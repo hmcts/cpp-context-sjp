@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>sjp-query</artifactId>
+        <groupId>uk.gov.moj.cpp.sjp</groupId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>sjp-query-api</artifactId>
+    <packaging>war</packaging>
+
+    <properties>
+        <cpp.service-component>QUERY_API</cpp.service-component>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>uk.gov.justice.maven</groupId>
+                <artifactId>raml-maven-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.sjp</groupId>
+                        <artifactId>sjp-query-controller</artifactId>
+                        <version>${project.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <generatorProperties>
+                        <actionMapping>${cpp.framework.action.mapping.enabled}</actionMapping>
+                    </generatorProperties>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.common</groupId>
+            <artifactId>query-api</artifactId>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.access-control</groupId>
+            <artifactId>access-control-common-providers</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.system.authorisation</groupId>
+            <artifactId>authorisation-interceptor</artifactId>
+        </dependency>
+        <!-- Unit Test Dependencies -->
+        <dependency>
+            <groupId>uk.gov.moj.cpp.access-control</groupId>
+            <artifactId>access-control-test-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>

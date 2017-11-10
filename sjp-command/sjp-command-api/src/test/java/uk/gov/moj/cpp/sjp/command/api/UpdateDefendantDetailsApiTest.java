@@ -1,0 +1,65 @@
+package uk.gov.moj.cpp.sjp.command.api;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
+import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
+import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
+import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.sjp.command.api.UpdateDefendantDetailsApi;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
+
+@RunWith(MockitoJUnitRunner.class)
+public class UpdateDefendantDetailsApiTest {
+
+    private static final String COMMAND_NAME = "sjp.update-defendant-details";
+    private static final String NEW_COMMAND_NAME = "sjp.command.update-defendant-details";
+
+    @Spy
+    private Enveloper enveloper = EnveloperFactory.createEnveloper();
+
+    @Mock
+    private Sender sender;
+
+    @InjectMocks
+    private UpdateDefendantDetailsApi updateDefendantDetailsApi;
+
+    @Captor
+    private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
+
+    @Test
+    public void shouldHandleCommand() {
+        assertThat(UpdateDefendantDetailsApi.class, isHandlerClass(COMMAND_API)
+                .with(method("updateDefendantDetails").thatHandles(COMMAND_NAME)));
+    }
+
+    @Test
+    public void shouldRenameCommand() {
+        final JsonEnvelope command = envelope().with(metadataWithRandomUUID(COMMAND_NAME)).build();
+
+        updateDefendantDetailsApi.updateDefendantDetails(command);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        final JsonEnvelope newCommand = envelopeCaptor.getValue();
+        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName(NEW_COMMAND_NAME));
+        assertThat(newCommand.payloadAsJsonObject(), equalTo(command.payloadAsJsonObject()));
+    }
+
+}

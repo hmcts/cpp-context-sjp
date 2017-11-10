@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "title": {
+      "enum":["Mr", "Mrs", "Ms", "Miss", "Co"]
+    },
+    "firstName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "lastName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "dateOfBirth": {
+      "type": "string"
+    },
+    "gender": {
+      "enum": [
+        "Male",
+        "Female",
+        "Not Specified"
+      ]
+    },
+    "email": {
+      "type": "string"
+    },
+    "address": {
+      "type": "object",
+      "properties": {
+        "address1": {
+          "type": "string"
+        },
+        "address2": {
+          "type": "string"
+        },
+        "address3": {
+          "type": "string"
+        },
+        "address4": {
+          "type": "string"
+        },
+        "postCode": {
+          "type": "string"
+        }
+      }
+    },
+    "contactNumber": {
+      "type": "object",
+      "properties": {
+        "home": {
+          "type": "string"
+        },
+        "mobile": {
+          "type": "string"
+        }
+      }
+    },
+    "nationalInsuranceNumber": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "firstName",
+    "lastName",
+    "gender"
+  ]
+}

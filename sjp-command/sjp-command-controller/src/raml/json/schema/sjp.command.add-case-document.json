@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "caseId": {
+      "type": "string"
+    },
+    "materialId": {
+      "type": "string"
+    },
+    "policeName": {
+      "type": "string"
+    },
+    "policeMaterialId": {
+      "type": "string"
+    },
+    "documentType": {
+      "type": "string"
+    },
+    "externalFileURL": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "caseId",
+    "materialId"
+  ]
+}

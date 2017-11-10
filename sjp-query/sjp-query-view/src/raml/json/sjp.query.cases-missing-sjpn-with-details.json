@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "id":"3a971f34-bd39-4a0e-8999-b99ff54554d7",
+      "urn":"TFL0538921682",
+      "postingDate":"2017-05-01",
+      "firstName":"Bob",
+      "lastName":"Wass"
+    },
+    {
+      "id":"3a971f34-bd39-4a0e-8999-b99ff54554d8",
+      "urn":"TFL0538921683",
+      "postingDate":"2017-05-01",
+      "firstName":"Rob",
+      "lastName":"Mass"
+    }
+  ],
+  "count":2
+}

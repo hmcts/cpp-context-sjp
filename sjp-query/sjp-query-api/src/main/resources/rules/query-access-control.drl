@@ -1,0 +1,171 @@
+package uk.gov.moj.cpp.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.sjp.query.api.RuleConstants;
+
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "sjp.query.case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCaseActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-by-urn"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-by-urn");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCaseByUrnActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.sjp-case-by-urn"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.sjp-case-by-urn");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQuerySjpCaseByUrnActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-documents"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-documents");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCaseDocumentsActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-defendants"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-defendants");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCaseDefendantsActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-by-urn-postcode"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-by-urn-postcode");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCaseByUrnPostcodeActionGroups()))
+
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.cases-search-by-material-id"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.cases-search-by-material-id");
+     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCasesSearchByMaterialIdActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.cases-search"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.cases-search");
+      eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCasesSearchActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-search-results"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-search-results");
+      eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryFindCaseSearchResultsActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.cases-missing-sjpn"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.cases-missing-sjpn");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCasesMissingSjpnActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.cases-missing-sjpn-with-details"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.cases-missing-sjpn-with-details");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCasesMissingSjpnActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.financial-means"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.financial-means");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryFinancialMeansActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.employer"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.employer");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryEmployerActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.awaiting-cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.awaiting-cases");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryAwaitingCasesActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.cases-referred-to-court"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.cases-referred-to-court");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCasesReferredToCourtActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.not-ready-cases-grouped-by-age"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.not-ready-cases-grouped-by-age");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getNotReadyCasesGroupedByAgeActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.oldest-case-age"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.oldest-case-age");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getOldestCaseAgeActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get result orders"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.result-orders");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryResultOrders()))
+  then
+    $outcome.setSuccess(true);
+end
+

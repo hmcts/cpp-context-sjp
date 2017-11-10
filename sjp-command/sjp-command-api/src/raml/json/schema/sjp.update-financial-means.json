@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "income": {
+      "type": "object",
+      "properties": {
+        "frequency": {
+          "enum": [
+            "WEEKLY",
+            "MONTHLY",
+            "FORTNIGHTLY"
+          ]
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "benefits": {
+      "type": "object",
+      "properties": {
+        "claimed": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "employmentStatus": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "income",
+    "benefits"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string",
+      "id": "caseId"
+    },
+    "structurePersonId": {
+      "type": "string",
+      "id": "structurePersonId"
+    },
+    "personType": {
+      "enum": [
+        "VICTIM",
+        "WITNESS"
+      ],
+      "id": "personType"
+    },
+    "policePersonType": {
+      "enum": [
+        "VICTIM",
+        "WITNESS",
+        "VICTIM_WITNESS"
+      ],
+      "id": "policePersonType"
+    }
+  },
+  "required": [
+    "caseId",
+    "structurePersonId",
+    "personType",
+    "policePersonType"
+  ]
+}

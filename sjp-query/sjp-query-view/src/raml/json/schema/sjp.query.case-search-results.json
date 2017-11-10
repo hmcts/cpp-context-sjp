@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "caseId": {
+      "type": "string"
+    },
+    "enterpriseId": {
+      "type": "string",
+      "minLength": 12,
+      "maxLength": 12
+    },
+    "urn": {
+      "type": "string"
+    },
+    "initiationCode": {
+      "type": "string"
+    },
+    "prosecutingAuthority": {
+      "id": "/prosecutingAuthority",
+      "type": "string",
+      "enum": [
+        "CPS",
+        "TFL"
+      ]
+    },
+    "postingDate": {
+      "type": "string"
+    },
+    "completed": {
+      "type": "boolean"
+    },
+    "reopendDate": {
+      "type": "string"
+    },
+    "pleaDate": {
+      "type": "string"
+    },
+    "withdrawalRequestedDate": {
+      "type": "string"
+    },
+    "personId": {
+      "type": "string"
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "dateOfBirth": {
+      "type": "string"
+    },
+    "postCode": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "caseId",
+    "urn",
+    "enterpriseId",
+    "initiationCode",
+    "prosecutingAuthority",
+    "lastName"
+  ]
+}

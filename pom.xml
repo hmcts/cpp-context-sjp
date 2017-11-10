@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>uk.gov.moj.cpp.common</groupId>
+        <artifactId>service-parent-pom</artifactId>
+        <version>4.1.4</version>
+    </parent>
+
+    <groupId>uk.gov.moj.cpp.sjp</groupId>
+    <artifactId>sjp-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
+        <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
+        <sonar.scm.provider>git</sonar.scm.provider>
+        <assignment.version>2.0.85</assignment.version>
+        <charging.version>2.0.255</charging.version>
+        <people.version>2.0.97</people.version>
+        <resulting.version>2.0.151</resulting.version>
+        <lifecycle.version>2.0.263</lifecycle.version>
+        <referencedata.version>2.0.128</referencedata.version>
+        <authorisation.service.version>0.1.49</authorisation.service.version>
+        <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
+        <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
+    </properties>
+
+    <modules>
+        <module>sjp-viewstore</module>
+        <module>sjp-domain</module>
+        <module>sjp-event</module>
+        <module>sjp-command</module>
+        <module>sjp-query</module>
+        <module>sjp-integration-test</module>
+        <module>sjp-service</module>
+    </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>external.atlassian.jgitflow</groupId>
+                    <artifactId>jgitflow-maven-plugin</artifactId>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <archiveClasses>true</archiveClasses>
+                    <attachClasses>true</attachClasses>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>external.atlassian.jgitflow</groupId>
+                <artifactId>jgitflow-maven-plugin</artifactId>
+                <configuration>
+                    <flowInitContext>
+                        <masterBranchName>dev/sjp-release</masterBranchName>
+                        <developBranchName>master</developBranchName>
+                        <featureBranchPrefix>dev/sjp-feature-</featureBranchPrefix>
+                        <releaseBranchPrefix>dev/sjp-release-</releaseBranchPrefix>
+                        <hotfixBranchPrefix>dev/sjp-hotfix-</hotfixBranchPrefix>
+                        <versionTagPrefix>sjp-tag-</versionTagPrefix>
+                    </flowInitContext>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <enableSshAgent>true</enableSshAgent>
+                    <pushReleases>true</pushReleases>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+    </dependencies>
+    <distributionManagement>
+        <site>
+            <id>site</id>
+            <url>${mvn.site.url}</url>
+        </site>
+    </distributionManagement>
+</project>

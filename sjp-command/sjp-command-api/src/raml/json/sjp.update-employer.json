@@ -1,0 +1,12 @@
+{
+  "employeeReference": "12345",
+  "name": "McDonald's",
+  "phone": "020 7998 9300",
+  "address": {
+    "address1": "14 Tottenham Court Road",
+    "address2": "London",
+    "address3": "England",
+    "address4": "UK",
+    "postCode": "W1T 1JY"
+  }
+}

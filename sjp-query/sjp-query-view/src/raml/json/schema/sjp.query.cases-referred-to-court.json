@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "cases": {
+      "type": "array",
+      "items": {
+        "caseId": {
+          "type": "string"
+        },
+        "urn": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "interpreterLanguage": {
+          "type": "string"
+        },
+        "hearingDate": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "caseId",
+        "urn",
+        "firstName",
+        "lastName",
+        "hearingDate"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "cases"
+  ]
+}

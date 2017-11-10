@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "offenceId": {
+      "type": "string"
+    },
+    "plea": {
+      "enum": ["NOT_GUILTY", "GUILTY", "GUILTY_REQUEST_HEARING"]
+    },
+    "pleaMethod": {
+      "enum": ["ONLINE", "POSTAL"]
+    },
+    "pleaDetails": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "plea",
+    "caseId",
+    "offenceId"
+  ],
+  "additionalProperties": false
+}

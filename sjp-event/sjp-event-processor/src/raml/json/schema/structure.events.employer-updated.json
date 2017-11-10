@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "defendantId": {
+      "$ref": "#/definitions/uuid"
+    },
+    "employeeReference": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 35
+    },
+    "phone": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "address": {
+      "type": "object",
+      "properties": {
+        "address1": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "address2": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "address3": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "address4": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "postCode": {
+          "type": "string",
+          "maxLength": 10
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [ "defendantId" ],
+  "additionalProperties": false,
+  "definitions": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    }
+  }
+}

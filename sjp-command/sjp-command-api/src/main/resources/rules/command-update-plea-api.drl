@@ -1,0 +1,27 @@
+package uk.gov.moj.cpp.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants;
+
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command API - Rule for Update Plea"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.update-plea");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getUpdatePleaActionGroups()));
+
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command API - Rule for Cancel Plea"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.cancel-plea");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getCancelPleaActionGroups()));
+
+  then
+    $outcome.setSuccess(true);
+end

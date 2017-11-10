@@ -1,0 +1,14 @@
+{
+  "caseCountsByAgeRanges": [
+    {
+      "ageFrom": 0,
+      "ageTo": 20,
+      "casesCount": 1
+    },
+    {
+      "ageFrom": 21,
+      "ageTo": 27,
+      "casesCount": 2
+    }
+  ]
+}

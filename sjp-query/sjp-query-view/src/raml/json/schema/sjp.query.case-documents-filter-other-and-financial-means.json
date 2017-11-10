@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseDocuments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "materialId": {
+            "type": "string"
+          },
+          "policeName": {
+            "type": "string"
+          },
+          "policeMaterialId": {
+            "type": "string"
+          },
+          "documentName": {
+            "type": ["string", "null"]
+          },
+          "documentType": {
+            "type": "string"
+          },
+          "externalFileURL": {
+            "type": ["string", "null"]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "materialId",
+          "policeName",
+          "policeMaterialId",
+          "documentType"
+        ]
+      }
+    }
+  },
+  "required": [
+    "caseDocuments"
+  ]
+}

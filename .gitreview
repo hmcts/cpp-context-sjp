@@ -1,0 +1,6 @@
+[gerrit]
+host=codereview.dev2.cloud.local
+port=29418
+project=cpp.context.sjp
+defaultbranch=master
+defaultremote=origin

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
+ http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd" version="1.0">
+
+    <persistence-unit name="sjp-persistence-unit">
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <jta-data-source>java:/DS.sjp</jta-data-source>
+        <class>uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail</class>
+        <class>uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail</class>
+        <class>uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument</class>
+        <class>uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail</class>
+        <class>uk.gov.moj.cpp.structure.persistence.entity.Person</class>
+        <properties>
+           <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL94Dialect"/>
+        </properties>
+    </persistence-unit>
+
+</persistence>

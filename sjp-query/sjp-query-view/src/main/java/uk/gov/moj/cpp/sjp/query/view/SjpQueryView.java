@@ -1,0 +1,192 @@
+package uk.gov.moj.cpp.sjp.query.view;
+
+import static java.util.Optional.empty;
+
+import uk.gov.justice.services.common.converter.LocalDates;
+import uk.gov.justice.services.core.annotation.Component;
+import uk.gov.justice.services.core.annotation.Handles;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.Employer;
+import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
+import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
+import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
+import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
+import uk.gov.moj.cpp.sjp.query.view.service.EmployerService;
+
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.json.JsonObject;
+
+@SuppressWarnings("WeakerAccess")
+@ServiceComponent(Component.QUERY_VIEW)
+public class SjpQueryView {
+
+    static final String FIELD_CASE_ID = "caseId";
+    static final String FIELD_URN = "urn";
+    static final String FIELD_QUERY = "q";
+    static final String FIELD_DEFENDANT_ID = "defendantId";
+    static final String FIELD_DAYS_SINCE_POSTING = "daysSincePosting";
+
+    private static final String NAME_RESPONSE_CASE = "sjp.query.case-response";
+    private static final String NAME_RESPONSE_CASES_SEARCH = "sjp.query.cases-search-response";
+    private static final String NAME_RESPONSE_CASES_SEARCH_BY_MATERIAL_ID = "sjp.query.cases-search-by-material-id-response";
+    private static final String NAME_RESPONSE_CASE_DOCUMENTS = "sjp.query.case-documents-response";
+    private static final String NAME_RESPONSE_CASE_DEFENDANTS = "sjp.query.case-defendants-response";
+    private static final String NAME_RESPONSE_AWAITING_CASES = "sjp.query.awaiting-cases-response";
+    private static final String NAME_RESPONSE_CASES_REFERRED_TO_COURT = "sjp.query.cases-referred-to-court-response";
+    private static final String NAME_RESPONSE_CASES_WITH_ORDER = "sjp.query.result-orders";
+
+    @Inject
+    private CaseService caseService;
+
+    @Inject
+    private FinancialMeansService financialMeansService;
+
+    @Inject
+    private EmployerService employerService;
+
+    @Inject
+    private Enveloper enveloper;
+
+    @Handles("sjp.query.case")
+    public JsonEnvelope findCase(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(
+                caseService.findCase(envelope.payloadAsJsonObject().getString(FIELD_CASE_ID)));
+    }
+
+    @Handles("sjp.query.case-filter-other-and-financial-means-documents")
+    public JsonEnvelope findCaseAndFilterOtherAndFinancialMeansDocuments(JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE)
+                .apply(caseService.findCaseAndFilterOtherAndFinancialMeansDocuments(
+                        envelope.payloadAsJsonObject().getString(FIELD_CASE_ID)));
+    }
+
+
+    @Handles("sjp.query.case-by-urn")
+    public JsonEnvelope findCaseByUrn(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(
+                caseService.findCaseByUrn(envelope.payloadAsJsonObject().getString(FIELD_URN)));
+    }
+
+    @Handles("sjp.query.sjp-case-by-urn")
+    public JsonEnvelope findSjpCaseByUrn(final JsonEnvelope envelope) {
+        final CaseView sjpCaseByUrn = caseService.findSjpCaseByUrn(envelope.payloadAsJsonObject().getString(FIELD_URN));
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(sjpCaseByUrn);
+    }
+
+    @Handles("sjp.query.cases-search")
+    public JsonEnvelope searchCasesByPersonId(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASES_SEARCH).apply(
+                caseService.searchCasesByPersonId(envelope.payloadAsJsonObject().getString(FIELD_QUERY)));
+    }
+
+    @Handles("sjp.query.case-search-results")
+    public JsonEnvelope findCaseSearchResults(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASES_SEARCH).apply(
+                caseService.searchCases(envelope.payloadAsJsonObject().getString(FIELD_QUERY)));
+    }
+
+    @Handles("sjp.query.cases-missing-sjpn")
+    public JsonEnvelope findCasesMissingSjpn(final JsonEnvelope envelope) {
+        final JsonObject payload = envelope.payloadAsJsonObject();
+        final Optional<Integer> limit = payload.containsKey("limit") ? Optional.of(payload.getInt("limit")) : empty();
+        final Optional<LocalDate> postedBefore = payload.containsKey(FIELD_DAYS_SINCE_POSTING) ?
+                Optional.of(LocalDate.now().minusDays(payload.getInt(FIELD_DAYS_SINCE_POSTING))) : empty();
+
+        return enveloper.withMetadataFrom(envelope, "sjp.query.cases-missing-sjpn")
+                .apply(caseService.findCasesMissingSjpn(limit, postedBefore));
+    }
+
+    @Handles("sjp.query.cases-missing-sjpn-with-details")
+    public JsonEnvelope findCasesMissingSjpnWithDetails(final JsonEnvelope envelope) {
+        final JsonObject payload = envelope.payloadAsJsonObject();
+        final Optional<LocalDate> postedBefore = payload.containsKey(FIELD_DAYS_SINCE_POSTING) ?
+                Optional.of(LocalDate.now().minusDays(payload.getInt(FIELD_DAYS_SINCE_POSTING))) : empty();
+        return enveloper.withMetadataFrom(envelope, "sjp.query.cases-missing-sjpn-with-details")
+                .apply(caseService.findCasesMissingSjpnWithDetails(postedBefore));
+    }
+
+    @Handles("sjp.query.case-documents")
+    public JsonEnvelope findCaseDocuments(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE_DOCUMENTS).apply(
+                caseService.findCaseDocuments(envelope.payloadAsJsonObject().getString(FIELD_CASE_ID)));
+    }
+
+    @Handles("sjp.query.case-documents-filter-other-and-financial-means")
+    public JsonEnvelope findCaseDocumentsFilterOtherAndFinancialMeans(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE_DOCUMENTS).apply(
+                caseService.findCaseDocumentsFilterOtherAndFinancialMeans(envelope.payloadAsJsonObject().getString(FIELD_CASE_ID)));
+
+    }
+
+    @Handles("sjp.query.case-defendants")
+    public JsonEnvelope findCaseDefendants(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE_DEFENDANTS)
+                .apply(caseService.findCaseDefendants(
+                        envelope.payloadAsJsonObject().getString(FIELD_CASE_ID)));
+    }
+
+    @Handles("sjp.query.financial-means")
+    public JsonEnvelope findFinancialMeans(final JsonEnvelope envelope) {
+        final UUID defendantId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_DEFENDANT_ID));
+        final Optional<FinancialMeans> financialMeans = financialMeansService.getFinancialMeans(defendantId);
+        return enveloper.withMetadataFrom(envelope, "sjp.query.financial-means")
+                .apply(financialMeans.orElse(new FinancialMeans(null, null, null, null)));
+    }
+
+    @Handles("sjp.query.employer")
+    public JsonEnvelope findEmployer(final JsonEnvelope envelope) {
+        final UUID defendantId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_DEFENDANT_ID));
+        final Optional<Employer> employer = employerService.getEmployer(defendantId);
+        return enveloper.withMetadataFrom(envelope, "sjp.query.employer")
+                .apply(employer.orElse(new Employer(null, null, null, null, null)));
+    }
+
+    @Handles("sjp.query.cases-search-by-material-id")
+    public JsonEnvelope searchCaseByMaterialId(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASES_SEARCH_BY_MATERIAL_ID).apply(
+                caseService.searchCaseByMaterialId(envelope.payloadAsJsonObject().getString(FIELD_QUERY)));
+
+    }
+
+    @Handles("sjp.query.awaiting-cases")
+    public JsonEnvelope getAwaitingCases(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_AWAITING_CASES).apply(
+                caseService.findAwaitingCases());
+    }
+
+    @Handles("sjp.query.cases-referred-to-court")
+    public JsonEnvelope getCasesReferredToCourt(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASES_REFERRED_TO_COURT).apply(
+                caseService.findCasesReferredToCourt());
+    }
+
+    @Handles("sjp.query.not-ready-cases-grouped-by-age")
+    public JsonEnvelope findNotReadyCasesGroupedByAge(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, "sjp.query.not-ready-cases-grouped-by-age")
+                .apply(caseService.getNotReadyCasesGroupedByAge());
+    }
+
+    @Handles("sjp.query.oldest-case-age")
+    public JsonEnvelope findOldestCaseAge(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, "sjp.query.oldest-case-age")
+                .apply(caseService.getOldestCaseAge());
+    }
+
+    @Handles(NAME_RESPONSE_CASES_WITH_ORDER)
+    public JsonEnvelope getResultOrders(final JsonEnvelope envelope) {
+
+        final JsonObject payload = envelope.payloadAsJsonObject();
+
+        final LocalDate fromDate = LocalDates.from(payload.getString("fromDate"));
+        final LocalDate toDate = LocalDates.from(payload.getString("toDate"));
+
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASES_WITH_ORDER)
+                .apply(caseService.findResultOrders(fromDate, toDate));
+    }
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "employeeReference": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 35
+    },
+    "phone": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "address": {
+      "type": "object",
+      "properties": {
+        "address1": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "address2": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "address3": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "address4": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "postCode": {
+          "type": "string",
+          "maxLength": 10
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

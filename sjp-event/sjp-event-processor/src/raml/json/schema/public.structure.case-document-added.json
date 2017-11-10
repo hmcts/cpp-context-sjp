@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "description": "case document id"
+    },
+    "materialId": {
+      "type": "string"
+    },
+    "documentType" : {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "id",
+    "materialId"
+  ]
+}

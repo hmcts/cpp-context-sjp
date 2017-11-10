@@ -1,0 +1,11 @@
+{
+  "income": {
+    "amount": 100.1,
+    "frequency": "MONTHLY"
+  },
+  "benefits": {
+    "claimed": true,
+    "type": "free text describing benefits type"
+  },
+  "employmentStatus": "EMPLOYED"
+}

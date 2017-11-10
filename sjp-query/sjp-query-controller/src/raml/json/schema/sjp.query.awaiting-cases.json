@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "awaitingCases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "personId": {
+            "type": "string"
+          },
+          "offenceCode": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "personId",
+          "offenceCode"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "awaitingCases"
+  ]
+}

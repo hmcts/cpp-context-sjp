@@ -1,0 +1,350 @@
+#%RAML 0.8
+title: Sjp - Command API
+version: v1
+protocols: [ HTTP ]
+
+baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
+
+/cases:
+  post:
+    description: |
+      Create a case
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.create-sjp-case+json
+          name: sjp.create-sjp-case
+      ...
+    body:
+      application/vnd.sjp.create-sjp-case+json:
+        example:
+          !include json/sjp.create-sjp-case.json
+        schema:
+          !include json/schema/sjp.create-sjp-case.json
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted
+
+/cases/{caseId}:
+  uriParameters:
+    caseId:
+      description: The ID of the case for which enterprise id is attached
+  post:
+    description: |
+      Associate an enterprise ID with an existing case.
+      ...
+      (mapping):
+          requestType: application/vnd.enterprise-id+json
+          name: sjp.associate-enterprise-id
+      ...
+    body:
+      application/vnd.enterprise-id+json:
+        example:
+          !include json/enterprise-id.json
+        schema:
+          !include json/schema/enterprise-id.json
+    responses:
+      202:
+        description: Accepted
+      500:
+        description: Internal Server Error
+
+/cases/{caseId}/defendant/{defendantId}/financial-means:
+  uriParameters:
+    caseId:
+      description: The ID of the case to modify
+      type: string
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  post:
+    description: |
+      Update financial means
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.update-financial-means+json
+          name: sjp.update-financial-means
+      ...
+    body:
+      application/vnd.sjp.update-financial-means+json:
+        example:
+          !include json/sjp.update-financial-means.json
+        schema:
+          !include json/schema/sjp.update-financial-means.json
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted
+
+/cases/{caseId}/defendant/{defendantId}/employer:
+  uriParameters:
+    caseId:
+      description: The ID of the case to modify
+      type: string
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  post:
+    description: |
+      Update employer
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.update-employer+json
+          name: sjp.update-employer
+      ...
+    body:
+      application/vnd.sjp.update-employer+json:
+        example:
+          !include json/sjp.update-employer.json
+        schema:
+          !include json/schema/sjp.update-employer.json
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted
+
+/cases/{caseId}/offences-withdrawal-request:
+  uriParameters:
+    caseId:
+      description: The ID of the case update
+      type: string
+  post:
+    description: |
+      Request all offences for a case to be withdrawn or cancel withdrawl request
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.request-withdrawal-all-offences+json
+          name: sjp.request-withdrawal-all-offences
+      (mapping):
+          requestType: application/vnd.sjp.cancel-request-withdrawal-all-offences+json
+          name: sjp.cancel-request-withdrawal-all-offences
+      ...
+    body:
+      application/vnd.sjp.request-withdrawal-all-offences+json: !!null
+      application/vnd.sjp.cancel-request-withdrawal-all-offences+json: !!null
+    responses:
+      500:
+        description: Internal Server Error
+      400:
+        description: Bad request
+      202:
+        description: Accepted
+
+/cases/{caseId}/offences/{offenceId}/pleas:
+  uriParameters:
+    caseId:
+      description: The ID of the offence update
+      type: string
+    offenceId:
+      description: The ID of the offence update
+      type: string
+  post:
+    description: |
+      Update/cancel a case's plea
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.update-plea+json
+          name: sjp.update-plea
+      (mapping):
+          requestType: application/vnd.sjp.cancel-plea+json
+          name: sjp.cancel-plea
+      ...
+    body:
+      application/vnd.sjp.update-plea+json:
+        example:
+          !include json/sjp.update-plea.json
+        schema:
+          !include json/schema/sjp.update-plea.json
+      application/vnd.sjp.cancel-plea+json: !!null
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted
+
+/cases/{caseId}/upload-case-document/{caseDocumentType}:
+  uriParameters:
+    caseId:
+      description: The ID of a case to modify
+      type: string
+    caseDocumentType:
+      description: Type of a document
+      type: string
+  post:
+    description: |
+      Upload a case document for a case
+      ...
+      (mapping):
+          requestType: multipart/form-data
+          name: sjp.upload-case-document
+      ...
+    body:
+      multipart/form-data:
+        formParameters:
+          caseDocument:
+            description: a case document to be uploaded
+            type: file
+    responses:
+      202:
+        description: Accepted
+      500:
+        description: Internal Server Error
+
+/cases/{caseId}/case-documents:
+  uriParameters:
+    caseId:
+      description: The ID of the case to modify
+      type: string
+  post:
+    description: |
+      Add a case document to a case
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.add-case-document+json
+          name: sjp.add-case-document
+      (mapping):
+          requestType: multipart/form-data
+          name: sjp.upload-case-documents
+      ...
+    body:
+      application/vnd.sjp.add-case-document+json:
+        example:
+          !include json/sjp.add-case-document.json
+        schema:
+          !include json/schema/sjp.add-case-document.json
+      multipart/form-data:
+        formParameters:
+          pleaDocument:
+            description: Scanned plea document
+            type: file
+    responses:
+      202:
+        description: Accepted
+      500:
+        description: Internal Server Error
+
+/cases/{caseId}/mark-reopened-in-libra:
+  uriParameters:
+    caseId:
+      description: The ID of the case
+      type: string
+  post:
+    description: |
+      Mark case as reopened in Libra on this date
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.mark-case-reopened-in-libra+json
+          name: sjp.mark-case-reopened-in-libra
+      ...
+    body:
+      application/vnd.sjp.mark-case-reopened-in-libra+json:
+        example:
+          !include json/sjp.case-reopened-in-libra.json
+        schema:
+          !include json/schema/sjp.mark-case-reopened-in-libra.json
+    responses:
+      202:
+        description: Accepted
+
+/cases/{caseId}/update-reopened-in-libra:
+  uriParameters:
+    caseId:
+      description: The ID of the case
+      type: string
+  post:
+    description: |
+      Update details of a case reopened in Libra
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.update-case-reopened-in-libra+json
+          name: sjp.update-case-reopened-in-libra
+      ...
+    body:
+      application/vnd.sjp.update-case-reopened-in-libra+json:
+        example:
+          !include json/sjp.case-reopened-in-libra.json
+        schema:
+          !include json/schema/sjp.update-case-reopened-in-libra.json
+    responses:
+      202:
+        description: Accepted
+
+/cases/{caseId}/undo-reopened-in-libra:
+  uriParameters:
+    caseId:
+      description: The ID of the case
+      type: string
+  post:
+    description: |
+      Remove details of a case reopened in Libra
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.undo-case-reopened-in-libra+json
+          name: sjp.undo-case-reopened-in-libra
+      ...
+    body:
+      application/vnd.sjp.undo-case-reopened-in-libra+json:
+        example:
+          !include json/sjp.undo-case-reopened-in-libra.json
+        schema:
+          !include json/schema/sjp.undo-case-reopened-in-libra.json
+    responses:
+      202:
+        description: Accepted
+
+/cases/{caseId}/add-person-info:
+  post:
+    description: |
+      Add personal details of the defendant for searching
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.add-person-info+json
+          name: sjp.add-person-info
+      ...
+    body:
+      application/vnd.sjp.add-person-info+json:
+        example:
+          !include json/sjp.add-person-info.json
+        schema:
+          !include json/schema/sjp.add-person-info.json
+    responses:
+      202:
+        description: Accepted
+
+
+/cases/{caseId}/defendant/{defendantId}:
+  post:
+    description: |
+      Update person's details (used currently by ATCM, as the replace entire person didn't sound correct)
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.update-defendant-details+json
+          name: sjp.update-defendant-details
+      ...
+    body:
+      application/vnd.sjp.update-defendant-details+json:
+        example:
+            !include json/sjp.update-defendant-details.json
+        schema:
+            !include json/schema/sjp.update-defendant-details.json
+    responses:
+      202:
+        description: Accepted
+
+/cases/{caseId}/court-referral:
+  post:
+    description: |
+      Action court referral
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.action-court-referral+json
+          name: sjp.action-court-referral
+      ...
+    body:
+      application/vnd.sjp.action-court-referral+json: !!null
+    responses:
+      202:
+        description: Accepted

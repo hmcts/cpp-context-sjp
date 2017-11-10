@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "offenceId": {
+      "type": "string"
+    },
+    "pleaMethod": {
+      "enum": ["ONLINE", "POSTAL"]
+    }
+  },
+  "required": [
+    "caseId",
+    "offenceId"
+  ],
+  "additionalProperties": false
+}

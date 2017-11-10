@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "searchTerm": {
+      "id": "/searchTerm",
+      "type": "string"
+    },
+    "hits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "urn": {
+            "type": "string"
+          },
+          "postingDate": {
+            "type": "string"
+          },
+          "reopenedDate": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "plea": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "urn",
+          "postingDate",
+          "reopenedDate",
+          "completed"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "searchTerm",
+    "hits"
+  ]
+}

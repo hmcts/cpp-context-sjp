@@ -1,0 +1,562 @@
+package uk.gov.moj.cpp.sjp.query.view.service;
+
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.time.ZoneOffset.UTC;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.UUID.randomUUID;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder.aCase;
+import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
+
+import uk.gov.justice.services.common.converter.LocalDates;
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
+import uk.gov.moj.cpp.sjp.persistence.builder.CaseDocumentBuilder;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.InterpreterDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.NotReadyCaseRepository;
+import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
+import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
+import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
+import uk.gov.moj.cpp.sjp.query.view.response.DefendantsView;
+import uk.gov.moj.cpp.sjp.query.view.response.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
+import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
+import uk.gov.moj.cpp.sjp.query.view.response.SearchCasesHit;
+import uk.gov.moj.cpp.sjp.query.view.response.SearchCasesView;
+
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.json.JsonObject;
+import javax.persistence.NoResultException;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+
+@RunWith(MockitoJUnitRunner.class)
+public class CaseServiceTest {
+
+    private static final UUID CASE_ID = randomUUID();
+    private static final String URN = "urn";
+    private static final UUID PERSON_ID = randomUUID();
+    private static final String PROSECUTING_AUTHORITY = "prosecutingAuthority";
+    private static final Boolean COMPLETED = Boolean.TRUE;
+    private static final String INITIATION_CODE = "J";
+    private static final String ENTERPRISE_ID = "2K2SLYFC743H";
+
+    private static final UUID ID = randomUUID();
+    private static final UUID CASE_ID_TO_FIND = randomUUID();
+
+    private static final String INTERPRETER = "french";
+    private static final String PROSECUTING_AUTHORITY_CPS = "CPS";
+    private static final String PROSECUTING_AUTHORITY_TFL = "TFL";
+    private static final LocalDate POSTING_DATE = LocalDate.now();
+    private static final String FIRST_NAME = "Adam";
+    private static final String LAST_NAME = "Zuma";
+
+    private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
+
+    @Mock
+    private CaseRepository caseRepository;
+
+    @Mock
+    private NotReadyCaseRepository notReadyCaseRepository;
+
+    @Mock
+    private CaseDocumentRepository caseDocumentRepository;
+
+    @Mock
+    private CaseSearchResultRepository caseSearchResultRepository;
+
+    @InjectMocks
+    private CaseService service;
+
+    @Test
+    public void shouldFindCaseViewWithDocuments() {
+        final CaseDetail caseDetail = createCaseDetailWithDocumentTypes("FINANCIAL_MEANS", "OTHER", "Travelcard");
+
+        given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
+        CaseView caseView = service.findCase(CASE_ID.toString());
+        assertThat(caseView, notNullValue());
+        assertThat(caseView.getId(), is(CASE_ID.toString()));
+        assertThat(caseView.getUrn(), is(URN));
+        assertThat(caseView.getCaseDocuments().size(), is(3));
+    }
+
+    @Test
+    public void shouldFindCaseViewWithFilteringOfOtherAndFinancialMeansDocuments() {
+        final CaseDetail caseDetail = createCaseDetailWithDocumentTypes("FINANCIAL_MEANS", "OTHER", "OTHER-Travelcard");
+
+        given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
+
+        final CaseView caseView = service.findCaseAndFilterOtherAndFinancialMeansDocuments(CASE_ID.toString());
+        assertThat(caseView.getCaseDocuments().size(), is(0));
+    }
+
+    @Test
+    public void shouldFindCaseViewWithFilteringWhichLeavesRequiredDocuments() {
+        final CaseDetail caseDetail = createCaseDetailWithDocumentTypes("PLEA", "CITN", "SJPN");
+
+        given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
+
+        final CaseView caseView = service.findCaseAndFilterOtherAndFinancialMeansDocuments(CASE_ID.toString());
+        assertThat(caseView.getCaseDocuments().size(), is(3));
+    }
+
+    @Test
+    public void shouldFindCaseViewWithFilteringOfUnwantedDocuments() {
+        final CaseDetail caseDetail = createCaseDetailWithDocumentTypes("PLEA", "OTHER", "FINANCIAL_MEANS");
+
+        given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
+
+        final CaseView caseView = service.findCaseAndFilterOtherAndFinancialMeansDocuments(CASE_ID.toString());
+        assertThat(caseView.getCaseDocuments().size(), is(1));
+    }
+
+    @Test
+    public void shouldFindCaseByUrn() {
+        CaseDetail caseDetail = createCaseDetail();
+
+        given(caseRepository.findByUrn(URN)).willReturn(caseDetail);
+        CaseView caseView = service.findCaseByUrn(URN);
+
+        assertThat(caseView, notNullValue());
+        assertThat(caseView.getId(), is(CASE_ID.toString()));
+        assertThat(caseView.getUrn(), is(URN));
+        assertThat(caseView.getDateTimeCreated(), is(clock.now()));
+    }
+
+    @Test
+    public void shouldFindCaseByUrnAndContainsReopenedDateAndLibraCaseNumber() {
+        final CaseDetail caseDetail = createCaseDetail();
+        final LocalDate reopenedDate = LocalDate.now();
+        final String reason = "REASON";
+        caseDetail.setReopenedDate(reopenedDate);
+        caseDetail.setLibraCaseNumber("LIBRA12345");
+        caseDetail.setReopenedInLibraReason(reason);
+
+        given(caseRepository.findByUrn(URN)).willReturn(caseDetail);
+
+        final CaseView caseView = service.findCaseByUrn(URN);
+
+        assertThat(caseView, notNullValue());
+        assertThat(caseView.getId(), is(CASE_ID.toString()));
+        assertThat(caseView.getUrn(), is(URN));
+        assertThat(caseView.getLibraCaseNumber(), is("LIBRA12345"));
+        assertThat(caseView.getReopenedInLibraReason(), is(reason));
+        assertThat(caseView.getReopenedDate(), is(reopenedDate));
+        assertThat(caseView.getDateTimeCreated(), is(clock.now()));
+    }
+
+    @Test
+    public void shouldFindSjpCaseByUrn() {
+        LocalDate postingDate = LocalDate.now();
+        final CaseDetail caseDetail = aCase().withCaseId(CASE_ID).withUrn(URN)
+                .withPostingDate(postingDate)
+                .addDefendantDetail(aDefendantDetail().withPersonId(PERSON_ID).build())
+                .build();
+
+        given(caseRepository.findSjpCaseByUrn(URN)).willReturn(caseDetail);
+        CaseView caseView = service.findSjpCaseByUrn(URN);
+
+        assertThat(caseView, notNullValue());
+        assertThat(caseView.getId(), is(CASE_ID.toString()));
+        assertThat(caseView.getUrn(), is(URN));
+        assertThat(caseView.getPostingDate(), is(postingDate));
+        assertTrue(caseView.getDefendants().stream()
+                .anyMatch(defendant -> defendant.getPersonId().equals(PERSON_ID)));
+    }
+
+    @Test
+    public void shouldHandleWhenNoCaseFoundForUrn() {
+        given(caseRepository.findByUrn(URN)).willThrow(new NoResultException("boom"));
+        assertThat(service.findCaseByUrn(URN), nullValue());
+    }
+
+    @Test
+    public void shouldSearchCasesByPersonId() {
+        this.shouldSearchCases(
+                (personId, caseDetailList) -> when(caseRepository.findByPersonId(personId))
+                        .thenReturn(caseDetailList),
+                service::searchCasesByPersonId);
+    }
+
+    private void shouldSearchCases(final BiFunction<UUID, List<CaseDetail>, Object> setUpFunction,
+                                   final Function<String, SearchCasesView> functionToTest) {
+        final List<CaseDetail> caseDetailList = new ArrayList<>();
+        caseDetailList.add(createCaseDetail());
+
+        final UUID caseId2 = UUID.randomUUID();
+        final CaseDetail caseDetailWithPlea = createCaseDetail();
+        caseDetailWithPlea.setId(caseId2);
+        caseDetailWithPlea.setCompleted(Boolean.FALSE);
+        final DefendantDetail defendantDetail = new DefendantDetail();
+        final Set<OffenceDetail> offences = new HashSet<>();
+        offences.add(OffenceDetail.builder().setPlea("GUILTY").setId(UUID.randomUUID()).build());
+        defendantDetail.setOffences(offences);
+        caseDetailWithPlea.addDefendant(defendantDetail);
+        caseDetailList.add(caseDetailWithPlea);
+
+        setUpFunction.apply(CASE_ID_TO_FIND, caseDetailList);
+
+        SearchCasesView searchCasesView = functionToTest.apply(CASE_ID_TO_FIND.toString());
+
+        assertThat(searchCasesView, notNullValue());
+
+        List<SearchCasesHit> hits = searchCasesView.getHits();
+        hits.sort(Comparator.comparing(SearchCasesHit::getPlea));
+
+        assertThat(hits.get(0).getId(), is(CASE_ID.toString()));
+        assertThat(hits.get(0).getCompleted(), is(COMPLETED));
+        assertThat(hits.get(0).getPlea(), is(""));
+
+        assertThat(hits.get(1).getId(), is(caseDetailWithPlea.getId().toString()));
+        assertThat(hits.get(1).getCompleted(), is(Boolean.FALSE));
+        assertThat(hits.get(1).getPlea(), is("GUILTY"));
+    }
+
+    @Test
+    public void shouldSearchCaseByMaterialId_whenTFL() {
+        final UUID materialId = UUID.randomUUID();
+        CaseDetail caseDetail = new CaseDetail();
+        caseDetail.setId(CASE_ID);
+        caseDetail.setProsecutingAuthority(PROSECUTING_AUTHORITY_TFL);
+
+        when(caseRepository.findByMaterialId(materialId)).thenReturn(caseDetail);
+
+        SearchCaseByMaterialIdView searchCaseByMaterialIdView =
+                service.searchCaseByMaterialId(materialId.toString());
+
+        assertThat(searchCaseByMaterialIdView.getCaseId(), is(CASE_ID.toString()));
+        assertThat(searchCaseByMaterialIdView.getProsecutingAuthority(),
+                is(ProsecutingAuthority.TFL));
+    }
+
+    @Test
+    public void shouldSearchCaseByMaterialId_whenCaseIdAndProsecutingAuthorityAreNull() {
+        final UUID materialId = UUID.randomUUID();
+
+        when(caseRepository.findByMaterialId(materialId)).thenReturn(null);
+
+        SearchCaseByMaterialIdView searchCaseByMaterialIdView =
+                service.searchCaseByMaterialId(materialId.toString());
+
+        assertThat(searchCaseByMaterialIdView.getCaseId(), nullValue());
+        assertThat(searchCaseByMaterialIdView.getProsecutingAuthority(), nullValue());
+    }
+
+
+    @Test
+    public void shouldReturnNullIfCaseNotFoundSearchCaseByMaterialId() {
+        final UUID materialId = UUID.randomUUID();
+
+        when(caseRepository.findByMaterialId(materialId)).thenThrow(new NoResultException());
+
+        SearchCaseByMaterialIdView searchCaseByMaterialIdView =
+                service.searchCaseByMaterialId(materialId.toString());
+
+        assertThat(searchCaseByMaterialIdView.getCaseId(), is(nullValue()));
+        assertThat(searchCaseByMaterialIdView.getProsecutingAuthority(), is(nullValue()));
+    }
+
+
+    @Test
+    public void shouldFindCaseDocuments() {
+        List<CaseDocument> caseDocumentList = new ArrayList<>();
+        UUID documentId = randomUUID();
+        CaseDocument caseDocument = new CaseDocument(documentId, randomUUID(), "SJPN", ZonedDateTime.now(), CASE_ID, 2);
+        caseDocumentList.add(caseDocument);
+        when(caseRepository.findCaseDocuments(CASE_ID)).thenReturn(caseDocumentList);
+
+        CaseDocumentsView caseDocumentsView = service.findCaseDocuments(CASE_ID.toString());
+        assertThat(caseDocumentsView, notNullValue());
+        CaseDocumentView firstCaseDocument = caseDocumentsView.getCaseDocuments().get(0);
+        assertThat(firstCaseDocument.getId().toString(), is(documentId.toString()));
+        assertThat(firstCaseDocument.getDocumentNumber(), is(2));
+    }
+
+    @Test
+    public void shouldFindCaseDocumentsViewWithFilteringOfOtherAndFinancialMeansDocuments() {
+        final List<CaseDocument> caseDocuments = createCaseDocuments("FINANCIAL_MEANS", "OTHER", "OTHER-Travelcard");
+
+        given(caseRepository.findCaseDocuments(CASE_ID)).willReturn(caseDocuments);
+
+        final CaseDocumentsView caseDocumentsView = service.findCaseDocumentsFilterOtherAndFinancialMeans(CASE_ID.toString());
+        assertThat(caseDocumentsView.getCaseDocuments().size(), is(0));
+    }
+
+    @Test
+    public void shouldFindCaseDocumentsViewWithFilteringWhichLeavesRequiredDocuments() {
+        final List<CaseDocument> caseDocuments = createCaseDocuments("PLEA", "CITN", "SJPN");
+
+        given(caseRepository.findCaseDocuments(CASE_ID)).willReturn(caseDocuments);
+
+        final CaseDocumentsView caseDocumentsView = service.findCaseDocumentsFilterOtherAndFinancialMeans(CASE_ID.toString());
+        assertThat(caseDocumentsView.getCaseDocuments().size(), is(3));
+    }
+
+    @Test
+    public void shouldFindCaseDocumentsViewWithFilteringOfUnwantedDocuments() {
+        final List<CaseDocument> caseDocuments = createCaseDocuments("PLEA", "OTHER", "FINANCIAL_MEANS");
+
+        given(caseRepository.findCaseDocuments(CASE_ID)).willReturn(caseDocuments);
+
+        final CaseDocumentsView caseDocumentsView = service.findCaseDocumentsFilterOtherAndFinancialMeans(CASE_ID.toString());
+        assertThat(caseDocumentsView.getCaseDocuments().size(), is(1));
+    }
+
+    @Test
+    public void shouldFindCaseDefendants() {
+        List<DefendantDetail> defendantList = new ArrayList<>();
+
+        Set<OffenceDetail> offences = new HashSet<>();
+
+        DefendantDetail defendant = new DefendantDetail(ID, PERSON_ID, offences);
+        defendant.setCaseDetail(createCaseDetail());
+        defendant.setInterpreter(new InterpreterDetail(Boolean.TRUE, INTERPRETER));
+        defendantList.add(defendant);
+
+
+        when(caseRepository.findCaseDefendants(CASE_ID)).thenReturn(defendantList);
+
+        DefendantsView defendantsView = service.findCaseDefendants(CASE_ID.toString());
+
+        assertThat(defendantsView, notNullValue());
+
+        assertThat(defendantsView.getDefendants().get(0).getInterpreter().getLanguage(), is(INTERPRETER));
+        assertThat(defendantsView.getDefendants().get(0).getPersonId(), is(PERSON_ID));
+        assertThat(defendantsView.getDefendants().get(0).getCaseId(), is(CASE_ID));
+        assertThat(defendantsView.getDefendants().get(0).getId(), is(ID));
+        assertThat(defendantsView.getDefendants().get(0).getOffences().size(), is(0));
+
+    }
+
+    @Test
+    public void shouldFindAwatingCases() {
+
+        final CaseDetail caseDetail =
+                aCase().addDefendantDetail(aDefendantDetail().build()).build();
+        when(caseRepository.findAwaitingSjpCases(600)).thenReturn(asList(caseDetail));
+
+        final JsonObject awaitingCases = service.findAwaitingCases();
+
+        final JsonObject awaitingCase1 = awaitingCases.getJsonArray("awaitingCases")
+                .getValuesAs(JsonObject.class).get(0);
+        final DefendantDetail defendantDetail = caseDetail.getDefendants().iterator().next();
+        assertThat(awaitingCase1.getString("personId"),
+                is(defendantDetail.getPersonId().toString()));
+        final OffenceDetail offenceDetail = defendantDetail.getOffences().iterator().next();
+        assertThat(awaitingCase1.getString("offenceCode"), is(offenceDetail.getCode()));
+
+    }
+
+    @Test
+    public void shouldFindResultOrders() {
+        //given
+        final LocalDate FROM_DATE = LocalDates.from("2017-01-01");
+        final LocalDate TO_DATE = LocalDates.from("2017-01-10");
+
+        DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), UUID.randomUUID(),
+                null);
+        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "URN", null,
+                null, null, null);
+        caseDetail.addDefendant(defendantDetail);
+
+        CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
+                UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
+                ZonedDateTime.now(), caseDetail.getId(), null);
+
+        final ZonedDateTime FROM_DATE_TIME = FROM_DATE.atStartOfDay(ZoneOffset.UTC);
+        final ZonedDateTime TO_DATE_TIME = TO_DATE.atStartOfDay(ZoneOffset.UTC);
+        when(caseDocumentRepository.findCaseDocumentsOrderedByAddedByDescending(FROM_DATE_TIME,
+                TO_DATE_TIME, CaseDocument.RESULT_ORDER_DOCUMENT_TYPE)).thenReturn(
+                Arrays.asList(caseDocument));
+        when(caseRepository.findBy(caseDetail.getId())).thenReturn(caseDetail);
+        //when
+        final ResultOrdersView resultOrdersView = service.findResultOrders(FROM_DATE, TO_DATE);
+        //then
+        assertEquals(caseDocument.getCaseId(),
+                resultOrdersView.getResultOrders().get(0).getCaseId());
+        assertEquals(caseDetail.getUrn(),
+                resultOrdersView.getResultOrders().get(0).getUrn());
+        assertEquals(caseDetail.getDefendants().stream().findFirst().get().getPersonId(),
+                resultOrdersView.getResultOrders().get(0).getDefendant().getPersonId());
+        assertEquals(caseDocument.getMaterialId(),
+                resultOrdersView.getResultOrders().get(0).getOrder().getMaterialId());
+        assertEquals(caseDocument.getAddedAt(),
+                resultOrdersView.getResultOrders().get(0).getOrder().getAddedAt());
+    }
+
+    @Test
+    public void shouldNotFindResultOrders() {
+        //given
+        final LocalDate FROM_DATE = LocalDates.from("2017-01-01");
+        final LocalDate TO_DATE = LocalDates.from("2017-01-10");
+
+        DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), UUID.randomUUID(),
+                null);
+        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "URN", null, null,
+                null, null);
+        caseDetail.addDefendant(defendantDetail);
+        CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
+                UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
+                ZonedDateTime.now(), caseDetail.getId(), null);
+
+        final ZonedDateTime FROM_DATE_TIME = FROM_DATE.atStartOfDay(ZoneOffset.UTC);
+        final ZonedDateTime TO_DATE_TIME = TO_DATE.atStartOfDay(ZoneOffset.UTC);
+        when(caseDocumentRepository.findCaseDocumentsOrderedByAddedByDescending(FROM_DATE_TIME,
+                TO_DATE_TIME, CaseDocument.RESULT_ORDER_DOCUMENT_TYPE)).thenReturn(
+                Arrays.asList(caseDocument));
+        when(caseRepository.findBy(caseDetail.getId())).thenReturn(null);
+        //when
+        final ResultOrdersView resultOrdersView = service.findResultOrders(FROM_DATE, TO_DATE);
+        //then
+        assertEquals(resultOrdersView.getResultOrders().size(), 0);
+    }
+
+    @Test
+    public void shouldGroupNotReadyCasesByAgeRange() {
+
+        final List<CaseCountByAgeView> casesCountsInAgeRanges = new ArrayList<>();
+        casesCountsInAgeRanges.add(new CaseCountByAgeView(-1, 1));
+        casesCountsInAgeRanges.add(new CaseCountByAgeView(0, 1));
+        casesCountsInAgeRanges.add(new CaseCountByAgeView(1, 1));
+        casesCountsInAgeRanges.add(new CaseCountByAgeView(20, 2));
+        casesCountsInAgeRanges.add(new CaseCountByAgeView(21, 3));
+        casesCountsInAgeRanges.add(new CaseCountByAgeView(22, 4));
+        casesCountsInAgeRanges.add(new CaseCountByAgeView(27, 5));
+
+        when(notReadyCaseRepository.getCountOfCasesByAge()).thenReturn(casesCountsInAgeRanges);
+
+        final JsonObject notReadyCasesGroupedByAge = service.getNotReadyCasesGroupedByAge();
+        assertThat(notReadyCasesGroupedByAge.toString(), isJson(allOf(
+                withJsonPath("$.caseCountsByAgeRanges", hasSize(2)),
+                withJsonPath("$.caseCountsByAgeRanges[?(@.ageTo == 20)].casesCount", contains(5)),
+                withJsonPath("$.caseCountsByAgeRanges[?(@.ageFrom == 21 && @.ageTo == 27)].casesCount", contains(12))
+        )));
+    }
+
+    @Test
+    public void shouldGetOldestCaseAge() {
+
+        final int age = 7;
+        when(caseRepository.findOldestUncompletedPostingDate()).thenReturn(LocalDate.now().minusDays(age));
+
+        final JsonObject response = service.getOldestCaseAge();
+
+        assertThat(response.getInt("oldestCaseAge"), equalTo(age));
+    }
+
+    @Test
+    public void shouldSearchCasesByUrn() {
+        final String query = URN;
+
+        when(caseSearchResultRepository.findByCaseSummary_urn(query)).thenReturn(asList(createCaseSearchResult()));
+
+        final JsonObject cases = service.searchCases(query);
+
+        assertThat(cases.getJsonArray("results").getValuesAs(JsonObject.class)
+                .get(0).getString("urn"), equalTo(URN));
+    }
+
+    @Test
+    public void shouldSearchCasesByLastName() {
+        final String query = LAST_NAME;
+
+        when(caseSearchResultRepository.findByCaseSummary_urn(query)).thenReturn(emptyList());
+        when(caseSearchResultRepository.findByLastName(query)).thenReturn(asList(createCaseSearchResult()));
+
+        final JsonObject cases = service.searchCases(query);
+
+        final JsonObject result = cases.getJsonArray("results")
+                .getValuesAs(JsonObject.class).get(0);
+        assertThat(result.getString("caseId"), equalTo(CASE_ID.toString()));
+        assertThat(result.getString("urn"), equalTo(URN));
+        assertThat(result.getString("enterpriseId"), equalTo(ENTERPRISE_ID));
+        assertThat(result.getString("initiationCode"), equalTo(INITIATION_CODE));
+        assertThat(result.getString("prosecutingAuthority"), equalTo(PROSECUTING_AUTHORITY));
+        assertThat(result.getString("postingDate"), equalTo(POSTING_DATE.toString()));
+        assertThat(result.getString("personId"), equalTo(PERSON_ID.toString()));
+        assertThat(result.getString("firstName"), equalTo(FIRST_NAME));
+        assertThat(result.getString("lastName"), equalTo(LAST_NAME));
+    }
+
+    private CaseDetail createCaseDetail() {
+        return new CaseDetail(CASE_ID, URN, PROSECUTING_AUTHORITY_CPS,
+                null, COMPLETED, clock.now());
+    }
+
+    private CaseDetail createCaseDetailWithDocumentTypes(String... documentTypes) {
+        final CaseDetail caseDetail = createCaseDetail();
+        createCaseDocuments(documentTypes).forEach(caseDetail::addCaseDocuments);
+        return caseDetail;
+
+    }
+
+    private List<CaseDocument> createCaseDocuments(String... documentTypes) {
+        return Arrays.stream(documentTypes)
+                .map(this::createCaseDocument)
+                .collect(Collectors.toList());
+    }
+
+    private CaseDocument createCaseDocument(String documentType) {
+        return CaseDocumentBuilder.aCaseDocument().withDocumentType(documentType).build();
+    }
+
+    private CaseSearchResult createCaseSearchResult() {
+        final CaseSearchResult caseSearchResult = new CaseSearchResult();
+        final CaseSummary caseSummary = new CaseSummary();
+        caseSummary.setId(CASE_ID);
+        caseSummary.setUrn(URN);
+        caseSummary.setEnterpriseId(ENTERPRISE_ID);
+        caseSummary.setInitiationCode(INITIATION_CODE);
+        caseSummary.setProsecutingAuthority(PROSECUTING_AUTHORITY);
+        caseSummary.setPostingDate(POSTING_DATE);
+        caseSearchResult.setId(randomUUID());
+        caseSearchResult.setCaseId(CASE_ID);
+        caseSearchResult.setCaseSummary(caseSummary);
+        caseSearchResult.setPersonId(PERSON_ID);
+        caseSearchResult.setFirstName(FIRST_NAME);
+        caseSearchResult.setLastName(LAST_NAME);
+        // not resulted
+        return caseSearchResult;
+    }
+}

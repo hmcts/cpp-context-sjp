@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "plea": {
+      "type": "string",
+      "enum": ["NOT_GUILTY", "GUILTY", "GUILTY_REQUEST_HEARING"]
+    },
+    "interpreterRequired": {
+      "type": "boolean"
+    },
+    "interpreterLanguage": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "plea"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,63 @@
+---
+resource_descriptor:
+  spec_version: '1.0.0'
+  version: '${project.version}'
+
+  resources:
+    - name: java:/app/structure-service/DS.eventstore
+      type: xa-datasource
+      setup:
+        - type: liquibase
+          maven:
+            groupId: uk.gov.justice.services
+            artifactId: event-repository-liquibase
+            type: jar
+            version: '${cpp.framework.version}'
+        - type: liquibase
+          maven:
+            groupId: uk.gov.justice.services
+            artifactId: aggregate-snapshot-repository-liquibase
+            type: jar
+            version: '${cpp.framework.version}'
+
+    - name: java:/DS.structure
+      type: xa-datasource
+      setup:
+        - type: liquibase
+          maven:
+            groupId: uk.gov.justice.services
+            artifactId: event-buffer-liquibase
+            type: jar
+            version: '${cpp.framework.version}'
+        - type: liquibase
+          maven:
+            groupId: uk.gov.moj.cpp.assignment
+            artifactId: structure-viewstore-liquibase
+            type: jar
+            version: '${project.version}'
+
+    - name: structure.controller.command
+      type: queue
+    - name: structure.handler.command
+      type: queue
+    - name: structure.event
+      type: topic
+    - name: public.event
+      type: topic
+
+
+    # Artefact provides these services
+    - name:   'structure-service'
+      id:     'structure_service'
+      target: '/structure-service'
+      map:
+        - '/structure-command-api'
+        - '/structure-command-controller'
+        - '/structure-command-handler'
+        - '/structure-event-listener'
+        - '/structure-event-processor'
+        - '/structure-query-api'
+        - '/structure-query-controller'
+        - '/structure-query-view'
+      matcher: '/structure-[^/]+'
+

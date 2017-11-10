@@ -1,0 +1,309 @@
+package uk.gov.moj.sjp.it.helper;
+
+import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
+import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import com.github.tomakehurst.wiremock.http.RequestMethod;
+import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Duration.TEN_SECONDS;
+import static com.jayway.jsonassert.JsonAssert.with;
+import static com.jayway.jsonpath.Criteria.where;
+import com.jayway.jsonpath.Filter;
+import static com.jayway.jsonpath.JsonPath.compile;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import com.jayway.restassured.path.json.JsonPath;
+import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import org.hamcrest.Matchers;
+import static org.hamcrest.Matchers.hasSize;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.justice.services.test.utils.core.http.ResponseData;
+import uk.gov.justice.services.test.utils.core.http.RestPoller;
+import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.justice.services.test.utils.core.matchers.UuidStringMatcher.isAUuid;
+import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
+import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
+import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS;
+import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
+import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS;
+import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED;
+import uk.gov.moj.sjp.it.stub.LifecycleStub;
+import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
+import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseDocumentsByCaseId;
+import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
+import uk.gov.moj.sjp.it.util.QueueUtil;
+import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
+import static uk.gov.moj.sjp.it.util.SchemaValidatorUtil.validateAgainstSchema;
+
+import javax.jms.MessageConsumer;
+import javax.ws.rs.core.Response;
+
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * Helper for CaseDocument.
+ */
+public class CaseDocumentHelper extends AbstractTestHelper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CaseDocumentHelper.class);
+
+    private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.add-case-document+json";
+    public static final String GET_CASE_DOCUMENTS_MEDIA_TYPE = "application/vnd.sjp.query.case-documents+json";
+
+    private static final String TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD = "payload/structure.command.add-case-document.json";
+
+    private static final String ID_PROPERTY = "id";
+    private static final String CASE_ID_PROPERTY = "caseId";
+    private static final String MATERIAL_ID_PROPERTY = "materialId";
+    private static final String POLICE_NAME_PROPERTY = "policeName";
+    private static final String POLICE_NAME_PROPERTY_VALUE = "policeNameValue";
+    private static final String POLICE_MATERIAL_ID_PROPERTY = "policeMaterialId";
+    private static final String DOCUMENT_TYPE_PROPERTY = "documentType";
+
+    private static final String EXTERNAL_FILE_URL_PROPERTY = "externalFileURL";
+    private static final String EXTERNAL_FILE_URL_PROPERTY_VALUE = "http:localhost:2222//external/file/url";
+
+    private static final String DOCUMENT_TYPE_PLEA = "PLEA";
+    private static final String FILE_NAME_PLEA = "SMITH_Fred_TFL2041315_PLEA.pdf";
+    private static final String FILE_PATH_PLEA = "src/test/resources/plea";
+    private static final String FILE_MIME_TYPE = "application/pdf";
+
+    private String caseId;
+    private String request;
+    private UUID id;
+    private String materialId;
+    private UUID policeMaterialIdPropertyValue = UUID.randomUUID();
+
+    private MessageConsumer privateCaseDocumentAlreadyExistsEventsConsumer;
+    private MessageConsumerClient publicCaseDocumentAlreadyExistsConsumer = new MessageConsumerClient();
+    private MessageConsumerClient publicCaseDocumentUploaded = new MessageConsumerClient();
+
+    public CaseDocumentHelper(String caseId) {
+        this.id = UUID.randomUUID();
+        this.materialId = UUID.randomUUID().toString();
+        this.caseId = caseId;
+        privateEventsConsumer = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_CASE_DOCUMENT_ADDED);
+        publicConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED, PUBLIC_ACTIVE_MQ_TOPIC);
+
+        privateCaseDocumentAlreadyExistsEventsConsumer = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS);
+        publicCaseDocumentAlreadyExistsConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS, PUBLIC_ACTIVE_MQ_TOPIC);
+        publicCaseDocumentUploaded.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED, PUBLIC_ACTIVE_MQ_TOPIC);
+    }
+
+    private void addCaseDocument(String payload, String documentType) {
+        addCaseDocument(UUID.fromString(USER_ID), payload, documentType);
+    }
+
+    private void addCaseDocument(UUID userId, String payload, String documentType) {
+        String writeUrl = "/cases/CASEID/case-documents".replace("CASEID", caseId);
+        final String payloadWithReplacedDocumentType;
+        if (documentType != null) {
+            payloadWithReplacedDocumentType = String.format(payload, id,
+                            policeMaterialIdPropertyValue, documentType);
+        }
+        else {
+            payloadWithReplacedDocumentType = String.format(payload, id,
+                            policeMaterialIdPropertyValue, "SJPN");
+        }
+        JSONObject jsonObject = new JSONObject(payloadWithReplacedDocumentType);
+        jsonObject.put(MATERIAL_ID_PROPERTY, materialId);
+        jsonObject.put(POLICE_NAME_PROPERTY, POLICE_NAME_PROPERTY_VALUE);
+
+        request = jsonObject.toString();
+        LOGGER.info("Adding case document with payload: {}", request);
+        makePostCall(userId, getWriteUrl(writeUrl), WRITE_MEDIA_TYPE, request);
+    }
+    public void addCaseDocument(String payload) {
+        addCaseDocument(payload, null);
+    }
+
+    public void addCaseDocument() {
+        addCaseDocument(getPayload(TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD));
+    }
+
+    public void addCaseDocumentWithDocumentType(UUID userId, String documentType) {
+        id = UUID.randomUUID();
+        policeMaterialIdPropertyValue = UUID.randomUUID();
+        addCaseDocument(userId, getPayload(TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD), documentType);
+    }
+
+    public void addDuplicateCaseDocument() {
+        id = UUID.randomUUID();
+        addCaseDocument(getPayload(TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD));
+    }
+
+    public void uploadPleaCaseDocument() {
+        uploadDocument(DOCUMENT_TYPE_PLEA);
+    }
+
+    public void uploadDocument(String documentType) {
+        //It doesn't matter the files are plea, jut to make it simplier
+        uploadCaseDocument(UUID.fromString(USER_ID), documentType, FILE_PATH_PLEA + '/' + FILE_NAME_PLEA);
+    }
+    public void uploadCaseDocument(String documentType) {
+        uploadCaseDocument(UUID.fromString(USER_ID), documentType, FILE_PATH_PLEA + '/' + FILE_NAME_PLEA);
+    }
+
+    public void uploadCaseDocument(UUID userId, String documentType, String fileName) {
+        String writeUrl = "/cases/CASEID/upload-case-document/DOCUMENTTYPE"
+                .replace("CASEID", caseId)
+                .replace("DOCUMENTTYPE", documentType);
+        request = fileName;
+        LOGGER.info("Uploading case document with payload from file: {}", request);
+        makeMultipartFormPostCall(userId,getWriteUrl(writeUrl), "caseDocument", request);
+    }
+
+    public void addCaseDocumentWithExternalFileUrl() {
+        String writeUrl = "/cases/CASEID/case-documents".replace("CASEID", caseId);
+        String payload = getPayload(TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD);
+        JSONObject jsonObject = new JSONObject(payload);
+        jsonObject.put("id", id.toString());
+        jsonObject.put(DOCUMENT_TYPE_PROPERTY, "OTHER");
+        jsonObject.put(MATERIAL_ID_PROPERTY, materialId);
+        jsonObject.put(POLICE_NAME_PROPERTY, POLICE_NAME_PROPERTY_VALUE);
+        jsonObject.put(POLICE_MATERIAL_ID_PROPERTY, policeMaterialIdPropertyValue.toString());
+        jsonObject.put(EXTERNAL_FILE_URL_PROPERTY, EXTERNAL_FILE_URL_PROPERTY_VALUE);
+        request = jsonObject.toString();
+        LOGGER.info("Creating case document with payload: {}", request);
+        makePostCall(getWriteUrl(writeUrl), WRITE_MEDIA_TYPE, request);
+    }
+
+    public void verifyInActiveMQ() {
+        JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+
+        LOGGER.info("Response: {}", jsonResponse.prettify());
+        JsonPath jsonRequest = new JsonPath(request);
+
+        Map caseDocument = jsonResponse.getJsonObject("caseDocument");
+        assertThat(caseDocument.get(ID_PROPERTY), is(id.toString()));
+        assertThat(jsonResponse.get(CASE_ID_PROPERTY), is(caseId));
+        assertJsonPayload(jsonRequest, caseDocument);
+    }
+
+    public void verifyInPublicTopic() {
+        final String caseDocumentAddedEvent = publicConsumer.retrieveMessage().orElse(null);
+
+        assertThat(caseDocumentAddedEvent, notNullValue());
+
+        with(caseDocumentAddedEvent)
+                .assertThat("$.caseId", is(caseId))
+                .assertThat("$.id", notNullValue())
+                .assertThat("$.materialId", is(materialId));
+    }
+
+
+    public void assertCaseMaterialAdded() {
+        UrlMatchingStrategy url = new UrlMatchingStrategy();
+        url.setUrlPath(LifecycleStub.QUERY_URL);
+
+        await().atMost(TEN_SECONDS).until(() -> WireMock.findAll(new RequestPatternBuilder(RequestMethod.POST, url)
+                .withHeader("Content-Type", equalTo(LifecycleStub.QUERY_MEDIA_TYPE))
+                .withRequestBody(containing("\"caseId\":\"" + caseId + "\""))
+                .withRequestBody(containing("\"mimeType\":\"" + FILE_MIME_TYPE + "\""))
+                .withRequestBody(containing("\"documentType\":\"" + DOCUMENT_TYPE_PLEA + "\""))
+                .withRequestBody(containing("\"originalFileName\":\"" + FILE_NAME_PLEA + "\""))).size() >= 1);
+    }
+
+    public void verifyCaseDocumentUploadedEventRaised() {
+        final String caseDocumentUploadedEvent = publicCaseDocumentUploaded.retrieveMessage().orElse(null);
+
+        assertThat(caseDocumentUploadedEvent, notNullValue());
+
+        with(caseDocumentUploadedEvent)
+                .assertThat("$.documentId", isAUuid());
+    }
+
+    public void assertDocumentAdded(){
+        assertDocumentAdded(USER_ID);
+    }
+
+    public void assertDocumentAdded(String userId) {
+        JsonPath jsonRequest = new JsonPath(request);
+
+        Filter caseDocumentFilter = Filter.filter(where("id").is(id.toString()));
+        final ResponseData caseDocumentsResponse = poll(getCaseDocumentsByCaseId(caseId, userId))
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath(compile("$.caseDocuments[?]", caseDocumentFilter), hasSize(1)),
+                                withJsonPath(compile("$.caseDocuments[?].materialId", caseDocumentFilter), hasItem(jsonRequest.getString(MATERIAL_ID_PROPERTY))),
+                                withJsonPath(compile("$.caseDocuments[?].documentType", caseDocumentFilter), hasItem(jsonRequest.getString(DOCUMENT_TYPE_PROPERTY)))
+                        ))
+                );
+    }
+
+    public void assertDocumentNumber(UUID userId, int index, String documentType, int documentNumber) {
+        poll(getCaseDocumentsByCaseId(caseId, userId.toString()))
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.caseDocuments[" + index + "].documentNumber", Matchers.is(documentNumber)),
+                                withJsonPath("$.caseDocuments[" + index + "].documentType", Matchers.is(documentType)),
+                                withJsonPath("$.caseDocuments[" + index + "].materialId", Matchers.notNullValue())
+                        ))
+                );
+    }
+
+    public void verifyDocumentNotVisibleForProsecutorWhenQueryingForCaseDocuments(final String tflUserId) {
+        Filter caseDocumentFilter = Filter.filter(where("id").is(id.toString()));
+        RestPoller.poll(getCaseDocumentsByCaseId(caseId, tflUserId)).until(payload()
+                .isJson(
+                        withJsonPath(compile("$.caseDocuments[?]", caseDocumentFilter), hasSize(0))
+        ));
+    }
+    public void verifyDocumentNotVisibleForProsecutorWhenQueryingForACase(final String tflUserId) {
+        Filter caseDocumentFilter = Filter.filter(where("id").is(id.toString()));
+        RestPoller.poll(getCaseById(caseId, tflUserId)).until(payload()
+                .isJson(
+                        withJsonPath(compile("$.caseDocuments[?]", caseDocumentFilter), hasSize(0))
+        ));
+    }
+
+    public void addDocumentAndVerifyAdded() {
+        addCaseDocument();
+        assertDocumentAdded();
+    }
+
+    private void assertJsonPayload(JsonPath jsonRequest, Map caseDocument) {
+        assertThat(caseDocument.get(MATERIAL_ID_PROPERTY), is(jsonRequest.getString(MATERIAL_ID_PROPERTY)));
+        assertThat(caseDocument.get(DOCUMENT_TYPE_PROPERTY), is(jsonRequest.getString(DOCUMENT_TYPE_PROPERTY)));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void assertQueryCallResponseStatusIs(Response.Status status) {
+        poll(getCaseDocumentsByCaseId(caseId))
+                .until(
+                        status().is(status)
+                );
+    }
+
+    public String getMaterialId() {
+        return materialId;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        publicCaseDocumentAlreadyExistsConsumer.close();
+        publicCaseDocumentUploaded.close();
+    }
+
+}

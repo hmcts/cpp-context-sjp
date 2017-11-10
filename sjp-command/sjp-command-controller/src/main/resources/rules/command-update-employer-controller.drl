@@ -1,0 +1,12 @@
+package uk.gov.moj.cpp.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+
+rule "Command - Rule for update employer"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.update-employer");
+  then
+    $outcome.setSuccess(true);
+end

@@ -1,0 +1,323 @@
+#%RAML 0.8
+title: Sjp Query
+version: v0.1
+protocols: [ HTTP, HTTPS ]
+
+baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
+
+#used
+/cases/{caseId}:
+  description: return a case
+  uriParameters:
+    caseId:
+      description: Case ID
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case+json
+          name: sjp.query.case
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case+json:
+            schema: !include json/schema/sjp.query.case.json
+            example: !include json/sjp.query.case.json
+
+#used
+/cases:
+  get:
+    description: |
+      Get case by URN
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-by-urn+json
+          name: sjp.query.case-by-urn
+      (mapping):
+          responseType: application/vnd.sjp.query.sjp-case-by-urn+json
+          name: sjp.query.sjp-case-by-urn
+      ...
+    queryParameters:
+      urn:
+        description: URN
+        type: string
+        required: false
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.sjp-case-by-urn+json:
+                  schema: !include json/schema/sjp.query.case.json
+                  example: !include json/sjp.query.case.json
+
+                application/vnd.sjp.query.case-by-urn+json:
+                  schema: !include json/schema/sjp.query.case.json
+                  example: !include json/sjp.query.case.json
+#used
+/result-orders:
+  get:
+    description: |
+      Get result orders for a given date range.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.result-orders+json
+          name: sjp.query.result-orders
+      ...
+    queryParameters:
+      fromDate:
+          description: From date inclusive.
+          type: string
+          required: true
+      toDate:
+          description: To date exclusive.
+          type: string
+          required: true
+
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.result-orders+json:
+            schema: !include json/schema/sjp.query.result-orders.json
+            example: !include json/sjp.query.result-orders.json
+#used
+/cases-missing-sjpn:
+  get:
+    description: |
+      Get cases missing the SJPN
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.cases-missing-sjpn+json
+          name: sjp.query.cases-missing-sjpn
+      ...
+    queryParameters:
+      limit:
+        description: |
+          Limits the number of case IDs returned. Set to 0 if you only need the number of cases.
+        type: integer
+        required: false
+      daysSincePosting:
+        description: |
+          Returns cases that has posting date older than daysSincePosting.
+        type: integer
+        required: false
+
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.cases-missing-sjpn+json:
+            schema: !include json/schema/sjp.query.cases-missing-sjpn.json
+            example: !include json/sjp.query.cases-missing-sjpn.json
+
+#used
+/cases-missing-sjpn-with-details:
+  get:
+    description: |
+      Get cases missing the SJPN with defendant details
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.cases-missing-sjpn-with-details+json
+          name: sjp.query.cases-missing-sjpn-with-details
+      ...
+    queryParameters:
+      daysSincePosting:
+        description: |
+          Returns cases that has posting date older than daysSincePosting.
+        type: integer
+        required: false
+
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.cases-missing-sjpn-with-details+json:
+            schema: !include json/schema/sjp.query.cases-missing-sjpn-with-details.json
+            example: !include json/sjp.query.cases-missing-sjpn-with-details.json
+#used
+/defendant/{defendantId}/financial-means:
+  uriParameters:
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  get:
+    description: |
+      Retrieve financial means information
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.financial-means+json
+          name: sjp.query.financial-means
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.financial-means+json:
+                  schema: !include json/schema/sjp.query.financial-means.json
+                  example: !include json/sjp.query.financial-means.json
+#used
+/defendant/{defendantId}/employer:
+  uriParameters:
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  get:
+    description: |
+      Retrieve employer information
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.employer+json
+          name: sjp.query.employer
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.employer+json:
+                  schema: !include json/schema/sjp.query.employer.json
+                  example: !include json/sjp.query.employer.json
+
+/search:
+  get:
+    description: |
+      Search for cases
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.cases-search+json
+          name: sjp.query.cases-search
+
+      (mapping):
+          responseType: application/vnd.sjp.query.cases-search-by-material-id+json
+          name: sjp.query.cases-search-by-material-id
+
+      (mapping):
+          responseType: application/vnd.sjp.query.case-search-results+json
+          name: sjp.query.case-search-results
+
+      ...
+    queryParameters:
+      q:
+        description: query
+        type: string
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.cases-search+json:
+                  schema: !include json/schema/sjp.query.cases-search.json
+                  example: !include json/sjp.query.cases-search.json
+
+                application/vnd.sjp.query.cases-search-by-material-id+json:
+                  schema: !include json/schema/sjp.query.cases-search-by-material-id.json
+                  example: !include json/sjp.query.cases-search-by-material-id.json
+
+                application/vnd.sjp.query.case-search-results+json:
+                  schema: !include json/schema/sjp.query.case-search-results.json
+                  example: !include json/sjp.query.case-search-results.json
+
+#used
+/cases/{caseId}/documents:
+  description: Get list of case documents for a corresponding case
+  uriParameters:
+    caseId:
+      description: Case ID
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-documents+json
+          name: sjp.query.case-documents
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case-documents+json:
+            schema: !include json/schema/sjp.query.case-documents.json
+            example: !include json/sjp.query.case-documents.json
+
+#used
+/cases/{caseId}/defendants:
+  description: Get list of case defendants for a case
+  uriParameters:
+    caseId:
+      description: Case ID
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-defendants+json
+          name: sjp.query.case-defendants
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case-defendants+json:
+            schema: !include json/schema/sjp.query.case-defendants.json
+            example: !include json/sjp.query.case-defendants.json
+
+#used
+/cases/awaiting:
+  description: return the 600 oldest not resulted SJP cases, that have SJPN documents
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.awaiting-cases+json
+          name: sjp.query.awaiting-cases
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.awaiting-cases+json:
+            schema: !include json/schema/sjp.query.awaiting-cases.json
+            example: !include json/sjp.query.awaiting-cases.json
+
+#used
+/cases/referred-to-court:
+  description: return the SJP cases which have been referred to court
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.cases-referred-to-court+json
+          name: sjp.query.cases-referred-to-court
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.cases-referred-to-court+json:
+            schema: !include json/schema/sjp.query.cases-referred-to-court.json
+            example: !include json/sjp.query.cases-referred-to-court.json
+
+#used
+/cases/not-ready-grouped-by-age:
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.not-ready-cases-grouped-by-age+json
+          name: sjp.query.not-ready-cases-grouped-by-age
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.not-ready-cases-grouped-by-age+json:
+            schema: !include json/schema/sjp.query.not-ready-cases-grouped-by-age.json
+            example: !include json/sjp.query.not-ready-cases-grouped-by-age.json
+
+#used
+/cases/oldest-age:
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.oldest-case-age+json
+          name: sjp.query.oldest-case-age
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.oldest-case-age+json:
+            schema: !include json/schema/sjp.query.oldest-case-age.json
+            example: !include json/sjp.query.oldest-case-age.json

@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "resultOrder": {
+      "type": "object",
+      "properties": {
+        "caseId": {
+          "type": "string"
+        },
+        "urn": {
+          "type": "string"
+        },
+        "defendant": {
+          "type": "object",
+          "properties": {
+            "personId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "personId"
+          ]
+        },
+        "order": {
+          "type": "object",
+          "properties": {
+            "materialId": {
+              "type": "string"
+            },
+            "addedAt": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "materialId",
+            "addedAt"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "caseId",
+        "urn",
+        "defendant",
+        "order"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "resultOrders": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/resultOrder",
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "resultOrders"
+  ]
+}

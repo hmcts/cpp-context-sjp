@@ -1,0 +1,64 @@
+{
+  "personalDetails" :{
+    "detailsCorrected": {
+      "yes": false,
+      "correctDetails": "My postcode is now CR9 RD9"
+    },
+    "contactNumber":"079112121212",
+    "email":"one@gmail.com",
+    "dateOfBirth":"2004-10-05",
+    "nationalInsuranceNumber": {
+      "yes": true,
+      "NI": "VO 12 34 56 D"
+    }
+  },
+  "pleas": [
+    {
+      "offenceId": "d7a7a8f8-2e60-4bf6-90de-b2001b635718",
+      "plea": "GUILTY",
+      "court": true,
+      "mitigation": "I can't think of any"
+    }
+  ],
+  "financialMeans": {
+    "status": "Employed and also receiving benefits",
+    "payment": {
+      "amount":"1000",
+      "frequency":"Fortnightly"
+    },
+    "benefits": {
+      "benefit": "Universal Credit",
+      "payment": {
+        "amount": "290",
+        "frequency": "Monthly"
+      },
+      "financialProblems": {
+        "yes": true,
+        "justification":"CarInsurance is too high",
+        "expenses":{
+          "household":{
+            "accommodation" :"130",
+            "utilityBills":"78",
+            "insurance":"45",
+            "councilTax":"104",
+            "otherContributors" : false
+          },
+          "other":{
+            "televisionSubscriptions":"32",
+            "travelExpenses":"32",
+            "telephone":"32",
+            "loanRepayments":"355",
+            "countyCourtOrders":"35",
+            "fines":"32",
+            "childMaintenance":"32",
+            "otherSignificantExpenses":{
+              "yes":true,
+              "details":"Parent dependency",
+              "amount":"2020"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,167 @@
+package uk.gov.moj.sjp.it.test;
+
+
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.cpp.sjp.domain.IncomeFrequency.MONTHLY;
+import static uk.gov.moj.cpp.sjp.domain.IncomeFrequency.WEEKLY;
+import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
+import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithDecision;
+import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
+
+import uk.gov.moj.cpp.sjp.domain.Benefits;
+import uk.gov.moj.cpp.sjp.domain.Income;
+import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
+import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+import javax.ws.rs.core.Response;
+
+import org.hamcrest.Matcher;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+public class UpdateFinancialMeanIT extends BaseIntegrationTest {
+
+    private FinancialMeansHelper financialMeansHelper;
+    private CaseSjpHelper caseSjpHelper;
+
+    @Before
+    public void setUp() {
+        financialMeansHelper = new FinancialMeansHelper();
+        caseSjpHelper = new CaseSjpHelper();
+        caseSjpHelper.createCase();
+        caseSjpHelper.verifyCaseCreatedUsingId();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        caseSjpHelper.close();
+        financialMeansHelper.close();
+    }
+
+    @Test
+    public void shouldUpdateAndFetchFinancialMeansWithoutOptionalFields() {
+        stubGetCaseDecisionsWithNoDecision(caseSjpHelper.getCaseId());
+        stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
+
+        final String defendantId = caseSjpHelper.getSingleDefendantId();
+        final String caseId = caseSjpHelper.getCaseId();
+
+        final JsonObject payload = createObjectBuilder()
+                .add("income", createObjectBuilder())
+                .add("benefits", createObjectBuilder())
+                .build();
+
+        final Matcher expectedFinancialMeansMatcher = isJson(allOf(
+                withJsonPath("$.defendantId", is(defendantId)),
+                withoutJsonPath("$.income.frequency"),
+                withoutJsonPath("$.income.amount"),
+                withoutJsonPath("$.benefits.claimed"),
+                withoutJsonPath("$.benefits.type")
+        ));
+
+        financialMeansHelper.updateFinancialMeans(caseId, defendantId, payload);
+        financialMeansHelper.getFinancialMeans(defendantId, expectedFinancialMeansMatcher);
+        financialMeansHelper.getEventFromPublicTopic(expectedFinancialMeansMatcher);
+    }
+
+    @Test
+    public void shouldAddUpdateAndFetchFinancialMeans() {
+        stubGetCaseDecisionsWithNoDecision(caseSjpHelper.getCaseId());
+        stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
+
+        final String defendantId = caseSjpHelper.getSingleDefendantId();
+        final String caseId = caseSjpHelper.getCaseId();
+        final Income originalIncome = new Income(MONTHLY, BigDecimal.valueOf(1000.50));
+        final Income updatedIncome = new Income(WEEKLY, BigDecimal.valueOf(200.0));
+        final Benefits updatedBenefits = new Benefits(false, "");
+        final String employmentStatus = "EMPLOYED";
+
+        final JsonObject original = createObjectBuilder()
+                .add("income", createObjectBuilder()
+                        .add("frequency", originalIncome.getFrequency().name())
+                        .add("amount", originalIncome.getAmount()))
+                .add("benefits", createObjectBuilder())
+                .add("employmentStatus", employmentStatus)
+                .build();
+
+        final JsonObject updated = createObjectBuilder()
+                .add("income", createObjectBuilder()
+                        .add("frequency", updatedIncome.getFrequency().name())
+                        .add("amount", updatedIncome.getAmount()))
+                .add("benefits", createObjectBuilder()
+                        .add("claimed", updatedBenefits.getClaimed())
+                        .add("type", updatedBenefits.getType()))
+                .build();
+
+        final Matcher expectedOriginal = isJson(allOf(
+                withJsonPath("$.income.frequency", is(originalIncome.getFrequency().name())),
+                withJsonPath("$.income.amount", is(originalIncome.getAmount().doubleValue())),
+                withoutJsonPath("$.benefits.claimed"),
+                withoutJsonPath("$.benefits.type"),
+                withJsonPath("$.employmentStatus", is(employmentStatus))
+        ));
+
+        final Matcher expectedUpdated = isJson(allOf(
+                withJsonPath("$.income.frequency", is(updatedIncome.getFrequency().name())),
+                withJsonPath("$.income.amount", is(updatedIncome.getAmount().doubleValue())),
+                withJsonPath("$.benefits.claimed", is(updatedBenefits.getClaimed())),
+                withJsonPath("$.benefits.type", is(updatedBenefits.getType())),
+                withoutJsonPath("$.employmentStatus")
+        ));
+
+        financialMeansHelper.updateFinancialMeans(caseId, defendantId, original);
+        financialMeansHelper.getFinancialMeans(defendantId, expectedOriginal);
+        financialMeansHelper.getEventFromPublicTopic(expectedOriginal);
+
+        financialMeansHelper.updateFinancialMeans(caseId, defendantId, updated);
+        financialMeansHelper.getFinancialMeans(defendantId, expectedUpdated);
+        financialMeansHelper.getEventFromPublicTopic(expectedUpdated);
+    }
+
+    @Test
+    public void shouldReturnEmptyObjectWhenFinancialMeansDoNotExist() {
+        final UUID nonExistingDefendantId = randomUUID();
+        final Response response = financialMeansHelper.getFinancialMeans(nonExistingDefendantId.toString());
+        assertThat(response.readEntity(String.class), is("{}"));
+    }
+
+    @Test
+    public void shouldRejectFinancialMeansUpdateIfCaseIsAlreadyCompleted() throws Exception {
+
+        stubGetCaseDecisionsWithDecision(caseSjpHelper.getCaseId());
+
+        final String defendantId = caseSjpHelper.getSingleDefendantId();
+        final String caseId = caseSjpHelper.getCaseId();
+        final Income income = new Income(MONTHLY, BigDecimal.valueOf(1000.50));
+        final Benefits benefits = new Benefits(true, "Benefits type");
+
+        final JsonObject payload = createObjectBuilder()
+                .add("income", createObjectBuilder()
+                        .add("frequency", income.getFrequency().name())
+                        .add("amount", income.getAmount()))
+                .add("benefits", createObjectBuilder()
+                        .add("claimed", benefits.getClaimed())
+                        .add("type", benefits.getType()))
+                .build();
+
+        final Matcher expectedCaseUpdateRejectedMatcher = isJson(allOf(
+                withJsonPath("$.caseId", is(caseId)),
+                withJsonPath("$.reason", is("CASE_COMPLETED"))
+        ));
+
+        financialMeansHelper.updateFinancialMeans(caseId, defendantId, payload);
+        financialMeansHelper.getEventFromPublicTopic(expectedCaseUpdateRejectedMatcher);
+    }
+}

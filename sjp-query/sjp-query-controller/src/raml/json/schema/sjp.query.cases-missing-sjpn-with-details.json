@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "urn": {
+            "type": "string"
+          },
+          "postingDate": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "urn",
+          "postingDate",
+          "firstName",
+          "lastName"
+        ]
+      }
+    },
+    "count": {
+      "type": "number"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "count"
+  ]
+}

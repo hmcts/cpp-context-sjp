@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "address": {
+      "type": "object",
+      "properties": {
+        "addressLine1": {
+          "type": "string"
+        },
+        "addressLine2": {
+          "type": "string"
+        },
+        "addressLine3": {
+          "type": "string"
+        },
+        "addressLine4": {
+          "type": "string"
+        },
+        "postCode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "addressLine1",
+        "postCode"
+      ]
+    },
+    "offence": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "wording": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "wording"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "defendant": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "personId": {
+          "type": "string"
+        },
+        "firstName": {
+          "description": "The person fore name",
+          "type": "string"
+        },
+        "lastName": {
+          "description": "The person last name",
+          "type": "string"
+        },
+        "dateOfBirth": {
+          "description": "The person date of birth",
+          "type": "string"
+        },
+        "nationality": {
+          "description": "The person nationality",
+          "type": "string"
+        },
+        "disability": {
+          "description": "The person disability status",
+          "type": "string"
+        },
+        "ethnicity": {
+          "description": "The person ethnicity",
+          "type": "string"
+        },
+        "gender": {
+          "description": "The person gender",
+          "type": "string"
+        },
+        "address": {
+          "$ref": "#/definitions/address"
+        },
+        "offences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/offence"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "personId",
+        "firstName",
+        "lastName",
+        "dateOfBirth",
+        "address",
+        "offences"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "caseId",
+    "defendant"
+  ]
+}

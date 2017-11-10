@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "",
+  "type": "object",
+  "properties": {
+    "urn": {
+      "id": "/urn",
+      "type": "string"
+    },
+    "id": {
+      "id": "/id",
+      "type": "string"
+    },
+    "ptiUrn": {
+      "id": "/ptiUrn",
+      "type": "string"
+    },
+    "prosecutingAuthority": {
+      "id": "/prosecutingAuthority",
+      "type": "string",
+      "enum": [
+        "TFL"
+      ]
+    },
+    "initiationCode": {
+      "id": "/initiationCode",
+      "type": "string"
+    },
+    "summonsCode": {
+      "id": "/summonsCode",
+      "type": "string"
+    },
+    "libraOriginatingOrg": {
+      "id": "/libraOriginatingOrg",
+      "type": "string"
+    },
+    "libraHearingLocation": {
+      "id": "/libraHearingLocation",
+      "type": "string"
+    },
+    "dateOfHearing": {
+      "id": "/dateOfHearing",
+      "type": "string"
+    },
+    "timeOfHearing": {
+      "id": "/timeOfHearing",
+      "type": "string"
+    },
+    "personId": {
+      "id": "/personId",
+      "type": "string"
+    },
+    "numPreviousConvictions": {
+      "id": "/numPreviousConvictions",
+      "type": "integer"
+    },
+    "costs": {
+      "id": "/costs",
+      "type": "number"
+    },
+    "postingDate": {
+      "id": "/postingDate",
+      "type": "string"
+    },
+    "offences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "prosecutorCaseId": {
+            "type": "string"
+          },
+          "offenceSequenceNo": {
+            "type": "integer"
+          },
+          "libraOffenceCode": {
+            "type": "string"
+          },
+          "chargeDate": {
+            "type": "string"
+          },
+          "libraOffenceDateCode": {
+            "type": "integer"
+          },
+          "offenceDate": {
+            "type": "string"
+          },
+          "offenceWording": {
+            "type": "string"
+          },
+          "prosecutionFacts": {
+            "type": "string"
+          },
+          "witnessStatement": {
+            "type": "string"
+          },
+          "compensation": {
+            "type": "number"
+          }
+        },
+        "required" : [
+          "id",
+          "prosecutorCaseId",
+          "offenceSequenceNo",
+          "libraOffenceCode",
+          "chargeDate",
+          "libraOffenceDateCode",
+          "offenceDate",
+          "offenceWording"
+        ]
+      }
+    }
+  },
+  "required": [
+    "urn",
+    "id",
+    "prosecutingAuthority",
+    "postingDate"
+  ]
+}

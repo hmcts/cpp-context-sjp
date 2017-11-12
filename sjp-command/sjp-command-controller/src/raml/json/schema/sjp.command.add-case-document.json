@@ -11,16 +11,7 @@
     "materialId": {
       "type": "string"
     },
-    "policeName": {
-      "type": "string"
-    },
-    "policeMaterialId": {
-      "type": "string"
-    },
     "documentType": {
-      "type": "string"
-    },
-    "externalFileURL": {
       "type": "string"
     }
   },

@@ -25,7 +25,6 @@ import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.client.FileService;
 import uk.gov.justice.services.fileservice.domain.FileReference;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.event.processor.CaseDocumentUploadedProcessor;
 import uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants;
 
 import java.io.InputStream;
@@ -52,7 +51,7 @@ public class CaseDocumentUploadedProcessorTest {
     private final String DOCUMENT_TYPE = "PLEA";
 
     @InjectMocks
-    private CaseDocumentUploadedProcessor processor = new CaseDocumentUploadedProcessor();
+    private CaseDocumentProcessor processor = new CaseDocumentProcessor();
 
     @Mock
     private Sender sender;

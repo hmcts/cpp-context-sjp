@@ -21,7 +21,7 @@
         <charging.version>2.0.255</charging.version>
         <people.version>2.0.97</people.version>
         <resulting.version>2.0.151</resulting.version>
-        <lifecycle.version>2.0.263</lifecycle.version>
+        <material.version>2.0.99-structurerefactor-SNAPSHOT</material.version>
         <referencedata.version>2.0.128</referencedata.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>

@@ -51,10 +51,21 @@
             <groupId>uk.gov.moj.cpp.system.authorisation</groupId>
             <artifactId>authorisation-interceptor</artifactId>
         </dependency>
-
         <dependency>
             <groupId>uk.gov.moj.cpp.system.authorisation</groupId>
             <artifactId>authorisation-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.activiti</groupId>
+            <artifactId>activiti-engine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.activiti</groupId>
+            <artifactId>activiti-cdi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.activiti</groupId>
+            <artifactId>activiti-embedded-rest</artifactId>
         </dependency>
 
         <!-- Test Dependencies -->
@@ -84,9 +95,9 @@
                 <artifactId>raml-maven-plugin</artifactId>
                 <dependencies>
                     <dependency>
-                        <groupId>uk.gov.moj.cpp.lifecycle</groupId>
-                        <artifactId>lifecycle-command-api</artifactId>
-                        <version>${lifecycle.version}</version>
+                        <groupId>uk.gov.moj.cpp.material</groupId>
+                        <artifactId>material-command-api</artifactId>
+                        <version>${material.version}</version>
                         <classifier>raml</classifier>
                     </dependency>
                     <dependency>

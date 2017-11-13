@@ -36,7 +36,7 @@ public class CaseUpdatedListener {
     @Inject
     private Enveloper enveloper;
 
-    @Handles("structure.events.defendant-added")
+    @Handles("sjp.events.defendant-added")
     public void handleDefendantAddedEvent(final JsonEnvelope jsonEnvelope) {
         JsonObject privateEventPayload = jsonEnvelope.payloadAsJsonObject();
         final String caseId = privateEventPayload.getString(CASE_ID);
@@ -51,7 +51,7 @@ public class CaseUpdatedListener {
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, DEFENDANT_ADDED_PUBLIC_EVENT).apply(publicEventPayload));
     }
 
-    @Handles("structure.events.defendant-addition-failed")
+    @Handles("sjp.events.defendant-addition-failed")
     public void handleDefendantAdditionFailedEvent(final JsonEnvelope jsonEnvelope) {
         JsonObject privateEventPayload = jsonEnvelope.payloadAsJsonObject();
         String caseId = privateEventPayload.getString(CASE_ID);
@@ -68,7 +68,7 @@ public class CaseUpdatedListener {
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, DEFENDANT_ADDITION_FAILED_PUBLIC_EVENT).apply(publicEventPayload));
     }
 
-    @Handles("structure.events.case-reopened-in-libra")
+    @Handles("sjp.events.case-reopened-in-libra")
     public void handleCaseReopenedInLibra(final JsonEnvelope jsonEnvelope) {
         final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
         if (LOGGER.isDebugEnabled()) {
@@ -77,7 +77,7 @@ public class CaseUpdatedListener {
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, CASE_REOPENED_IN_LIBRA_PUBLIC_EVENT).apply(payload));
     }
 
-    @Handles("structure.events.case-reopened-in-libra-updated")
+    @Handles("sjp.events.case-reopened-in-libra-updated")
     public void handleCaseReopenedInLibraUpdated(final JsonEnvelope jsonEnvelope) {
         final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
         if (LOGGER.isDebugEnabled()) {
@@ -86,7 +86,7 @@ public class CaseUpdatedListener {
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, CASE_REOPENED_IN_LIBRA_UPDATED_PUBLIC_EVENT).apply(payload));
     }
 
-    @Handles("structure.events.case-reopened-in-libra-undone")
+    @Handles("sjp.events.case-reopened-in-libra-undone")
     public void handleCaseReopenedInLibraUndone(final JsonEnvelope jsonEnvelope) {
         final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
         if (LOGGER.isDebugEnabled()) {

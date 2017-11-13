@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 //generic event used to indicate to the front-end the update to a case couldn't be applied due to business rules
-@Event("structure.events.case-update-rejected")
+@Event("sjp.events.case-update-rejected")
 public class CaseUpdateRejected {
 
     //should match CaseUpdateHelper class

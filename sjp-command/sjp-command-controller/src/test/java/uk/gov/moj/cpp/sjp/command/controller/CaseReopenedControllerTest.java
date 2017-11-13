@@ -5,8 +5,6 @@ import static uk.gov.justice.services.core.annotation.Component.COMMAND_CONTROLL
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 
-import uk.gov.moj.cpp.sjp.command.controller.CaseReopenedController;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -29,6 +27,16 @@ public class CaseReopenedControllerTest {
                 .with(
                         method("updateCaseReopenedInLibra")
                                 .thatHandles("sjp.command.update-case-reopened-in-libra")
+                                .withSenderPassThrough()
+                ));
+    }
+
+    @Test
+    public void shouldHandleUndoCaseReopenedInLibraCommand() throws Exception {
+        assertThat(CaseReopenedController.class, isHandlerClass(COMMAND_CONTROLLER)
+                .with(
+                        method("undoCaseReopenedInLibra")
+                                .thatHandles("sjp.command.undo-case-reopened-in-libra")
                                 .withSenderPassThrough()
                 ));
     }

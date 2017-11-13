@@ -22,7 +22,7 @@ public class CaseUpdateRejectedProcessor {
     @Inject
     private Enveloper enveloper;
 
-    @Handles("structure.events.case-update-rejected")
+    @Handles("sjp.events.case-update-rejected")
     public void caseUpdateRejected(final JsonEnvelope event) {
         final JsonObject payload = event.payloadAsJsonObject();
         final JsonObject newPayload = createObjectBuilder()

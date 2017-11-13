@@ -31,20 +31,20 @@ public class SearchCasesView {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o){
-        	return true;
+        if (this == o) {
+            return true;
         }
-        
-        if (o == null || getClass() != o.getClass()){
-        	return false;
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
         }
 
         SearchCasesView that = (SearchCasesView) o;
 
-        if (searchTerm != null ? !searchTerm.equals(that.searchTerm) : that.searchTerm != null){
-        	return false;
+        if (searchTerm != null ? !searchTerm.equals(that.searchTerm) : that.searchTerm != null) {
+            return false;
         }
-        
+
         return hits != null ? hits.equals(that.hits) : that.hits == null;
 
     }

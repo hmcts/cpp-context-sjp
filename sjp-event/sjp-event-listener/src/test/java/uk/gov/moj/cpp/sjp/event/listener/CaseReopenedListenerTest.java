@@ -31,9 +31,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class CaseReopenedListenerTest {
 
-    private static final String EVENTS_MARK_CASE_REOPENED = "structure.events.case-reopened-in-libra";
-    private static final String EVENTS_UPDATE_CASE_REOPENED = "structure.events.case-reopened-in-libra-updated";
-    private static final String EVENTS_UNDO_CASE_REOPENED = "structure.events.case-reopened-in-libra-undone";
+    private static final String EVENTS_MARK_CASE_REOPENED = "sjp.events.case-reopened-in-libra";
+    private static final String EVENTS_UPDATE_CASE_REOPENED = "sjp.events.case-reopened-in-libra-updated";
+    private static final String EVENTS_UNDO_CASE_REOPENED = "sjp.events.case-reopened-in-libra-undone";
 
     private static final String METHOD_MARK_CASE_REOPENED = "markCaseReopened";
     private static final String METHOD_UPDATE_CASE_REOPENED = "updateCaseReopened";
@@ -85,7 +85,7 @@ public class CaseReopenedListenerTest {
         when(caseRepository.findBy(UUID.fromString(caseId))).thenReturn(caseDetails);
 
         final JsonEnvelope event = JsonEnvelopeBuilder.envelope()
-                .with(JsonObjectMetadata.metadataWithRandomUUID("structure.events.case-reopened-in-libra-undone"))
+                .with(JsonObjectMetadata.metadataWithRandomUUID("sjp.events.case-reopened-in-libra-undone"))
                 .withPayloadOf(caseId, "caseId").build();
         listener.undoCaseReopened(event);
 
@@ -99,7 +99,7 @@ public class CaseReopenedListenerTest {
 
 
         final JsonEnvelope event = JsonEnvelopeBuilder.envelope()
-                .with(JsonObjectMetadata.metadataWithRandomUUID("structure.events.case-reopened-in-libra"))
+                .with(JsonObjectMetadata.metadataWithRandomUUID("sjp.events.case-reopened-in-libra"))
                 .withPayloadOf(caseReopenDetails.getCaseId(), "caseId")
                 .withPayloadOf(caseReopenDetails.getReopenedDate().toString(), "reopenedDate")
                 .withPayloadOf(caseReopenDetails.getLibraCaseNumber(), "libraCaseNumber")

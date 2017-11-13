@@ -22,7 +22,7 @@ public class CaseSearchResultListener {
     @Inject
     private CaseSearchResultRepository repository;
 
-    @Handles("structure.events.person-info-added")
+    @Handles("sjp.events.person-info-added")
     public void personInfoAdded(final JsonEnvelope envelope) {
 
         final JsonObject payload = envelope.payloadAsJsonObject();
@@ -40,7 +40,7 @@ public class CaseSearchResultListener {
         repository.save(caseSearchResult);
     }
 
-    @Handles("structure.events.person-info-updated")
+    @Handles("sjp.events.person-info-updated")
     public void personInfoUpdated(final JsonEnvelope event) {
         final JsonObject eventPayload = event.payloadAsJsonObject();
         final List<CaseSearchResult> searchResults = repository.findByPersonId(

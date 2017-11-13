@@ -75,7 +75,7 @@ public class AddPersonInfoHandlerTest extends BasePersonInfoHandlerTest {
 
         assertThat(eventStream, eventStreamAppendedWith(streamContaining(jsonEnvelope(
                 withMetadataEnvelopedFrom(command)
-                        .withName("structure.events.person-info-added"),
+                        .withName("sjp.events.person-info-added"),
                 payloadIsJson(allOf(
                         withJsonPath("$.id", is(id.toString())),
                         withJsonPath("$.caseId", is(caseId.toString())),

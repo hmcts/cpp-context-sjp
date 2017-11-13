@@ -35,13 +35,12 @@ public abstract class AbstractTestHelper implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTestHelper.class);
 
-    public static final String DEFENSE_LAWYER_ID = "aba9e96a-6928-462b-9933-baa647ed6e17";
     public static final String PUBLIC_ACTIVE_MQ_TOPIC = "public.event";
     public static final String USER_ID = UUID.randomUUID().toString();
     private static final String STRUCTURE_SYSTEM_USER = "38e4b0c2-b4d4-4078-a857-7a5570e7ae73";
 
     protected static final String BASE_URI = System.getProperty("baseUri", "http://localhost:8080");
-    protected static final String STRUCTURE_EVENT_TOPIC = "structure.event";
+    protected static final String SJP_EVENT_TOPIC = "sjp.event";
     private static final String WRITE_BASE_URL = "/sjp-command-api/command/api/rest/sjp";
     private static final String READ_BASE_URL = "/sjp-query-api/query/api/rest/sjp";
 

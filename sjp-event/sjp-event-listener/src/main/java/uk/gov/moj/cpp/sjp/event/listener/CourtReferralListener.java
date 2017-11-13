@@ -21,7 +21,7 @@ public class CourtReferralListener {
     @Inject
     private CourtReferralRepository repository;
 
-    @Handles("structure.events.court-referral-created")
+    @Handles("sjp.events.court-referral-created")
     public void courtReferralCreated(final JsonEnvelope envelope) {
 
         final JsonObject payload = envelope.payloadAsJsonObject();
@@ -32,7 +32,7 @@ public class CourtReferralListener {
         repository.save(courtReferral);
     }
 
-    @Handles("structure.events.court-referral-actioned")
+    @Handles("sjp.events.court-referral-actioned")
     public void courtReferralActioned(final JsonEnvelope envelope) {
 
         final JsonObject payload = envelope.payloadAsJsonObject();

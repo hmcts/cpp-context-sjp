@@ -180,8 +180,16 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       (mapping):
           requestType: multipart/form-data
           name: sjp.upload-case-document
+      (mapping):
+          requestType: application/vnd.sjp.upload-case-document+json
+          name: sjp.upload-case-document
       ...
     body:
+      application/vnd.sjp.upload-case-document+json:
+        example:
+          !include json/sjp.upload-case-document.json
+        schema:
+          !include json/schema/sjp.upload-case-document.json
       multipart/form-data:
         formParameters:
           caseDocument:

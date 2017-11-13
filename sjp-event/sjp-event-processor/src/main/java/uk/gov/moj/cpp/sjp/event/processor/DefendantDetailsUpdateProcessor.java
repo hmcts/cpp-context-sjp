@@ -19,7 +19,7 @@ public class DefendantDetailsUpdateProcessor {
     @Inject
     private Sender sender;
 
-    @Handles("structure.events.defendant-details-updated")
+    @Handles("sjp.events.defendant-details-updated")
     public void publish(final JsonEnvelope jsonEnvelope) {
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, "people.command.update-personal-details").
                 apply(jsonEnvelope.payloadAsJsonObject()));

@@ -18,7 +18,7 @@ public class EmployerProcessor {
     @Inject
     private Enveloper enveloper;
 
-    @Handles("structure.events.employer-updated")
+    @Handles("sjp.events.employer-updated")
     public void updateEmployer(final JsonEnvelope envelope) {
         sender.send(enveloper.withMetadataFrom(envelope, "public.structure.employer-updated")
                 .apply(envelope.payloadAsJsonObject()));

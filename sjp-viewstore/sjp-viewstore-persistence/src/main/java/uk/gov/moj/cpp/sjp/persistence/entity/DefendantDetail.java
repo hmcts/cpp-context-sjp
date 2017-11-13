@@ -103,19 +103,6 @@ public class DefendantDetail implements Serializable {
         }
     }
 
-    public void addOffences(final Set<OffenceDetail> newOffences) {
-        if (newOffences != null && newOffences.size() > 0) {
-            newOffences.forEach(offence -> offence.setDefendantDetail(this));
-            this.offences.addAll(newOffences);
-        }
-    }
-
-    public void addOffence(OffenceDetail offenceDetail) {
-        Objects.requireNonNull(offenceDetail);
-        offences.add(offenceDetail);
-        offenceDetail.setDefendantDetail(this);
-    }
-
     public CaseDetail getCaseDetail() {
         return caseDetail;
     }

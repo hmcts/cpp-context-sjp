@@ -5,7 +5,7 @@ import uk.gov.justice.domain.annotation.Event;
 /**
  * Event for rejecting an update of a reopened case if it hasn't been yet reopened
  */
-@Event("structure.events.update-case-reopened-failed")
+@Event("sjp.events.update-case-reopened-failed")
 public class CaseNotReopened {
 
     private final String caseId;

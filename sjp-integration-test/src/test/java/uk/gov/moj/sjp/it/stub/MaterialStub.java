@@ -1,10 +1,6 @@
 package uk.gov.moj.sjp.it.stub;
 
 
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
-
-import java.util.UUID;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -14,13 +10,17 @@ import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
-public class LifecycleStub extends StubUtil {
+import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
-    public static final String QUERY_URL = "/lifecycle-command-api/command/api/rest/lifecycle/add-case-material";
-    public static final String QUERY_MEDIA_TYPE = "application/vnd.lifecycle.command.add-case-material+json";
+import java.util.UUID;
+
+public class MaterialStub extends StubUtil {
+
+    public static final String QUERY_URL = "/material-command-api/command/api/rest/material/material";
+    public static final String QUERY_MEDIA_TYPE = "application/vnd.material.command.upload-file+json";
 
     public static void stubAddCaseMaterial() {
-        InternalEndpointMockUtils.stubPingFor("lifecycle-command-api");
+        InternalEndpointMockUtils.stubPingFor("material-command-api");
 
         stubFor(post(urlPathEqualTo(QUERY_URL))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)

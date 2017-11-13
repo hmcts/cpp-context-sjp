@@ -20,7 +20,7 @@ public class CaseCreationFailedBecauseCaseAlreadyExistedProcessor {
     @Inject
     private Sender sender;
 
-    @Handles("structure.events.case-creation-failed-because-case-already-existed")
+    @Handles("sjp.events.case-creation-failed-because-case-already-existed")
     public void publish(final JsonEnvelope event) {
         final JsonObject payload = event.payloadAsJsonObject();
         sender.send(enveloper.withMetadataFrom(event,

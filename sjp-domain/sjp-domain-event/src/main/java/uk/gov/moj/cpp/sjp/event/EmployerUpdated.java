@@ -9,7 +9,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Event("structure.events.employer-updated")
+@Event("sjp.events.employer-updated")
 public class EmployerUpdated {
 
     private UUID defendantId;

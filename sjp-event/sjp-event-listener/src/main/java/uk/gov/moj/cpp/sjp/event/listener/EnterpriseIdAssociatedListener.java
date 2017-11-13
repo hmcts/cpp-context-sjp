@@ -22,7 +22,7 @@ public class EnterpriseIdAssociatedListener {
     @Inject
     private CaseRepository caseRepository;
 
-    @Handles("structure.events.enterprise-id-associated")
+    @Handles("sjp.events.enterprise-id-associated")
     public void associateEnterpriseIdToCase(final JsonEnvelope event) {
         final JsonObject payload = event.payloadAsJsonObject();
 

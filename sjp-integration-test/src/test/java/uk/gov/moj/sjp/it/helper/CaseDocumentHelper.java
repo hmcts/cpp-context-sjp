@@ -1,55 +1,56 @@
 package uk.gov.moj.sjp.it.helper;
 
-import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
-import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import com.github.tomakehurst.wiremock.http.RequestMethod;
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.TEN_SECONDS;
 import static com.jayway.jsonassert.JsonAssert.with;
 import static com.jayway.jsonpath.Criteria.where;
-import com.jayway.jsonpath.Filter;
 import static com.jayway.jsonpath.JsonPath.compile;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import com.jayway.restassured.path.json.JsonPath;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import org.hamcrest.Matchers;
 import static org.hamcrest.Matchers.hasSize;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.test.utils.core.http.ResponseData;
-import uk.gov.justice.services.test.utils.core.http.RestPoller;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.matchers.UuidStringMatcher.isAUuid;
-import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED;
-import uk.gov.moj.sjp.it.stub.LifecycleStub;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseDocumentsByCaseId;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
-import uk.gov.moj.sjp.it.util.QueueUtil;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
-import static uk.gov.moj.sjp.it.util.SchemaValidatorUtil.validateAgainstSchema;
+
+import uk.gov.justice.services.test.utils.core.http.ResponseData;
+import uk.gov.justice.services.test.utils.core.http.RestPoller;
+import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
+import uk.gov.moj.sjp.it.stub.MaterialStub;
+import uk.gov.moj.sjp.it.util.QueueUtil;
+
+import java.util.Map;
+import java.util.UUID;
 
 import javax.jms.MessageConsumer;
 import javax.ws.rs.core.Response;
 
-import java.util.Map;
-import java.util.UUID;
+import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
+import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.http.RequestMethod;
+import com.jayway.jsonpath.Filter;
+import com.jayway.restassured.path.json.JsonPath;
+import org.hamcrest.Matchers;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Helper for CaseDocument.
@@ -110,11 +111,10 @@ public class CaseDocumentHelper extends AbstractTestHelper {
         final String payloadWithReplacedDocumentType;
         if (documentType != null) {
             payloadWithReplacedDocumentType = String.format(payload, id,
-                            policeMaterialIdPropertyValue, documentType);
-        }
-        else {
+                    policeMaterialIdPropertyValue, documentType);
+        } else {
             payloadWithReplacedDocumentType = String.format(payload, id,
-                            policeMaterialIdPropertyValue, "SJPN");
+                    policeMaterialIdPropertyValue, "SJPN");
         }
         JSONObject jsonObject = new JSONObject(payloadWithReplacedDocumentType);
         jsonObject.put(MATERIAL_ID_PROPERTY, materialId);
@@ -124,6 +124,7 @@ public class CaseDocumentHelper extends AbstractTestHelper {
         LOGGER.info("Adding case document with payload: {}", request);
         makePostCall(userId, getWriteUrl(writeUrl), WRITE_MEDIA_TYPE, request);
     }
+
     public void addCaseDocument(String payload) {
         addCaseDocument(payload, null);
     }
@@ -151,6 +152,7 @@ public class CaseDocumentHelper extends AbstractTestHelper {
         //It doesn't matter the files are plea, jut to make it simplier
         uploadCaseDocument(UUID.fromString(USER_ID), documentType, FILE_PATH_PLEA + '/' + FILE_NAME_PLEA);
     }
+
     public void uploadCaseDocument(String documentType) {
         uploadCaseDocument(UUID.fromString(USER_ID), documentType, FILE_PATH_PLEA + '/' + FILE_NAME_PLEA);
     }
@@ -161,7 +163,7 @@ public class CaseDocumentHelper extends AbstractTestHelper {
                 .replace("DOCUMENTTYPE", documentType);
         request = fileName;
         LOGGER.info("Uploading case document with payload from file: {}", request);
-        makeMultipartFormPostCall(userId,getWriteUrl(writeUrl), "caseDocument", request);
+        makeMultipartFormPostCall(userId, getWriteUrl(writeUrl), "caseDocument", request);
     }
 
     public void addCaseDocumentWithExternalFileUrl() {
@@ -203,28 +205,30 @@ public class CaseDocumentHelper extends AbstractTestHelper {
     }
 
 
-    public void assertCaseMaterialAdded() {
+    public void assertCaseMaterialAdded(final String documentReference) {
         UrlMatchingStrategy url = new UrlMatchingStrategy();
-        url.setUrlPath(LifecycleStub.QUERY_URL);
+        url.setUrlPath(MaterialStub.QUERY_URL);
 
+        System.out.println("documentReference: " + documentReference);
         await().atMost(TEN_SECONDS).until(() -> WireMock.findAll(new RequestPatternBuilder(RequestMethod.POST, url)
-                .withHeader("Content-Type", equalTo(LifecycleStub.QUERY_MEDIA_TYPE))
-                .withRequestBody(containing("\"caseId\":\"" + caseId + "\""))
-                .withRequestBody(containing("\"mimeType\":\"" + FILE_MIME_TYPE + "\""))
-                .withRequestBody(containing("\"documentType\":\"" + DOCUMENT_TYPE_PLEA + "\""))
-                .withRequestBody(containing("\"originalFileName\":\"" + FILE_NAME_PLEA + "\""))).size() >= 1);
+                        .withHeader("Content-Type", equalTo(MaterialStub.QUERY_MEDIA_TYPE))
+                        .withRequestBody(containing("\"fileServiceId\":\"" + documentReference + "\""))
+                ).size() > 0
+        );
     }
 
-    public void verifyCaseDocumentUploadedEventRaised() {
+    public String verifyCaseDocumentUploadedEventRaised() {
         final String caseDocumentUploadedEvent = publicCaseDocumentUploaded.retrieveMessage().orElse(null);
 
         assertThat(caseDocumentUploadedEvent, notNullValue());
 
         with(caseDocumentUploadedEvent)
                 .assertThat("$.documentId", isAUuid());
+
+        return new JsonPath(caseDocumentUploadedEvent).getString("documentId");
     }
 
-    public void assertDocumentAdded(){
+    public void assertDocumentAdded() {
         assertDocumentAdded(USER_ID);
     }
 
@@ -260,14 +264,15 @@ public class CaseDocumentHelper extends AbstractTestHelper {
         RestPoller.poll(getCaseDocumentsByCaseId(caseId, tflUserId)).until(payload()
                 .isJson(
                         withJsonPath(compile("$.caseDocuments[?]", caseDocumentFilter), hasSize(0))
-        ));
+                ));
     }
+
     public void verifyDocumentNotVisibleForProsecutorWhenQueryingForACase(final String tflUserId) {
         Filter caseDocumentFilter = Filter.filter(where("id").is(id.toString()));
         RestPoller.poll(getCaseById(caseId, tflUserId)).until(payload()
                 .isJson(
                         withJsonPath(compile("$.caseDocuments[?]", caseDocumentFilter), hasSize(0))
-        ));
+                ));
     }
 
     public void addDocumentAndVerifyAdded() {

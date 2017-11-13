@@ -21,7 +21,7 @@ public class EnterpriseIdAssociatedListener {
     @Inject
     private Enveloper enveloper;
 
-    @Handles("structure.events.enterprise-id-associated")
+    @Handles("sjp.events.enterprise-id-associated")
     public void enterpriseIdAssociated(final JsonEnvelope event) {
         final JsonObject payload = buildPublicPayloadFrom(event.payloadAsJsonObject());
 
@@ -31,11 +31,9 @@ public class EnterpriseIdAssociatedListener {
     }
 
     private JsonObject buildPublicPayloadFrom(final JsonObject privateEventPayload) {
-        final JsonObject payload = createObjectBuilder()
+        return createObjectBuilder()
                 .add("caseId", privateEventPayload.getString("caseId"))
                 .add("enterpriseId", privateEventPayload.getString("enterpriseId"))
                 .build();
-
-        return payload;
     }
 }

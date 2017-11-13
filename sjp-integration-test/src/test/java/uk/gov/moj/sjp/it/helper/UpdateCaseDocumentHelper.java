@@ -52,7 +52,7 @@ public class UpdateCaseDocumentHelper extends AbstractTestHelper {
     public UpdateCaseDocumentHelper(UUID caseId, UUID documentId) {
         this.caseId = caseId;
         this.documentId = documentId;
-        caseDocumentNameUpdatedMC.startConsumer(EVENT_SELECTOR_CASE_DOCUMENT_NAME_UPDATED, STRUCTURE_EVENT_TOPIC);
+        caseDocumentNameUpdatedMC.startConsumer(EVENT_SELECTOR_CASE_DOCUMENT_NAME_UPDATED, SJP_EVENT_TOPIC);
         publicConsumer.startConsumer(PUBLIC_SELECTOR_STRUCTURE_CASE_DOCUMENT_NAME_UPDATED, PUBLIC_ACTIVE_MQ_TOPIC);
     }
 

@@ -8,7 +8,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Event("structure.events.interpreter-for-defendant-updated")
+@Event("sjp.events.interpreter-for-defendant-updated")
 public class InterpreterUpdatedForDefendant {
 
     private UUID caseId;

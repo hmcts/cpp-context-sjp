@@ -23,7 +23,7 @@ public class EmployerListener {
     private EmployerRepository employerRepository;
 
     @Transactional
-    @Handles("structure.events.employer-updated")
+    @Handles("sjp.events.employer-updated")
     public void updateEmployer(final JsonEnvelope event) {
         final EmployerUpdated employerUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), EmployerUpdated.class);
         final Employer employer = new Employer(employerUpdated.getDefendantId());

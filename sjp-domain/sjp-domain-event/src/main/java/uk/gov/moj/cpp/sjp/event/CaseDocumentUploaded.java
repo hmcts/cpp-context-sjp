@@ -4,7 +4,7 @@ import uk.gov.justice.domain.annotation.Event;
 
 import java.util.UUID;
 
-@Event("structure.events.case-document-uploaded")
+@Event("sjp.events.case-document-uploaded")
 public class CaseDocumentUploaded {
 
     private final UUID caseId;

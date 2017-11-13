@@ -37,9 +37,6 @@ public class CaseSummary implements Serializable {
     @Column(name = "completed")
     private Boolean completed = Boolean.FALSE;
 
-    public CaseSummary() {
-    }
-
     public UUID getId() {
         return id;
     }

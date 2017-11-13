@@ -6,7 +6,7 @@ import uk.gov.moj.cpp.sjp.domain.PersonInfoDetails;
 
 import java.util.UUID;
 
-@Event("structure.events.person-info-added")
+@Event("sjp.events.person-info-added")
 public class PersonInfoAdded {
 
     private UUID id;

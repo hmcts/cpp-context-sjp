@@ -112,7 +112,7 @@ public class AddCaseDocumentHandlerTest {
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(addCaseDocumentCommand)
-                                        .withName("structure.events.case-document-added"),
+                                        .withName("sjp.events.case-document-added"),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", is(CASE_ID_STR)),
                                         withJsonPath("$.caseDocument.id", is(CASE_DOCUMENT_ID_STR)),
@@ -135,7 +135,7 @@ public class AddCaseDocumentHandlerTest {
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(addCaseDocumentCommand)
-                                        .withName("structure.events.case-document-addition-failed"),
+                                        .withName("sjp.events.case-document-addition-failed"),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.documentId", is(CASE_DOCUMENT_ID_STR))
                                 ))))));
@@ -151,7 +151,7 @@ public class AddCaseDocumentHandlerTest {
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(addCaseDocumentCommand)
-                                        .withName("structure.events.case-document-added"),
+                                        .withName("sjp.events.case-document-added"),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", is(CASE_ID_STR)),
                                         withJsonPath("$.caseDocument.id", is(CASE_DOCUMENT_ID_STR)),
@@ -171,7 +171,7 @@ public class AddCaseDocumentHandlerTest {
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(addCaseDocumentCommand)
-                                        .withName("structure.events.case-document-added"),
+                                        .withName("sjp.events.case-document-added"),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", is(CASE_ID_STR)),
                                         withJsonPath("$.caseDocument.id", is(CASE_DOCUMENT_ID_STR)),

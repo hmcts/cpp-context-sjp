@@ -7,7 +7,7 @@ import java.util.UUID;
 /**
  * Event: Signifies that an Enterprise ID has been associated with a Case.
  */
-@Event("structure.events.enterprise-id-associated")
+@Event("sjp.events.enterprise-id-associated")
 public class EnterpriseIdAssociated {
 
     private UUID caseId;

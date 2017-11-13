@@ -18,7 +18,7 @@ public class FinancialMeansProcessor {
     @Inject
     private Enveloper enveloper;
 
-    @Handles("structure.events.financial-means-updated")
+    @Handles("sjp.events.financial-means-updated")
     public void updateFinancialMeans(final JsonEnvelope envelope) {
         sender.send(enveloper.withMetadataFrom(envelope, "public.structure.financial-means-updated")
                 .apply(envelope.payloadAsJsonObject()));

@@ -21,7 +21,7 @@ public class CaseSearchResultListener {
     @Inject
     private Enveloper enveloper;
 
-    @Handles("structure.events.person-info-added")
+    @Handles("sjp.events.person-info-added")
     public void personInfoAdded(final JsonEnvelope event) {
         final JsonObject payload = buildPublicPayloadFrom(event.payloadAsJsonObject());
 
@@ -31,11 +31,10 @@ public class CaseSearchResultListener {
     }
 
     private JsonObject buildPublicPayloadFrom(final JsonObject privateEventPayload) {
-        final JsonObject payload = createObjectBuilder()
+
+        return createObjectBuilder()
                 .add("caseId", privateEventPayload.getString("caseId"))
                 .add("personId", privateEventPayload.getString("personId"))
                 .build();
-
-        return payload;
     }
 }

@@ -6,7 +6,7 @@ import uk.gov.justice.domain.annotation.Event;
 
 import java.util.UUID;
 
-@Event("structure.events.case-completed")
+@Event("sjp.events.case-completed")
 public class CaseCompleted {
 
     private final UUID caseId;

@@ -7,7 +7,7 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 
 import java.util.UUID;
 
-@Event("structure.events.plea-updated")
+@Event("sjp.events.plea-updated")
 public class PleaUpdated {
     private String caseId;
     private String offenceId;

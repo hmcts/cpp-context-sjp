@@ -1,8 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.activiti;
 
-import static uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper.metadataToString;
-
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,9 +29,12 @@ public class SjpProcessManagerService {
     @Inject
     private RuntimeService runtimeService;
 
+    @Inject
+    private MetadataHelper metadataHelper;
+
     public void startUploadFileProcess(final JsonEnvelope envelope, final UUID caseId, final UUID documentReference, final String documentType) {
         final Map<String, Object> processVariables = new HashMap<>();
-        processVariables.put("metadata", metadataToString(envelope.metadata()));
+        processVariables.put("metadata", metadataHelper.metadataToString(envelope.metadata()));
         processVariables.put("caseId", caseId.toString());
         processVariables.put("documentReference", documentReference.toString());
         processVariables.put("documentType", documentType);
@@ -50,8 +52,8 @@ public class SjpProcessManagerService {
                 .singleResult();
 
         final Map<String, Object> processVariables = new HashMap<>();
-        processVariables.put("metadata", metadataToString(envelope.metadata()));
-        processVariables.put("materialId", materialId);
+        processVariables.put("metadata", metadataHelper.metadataToString(envelope.metadata()));
+        processVariables.put("materialId", materialId.toString());
 
         runtimeService.signal(execution.getId(), processVariables);
 

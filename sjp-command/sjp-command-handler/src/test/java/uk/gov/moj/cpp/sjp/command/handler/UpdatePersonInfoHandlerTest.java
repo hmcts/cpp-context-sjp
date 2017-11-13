@@ -69,7 +69,7 @@ public class UpdatePersonInfoHandlerTest {
 
         assertThat(eventStream, eventStreamAppendedWith(streamContaining(jsonEnvelope(
                 withMetadataEnvelopedFrom(command)
-                        .withName("structure.events.person-info-updated"),
+                        .withName("sjp.events.person-info-updated"),
                 payloadIsJson(allOf(
                         withJsonPath("$.personId", is(personId.toString())),
                         withJsonPath("$.lastName", is(lastName))

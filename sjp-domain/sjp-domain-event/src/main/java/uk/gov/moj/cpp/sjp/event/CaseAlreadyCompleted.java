@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
 
-@Event("structure.events.case-completion-failed")
+@Event("sjp.events.case-completion-failed")
 public class CaseAlreadyCompleted {
 
     private final String caseId;

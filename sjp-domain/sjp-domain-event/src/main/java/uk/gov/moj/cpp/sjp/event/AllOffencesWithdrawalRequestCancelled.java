@@ -7,7 +7,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Event("structure.events.all-offences-withdrawal-request-cancelled")
+@Event("sjp.events.all-offences-withdrawal-request-cancelled")
 public class AllOffencesWithdrawalRequestCancelled {
 
     private UUID caseId;

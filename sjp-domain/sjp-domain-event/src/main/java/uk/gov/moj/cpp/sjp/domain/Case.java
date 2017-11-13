@@ -5,9 +5,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class Case {
 
     private UUID id;
@@ -25,17 +22,6 @@ public class Case {
     private int numPreviousConvictions;
     private BigDecimal costs;
     private LocalDate postingDate;
-
-
-    //TODO: evaluate the need for 2 constructors (one with id and urn should be enough)
-    @JsonCreator
-    public Case(@JsonProperty("id") UUID id,
-                @JsonProperty("urn") String urn,
-                @JsonProperty("prosecutingAuthority") ProsecutingAuthority prosecutingAuthority) {
-        this.id = id;
-        this.urn = urn;
-        this.prosecutingAuthority = prosecutingAuthority;
-    }
 
     public Case(UUID id,
                 String urn,

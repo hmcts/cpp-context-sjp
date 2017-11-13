@@ -31,7 +31,7 @@ public class OffenceUpdatedListener {
     @Inject
     private CaseSearchResultRepository searchResultRepository;
 
-    @Handles("structure.events.plea-updated")
+    @Handles("sjp.events.plea-updated")
     @Transactional
     public void updatePlea(final JsonEnvelope envelope) {
         final PleaUpdated event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), PleaUpdated.class);
@@ -45,7 +45,7 @@ public class OffenceUpdatedListener {
                 offenceDetail.getDefendantDetail().getPersonId(), now());
     }
 
-    @Handles("structure.events.plea-cancelled")
+    @Handles("sjp.events.plea-cancelled")
     @Transactional
     public void cancelPlea(final JsonEnvelope envelope) {
         final PleaCancelled event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), PleaCancelled.class);

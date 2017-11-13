@@ -9,7 +9,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Event("structure.events.financial-means-updated")
+@Event("sjp.events.financial-means-updated")
 public class FinancialMeansUpdated {
 
     private UUID defendantId;

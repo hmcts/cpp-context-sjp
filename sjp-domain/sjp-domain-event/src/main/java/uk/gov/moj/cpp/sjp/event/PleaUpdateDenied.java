@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 // Old event. Replaced by case-update-rejected
-@Event("structure.events.plea-update-denied")
+@Event("sjp.events.plea-update-denied")
 public class PleaUpdateDenied implements Serializable {
     private String caseId;
     private String offenceId;
@@ -17,7 +17,7 @@ public class PleaUpdateDenied implements Serializable {
     private String interpreterLanguage;
     private DenialReason denialReason;
 
-    //structure.command.validation.UpdatedPleaValidator.DenialReason should be a subset of this
+    //sjp.command.validation.UpdatedPleaValidator.DenialReason should be a subset of this
     public enum DenialReason {
         SJPN_NOT_ATTACHED,
         WITHDRAWAL_PENDING,

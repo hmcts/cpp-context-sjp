@@ -24,7 +24,7 @@ public class CaseCreatedProcessor {
     @Inject
     private Sender sender;
 
-    @Handles("structure.events.sjp-case-created")
+    @Handles("sjp.events.sjp-case-created")
     public void publishSjpCaseCreatedPublicEvent(final JsonEnvelope event) {
         final String caseId = event.payloadAsJsonObject().getString("id");
         final String postingDate = event.payloadAsJsonObject().getString("postingDate");

@@ -46,14 +46,14 @@ public class CaseUpdatedListener {
     @Inject
     private CaseSearchResultRepository searchResultRepository;
 
-    @Handles("structure.events.case-completed")
+    @Handles("sjp.events.case-completed")
     @Transactional
     public void caseCompleted(final JsonEnvelope envelope) {
         CaseCompleted caseCompletedEvent = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), CaseCompleted.class);
         caseRepository.completeCase(caseCompletedEvent.getCaseId());
     }
 
-    @Handles("structure.events.all-offences-withdrawal-requested")
+    @Handles("sjp.events.all-offences-withdrawal-requested")
     @Transactional
     public void allOffencesWithdrawalRequested(final JsonEnvelope envelope) {
         final AllOffencesWithdrawalRequested event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), AllOffencesWithdrawalRequested.class);
@@ -63,7 +63,7 @@ public class CaseUpdatedListener {
         updateWithdrawalRequestedDate(event.getCaseId(), now());
     }
 
-    @Handles("structure.events.all-offences-withdrawal-request-cancelled")
+    @Handles("sjp.events.all-offences-withdrawal-request-cancelled")
     @Transactional
     public void allOffencesWithdrawalRequestCancelled(final JsonEnvelope envelope) {
         final AllOffencesWithdrawalRequestCancelled event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), AllOffencesWithdrawalRequestCancelled.class);
@@ -72,7 +72,7 @@ public class CaseUpdatedListener {
         updateWithdrawalRequestedDate(event.getCaseId(), null);
     }
 
-    @Handles("structure.events.case-document-added")
+    @Handles("sjp.events.case-document-added")
     @Transactional
     public void addCaseDocument(final JsonEnvelope envelope) {
         CaseDocumentAdded caseDocumentAdded = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), CaseDocumentAdded.class);
@@ -85,19 +85,19 @@ public class CaseUpdatedListener {
         return caseRepository.findBy(caseId);
     }
 
-    @Handles("structure.events.case-reopened-in-libra")
+    @Handles("sjp.events.case-reopened-in-libra")
     @Transactional
     public void markCaseReopened(final JsonEnvelope envelope) {
         handleCaseReopened(envelope);
     }
 
-    @Handles("structure.events.case-reopened-in-libra-updated")
+    @Handles("sjp.events.case-reopened-in-libra-updated")
     @Transactional
     public void updateCaseReopened(final JsonEnvelope envelope) {
         handleCaseReopened(envelope);
     }
 
-    @Handles("structure.events.case-reopened-in-libra-undone")
+    @Handles("sjp.events.case-reopened-in-libra-undone")
     @Transactional
     public void undoCaseReopened(final JsonEnvelope envelope) {
         CaseDetail caseDetail = findCaseById(

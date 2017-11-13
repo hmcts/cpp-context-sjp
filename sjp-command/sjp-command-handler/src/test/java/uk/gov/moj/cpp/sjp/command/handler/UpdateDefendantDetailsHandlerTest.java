@@ -86,7 +86,7 @@ public class UpdateDefendantDetailsHandlerTest extends BasePersonInfoHandlerTest
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
-                                        .withName("structure.events.defendant-details-updated"),
+                                        .withName("sjp.events.defendant-details-updated"),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.defendantId", equalTo(defendantId.toString())),
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
@@ -125,7 +125,7 @@ public class UpdateDefendantDetailsHandlerTest extends BasePersonInfoHandlerTest
                 .add("address", addAddressToPayload(address));
 
         return JsonEnvelopeBuilder.envelopeFrom(
-                metadataOf(randomUUID(), "structure.command.update-defendant-details"),
+                metadataOf(randomUUID(), "sjp.command.update-defendant-details"),
                 payload.build());
     }
 

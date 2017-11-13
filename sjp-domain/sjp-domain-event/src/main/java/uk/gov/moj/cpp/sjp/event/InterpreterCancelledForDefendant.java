@@ -7,7 +7,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Event("structure.events.interpreter-for-defendant-cancelled")
+@Event("sjp.events.interpreter-for-defendant-cancelled")
 public class InterpreterCancelledForDefendant {
 
     private UUID caseId;

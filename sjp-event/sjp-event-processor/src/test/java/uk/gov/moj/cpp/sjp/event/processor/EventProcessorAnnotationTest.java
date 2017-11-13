@@ -4,9 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.event.processor.AllOffencesWithdrawalRequestedProcessor;
-import uk.gov.moj.cpp.sjp.event.processor.CaseUpdateRejectedProcessor;
-import uk.gov.moj.cpp.sjp.event.processor.PersonalDetailsUpdatedProcessor;
 import uk.gov.moj.cpp.sjp.event.processor.listener.CaseUpdatedListener;
 
 import java.lang.reflect.Method;
@@ -20,9 +17,9 @@ import org.junit.runners.Parameterized;
 @RunWith(Parameterized.class)
 public class EventProcessorAnnotationTest {
 
-    private static final String EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA = "structure.events.case-reopened-in-libra";
-    private static final String EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA_UPDATED = "structure.events.case-reopened-in-libra-updated";
-    private static final String EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA_UNDONE = "structure.events.case-reopened-in-libra-undone";
+    private static final String EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA = "sjp.events.case-reopened-in-libra";
+    private static final String EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA_UPDATED = "sjp.events.case-reopened-in-libra-updated";
+    private static final String EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA_UNDONE = "sjp.events.case-reopened-in-libra-undone";
     private static final String EVENT_PUBLIC_PEOPLE_PERSONAL_DETAILS_UPDATED = "people.personal-details-updated";
     private static final String METHOD_CASE_REOPENED_IN_LIBRA = "handleCaseReopenedInLibra";
     private static final String METHOD_CASE_REOPENED_IN_LIBRA_UPDATED = "handleCaseReopenedInLibraUpdated";
@@ -35,8 +32,8 @@ public class EventProcessorAnnotationTest {
                 {CaseUpdatedListener.class, EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA, METHOD_CASE_REOPENED_IN_LIBRA},
                 {CaseUpdatedListener.class, EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA_UPDATED, METHOD_CASE_REOPENED_IN_LIBRA_UPDATED},
                 {CaseUpdatedListener.class, EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA_UNDONE, METHOD_CASE_REOPENED_IN_LIBRA_UNDONE},
-                {AllOffencesWithdrawalRequestedProcessor.class, "structure.events.all-offences-withdrawal-requested", "publishAllOffencesWithdrawalEvent"},
-                {CaseUpdateRejectedProcessor.class, "structure.events.case-update-rejected", "caseUpdateRejected"},
+                {AllOffencesWithdrawalRequestedProcessor.class, "sjp.events.all-offences-withdrawal-requested", "publishAllOffencesWithdrawalEvent"},
+                {CaseUpdateRejectedProcessor.class, "sjp.events.case-update-rejected", "caseUpdateRejected"},
                 {PersonalDetailsUpdatedProcessor.class, EVENT_PUBLIC_PEOPLE_PERSONAL_DETAILS_UPDATED, METHOD_PERSONAL_DETAILS_UPDATED}
         });
     }

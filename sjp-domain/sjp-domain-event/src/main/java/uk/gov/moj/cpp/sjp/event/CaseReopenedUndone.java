@@ -11,7 +11,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 /**
  * Event for case reopened undone
  */
-@Event("structure.events.case-reopened-in-libra-undone")
+@Event("sjp.events.case-reopened-in-libra-undone")
 public class CaseReopenedUndone implements Serializable {
 
     private static final long serialVersionUID = 4206671253527856605L;

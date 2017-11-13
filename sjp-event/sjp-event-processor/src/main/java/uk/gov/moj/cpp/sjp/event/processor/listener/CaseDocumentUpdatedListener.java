@@ -28,7 +28,7 @@ public class CaseDocumentUpdatedListener {
     static final String PUBLIC_CASE_DOCUMENT_ALREADY_ADDED_PUBLIC_EVENT = "public.structure.case-document-already-exists";
     private static final String PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT = "public.structure.case-document-added";
 
-    @Handles("structure.events.case-document-added")
+    @Handles("sjp.events.case-document-added")
     public void handleCaseDocumentAdded(final JsonEnvelope jsonEnvelope) {
         final String caseId = jsonEnvelope.payloadAsJsonObject().getString(EventProcessorConstants.CASE_ID);
         LOGGER.info("Received Case document added message for caseId {}", caseId);
@@ -37,7 +37,7 @@ public class CaseDocumentUpdatedListener {
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT).apply(publicEventPayload));
     }
 
-    @Handles("structure.events.case-document-already-exists")
+    @Handles("sjp.events.case-document-already-exists")
     public void handleDuplicateCaseDocumentAddedEvent(final JsonEnvelope jsonEnvelope) {
         final String caseId = jsonEnvelope.payloadAsJsonObject().getString(EventProcessorConstants.CASE_ID);
         JsonObject caseDocument = jsonEnvelope.payloadAsJsonObject().getJsonObject(EventProcessorConstants.CASE_DOCUMENT);

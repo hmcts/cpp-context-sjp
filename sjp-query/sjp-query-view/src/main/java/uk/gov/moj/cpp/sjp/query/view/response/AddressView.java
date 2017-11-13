@@ -6,7 +6,7 @@ public class AddressView {
     private String postCode;
 
     public AddressView() {
-    	super();
+        super();
     }
 
     public AddressView(final String address,

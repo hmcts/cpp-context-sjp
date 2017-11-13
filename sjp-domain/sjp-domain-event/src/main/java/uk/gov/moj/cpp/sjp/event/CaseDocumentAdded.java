@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.event;
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 
-@Event("structure.events.case-document-added")
+@Event("sjp.events.case-document-added")
 public class CaseDocumentAdded {
 
     private String caseId;

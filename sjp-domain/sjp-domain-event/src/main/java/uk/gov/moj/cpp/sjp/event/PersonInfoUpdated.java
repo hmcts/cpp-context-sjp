@@ -5,7 +5,7 @@ import uk.gov.moj.cpp.sjp.domain.PersonInfoDetails;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
-@Event("structure.events.person-info-updated")
+@Event("sjp.events.person-info-updated")
 public class PersonInfoUpdated {
 
     @JsonUnwrapped

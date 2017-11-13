@@ -12,7 +12,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.FinancialMeans;
 import uk.gov.moj.cpp.sjp.persistence.repository.FinancialMeansRepository;
 
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 
 @ServiceComponent(EVENT_LISTENER)
 public class FinancialMeansListener {
@@ -26,8 +25,7 @@ public class FinancialMeansListener {
     @Inject
     private FinancialMeansConverter financialMeansConverter;
 
-    @Transactional
-    @Handles("structure.events.financial-means-updated")
+    @Handles("sjp.events.financial-means-updated")
     public void updateFinancialMeans(final JsonEnvelope event) {
         final FinancialMeansUpdated financialMeansUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), FinancialMeansUpdated.class);
         final FinancialMeans financialMeans = financialMeansConverter.convertToFinancialMeansEntity(financialMeansUpdated);

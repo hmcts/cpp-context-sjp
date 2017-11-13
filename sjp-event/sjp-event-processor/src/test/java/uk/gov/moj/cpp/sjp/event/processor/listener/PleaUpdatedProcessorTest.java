@@ -19,7 +19,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.sjp.event.processor.listener.PleaUpdatedProcessor;
 
 import java.util.UUID;
 
@@ -93,12 +92,12 @@ public class PleaUpdatedProcessorTest {
     @Test
     public void shouldHandlePleaUpdatedEvent() {
         assertThat(PleaUpdatedProcessor.class, isHandlerClass(EVENT_PROCESSOR)
-                .with(method("updatePlea").thatHandles("structure.events.plea-updated")));
+                .with(method("updatePlea").thatHandles("sjp.events.plea-updated")));
     }
 
     @Test
     public void shouldHandlePleaCancelledEvent() {
         assertThat(PleaUpdatedProcessor.class, isHandlerClass(EVENT_PROCESSOR)
-                .with(method("cancelPlea").thatHandles("structure.events.plea-cancelled")));
+                .with(method("cancelPlea").thatHandles("sjp.events.plea-cancelled")));
     }
 }

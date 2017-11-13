@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
 
-@Event("structure.events.plea-update-failed")
+@Event("sjp.events.plea-update-failed")
 public class OffenceNotFound {
 
     private final String offenceId;

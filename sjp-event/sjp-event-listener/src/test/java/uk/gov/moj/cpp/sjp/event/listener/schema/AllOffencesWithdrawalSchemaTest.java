@@ -1,10 +1,10 @@
 package uk.gov.moj.cpp.sjp.event.listener.schema;
 
-import org.junit.Before;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
+
+import org.junit.Before;
+import org.junit.Test;
 
 public class AllOffencesWithdrawalSchemaTest {
 
@@ -12,11 +12,11 @@ public class AllOffencesWithdrawalSchemaTest {
 
     @Before
     public void setup() throws IOException {
-        schemaAssert = SchemaAssert.loadSchema("/json/schema/structure.events.all-offences-withdrawal-requested.json");
+        schemaAssert = SchemaAssert.loadSchema("/json/schema/sjp.events.all-offences-withdrawal-requested.json");
     }
 
     @Test
     public void shouldValidate() throws URISyntaxException, IOException {
-        schemaAssert.assertValid("/uk/gov/moj/cpp/structure/event/all-offences-withdrawal");
+        schemaAssert.assertValid("/uk/gov/moj/cpp/sjp/event/all-offences-withdrawal");
     }
 }

@@ -5,7 +5,7 @@ import uk.gov.justice.domain.annotation.Event;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Event("structure.events.plea-cancelled")
+@Event("sjp.events.plea-cancelled")
 public class PleaCancelled {
     private String caseId;
     private String offenceId;

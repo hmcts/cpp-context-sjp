@@ -68,7 +68,7 @@ public class AssociateEnterpriseIdHandlerTest {
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
-                                        .withName("structure.events.enterprise-id-associated"),
+                                        .withName("sjp.events.enterprise-id-associated"),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
                                         withJsonPath("$.enterpriseId", equalTo(enterpriseId))
@@ -83,7 +83,7 @@ public class AssociateEnterpriseIdHandlerTest {
                 .add(ENTERPRISE_ID_PROPERTY, enterpriseId);
 
         return JsonEnvelopeBuilder.envelopeFrom(
-                metadataOf(randomUUID(), "structure.command.associate-enterprise-id"),
+                metadataOf(randomUUID(), "sjp.command.associate-enterprise-id"),
                 payload.build());
     }
 

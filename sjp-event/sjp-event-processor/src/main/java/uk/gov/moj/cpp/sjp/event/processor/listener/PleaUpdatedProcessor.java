@@ -21,12 +21,12 @@ public class PleaUpdatedProcessor {
     @Inject
     private Enveloper enveloper;
 
-    @Handles("structure.events.plea-updated")
+    @Handles("sjp.events.plea-updated")
     public void updatePlea(final JsonEnvelope envelope) {
         publishPublicEvent(envelope, "public.structure.plea-updated");
     }
 
-    @Handles("structure.events.plea-cancelled")
+    @Handles("sjp.events.plea-cancelled")
     public void cancelPlea(final JsonEnvelope envelope) {
         publishPublicEvent(envelope, "public.structure.plea-cancelled");
     }

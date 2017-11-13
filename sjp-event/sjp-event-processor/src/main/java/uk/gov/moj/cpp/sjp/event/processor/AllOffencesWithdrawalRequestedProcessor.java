@@ -21,7 +21,7 @@ public class AllOffencesWithdrawalRequestedProcessor {
     @Inject
     private Enveloper enveloper;
 
-    @Handles("structure.events.all-offences-withdrawal-requested")
+    @Handles("sjp.events.all-offences-withdrawal-requested")
     public void publishAllOffencesWithdrawalEvent(final JsonEnvelope event) {
         final JsonEnvelope newEventEnvelope = enveloper.withMetadataFrom(event,
                 "public.structure.all-offences-withdrawal-requested")

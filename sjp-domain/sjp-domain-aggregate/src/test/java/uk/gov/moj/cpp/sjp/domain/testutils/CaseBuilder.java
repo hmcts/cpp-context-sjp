@@ -42,57 +42,42 @@ public class CaseBuilder {
     private String timeOfHearing;
     private String personId;
     private List<SjpOffence> offences;
-    private boolean sjpCase;
 
-    private CaseBuilder(boolean sjp) {
-        sjpCase = sjp;
+    private CaseBuilder() {
 
         id = DefaultTestData.CASE_ID;
         urn = URN;
-        if (sjpCase) {
-            ptiUrn = PTI_URN;
-            initiationCode = INITIATION_CODE;
-            summonsCode = SUMMONS_CODE;
-            prosecutingAuthority = ProsecutingAuthority.TFL;
-            libraOriginatingOrg = LIBRA_ORIGINATING_ORG;
-            libraHearingLocation = LIBRA_HEARING_LOCATION;
-            dateOfHearing = DATE_OF_HEARING;
-            timeOfHearing = TIME_OF_HEARING;
-            personId = PERSONID;
-            offences = OFFENCES;
-        } else {
-            prosecutingAuthority = ProsecutingAuthority.CPS;
-        }
+        ptiUrn = PTI_URN;
+        initiationCode = INITIATION_CODE;
+        summonsCode = SUMMONS_CODE;
+        prosecutingAuthority = ProsecutingAuthority.TFL;
+        libraOriginatingOrg = LIBRA_ORIGINATING_ORG;
+        libraHearingLocation = LIBRA_HEARING_LOCATION;
+        dateOfHearing = DATE_OF_HEARING;
+        timeOfHearing = TIME_OF_HEARING;
+        personId = PERSONID;
+        offences = OFFENCES;
     }
 
     public static CaseBuilder aDefaultSjpCase() {
-        return new CaseBuilder(true);
-    }
-
-    public static CaseBuilder aDefaultCase() {
-        return new CaseBuilder(false);
+        return new CaseBuilder();
     }
 
     public Case build() {
-        if (sjpCase) {
-            return new Case(id,
-                    urn,
-                    ptiUrn,
-                    prosecutingAuthority,
-                    initiationCode,
-                    summonsCode,
-                    libraOriginatingOrg,
-                    libraHearingLocation,
-                    dateOfHearing,
-                    timeOfHearing,
-                    personId,
-                    NUM_PREVIOUS_CONVICTIONS,
-                    COSTS,
-                    POSTING_DATE,
-                    offences);
-        }
         return new Case(id,
                 urn,
-                prosecutingAuthority);
+                ptiUrn,
+                prosecutingAuthority,
+                initiationCode,
+                summonsCode,
+                libraOriginatingOrg,
+                libraHearingLocation,
+                dateOfHearing,
+                timeOfHearing,
+                personId,
+                NUM_PREVIOUS_CONVICTIONS,
+                COSTS,
+                POSTING_DATE,
+                offences);
     }
 }

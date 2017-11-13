@@ -5,7 +5,7 @@ import uk.gov.justice.domain.annotation.Event;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-@Event("structure.events.court-referral-actioned")
+@Event("sjp.events.court-referral-actioned")
 public class CourtReferralActioned {
 
     private final UUID caseId;

@@ -11,7 +11,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Event("structure.events.defendant-details-updated")
+@Event("sjp.events.defendant-details-updated")
 public class DefendantDetailsUpdated implements Serializable {
 
     private final UUID caseId;

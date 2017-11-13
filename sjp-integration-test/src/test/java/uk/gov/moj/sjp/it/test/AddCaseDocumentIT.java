@@ -1,6 +1,6 @@
 package uk.gov.moj.sjp.it.test;
 
-import static uk.gov.moj.sjp.it.stub.LifecycleStub.stubAddCaseMaterial;
+import static uk.gov.moj.sjp.it.stub.MaterialStub.stubAddCaseMaterial;
 
 import uk.gov.moj.sjp.it.helper.AbstractTestHelper;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
@@ -93,8 +93,8 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
 
             try (CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(sjpHelper.getCaseId())) {
                 caseDocumentHelper.uploadPleaCaseDocument();
-                caseDocumentHelper.assertCaseMaterialAdded();
-                caseDocumentHelper.verifyCaseDocumentUploadedEventRaised();
+                final String documentReference = caseDocumentHelper.verifyCaseDocumentUploadedEventRaised();
+                caseDocumentHelper.assertCaseMaterialAdded(documentReference);
             }
         }
     }

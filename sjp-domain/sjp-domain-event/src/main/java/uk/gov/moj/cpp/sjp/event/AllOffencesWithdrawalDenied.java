@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 // Old event. Replaced by case-update-rejected
-@Event("structure.events.all-offences-withdrawal-denied")
+@Event("sjp.events.all-offences-withdrawal-denied")
 public class AllOffencesWithdrawalDenied {
 
     private final UUID caseId;

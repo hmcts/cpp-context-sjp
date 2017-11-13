@@ -26,7 +26,7 @@ public class CaseCreatedListener {
     @Inject
     private CaseRepository caseRepository;
 
-    @Handles("structure.events.sjp-case-created")
+    @Handles("sjp.events.sjp-case-created")
     @Transactional
     public void sjpCaseCreated(final JsonEnvelope envelope) {
         CaseDetail caseDetail = sjpConverter.convert(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), SjpCaseCreated.class));

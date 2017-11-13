@@ -7,7 +7,7 @@ import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
 /**
  * Event for updating reopened case.
  */
-@Event("structure.events.case-reopened-in-libra-updated")
+@Event("sjp.events.case-reopened-in-libra-updated")
 public class CaseReopenedUpdated {
 
     @JsonUnwrapped

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-@Event("structure.events.sjp-case-created")
+@Event("sjp.events.sjp-case-created")
 public class SjpCaseCreated {
 
     private String id;

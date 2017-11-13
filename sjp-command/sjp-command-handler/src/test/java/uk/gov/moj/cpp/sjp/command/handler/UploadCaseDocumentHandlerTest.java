@@ -89,7 +89,7 @@ public class UploadCaseDocumentHandlerTest {
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
-                                        .withName("structure.events.case-document-uploaded"),
+                                        .withName("sjp.events.case-document-uploaded"),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
                                         withJsonPath("$.documentReference", equalTo(caseDocumentReference.toString())),
@@ -106,7 +106,7 @@ public class UploadCaseDocumentHandlerTest {
                 .add(CASE_DOCUMENT_TYPE_PROPERTY, documentType);
 
         return JsonEnvelopeBuilder.envelopeFrom(
-                metadataOf(randomUUID(), "structure.command.upload-case-document"),
+                metadataOf(randomUUID(), "sjp.command.upload-case-document"),
                 payload.build());
     }
 

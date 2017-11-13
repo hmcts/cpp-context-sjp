@@ -5,7 +5,7 @@ import uk.gov.justice.domain.annotation.Event;
 import java.time.LocalDate;
 import java.util.UUID;
 
-@Event("structure.events.court-referral-created")
+@Event("sjp.events.court-referral-created")
 public class CourtReferralCreated {
 
     private final UUID caseId;

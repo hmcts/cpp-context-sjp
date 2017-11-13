@@ -81,7 +81,7 @@ public class AddDefendantHelper extends AbstractTestHelper {
     public AddDefendantHelper(final String caseId) {
         this.caseId = caseId;
         privateEventsConsumer = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_DEFENDANT_ADDED);
-        privateEventDefendantAdditionFailedConsumer.startConsumer(EVENT_SELECTOR_DEFENDANT_ADDITION_FAILED, STRUCTURE_EVENT_TOPIC);
+        privateEventDefendantAdditionFailedConsumer.startConsumer(EVENT_SELECTOR_DEFENDANT_ADDITION_FAILED, SJP_EVENT_TOPIC);
 
         publicConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_DEFENDANT_ADDED, PUBLIC_ACTIVE_MQ_TOPIC);
         publicEventDefendantAdditionFailedConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_DEFENDANT_ADDITION_FAILED, PUBLIC_ACTIVE_MQ_TOPIC);

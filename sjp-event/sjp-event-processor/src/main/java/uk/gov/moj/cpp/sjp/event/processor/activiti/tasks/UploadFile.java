@@ -3,13 +3,12 @@ package uk.gov.moj.cpp.sjp.event.processor.activiti.tasks;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataFrom;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper.metadataFromString;
 
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.sjp.event.processor.utils.ProcessIdHelper;
+import uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper;
 
 import java.util.UUID;
 
@@ -32,15 +31,18 @@ public class UploadFile implements JavaDelegate {
     @FrameworkComponent(EVENT_PROCESSOR)
     private Sender sender;
 
+    @Inject
+    private MetadataHelper metadataHelper;
+
     @Override
-    public void execute(final DelegateExecution execution) throws Exception {
+    public void execute(final DelegateExecution execution) {
 
         LOGGER.info("Task '{}' started for process {}", execution.getCurrentActivityName(), execution.getId());
 
         final String documentReference = execution.getVariable("documentReference", String.class);
         final String metadataAsString = execution.getVariable("metadata", String.class);
 
-        final Metadata originalMetadata = metadataFromString(metadataAsString);
+        final Metadata originalMetadata = metadataHelper.metadataFromString(metadataAsString);
 
         final JsonObject fileUploadedEventPayload = Json.createObjectBuilder()
                 .add("documentId", documentReference)
@@ -51,16 +53,19 @@ public class UploadFile implements JavaDelegate {
                 .add("fileServiceId", documentReference)
                 .build();
 
-        final JsonEnvelope uploadFileCommand = envelopeFrom(
-                metadataFrom(originalMetadata).withName("material.command.upload-file")
-                        .withClientCorrelationId(ProcessIdHelper.encodeProcessId(execution)),
-                uploadFileCommandPayload);
+        final JsonEnvelope uploadFileCommand = metadataHelper.envelopeWithSjpProcessId(
+                metadataFrom(originalMetadata).withName("material.command.upload-file").build(),
+                uploadFileCommandPayload,
+                execution.getId());
 
         final JsonEnvelope fileUploadedEvent = envelopeFrom(
                 metadataFrom(originalMetadata).withName("public.structure.case-document-uploaded"),
                 fileUploadedEventPayload);
 
         sender.send(uploadFileCommand);
+        // might be not ideal to sends command + event in one place, but not big problem at the moment
+        // the public event is used by the UI to poll until the document is uploaded
+        // not sure why polling is used for this documentId and not correlationId?
         sender.send(fileUploadedEvent);
     }
 

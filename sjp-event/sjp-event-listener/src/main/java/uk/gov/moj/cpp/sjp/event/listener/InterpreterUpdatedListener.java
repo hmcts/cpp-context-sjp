@@ -25,7 +25,7 @@ public class InterpreterUpdatedListener {
     @Inject
     private CaseRepository caseRepository;
 
-    @Handles("structure.events.interpreter-for-defendant-updated")
+    @Handles("sjp.events.interpreter-for-defendant-updated")
     @Transactional
     public void interpreterUpdated(final JsonEnvelope envelope) {
         final InterpreterUpdatedForDefendant event = jsonObjectToObjectConverter.convert(
@@ -42,7 +42,7 @@ public class InterpreterUpdatedListener {
         }
     }
 
-    @Handles("structure.events.interpreter-for-defendant-cancelled")
+    @Handles("sjp.events.interpreter-for-defendant-cancelled")
     @Transactional
     public void interpreterCancelled(final JsonEnvelope envelope) {
         final InterpreterCancelledForDefendant event = jsonObjectToObjectConverter.convert(

@@ -133,33 +133,4 @@ public class DefendantAggregate implements Aggregate {
                 })
         );
     }
-
-    // below accessors for making sonar happy...
-    public String getTitle() {
-        return title;
-    }
-
-    public LocalDate getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public Address getAddress() {
-        return address;
-    }
-
-    public DefendantAggregate setTitle(final String title) {
-        this.title = title;
-        return this;
-    }
-
-    public DefendantAggregate setDateOfBirth(final LocalDate dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-        return this;
-    }
-
-    public DefendantAggregate setAddress(final Address address) {
-        this.address = address;
-        return this;
-    }
-
 }

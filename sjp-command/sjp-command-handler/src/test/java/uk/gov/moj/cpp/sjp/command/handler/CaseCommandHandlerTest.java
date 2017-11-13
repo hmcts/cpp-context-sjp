@@ -96,8 +96,6 @@ public class CaseCommandHandlerTest {
     @SuppressWarnings("unchecked")
     public void verifyMocks() throws EventStreamException {
         verify(jsonEnvelope, atLeast(1)).payloadAsJsonObject();
-        verify(jsonEnvelope, atLeast(1)).metadata();
-        verify(metadata, atLeast(1)).name();
         verify(jsonObject, atLeast(1)).getString(CaseCommandHandler.CASE_ID);
         verify(eventSource).getStreamById(CASE_ID);
         verify(aggregateService).get(eventStream, CaseAggregate.class);

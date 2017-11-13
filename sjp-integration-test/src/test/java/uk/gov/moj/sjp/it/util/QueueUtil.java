@@ -1,10 +1,9 @@
 package uk.gov.moj.sjp.it.util;
 
-import com.jayway.restassured.path.json.JsonPath;
-import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
-import org.apache.activemq.artemis.jms.client.ActiveMQTopic;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static uk.gov.moj.sjp.it.util.OptionalPresent.ifPresent;
+
+import java.io.StringReader;
+import java.util.Optional;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -14,10 +13,12 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.json.Json;
 import javax.json.JsonObject;
-import java.io.StringReader;
-import java.util.Optional;
 
-import static uk.gov.moj.sjp.it.util.OptionalPresent.ifPresent;
+import com.jayway.restassured.path.json.JsonPath;
+import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
+import org.apache.activemq.artemis.jms.client.ActiveMQTopic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class QueueUtil {
 
@@ -35,7 +36,7 @@ public class QueueUtil {
 
     private Topic topic;
 
-    public static final QueueUtil privateEvents = new QueueUtil("structure.event");
+    public static final QueueUtil privateEvents = new QueueUtil("sjp.event");
 
     public static final QueueUtil publicEvents = new QueueUtil("public.event");
 

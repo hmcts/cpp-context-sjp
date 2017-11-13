@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
 
-@Event("structure.events.case-not-found")
+@Event("sjp.events.case-not-found")
 public class CaseNotFound {
 
     private final String caseId;

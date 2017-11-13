@@ -3,12 +3,12 @@ package uk.gov.moj.cpp.sjp.event.processor.activiti.tasks;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.DefaultJsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataFrom;
-import static uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper.metadataFromString;
 
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -29,8 +29,11 @@ public class AddMaterialToCase implements JavaDelegate {
     @FrameworkComponent(EVENT_PROCESSOR)
     private Sender sender;
 
+    @Inject
+    private MetadataHelper metadataHelper;
+
     @Override
-    public void execute(final DelegateExecution execution) throws Exception {
+    public void execute(final DelegateExecution execution) {
 
         LOGGER.info("Task '{}' started for process {}", execution.getCurrentActivityName(), execution.getId());
 
@@ -40,7 +43,7 @@ public class AddMaterialToCase implements JavaDelegate {
         final String documentType = execution.getVariable("documentType", String.class);
         final String materialId = execution.getVariable("materialId", String.class);
 
-        final Metadata metadata = metadataFromString(metadataAsString);
+        final Metadata metadata = metadataHelper.metadataFromString(metadataAsString);
 
         final JsonObject payload = Json.createObjectBuilder()
                 .add("id", documentReference)

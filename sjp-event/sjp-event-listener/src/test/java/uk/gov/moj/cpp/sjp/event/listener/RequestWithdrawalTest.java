@@ -116,12 +116,12 @@ public class RequestWithdrawalTest {
         method = caseUpdatedListenerClass.getDeclaredMethod("allOffencesWithdrawalRequestCancelled", JsonEnvelope.class);
         handles = method.getAnnotation(Handles.class);
 
-        assertThat("structure.events.all-offences-withdrawal-request-cancelled", equalTo(handles.value()));
+        assertThat("sjp.events.all-offences-withdrawal-request-cancelled", equalTo(handles.value()));
 
         method = caseUpdatedListenerClass.getDeclaredMethod("allOffencesWithdrawalRequested", JsonEnvelope.class);
         handles = method.getAnnotation(Handles.class);
 
-        assertThat("structure.events.all-offences-withdrawal-requested", equalTo(handles.value()));
+        assertThat("sjp.events.all-offences-withdrawal-requested", equalTo(handles.value()));
     }
 
 }

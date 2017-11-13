@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp;
 
 import uk.gov.justice.domain.annotation.Event;
 
-@Event("structure.events.court-referral-not-found")
+@Event("sjp.events.court-referral-not-found")
 public class CourtReferralNotFound {
 
     private final String caseId;

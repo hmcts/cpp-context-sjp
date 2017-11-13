@@ -18,7 +18,7 @@ public class CourtReferralProcessor {
     @Inject
     private Enveloper enveloper;
 
-    @Handles("structure.events.court-referral-actioned")
+    @Handles("sjp.events.court-referral-actioned")
     public void actionCourtReferral(final JsonEnvelope envelope) {
         sender.send(enveloper.withMetadataFrom(envelope, "public.structure.court-referral-actioned")
                 .apply(envelope.payloadAsJsonObject()));

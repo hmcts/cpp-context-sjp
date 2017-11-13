@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
 
-@Event("structure.events.case-document-addition-failed")
+@Event("sjp.events.case-document-addition-failed")
 public class CaseDocumentAlreadyExists {
 
     private final String documentId;

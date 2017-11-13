@@ -21,7 +21,7 @@ public class UserAndGroupsService {
     @Inject
     private Enveloper enveloper;
 
-    final private String PROSECUTOR_GROUP = "TFL Users";
+    private static final String PROSECUTOR_GROUP = "TFL Users";
 
     public boolean isSjpProsecutor(JsonEnvelope originalEnvelope) {
 

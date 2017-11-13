@@ -25,8 +25,7 @@ public enum EmploymentStatus {
         return null;
     }
     @JsonValue
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 }

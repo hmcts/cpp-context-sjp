@@ -36,7 +36,6 @@ public class CaseCommandHandler {
     protected void applyToCaseAggregate(final JsonEnvelope command, final Function<CaseAggregate, Stream<Object>> function) throws EventStreamException {
         final EventStream eventStream = eventSource.getStreamById(getCaseId(command.payloadAsJsonObject()));
         final CaseAggregate aCase = aggregateService.get(eventStream, CaseAggregate.class);
-        final String actionName = command.metadata().name();
 
         final Stream<Object> events = function.apply(aCase);
         eventStream.append(events.map(enveloper.withMetadataFrom(command)));

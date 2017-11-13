@@ -5,6 +5,7 @@ import java.util.List;
 
 public final class RuleConstants {
 
+    private static final String GROUP_SYSTEM_USERS = "System Users";
     private static final String GROUP_LEGAL_ADVISERS = "Legal Advisers";
     private static final String GROUP_COURT_ADMINISTRATORS = "Court Administrators";
 
@@ -13,7 +14,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getUploadCaseDocumentActionGroups() {
-        return Arrays.asList(GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
+        return Arrays.asList(GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_SYSTEM_USERS);
     }
 }
 

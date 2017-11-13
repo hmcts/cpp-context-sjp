@@ -4,7 +4,7 @@ import uk.gov.justice.domain.annotation.Event;
 
 import java.util.UUID;
 
-@Event("structure.events.case-creation-failed-because-case-already-existed")
+@Event("sjp.events.case-creation-failed-because-case-already-existed")
 public class CaseCreationFailedBecauseCaseAlreadyExisted {
 
     private UUID caseId;

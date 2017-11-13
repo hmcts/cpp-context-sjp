@@ -1,0 +1,103 @@
+#%RAML 0.8
+title: API Using media type in the URL
+baseUri: message://event/listener/message/sjp
+
+version: v1
+/sjp.event:
+  post:
+    body:
+      application/vnd.sjp.events.defendant-added+json:
+          schema: !include json/schema/sjp.events.defendant-added.json
+          example: !include json/sjp.events.defendant-added.json
+
+      application/vnd.sjp.events.storage-reference-set+json:
+        schema: !include json/schema/sjp.events.storage-reference-set.json
+        example: !include json/sjp.events.storage-reference-set.json
+
+      application/vnd.sjp.events.case-document-added+json:
+        schema: !include json/schema/sjp.events.case-document-added.json
+        example: !include json/sjp.events.case-document-added.json
+
+      application/vnd.sjp.events.case-created+json:
+        schema: !include json/schema/sjp.events.case-created.json
+        example: !include json/sjp.events.case-created.json
+
+      application/vnd.sjp.events.sjp-case-created+json:
+        example: !include json/sjp.events.sjp-case-created.json
+        schema: !include json/schema/sjp.events.sjp-case-created.json
+
+      application/vnd.sjp.events.plea-updated+json:
+        schema: !include json/schema/sjp.events.plea-updated.json
+        example: !include json/sjp.events.plea-updated.json
+
+      application/vnd.sjp.events.plea-cancelled+json:
+        schema: !include json/schema/sjp.events.plea-cancelled.json
+        example: !include json/sjp.events.plea-cancelled.json
+
+      application/vnd.sjp.events.case-completed+json:
+        schema: !include json/schema/sjp.events.case-completed.json
+        example: !include json/sjp.events.case-completed.json
+
+      application/vnd.sjp.events.person-type-updated+json:
+        schema: !include json/schema/sjp.events.person-type-updated.json
+        example: !include json/sjp.events.person-type-updated.json
+
+      application/vnd.sjp.events.court-referral-created+json:
+        schema: !include json/schema/sjp.events.court-referral-created.json
+        example: !include json/sjp.events.court-referral-created.json
+
+      application/vnd.sjp.events.court-referral-actioned+json:
+        schema: !include json/schema/sjp.events.court-referral-actioned.json
+        example: !include json/sjp.events.court-referral-actioned.json
+
+      application/vnd.sjp.events.financial-means-updated+json:
+        schema: !include json/schema/sjp.events.financial-means-updated.json
+        example: !include json/sjp.events.financial-means-updated.json
+
+      application/vnd.sjp.events.employer-updated+json:
+        schema: !include json/schema/sjp.events.employer-updated.json
+        example: !include json/sjp.events.employer-updated.json
+
+      application/vnd.sjp.events.interpreter-for-defendant-updated+json:
+        schema: !include json/schema/sjp.events.interpreter-for-defendant-updated.json
+        example: !include json/sjp.events.interpreter-for-defendant-updated.json
+
+      application/vnd.sjp.events.interpreter-for-defendant-cancelled+json:
+        schema: !include json/schema/sjp.events.interpreter-for-defendant-cancelled.json
+        example: !include json/sjp.events.interpreter-for-defendant-cancelled.json
+
+      application/vnd.sjp.events.all-offences-withdrawal-requested+json:
+        schema: !include json/schema/sjp.events.all-offences-withdrawal-requested.json
+        example: !include json/sjp.events.all-offences-withdrawal-requested.json
+
+      application/vnd.sjp.events.all-offences-withdrawal-request-cancelled+json:
+        schema: !include json/schema/sjp.events.all-offences-withdrawal-request-cancelled.json
+        example: !include json/sjp.events.all-offences-withdrawal-request-cancelled.json
+
+      application/vnd.sjp.events.case-reopened-in-libra+json:
+        schema: !include json/schema/sjp.events.case-reopened-in-libra.json
+        example: !include json/sjp.events.case-reopened-in-libra.json
+
+      application/vnd.sjp.events.case-reopened-in-libra-updated+json:
+        schema: !include json/schema/sjp.events.case-reopened-in-libra-updated.json
+        example: !include json/sjp.events.case-reopened-in-libra.json
+
+      application/vnd.sjp.events.case-reopened-in-libra-undone+json:
+        schema: !include json/schema/sjp.events.case-reopened-in-libra-undone.json
+        example: !include json/sjp.events.case-reopened-in-libra-undone.json
+
+      application/vnd.sjp.events.enterprise-id-associated+json:
+        schema: !include json/schema/sjp.events.enterprise-id-associated.json
+        example: !include json/sjp.events.enterprise-id-associated.json
+
+      application/vnd.sjp.events.person-info-added+json:
+        schema: !include json/schema/sjp.events.person-info-added.json
+        example: !include json/sjp.events.person-info-added.json
+
+      application/vnd.sjp.events.person-info-updated+json:
+        schema: !include json/schema/sjp.events.person-info-updated.json
+        example: !include json/sjp.events.person-info-updated.json
+
+      application/vnd.sjp.events.offences-for-defendant-updated+json:
+        schema: !include json/schema/sjp.events.offences-for-defendant-updated.json
+        example: !include json/sjp.events.offences-for-defendant-updated.json

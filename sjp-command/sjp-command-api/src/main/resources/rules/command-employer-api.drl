@@ -16,3 +16,12 @@ rule "Command - Rule for update employer"
     $outcome.setSuccess(true);
 end
 
+rule "Command - Rule for delete employer"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.delete-employer");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getDeleteEmployerGroups()));
+  then
+    $outcome.setSuccess(true);
+end
+

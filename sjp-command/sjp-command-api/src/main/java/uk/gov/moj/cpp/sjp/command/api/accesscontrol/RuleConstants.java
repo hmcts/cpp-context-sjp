@@ -38,6 +38,10 @@ public final class RuleConstants {
         return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
+    public static List<String> getDeleteEmployerGroups() {
+        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+    }
+
     public static List<String> getCancelPleaActionGroups() {
         return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }

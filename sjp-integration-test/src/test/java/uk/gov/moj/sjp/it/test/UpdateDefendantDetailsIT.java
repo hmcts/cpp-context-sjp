@@ -53,7 +53,7 @@ public class UpdateDefendantDetailsIT extends BaseIntegrationTest {
     @Test
     public void updateDefendantDetails() throws IOException {
 
-        JsonObject payloadTemplate = FileUtil.givenPayload("/payload/structure.command.update-defendant-details.json");
+        JsonObject payloadTemplate = FileUtil.givenPayload("/payload/sjp.update-defendant-details.json");
 
         JsonObject payload = JsonObjects
                 .createObjectBuilderWithFilter(payloadTemplate, propertyName -> !propertyName.equals("personId"))

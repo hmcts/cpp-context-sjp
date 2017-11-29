@@ -133,7 +133,7 @@ public class CaseDocumentUploadedProcessorTest {
                 .add("documentReference", documentReference.toString())
                 .add("documentType", documentType).build();
 
-        return createEnvelope("structure.events.case-document-uploaded",
+        return createEnvelope("sjp.events.case-document-uploaded",
                 payload);
     }
 

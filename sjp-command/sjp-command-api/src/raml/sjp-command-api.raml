@@ -88,11 +88,14 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       type: string
   post:
     description: |
-      Update employer
+      Update or delete employer
       ...
       (mapping):
           requestType: application/vnd.sjp.update-employer+json
           name: sjp.update-employer
+      (mapping):
+          requestType: application/vnd.sjp.delete-employer+json
+          name: sjp.delete-employer
       ...
     body:
       application/vnd.sjp.update-employer+json:
@@ -100,6 +103,7 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
           !include json/sjp.update-employer.json
         schema:
           !include json/schema/sjp.update-employer.json
+      application/vnd.sjp.delete-employer+json: !!null
     responses:
       500:
         description: Internal Server Error

@@ -4,12 +4,9 @@ import static java.time.ZoneOffset.UTC;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
+import static uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus.EMPLOYED;
 
 import uk.gov.justice.domain.aggregate.Aggregate;
-import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
-import uk.gov.moj.cpp.sjp.domain.command.CancelPlea;
-import uk.gov.moj.cpp.sjp.domain.command.ChangePlea;
-import uk.gov.moj.cpp.sjp.domain.command.CompleteCase;
 import uk.gov.moj.cpp.sjp.CourtReferralNotFound;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
@@ -19,6 +16,10 @@ import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.SjpOffence;
+import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
+import uk.gov.moj.cpp.sjp.domain.command.CancelPlea;
+import uk.gov.moj.cpp.sjp.domain.command.ChangePlea;
+import uk.gov.moj.cpp.sjp.domain.command.CompleteCase;
 import uk.gov.moj.cpp.sjp.domain.command.UpdatePlea;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
@@ -42,8 +43,11 @@ import uk.gov.moj.cpp.sjp.event.CaseStarted;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.CourtReferralActioned;
 import uk.gov.moj.cpp.sjp.event.CourtReferralCreated;
+import uk.gov.moj.cpp.sjp.event.DefendantNotEmployed;
 import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
+import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
+import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
 import uk.gov.moj.cpp.sjp.event.EnterpriseIdAssociated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
@@ -72,7 +76,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 1L;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseAggregate.class);
 
@@ -93,6 +97,8 @@ public class CaseAggregate implements Aggregate {
     private DocumentCountByDocumentType documentCountByDocumentType = new DocumentCountByDocumentType();
 
     private ProsecutingAuthority prosecutingAuthority;
+
+    private final Map<UUID, String> employmentStatusByDefendantId = new HashMap<>();
 
 
     public Stream<Object> createCase(final Case aCase, final ZonedDateTime now) {
@@ -137,16 +143,39 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> updateEmployer(final Employer employer) {
         final UUID defendantId = employer.getDefendantId();
-        final Object event;
+        final Stream.Builder streamBuilder = Stream.builder();
 
         if (hasDefendant(defendantId)) {
-            event = new EmployerUpdated(employer);
+            streamBuilder.add(new EmployerUpdated(employer));
+
+            final String actualEmploymentStatus = employmentStatusByDefendantId.get(defendantId);
+
+            if (!EMPLOYED.name().equals(actualEmploymentStatus)) {
+                streamBuilder.add(new EmploymentStatusUpdated(defendantId, EMPLOYED.name()));
+            }
         } else {
-            event = new DefendantNotFound(defendantId.toString(), "Update employer");
+            streamBuilder.add(new DefendantNotFound(defendantId.toString(), "Update employer"));
         }
 
-        return apply(Stream.of(event));
+        return apply(streamBuilder.build());
     }
+
+    public Stream<Object> deleteEmployer(final UUID defendantId) {
+        final Stream.Builder streamBuilder = Stream.builder();
+
+        if (hasDefendant(defendantId)) {
+            if (employmentStatusByDefendantId.containsKey(defendantId)) {
+                streamBuilder.add(new EmployerDeleted(defendantId));
+            } else {
+                streamBuilder.add(new DefendantNotEmployed(defendantId));
+            }
+        } else {
+            streamBuilder.add(new DefendantNotFound(defendantId.toString(), "Update employer"));
+        }
+
+        return apply(streamBuilder.build());
+    }
+
 
 
     public int getNumberOfDocumentOfGivenType(final String documentType) {
@@ -476,7 +505,16 @@ public class CaseAggregate implements Aggregate {
                 when(EnterpriseIdAssociated.class).apply(e -> {
                     //nothing to update
                 }),
-                when(FinancialMeansUpdated.class).apply(e -> {
+                when(FinancialMeansUpdated.class).apply(e ->
+                        employmentStatusByDefendantId.put(e.getDefendantId(), e.getEmploymentStatus())
+                ),
+                when(EmploymentStatusUpdated.class).apply(e ->
+                        employmentStatusByDefendantId.put(e.getDefendantId(), e.getEmploymentStatus())
+                ),
+                when(EmployerDeleted.class).apply(e ->
+                        employmentStatusByDefendantId.remove(e.getDefendantId())
+                ),
+                when(DefendantNotEmployed.class).apply(e -> {
                     //nothing to update
                 }),
                 when(EmployerUpdated.class).apply(e -> {

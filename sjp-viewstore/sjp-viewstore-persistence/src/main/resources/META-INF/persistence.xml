@@ -11,7 +11,7 @@
         <class>uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail</class>
         <class>uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument</class>
         <class>uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail</class>
-        <class>uk.gov.moj.cpp.structure.persistence.entity.Person</class>
+        <class>uk.gov.moj.cpp.sjp.persistence.entity.Person</class>
         <properties>
            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL94Dialect"/>
         </properties>

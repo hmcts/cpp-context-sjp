@@ -15,7 +15,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
-import uk.gov.moj.cpp.sjp.event.processor.CaseUpdateRejectedProcessor;
 
 import java.util.UUID;
 
@@ -47,7 +46,7 @@ public class CaseUpdateRejectedProcessorTest {
     @Test
     public void caseUpdateRejectedPublicEvent() throws Exception {
 
-        final JsonEnvelope privateEvent = createEnvelope("structure.events.case-update-rejected",
+        final JsonEnvelope privateEvent = createEnvelope("sjp.events.case-update-rejected",
                 Json.createObjectBuilder()
                         .add("caseId", CASE_ID)
                         .add("reason", CaseUpdateRejected.RejectReason.CASE_COMPLETED.name())

@@ -13,7 +13,7 @@ import java.util.Optional;
 import javax.inject.Inject;
 
 @ServiceComponent(COMMAND_CONTROLLER)
-public class UpdateEmployerController {
+public class EmployerController {
 
     @Inject
     private Sender sender;
@@ -26,4 +26,11 @@ public class UpdateEmployerController {
         final Optional<JsonEnvelope> rejectCommandEnvelope = caseUpdateHelper.checkForCaseUpdateRejectReasons(envelope);
         sender.send(rejectCommandEnvelope.orElse(envelope));
     }
+
+    @Handles("sjp.command.delete-employer")
+    public void deleteEmployer(final JsonEnvelope envelope) {
+        final Optional<JsonEnvelope> rejectCommandEnvelope = caseUpdateHelper.checkForCaseUpdateRejectReasons(envelope);
+        sender.send(rejectCommandEnvelope.orElse(envelope));
+    }
+
 }

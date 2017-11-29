@@ -4,7 +4,7 @@ resource_descriptor:
   version: '${project.version}'
 
   resources:
-    - name: java:/app/structure-service/DS.eventstore
+    - name: java:/app/sjp-service/DS.eventstore
       type: xa-datasource
       setup:
         - type: liquibase
@@ -20,7 +20,7 @@ resource_descriptor:
             type: jar
             version: '${cpp.framework.version}'
 
-    - name: java:/DS.structure
+    - name: java:/DS.sjp
       type: xa-datasource
       setup:
         - type: liquibase
@@ -32,32 +32,32 @@ resource_descriptor:
         - type: liquibase
           maven:
             groupId: uk.gov.moj.cpp.assignment
-            artifactId: structure-viewstore-liquibase
+            artifactId: sjp-viewstore-liquibase
             type: jar
             version: '${project.version}'
 
-    - name: structure.controller.command
+    - name: sjp.controller.command
       type: queue
-    - name: structure.handler.command
+    - name: sjp.handler.command
       type: queue
-    - name: structure.event
+    - name: sjp.event
       type: topic
     - name: public.event
       type: topic
 
 
     # Artefact provides these services
-    - name:   'structure-service'
-      id:     'structure_service'
-      target: '/structure-service'
+    - name:   'sjp-service'
+      id:     'sjp_service'
+      target: '/sjp-service'
       map:
-        - '/structure-command-api'
-        - '/structure-command-controller'
-        - '/structure-command-handler'
-        - '/structure-event-listener'
-        - '/structure-event-processor'
-        - '/structure-query-api'
-        - '/structure-query-controller'
-        - '/structure-query-view'
-      matcher: '/structure-[^/]+'
+        - '/sjp-command-api'
+        - '/sjp-command-controller'
+        - '/sjp-command-handler'
+        - '/sjp-event-listener'
+        - '/sjp-event-processor'
+        - '/sjp-query-api'
+        - '/sjp-query-controller'
+        - '/sjp-query-view'
+      matcher: '/sjp-[^/]+'
 

@@ -28,7 +28,7 @@ import com.jayway.restassured.path.json.JsonPath;
  */
 public class CompleteCaseHelper extends AbstractTestHelper {
 
-    private static final String WRITE_MEDIA_TYPE = "application/vnd.structure.command.complete-case+json";
+    private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.command.complete-case+json";
 
     private static final String CASE_ID_PROPERTY = "caseId";
 

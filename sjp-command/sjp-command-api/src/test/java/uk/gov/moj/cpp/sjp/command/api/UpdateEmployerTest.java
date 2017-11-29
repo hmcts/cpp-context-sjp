@@ -3,10 +3,7 @@ package uk.gov.moj.cpp.sjp.command.api;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
-import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
-import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
-import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 
@@ -14,7 +11,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.sjp.command.api.UpdateEmployerApi;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,9 +24,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateEmployerTest {
 
-    private static final String COMMAND_NAME = "sjp.update-employer";
-    private static final String NEW_COMMAND_NAME = "sjp.command.update-employer";
-
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
@@ -38,27 +31,34 @@ public class UpdateEmployerTest {
     private Sender sender;
 
     @InjectMocks
-    private UpdateEmployerApi updateEmployerApi;
+    private EmployerApi employerApi;
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
 
     @Test
-    public void shouldHandleCommand() {
-        assertThat(UpdateEmployerApi.class, isHandlerClass(COMMAND_API)
-                .with(method("updateEmployer").thatHandles(COMMAND_NAME)));
-    }
+    public void shouldRenameUpdateCommand() {
+        final JsonEnvelope command = envelope().with(metadataWithRandomUUID("sjp.update-employer")).build();
 
-    @Test
-    public void shouldRenameCommand() {
-        final JsonEnvelope command = envelope().with(metadataWithRandomUUID(COMMAND_NAME)).build();
-
-        updateEmployerApi.updateEmployer(command);
+        employerApi.updateEmployer(command);
 
         verify(sender).send(envelopeCaptor.capture());
 
         final JsonEnvelope newCommand = envelopeCaptor.getValue();
-        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName(NEW_COMMAND_NAME));
+        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName("sjp.command.update-employer"));
+        assertThat(newCommand.payloadAsJsonObject(), equalTo(command.payloadAsJsonObject()));
+    }
+
+    @Test
+    public void shouldRenameDeleteCommand() {
+        final JsonEnvelope command = envelope().with(metadataWithRandomUUID("sjp.delete-employer")).build();
+
+        employerApi.deleteEmployer(command);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        final JsonEnvelope newCommand = envelopeCaptor.getValue();
+        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName("sjp.command.delete-employer"));
         assertThat(newCommand.payloadAsJsonObject(), equalTo(command.payloadAsJsonObject()));
     }
 

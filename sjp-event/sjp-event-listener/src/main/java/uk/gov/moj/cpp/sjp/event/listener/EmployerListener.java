@@ -10,6 +10,9 @@ import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.persistence.entity.Employer;
 import uk.gov.moj.cpp.sjp.persistence.repository.EmployerRepository;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -40,4 +43,12 @@ public class EmployerListener {
 
         employerRepository.save(employer);
     }
+
+    @Transactional
+    @Handles("sjp.events.employer-deleted")
+    public void deleteEmployer(final JsonEnvelope event) {
+        final UUID defendantId = UUID.fromString(event.payloadAsJsonObject().getString("defendantId"));
+        Optional.ofNullable(employerRepository.findBy(defendantId)).ifPresent(employerRepository::remove);
+    }
+
 }

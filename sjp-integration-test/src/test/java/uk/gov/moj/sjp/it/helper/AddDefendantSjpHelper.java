@@ -1,15 +1,5 @@
 package uk.gov.moj.sjp.it.helper;
 
-import com.jayway.jsonpath.Filter;
-import com.jayway.restassured.path.json.JsonPath;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.test.utils.core.http.ResponseData;
-import uk.gov.moj.sjp.it.util.QueueUtil;
-
-import java.util.UUID;
-
 import static com.jayway.jsonassert.JsonAssert.with;
 import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.Filter.filter;
@@ -32,13 +22,24 @@ import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
+import uk.gov.justice.services.test.utils.core.http.ResponseData;
+import uk.gov.moj.sjp.it.util.QueueUtil;
+
+import java.util.UUID;
+
+import com.jayway.jsonpath.Filter;
+import com.jayway.restassured.path.json.JsonPath;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class AddDefendantSjpHelper extends AbstractTestHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AddDefendantHelper.class);
 
-    private static final String WRITE_MEDIA_TYPE = "application/vnd.structure.command.add-defendant+json";
+    private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.command.add-defendant+json";
 
-    private static final String TEMPLATE_ADD_DEFENDANT_PAYLOAD = "raml/json/structure.command.add-defendant.json";
+    private static final String TEMPLATE_ADD_DEFENDANT_PAYLOAD = "raml/json/sjp.command.add-defendant.json";
 
     private final String caseId;
     private String request;

@@ -40,6 +40,11 @@ public class FinancialMeans {
         //required for hibernate
     }
 
+    public FinancialMeans(final UUID defendantId, final String employmentStatus) {
+        this.defendantId = defendantId;
+        this.employmentStatus = employmentStatus;
+    }
+
     public FinancialMeans(final UUID defendantId,
                           final IncomeFrequency incomeFrequency,
                           final BigDecimal incomeAmount,

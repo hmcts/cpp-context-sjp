@@ -15,14 +15,13 @@ import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_INTERPRETER_UPDATED
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getDefendantsByCaseId;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
-import org.hamcrest.Matcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import uk.gov.moj.sjp.it.util.QueueUtil;
 
 import com.jayway.jsonpath.ReadContext;
 import com.jayway.restassured.path.json.JsonPath;
-
-import uk.gov.moj.sjp.it.util.QueueUtil;
+import org.hamcrest.Matcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -35,10 +34,10 @@ public class UpdateInterpreterForDefendantHelper extends AbstractTestHelper {
                     LoggerFactory.getLogger(UpdateInterpreterForDefendantHelper.class);
 
     public static final String GET_CASE_DEFENDANTS_MEDIA_TYPE =
-                    "application/vnd.structure.query.case-defendants+json";
+                    "application/vnd.sjp.query.case-defendants+json";
 
     private static final String WRITE_MEDIA_TYPE =
-                    "application/vnd.structure.command.update-interpreter-for-defendant+json";
+                    "application/vnd.sjp.command.update-interpreter-for-defendant+json";
 
     private CaseHelper caseHelper;
     private String request;

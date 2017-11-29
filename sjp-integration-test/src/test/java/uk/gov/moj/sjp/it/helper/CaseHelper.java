@@ -1,21 +1,22 @@
 package uk.gov.moj.sjp.it.helper;
 
-import com.jayway.restassured.path.json.JsonPath;
-import org.json.JSONObject;
-import uk.gov.moj.sjp.it.EventSelector;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_CASE_CREATED;
+
+import uk.gov.moj.sjp.it.EventSelector;
+
+import com.jayway.restassured.path.json.JsonPath;
+import org.json.JSONObject;
 
 /**
  * Helper to class to support Write / Read operations for assignment
  */
 public class CaseHelper extends AbstractCaseHelper {
 
-    private static final String WRITE_MEDIA_TYPE = "application/vnd.structure.command.create-case+json";
+    private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.command.create-case+json";
 
-    private static final String TEMPLATE_CASE_CREATE_PAYLOAD = "raml/json/structure.command.create-case.json";
+    private static final String TEMPLATE_CASE_CREATE_PAYLOAD = "raml/json/sjp.command.create-case.json";
 
     public CaseHelper() {
         super();

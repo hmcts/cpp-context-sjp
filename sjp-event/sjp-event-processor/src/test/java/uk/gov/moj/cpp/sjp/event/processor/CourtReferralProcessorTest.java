@@ -15,7 +15,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.event.processor.CourtReferralProcessor;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -52,7 +51,7 @@ public class CourtReferralProcessorTest {
     public void shouldPublishPublicEvent() throws Exception {
 
         final ZonedDateTime actioned = ZonedDateTime.now(UTC);
-        final JsonEnvelope privateEvent = createEnvelope("structure.events.court-referral-actioned",
+        final JsonEnvelope privateEvent = createEnvelope("sjp.events.court-referral-actioned",
                 Json.createObjectBuilder()
                         .add("caseId", CASE_ID)
                         .add("actioned", actioned.toString())

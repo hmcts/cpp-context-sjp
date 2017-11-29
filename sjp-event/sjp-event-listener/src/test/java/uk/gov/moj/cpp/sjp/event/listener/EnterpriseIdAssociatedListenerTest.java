@@ -58,7 +58,7 @@ public class EnterpriseIdAssociatedListenerTest {
                 .add(ENTERPRISE_ID_PROPERTY, enterpriseId);
 
         return JsonEnvelopeBuilder.envelopeFrom(
-                metadataOf(randomUUID(), "structure.events.enterprise-id-associated"),
+                metadataOf(randomUUID(), "sjp.events.enterprise-id-associated"),
                 payload.build());
     }
 }

@@ -10,11 +10,10 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 
-import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.sjp.command.service.ResultingQueryService;
 
 import java.util.UUID;
 
@@ -34,7 +33,7 @@ public class ResultingQueryServiceTest {
 
     private static final UUID CASE_ID = UUID.randomUUID();
 
-    private static final String STRUCTURE_COMMAND_REQUEST_WITHDRAWAL_ALL_OFFENCES = "structure.command.request-withdrawal-all-offences";
+    private static final String STRUCTURE_COMMAND_REQUEST_WITHDRAWAL_ALL_OFFENCES = "sjp.command.request-withdrawal-all-offences";
 
     @InjectMocks
     private ResultingQueryService resultingQueryService;

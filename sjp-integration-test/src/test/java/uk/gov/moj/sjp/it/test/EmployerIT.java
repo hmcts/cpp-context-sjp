@@ -9,12 +9,16 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithDecision;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 
 import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 import uk.gov.moj.sjp.it.helper.EmployerHelper;
+import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
 
 import java.util.UUID;
 
@@ -27,10 +31,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class UpdateEmployerIT extends BaseIntegrationTest {
+public class EmployerIT extends BaseIntegrationTest {
 
     private EmployerHelper employerHelper;
     private CaseSjpHelper caseSjpHelper;
+    private FinancialMeansHelper financialMeansHelper;
 
     private static final String FIELD_NAME = "name";
     private static final String FIELD_EMPLOYEE_REFERENCE = "employeeReference";
@@ -45,6 +50,7 @@ public class UpdateEmployerIT extends BaseIntegrationTest {
     @Before
     public void setUp() {
         employerHelper = new EmployerHelper();
+        financialMeansHelper = new FinancialMeansHelper();
         caseSjpHelper = new CaseSjpHelper();
         caseSjpHelper.createCase();
         caseSjpHelper.verifyCaseCreatedUsingId();
@@ -54,29 +60,38 @@ public class UpdateEmployerIT extends BaseIntegrationTest {
     public void tearDown() throws Exception {
         caseSjpHelper.close();
         employerHelper.close();
+        financialMeansHelper.close();
     }
 
     @Test
-    public void shouldCreateAndUpdateEmployer() {
-        stubGetCaseDecisionsWithNoDecision(caseSjpHelper.getCaseId());
-        stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
+    public void shouldCreateUpdateAndDeleteEmployer() {
+            stubGetCaseDecisionsWithNoDecision(caseSjpHelper.getCaseId());
+            stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
 
-        final String defendantId = caseSjpHelper.getSingleDefendantId();
-        final String caseId = caseSjpHelper.getCaseId();
+            final String defendantId = caseSjpHelper.getSingleDefendantId();
+            final String caseId = caseSjpHelper.getCaseId();
 
-        final JsonObject employer1 = getEmployerPayload();
-        final Matcher expectedEmployerMatcher1 = getMatcher(employer1);
+            final JsonObject employer1 = getEmployerPayload();
 
-        final JsonObject employer2 = getEmployerPayload();
-        final Matcher expectedEmployerMatcher2 = getMatcher(employer2);
+            final JsonObject employer2 = getEmployerPayload();
 
-        employerHelper.updateEmployer(caseId, defendantId, employer1);
-        employerHelper.getEmployer(defendantId, expectedEmployerMatcher1);
-        assertThat(employerHelper.getEventFromPublicTopic(), expectedEmployerMatcher1);
+            employerHelper.updateEmployer(caseId, defendantId, employer1);
+            employerHelper.getEmployer(defendantId, getEmployerUpdatedPayloadMatcher(employer1));
+            assertThat(employerHelper.getEventFromPublicTopic(), getEmployerUpdatedPublicEventMatcher(employer1));
 
-        employerHelper.updateEmployer(caseId, defendantId, employer2);
-        employerHelper.getEmployer(defendantId, expectedEmployerMatcher2);
-        assertThat(employerHelper.getEventFromPublicTopic(), expectedEmployerMatcher2);
+            employerHelper.updateEmployer(caseId, defendantId, employer2);
+            employerHelper.getEmployer(defendantId, getEmployerUpdatedPayloadMatcher(employer2));
+
+            assertThat(employerHelper.getEventFromPublicTopic(), getEmployerUpdatedPublicEventMatcher(employer2));
+
+            final Matcher expectedFinancialMeans = isJson(withJsonPath("$.employmentStatus", is("EMPLOYED")));
+            financialMeansHelper.getFinancialMeans(defendantId, expectedFinancialMeans);
+
+            employerHelper.deleteEmployer(caseId, defendantId);
+
+            employerHelper.getEmployer(defendantId, isJson(withJsonPath("$.size()", is(0))));
+
+            assertThat(employerHelper.getEventFromPublicTopic(), getEmployerDeletedPublicEventMatcher(defendantId));
     }
 
     @Test
@@ -96,10 +111,7 @@ public class UpdateEmployerIT extends BaseIntegrationTest {
 
         final JsonObject employer = getEmployerPayload();
 
-        final Matcher expectedCaseUpdateRejectedMatcher = isJson(allOf(
-                withJsonPath("$.caseId", is(caseId)),
-                withJsonPath("$.reason", is("CASE_COMPLETED"))
-        ));
+        final Matcher expectedCaseUpdateRejectedMatcher = getCaseUpdateRejectedPublicEventMatcher(caseId, "CASE_COMPLETED");
 
         employerHelper.updateEmployer(caseId, defendantId, employer);
         assertThat(employerHelper.getEventFromPublicTopic(), expectedCaseUpdateRejectedMatcher);
@@ -120,9 +132,10 @@ public class UpdateEmployerIT extends BaseIntegrationTest {
                 .add(FIELD_ADDRESS, address).build();
     }
 
-    private Matcher getMatcher(final JsonObject employer) {
+    private Matcher getEmployerUpdatedPayloadContentMatcher(final JsonObject employer) {
+
         final JsonObject address = employer.getJsonObject(FIELD_ADDRESS);
-        return isJson(allOf(
+        return allOf(
                 withJsonPath("$.name", equalTo(employer.getString(FIELD_NAME))),
                 withJsonPath("$.employeeReference", equalTo(employer.getString(FIELD_EMPLOYEE_REFERENCE))),
                 withJsonPath("$.phone", equalTo(employer.getString(FIELD_PHONE))),
@@ -131,6 +144,34 @@ public class UpdateEmployerIT extends BaseIntegrationTest {
                 withJsonPath("$.address.address3", equalTo(address.getString(FIELD_ADDRESS_3))),
                 withJsonPath("$.address.address4", equalTo(address.getString(FIELD_ADDRESS_4))),
                 withJsonPath("$.address.postCode", equalTo(address.getString(FIELD_POST_CODE)))
-        ));
+        );
     }
+
+    private Matcher getEmployerUpdatedPayloadMatcher(final JsonObject employer) {
+        return isJson(getEmployerUpdatedPayloadContentMatcher(employer));
+    }
+
+    private Matcher getEmployerUpdatedPublicEventMatcher(final JsonObject employer) {
+        final Matcher payloadContentMatcher = getEmployerUpdatedPayloadContentMatcher(employer);
+        return jsonEnvelope()
+                .withMetadataOf(metadata().withName("public.structure.employer-updated"))
+                .withPayloadOf(payloadIsJson(payloadContentMatcher));
+    }
+
+    private Matcher getEmployerDeletedPublicEventMatcher(final String defendantId) {
+        return jsonEnvelope()
+                .withMetadataOf(metadata().withName("public.structure.employer-deleted"))
+                .withPayloadOf(payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId.toString()))));
+    }
+
+    private Matcher getCaseUpdateRejectedPublicEventMatcher(final String caseId, final String reason) {
+        final Matcher payloadMatcher = allOf(
+                withJsonPath("$.caseId", is(caseId)),
+                withJsonPath("$.reason", is(reason)));
+
+        return jsonEnvelope()
+                .withMetadataOf(metadata().withName("public.structure.case-update-rejected"))
+                .withPayloadOf(payloadIsJson(payloadMatcher));
+    }
+
 }

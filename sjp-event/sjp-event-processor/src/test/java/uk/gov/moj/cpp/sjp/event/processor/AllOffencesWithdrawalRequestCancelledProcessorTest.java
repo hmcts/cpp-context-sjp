@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
@@ -14,7 +13,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.event.processor.AllOffencesWithdrawalRequestCancelledProcessor;
 
 import java.util.UUID;
 
@@ -46,7 +44,7 @@ public class AllOffencesWithdrawalRequestCancelledProcessorTest {
     @Test
     public void publishAllOffencesWithdrawalRequestedPublicEvent() throws Exception {
 
-        final JsonEnvelope privateEvent = createEnvelope("structure.events.all-offences-withdrawal-request-cancelled",
+        final JsonEnvelope privateEvent = createEnvelope("sjp.events.all-offences-withdrawal-request-cancelled",
                 Json.createObjectBuilder().add("caseId", CASE_ID).build());
         allOffencesWithdrawalRequestCancelledProcessor.publishAllOffencesWithdrawalRequestCancelledEvent(privateEvent);
 

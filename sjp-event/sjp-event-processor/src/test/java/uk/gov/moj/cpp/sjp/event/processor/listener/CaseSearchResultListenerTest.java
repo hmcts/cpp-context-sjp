@@ -14,7 +14,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.sjp.event.processor.listener.CaseSearchResultListener;
 
 import javax.json.JsonObject;
 
@@ -32,7 +31,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class CaseSearchResultListenerTest {
 
     private static final String PUBLIC_EVENT_NAME = "public.structure.person-info-added";
-    private static final String PRIVATE_EVENT_NAME = "structure.events.person-info-added";
+    private static final String PRIVATE_EVENT_NAME = "sjp.events.person-info-added";
 
     @Mock
     private Sender sender;

@@ -1,11 +1,17 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
+import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -95,5 +101,40 @@ public class EmployerListenerTest {
         assertThat(employer.getAddress4(), nullValue());
         assertThat(employer.getPostCode(), nullValue());
     }
+
+    @Test
+    public void shouldDeleteEmployerIfExists() {
+
+        final UUID defendantId = UUID.randomUUID();
+        final JsonEnvelope deleteEmployerEvent = createDeleteEmployerEvent(defendantId);
+        final Employer existingEmployer = new Employer();
+
+        when(employerRepository.findBy(defendantId)).thenReturn(existingEmployer);
+
+        employerListener.deleteEmployer(deleteEmployerEvent);
+
+        verify(employerRepository).remove(argThat(is(existingEmployer)));
+    }
+
+    @Test
+    public void shouldNotDeleteNonExistingEmployer() {
+
+        final UUID defendantId = UUID.randomUUID();
+        final JsonEnvelope deleteEmployerEvent = createDeleteEmployerEvent(defendantId);
+
+        when(employerRepository.findBy(defendantId)).thenReturn(null);
+
+        employerListener.deleteEmployer(deleteEmployerEvent);
+
+        verify(employerRepository, never()).remove(argThat(any(Employer.class)));
+    }
+
+    private JsonEnvelope createDeleteEmployerEvent(final UUID defendantId) {
+        return envelope()
+                .with(metadataWithRandomUUID("sjp.events.employer-deleted"))
+                .withPayloadOf(defendantId.toString(), "defendantId")
+                .build();
+    }
+
 
 }

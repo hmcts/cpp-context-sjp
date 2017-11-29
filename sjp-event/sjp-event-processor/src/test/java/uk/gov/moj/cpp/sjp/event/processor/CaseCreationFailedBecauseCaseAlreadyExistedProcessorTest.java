@@ -14,7 +14,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
-import uk.gov.moj.cpp.sjp.event.processor.CaseCreationFailedBecauseCaseAlreadyExistedProcessor;
 
 import java.util.UUID;
 
@@ -47,7 +46,7 @@ public class CaseCreationFailedBecauseCaseAlreadyExistedProcessorTest {
         final String URN = "urn";
 
         final JsonEnvelope privateEvent = EnvelopeFactory
-                .createEnvelope("structure.events.case-creation-failed-because-case-already-existed",
+                .createEnvelope("sjp.events.case-creation-failed-because-case-already-existed",
                                 Json.createObjectBuilder().add("caseId", CASE_ID).add("urn", URN)
                                                 .build());
 

@@ -16,7 +16,7 @@ import javax.json.JsonObject;
 
 import org.junit.Test;
 
-public class UpdateEmployerTest extends BaseDroolsAccessControlTest {
+public class EmployerTest extends BaseDroolsAccessControlTest {
 
     @Override
     protected Map<Class, Object> getProviderMocks() {
@@ -25,11 +25,20 @@ public class UpdateEmployerTest extends BaseDroolsAccessControlTest {
 
     @Test
     public void shouldAllowUpdateEmployerCommand() {
-        final JsonObject inputPayload = createObjectBuilder()
-                .add("caseId", randomUUID().toString())
-                .build();
-        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID("sjp.command.update-employer").build(), inputPayload);
-        final Action action = new Action(envelope);
+        final Action action = buildActionWithName("sjp.command.update-employer");
         assertSuccessfulOutcome(executeRulesWith(action));
     }
+
+    @Test
+    public void shouldAllowDeleteEmployerCommand() {
+        final Action action = buildActionWithName("sjp.command.delete-employer");
+        assertSuccessfulOutcome(executeRulesWith(action));
+    }
+
+    private Action buildActionWithName(final String name) {
+        final JsonObject commandPayload = createObjectBuilder().add("caseId", randomUUID().toString()).build();
+        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(name).build(), commandPayload);
+        return new Action(envelope);
+    }
+
 }

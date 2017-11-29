@@ -11,7 +11,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.sjp.event.processor.DefendantDetailsUpdateProcessor;
 
 import javax.json.JsonObject;
 
@@ -43,7 +42,7 @@ public class DefendantDetailsUpdateProcessorTest {
     public void updatesPeopleWhenDefendandDetailsUpdated() {
         // given
         JsonObject eventPayload = createObjectBuilder().build();
-        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("structure.events.defendant-details-updated"),
+        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.defendant-details-updated"),
                 eventPayload);
 
         // when

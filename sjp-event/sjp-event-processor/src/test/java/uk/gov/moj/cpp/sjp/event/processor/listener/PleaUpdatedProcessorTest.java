@@ -49,7 +49,7 @@ public class PleaUpdatedProcessorTest {
         final String plea = "GUILTY";
 
         final JsonEnvelope command = envelope()
-                .with(metadataWithRandomUUID("structure.events.plea-updated"))
+                .with(metadataWithRandomUUID("sjp.events.plea-updated"))
                 .withPayloadOf(caseId, "caseId")
                 .withPayloadOf(offenceId, "offenceId")
                 .withPayloadOf(plea, "plea")
@@ -73,7 +73,7 @@ public class PleaUpdatedProcessorTest {
         final String offenceId = UUID.randomUUID().toString();
 
         final JsonEnvelope command = envelope()
-                .with(metadataWithRandomUUID("structure.events.plea-cancelled"))
+                .with(metadataWithRandomUUID("sjp.events.plea-cancelled"))
                 .withPayloadOf(caseId, "caseId")
                 .withPayloadOf(offenceId, "offenceId")
                 .build();

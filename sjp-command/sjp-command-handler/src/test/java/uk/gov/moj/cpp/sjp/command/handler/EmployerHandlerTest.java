@@ -15,10 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UpdateEmployerHandlerTest extends CaseCommandHandlerTest {
+public class EmployerHandlerTest extends CaseCommandHandlerTest {
 
     @InjectMocks
-    private UpdateEmployerHandler updateEmployerHandler;
+    private EmployerHandler employerHandler;
 
     @Test
     public void shouldUpdateEmployer() throws EventStreamException {
@@ -29,9 +29,22 @@ public class UpdateEmployerHandlerTest extends CaseCommandHandlerTest {
         when(converter.convert(jsonObject, Employer.class)).thenReturn(employer);
         when(caseAggregate.updateEmployer(employer)).thenReturn(events);
 
-        updateEmployerHandler.updateEmployer(jsonEnvelope);
+        employerHandler.updateEmployer(jsonEnvelope);
 
         verify(converter).convert(jsonObject, Employer.class);
         verify(caseAggregate).updateEmployer(employer);
+    }
+
+    @Test
+    public void shouldDeleteEmployer() throws EventStreamException {
+        final UUID defendatId = UUID.randomUUID();
+        when(jsonObject.getString("defendantId")).thenReturn(defendatId.toString());
+
+        when(caseAggregate.deleteEmployer(defendatId)).thenReturn(events);
+
+        employerHandler.deleteEmployer(jsonEnvelope);
+
+        verify(jsonObject).getString("defendantId");
+        verify(caseAggregate).deleteEmployer(defendatId);
     }
 }

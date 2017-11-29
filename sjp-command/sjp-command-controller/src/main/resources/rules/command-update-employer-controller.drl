@@ -10,3 +10,12 @@ rule "Command - Rule for update employer"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Command - Rule for delete employer"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.delete-employer");
+  then
+    $outcome.setSuccess(true);
+end
+

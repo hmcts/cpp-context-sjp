@@ -63,7 +63,7 @@ public class InterpreterUpdatedListenerTest {
         final String language = "French";
 
         final JsonEnvelope envelope = DefaultJsonEnvelope.envelope()
-                .with(metadataWithRandomUUID("structure.events.interpreter-for-defendant-updated"))
+                .with(metadataWithRandomUUID("sjp.events.interpreter-for-defendant-updated"))
                 .withPayloadOf(caseId, "caseId")
                 .withPayloadOf(defendantId, "defendantId").withPayloadOf(
                         Json.createObjectBuilder().add("needed", true)
@@ -88,7 +88,7 @@ public class InterpreterUpdatedListenerTest {
     public void shouldCancelInterpreter() {
 
         final JsonEnvelope envelope = DefaultJsonEnvelope.envelope()
-                .with(metadataWithRandomUUID("structure.events.interpreter-for-defendant-cancelled"))
+                .with(metadataWithRandomUUID("sjp.events.interpreter-for-defendant-cancelled"))
                 .withPayloadOf(caseId, "caseId")
                 .withPayloadOf(defendantId, "defendantId")
                 .build();

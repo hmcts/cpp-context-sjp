@@ -177,7 +177,6 @@ public class CaseAggregate implements Aggregate {
     }
 
 
-
     public int getNumberOfDocumentOfGivenType(final String documentType) {
         return documentCountByDocumentType.getCount(documentType);
     }
@@ -248,42 +247,53 @@ public class CaseAggregate implements Aggregate {
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         if (changePleaCommand instanceof UpdatePlea) {
-            streamBuilder.add(new PleaUpdated(
-                    changePleaCommand.getCaseId().toString(),
-                    changePleaCommand.getOffenceId().toString(),
-                    ((UpdatePlea) changePleaCommand).getPlea(),
-                    PleaMethod.POSTAL));
-        } else {
-            streamBuilder.add(new PleaCancelled(
-                    changePleaCommand.getCaseId().toString(),
-                    changePleaCommand.getOffenceId().toString()));
-        }
+            final UpdatePlea updatePlea = (UpdatePlea) changePleaCommand;
+            final PleaUpdated pleaUpdated = new PleaUpdated(
+                    updatePlea.getCaseId().toString(),
+                    updatePlea.getOffenceId().toString(),
+                    updatePlea.getPlea(),
+                    PleaMethod.POSTAL);
 
-        final Object interpreterEvent = changeInterpreter(changePleaCommand, defendantId.get());
-        if (interpreterEvent != null) {
-            streamBuilder.add(interpreterEvent);
-        }
+            streamBuilder.add(pleaUpdated);
 
+            updateInterpreter(updatePlea.getInterpreterLanguage(), defendantId.get())
+                    .ifPresent(streamBuilder::add);
+
+        } else if (changePleaCommand instanceof CancelPlea) {
+            final CancelPlea cancelPlea = (CancelPlea) changePleaCommand;
+            final PleaCancelled pleaCancelled = new PleaCancelled(
+                    cancelPlea.getCaseId().toString(),
+                    cancelPlea.getOffenceId().toString());
+
+            streamBuilder.add(pleaCancelled);
+            updateInterpreter(null, defendantId.get())
+                    .ifPresent(streamBuilder::add);
+        }
         return apply(streamBuilder.build());
     }
 
-    private Object changeInterpreter(final ChangePlea changePleaCommand, final UUID defendantId) {
+    public Stream<Object> updateInterpreter(final UUID defendantId, final String language) {
+        final Stream.Builder streamBuilder = Stream.builder();
+        if (hasDefendant(defendantId)) {
+            updateInterpreter(language, defendantId).ifPresent(streamBuilder::add);
+        } else {
+            streamBuilder.add(new DefendantNotFound(defendantId.toString(), "Update interpreter"));
+        }
+        return apply(streamBuilder.build());
+
+    }
+
+    private Optional<Object> updateInterpreter(final String newInterpreterLanguage, final UUID defendantId) {
         // Assuming that if there is an interpreterLanguage interpreterRequired should always be true
-        final String defendantInterpreterLanguage = this.defendantInterpreterLanguages.get(defendantId);
-        String interpreterLanguage = null;
-        if (changePleaCommand instanceof UpdatePlea) {
-            interpreterLanguage = ((UpdatePlea) changePleaCommand).getInterpreterLanguage();
+        final String existingInterpreterLanguage = this.defendantInterpreterLanguages.get(defendantId);
+        Object event = null;
+
+        if (existingInterpreterLanguage != null && newInterpreterLanguage == null) {
+            event = new InterpreterCancelledForDefendant(caseId, defendantId);
+        } else if (!Objects.equals(existingInterpreterLanguage, newInterpreterLanguage)) {
+            event = new InterpreterUpdatedForDefendant(caseId, defendantId, new Interpreter(true, newInterpreterLanguage));
         }
-        if (defendantInterpreterLanguage != null && interpreterLanguage == null) {
-            return new InterpreterCancelledForDefendant(caseId, defendantId);
-        }
-        // Don't raise an event if the interpreter is not changing
-        else if (!Objects.equals(defendantInterpreterLanguage, interpreterLanguage)) {
-            return new InterpreterUpdatedForDefendant(caseId, defendantId,
-                    new Interpreter(Boolean.TRUE, interpreterLanguage)
-            );
-        }
-        return null;
+        return Optional.ofNullable(event);
     }
 
     public Stream<Object> updatePlea(final UpdatePlea updatePleaCommand) {

@@ -31,7 +31,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UpdateFinancialMeansControllerTest {
+public class UpdateInterpreterControllerTest {
 
     @Mock
     private Sender sender;
@@ -40,39 +40,39 @@ public class UpdateFinancialMeansControllerTest {
     private CaseUpdateHelper caseUpdateHelper;
 
     @InjectMocks
-    private UpdateFinancialMeansController updateFinancialMeansController;
+    private UpdateInterpreterController updateInterpreterController;
 
     @Test
     public void shouldHandleCommandsAndPassThrough() {
         final UUID caseId = UUID.randomUUID();
-        final JsonEnvelope updateFinancialMeansCommand = getUpdateFinancialMeansCommand(caseId);
+        final JsonEnvelope updateInterpreterCommand = getUpdateInterpreterCommand(caseId);
 
-        when(caseUpdateHelper.checkForCaseUpdateRejectReasons(updateFinancialMeansCommand)).thenReturn(Optional.empty());
+        when(caseUpdateHelper.checkForCaseUpdateRejectReasons(updateInterpreterCommand)).thenReturn(Optional.empty());
 
-        updateFinancialMeansController.updateFinancialMeans(updateFinancialMeansCommand);
+        updateInterpreterController.updateInterpreter(updateInterpreterCommand);
 
-        verify(sender).send(updateFinancialMeansCommand);
+        verify(sender).send(updateInterpreterCommand);
     }
 
     @Test
-    public void shouldRejectCaseUpdateWhenCaseAssigned() {
+    public void shouldRejectInterpreterUpdateWhenCaseAssigned() {
         shouldRejectCaseUpdate(CASE_ASSIGNED);
     }
 
     @Test
-    public void shouldRejectCaseUpdateWhenCaseCompleted() {
+    public void shouldRejectInterpreterUpdateWhenCaseCompleted() {
         shouldRejectCaseUpdate(CASE_COMPLETED);
     }
 
     private void shouldRejectCaseUpdate(final CaseUpdateHelper.RejectReason rejectReason) {
 
         final UUID caseId = UUID.randomUUID();
-        final JsonEnvelope updateFinancialMeansCommand = getUpdateFinancialMeansCommand(caseId);
+        final JsonEnvelope updateInterpreterCommand = getUpdateInterpreterCommand(caseId);
         final JsonEnvelope rejectCaseUpdateCommand = getRejectCaseUpdateCommand(caseId, rejectReason);
 
-        when(caseUpdateHelper.checkForCaseUpdateRejectReasons(updateFinancialMeansCommand)).thenReturn(Optional.of(rejectCaseUpdateCommand));
+        when(caseUpdateHelper.checkForCaseUpdateRejectReasons(updateInterpreterCommand)).thenReturn(Optional.of(rejectCaseUpdateCommand));
 
-        updateFinancialMeansController.updateFinancialMeans(updateFinancialMeansCommand);
+        updateInterpreterController.updateInterpreter(updateInterpreterCommand);
 
         final ArgumentCaptor<JsonEnvelope> captor = ArgumentCaptor.forClass(JsonEnvelope.class);
         verify(sender).send(captor.capture());
@@ -85,14 +85,13 @@ public class UpdateFinancialMeansControllerTest {
                 ))));
     }
 
-    private JsonEnvelope getUpdateFinancialMeansCommand(final UUID caseId) {
+    private JsonEnvelope getUpdateInterpreterCommand(final UUID caseId) {
         final JsonObject payload = Json.createObjectBuilder()
                 .add("caseId", caseId.toString())
                 .add("defendantId", UUID.randomUUID().toString())
-                .add("income", Json.createObjectBuilder())
-                .add("benefits", Json.createObjectBuilder())
+                .add("language", "Welsh")
                 .build();
-        return createEnvelope("sjp.command.update-financial-means", payload);
+        return createEnvelope("sjp.command.update-interpreter", payload);
     }
 
     private JsonEnvelope getRejectCaseUpdateCommand(final UUID caseId, final CaseUpdateHelper.RejectReason rejectReason) {

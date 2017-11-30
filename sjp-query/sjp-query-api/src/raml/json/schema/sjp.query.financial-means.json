@@ -2,9 +2,6 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "id": {
-      "$ref": "#/definitions/uuid"
-    },
     "defendantId": {
       "$ref": "#/definitions/uuid"
     },
@@ -46,7 +43,6 @@
     }
   },
   "required": [
-    "id",
     "defendantId",
     "income",
     "benefits"

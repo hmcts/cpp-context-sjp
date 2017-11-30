@@ -24,5 +24,6 @@
     "plea",
     "offenceId",
     "caseId"
-  ]
+  ],
+  "additionalProperties": false
 }

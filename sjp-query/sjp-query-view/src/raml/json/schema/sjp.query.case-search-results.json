@@ -8,10 +8,11 @@
     "caseId": {
       "type": "string"
     },
-    "enterpriseId": {
-      "type": "string",
-      "minLength": 12,
-      "maxLength": 12
+    "personId": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
     },
     "urn": {
       "type": "string"
@@ -33,6 +34,11 @@
     "completed": {
       "type": "boolean"
     },
+    "enterpriseId": {
+      "type": "string",
+      "minLength": 12,
+      "maxLength": 12
+    },
     "reopendDate": {
       "type": "string"
     },
@@ -42,13 +48,7 @@
     "withdrawalRequestedDate": {
       "type": "string"
     },
-    "personId": {
-      "type": "string"
-    },
     "firstName": {
-      "type": "string"
-    },
-    "lastName": {
       "type": "string"
     },
     "dateOfBirth": {

@@ -7,410 +7,97 @@
       "id": "/id",
       "type": "string"
     },
-    "enterpriseId": {
-      "id": "/enterpriseId",
-      "type": "string",
-      "minLength": 12,
-      "maxLength": 12
-    },
-    "version": {
-      "id": "/version",
-      "type": "integer"
-    },
     "urn": {
       "id": "/urn",
       "type": "string"
     },
+    "defendants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "personId": {
+            "type": "string"
+          },
+          "offences": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "offenceCode": {
+                  "type": "string"
+                },
+                "plea": {
+                  "type": "string"
+                },
+                "pleaMethod": {
+                  "enum": [
+                    "ONLINE",
+                    "POSTAL"
+                  ]
+                },
+                "offenceSequenceNumber": {
+                  "type": "integer"
+                },
+                "wording": {
+                  "type": "string"
+                },
+                "cjsCode": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "sequenceNumber": {
+                  "type": "integer"
+                },
+                "startDate": {
+                  "type": "string"
+                },
+                "endDate": {
+                  "type": "string"
+                },
+                "pendingWithdrawal": {
+                  "type": "boolean"
+                },
+                "compensation": {
+                  "type": "boolean"
+                },
+                "prosecutionFacts": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "caseId": {
+            "type": "string"
+          },
+          "interpreter": {
+            "type": "object",
+            "properties": {
+              "needed": {
+                "type": "boolean"
+              },
+              "language": {
+                "type": "string"
+              }
+            }
+          },
+          "numPreviousConvictions": {
+            "type": "integer"
+          }
+        }
+      }
+    },
     "dateTimeCreated": {
       "id": "/dateTimeCreated",
       "type": "string"
-    },
-    "completed": {
-      "id": "/completed",
-      "type": "boolean"
-    },
-    "sensitive": {
-      "id": "/sensitive",
-      "type": "boolean"
-    },
-    "ownershipTransferred": {
-      "id": "/ownershipTransferred",
-      "type": "boolean"
-    },
-    "review-status": {
-      "id": "/review-status",
-      "type": "string"
-    },
-    "costs": {
-      "id": "/costs",
-      "type": "number"
-    },
-    "postingDate": {
-      "id": "/postingDate",
-      "type": "string"
-    },
-    "reopenedDate": {
-      "id": "/reopenedDate",
-      "type": "string"
-    },
-    "libraCaseNumber": {
-      "id": "/libraCaseNumber",
-      "type": "string"
-    },
-    "reopenedInLibraReason": {
-      "type": "string"
-    },
-    "policeOfficerInCase": {
-      "id": "/policeOfficerInCase",
-      "anyOf": [
-        {
-          "type": "object"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "properties": {
-        "personId": {
-          "id": "/policeOfficerInCase/personId",
-          "type": "string"
-        },
-        "rank": {
-          "id": "/policeOfficerInCase/rank",
-          "type": "string"
-        },
-        "narrative": {
-          "id": "/policeOfficerInCase/narrative",
-          "type": "string"
-        },
-        "badgeNumber": {
-          "id": "/policeOfficerInCase/badgeNumber",
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
-    },
-    "policeSupervisor": {
-      "id": "/policeSupervisor",
-      "anyOf": [
-        {
-          "type": "object"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "properties": {
-        "personId": {
-          "id": "/policeSupervisor/personId",
-          "type": "string"
-        },
-        "rank": {
-          "id": "/policeSupervisor/rank",
-          "type": "string"
-        },
-        "narrative": {
-          "id": "/policeSupervisor/narrative",
-          "type": "string"
-        },
-        "badgeNumber": {
-          "id": "/policeSupervisor/badgeNumber",
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
-    },
-    "witnesses": {
-      "id": "/witnesses",
-      "type": "array",
-      "items": {
-        "id": "/witnesses/0",
-        "type": "object",
-        "properties": {
-          "id": {
-            "id": "/witnesses/0/id",
-            "type": "string"
-          },
-          "personId": {
-            "id": "/witnesses/0/personId",
-            "type": "string"
-          },
-          "policePersonId": {
-            "id": "/witnesses/0/policePersonId",
-            "type": "string"
-          },
-          "statements": {
-            "id": "/witnesses/0/statements",
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "id": "/witnesses/0/statements/0/id",
-                  "type": "string"
-                },
-                "statementNumber": {
-                  "id": "/witnesses/0/statements/0/statementNumber",
-                  "type": "string"
-                },
-                "statementDate": {
-                  "id": "/witnesses/0/statements/0/statementDate",
-                  "type": "string"
-                },
-                "policeMaterialId": {
-                  "id": "/witnesses/0/policeMaterialId",
-                  "type": "string"
-                },
-                "latestRedactedMaterialId" : {
-                  "id": "/witnesses/0/statements/0/latestRedactedMaterialId",
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "classification": {
-            "id": "/witnesses/classification",
-            "type": "array",
-            "properties": {
-              "classificationCode": {
-                "id": "/witnesses/0/classification/classificationCode",
-                "type": "string"
-              },
-              "classificationValue": {
-                "id": "/witnesses/0/classification/classificationValue",
-                "type": "string"
-              },
-              "isVictim": {
-                "id": "/witnesses/0/classification/isVictim",
-                "type": "boolean"
-              },
-              "isEntitlementRequired": {
-                "id": "/witnesses/0/classification/isEntitlementRequired",
-                "type": "boolean"
-              },
-              "witnessExpertise": {
-                "id": "/witnesses/0/classification/witnessExpertise",
-                "type": "string"
-              },
-              "witnessStatus": {
-                "id": "/witnesses/0/classification/witnessStatus",
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      }
-    },
-    "suspects": {
-      "id": "/suspects",
-      "type": "array",
-      "items": {
-        "id": "/suspects/0",
-        "type": "object",
-        "properties": {
-          "id": {
-            "id": "/suspects/0/id",
-            "type": "string"
-          },
-          "personId": {
-            "id": "/suspects/0/personId",
-            "type": "string"
-          },
-          "policePersonId": {
-            "id": "/suspects/0/policePersonId",
-            "type": "string"
-          },
-          "asn": {
-            "id": "/suspects/0/asn",
-            "type": "string"
-          },
-          "bailConditions": {
-            "id": "/suspects/0/bailConditions",
-            "type": "string"
-          },
-          "bailStatus": {
-            "id": "/suspects/0/bailStatus",
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "bailDate": {
-            "id": "/suspects/0/bailDate",
-            "type": "string"
-          },
-          "policeRemandStatus": {
-            "id": "/suspects/0/policeRemandStatus",
-            "type": "string"
-          },
-          "idpcApproved": {
-            "id": "/suspects/0/idpcApproved",
-            "type": "boolean"
-          },
-          "charges": {
-            "id": "/suspects/0/charges",
-            "type": "array",
-            "items": {
-              "id": "/suspects/0/charges/0",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "id": "/suspects/0/charges/0/id",
-                  "type": "string"
-                },
-                "twifId": {
-                  "id": "/suspects/0/charges/0/twifId",
-                  "type": "string"
-                },
-                "code": {
-                  "id": "/suspects/0/charges/0/code",
-                  "type": "string"
-                },
-                "description": {
-                  "id": "/suspects/0/charges/0/description",
-                  "type": "string"
-                },
-                "status": {
-                  "id": "/suspects/0/charges/0/status",
-                  "type": "string"
-                },
-                "categoryType": {
-                  "id": "/suspects/0/charges/0/categoryType",
-                  "type": "string"
-                },
-                "fromDate": {
-                  "id": "/suspects/0/charges/0/fromDate",
-                  "type": "string"
-                },
-                "toDate": {
-                  "id": "/suspects/0/charges/0/toDate",
-                  "type": "string"
-                },
-                "particulars": {
-                  "type": "object",
-                  "id": "/suspects/0/charges/0/particulars",
-                  "properties": {
-                    "address": {
-                      "id": "/suspects/0/charges/0/particulars/address",
-                      "type": "string"
-                    },
-                    "postCode": {
-                      "id": "/suspects/0/charges/0/particulars/postCode",
-                      "type": "string"
-                    },
-                    "country": {
-                      "id": "/suspects/0/charges/0/particulars/country",
-                      "type": "string"
-                    }
-                  },
-                  "additionalProperties": false
-                },
-                "authorisedCharge": {
-                  "id": "/suspects/0/charges/0/authorisedCharge",
-                  "type": [
-                    "object",
-                    "null"
-                  ],
-                  "properties": {
-                    "id": {
-                      "id": "/suspects/0/charges/0/authorisedCharge/id",
-                      "type": "string"
-                    },
-                    "code": {
-                      "id": "/suspects/0/charges/0/authorisedCharge/code",
-                      "type": "string"
-                    }
-                  },
-                  "additionalProperties": false
-                }
-              },
-              "additionalProperties": false
-            }
-          }
-        },
-        "additionalProperties": false
-      }
-    },
-    "exhibits": {
-      "id": "/exhibits",
-      "type": "array",
-      "items": {
-        "id": "/exhibits/0",
-        "type": "object",
-        "properties": {
-          "id": {
-            "id": "/exhibits/0/id",
-            "type": "string"
-          },
-          "exhibitName": {
-            "id": "/exhibits/0/exhibitName",
-            "type": "string"
-          },
-          "policeExhibitId": {
-            "id": "/exhibits/0/policeExhibitId",
-            "type": "string"
-          },
-          "policeExhibitName": {
-            "id": "/exhibits/0/policeExhibitName",
-            "type": "string"
-          },
-          "policeMaterialId": {
-            "id": "/exhibits/0/policeMaterialId",
-            "type": "string"
-          },
-          "attachmentName": {
-            "id": "/exhibits/0/attachmentName",
-            "type": "string"
-          },
-          "policeReference": {
-            "id": "/exhibits/0/policeReference",
-            "type": "string"
-          },
-          "suspectId": {
-            "id": "/exhibits/0/suspectId",
-            "type": "string"
-          },
-          "exhibitMaterialId": {
-            "id": "/exhibits/0/exhibitMaterialId",
-            "type": "string"
-          },
-          "latestRedactedMaterialId": {
-            "id": "/exhibits/0/latestRedactedMaterialId",
-            "type": "string"
-          },
-          "exhibitClassifications": {
-            "id": "/exhibits/0/exhibitClassifications",
-            "type": "array",
-            "items": {
-              "id": "/exhibits/0/exhibitClassifications/1",
-              "type": "object",
-              "properties": {
-                "classification": {
-                  "id": "/exhibits/0/exhibitClassifications/1/classification",
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
-            }
-          },
-          "storageReference": {
-            "id": "/exhibits/0/storageReference",
-            "type": "string"
-          },
-          "personProducingExhibitId": {
-            "id": "/exhibits/0/personProducingExhibitId",
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "exhibitName",
-          "exhibitClassifications"
-        ]
-      }
     },
     "caseDocuments": {
       "id": "/caseDocuments",
@@ -452,320 +139,41 @@
         }
       }
     },
-    "policeSummaries": {
-      "id": "/policeSummaries",
-      "type": "array",
-      "items": {
-        "id": "/policeSummaries/0",
-        "type": "object",
-        "properties": {
-          "id": {
-            "id": "/policeSummaries/0/id",
-            "type": "string"
-          },
-          "outlineHeading": {
-            "id": "/policeSummaries/0/outlineHeading",
-            "type": "string"
-          },
-          "outlineText": {
-            "id": "/policeSummaries/0/outlineText",
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      }
-    },
-    "defendants": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "caseId": {
-            "type": "string"
-          },
-          "personId": {
-            "type": "string"
-          },
-          "policeDefendantId": {
-            "type": "string"
-          },
-          "bailStatus": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "defendantBailDocuments": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "documentId": {
-                  "type": "string"
-                },
-                "active": {
-                  "type": "boolean"
-                }
-              },
-              "required": [
-                "id",
-                "documentId",
-                "active"
-              ]
-            }
-          },
-          "custodyTimeLimitDate": {
-            "type": "string"
-          },
-          "defenceSolicitorFirm": {
-            "type": "string"
-          },
-          "interpreter": {
-            "type": "object",
-            "properties": {
-              "needed": {
-                "type": "boolean"
-              },
-              "language": {
-                "type": "string"
-              }
-            }
-          },
-          "numPreviousConvictions": {
-            "type": "integer"
-          },
-          "offences": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "offenceCode": {
-                  "type": "string"
-                },
-                "cjsCode": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                },
-                "plea": {
-                  "type": "string"
-                },
-                "indicatedPlea": {
-                  "type": "string",
-                  "enum": [
-                    "NOT_GUILTY",
-                    "GUILTY",
-                    "NO_PLEA"
-                  ]
-                },
-                "offenceSequenceNumber": {
-                  "type": "integer"
-                },
-                "pleaMitigation": {
-                  "type": "string"
-                },
-                "wording": {
-                  "type": "string"
-                },
-                "policeOffenceId": {
-                  "type": "string"
-                },
-                "cprDefendantOffenderYear": {
-                  "type": "string"
-                },
-                "cprDefendantOffenderOrganisationUnit": {
-                  "type": "string"
-                },
-                "cprDefendantOffenderNumber": {
-                  "type": "string"
-                },
-                "cprDefendantOffenderCheckDigit": {
-                  "type": "string"
-                },
-                "pleaMethod": {
-                  "enum": [
-                    "ONLINE",
-                    "POSTAL"
-                  ]
-                },
-                "reason": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                },
-                "category": {
-                  "type": "string"
-                },
-                "pendingWithdrawal": {
-                  "type": "boolean"
-                },
-                "compensation": {
-                  "type": "number"
-                },
-                "prosecutionFacts": {
-                  "type": "string"
-                },
-                "arrestDate": {
-                  "type": "string"
-                },
-                "startDate": {
-                  "type": "string"
-                },
-                "endDate": {
-                  "type": "string"
-                },
-                "chargeDate": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "victims": {
-      "id": "/victims",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "id": "/victims/0/id",
-            "type": "string"
-          },
-          "personId": {
-            "id": "/victims/0/personId",
-            "type": "string"
-          },
-          "policePersonId": {
-            "id": "/victims/0/policePersonId",
-            "type": "string"
-          },
-          "policeMaterialId": {
-            "id": "/victims/0/policeMaterialId",
-            "type": "string"
-          },
-          "classifications": {
-            "id": "/victims/0/classifications",
-            "type": "array",
-            "items": {
-              "id": "/victims/0/classifications/0",
-              "type": "object",
-              "properties": {
-                "classificationType": {
-                  "id": "/victims/0/classifications/0/classificationType",
-                  "type": "string"
-                },
-                "classificationCode": {
-                  "id": "/victims/0/classifications/0/classificationCode",
-                  "type": "string"
-                },
-                "classificationValue": {
-                  "id": "/victims/0/classifications/0/classificationValue",
-                  "type": "string"
-                }
-              }
-            }
-          }
-        },
-        "required": [
-          "id",
-          "personId",
-          "policePersonId"
-        ]
-      }
-    },
     "prosecutingAuthority": {
       "id": "/prosecutingAuthority",
       "type": "string",
       "enum": [
-        "CPS",
         "TFL"
       ]
     },
-    "caseMarkers": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "caseMarker": {
-            "type": "string",
-            "id": "http://jsonschema.net/caseMarkers/3/caseMarker"
-          }
-        },
-        "id": "http://jsonschema.net/caseMarkers/3",
-        "required": [
-          "caseMarker"
-        ]
-      },
-      "id": "http://jsonschema.net/caseMarkers"
+    "completed": {
+      "id": "/completed",
+      "type": "boolean"
     },
-    "actionPlan": {
-      "type": "object",
-      "properties": {
-        "actionItems": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "category": {
-                "type": "string"
-              },
-              "description": {
-                "type": "string"
-              },
-              "deadlineDate": {
-                "type": "string"
-              },
-              "createdDate": {
-                "type": "string"
-              },
-              "suspects": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "id"
-                  ]
-                }
-              },
-              "status": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "id",
-              "category",
-              "description",
-              "deadlineDate",
-              "createdDate",
-              "status"
-            ]
-          }
-        }
-      },
-      "required": [
-        "actionItems"
-      ]
+    "costs": {
+      "id": "/costs",
+      "type": "number"
+    },
+    "postingDate": {
+      "id": "/postingDate",
+      "type": "string"
+    },
+    "reopenedDate": {
+      "id": "/reopenedDate",
+      "type": "string"
+    },
+    "libraCaseNumber": {
+      "id": "/libraCaseNumber",
+      "type": "string"
+    },
+    "reopenedInLibraReason": {
+      "type": "string"
+    },
+    "enterpriseId": {
+      "id": "/enterpriseId",
+      "type": "string",
+      "minLength": 12,
+      "maxLength": 12
     }
   },
   "additionalProperties": false,

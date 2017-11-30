@@ -7,9 +7,6 @@
     },
     "offenceId": {
       "type": "string"
-    },
-    "pleaMethod": {
-      "enum": ["ONLINE", "POSTAL"]
     }
   },
   "required": [

@@ -1,3 +1,17 @@
 {
-  "defendantId": "50770ba9-37ea-4713-8cab-fe5bf1202716"
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "defendantId": {
+      "$ref": "#/definitions/uuid"
+    }
+  },
+  "required": [ "defendantId" ],
+  "additionalProperties": false,
+  "definitions": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    }
+  }
 }

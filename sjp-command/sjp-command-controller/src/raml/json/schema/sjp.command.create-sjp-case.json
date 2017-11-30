@@ -3,12 +3,12 @@
   "id": "",
   "type": "object",
   "properties": {
-    "urn": {
-      "id": "/urn",
-      "type": "string"
-    },
     "id": {
       "id": "/id",
+      "type": "string"
+    },
+    "urn": {
+      "id": "/urn",
       "type": "string"
     },
     "ptiUrn": {
@@ -115,13 +115,14 @@
     }
   },
   "required": [
-    "urn",
     "id",
+    "urn",
     "ptiUrn",
     "prosecutingAuthority",
     "initiationCode",
     "summonsCode",
     "libraOriginatingOrg",
+    "libraHearingLocation",
     "dateOfHearing",
     "timeOfHearing",
     "personId",

@@ -8,12 +8,12 @@
   },
   "type": "object",
   "properties": {
-    "urn": {
-      "id": "/urn",
-      "type": "string"
-    },
     "id": {
       "$ref": "#/definitions/uuid",
+      "type": "string"
+    },
+    "urn": {
+      "id": "/urn",
       "type": "string"
     },
     "ptiUrn": {
@@ -76,6 +76,9 @@
       "items": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "prosecutorCaseId": {
             "type": "string"
           },
@@ -104,11 +107,11 @@
             "type": "string"
           },
           "compensation": {
-            "id": "/compensation",
             "type": "number"
           }
         },
         "required" : [
+          "id",
           "prosecutorCaseId",
           "offenceSequenceNo",
           "libraOffenceCode",
@@ -121,16 +124,19 @@
     }
   },
   "required": [
-    "urn",
     "id",
+    "urn",
     "ptiUrn",
     "initiationCode",
     "summonsCode",
     "prosecutingAuthority",
     "libraOriginatingOrg",
+    "libraHearingLocation",
     "dateOfHearing",
     "timeOfHearing",
     "personId",
-    "defendantId"
+    "defendantId",
+    "offences",
+    "postingDate"
   ]
 }

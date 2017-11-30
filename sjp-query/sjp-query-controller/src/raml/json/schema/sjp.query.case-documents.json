@@ -41,7 +41,8 @@
           "materialId",
           "policeName",
           "policeMaterialId",
-          "documentType"
+          "documentType",
+          "documentNumber"
         ]
       }
     }

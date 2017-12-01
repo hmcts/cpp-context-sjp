@@ -67,7 +67,7 @@
                   "type": "boolean"
                 },
                 "compensation": {
-                  "type": "boolean"
+                  "type": "number"
                 },
                 "prosecutionFacts": {
                   "type": "string"

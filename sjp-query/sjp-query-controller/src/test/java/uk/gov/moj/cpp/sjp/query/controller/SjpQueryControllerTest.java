@@ -1,23 +1,37 @@
 package uk.gov.moj.cpp.sjp.query.controller;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 
 import uk.gov.justice.services.core.annotation.Component;
+import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.query.controller.service.SjpService;
+import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.sjp.query.controller.service.PeopleService;
+
+import javax.json.JsonValue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -32,8 +46,11 @@ public class SjpQueryControllerTest {
     @Mock
     private JsonEnvelope response;
 
+    @Spy
+    private Enveloper enveloper = EnveloperFactory.createEnveloper();
+
     @Mock
-    private SjpService sjpService;
+    private PeopleService peopleService;
 
     @InjectMocks
     private SjpQueryController sjpQueryController;
@@ -61,25 +78,48 @@ public class SjpQueryControllerTest {
 
     @Test
     public void shouldFindCaseByUrnPostcode() {
-
-        setupExpectations();
-        when(sjpService.getQueryEnvelope(Mockito.anyString(), Mockito.any(JsonEnvelope.class))).thenReturn(query);
-        when(sjpService.findPersonByPostcode(Mockito.any(JsonEnvelope.class), Mockito.any(JsonEnvelope.class))).thenReturn(query);
-        when(sjpService.buildCaseDetailsResponse(Mockito.anyString(), Mockito.any(JsonEnvelope.class),
-                Mockito.any(JsonEnvelope.class))).thenReturn(response);
-
-        JsonEnvelope actualResponse = sjpQueryController.findCaseByUrnPostcode(query);
-
-        checkResult(actualResponse);
+        testFindCaseByUrnPostcode(true, true);
     }
 
-    private void setupExpectations() {
-        when(requester.request(query)).thenReturn(response);
+    @Test
+    public void shouldNotFindCaseByUrnPostcode_invalidUrn() {
+        testFindCaseByUrnPostcode(false, true); // doesn't matter that validPostcode could also be false
     }
 
-    private void checkResult(JsonEnvelope actualResponse) {
-        verify(requester).request(query);
-        assertThat(actualResponse, equalTo(response));
+    @Test
+    public void shouldNotFindCaseByUrnPostcode_invalidPostcode() {
+        testFindCaseByUrnPostcode(true, false);
+    }
+
+    private void testFindCaseByUrnPostcode(final boolean validUrn, final boolean validPostcode) {
+        final String urn = "ABC123";
+        final String postcode = "CR0 1YG";
+        final JsonEnvelope query = envelope()
+                .with(metadataWithRandomUUID("sjp.query.case-by-urn-postcode"))
+                .withPayloadOf(urn, "urn")
+                .withPayloadOf(postcode, "postcode").build();
+
+        final JsonEnvelope caseDetails = envelope().withPayloadOf("id", randomUUID().toString()).build();
+        when(requester.request(any(JsonEnvelope.class))).thenReturn(validUrn ? caseDetails : envelope().withNullPayload().build());
+
+        JsonValue resultPayload = JsonValue.NULL;
+        if (validUrn) {
+            resultPayload = validPostcode ? createObjectBuilder().build() : JsonValue.NULL;
+            when(peopleService.addPersonInfoForDefendantWithMatchingPostcode(postcode,
+                    caseDetails.payloadAsJsonObject(), query)).thenReturn(resultPayload == JsonValue.NULL ? null : resultPayload);
+        }
+
+        final JsonEnvelope result = sjpQueryController.findCaseByUrnPostcode(query);
+
+        verify(requester).request(argThat(jsonEnvelope(metadata().withName("sjp.query.case-by-urn"),
+                payloadIsJson(withJsonPath("$.urn", equalTo(urn))))));
+
+        if (validUrn) {
+            verify(peopleService).addPersonInfoForDefendantWithMatchingPostcode(postcode, caseDetails.payloadAsJsonObject(), query);
+        }
+
+        assertThat(result.metadata().name(), equalTo("sjp.query.case-by-urn-response"));
+        assertThat(result.payload(), equalTo(resultPayload));
     }
 
 }

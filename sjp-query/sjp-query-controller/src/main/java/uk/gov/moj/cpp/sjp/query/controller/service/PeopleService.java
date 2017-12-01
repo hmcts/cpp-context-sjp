@@ -1,23 +1,23 @@
 package uk.gov.moj.cpp.sjp.query.controller.service;
 
 
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_CONTROLLER;
 
 import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
-import java.util.List;
-
 import javax.inject.Inject;
-import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 @SuppressWarnings("WeakerAccess")
 public class PeopleService {
-
-    private static final String QUERY_PERSON = "people.query.person";
 
     @Inject
     private Enveloper enveloper;
@@ -26,34 +26,40 @@ public class PeopleService {
     @ServiceComponent(QUERY_CONTROLLER)
     private Requester requester;
 
-    public JsonEnvelope findPersonByPostcode(JsonEnvelope caseByUrnAndPostcodeQuery, List<String> personIds) {
-        String postcode = caseByUrnAndPostcodeQuery.payloadAsJsonObject().getString("postcode");
-        for (String personId : personIds) {
-            JsonEnvelope person = getPerson(caseByUrnAndPostcodeQuery, personId);
-            if (checkPostcodeBelongsTo(postcode, person)) {
-                return person;
-            }
-        }
-        return enveloper.withMetadataFrom(caseByUrnAndPostcodeQuery,
-                caseByUrnAndPostcodeQuery.metadata().name()).apply(null);
+    public JsonValue getPerson(final String personId, final JsonEnvelope query) {
+        return requester.requestAsAdmin(enveloper.withMetadataFrom(query, "people.query.person")
+                .apply(createObjectBuilder().add("personId", personId).build())).payload();
     }
 
-    private JsonEnvelope getPerson(JsonEnvelope jsonEnvelope, String personId) {
-        JsonObject payload = Json.createObjectBuilder().add("personId", personId).build();
-        JsonEnvelope request = enveloper.withMetadataFrom(jsonEnvelope, QUERY_PERSON).apply(payload);
-        return requester.requestAsAdmin(request);
-    }
-
-
-    private boolean checkPostcodeBelongsTo(String postcode, JsonEnvelope person) {
-        String inputPostCode = postcode.replaceAll(" ", "");
-        if (person.payloadAsJsonObject() != null && !person.payloadAsJsonObject().isEmpty()) {
-            String personObjPostCode = person.payloadAsJsonObject().getJsonObject("address")
-                    .getString("postCode").replaceAll(" ", "");
-            if (inputPostCode.equalsIgnoreCase(personObjPostCode)) {
-                return true;
+    /**
+     * Add the person info for the defendant matching the given postcode
+     * Also only returns a subset of the case attributes
+     *
+     * @param query for the metadata
+     * @return caseDetails with person info added to the relevant defendant, or JsonValue.NULL if
+     * there is no match
+     */
+    public JsonValue addPersonInfoForDefendantWithMatchingPostcode(final String postcode, final JsonObject caseDetails, final JsonEnvelope query) {
+        final JsonArrayBuilder defendantsArrayBuilder = createArrayBuilder();
+        for (final JsonObject defendant : caseDetails.getJsonArray("defendants").getValuesAs(JsonObject.class)) {
+            // Assume person will never be JsonValue.NULL
+            final JsonObject person = (JsonObject) getPerson(defendant.getString("personId"), query);
+            if (person.getJsonObject("address").getString("postcode").replaceAll(" ", "")
+                    .equalsIgnoreCase(postcode.replaceAll(" ", ""))) {
+                defendantsArrayBuilder.add(createObjectBuilder()
+                        .add("id", defendant.getString("id"))
+                        .add("person", person)
+                        .add("offences", defendant.getJsonArray("offences")));
             }
         }
-        return false;
+        final JsonArray defendants = defendantsArrayBuilder.build();
+        if (!defendants.isEmpty()) {
+            return createObjectBuilder()
+                    .add("id", caseDetails.getString("id"))
+                    .add("completed", caseDetails.getBoolean("completed", false))
+                    .add("defendants", defendants).build();
+        } else {
+            return null;
+        }
     }
 }

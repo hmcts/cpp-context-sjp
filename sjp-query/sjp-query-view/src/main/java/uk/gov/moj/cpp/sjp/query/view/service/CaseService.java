@@ -357,7 +357,8 @@ public class CaseService {
                 .add("id", searchResult.getId().toString())
                 .add("caseId", searchResult.getCaseId().toString())
                 .add("personId", searchResult.getPersonId().toString())
-                .add("lastName", searchResult.getLastName());
+                .add("lastName", searchResult.getLastName())
+                .add("assigned", searchResult.isAssigned());
         // it may be possible that the person details are added before the case is created
         final CaseSummary caseSummary = searchResult.getCaseSummary();
         if (caseSummary != null) {

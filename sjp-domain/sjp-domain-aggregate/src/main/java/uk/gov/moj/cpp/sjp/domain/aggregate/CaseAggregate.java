@@ -5,10 +5,12 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus.EMPLOYED;
+import static uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason.CASE_ASSIGNED;
 
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.moj.cpp.sjp.CourtReferralNotFound;
 import uk.gov.moj.cpp.sjp.domain.Case;
+import uk.gov.moj.cpp.sjp.domain.CaseAssignment;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
 import uk.gov.moj.cpp.sjp.domain.Employer;
@@ -28,6 +30,8 @@ import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.CaseAlreadyCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseAlreadyReopened;
+import uk.gov.moj.cpp.sjp.event.CaseAssignmentCreated;
+import uk.gov.moj.cpp.sjp.event.CaseAssignmentDeleted;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseCreationFailedBecauseCaseAlreadyExisted;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
@@ -87,6 +91,8 @@ public class CaseAggregate implements Aggregate {
     private boolean caseCompleted = false;
     private boolean withdrawalAllOffencesRequested = false;
     private boolean hasCourtReferral;
+    private boolean caseAssigned = false;
+
 
     private Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
 
@@ -239,6 +245,9 @@ public class CaseAggregate implements Aggregate {
             return apply(Stream.of(new DefendantNotFound(changePleaCommand.getOffenceId().toString(), "Update Plea")));
         }
 
+        if (caseAssigned) {
+            return caseUpdateRejected(changePleaCommand.getCaseId().toString(), CASE_ASSIGNED);
+        }
 
         if (withdrawalAllOffencesRequested) {
             return apply(Stream.of(new CaseUpdateRejected(changePleaCommand.getCaseId(),
@@ -402,6 +411,15 @@ public class CaseAggregate implements Aggregate {
         return apply(Stream.of(new CaseReopenedUndone(caseId, caseReopenedDate)));
     }
 
+    public Stream<Object> caseAssignmentCreated(final CaseAssignment caseAssignment) {
+        return apply(Stream.builder().add(new CaseAssignmentCreated(caseAssignment)).build());
+    }
+
+    public Stream<Object> caseAssignmentDeleted(final CaseAssignment caseAssignment) {
+        return apply(Stream.builder().add(new CaseAssignmentDeleted(caseAssignment)).build());
+    }
+
+
     private boolean assertCaseIdNotNullAndMatch(String caseId) {
         if (caseId == null) {
             LOGGER.warn("Case ID is null");
@@ -537,6 +555,8 @@ public class CaseAggregate implements Aggregate {
                 when(CourtReferralNotFound.class).apply(e -> {
                     //nothing to update
                 }),
+                when(CaseAssignmentCreated.class).apply(ignored -> caseAssigned = true),
+                when(CaseAssignmentDeleted.class).apply(ignored -> caseAssigned = false),
                 otherwiseDoNothing()
         );
     }
@@ -577,4 +597,7 @@ public class CaseAggregate implements Aggregate {
         return offenceIdsByDefendantId.keySet().contains(defendantId);
     }
 
+    public boolean isCaseAssigned() {
+        return caseAssigned;
+    }
 }

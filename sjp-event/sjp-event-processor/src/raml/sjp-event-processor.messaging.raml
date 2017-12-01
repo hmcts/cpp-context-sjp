@@ -96,6 +96,7 @@ baseUri: message://event/processor/message/sjp
         schema: !include json/schema/sjp.events.court-referral-actioned.json
         example: !include json/sjp.events.court-referral-actioned.json
 
+
 /public.event:
   post:
     body:
@@ -111,3 +112,9 @@ baseUri: message://event/processor/message/sjp
       application/vnd.material.material-added+json:
           schema: !include json/schema/material.material-added.json
           example: !include json/material.material-added.json
+      application/vnd.assignment.assignment-created+json:
+        schema: !include json/schema/assignment.assignment-created.json
+        example: !include json/assignment.assignment-created.json
+      application/vnd.assignment.assignment-deleted+json:
+        schema: !include json/schema/assignment.assignment-deleted.json
+        example: !include json/assignment.assignment-deleted.json

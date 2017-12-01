@@ -108,20 +108,13 @@ public class CaseUpdatedListener {
 
     private void handleCaseReopened(final JsonEnvelope envelope) {
         final JsonObject payload = envelope.payloadAsJsonObject();
-        updateCaseReopened(
-                UUID.fromString(payload.getString("caseId")),
-                LocalDates.from(payload.getString("reopenedDate")),
-                payload.getString("libraCaseNumber"),
-                payload.getString("reason")
-        );
-    }
 
-    private void updateCaseReopened(final UUID caseId, final LocalDate reopenedDate,
-                                    final String libraCaseNumber, final String reason) {
-        CaseDetail caseDetail = findCaseById(caseId);
-        caseDetail.setReopenedDate(reopenedDate);
-        caseDetail.setLibraCaseNumber(libraCaseNumber);
-        caseDetail.setReopenedInLibraReason(reason);
+        final UUID caseId = UUID.fromString(payload.getString("caseId"));
+        final CaseDetail caseDetail = findCaseById(caseId);
+        caseDetail.setReopenedDate(LocalDates.from(payload.getString("reopenedDate")));
+        caseDetail.setLibraCaseNumber(payload.getString("libraCaseNumber"));
+        caseDetail.setReopenedInLibraReason(payload.getString("reason"));
+
     }
 
     private void updateWithdrawalRequestedDate(final UUID caseId, final LocalDate withdrawalRequestedDate) {

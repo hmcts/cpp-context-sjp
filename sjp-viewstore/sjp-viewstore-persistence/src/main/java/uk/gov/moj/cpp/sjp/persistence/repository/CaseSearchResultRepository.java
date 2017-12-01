@@ -22,4 +22,6 @@ public interface CaseSearchResultRepository extends EntityRepository<CaseSearchR
     List<CaseSearchResult> findByCaseIdAndPersonId(UUID caseId, UUID personId);
 
     List<CaseSearchResult> findByPersonId(UUID personId);
+
+    List<CaseSearchResult> findByCaseId(UUID caseId);
 }

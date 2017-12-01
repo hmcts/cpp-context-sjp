@@ -22,8 +22,11 @@ public class UserAndGroupsService {
     private Enveloper enveloper;
 
     private static final String PROSECUTOR_GROUP = "TFL Users";
+    final private String LEGAL_ADVISOR_GROUP = "Legal Advisers";
+    final private String COURT_ADMINISTRATOR_GROUP = "Court Administrators";
 
-    public boolean isSjpProsecutor(JsonEnvelope originalEnvelope) {
+
+    public boolean isSjpProsecutorUserGroupOnly(JsonEnvelope originalEnvelope) {
 
         final JsonEnvelope requestEnvelope = enveloper.withMetadataFrom(originalEnvelope, "usersgroups.get-groups-by-user")
                 .apply(Json.createObjectBuilder().add("userId", originalEnvelope.metadata().userId().get()).build());
@@ -33,6 +36,9 @@ public class UserAndGroupsService {
         final JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
         final JsonArray groups = responsePayload.getJsonArray("groups");
 
-        return groups.getValuesAs(JsonObject.class).stream().anyMatch(group -> group.getString("groupName").equals(PROSECUTOR_GROUP));
+        return groups.getValuesAs(JsonObject.class).stream().anyMatch(group -> group.getString("groupName").equals(PROSECUTOR_GROUP)) &&
+                groups.getValuesAs(JsonObject.class).stream().noneMatch(group ->
+                        group.getString("groupName").equals(LEGAL_ADVISOR_GROUP) || group.getString("groupName").equals(COURT_ADMINISTRATOR_GROUP)
+                );
     }
 }

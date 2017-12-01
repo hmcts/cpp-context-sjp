@@ -35,7 +35,7 @@ public class SjpQueryController {
 
     @Handles("sjp.query.case")
     public JsonEnvelope findCase(final JsonEnvelope query) {
-        if (userAndGroupsService.isSjpProsecutor(query)) {
+        if (userAndGroupsService.isSjpProsecutorUserGroupOnly(query)) {
             final JsonObject payload = createObjectBuilder()
                     .add(CASE_ID, query.asJsonObject().getString(CASE_ID))
                     .build();
@@ -109,7 +109,7 @@ public class SjpQueryController {
 
     @Handles("sjp.query.case-documents")
     public JsonEnvelope findCaseDocuments(final JsonEnvelope query) {
-        if (userAndGroupsService.isSjpProsecutor(query)) {
+        if (userAndGroupsService.isSjpProsecutorUserGroupOnly(query)) {
             final JsonObject payload = createObjectBuilder()
                     .add(CASE_ID, query.asJsonObject().getString(CASE_ID))
                     .build();

@@ -19,9 +19,11 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.query.controller.service.UserAndGroupsService;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -43,13 +45,15 @@ public class UserAndGroupsServiceTest {
     @Spy
     private Enveloper enveloper = createEnveloper();
 
-    @Test
-    public void isSjpProsecutorWhenUserIsTflUser() {
+    private JsonEnvelope setupMocksAndStubData(String[] userGroupNames) {
+        final JsonArrayBuilder groupsArray = Json.createArrayBuilder();
+        Arrays.stream(userGroupNames).forEach(userGroup -> {
+            groupsArray.add(createObjectBuilder().add("groupId", UUID.randomUUID().toString())
+                    .add("groupName", userGroup));
+        });
+
         final JsonObject groupsPayload = createObjectBuilder()
-                .add("groups", Json.createArrayBuilder()
-                        .add(createObjectBuilder()
-                        .add("groupId", UUID.randomUUID().toString())
-                        .add("groupName", "TFL Users"))).build();
+                .add("groups", groupsArray).build();
 
         final UUID userId = UUID.randomUUID();
         final JsonEnvelope originalEnvelope = envelopeFrom(
@@ -63,31 +67,70 @@ public class UserAndGroupsServiceTest {
                 payloadIsJson(withJsonPath("$.userId", is(userId.toString())))
         )))).thenReturn(userAndGroupsResponse);
 
-        final boolean isSjpProsecutor = service.isSjpProsecutor(originalEnvelope);
+        return originalEnvelope;
+    }
+
+    @Test
+    public void isSjpProsecutorWhenUserIsTflUserGroupOnly() {
+        String[] userGroupNames = { "TFL Users" };
+        final JsonEnvelope originalEnvelope = setupMocksAndStubData(userGroupNames);
+
+        final boolean isSjpProsecutor = service.isSjpProsecutorUserGroupOnly(originalEnvelope);
         assertTrue(isSjpProsecutor);
     }
 
     @Test
-    public void isSjpProsecutorWhenUserIsNotUser() {
-        final JsonObject groupsPayload = createObjectBuilder()
-                .add("groups", Json.createArrayBuilder()
-                        .add(createObjectBuilder()
-                                .add("groupId", UUID.randomUUID().toString())
-                                .add("groupName", "Court Administrators"))).build();
+    public void isSjpProsecutorWhenUserIsCourtAdminUserGroupOnly() {
+        String[] userGroupNames = { "Court Administrators" };
+        final JsonEnvelope originalEnvelope = setupMocksAndStubData(userGroupNames);
 
-        final UUID userId = UUID.randomUUID();
-        final JsonEnvelope originalEnvelope = envelopeFrom(
-                metadataWithRandomUUID("usersgroups.get-groups-by-user").withUserId(userId.toString()),
-                createObjectBuilder().add("userId", userId.toString()).build()
-        );
 
-        final JsonEnvelope userAndGroupsResponse = enveloper.withMetadataFrom(originalEnvelope, "usersgroups.get-groups-by-user").apply(groupsPayload);
-        when(requester.requestAsAdmin(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(originalEnvelope).withName("usersgroups.get-groups-by-user"),
-                payloadIsJson(withJsonPath("$.userId", is(userId.toString())))
-        )))).thenReturn(userAndGroupsResponse);
+        final boolean isSjpProsecutor = service.isSjpProsecutorUserGroupOnly(originalEnvelope);
+        assertFalse(isSjpProsecutor);
+    }
 
-        final boolean isSjpProsecutor = service.isSjpProsecutor(originalEnvelope);
+    @Test
+    public void isSjpProsecutorWhenUserIsLegalAdvisorUserGroupOnly() {
+        String[] userGroupNames = { "Legal Advisers" };
+        final JsonEnvelope originalEnvelope = setupMocksAndStubData(userGroupNames);
+
+        final boolean isSjpProsecutor = service.isSjpProsecutorUserGroupOnly(originalEnvelope);
+        assertFalse(isSjpProsecutor);
+    }
+
+    @Test
+    public void isSjpProsecutorWhenUserHasAllUserGroups() {
+        String[] userGroupNames = { "TFL Users", "Court Administrators", "Legal Advisers" };
+        final JsonEnvelope originalEnvelope = setupMocksAndStubData(userGroupNames);
+
+        final boolean isSjpProsecutor = service.isSjpProsecutorUserGroupOnly(originalEnvelope);
+        assertFalse(isSjpProsecutor);
+    }
+
+    @Test
+    public void isSjpProsecutorWhenUserHasTflAndCourtAdminUserGroups() {
+        String[] userGroupNames = { "TFL Users", "Court Administrators" };
+        final JsonEnvelope originalEnvelope = setupMocksAndStubData(userGroupNames);
+
+        final boolean isSjpProsecutor = service.isSjpProsecutorUserGroupOnly(originalEnvelope);
+        assertFalse(isSjpProsecutor);
+    }
+
+    @Test
+    public void isSjpProsecutorWhenUserHasTflAndLegalAdvisorUserGroups() {
+        String[] userGroupNames = { "TFL Users", "Legal Advisers" };
+        final JsonEnvelope originalEnvelope = setupMocksAndStubData(userGroupNames);
+
+        final boolean isSjpProsecutor = service.isSjpProsecutorUserGroupOnly(originalEnvelope);
+        assertFalse(isSjpProsecutor);
+    }
+
+    @Test
+    public void isSjpProsecutorWhenUserHasCourtAdminAndLegalAdvisorUserGroups() {
+        String[] userGroupNames = { "Court Administrators", "Legal Advisers" };
+        final JsonEnvelope originalEnvelope = setupMocksAndStubData(userGroupNames);
+
+        final boolean isSjpProsecutor = service.isSjpProsecutorUserGroupOnly(originalEnvelope);
         assertFalse(isSjpProsecutor);
     }
 }

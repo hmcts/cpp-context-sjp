@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 
 import java.math.BigDecimal;

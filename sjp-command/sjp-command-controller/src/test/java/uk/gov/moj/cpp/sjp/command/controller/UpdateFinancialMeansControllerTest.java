@@ -15,7 +15,6 @@ import static uk.gov.moj.cpp.sjp.command.service.CaseUpdateHelper.RejectReason.C
 
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.command.controller.UpdateFinancialMeansController;
 import uk.gov.moj.cpp.sjp.command.service.CaseUpdateHelper;
 
 import java.util.Optional;
@@ -38,9 +37,6 @@ public class UpdateFinancialMeansControllerTest {
     private Sender sender;
 
     @Mock
-    private JsonEnvelope envelope;
-
-    @Mock
     private CaseUpdateHelper caseUpdateHelper;
 
     @InjectMocks
@@ -55,7 +51,6 @@ public class UpdateFinancialMeansControllerTest {
 
         updateFinancialMeansController.updateFinancialMeans(updateFinancialMeansCommand);
 
-        final ArgumentCaptor<JsonEnvelope> captor = ArgumentCaptor.forClass(JsonEnvelope.class);
         verify(sender).send(updateFinancialMeansCommand);
     }
 

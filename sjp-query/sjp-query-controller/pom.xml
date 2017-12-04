@@ -12,7 +12,7 @@
 
     <properties>
         <cpp.service-component>QUERY_CONTROLLER</cpp.service-component>
-        <usersgroups.version>2.0.81</usersgroups.version>
+        <usersgroups.version>2.0.84</usersgroups.version>
     </properties>
 
     <build>

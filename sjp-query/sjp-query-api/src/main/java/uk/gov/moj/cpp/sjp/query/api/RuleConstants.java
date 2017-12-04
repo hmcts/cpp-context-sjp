@@ -28,7 +28,8 @@ public final class RuleConstants {
     }
 
     public static List<String> getQueryCaseByUrnPostcodeActionGroups() {
-        return asList(GROUP_TFL_USERS);
+        //TODO replace with online-plea user
+        return asList(GROUP_TFL_USERS, GROUP_COURT_ADMINISTRATORS);
     }
 
     public static List<String> getQueryCasesSearchActionGroups() {

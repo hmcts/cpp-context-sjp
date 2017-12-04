@@ -37,8 +37,8 @@ public class CaseSearchResultHelper extends AbstractTestHelper {
     private final String personId;
     private final LocalDate updatedDateOfBirth;
     private final LocalDate dateOfBirth;
-    private CaseSjpHelper caseSjpHelper;
-
+    private final String assignmentNatureType = "for-magistrate-decision";
+    private final CaseSjpHelper caseSjpHelper;
 
     public CaseSearchResultHelper(CaseSjpHelper caseSjpHelper) {
         this.caseSjpHelper = caseSjpHelper;
@@ -78,6 +78,37 @@ public class CaseSearchResultHelper extends AbstractTestHelper {
         try (MessageProducerClient producerClient = new MessageProducerClient()) {
             producerClient.startProducer("public.event");
             producerClient.sendMessage("people.personal-details-updated", eventEnvelope);
+        }
+    }
+
+
+    public void assignmentCreated()  {
+        final JsonObject payload = createObjectBuilder()
+                .add("domainObjectId", caseSjpHelper.getCaseId())
+                .add("assignmentNatureType", assignmentNatureType)
+                .build();
+
+        final JsonEnvelope eventEnvelope = envelopeFrom(
+                metadataWithRandomUUID("assignment.assignment-created"), payload);
+
+        try (MessageProducerClient producerClient = new MessageProducerClient()) {
+            producerClient.startProducer("public.event");
+            producerClient.sendMessage("assignment.assignment-created", eventEnvelope);
+        }
+    }
+
+    public void assignmentDeleted()  {
+        final JsonObject payload = createObjectBuilder()
+                .add("domainObjectId", caseSjpHelper.getCaseId())
+                .add("assignmentNatureType", assignmentNatureType)
+                .build();
+
+        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("assignment.assignment-deleted"),
+                payload);
+
+        try (MessageProducerClient producerClient = new MessageProducerClient()) {
+            producerClient.startProducer("public.event");
+            producerClient.sendMessage("assignment.assignment-deleted", eventEnvelope);
         }
     }
 
@@ -132,6 +163,16 @@ public class CaseSearchResultHelper extends AbstractTestHelper {
                         withoutJsonPath("$.results[0].withdrawalRequestedDate")
                 ));
     }
+
+
+    public void verifyAssignment(final boolean assigned) {
+        poll(searchCases(caseSjpHelper.getCaseUrn()))
+                .until(status().is(OK), payload().isJson(allOf(
+                        withJsonPath("$.results[0].urn", is(caseSjpHelper.getCaseUrn())),
+                        withJsonPath("$.results[0].assigned", is(assigned)))));
+    }
+
+
 
     public String getFirstName() {
         return firstName;

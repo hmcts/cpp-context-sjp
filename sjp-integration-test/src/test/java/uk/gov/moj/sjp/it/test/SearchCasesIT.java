@@ -39,4 +39,24 @@ public class SearchCasesIT extends BaseIntegrationTest {
         caseSearchResultHelper.verifyPersonNotFound(caseSearchResultHelper.getLastName());
     }
 
+    @Test
+    public void verifyAssignmentCreationAndDeletionIsReflected() {
+        // given
+        caseSearchResultHelper.addPersonInfo();
+
+        // then
+        caseSearchResultHelper.verifyAssignment(false);
+
+        // when
+        caseSearchResultHelper.assignmentCreated();
+        // then
+        caseSearchResultHelper.verifyAssignment(true);
+
+        // when
+        caseSearchResultHelper.assignmentDeleted();
+        // then
+        caseSearchResultHelper.verifyAssignment(false);
+    }
+
+
 }

@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.controller;
 
 import static javax.json.Json.createObjectBuilder;
-import static javax.json.JsonValue.NULL;
 
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -9,35 +8,34 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.query.controller.service.SjpService;
+import uk.gov.moj.cpp.sjp.query.controller.service.PeopleService;
 import uk.gov.moj.cpp.sjp.query.controller.service.UserAndGroupsService;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 @SuppressWarnings("WeakerAccess")
 @ServiceComponent(Component.QUERY_CONTROLLER)
 public class SjpQueryController {
 
     private static final String CASE_ID = "caseId";
-    private static final String QUERY_BY_URN = "sjp.query.case-by-urn";
-    private static final String QUERY_BY_URN_POSTCODE = "sjp.query.case-by-urn-postcode";
 
     @Inject
     private Requester requester;
 
     @Inject
-    private SjpService sjpService;
+    private UserAndGroupsService userAndGroupsService;
 
     @Inject
-    private UserAndGroupsService userAndGroupsService;
+    private PeopleService peopleService;
 
     @Inject
     private Enveloper enveloper;
 
     @Handles("sjp.query.case")
     public JsonEnvelope findCase(final JsonEnvelope query) {
-        if (userAndGroupsService.isSjpProsecutor(query)) {
+        if (userAndGroupsService.isSjpProsecutorUserGroupOnly(query)) {
             final JsonObject payload = createObjectBuilder()
                     .add(CASE_ID, query.asJsonObject().getString(CASE_ID))
                     .build();
@@ -48,7 +46,7 @@ public class SjpQueryController {
         }
     }
 
-    @Handles(QUERY_BY_URN)
+    @Handles("sjp.query.case-by-urn")
     public JsonEnvelope findCaseByUrn(final JsonEnvelope query) {
         return requester.request(query);
     }
@@ -58,19 +56,26 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
-    @Handles(QUERY_BY_URN_POSTCODE)
-    public JsonEnvelope findCaseByUrnPostcode(final JsonEnvelope caseByUrnAndPostcodeQuery) {
-        final JsonEnvelope caseByUrnQuery = sjpService.getQueryEnvelope(QUERY_BY_URN, caseByUrnAndPostcodeQuery);
-        final JsonEnvelope caseDetails = requester.request(caseByUrnQuery);
-        if (caseDetails.payload() == NULL) {
-            return caseDetails;
-        }
-        final JsonEnvelope personDetails = sjpService.findPersonByPostcode(caseDetails, caseByUrnAndPostcodeQuery);
-        if (personDetails.payload() == NULL) {
-            return personDetails;
-        }
-        return sjpService.buildCaseDetailsResponse(QUERY_BY_URN_POSTCODE, caseDetails, personDetails);
+    @Handles("sjp.query.case-by-urn-postcode")
+    public JsonEnvelope findCaseByUrnPostcode(final JsonEnvelope query) {
+
+        final JsonObject payload = query.payloadAsJsonObject();
+        final String urn = payload.getString("urn");
+        final String postcode = payload.getString("postcode");
+
+        // Find the case by urn
+        final JsonValue caseDetails = requester.request(enveloper.withMetadataFrom(query,
+                "sjp.query.case-by-urn").apply(createObjectBuilder()
+                .add("urn", urn).build())).payload();
+
+        // Find the person and check that the postcode matches
+        final JsonValue responsePayload = JsonValue.NULL.equals(caseDetails) ? null :
+                peopleService.addPersonInfoForDefendantWithMatchingPostcode(postcode, (JsonObject) caseDetails, query);
+
+        return enveloper.withMetadataFrom(query, "sjp.query.case-by-urn-response")
+                .apply(responsePayload);
     }
+
 
     @Handles("sjp.query.financial-means")
     public JsonEnvelope findFinancialMeans(final JsonEnvelope query) {
@@ -104,7 +109,7 @@ public class SjpQueryController {
 
     @Handles("sjp.query.case-documents")
     public JsonEnvelope findCaseDocuments(final JsonEnvelope query) {
-        if (userAndGroupsService.isSjpProsecutor(query)) {
+        if (userAndGroupsService.isSjpProsecutorUserGroupOnly(query)) {
             final JsonObject payload = createObjectBuilder()
                     .add(CASE_ID, query.asJsonObject().getString(CASE_ID))
                     .build();

@@ -24,6 +24,7 @@ import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDef
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDocumentBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
@@ -41,7 +42,6 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantsView;
-import uk.gov.moj.cpp.sjp.query.view.response.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCasesHit;
@@ -88,6 +88,9 @@ public class CaseServiceTest {
     private static final String INTERPRETER = "french";
     private static final String PROSECUTING_AUTHORITY_CPS = "CPS";
     private static final String PROSECUTING_AUTHORITY_TFL = "TFL";
+    private static final String PROSECUTING_AUTHORITY_TVL = "TVL";
+    private static final String PROSECUTING_AUTHORITY_DVLA = "DVLA";
+
     private static final LocalDate POSTING_DATE = LocalDate.now();
     private static final String FIRST_NAME = "Adam";
     private static final String LAST_NAME = "Zuma";
@@ -251,6 +254,40 @@ public class CaseServiceTest {
         assertThat(hits.get(1).getId(), is(caseDetailWithPlea.getId().toString()));
         assertThat(hits.get(1).getCompleted(), is(Boolean.FALSE));
         assertThat(hits.get(1).getPlea(), is("GUILTY"));
+    }
+
+    @Test
+    public void shouldSearchCaseByMaterialId_whenTVL() {
+        final UUID materialId = UUID.randomUUID();
+        CaseDetail caseDetail = new CaseDetail();
+        caseDetail.setId(CASE_ID);
+        caseDetail.setProsecutingAuthority(PROSECUTING_AUTHORITY_TVL);
+
+        when(caseRepository.findByMaterialId(materialId)).thenReturn(caseDetail);
+
+        SearchCaseByMaterialIdView searchCaseByMaterialIdView =
+                service.searchCaseByMaterialId(materialId.toString());
+
+        assertThat(searchCaseByMaterialIdView.getCaseId(), is(CASE_ID.toString()));
+        assertThat(searchCaseByMaterialIdView.getProsecutingAuthority(),
+                is(ProsecutingAuthority.TVL));
+    }
+
+    @Test
+    public void shouldSearchCaseByMaterialId_whenDVLA() {
+        final UUID materialId = UUID.randomUUID();
+        CaseDetail caseDetail = new CaseDetail();
+        caseDetail.setId(CASE_ID);
+        caseDetail.setProsecutingAuthority(PROSECUTING_AUTHORITY_DVLA);
+
+        when(caseRepository.findByMaterialId(materialId)).thenReturn(caseDetail);
+
+        SearchCaseByMaterialIdView searchCaseByMaterialIdView =
+                service.searchCaseByMaterialId(materialId.toString());
+
+        assertThat(searchCaseByMaterialIdView.getCaseId(), is(CASE_ID.toString()));
+        assertThat(searchCaseByMaterialIdView.getProsecutingAuthority(),
+                is(ProsecutingAuthority.DVLA));
     }
 
     @Test

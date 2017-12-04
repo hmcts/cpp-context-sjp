@@ -31,6 +31,9 @@
     "postingDate": {
       "type": "string"
     },
+    "assigned": {
+      "type": "boolean"
+    },
     "completed": {
       "type": "boolean"
     },

@@ -78,6 +78,62 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
+/cases/{caseId}/defendant/{defendantId}:
+  uriParameters:
+    caseId:
+      description: The ID of the case to modify
+      type: string
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  post:
+    description: |
+      Update defendant's personal details or interpreter
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.update-defendant-details+json
+          name: sjp.update-defendant-details
+      ...
+    body:
+      application/vnd.sjp.update-defendant-details+json:
+        example:
+          !include json/sjp.update-defendant-details.json
+        schema:
+          !include json/schema/sjp.update-defendant-details.json
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted
+
+/cases/{caseId}/defendants/{defendantId}:
+  uriParameters:
+    caseId:
+      description: The ID of the case to modify
+      type: string
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  post:
+    description: |
+      Update defendant's interpreter
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.update-interpreter+json
+          name: sjp.update-interpreter
+      ...
+    body:
+      application/vnd.sjp.update-interpreter+json:
+        example:
+          !include json/sjp.update-interpreter.json
+        schema:
+          !include json/schema/sjp.update-interpreter.json
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted
+
 /cases/{caseId}/defendant/{defendantId}/employer:
   uriParameters:
     caseId:
@@ -326,25 +382,6 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
-
-/cases/{caseId}/defendant/{defendantId}:
-  post:
-    description: |
-      Update person's details (used currently by ATCM, as the replace entire person didn't sound correct)
-      ...
-      (mapping):
-          requestType: application/vnd.sjp.update-defendant-details+json
-          name: sjp.update-defendant-details
-      ...
-    body:
-      application/vnd.sjp.update-defendant-details+json:
-        example:
-            !include json/sjp.update-defendant-details.json
-        schema:
-            !include json/schema/sjp.update-defendant-details.json
-    responses:
-      202:
-        description: Accepted
 
 /cases/{caseId}/court-referral:
   post:

@@ -12,6 +12,7 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.toJsonArray;
 
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
@@ -33,7 +34,6 @@ import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnWithDetailsView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantsView;
-import uk.gov.moj.cpp.sjp.query.view.response.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCasesHit;
@@ -357,7 +357,8 @@ public class CaseService {
                 .add("id", searchResult.getId().toString())
                 .add("caseId", searchResult.getCaseId().toString())
                 .add("personId", searchResult.getPersonId().toString())
-                .add("lastName", searchResult.getLastName());
+                .add("lastName", searchResult.getLastName())
+                .add("assigned", searchResult.isAssigned());
         // it may be possible that the person details are added before the case is created
         final CaseSummary caseSummary = searchResult.getCaseSummary();
         if (caseSummary != null) {

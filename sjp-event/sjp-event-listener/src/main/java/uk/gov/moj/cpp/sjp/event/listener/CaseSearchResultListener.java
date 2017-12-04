@@ -12,9 +12,11 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
+import javax.transaction.Transactional;
 
 @ServiceComponent(EVENT_LISTENER)
 public class CaseSearchResultListener {
@@ -56,4 +58,23 @@ public class CaseSearchResultListener {
             repository.save(caseSearchResult);
         });
     }
+
+    @Handles("sjp.events.case-assignment-created")
+    @Transactional
+    public void caseAssignmentCreated(final JsonEnvelope envelope) {
+        updateCaseAssignment(envelope, true);
+    }
+
+    @Handles("sjp.events.case-assignment-deleted")
+    @Transactional
+    public void caseAssignmentDeleted(final JsonEnvelope envelope) {
+        updateCaseAssignment(envelope, false);
+    }
+
+    private void updateCaseAssignment(final JsonEnvelope envelope, final boolean assigned) {
+        final UUID caseId = UUID.fromString(envelope.payloadAsJsonObject().getString("caseId"));
+        final List<CaseSearchResult> results = repository.findByCaseId(caseId);
+        results.forEach(result -> result.setAssigned(assigned));
+    }
+
 }

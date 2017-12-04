@@ -5,5 +5,7 @@
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
 
     <include file="liquibase/sjp-view-store-db-changesets/001-initial-schema.changelog.xml"/>
+    <include file="liquibase/sjp-view-store-db-changesets/002-add-case-assignment.xml"/>
+
 
 </databaseChangeLog>

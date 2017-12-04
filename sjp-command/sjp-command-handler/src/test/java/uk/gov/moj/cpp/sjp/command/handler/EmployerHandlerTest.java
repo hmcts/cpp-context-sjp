@@ -37,14 +37,14 @@ public class EmployerHandlerTest extends CaseCommandHandlerTest {
 
     @Test
     public void shouldDeleteEmployer() throws EventStreamException {
-        final UUID defendatId = UUID.randomUUID();
-        when(jsonObject.getString("defendantId")).thenReturn(defendatId.toString());
+        final UUID defendantId = UUID.randomUUID();
+        when(jsonObject.getString("defendantId")).thenReturn(defendantId.toString());
 
-        when(caseAggregate.deleteEmployer(defendatId)).thenReturn(events);
+        when(caseAggregate.deleteEmployer(defendantId)).thenReturn(events);
 
         employerHandler.deleteEmployer(jsonEnvelope);
 
         verify(jsonObject).getString("defendantId");
-        verify(caseAggregate).deleteEmployer(defendatId);
+        verify(caseAggregate).deleteEmployer(defendantId);
     }
 }

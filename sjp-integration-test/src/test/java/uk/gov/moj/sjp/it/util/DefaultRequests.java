@@ -11,6 +11,7 @@ import static uk.gov.moj.sjp.it.helper.CaseCourtReferralHelper.CASES_REFERRED_TO
 import static uk.gov.moj.sjp.it.helper.CaseDocumentHelper.GET_CASE_DOCUMENTS_MEDIA_TYPE;
 import static uk.gov.moj.sjp.it.helper.CaseSearchResultHelper.CASE_SEARCH_RESULTS_MEDIA_TYPE;
 import static uk.gov.moj.sjp.it.helper.CaseSjpHelper.GET_SJP_CASE_BY_URN_MEDIA_TYPE;
+import static uk.gov.moj.sjp.it.helper.CitizenHelper.GET_CASE_BY_URN_AND_POSTCODE_MEDIA_TYPE;
 import static uk.gov.moj.sjp.it.helper.SearchCaseByMaterialIdHelper.CASES_SEARCH_BY_MATERIAL_MEDIA_TYPE;
 import static uk.gov.moj.sjp.it.helper.SearchCasesByPersonIdHelper.CASES_SEARCH_MEDIA_TYPE;
 import static uk.gov.moj.sjp.it.helper.UpdateOffencesForDefendantHelper.GET_CASE_DEFENDANTS;
@@ -79,4 +80,8 @@ public class DefaultRequests {
                 .withHeader(HeaderConstants.USER_ID, USER_ID);
     }
 
+    public static RequestParamsBuilder getCaseByUrnAndPostcode(final String caseUrn, final String postcode) {
+        return requestParams(getReadUrl("/cases-for-citizen?urn=" + caseUrn + "&postcode=" + postcode), GET_CASE_BY_URN_AND_POSTCODE_MEDIA_TYPE)
+                .withHeader(HeaderConstants.USER_ID, USER_ID);
+    }
 }

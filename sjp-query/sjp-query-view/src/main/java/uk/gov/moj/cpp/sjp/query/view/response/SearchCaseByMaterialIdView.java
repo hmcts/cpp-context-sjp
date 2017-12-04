@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
 
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+
 public class SearchCaseByMaterialIdView {
 
     private String caseId;

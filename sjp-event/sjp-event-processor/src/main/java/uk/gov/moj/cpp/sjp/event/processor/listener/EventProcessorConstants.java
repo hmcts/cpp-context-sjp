@@ -13,6 +13,12 @@ public class EventProcessorConstants {
     public static final String DOCUMENT_TYPE = "documentType";
     public static final String FILENAME = "fileName";
 
+    public static final String CASE_ASSIGNMENT_TYPE = "caseAssignmentType";
+
+    public static final String ASSIGNMENT_DOMAIN_OBJECT_ID = "domainObjectId";
+    public static final String ASSIGNMENT_NATURE_TYPE = "assignmentNatureType";
+
+
     private EventProcessorConstants() {
     }
 }

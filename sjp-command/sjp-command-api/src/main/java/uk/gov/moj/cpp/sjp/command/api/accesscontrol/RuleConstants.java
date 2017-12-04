@@ -70,5 +70,11 @@ public final class RuleConstants {
     public static List<String> getUpdateDefendantDetails() {
         return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
+
+    public static List<String> getUpdateInterpreterGroups() {
+        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+    }
+
+
 }
 

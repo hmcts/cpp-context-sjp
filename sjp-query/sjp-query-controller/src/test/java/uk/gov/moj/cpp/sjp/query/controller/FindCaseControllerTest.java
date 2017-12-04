@@ -58,7 +58,7 @@ public class FindCaseControllerTest {
         // This is big case object, not relevant for the testing of this controller
         final JsonEnvelope response = envelope().build();
 
-        when(userAndGroupsService.isSjpProsecutor(query)).thenReturn(Boolean.FALSE);
+        when(userAndGroupsService.isSjpProsecutorUserGroupOnly(query)).thenReturn(Boolean.FALSE);
         when(requester.request(jsonEnvelopeCaptor.capture())).thenReturn(response);
 
         final JsonEnvelope aCase = controller.findCase(query);
@@ -80,7 +80,7 @@ public class FindCaseControllerTest {
         // This is big case object, not relevant for the testing of this controller
         final JsonEnvelope response = envelope().build();
 
-        when(userAndGroupsService.isSjpProsecutor(query)).thenReturn(Boolean.TRUE);
+        when(userAndGroupsService.isSjpProsecutorUserGroupOnly(query)).thenReturn(Boolean.TRUE);
         when(requester.request(jsonEnvelopeCaptor.capture())).thenReturn(response);
 
         final JsonEnvelope aCase = controller.findCase(query);
@@ -105,7 +105,7 @@ public class FindCaseControllerTest {
         // This is big case object, not relevant for the testing of this controller
         final JsonEnvelope response = envelope().build();
 
-        when(userAndGroupsService.isSjpProsecutor(query)).thenReturn(Boolean.FALSE);
+        when(userAndGroupsService.isSjpProsecutorUserGroupOnly(query)).thenReturn(Boolean.FALSE);
         when(requester.request(jsonEnvelopeCaptor.capture())).thenReturn(response);
 
         final JsonEnvelope aCase = controller.findCaseDocuments(query);
@@ -127,7 +127,7 @@ public class FindCaseControllerTest {
         // This is big case object, not relevant for the testing of this controller
         final JsonEnvelope response = envelope().build();
 
-        when(userAndGroupsService.isSjpProsecutor(query)).thenReturn(Boolean.TRUE);
+        when(userAndGroupsService.isSjpProsecutorUserGroupOnly(query)).thenReturn(Boolean.TRUE);
         when(requester.request(jsonEnvelopeCaptor.capture())).thenReturn(response);
 
         final JsonEnvelope aCase = controller.findCaseDocuments(query);

@@ -46,6 +46,10 @@ public class CaseSearchResult implements Serializable {
     @Column(name = "post_code")
     private String postCode;
 
+    @Column(name = "assigned")
+    private Boolean assigned = false;
+
+
     public CaseSearchResult() {
     }
 
@@ -139,4 +143,11 @@ public class CaseSearchResult implements Serializable {
         this.postCode = postCode;
     }
 
+    public Boolean isAssigned() {
+        return assigned != null && assigned;
+    }
+
+    public void setAssigned(Boolean assigned) {
+        this.assigned = assigned;
+    }
 }

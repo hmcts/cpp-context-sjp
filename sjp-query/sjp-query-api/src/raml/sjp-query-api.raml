@@ -321,3 +321,30 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
           application/vnd.sjp.query.oldest-case-age+json:
             schema: !include json/schema/sjp.query.oldest-case-age.json
             example: !include json/sjp.query.oldest-case-age.json
+
+/cases-for-citizen:
+  get:
+    description: |
+      Get case by URN and postcode
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-by-urn-postcode+json
+          name: sjp.query.case-by-urn-postcode
+      ...
+    queryParameters:
+      urn:
+        description: URN
+        type: string
+        required: true
+      postcode:
+        description: Postcode
+        type: string
+        required: true
+
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.case-by-urn-postcode+json:
+                  schema: !include json/schema/sjp.query.case-by-urn-postcode.json
+                  example: !include json/sjp.query.case-by-urn-postcode.json

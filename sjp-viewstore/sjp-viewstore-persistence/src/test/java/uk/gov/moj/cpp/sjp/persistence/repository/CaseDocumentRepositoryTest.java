@@ -7,8 +7,6 @@ import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -65,7 +63,7 @@ public class CaseDocumentRepositoryTest extends BaseTransactionalTest {
 
         DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), UUID.randomUUID(),
                 null);
-        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "URN", null, null, null, null);
+        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "URN", null, null, null, null, null);
         caseDetail.addDefendant(defendantDetail);
         CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,

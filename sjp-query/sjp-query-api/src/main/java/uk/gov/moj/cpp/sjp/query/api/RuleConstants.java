@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.query.api;
 
 import static java.util.Arrays.asList;
 
+import java.util.Collections;
 import java.util.List;
 
 public final class RuleConstants {
@@ -28,8 +29,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getQueryCaseByUrnPostcodeActionGroups() {
-        //TODO replace with online-plea user
-        return asList(GROUP_TFL_USERS, GROUP_COURT_ADMINISTRATORS);
+        return Collections.singletonList(GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getQueryCasesSearchActionGroups() {

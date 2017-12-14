@@ -150,6 +150,10 @@
       "id": "/completed",
       "type": "boolean"
     },
+    "assigned": {
+      "id": "/assigned",
+      "type": "boolean"
+    },
     "costs": {
       "id": "/costs",
       "type": "number"

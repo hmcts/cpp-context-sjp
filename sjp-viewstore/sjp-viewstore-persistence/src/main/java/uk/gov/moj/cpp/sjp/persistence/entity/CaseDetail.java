@@ -90,6 +90,9 @@ public class CaseDetail implements Serializable {
     @Column(name = "completed")
     private Boolean completed = Boolean.FALSE;
 
+    @Column(name = "assigned")
+    private Boolean assigned = Boolean.FALSE;
+
     @Column(name = "summons_code")
     private String summonsCode;
 
@@ -116,12 +119,13 @@ public class CaseDetail implements Serializable {
         super();
     }
 
-    public CaseDetail(UUID id, String urn, String prosecutingAuthority, String initiationCode, Boolean completed, ZonedDateTime createdOn) {
+    public CaseDetail(UUID id, String urn, String prosecutingAuthority, String initiationCode, Boolean completed, Boolean assigned, ZonedDateTime createdOn) {
         this.id = id;
         this.urn = urn;
         this.prosecutingAuthority = prosecutingAuthority;
         this.initiationCode = initiationCode;
         this.completed = completed;
+        this.assigned = assigned;
         this.dateTimeCreated = createdOn;
     }
 
@@ -195,6 +199,14 @@ public class CaseDetail implements Serializable {
 
     public void setCompleted(Boolean completed) {
         this.completed = completed;
+    }
+
+    public Boolean getAssigned() {
+        return assigned;
+    }
+
+    public void setAssigned(Boolean assigned) {
+        this.assigned = assigned;
     }
 
     public String getSummonsCode() {

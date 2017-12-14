@@ -1,28 +1,32 @@
 {
-  "caseId": "7e2f843e-d639-40b3-8611-8015f3a18958",
-  "defendant":
-  {
-    "id": "ab746921-d839-4867-bcf9-b41db8ebc852",
-    "personId": "ab746921-d839-4867-bcf9-b41db8ebc852",
-    "firstName": "David",
-    "lastName": "LLOYD",
-    "dateOfBirth": "1980-07-15",
-    "nationality": "England",
-    "disability": "Any thing",
-    "ethnicity": "white and Black Caribbean",
-    "gender": "Male",
-    "address": {
-      "addressLine1": "14 Tottenham Court Road",
-      "addressLine2": "London",
-      "addressLine3": "England",
-      "addressLine4": "UK",
-      "postCode": "W1T 1JY"
-    },
-    "offences": [
-      {
-        "id": "0baecac5-222b-402d-9047-84803679edad",
-        "wording": "On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable"
-      }
-    ]
-  }
+  "id": "b1ae452f-da24-48ac-bac3-d13e528c2da6",
+  "completed": true,
+  "assigned": true,
+  "defendants": [
+    {
+      "id": "1613a21d-d627-46f7-95f0-c9dd7b32c39e",
+      "person": {
+        "id": "ab1df96b-9528-4123-9081-03b3974e0150",
+        "firstName": "John",
+        "lastName": "Protractor-3076799829",
+        "dateOfBirth": "1977-10-17",
+        "address": {
+          "address1": "Flat 55",
+          "address2": "1 Oxford Road",
+          "address3": "Croydon",
+          "address4": "Surrey",
+          "postCode": "SW99 1AA"
+        }
+      },
+      "offences": [
+        {
+          "id": "8fd81570-65d3-4424-b630-537006afeb62",
+          "title": "Public service vehicle - passenger use altered / defaced   ticket",
+          "wording": "On 10/08/2016 At threadneedle street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction",
+          "pendingWithdrawal": true,
+          "plea": "GUILTY"
+        }
+      ]
+    }
+  ]
 }

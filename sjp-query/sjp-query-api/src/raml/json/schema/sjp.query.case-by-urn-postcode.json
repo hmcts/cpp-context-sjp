@@ -4,16 +4,16 @@
     "address": {
       "type": "object",
       "properties": {
-        "addressLine1": {
+        "address1": {
           "type": "string"
         },
-        "addressLine2": {
+        "address2": {
           "type": "string"
         },
-        "addressLine3": {
+        "address3": {
           "type": "string"
         },
-        "addressLine4": {
+        "address4": {
           "type": "string"
         },
         "postCode": {
@@ -22,7 +22,7 @@
       },
       "additionalProperties": false,
       "required": [
-        "addressLine1",
+        "address1",
         "postCode"
       ]
     },
@@ -32,21 +32,65 @@
         "id": {
           "type": "string"
         },
+        "title": {
+          "type": "string"
+        },
         "wording": {
+          "type": "string"
+        },
+        "pendingWithdrawal": {
+          "type": "boolean"
+        },
+        "plea": {
           "type": "string"
         }
       },
       "additionalProperties": false,
       "required": [
         "id",
-        "wording"
+        "wording",
+        "pendingWithdrawal"
       ]
-    }
-  },
-  "type": "object",
-  "properties": {
-    "caseId": {
-      "type": "string"
+    },
+    "person": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "dateOfBirth": {
+          "type": "string"
+        },
+        "homeTelephone": {
+          "type": "string"
+        },
+        "mobile": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "nationalInsuranceNumber": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "#/definitions/address"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "dateOfBirth",
+        "address"
+      ]
     },
     "defendant": {
       "type": "object",
@@ -54,39 +98,8 @@
         "id": {
           "type": "string"
         },
-        "personId": {
-          "type": "string"
-        },
-        "firstName": {
-          "description": "The person fore name",
-          "type": "string"
-        },
-        "lastName": {
-          "description": "The person last name",
-          "type": "string"
-        },
-        "dateOfBirth": {
-          "description": "The person date of birth",
-          "type": "string"
-        },
-        "nationality": {
-          "description": "The person nationality",
-          "type": "string"
-        },
-        "disability": {
-          "description": "The person disability status",
-          "type": "string"
-        },
-        "ethnicity": {
-          "description": "The person ethnicity",
-          "type": "string"
-        },
-        "gender": {
-          "description": "The person gender",
-          "type": "string"
-        },
-        "address": {
-          "$ref": "#/definitions/address"
+        "person": {
+          "$ref": "#/definitions/person"
         },
         "offences": {
           "type": "array",
@@ -99,18 +112,35 @@
       "additionalProperties": false,
       "required": [
         "id",
-        "personId",
-        "firstName",
-        "lastName",
-        "dateOfBirth",
-        "address",
+        "person",
         "offences"
       ]
     }
   },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "completed": {
+      "type": "boolean"
+    },
+    "assigned": {
+      "type": "boolean"
+    },
+    "defendants": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/defendant"
+      },
+      "minItems": 1
+    }
+  },
   "additionalProperties": false,
   "required": [
-    "caseId",
-    "defendant"
+    "id",
+    "completed",
+    "assigned",
+    "defendants"
   ]
 }

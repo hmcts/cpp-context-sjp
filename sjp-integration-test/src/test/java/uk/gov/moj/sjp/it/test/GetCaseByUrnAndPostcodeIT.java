@@ -5,6 +5,10 @@ import static uk.gov.moj.sjp.it.stub.AuthorisationServiceStub.stubEnableAllCapab
 import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 import uk.gov.moj.sjp.it.helper.CitizenHelper;
 import uk.gov.moj.sjp.it.stub.PeopleStub;
+import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
+
+import javax.json.Json;
+import javax.json.JsonObject;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,11 +32,14 @@ public class GetCaseByUrnAndPostcodeIT {
 
             urn = caseSjpHelper.getCaseUrn();
         }
+
+        ReferenceDataStub.stubQueryOffences("/GetCaseByUrnAndPostcodeIT/referencedata.query.offences.json");
     }
 
     @Test
     public void shouldFindCaseByUrnAndPostcode() {
-        citizenHelper.verifyCaseByPersonUrnAndPostcode(urn, POSTCODE);
+        final JsonObject expected = Json.createReader(getClass().getResourceAsStream("/GetCaseByUrnAndPostcodeIT/expected.json")).readObject();
+        citizenHelper.verifyCaseByPersonUrnAndPostcode(expected, urn, POSTCODE);
     }
 
     @Test

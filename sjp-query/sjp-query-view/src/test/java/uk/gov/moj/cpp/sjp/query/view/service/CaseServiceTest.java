@@ -434,7 +434,7 @@ public class CaseServiceTest {
         DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), UUID.randomUUID(),
                 null);
         CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "URN", null,
-                null, null, null);
+                null, null, null, null);
         caseDetail.addDefendant(defendantDetail);
 
         CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
@@ -471,7 +471,7 @@ public class CaseServiceTest {
         DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), UUID.randomUUID(),
                 null);
         CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "URN", null, null,
-                null, null);
+                null, null, null);
         caseDetail.addDefendant(defendantDetail);
         CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
@@ -558,7 +558,7 @@ public class CaseServiceTest {
 
     private CaseDetail createCaseDetail() {
         return new CaseDetail(CASE_ID, URN, PROSECUTING_AUTHORITY_CPS,
-                null, COMPLETED, clock.now());
+                null, COMPLETED, false, clock.now());
     }
 
     private CaseDetail createCaseDetailWithDocumentTypes(String... documentTypes) {

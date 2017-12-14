@@ -17,7 +17,7 @@
         <sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
-        <assignment.version>2.0.85</assignment.version>
+        <assignment.version>2.0.95</assignment.version>
         <charging.version>2.0.255</charging.version>
         <people.version>2.0.105</people.version>
         <resulting.version>2.0.151</resulting.version>

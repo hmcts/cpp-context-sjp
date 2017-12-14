@@ -9,6 +9,8 @@ public final class RuleConstants {
     private static final String GROUP_TFL_USERS = "TFL Users";
     private static final String GROUP_LEGAL_ADVISERS = "Legal Advisers";
     private static final String GROUP_COURT_ADMINISTRATORS = "Court Administrators";
+    private static final String GROUP_SUPPORT_USERS = "Support Users";
+
 
     private RuleConstants() {
         throw new IllegalAccessError("Utility class");
@@ -62,6 +64,9 @@ public final class RuleConstants {
         return Arrays.asList(GROUP_TFL_USERS);
     }
 
+    public static List<String> getRemovePersonInfoGroups() {
+        return Arrays.asList(GROUP_SUPPORT_USERS);
+    }
 
     public static List<String> getActionCourtReferralGroups() {
         return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
@@ -74,7 +79,5 @@ public final class RuleConstants {
     public static List<String> getUpdateInterpreterGroups() {
         return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
-
-
 }
 

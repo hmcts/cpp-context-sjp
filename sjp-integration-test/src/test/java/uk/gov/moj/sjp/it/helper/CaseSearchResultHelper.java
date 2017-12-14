@@ -14,6 +14,7 @@ import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseByUrn;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
 
 import uk.gov.justice.services.common.converter.LocalDates;
@@ -173,6 +174,11 @@ public class CaseSearchResultHelper extends AbstractTestHelper {
     }
 
 
+    public void verifyPersonInfoByUrn(final int expectedHits) {
+        poll(searchCases(caseSjpHelper.caseUrn))
+                .until(status().is(OK), payload().isJson(allOf(
+                        withJsonPath("$.results", hasSize(expectedHits)))));
+    }
 
     public String getFirstName() {
         return firstName;

@@ -5,6 +5,7 @@ import static com.google.common.collect.Range.atMost;
 import static com.google.common.collect.Range.closed;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Arrays.asList;
+import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.summingLong;
 import static java.util.stream.Collectors.toList;
@@ -47,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 import javax.inject.Inject;
@@ -93,11 +93,11 @@ public class CaseService {
      * @return CaseView. Null, when not found.
      */
     public CaseView findCase(final String id) {
-        return getCaseView(caseRepository.findBy(UUID.fromString(id)));
+        return getCaseView(caseRepository.findBy(fromString(id)));
     }
 
     public CaseView findCaseAndFilterOtherAndFinancialMeansDocuments(String caseId) {
-        final CaseView caseView = getCaseView(caseRepository.findBy(UUID.fromString(caseId)));
+        final CaseView caseView = getCaseView(caseRepository.findBy(fromString(caseId)));
         if (caseView != null && !isEmpty(caseView.getCaseDocuments())) {
             filterOtherAndFinancialMeansDocuments(caseView.getCaseDocuments());
         }
@@ -182,7 +182,7 @@ public class CaseService {
      * @return SearchView containing matched case summaries
      */
     public SearchCasesView searchCasesByPersonId(final String personId) {
-        final List<SearchCasesHit> cases = caseRepository.findByPersonId(UUID.fromString(personId))
+        final List<SearchCasesHit> cases = caseRepository.findByPersonId(fromString(personId))
                 .stream().map(SearchCasesHit::new).collect(toList());
         return new SearchCasesView(personId, cases);
     }
@@ -190,7 +190,7 @@ public class CaseService {
     public SearchCaseByMaterialIdView searchCaseByMaterialId(final String q) {
         SearchCaseByMaterialIdView searchCaseByMaterialIdView = new SearchCaseByMaterialIdView();
         try {
-            CaseDetail caseDetail = caseRepository.findByMaterialId(UUID.fromString(q));
+            CaseDetail caseDetail = caseRepository.findByMaterialId(fromString(q));
             if (caseDetail != null) {
                 String caseId = caseDetail.getId().toString();
                 ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.valueOf(caseDetail.getProsecutingAuthority());
@@ -212,13 +212,13 @@ public class CaseService {
      * @return case documents for the case
      */
     public CaseDocumentsView findCaseDocuments(final String caseId) {
-        final List<CaseDocumentView> caseDocuments = caseRepository.findCaseDocuments(UUID.fromString(caseId)).stream().map(CaseDocumentView::new).collect(toList());
+        final List<CaseDocumentView> caseDocuments = caseRepository.findCaseDocuments(fromString(caseId)).stream().map(CaseDocumentView::new).collect(toList());
         caseDocuments.sort(CaseDocumentView.BY_DOCUMENT_TYPE_AND_NUMBER);
         return new CaseDocumentsView(caseDocuments);
     }
 
     public CaseDocumentsView findCaseDocumentsFilterOtherAndFinancialMeans(String caseId) {
-        List<CaseDocumentView> caseDocuments = caseRepository.findCaseDocuments(UUID.fromString(caseId)).stream().map(CaseDocumentView::new).collect(toList());
+        List<CaseDocumentView> caseDocuments = caseRepository.findCaseDocuments(fromString(caseId)).stream().map(CaseDocumentView::new).collect(toList());
         caseDocuments.sort(CaseDocumentView.BY_DOCUMENT_TYPE_AND_NUMBER);
         final CaseDocumentsView caseDocumentsView = new CaseDocumentsView(caseDocuments);
         filterOtherAndFinancialMeansDocuments(caseDocumentsView.getCaseDocuments());
@@ -233,7 +233,7 @@ public class CaseService {
      */
     public DefendantsView findCaseDefendants(final String caseId) {
         List<DefendantView> caseDefendant =
-                caseRepository.findCaseDefendants(UUID.fromString(caseId)).stream()
+                caseRepository.findCaseDefendants(fromString(caseId)).stream()
                         .map(DefendantView::new).collect(toList());
         return new DefendantsView(caseDefendant);
     }

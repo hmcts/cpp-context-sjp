@@ -382,6 +382,32 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
+/cases/{caseId}/person-info/{personInfoId}:
+  uriParameters:
+    caseId:
+      description: The ID of a case to remove the person info
+      type: string
+    personInfoId:
+      description: personInfoId
+      type: string
+  post:
+    description: |
+      Remove person info
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.remove-person-info+json
+          name: sjp.remove-person-info
+      ...
+    body:
+      application/vnd.sjp.remove-person-info+json:
+        example:
+          !include json/sjp.remove-person-info.json
+        schema:
+          !include json/schema/sjp.remove-person-info.json
+    responses:
+      202:
+        description: Accepted
+
 
 /cases/{caseId}/court-referral:
   post:
@@ -397,3 +423,4 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
     responses:
       202:
         description: Accepted
+

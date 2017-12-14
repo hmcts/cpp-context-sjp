@@ -1,7 +1,6 @@
 package uk.gov.moj.sjp.it;
 
 public class EventSelector {
-
     public static final String EVENT_SELECTOR_CASE_COMPLETED = "sjp.events.case-completed";
     public static final String EVENT_SELECTOR_CASE_CREATED = "sjp.events.case-created";
     public static final String PUBLIC_EVENT_SELECTOR_DEFENDANT_ADDED = "public.structure.defendant-added";
@@ -36,4 +35,8 @@ public class EventSelector {
     public static final String PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UPDATED = "public.structure.case-reopened-in-libra-updated";
     public static final String EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE = "sjp.events.case-reopened-in-libra-undone";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE = "public.structure.case-reopened-in-libra-undone";
+    public static final String EVENT_SELECTOR_ADD_PERSON_INFO = "sjp.events.person-info-added";
+    public static final String PUBLIC_EVENT_SELECTOR_ADD_PERSON_INFO = "public.structure.person-info-added";
+    public static final String EVENT_SELECTOR_REMOVE_PERSON_INFO = "sjp.events.person-info-removed";
+
 }

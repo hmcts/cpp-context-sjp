@@ -1,0 +1,207 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "address": {
+      "type": "object",
+      "properties": {
+        "address1": {
+          "type": "string"
+        },
+        "address2": {
+          "type": "string"
+        },
+        "address3": {
+          "type": "string"
+        },
+        "address4": {
+          "type": "string"
+        },
+        "postCode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "properties": {
+    "person": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "#/definitions/address"
+        },
+        "homeTelephone": {
+          "type": "string"
+        },
+        "mobile": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "dateOfBirth": {
+          "type": "string"
+        },
+        "nationalInsuranceNumber": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "address",
+        "email",
+        "dateOfBirth"
+      ],
+      "additionalProperties": false
+    },
+    "offences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "plea": {
+            "type": "string",
+            "enum": ["NOT_GUILTY", "GUILTY"]
+          },
+          "comeToCourt": {
+            "type": "boolean"
+          },
+          "mitigation": {
+            "type": "string"
+          },
+          "notGuiltyBecause": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "plea"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "witnessDispute": {
+      "type": "string"
+    },
+    "witnessDetails": {
+      "type": "string"
+    },
+    "interpreterLanguage": {
+      "type": "string"
+    },
+    "unavailability": {
+      "type": "string"
+    },
+    "financialMeans": {
+      "type": "object",
+      "properties": {
+        "income": {
+          "type": "object",
+          "properties": {
+            "amount": {
+              "type": "number"
+            },
+            "frequency": {
+              "type": "string",
+              "enum": ["WEEKLY", "FORTNIGHTLY", "MONTHLY"]
+            }
+          },
+          "required": [
+            "amount",
+            "frequency"
+          ],
+          "additionalProperties": false
+        },
+        "benefits": {
+          "type": "object",
+          "properties": {
+            "claimed": {
+              "type": "boolean"
+            },
+            "type": {
+              "type": "string"
+            },
+            "deductPenaltyPreference": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "claimed",
+            "deductPenaltyPreference"
+          ],
+          "additionalProperties": false
+        },
+        "employmentStatus": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "income",
+        "benefits",
+        "employmentStatus"
+      ],
+      "additionalProperties": false
+    },
+    "employer": {
+      "type": "object",
+      "properties": {
+        "employeeReference": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "#/definitions/address"
+        }
+      },
+      "required": [
+        "name",
+        "address"
+      ],
+      "additionalProperties": false
+    },
+    "outgoings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          }
+        },
+        "required" : [
+          "amount"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "person",
+    "offences",
+    "financialMeans"
+  ],
+  "additionalProperties": false
+}

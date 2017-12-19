@@ -207,7 +207,7 @@ public class StructureQueryViewTest {
                 .build();
 
         final Income income = new Income(IncomeFrequency.MONTHLY, BigDecimal.valueOf(1.1));
-        final Benefits benefit = new Benefits(true, "benefitType");
+        final Benefits benefit = new Benefits(true, "benefitType", null);
         final FinancialMeans financialMeans = new FinancialMeans(defendantId, income, benefit, "EMPLOYED");
 
         when(financialMeansService.getFinancialMeans(defendantId)).thenReturn(Optional.of(financialMeans));

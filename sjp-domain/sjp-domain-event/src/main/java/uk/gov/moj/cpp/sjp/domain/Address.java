@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Address implements Serializable {
 
@@ -43,5 +44,23 @@ public class Address implements Serializable {
 
     public String getPostCode() {
         return postCode;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Address)) {
+            return false;
+        }
+        final Address other = (Address) o;
+        return Objects.equals(address1, other.address1) &&
+                Objects.equals(address2, other.address2) &&
+                Objects.equals(address3, other.address3) &&
+                Objects.equals(address4, other.address4) &&
+                Objects.equals(postCode, other.postCode);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(address1, address2, address3, address4, postCode);
     }
 }

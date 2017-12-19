@@ -4,7 +4,9 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertNull;
 
+import uk.gov.moj.cpp.sjp.domain.Outgoing;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.Case;
@@ -17,6 +19,7 @@ import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -27,10 +30,18 @@ import org.junit.Test;
 public class UpdateFinancialMeansTest {
 
     private CaseAggregate caseAggregate;
+    private Income income;
+    private Benefits benefits;
+    private List<Outgoing> outgoings;
 
     @Before
     public void init() {
         caseAggregate = new CaseAggregate();
+        income = new Income(IncomeFrequency.MONTHLY, BigDecimal.valueOf(1000.50));
+        benefits = new Benefits(false, "", null);
+        outgoings = new ArrayList<>();
+        outgoings.add(new Outgoing("food", BigDecimal.valueOf(300.2)));
+        outgoings.add(new Outgoing("travel", BigDecimal.valueOf(100,8)));
     }
 
     @Test
@@ -40,9 +51,6 @@ public class UpdateFinancialMeansTest {
         final SjpCaseCreated sjpCaseCreated  = (SjpCaseCreated) eventsStream.findFirst().get();
 
         final UUID defendantId = sjpCaseCreated.getDefendantId();
-
-        final Income income = new Income(IncomeFrequency.MONTHLY, BigDecimal.valueOf(1000.50));
-        final Benefits benefits = new Benefits(false, "");
         final FinancialMeans financialMeans = new FinancialMeans(defendantId, income, benefits, "EMPLOYED");
 
         final Stream<Object> eventStream = caseAggregate.updateFinancialMeans(financialMeans);
@@ -56,13 +64,12 @@ public class UpdateFinancialMeansTest {
         assertThat(financialMeansUpdated.getBenefits(), equalTo(benefits));
         assertThat(financialMeansUpdated.getIncome(), equalTo(income));
         assertThat(financialMeansUpdated.getEmploymentStatus(), equalTo(financialMeans.getEmploymentStatus()));
+        assertNull(financialMeansUpdated.getOutgoings());
     }
 
     @Test
     public void shouldCreateDefendantNotFoundEventIfDefendantDoesNotExist() {
         final UUID defendantId = UUID.randomUUID();
-        final Income income = new Income(IncomeFrequency.MONTHLY, BigDecimal.valueOf(1000.50));
-        final Benefits benefits = new Benefits(false, "");
         final FinancialMeans financialMeans = new FinancialMeans(defendantId, income, benefits, "EMPLOYED");
 
         final Stream<Object> eventStream = caseAggregate.updateFinancialMeans(financialMeans);

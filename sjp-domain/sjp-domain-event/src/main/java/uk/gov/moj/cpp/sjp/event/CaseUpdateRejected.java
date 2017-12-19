@@ -13,7 +13,9 @@ public class CaseUpdateRejected {
     public enum RejectReason {
         WITHDRAWAL_PENDING,
         CASE_ASSIGNED,
-        CASE_COMPLETED
+        CASE_COMPLETED,
+        //below applies to online-plea only
+        PLEA_ALREADY_SUBMITTED
     }
 
     private UUID caseId;

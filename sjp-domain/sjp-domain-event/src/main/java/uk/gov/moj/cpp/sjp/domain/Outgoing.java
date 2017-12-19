@@ -4,19 +4,17 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class Income implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-    private final IncomeFrequency frequency;
+public class Outgoing implements Serializable {
+    private final String description;
     private final BigDecimal amount;
 
-    public Income(final IncomeFrequency frequency, final BigDecimal amount) {
-        this.frequency = frequency;
+    public Outgoing(final String description, final BigDecimal amount) {
+        this.description = description;
         this.amount = amount;
     }
 
-    public IncomeFrequency getFrequency() {
-        return frequency;
+    public String getDescription() {
+        return description;
     }
 
     public BigDecimal getAmount() {
@@ -31,14 +29,13 @@ public class Income implements Serializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final Income income = (Income) o;
-        return frequency == income.frequency &&
-                Objects.equals(amount, income.amount);
+        final Outgoing that = (Outgoing) o;
+        return Objects.equals(description, that.description) &&
+                Objects.equals(amount, that.amount);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(frequency, amount);
+        return Objects.hash(description, amount);
     }
-
 }

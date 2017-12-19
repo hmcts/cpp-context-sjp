@@ -85,7 +85,7 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
         final String caseId = caseSjpHelper.getCaseId();
         final Income originalIncome = new Income(MONTHLY, BigDecimal.valueOf(1000.50));
         final Income updatedIncome = new Income(WEEKLY, BigDecimal.valueOf(200.0));
-        final Benefits updatedBenefits = new Benefits(false, "");
+        final Benefits updatedBenefits = new Benefits(false, "", null);
         final String employmentStatus = "EMPLOYED";
 
         final JsonObject original = createObjectBuilder()
@@ -145,7 +145,7 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
         final String defendantId = caseSjpHelper.getSingleDefendantId();
         final String caseId = caseSjpHelper.getCaseId();
         final Income income = new Income(MONTHLY, BigDecimal.valueOf(1000.50));
-        final Benefits benefits = new Benefits(true, "Benefits type");
+        final Benefits benefits = new Benefits(true, "Benefits type", null);
 
         final JsonObject payload = createObjectBuilder()
                 .add("income", createObjectBuilder()

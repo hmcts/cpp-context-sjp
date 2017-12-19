@@ -3,10 +3,6 @@ package uk.gov.moj.cpp.sjp.command.api.validator;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import uk.gov.moj.cpp.sjp.command.api.validator.UpdatePleaModel;
-import uk.gov.moj.cpp.sjp.command.api.validator.UpdatePleaValidationErrorMessages;
-import uk.gov.moj.cpp.sjp.command.api.validator.UpdatePleaValidator;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +25,7 @@ public class UpdatePleaValidatorTest {
     @Test
     public void shouldAllowValidGuiltyPlea() {
         // given
-        final UpdatePleaModel data = prepareData(UpdatePleaModel.PleaType.GUILTY, null, null);
+        final UpdatePleaModel data = prepareData(PleaType.GUILTY, null, null);
 
         // when
         Map<String, List<String>> errors = service.validate(data);
@@ -41,7 +37,7 @@ public class UpdatePleaValidatorTest {
     @Test
     public void shouldAllowValidNotGuiltyPlea() {
         // given
-        final UpdatePleaModel data = prepareData(UpdatePleaModel.PleaType.NOT_GUILTY, false, null);
+        final UpdatePleaModel data = prepareData(PleaType.NOT_GUILTY, false, null);
 
         // when
         Map<String, List<String>> errors = service.validate(data);
@@ -53,7 +49,7 @@ public class UpdatePleaValidatorTest {
     @Test
     public void shouldAllowValidGuiltyRequestHearingPlea() {
         // given
-        final UpdatePleaModel data = prepareData(UpdatePleaModel.PleaType.GUILTY_REQUEST_HEARING, true, "Greek");
+        final UpdatePleaModel data = prepareData(PleaType.GUILTY_REQUEST_HEARING, true, "Greek");
 
         // when
         Map<String, List<String>> errors = service.validate(data);
@@ -65,7 +61,7 @@ public class UpdatePleaValidatorTest {
     @Test
     public void shouldReturnGuiltyPleaErrorMessages() {
         // given
-        final UpdatePleaModel data = prepareData(UpdatePleaModel.PleaType.GUILTY, false, "Basque");
+        final UpdatePleaModel data = prepareData(PleaType.GUILTY, false, "Basque");
 
         // when
         Map<String, List<String>> errors = service.validate(data);
@@ -80,7 +76,7 @@ public class UpdatePleaValidatorTest {
     @Test
     public void shouldReturnErrorMessage_INTERPRETER_REQUIREMENT_NOT_SET() {
         // given
-        final UpdatePleaModel data = prepareData(UpdatePleaModel.PleaType.NOT_GUILTY, null, null);
+        final UpdatePleaModel data = prepareData(PleaType.NOT_GUILTY, null, null);
 
         // when
         Map<String, List<String>> errors = service.validate(data);
@@ -93,7 +89,7 @@ public class UpdatePleaValidatorTest {
     @Test
     public void shouldReturnErrorMessage_INTERPRETER_LANGUAGE_NOT_SET_nullValue() {
         // given
-        final UpdatePleaModel data = prepareData(UpdatePleaModel.PleaType.GUILTY_REQUEST_HEARING, true, null);
+        final UpdatePleaModel data = prepareData(PleaType.GUILTY_REQUEST_HEARING, true, null);
 
         // when
         Map<String, List<String>> errors = service.validate(data);
@@ -106,7 +102,7 @@ public class UpdatePleaValidatorTest {
     @Test
     public void shouldReturnErrorMessage_INTERPRETER_LANGUAGE_NOT_SET_emptyString() {
         // given
-        final UpdatePleaModel data = prepareData(UpdatePleaModel.PleaType.GUILTY_REQUEST_HEARING, true, "");
+        final UpdatePleaModel data = prepareData(PleaType.GUILTY_REQUEST_HEARING, true, "");
 
         // when
         Map<String, List<String>> errors = service.validate(data);
@@ -119,7 +115,7 @@ public class UpdatePleaValidatorTest {
     @Test
     public void shouldReturnErrorMessage_INTERPRETER_LANGUAGE_NOT_ALLOWED() {
         // given
-        final UpdatePleaModel data = prepareData(UpdatePleaModel.PleaType.GUILTY_REQUEST_HEARING, false, "");
+        final UpdatePleaModel data = prepareData(PleaType.GUILTY_REQUEST_HEARING, false, "");
 
         // when
         Map<String, List<String>> errors = service.validate(data);
@@ -130,7 +126,7 @@ public class UpdatePleaValidatorTest {
     }
 
 
-    private UpdatePleaModel prepareData(UpdatePleaModel.PleaType plea, Boolean required, String language) {
+    private UpdatePleaModel prepareData(PleaType plea, Boolean required, String language) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
 
         if (plea != null) {

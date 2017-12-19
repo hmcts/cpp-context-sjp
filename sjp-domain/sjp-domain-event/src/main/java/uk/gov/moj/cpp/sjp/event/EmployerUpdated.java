@@ -35,8 +35,8 @@ public class EmployerUpdated {
         this.address = address;
     }
 
-    public EmployerUpdated(final Employer employer) {
-        this(employer.getDefendantId(),
+    public EmployerUpdated(final UUID defendantId, final Employer employer) {
+        this(defendantId,
                 employer.getName(),
                 employer.getEmployeeReference(),
                 employer.getPhone(),

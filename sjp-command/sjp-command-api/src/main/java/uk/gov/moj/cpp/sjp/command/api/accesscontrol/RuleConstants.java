@@ -20,6 +20,11 @@ public final class RuleConstants {
         return Arrays.asList(GROUP_TFL_USERS);
     }
 
+    public static List<String> getPleaOnlineActionGroups() {
+        //TODO: this needs to be changed TO ONLINE_PLEA_USERS as part of ATCM-2664
+        return Arrays.asList(GROUP_SYSTEM_USERS);
+    }
+
     public static List<String> getAddCaseDocumentActionGroups() {
         return Arrays.asList(GROUP_SYSTEM_USERS, GROUP_TFL_USERS, GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }

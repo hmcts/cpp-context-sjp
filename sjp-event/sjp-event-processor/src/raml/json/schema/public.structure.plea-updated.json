@@ -5,10 +5,31 @@
     "caseId": {
       "type": "string"
     },
+    "offenceId": {
+      "type": "string"
+    },
     "plea": {
       "enum": ["NOT_GUILTY", "GUILTY", "GUILTY_REQUEST_HEARING"]
     },
-    "offenceId": {
+    "pleaMethod": {
+      "enum": ["ONLINE", "POSTAL"]
+    },
+    "pleaDetails": {
+      "type": "object"
+    },
+    "mitigation": {
+      "type": "string"
+    },
+    "notGuiltyBecause": {
+      "type": "string"
+    },
+    "witnessDispute": {
+      "type": "string"
+    },
+    "witnessDetails": {
+      "type": "string"
+    },
+    "unavailability": {
       "type": "string"
     }
   },

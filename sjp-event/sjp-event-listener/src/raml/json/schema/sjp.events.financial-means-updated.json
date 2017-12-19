@@ -20,6 +20,10 @@
           "minimum": 0
         }
       },
+      "required": [
+        "frequency",
+        "amount"
+      ],
       "additionalProperties": false
     },
     "benefits": {
@@ -30,12 +34,37 @@
         },
         "type": {
           "type": "string"
+        },
+        "deductPenaltyPreference": {
+          "type": "boolean"
         }
       },
+      "required": [
+        "claimed",
+        "type"
+      ],
       "additionalProperties": false
     },
     "employmentStatus": {
       "type": "string"
+    },
+    "outgoings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          }
+        },
+        "required" : [
+          "amount"
+        ],
+        "additionalProperties": false
+      }
     }
   },
   "required": [

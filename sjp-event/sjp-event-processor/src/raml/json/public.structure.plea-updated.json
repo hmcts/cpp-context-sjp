@@ -1,5 +1,7 @@
 {
   "caseId" : "6ac98e9c-66b2-4363-8a78-641dbec8bbc3",
   "offenceId": "6ac98e9c-66b2-4363-8a78-641dbec8bbd2",
-  "plea": "GUILTY"
+  "plea": "NOT_GUILTY",
+  "notGuiltyBecause": "It was not me",
+  "pleaMethod": "ONLINE"
 }

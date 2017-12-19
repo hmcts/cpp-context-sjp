@@ -225,6 +225,34 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
+/cases/{caseId}/defendants/{defendantId}/plea-online:
+  uriParameters:
+    caseId:
+      description: The ID of the case update
+      type: string
+    defendantId:
+          description: The ID of the defendant
+          type: string
+  post:
+    description: |
+      Receive an online plea
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.plea-online+json
+          name: sjp.plea-online
+      ...
+    body:
+      application/vnd.sjp.plea-online+json:
+        example:
+          !include json/sjp.plea-online.json
+        schema:
+          !include json/schema/sjp.plea-online.json
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted
+
 /cases/{caseId}/upload-case-document/{caseDocumentType}:
   uriParameters:
     caseId:

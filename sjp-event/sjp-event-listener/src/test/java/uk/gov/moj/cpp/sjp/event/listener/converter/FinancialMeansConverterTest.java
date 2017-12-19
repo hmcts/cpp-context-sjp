@@ -53,8 +53,8 @@ public class FinancialMeansConverterTest {
 
     @Test
     public void shouldConvertToFinancialMeansEntity() {
-        final FinancialMeansUpdated financialMeansUpdated = new FinancialMeansUpdated(UUID.randomUUID(),
-                income, benefits, employmentStatus, null);
+        final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEvent(UUID.randomUUID(),
+                income, benefits, employmentStatus);
 
 
         final FinancialMeans financialMeans = financialMeansConverter.convertToFinancialMeansEntity(financialMeansUpdated);

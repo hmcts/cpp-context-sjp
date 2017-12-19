@@ -351,3 +351,21 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
           application/vnd.sjp.query.oldest-case-age+json:
             schema: !include json/schema/sjp.query.oldest-case-age.json
             example: !include json/sjp.query.oldest-case-age.json
+
+/cases/{caseId}/defendants-online-plea:
+  get:
+    description: |
+      Get defendant's online plea on a case.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.defendants-online-plea+json
+          name: sjp.query.defendants-online-plea
+      ...
+    queryParameters:
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.defendants-online-plea+json:
+                  schema: !include json/schema/sjp.query.defendants-online-plea.json
+                  example: !include json/sjp.query.defendants-online-plea.json

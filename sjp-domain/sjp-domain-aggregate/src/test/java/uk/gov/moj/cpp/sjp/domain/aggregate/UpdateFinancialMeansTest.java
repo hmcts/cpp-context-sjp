@@ -4,7 +4,7 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
@@ -41,7 +41,7 @@ public class UpdateFinancialMeansTest extends CaseAggregateBaseTest {
         assertThat(financialMeansUpdated.getBenefits(), equalTo(benefits));
         assertThat(financialMeansUpdated.getIncome(), equalTo(income));
         assertThat(financialMeansUpdated.getEmploymentStatus(), equalTo(financialMeans.getEmploymentStatus()));
-        assertNull(financialMeansUpdated.getOutgoings());
+        assertTrue(financialMeansUpdated.getOutgoings().isEmpty());
     }
 
     @Test

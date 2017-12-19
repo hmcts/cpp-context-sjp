@@ -7,6 +7,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
@@ -41,6 +42,8 @@ public class OffenceUpdatedListener {
 
         offenceDetail.setPlea(event.getPlea());
         offenceDetail.setPleaMethod(event.getPleaMethod());
+        offenceDetail.setMitigation(event.getMitigation());
+        offenceDetail.setNotGuiltyBecause(event.getNotGuiltyBecause());
 
         updatePleaReceivedDate(UUID.fromString(event.getCaseId()),
                 envelope.metadata().createdAt().map(ZonedDateTime::toLocalDate)

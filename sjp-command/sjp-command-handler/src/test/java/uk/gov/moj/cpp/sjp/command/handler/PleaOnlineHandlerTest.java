@@ -1,11 +1,12 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static java.time.ZoneOffset.UTC;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
+import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.Employer;
@@ -15,12 +16,14 @@ import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -28,6 +31,9 @@ public class PleaOnlineHandlerTest extends CaseCommandHandlerTest {
 
     @InjectMocks
     private PleaOnlineHandler pleaOnlineHandler;
+
+    @Spy
+    private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
 
     @Test
     public void shouldPleaOnline() throws EventStreamException {
@@ -45,11 +51,11 @@ public class PleaOnlineHandlerTest extends CaseCommandHandlerTest {
         );
 
         when(converter.convert(jsonObject, PleadOnline.class)).thenReturn(pleadOnline);
-        when(caseAggregate.pleaOnline(any(UUID.class), eq(pleadOnline))).thenReturn(events);
+        when(caseAggregate.pleaOnline(CASE_ID, pleadOnline, clock.now())).thenReturn(events);
 
         pleaOnlineHandler.pleaOnline(jsonEnvelope);
 
         verify(converter).convert(jsonObject, PleadOnline.class);
-        verify(caseAggregate).pleaOnline(any(UUID.class), eq(pleadOnline));
+        verify(caseAggregate).pleaOnline(CASE_ID, pleadOnline, clock.now());
     }
 }

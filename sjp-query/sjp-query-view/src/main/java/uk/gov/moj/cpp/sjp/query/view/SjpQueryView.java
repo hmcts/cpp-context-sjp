@@ -10,6 +10,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
+import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
@@ -49,6 +50,9 @@ public class SjpQueryView {
 
     @Inject
     private EmployerService employerService;
+
+    @Inject
+    private OnlinePleaRepository.FinancialMeansOnlinePleaRepository onlinePleaRepository;
 
     @Inject
     private Enveloper enveloper;
@@ -188,5 +192,12 @@ public class SjpQueryView {
 
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASES_WITH_ORDER)
                 .apply(caseService.findResultOrders(fromDate, toDate));
+    }
+
+    @Handles("sjp.query.defendants-online-plea")
+    public JsonEnvelope findDefendantsOnlinePlea(final JsonEnvelope envelope) {
+        final UUID caseId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_CASE_ID));
+        return enveloper.withMetadataFrom(envelope, "sjp.query.defendants-online-plea")
+                .apply(onlinePleaRepository.findBy(caseId));
     }
 }

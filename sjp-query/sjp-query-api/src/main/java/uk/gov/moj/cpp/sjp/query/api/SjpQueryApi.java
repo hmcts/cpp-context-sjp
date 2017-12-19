@@ -105,4 +105,9 @@ public class SjpQueryApi {
     public JsonEnvelope getResultOrders(final JsonEnvelope query) {
         return requester.request(query);
     }
+
+    @Handles("sjp.query.defendants-online-plea")
+    public JsonEnvelope getDefendantsOnlinePlea(final JsonEnvelope query) {
+        return requester.request(query);
+    }
 }

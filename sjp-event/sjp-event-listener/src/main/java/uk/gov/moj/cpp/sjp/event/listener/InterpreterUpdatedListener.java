@@ -8,10 +8,13 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
+import uk.gov.moj.cpp.sjp.event.listener.converter.OnlinePleaConverter;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.InterpreterDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -25,6 +28,12 @@ public class InterpreterUpdatedListener {
     @Inject
     private CaseRepository caseRepository;
 
+    @Inject
+    private OnlinePleaConverter onlinePleaConverter;
+
+    @Inject
+    private OnlinePleaRepository.InterpreterLanguageOnlinePleaRepository onlinePleaRepository;
+
     @Handles("sjp.events.interpreter-for-defendant-updated")
     @Transactional
     public void interpreterUpdated(final JsonEnvelope envelope) {
@@ -37,6 +46,12 @@ public class InterpreterUpdatedListener {
             defendant.setInterpreter(null);
         } else {
             defendant.setInterpreter(new InterpreterDetail(event.getInterpreter().getLanguage()));
+        }
+
+        if (event.isUpdatedByOnlinePlea()) {
+            final OnlinePlea onlinePlea = onlinePleaConverter.convertToOnlinePleaEntity(event.getCaseId(),
+                    event.getInterpreter() != null ? event.getInterpreter().getLanguage(): null, event.getUpdatedDate());
+            onlinePleaRepository.saveOnlinePlea(onlinePlea);
         }
     }
 

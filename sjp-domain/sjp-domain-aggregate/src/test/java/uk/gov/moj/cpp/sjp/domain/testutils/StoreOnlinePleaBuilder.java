@@ -43,7 +43,7 @@ public class StoreOnlinePleaBuilder {
 
     public static PleadOnline defaultStoreOnlinePleaWithGuiltyPlea(UUID offenceId, String defendantId) {
         List<Offence> offences = Arrays.asList(
-                new Offence(offenceId.toString(), PleaType.GUILTY.toString(), false, MITIGATION, null)
+                new Offence(offenceId.toString(), PleaType.GUILTY, false, MITIGATION, null)
         );
         final FinancialMeans financialMeans = new FinancialMeans(null, new Income(IncomeFrequency.MONTHLY, INCOME_AMOUNT),
                 new Benefits(BENEFITS_CLAIMED, BENEFITS_TYPE, BENEFITS_DEDUCT), EMPLOYMENT_STATUS);
@@ -59,7 +59,7 @@ public class StoreOnlinePleaBuilder {
 
     public static PleadOnline defaultStoreOnlinePleaWithGuiltyRequestHearingPlea(UUID offenceId, String defendantId, String interpreterLanguage) {
         List<Offence> offences = Arrays.asList(
-                new Offence(offenceId.toString(), PleaType.GUILTY.toString(), true, MITIGATION, null)
+                new Offence(offenceId.toString(), PleaType.GUILTY, true, MITIGATION, null)
         );
         final FinancialMeans financialMeans = new FinancialMeans(null, new Income(IncomeFrequency.MONTHLY, INCOME_AMOUNT),
                 new Benefits(BENEFITS_CLAIMED, BENEFITS_TYPE, BENEFITS_DEDUCT), EMPLOYMENT_STATUS);
@@ -74,8 +74,8 @@ public class StoreOnlinePleaBuilder {
     }
 
     public static PleadOnline defaultStoreOnlinePleaWithNotGuiltyPlea(UUID offenceId, String defendantId, String interpreterLanguage, boolean includeTrialRequestedFields) {
-        List<Offence> offences = Arrays.asList(
-                new Offence(offenceId.toString(), PleaType.NOT_GUILTY.toString(), null, null, NOT_GUILTY_BECAUSE)
+        final List<Offence> offences = Arrays.asList(
+                new Offence(offenceId.toString(), PleaType.NOT_GUILTY, true, null, NOT_GUILTY_BECAUSE)
         );
         final FinancialMeans financialMeans = new FinancialMeans(null, new Income(IncomeFrequency.MONTHLY, INCOME_AMOUNT),
                 new Benefits(BENEFITS_CLAIMED, BENEFITS_TYPE, BENEFITS_DEDUCT), EMPLOYMENT_STATUS);
@@ -100,13 +100,13 @@ public class StoreOnlinePleaBuilder {
                 .map(pleaInformation -> {
                     boolean comeToCourt = (Boolean) pleaInformation[2];
                     if (pleaInformation[1].equals(PleaType.GUILTY) && !comeToCourt) {
-                        return new Offence(pleaInformation[0].toString(), PleaType.GUILTY.toString(), false, MITIGATION, null);
+                        return new Offence(pleaInformation[0].toString(), PleaType.GUILTY, false, MITIGATION, null);
                     }
                     else if (pleaInformation[1].equals(PleaType.GUILTY) && comeToCourt) {
-                        return new Offence(pleaInformation[0].toString(), PleaType.GUILTY.toString(), true, MITIGATION, null);
+                        return new Offence(pleaInformation[0].toString(), PleaType.GUILTY, true, MITIGATION, null);
                     }
                     else if (pleaInformation[1].equals(PleaType.NOT_GUILTY) ) {
-                        return new Offence(pleaInformation[0].toString(), PleaType.NOT_GUILTY.toString(), null, null, NOT_GUILTY_BECAUSE);
+                        return new Offence(pleaInformation[0].toString(), PleaType.NOT_GUILTY, true, null, NOT_GUILTY_BECAUSE);
                     }
                     return null;
                 })

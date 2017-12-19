@@ -57,6 +57,13 @@
         ],
         "additionalProperties": false
       }
+    },
+    "updatedByOnlinePlea": {
+      "type": "boolean"
+    },
+    "updatedDate": {
+      "type": "string",
+      "format": "date-time"
     }
   },
   "required": [

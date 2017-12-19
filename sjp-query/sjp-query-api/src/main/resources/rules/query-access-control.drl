@@ -169,3 +169,12 @@ rule "sjp - Query - API - Get result orders"
     $outcome.setSuccess(true);
 end
 
+rule "sjp - Query - API - Get defendant's online plea"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.defendants-online-plea");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryDefendantsOnlinePleaGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+

@@ -146,3 +146,11 @@ rule "sjp.query.result-orders"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp.query.defendants-online-plea"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.defendants-online-plea");
+  then
+    $outcome.setSuccess(true);
+end

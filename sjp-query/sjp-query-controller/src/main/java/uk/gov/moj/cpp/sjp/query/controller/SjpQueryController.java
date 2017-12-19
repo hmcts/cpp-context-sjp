@@ -174,4 +174,8 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.defendants-online-plea")
+    public JsonEnvelope getDefendantsOnlinePlea(final JsonEnvelope query) {
+        return requester.request(query);
+    }
 }

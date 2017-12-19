@@ -3,21 +3,30 @@ package uk.gov.moj.cpp.sjp.event.listener;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
+import uk.gov.moj.cpp.sjp.event.listener.converter.OnlinePleaConverter;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.InterpreterDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.json.Json;
@@ -48,8 +57,19 @@ public class InterpreterUpdatedListenerTest {
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
+    @Mock
+    private OnlinePleaRepository.InterpreterLanguageOnlinePleaRepository onlinePleaRepository;
+
+    @Mock
+    private OnlinePleaConverter onlinePleaConverter;
+
+    @Mock
+    private OnlinePlea onlinePlea;
+
     @InjectMocks
     private InterpreterUpdatedListener listener;
+
+    private Clock clock = new StoppedClock(ZonedDateTime.now());
 
     @Before
     public void setUp() {
@@ -57,11 +77,16 @@ public class InterpreterUpdatedListenerTest {
         when(caseDetail.getDefendant()).thenReturn(defendant);
     }
 
-    @Test
-    public void shouldUpdateInterpreter() {
-
-        final String language = "French";
-
+    private JsonEnvelope commonSetupForInterpreter(String language, boolean updatedByOnlinePlea, ZonedDateTime now) {
+        final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant;
+        if (updatedByOnlinePlea) {
+            interpreterUpdatedForDefendant = InterpreterUpdatedForDefendant.createEventForOnlinePlea(
+                    caseId, defendantId, new Interpreter(language), now);
+        }
+        else {
+            interpreterUpdatedForDefendant = InterpreterUpdatedForDefendant.createEvent(
+                    caseId, defendantId, new Interpreter(language));
+        }
         final JsonEnvelope envelope = DefaultJsonEnvelope.envelope()
                 .with(metadataWithRandomUUID("sjp.events.interpreter-for-defendant-updated"))
                 .withPayloadOf(caseId, "caseId")
@@ -70,8 +95,18 @@ public class InterpreterUpdatedListenerTest {
                                 .add("language", language).build(), "interpreter")
                 .build();
 
-        when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), InterpreterUpdatedForDefendant.class)).thenReturn(
-                new InterpreterUpdatedForDefendant(caseId, defendantId, new Interpreter(language)));
+        when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), InterpreterUpdatedForDefendant.class))
+                .thenReturn(interpreterUpdatedForDefendant);
+        when(onlinePleaConverter.convertToOnlinePleaEntity(caseId, language, now)).thenReturn(onlinePlea);
+
+        return envelope;
+    }
+
+    @Test
+    public void shouldUpdateInterpreter() {
+        final String language = "French";
+        final ZonedDateTime now = clock.now();
+        final JsonEnvelope envelope = commonSetupForInterpreter(language, false, now);
 
         listener.interpreterUpdated(envelope);
 
@@ -79,6 +114,29 @@ public class InterpreterUpdatedListenerTest {
                         ArgumentCaptor.forClass(InterpreterDetail.class);
 
         verify(defendant).setInterpreter(captor.capture());
+        verify(jsonObjectToObjectConverter).convert(envelope.payloadAsJsonObject(), InterpreterUpdatedForDefendant.class);
+        verify(onlinePleaConverter, never()).convertToOnlinePleaEntity(caseId, language, now);
+        verify(onlinePleaRepository, never()).saveOnlinePlea(eq(onlinePlea));
+
+        assertThat(captor.getValue().getLanguage(), is(language));
+        assertThat(captor.getValue().getNeeded(), is(Boolean.TRUE));
+    }
+
+    @Test
+    public void shouldUpdateInterpreterForOnlinePlea() {
+        final String language = "French";
+        final ZonedDateTime now = clock.now();
+        final JsonEnvelope envelope = commonSetupForInterpreter(language, true, now);
+
+        listener.interpreterUpdated(envelope);
+
+        final ArgumentCaptor<InterpreterDetail> captor =
+                ArgumentCaptor.forClass(InterpreterDetail.class);
+
+        verify(defendant).setInterpreter(captor.capture());
+        verify(jsonObjectToObjectConverter).convert(envelope.payloadAsJsonObject(), InterpreterUpdatedForDefendant.class);
+        verify(onlinePleaConverter).convertToOnlinePleaEntity(eq(caseId), eq(language), eq(now));
+        verify(onlinePleaRepository).saveOnlinePlea(onlinePlea);
 
         assertThat(captor.getValue().getLanguage(), is(language));
         assertThat(captor.getValue().getNeeded(), is(Boolean.TRUE));

@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus.EMPLOYED;
 
 import uk.gov.justice.services.common.util.Clock;
@@ -54,11 +55,12 @@ public class PleadOnlineTest {
     private static final UUID offenceId = UUID.randomUUID();
 
     private Clock clock = new StoppedClock(ZonedDateTime.now());
+    private ZonedDateTime now = clock.now();
 
     private void assertPleaExpectationsAndCommonExpectations(final PleadOnline pleadOnline, final String defendantId, final PleaType pleaType,
                                                              final PleaUpdated pleaUpdated, final FinancialMeansUpdated financialMeansUpdated, final EmployerUpdated employerUpdated,
                                                              final EmploymentStatusUpdated employmentStatusUpdated, final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant,
-                                                             final TrialRequested trialRequested) {
+                                                             final TrialRequested trialRequested, final ZonedDateTime createDate) {
 
         assertThat(caseId.toString(), equalTo(pleaUpdated.getCaseId()));
         assertThat(PleaMethod.ONLINE, equalTo(pleaUpdated.getPleaMethod()));
@@ -68,23 +70,28 @@ public class PleadOnlineTest {
         assertThat(pleadOnline.getOffences().get(0).getNotGuiltyBecause(), equalTo(pleaUpdated.getNotGuiltyBecause()));
 
         assertCommonExpectations(pleadOnline, defendantId, financialMeansUpdated, employerUpdated, employmentStatusUpdated,
-                interpreterUpdatedForDefendant, trialRequested);
+                interpreterUpdatedForDefendant, trialRequested, createDate);
     }
 
     public void assertCommonExpectations(final PleadOnline pleadOnline, final String defendantId, final FinancialMeansUpdated financialMeansUpdated,
                                          final EmployerUpdated employerUpdated, final EmploymentStatusUpdated employmentStatusUpdated,
-                                         final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant, final TrialRequested trialRequested) {
+                                         final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant, final TrialRequested trialRequested,
+                                         final ZonedDateTime createDate) {
         assertThat(UUID.fromString(defendantId), equalTo(financialMeansUpdated.getDefendantId()));
         assertThat(pleadOnline.getFinancialMeans().getIncome(), equalTo(financialMeansUpdated.getIncome()));
         assertThat(pleadOnline.getFinancialMeans().getBenefits(), equalTo(financialMeansUpdated.getBenefits()));
         assertThat(pleadOnline.getFinancialMeans().getEmploymentStatus(), equalTo(financialMeansUpdated.getEmploymentStatus()));
         assertThat(pleadOnline.getOutgoings().size(), equalTo(financialMeansUpdated.getOutgoings().size()));
+        assertThat(createDate, equalTo(financialMeansUpdated.getUpdatedDate()));
+        assertTrue(financialMeansUpdated.isUpdatedByOnlinePlea());
 
         assertThat(UUID.fromString(defendantId), equalTo(employerUpdated.getDefendantId()));
         assertThat(pleadOnline.getEmployer().getName(), equalTo(employerUpdated.getName()));
         assertThat(pleadOnline.getEmployer().getEmployeeReference(), equalTo(employerUpdated.getEmployeeReference()));
         assertThat(pleadOnline.getEmployer().getPhone(), equalTo(employerUpdated.getPhone()));
         assertThat(pleadOnline.getEmployer().getAddress(), equalTo(employerUpdated.getAddress()));
+        assertThat(createDate, equalTo(employerUpdated.getUpdatedDate()));
+        assertTrue(employerUpdated.isUpdatedByOnlinePlea());
 
         if (employmentStatusUpdated != null) {
             assertThat(UUID.fromString(defendantId), equalTo(employmentStatusUpdated.getDefendantId()));
@@ -96,25 +103,29 @@ public class PleadOnlineTest {
             assertThat(UUID.fromString(defendantId), equalTo(interpreterUpdatedForDefendant.getDefendantId()));
             assertThat(pleadOnline.getInterpreterLanguage(), equalTo(interpreterUpdatedForDefendant.getInterpreter().getLanguage()));
             assertThat(true, equalTo(interpreterUpdatedForDefendant.getInterpreter().getNeeded()));
+            assertThat(createDate, equalTo(interpreterUpdatedForDefendant.getUpdatedDate()));
+            assertTrue(interpreterUpdatedForDefendant.isUpdatedByOnlinePlea());
         }
         if (trialRequested != null) {
             assertThat(caseId, equalTo(trialRequested.getCaseId()));
             assertThat(pleadOnline.getUnavailability(), equalTo(trialRequested.getUnavailability()));
             assertThat(pleadOnline.getWitnessDetails(), equalTo(trialRequested.getWitnessDetails()));
             assertThat(pleadOnline.getWitnessDispute(), equalTo(trialRequested.getWitnessDispute()));
+            assertThat(createDate, equalTo(trialRequested.getUpdatedDate()));
         }
     }
 
     @Test
     public void shoulPleaOnlineSuccessfullyForGuiltyPlea() {
         //given
+        final ZonedDateTime now = clock.now();
         final CaseReceived sjpCase = caseAggregate.receiveCase(createTestCase(), clock.now())
                 .map(c -> (CaseReceived) c)
                 .collect(toList()).get(0);
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, sjpCase.getDefendant().getId().toString());
-        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline);
+        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline, now);
 
         //then
         final List<Object> events = asList(eventStream.toArray());
@@ -124,7 +135,7 @@ public class PleadOnlineTest {
         assertThat("Has EmployerUpdated event", events, hasItem(isA(EmployerUpdated.class)));
         assertThat("Has EmploymentStatusUpdated event", events, hasItem(isA(FinancialMeansUpdated.class)));
         assertPleaExpectationsAndCommonExpectations(pleadOnline, sjpCase.getDefendant().getId().toString(), PleaType.GUILTY, (PleaUpdated) events.get(0), (FinancialMeansUpdated) events.get(1),
-                (EmployerUpdated) events.get(2), (EmploymentStatusUpdated) events.get(3), null, null);
+                (EmployerUpdated) events.get(2), (EmploymentStatusUpdated) events.get(3), null, null, now);
     }
 
     @Test
@@ -138,7 +149,7 @@ public class PleadOnlineTest {
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyRequestHearingPlea(offenceId,
                 sjpCase.getDefendant().getId().toString(), interpreterLanguage);
-        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline);
+        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline, now);
 
         //then
         final List<Object> events = asList(eventStream.toArray());
@@ -149,7 +160,7 @@ public class PleadOnlineTest {
         assertThat("Has EmploymentStatusUpdated event", events, hasItem(isA(FinancialMeansUpdated.class)));
         assertThat("Has InterpreterUpdatedForDefendant event", events, hasItem(isA(InterpreterUpdatedForDefendant.class)));
         assertPleaExpectationsAndCommonExpectations(pleadOnline, sjpCase.getDefendant().getId().toString(), PleaType.GUILTY_REQUEST_HEARING, (PleaUpdated) events.get(0), (FinancialMeansUpdated) events.get(1),
-                (EmployerUpdated) events.get(2), (EmploymentStatusUpdated) events.get(3), (InterpreterUpdatedForDefendant) events.get(4), null);
+                (EmployerUpdated) events.get(2), (EmploymentStatusUpdated) events.get(3), (InterpreterUpdatedForDefendant) events.get(4), null, now);
     }
 
     @Test
@@ -163,7 +174,7 @@ public class PleadOnlineTest {
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyRequestHearingPlea(offenceId,
                 sjpCase.getDefendant().getId().toString(), interpreterLanguage);
-        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline);
+        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline, now);
 
         //then
         List<Object> events = asList(eventStream.toArray());
@@ -173,7 +184,7 @@ public class PleadOnlineTest {
         assertThat("Has EmployerUpdated event", events, hasItem(isA(EmployerUpdated.class)));
         assertThat("Has EmploymentStatusUpdated event", events, hasItem(isA(FinancialMeansUpdated.class)));
         assertPleaExpectationsAndCommonExpectations(pleadOnline, sjpCase.getDefendant().getId().toString(), PleaType.GUILTY_REQUEST_HEARING, (PleaUpdated) events.get(0), (FinancialMeansUpdated) events.get(1),
-                (EmployerUpdated) events.get(2), (EmploymentStatusUpdated) events.get(3), null, null);
+                (EmployerUpdated) events.get(2), (EmploymentStatusUpdated) events.get(3), null, null, now);
     }
 
     @Test
@@ -186,7 +197,7 @@ public class PleadOnlineTest {
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithNotGuiltyPlea(offenceId,
                 sjpCase.getDefendant().getId().toString(), interpreterLanguage, true);
-        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline);
+        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline, now);
 
         //then
         final List<Object> events = asList(eventStream.toArray());
@@ -198,7 +209,7 @@ public class PleadOnlineTest {
         assertThat("Has InterpreterUpdatedForDefendant event", events, hasItem(isA(InterpreterUpdatedForDefendant.class)));
         assertThat("Has TrialRequested event", events, hasItem(isA(TrialRequested.class)));
         assertPleaExpectationsAndCommonExpectations(pleadOnline, sjpCase.getDefendant().getId().toString(), PleaType.NOT_GUILTY, (PleaUpdated) events.get(0), (FinancialMeansUpdated) events.get(2),
-                (EmployerUpdated) events.get(3), (EmploymentStatusUpdated) events.get(4), (InterpreterUpdatedForDefendant) events.get(5), (TrialRequested) events.get(1));
+                (EmployerUpdated) events.get(3), (EmploymentStatusUpdated) events.get(4), (InterpreterUpdatedForDefendant) events.get(5), (TrialRequested) events.get(1), now);
     }
 
     @Test
@@ -212,7 +223,7 @@ public class PleadOnlineTest {
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithNotGuiltyPlea(offenceId,
                 sjpCase.getDefendant().getId().toString(), interpreterLanguage, false);
-        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline);
+        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline, now);
 
         //then
         final List<Object> events = asList(eventStream.toArray());
@@ -223,7 +234,7 @@ public class PleadOnlineTest {
         assertThat("Has EmploymentStatusUpdated event", events, hasItem(isA(FinancialMeansUpdated.class)));
         assertThat("Has InterpreterUpdatedForDefendant event", events, hasItem(isA(InterpreterUpdatedForDefendant.class)));
         assertPleaExpectationsAndCommonExpectations(pleadOnline, sjpCase.getDefendant().getId().toString(), PleaType.NOT_GUILTY, (PleaUpdated) events.get(0), (FinancialMeansUpdated) events.get(1),
-                (EmployerUpdated) events.get(2), (EmploymentStatusUpdated) events.get(3), (InterpreterUpdatedForDefendant) events.get(4), null);
+                (EmployerUpdated) events.get(2), (EmploymentStatusUpdated) events.get(3), (InterpreterUpdatedForDefendant) events.get(4), null, now);
     }
 
     @Test
@@ -248,7 +259,7 @@ public class PleadOnlineTest {
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaForMultipleOffences(pleaInformationArray,
                 sjpCase.getDefendant().getId().toString(), interpreterLanguage);
-        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline);
+        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline, now);
 
         //then
         final List<Object> events = asList(eventStream.toArray());
@@ -273,7 +284,7 @@ public class PleadOnlineTest {
             assertThat(pleadOnline.getOffences().get(index).getNotGuiltyBecause(), equalTo(pleaUpdated.getNotGuiltyBecause()));
         });
         assertCommonExpectations(pleadOnline, sjpCase.getDefendant().getId().toString(), (FinancialMeansUpdated) events.get(5),
-                (EmployerUpdated) events.get(6), (EmploymentStatusUpdated) events.get(7), (InterpreterUpdatedForDefendant) events.get(8), (TrialRequested) events.get(4));
+                (EmployerUpdated) events.get(6), (EmploymentStatusUpdated) events.get(7), (InterpreterUpdatedForDefendant) events.get(8), (TrialRequested) events.get(4), now);
     }
 
     @Test
@@ -285,7 +296,7 @@ public class PleadOnlineTest {
 
         //when plea
         PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, sjpCase.getDefendant().getId().toString());
-        Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline);
+        Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline, now);
         List<Object> events = asList(eventStream.toArray());
         assertThat(events, hasSize(4));
 
@@ -295,10 +306,10 @@ public class PleadOnlineTest {
         assertThat("Has EmployerUpdated event", events, hasItem(isA(EmployerUpdated.class)));
         assertThat("Has EmploymentStatusUpdated event", events, hasItem(isA(FinancialMeansUpdated.class)));
         assertPleaExpectationsAndCommonExpectations(pleadOnline, sjpCase.getDefendant().getId().toString(), PleaType.GUILTY, (PleaUpdated) events.get(0), (FinancialMeansUpdated) events.get(1),
-                (EmployerUpdated) events.get(2), (EmploymentStatusUpdated) events.get(3), null, null);
+                (EmployerUpdated) events.get(2), (EmploymentStatusUpdated) events.get(3), null, null, now);
 
         //then plea second time
-        eventStream = caseAggregate.pleaOnline(caseId, pleadOnline);
+        eventStream = caseAggregate.pleaOnline(caseId, pleadOnline, now);
         events = asList(eventStream.toArray());
         assertThat(events, hasSize(1));
         assertThat("Has CaseUpdateRejected event", events, hasItem(isA(CaseUpdateRejected.class)));
@@ -313,7 +324,7 @@ public class PleadOnlineTest {
 
         //then plea again
         pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, sjpCase.getDefendant().getId().toString());
-        eventStream = caseAggregate.pleaOnline(caseId, pleadOnline);
+        eventStream = caseAggregate.pleaOnline(caseId, pleadOnline, now);
         events = asList(eventStream.toArray());
 
         //then successful
@@ -322,7 +333,7 @@ public class PleadOnlineTest {
         assertThat("Has FinancialMeansUpdated event", events, hasItem(isA(FinancialMeansUpdated.class)));
         assertThat("Has EmployerUpdated event", events, hasItem(isA(EmployerUpdated.class)));
         assertPleaExpectationsAndCommonExpectations(pleadOnline, sjpCase.getDefendant().getId().toString(), PleaType.GUILTY, (PleaUpdated) events.get(0), (FinancialMeansUpdated) events.get(1),
-                (EmployerUpdated) events.get(2), null, null, null);
+                (EmployerUpdated) events.get(2), null, null, null, now);
     }
 
     @Test
@@ -335,7 +346,7 @@ public class PleadOnlineTest {
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, sjpCase.getDefendant().getId().toString());
-        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline);
+        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline, now);
 
         //then
         final List<Object> events = asList(eventStream.toArray());
@@ -354,7 +365,7 @@ public class PleadOnlineTest {
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, sjpCase.getDefendant().getId().toString());
-        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline);
+        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline, now);
 
         //then
         final List<Object> events = asList(eventStream.toArray());
@@ -374,7 +385,7 @@ public class PleadOnlineTest {
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, sjpCase.getDefendant().getId().toString());
-        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline);
+        final Stream<Object> eventStream = caseAggregate.pleaOnline(caseId, pleadOnline, now);
 
         //then
         final List<Object> events = asList(eventStream.toArray());
@@ -389,7 +400,7 @@ public class PleadOnlineTest {
 
         final UUID offenceId = UUID.randomUUID();
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, sjpCase.getDefendant().getId().toString());
-        final List<Object> events = caseAggregate.pleaOnline(caseId, pleadOnline).collect(toList());
+        final List<Object> events = caseAggregate.pleaOnline(caseId, pleadOnline, now).collect(toList());
 
         assertThat(events.size(), is(1));
 
@@ -403,7 +414,7 @@ public class PleadOnlineTest {
 
         final String defendantId = UUID.randomUUID().toString();
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId);
-        final List<Object> events = caseAggregate.pleaOnline(caseId, pleadOnline).collect(toList());
+        final List<Object> events = caseAggregate.pleaOnline(caseId, pleadOnline, now).collect(toList());
 
         assertThat(events.size(), is(1));
 

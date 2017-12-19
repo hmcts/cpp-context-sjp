@@ -53,6 +53,10 @@ public class DefendantDetail implements Serializable {
         this.id = UUID.randomUUID();
     }
 
+    public DefendantDetail(final UUID id) {
+        this.id = id;
+    }
+
     public DefendantDetail(final UUID id, final PersonalDetails personalDetails, final Set<OffenceDetail> offences, final Integer numPreviousConvictions) {
         this();
         this.id = id;

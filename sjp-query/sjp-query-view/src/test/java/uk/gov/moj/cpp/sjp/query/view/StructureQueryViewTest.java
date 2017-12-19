@@ -40,6 +40,11 @@ import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
+import uk.gov.moj.cpp.sjp.domain.PleaType;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
+import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantsView;
@@ -49,7 +54,10 @@ import uk.gov.moj.cpp.sjp.query.view.service.EmployerService;
 import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -83,6 +91,9 @@ public class StructureQueryViewTest {
 
     @Mock
     private FinancialMeansService financialMeansService;
+
+    @Mock
+    private OnlinePleaRepository.FinancialMeansOnlinePleaRepository onlinePleaRepository;
 
     @Mock
     private EmployerService employerService;
@@ -352,6 +363,42 @@ public class StructureQueryViewTest {
         assertThat(response, jsonEnvelope(metadata().withName("sjp.query.oldest-case-age"),
                 payload().isJson(withJsonPath("$.oldestCaseAge", equalTo(oldestCaseAge))
                 )).thatMatchesSchema());
+    }
+
+    @Test
+    public void shouldFindDefendantsOnlinePlea() {
+        final UUID caseId = randomUUID();
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataWithRandomUUID("sjp.query.defendants-online-plea"))
+                .withPayloadOf(caseId, "caseId")
+                .build();
+        final UUID defendantId = UUID.fromString("4a950d66-b95f-459b-b77d-5ed308c3be02");
+        final UUID offenceId = UUID.fromString("8a962d66-b95f-69b-b77d-9ed308c3be02");
+        final OnlinePlea onlinePlea = stubOnlinePlea(defendantId, offenceId);
+
+        when(onlinePleaRepository.findBy(caseId)).thenReturn(onlinePlea);
+
+        final JsonEnvelope response = sjpQueryView.findDefendantsOnlinePlea(queryEnvelope);
+
+        verify(onlinePleaRepository).findBy(caseId);
+
+        assertThat(response, jsonEnvelope(metadata().withName("sjp.query.defendants-online-plea"), payload().isJson(allOf(
+                withJsonPath("$.defendantId", equalTo(defendantId.toString())),
+                withJsonPath("$.offences[0].id", equalTo(offenceId.toString())),
+                withJsonPath("$.offences[0].plea", equalTo(PleaType.NOT_GUILTY.name())),
+                withJsonPath("$.offences[0].comeToCourt", equalTo(true))
+        ))));
+    }
+
+    private OnlinePlea stubOnlinePlea(final UUID defendantId, final UUID offenceId) {
+        final OffenceDetail offence = new OffenceDetail();
+        offence.setId(offenceId);
+        offence.setPlea(PleaType.NOT_GUILTY.name());
+        final DefendantDetail defendant = new DefendantDetail(defendantId, null, new HashSet<>(Arrays.asList(offence)), null);
+        final OnlinePlea onlinePlea = new OnlinePlea();
+        onlinePlea.setDefendantDetail(defendant);
+
+        return onlinePlea;
     }
 
     private void setupCaseExpectations() {

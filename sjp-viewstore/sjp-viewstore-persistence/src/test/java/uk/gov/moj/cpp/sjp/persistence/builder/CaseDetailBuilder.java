@@ -27,6 +27,7 @@ public class CaseDetailBuilder {
     private Set<DefendantDetail> defendants = new LinkedHashSet<>();
     private String initiationCode;
     private Boolean completed;
+    private Boolean assigned;
     private String summonsCode;
     private String libraOriginatingOrg;
     private BigDecimal costs;
@@ -62,6 +63,11 @@ public class CaseDetailBuilder {
 
     public CaseDetailBuilder withCompleted(boolean completed) {
         this.completed = completed;
+        return this;
+    }
+
+    public CaseDetailBuilder withAssigned(boolean assigned) {
+        this.assigned = assigned;
         return this;
     }
 
@@ -118,6 +124,7 @@ public class CaseDetailBuilder {
                 prosecutingAuthority,
                 initiationCode,
                 completed,
+                assigned,
                 createdOn);
 
         caseDetail.setLibraOriginatingOrg(libraOriginatingOrg);

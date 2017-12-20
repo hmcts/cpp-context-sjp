@@ -85,6 +85,8 @@ public class SjpCaseCreatedToCaseTest {
         assertThat(kase.getUrn(), is(urn));
         assertThat(kase.getProsecutingAuthority(), is("TFL"));
         assertThat(kase.getInitiationCode(), is(initiationCode));
+        assertThat(kase.getCompleted(), is(false));
+        assertThat(kase.getAssigned(), is(false));
 
         assertThat(kase.getDefendants().iterator().next().getNumPreviousConvictions(), is(30)); // assuming there is just one defendant for now
         assertThat(kase.getCosts(), is(BigDecimal.valueOf(33.5)));

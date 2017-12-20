@@ -35,7 +35,7 @@ public class PeopleStub extends StubUtil {
                         .add("address2", "address2")
                         .add("address3", "address3")
                         .add("address4", "address4")
-                        .add("postcode", postcode));
+                        .add("postCode", postcode));
 
         String urlPath = "/people-query-api/query/api/rest/people/.*";
         stubFor(get(urlMatching(urlPath))

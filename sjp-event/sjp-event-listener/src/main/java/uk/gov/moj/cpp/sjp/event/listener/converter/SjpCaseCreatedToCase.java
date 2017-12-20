@@ -22,6 +22,7 @@ public class SjpCaseCreatedToCase implements Converter<SjpCaseCreated, CaseDetai
                 event.getProsecutingAuthority().toString(),
                 event.getInitiationCode(),
                 false,
+                false,
                 event.getCreatedOn());
         caseDetail.addDefendant(defendantDetail);
         defendantDetail.setNumPreviousConvictions(event.getNumPreviousConvictions()); // assuming there is just one defendant for now

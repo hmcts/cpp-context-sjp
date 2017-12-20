@@ -61,13 +61,13 @@ public class PeopleServiceTest {
     @Test
     public void shouldGetPerson() {
         final JsonEnvelope response = envelope().build();
-        when(requester.requestAsAdmin(any(JsonEnvelope.class))).thenReturn(response);
+        when(requester.request(any(JsonEnvelope.class))).thenReturn(response);
 
         final JsonValue result = peopleService.getPerson(personId, request);
 
         assertThat(result, is(response.payload()));
 
-        verify(requester).requestAsAdmin(argThat(jsonEnvelope(metadata().withName("people.query.person"),
+        verify(requester).request(argThat(jsonEnvelope(metadata().withName("people.query.person"),
                 payloadIsJson(withJsonPath("$.personId", equalTo(personId))))));
     }
 
@@ -83,9 +83,19 @@ public class PeopleServiceTest {
 
     private void shouldPostcodeOfPerson(final boolean postcodeMatch) {
         final String postcode = "CR0 1YG";
-        final JsonEnvelope response = envelope().withPayloadOf(createObjectBuilder()
-                .add("postcode", postcode).build(), "address").build();
-        when(requester.requestAsAdmin(any(JsonEnvelope.class))).thenReturn(response);
+        final JsonObject address = createObjectBuilder().add("postCode", postcode).build();
+        final JsonEnvelope response = envelope()
+                .withPayloadOf(personId, "id")
+                .withPayloadOf("FIRST_NAME", "firstName")
+                .withPayloadOf("LAST_NAME", "lastName")
+                .withPayloadOf("DATE_OF_BIRTH", "dateOfBirth")
+                .withPayloadOf("HOME_TELEPHONE", "homeTelephone")
+                .withPayloadOf("MOBILE", "mobile")
+                .withPayloadOf("EMAIL", "email")
+                .withPayloadOf("NATIONAL_INSURANCE_NUMBER", "nationalInsuranceNumber")
+                .withPayloadOf(address, "address")
+                .build();
+        when(requester.request(any(JsonEnvelope.class))).thenReturn(response);
 
         final JsonObject defendant = createObjectBuilder()
                 .add("id", randomUUID().toString())

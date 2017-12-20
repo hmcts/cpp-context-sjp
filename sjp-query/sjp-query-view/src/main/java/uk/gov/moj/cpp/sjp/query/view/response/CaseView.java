@@ -18,6 +18,7 @@ public class CaseView {
     private final Set<CaseDocumentView> caseDocuments;
     private final ProsecutingAuthority prosecutingAuthority;
     private final Boolean completed;
+    private final Boolean assigned;
     private BigDecimal costs;
     private LocalDate postingDate;
     private LocalDate reopenedDate;
@@ -44,6 +45,7 @@ public class CaseView {
         }
 
         completed = caseDetail.getCompleted();
+        assigned = caseDetail.getAssigned();
 
         this.costs = caseDetail.getCosts();
         this.postingDate = caseDetail.getPostingDate();
@@ -75,6 +77,10 @@ public class CaseView {
 
     public Boolean getCompleted() {
         return completed;
+    }
+
+    public Boolean getAssigned() {
+        return assigned;
     }
 
     public ZonedDateTime getDateTimeCreated() {

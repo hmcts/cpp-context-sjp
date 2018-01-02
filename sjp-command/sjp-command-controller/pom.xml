@@ -111,10 +111,6 @@
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.access-control</groupId>
-            <artifactId>access-control-charging-providers</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.moj.cpp.access-control</groupId>
             <artifactId>access-control-assignment-providers</artifactId>
         </dependency>
     </dependencies>

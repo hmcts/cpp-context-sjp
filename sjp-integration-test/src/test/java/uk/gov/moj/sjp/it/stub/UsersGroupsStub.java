@@ -15,7 +15,6 @@ import java.util.UUID;
 public class UsersGroupsStub extends StubUtil {
 
     public static final String TFL_USERS_GROUP = "TFL Users";
-    public static final String CHARGING_LAWYERS_GROUP = "Charging Lawyers";
     public static final String LEGAL_ADVISERS_GROUP = "Legal Advisers";
     public static final String COURT_ADMINISTRATORS_GROUP = "Court Administrators";
 

@@ -75,6 +75,14 @@ public class AssignmentProcessorTest {
                 assignmentProcessor::handleAssignmentDeleted);
     }
 
+    @Test
+    public void shouldHandleCaseAssignmentForEmptyType() throws Exception {
+        shouldHandleCaseAssignmentForEmptyNatureType(
+                ASSIGNMENT_CONTEXT_ASSIGNMENT_DELETED,
+                SJP_COMMAND_HANDLER_ASSIGNMENT_DELETED,
+                assignmentProcessor::handleAssignmentDeleted);
+    }
+
     private void shouldHandleCaseAssignment(final String assignmentEventName, final String structureHandlerName, final Consumer<JsonEnvelope> consumer) {
         // given
         final JsonEnvelope event = EnvelopeFactory.createEnvelope(
@@ -93,6 +101,27 @@ public class AssignmentProcessorTest {
                 payloadIsJson(allOf(
                         withJsonPath("$." + EventProcessorConstants.CASE_ID, equalTo(CASE_ID)),
                         withJsonPath("$." + CASE_ASSIGNMENT_TYPE, equalTo(TYPE.toString()))))
+        ));
+    }
+
+    private void shouldHandleCaseAssignmentForEmptyNatureType(final String assignmentEventName, final String structureHandlerName, final Consumer<JsonEnvelope> consumer) {
+        // given
+        final JsonEnvelope event = EnvelopeFactory.createEnvelope(
+                assignmentEventName,
+                Json.createObjectBuilder()
+                        .add(ASSIGNMENT_DOMAIN_OBJECT_ID, CASE_ID)
+                        .build());
+
+        // when
+        consumer.accept(event);
+
+        // then
+        verify(sender).send(captor.capture());
+        assertThat(captor.getValue(), jsonEnvelope(
+                metadata().withName(structureHandlerName),
+                payloadIsJson(allOf(
+                        withJsonPath("$." + EventProcessorConstants.CASE_ID, equalTo(CASE_ID)),
+                        withJsonPath("$." + CASE_ASSIGNMENT_TYPE, equalTo("unknown"))))
         ));
     }
 

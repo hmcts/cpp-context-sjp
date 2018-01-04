@@ -65,17 +65,17 @@ public class AssignmentProcessor {
         final String id = payload.getString(ASSIGNMENT_DOMAIN_OBJECT_ID, "NULL");
         LOGGER.debug("Received assignment deleted message for id: {}", id);
 
-        final String caseAssignmentTypeString = payload.getString(ASSIGNMENT_NATURE_TYPE, "NULL");
+        final String caseAssignmentTypeString = payload.getString(ASSIGNMENT_NATURE_TYPE, "unknown");
         final Optional<CaseAssignmentType> caseAssignmentType = CaseAssignmentType.from(caseAssignmentTypeString);
 
-        if (!caseAssignmentType.isPresent()) {
-            LOGGER.debug("Ignoring non-ATCM assignment deletion type: {}", caseAssignmentTypeString);
-            return;
+        if (caseAssignmentType.isPresent()) {
+            sender.send(
+                    createEvent(SJP_COMMAND_HANDLER_ASSIGNMENT_DELETED, envelope, id, caseAssignmentType.get())
+            );
         }
-
-        sender.send(
-                createEvent(SJP_COMMAND_HANDLER_ASSIGNMENT_DELETED, envelope, id, caseAssignmentType.get())
-        );
+        else {
+            LOGGER.debug("Ignoring non-ATCM assignment deletion type: {}", caseAssignmentTypeString);
+        }
     }
 
     private JsonEnvelope createEvent(final String command, final JsonEnvelope envelope, final String id, final CaseAssignmentType caseAssignmentType) {

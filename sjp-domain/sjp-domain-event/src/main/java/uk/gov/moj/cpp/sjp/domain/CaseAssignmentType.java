@@ -6,7 +6,8 @@ import java.util.Optional;
 public enum CaseAssignmentType {
 
     MAGISTRATE_DECISION ("for-magistrate-decision"),
-    DELEGATED_POWERS_DECISION ("for-delegated-powers-decision");
+    DELEGATED_POWERS_DECISION ("for-delegated-powers-decision"),
+    UNKNOWN ("unknown");
 
     private final String text;
 
@@ -15,7 +16,7 @@ public enum CaseAssignmentType {
     }
 
     public static Optional<CaseAssignmentType> from(final String text) {
-        return Arrays.stream(CaseAssignmentType.values()).filter(x -> x.text.equalsIgnoreCase(text)).findFirst();
+        return Arrays.stream(values()).filter(x -> x.text.equalsIgnoreCase(text)).findFirst();
     }
 
     @Override

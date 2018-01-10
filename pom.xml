@@ -10,7 +10,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>0.0.7-SNAPSHOT</version>
+    <version>0.0.7-ATCM-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -21,7 +21,7 @@
         <people.version>2.0.105</people.version>
         <resulting.version>2.0.151</resulting.version>
         <material.version>2.0.99-structurerefactor-SNAPSHOT</material.version>
-        <referencedata.version>2.0.128</referencedata.version>
+        <referencedata.version>2.0.137</referencedata.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>

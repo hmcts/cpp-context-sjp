@@ -23,7 +23,6 @@ import uk.gov.moj.cpp.sjp.domain.command.CancelPlea;
 import uk.gov.moj.cpp.sjp.domain.command.ChangePlea;
 import uk.gov.moj.cpp.sjp.domain.command.CompleteCase;
 import uk.gov.moj.cpp.sjp.domain.command.UpdatePlea;
-import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalDenied;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
@@ -93,11 +92,9 @@ public class CaseAggregate implements Aggregate {
     private boolean hasCourtReferral;
     private boolean caseAssigned = false;
 
-
     private Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
 
     private Map<UUID, CaseDocument> caseDocuments = new HashMap<>();
-    private Map<UUID, Plea.Type> offencePleas = new HashMap<>();
     private Map<UUID, String> defendantInterpreterLanguages = new HashMap<>();
 
     private DocumentCountByDocumentType documentCountByDocumentType = new DocumentCountByDocumentType();
@@ -105,7 +102,6 @@ public class CaseAggregate implements Aggregate {
     private ProsecutingAuthority prosecutingAuthority;
 
     private final Map<UUID, String> employmentStatusByDefendantId = new HashMap<>();
-
 
     public Stream<Object> createCase(final Case aCase, final ZonedDateTime now) {
         final Stream.Builder<Object> events = Stream.builder();
@@ -149,7 +145,7 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> updateEmployer(final Employer employer) {
         final UUID defendantId = employer.getDefendantId();
-        final Stream.Builder streamBuilder = Stream.builder();
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
 
         if (hasDefendant(defendantId)) {
             streamBuilder.add(new EmployerUpdated(employer));
@@ -167,7 +163,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> deleteEmployer(final UUID defendantId) {
-        final Stream.Builder streamBuilder = Stream.builder();
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
 
         if (hasDefendant(defendantId)) {
             if (employmentStatusByDefendantId.containsKey(defendantId)) {
@@ -221,7 +217,6 @@ public class CaseAggregate implements Aggregate {
         return apply(Stream.of(new CaseCompleted(completeCase.getCaseId())));
     }
 
-
     private Optional<UUID> getDefendantIdByOffenceId(final UUID offenceId) {
         return offenceIdsByDefendantId.entrySet().stream().filter(
                 entry -> entry.getValue().contains(offenceId)
@@ -230,7 +225,8 @@ public class CaseAggregate implements Aggregate {
 
     private boolean offenceExists(final UUID offenceId) {
         return offenceIdsByDefendantId.values().stream()
-                .anyMatch(offenceIds -> offenceIds.contains(offenceId));
+                .flatMap(Set::stream)
+                .anyMatch(offenceId::equals);
     }
 
     public Stream<Object> changePlea(final ChangePlea changePleaCommand) {
@@ -282,7 +278,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> updateInterpreter(final UUID defendantId, final String language) {
-        final Stream.Builder streamBuilder = Stream.builder();
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
         if (hasDefendant(defendantId)) {
             updateInterpreter(language, defendantId).ifPresent(streamBuilder::add);
         } else {
@@ -445,12 +441,10 @@ public class CaseAggregate implements Aggregate {
                     urn = e.getUrn();
                     prosecutingAuthority = e.getProsecutingAuthority();
                     offenceIdsByDefendantId.putIfAbsent(e.getDefendantId(), new HashSet<>());
-                    offenceIdsByDefendantId.get(e.getDefendantId()).addAll(
-                            e.getOffences()
-                                    .stream()
+                    offenceIdsByDefendantId.computeIfAbsent(e.getDefendantId(), id -> new HashSet<>())
+                            .addAll(e.getOffences().stream()
                                     .map(SjpOffence::getId)
-                                    .collect(Collectors.toSet())
-                    );
+                                    .collect(Collectors.toSet()));
                 }),
                 when(CaseCompleted.class)
                         .apply(e -> this.caseCompleted = true),
@@ -461,12 +455,12 @@ public class CaseAggregate implements Aggregate {
                 when(CaseDocumentUploaded.class).apply(e -> {
                     //nothing to update
                 }),
-                when(PleaUpdated.class).apply(e ->
-                        this.offencePleas.put(UUID.fromString(e.getOffenceId()), Plea.Type.valueOf(e.getPlea()))),
-                when(PleaCancelled.class).apply(e ->
-                        //TODO: check there is a plea
-                        this.offencePleas.remove(e.getOffenceId())
-                ),
+                when(PleaUpdated.class).apply(e -> {
+                    //nothing to update
+                }),
+                when(PleaCancelled.class).apply(e -> {
+                    //nothing to update
+                }),
                 // Old event. Replaced by CaseUpdateRejected
                 when(PleaUpdateDenied.class).apply(e -> {
                     //nothing to update
@@ -594,10 +588,11 @@ public class CaseAggregate implements Aggregate {
     }
 
     private boolean hasDefendant(final UUID defendantId) {
-        return offenceIdsByDefendantId.keySet().contains(defendantId);
+        return offenceIdsByDefendantId.containsKey(defendantId);
     }
 
     public boolean isCaseAssigned() {
         return caseAssigned;
     }
+
 }

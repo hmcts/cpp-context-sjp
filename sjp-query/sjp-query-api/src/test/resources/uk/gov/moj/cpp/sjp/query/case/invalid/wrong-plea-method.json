@@ -1,125 +1,17 @@
 {
   "id": "7e2f843e-d639-40b3-8611-8015f3a18958",
-  "version": 2,
   "urn": "22C22222222",
   "dateTimeCreated": "2016-09-07T10:26:03.656",
-  "review-status": "Started",
   "completed": false,
-  "sensitive": false,
-  "ownershipTransferred": false,
-  "policeOfficerInCase": {
-    "personId": "aa746921-d839-4867-bcf9-b41db8ebc852",
-    "rank": "constable",
-    "narrative": "",
-    "badgeNumber": "223"
-  },
-  "policeSupervisor": {
-    "personId": "ab746921-d839-4867-bcf9-b41db8ebc852",
-    "rank": "sergeant",
-    "narrative": "",
-    "badgeNumber": "223"
-  },
-  "witnesses": [
-    {
-      "id": "bbc-def-hjk-kdj",
-      "personId": "ab746921-d839-4867-bcf9-b41db8ebc852",
-      "policePersonId": "policePersonId",
-      "statements": [
-        {
-          "id": "id5"
-        },
-        {
-          "id": "id6"
-        }
-      ],
-      "classification": [
-        {
-          "isVictim": true,
-          "isEntitlementRequired": true,
-          "witnessExpertise": "EXPERT",
-          "witnessStatus": "INTIMIDATED"
-        }
-      ]
-    }
-  ],
-  "suspects": [
-    {
-      "id": "ebabacce-1628-48b3-83b8-6f0d2412019f",
-      "personId": "ab746921-d839-4867-bcf9-b41db8ebc852",
-      "policePersonId": "policePersonId",
-      "asn": "ASN",
-      "bailConditions": "Test",
-      "bailStatus": "in custody",
-      "bailDate": "2007-12-03T10:15:30",
-      "policeRemandStatus": "Test",
-      "idpcApproved": true,
-      "charges": [
-        {
-          "id": "39336236-3366-6161-2d64-3735352d3466",
-          "twifId": "CPP-AB746921-d839-4867-DDC9-B41BD8EBC852",
-          "code": "CJ123",
-          "description": "Assault",
-          "status": "Authorised",
-          "categoryType": "Either way",
-          "fromDate": "2007-12-03T10:15:30",
-          "toDate": "2007-12-03T10:15:30",
-          "particulars": {
-            "address": "14, Hampton Court",
-            "postCode": "HM1 1XH"
-          },
-          "authorisedCharge": {
-            "id": "7d635035-ef38-421f-9d88-74bacd30d318",
-            "code": "CJ12345"
-          }
-        }
-      ]
-    }
-  ],
-  "exhibits": [
-    {
-      "id": "exhibitId",
-      "personId": "cppContextPersonId",
-      "exhibitMaterialId": "materialId1",
-      "exhibitName": "descriptionOfExhibit",
-      "policeName": "policeName",
-      "exhibitClassifications": [
-        {
-          "classification": "e.g. audio tape"
-        },
-        {
-          "classification": "e.g. sensitive video"
-        }
-      ]
-    }
-  ],
   "caseDocuments": [
     {
-      "policeMaterialId": "policeMaterialId",
-      "policeName": "policeName",
-      "description": "description",
       "id": "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95",
       "materialId": "670490ee-95be-4e3e-af8b-9bef865e26ba"
-    }
-  ],
-  "policeSummaries": [
-    {
-      "id": "ba9a2765-e630-4d9a-923c-6b9fd29dbfc4",
-      "outlineHeading": "KEVD",
-      "outlineText": "This evidence is key"
     }
   ],
   "defendants": [
     {
       "personId": "ab746921-d839-4867-bcf9-b41db8ebc852",
-      "bailStatus": "conditional",
-      "defendantBailDocuments": [
-        {
-          "id": "e1a5765b-55c4-40a4-9bd9-240e67b53107",
-          "documentId": "documentMaterialId2",
-          "active": true
-        }
-      ],
-      "defenceSolicitorFirm": "xyz solicitor",
       "interpreter": "french",
       "offences": [
         {
@@ -136,50 +28,5 @@
       ]
     }
   ],
-  "caseMarkers": [
-    {
-      "caseMarker": "ASBOAppliedFor"
-    },
-    {
-      "caseMarker": "ASBOGranted"
-    },
-    {
-      "caseMarker": "AnimalRightsExtremism"
-    },
-    {
-      "caseMarker": "AssetRecovery"
-    }
-  ],
-  "victims": [
-    {
-      "id": "9a475250-41e7-47f2-abc2-e4b45511a82a",
-      "personId": "ab746921-d839-4867-bcf9-b41db8ebc852",
-      "policePersonId": "policePersonId",
-      "classifications": [
-        {
-          "classificationType": "victimClassificationType",
-          "classificationCode": "victimClassificationCode",
-          "classificationValue": "victimClassificationValue"
-        }
-      ]
-    }
-  ],
-  "prosecutingAuthority": "TFL",
-  "actionPlan": {
-    "actionItems": [
-      {
-        "id": "7e2f843e-d639-40b3-8611-8015f3a18958",
-        "category": "categoryCode",
-        "description": "description",
-        "deadlineDate": "2015-02-15",
-        "createdDate" : "2010-02-15",
-        "suspects": [
-          {
-            "id": "7e2f843e-d639-40b3-8611-8015f3a18959"
-          }
-        ],
-        "status": "open"
-      }
-    ]
-  }
+  "prosecutingAuthority": "TFL"
 }

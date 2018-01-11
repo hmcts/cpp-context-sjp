@@ -9,7 +9,6 @@ import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 
 import java.util.UUID;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +25,6 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        WireMock.resetAllRequests();
         caseHelper = new CaseSjpHelper();
         caseHelper.createAndVerifyCase();
     }

@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.jms.MessageConsumer;
-import javax.ws.rs.core.Response;
 
 import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy;
@@ -62,29 +61,20 @@ public class CaseDocumentHelper extends AbstractTestHelper {
     private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.add-case-document+json";
     public static final String GET_CASE_DOCUMENTS_MEDIA_TYPE = "application/vnd.sjp.query.case-documents+json";
 
-    private static final String TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD = "payload/structure.command.add-case-document.json";
+    private static final String TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD = "payload/sjp.command.add-case-document.json";
 
     private static final String ID_PROPERTY = "id";
     private static final String CASE_ID_PROPERTY = "caseId";
     private static final String MATERIAL_ID_PROPERTY = "materialId";
-    private static final String POLICE_NAME_PROPERTY = "policeName";
-    private static final String POLICE_NAME_PROPERTY_VALUE = "policeNameValue";
-    private static final String POLICE_MATERIAL_ID_PROPERTY = "policeMaterialId";
     private static final String DOCUMENT_TYPE_PROPERTY = "documentType";
-
-    private static final String EXTERNAL_FILE_URL_PROPERTY = "externalFileURL";
-    private static final String EXTERNAL_FILE_URL_PROPERTY_VALUE = "http:localhost:2222//external/file/url";
-
     private static final String DOCUMENT_TYPE_PLEA = "PLEA";
     private static final String FILE_NAME_PLEA = "SMITH_Fred_TFL2041315_PLEA.pdf";
     private static final String FILE_PATH_PLEA = "src/test/resources/plea";
-    private static final String FILE_MIME_TYPE = "application/pdf";
 
     private String caseId;
     private String request;
     private UUID id;
     private String materialId;
-    private UUID policeMaterialIdPropertyValue = UUID.randomUUID();
 
     private MessageConsumer privateCaseDocumentAlreadyExistsEventsConsumer;
     private MessageConsumerClient publicCaseDocumentAlreadyExistsConsumer = new MessageConsumerClient();
@@ -110,15 +100,12 @@ public class CaseDocumentHelper extends AbstractTestHelper {
         String writeUrl = "/cases/CASEID/case-documents".replace("CASEID", caseId);
         final String payloadWithReplacedDocumentType;
         if (documentType != null) {
-            payloadWithReplacedDocumentType = String.format(payload, id,
-                    policeMaterialIdPropertyValue, documentType);
+            payloadWithReplacedDocumentType = String.format(payload, id, documentType);
         } else {
-            payloadWithReplacedDocumentType = String.format(payload, id,
-                    policeMaterialIdPropertyValue, "SJPN");
+            payloadWithReplacedDocumentType = String.format(payload, id, "SJPN");
         }
         JSONObject jsonObject = new JSONObject(payloadWithReplacedDocumentType);
         jsonObject.put(MATERIAL_ID_PROPERTY, materialId);
-        jsonObject.put(POLICE_NAME_PROPERTY, POLICE_NAME_PROPERTY_VALUE);
 
         request = jsonObject.toString();
         LOGGER.info("Adding case document with payload: {}", request);
@@ -135,13 +122,7 @@ public class CaseDocumentHelper extends AbstractTestHelper {
 
     public void addCaseDocumentWithDocumentType(UUID userId, String documentType) {
         id = UUID.randomUUID();
-        policeMaterialIdPropertyValue = UUID.randomUUID();
         addCaseDocument(userId, getPayload(TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD), documentType);
-    }
-
-    public void addDuplicateCaseDocument() {
-        id = UUID.randomUUID();
-        addCaseDocument(getPayload(TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD));
     }
 
     public void uploadPleaCaseDocument() {
@@ -153,10 +134,6 @@ public class CaseDocumentHelper extends AbstractTestHelper {
         uploadCaseDocument(UUID.fromString(USER_ID), documentType, FILE_PATH_PLEA + '/' + FILE_NAME_PLEA);
     }
 
-    public void uploadCaseDocument(String documentType) {
-        uploadCaseDocument(UUID.fromString(USER_ID), documentType, FILE_PATH_PLEA + '/' + FILE_NAME_PLEA);
-    }
-
     public void uploadCaseDocument(UUID userId, String documentType, String fileName) {
         String writeUrl = "/cases/CASEID/upload-case-document/DOCUMENTTYPE"
                 .replace("CASEID", caseId)
@@ -164,21 +141,6 @@ public class CaseDocumentHelper extends AbstractTestHelper {
         request = fileName;
         LOGGER.info("Uploading case document with payload from file: {}", request);
         makeMultipartFormPostCall(userId, getWriteUrl(writeUrl), "caseDocument", request);
-    }
-
-    public void addCaseDocumentWithExternalFileUrl() {
-        String writeUrl = "/cases/CASEID/case-documents".replace("CASEID", caseId);
-        String payload = getPayload(TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD);
-        JSONObject jsonObject = new JSONObject(payload);
-        jsonObject.put("id", id.toString());
-        jsonObject.put(DOCUMENT_TYPE_PROPERTY, "OTHER");
-        jsonObject.put(MATERIAL_ID_PROPERTY, materialId);
-        jsonObject.put(POLICE_NAME_PROPERTY, POLICE_NAME_PROPERTY_VALUE);
-        jsonObject.put(POLICE_MATERIAL_ID_PROPERTY, policeMaterialIdPropertyValue.toString());
-        jsonObject.put(EXTERNAL_FILE_URL_PROPERTY, EXTERNAL_FILE_URL_PROPERTY_VALUE);
-        request = jsonObject.toString();
-        LOGGER.info("Creating case document with payload: {}", request);
-        makePostCall(getWriteUrl(writeUrl), WRITE_MEDIA_TYPE, request);
     }
 
     public void verifyInActiveMQ() {
@@ -283,17 +245,6 @@ public class CaseDocumentHelper extends AbstractTestHelper {
     private void assertJsonPayload(JsonPath jsonRequest, Map caseDocument) {
         assertThat(caseDocument.get(MATERIAL_ID_PROPERTY), is(jsonRequest.getString(MATERIAL_ID_PROPERTY)));
         assertThat(caseDocument.get(DOCUMENT_TYPE_PROPERTY), is(jsonRequest.getString(DOCUMENT_TYPE_PROPERTY)));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void assertQueryCallResponseStatusIs(Response.Status status) {
-        poll(getCaseDocumentsByCaseId(caseId))
-                .until(
-                        status().is(status)
-                );
     }
 
     public String getMaterialId() {

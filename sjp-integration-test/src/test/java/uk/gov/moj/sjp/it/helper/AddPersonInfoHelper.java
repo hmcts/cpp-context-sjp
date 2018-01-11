@@ -1,12 +1,8 @@
 package uk.gov.moj.sjp.it.helper;
 
-import static com.jayway.jsonpath.JsonPath.compile;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_ADD_PERSON_INFO;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_ADD_PERSON_INFO;
 import static uk.gov.moj.sjp.it.util.QueueUtil.privateEvents;
@@ -18,10 +14,7 @@ import java.time.LocalDate;
 
 import javax.json.JsonObject;
 
-import com.jayway.jsonpath.Filter;
-import com.jayway.jsonpath.ReadContext;
 import com.jayway.restassured.path.json.JsonPath;
-import org.hamcrest.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,11 +71,6 @@ public class AddPersonInfoHelper extends AbstractTestHelper {
         try (final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper)) {
             caseSearchResultHelper.verifyPersonInfoByUrn(expectedCount);
         }
-    }
-
-    private Matcher<ReadContext> matches(Filter personIdFilter) {
-        return allOf(
-                withJsonPath(compile("$.id", personIdFilter), hasSize(1)));
     }
 
     @Override

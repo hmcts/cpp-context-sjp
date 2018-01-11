@@ -3,11 +3,7 @@
     {
       "id": "fc3f8d82-d200-4cab-a492-2796e6fdf42c",
       "materialId": "87a321ef-ea34-47d7-865d-7f430b4775be",
-      "policeName": "Richard Prett file",
-      "policeMaterialId": "x1234",
-      "documentType": "PLEA",
-      "documentName": "document name"
+      "documentType": "PLEA"
     }
-  ],
-  "externalFileURL": "externalFileURL"
+  ]
 }

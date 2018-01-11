@@ -9,13 +9,8 @@ public class CaseDocumentView {
 
     private UUID id;
     private UUID materialId;
-    private String policeName;
-    private String policeMaterialId;
-    private String documentName;
     private String documentType;
     private Integer documentNumber;
-    private String externalFileURL;
-    private UUID latestRedactedMaterialId;
 
     public static final Comparator<CaseDocumentView> BY_DOCUMENT_TYPE_AND_NUMBER = (first, second) -> {
         if (first.documentType == null) {
@@ -52,39 +47,12 @@ public class CaseDocumentView {
         this.materialId = materialId;
     }
 
-    public String getPoliceName() {
-        return policeName;
-    }
-
-    public void setPoliceName(String policeName) {
-        this.policeName = policeName;
-    }
-
-    public String getPoliceMaterialId() {
-        return policeMaterialId;
-    }
-
-    public void setPoliceMaterialId(String policeMaterialId) {
-        this.policeMaterialId = policeMaterialId;
-    }
-
     public String getDocumentType() {
         return documentType;
-    }
-
-    public String getDocumentName() {
-        return documentName;
-    }
-
-    public String getExternalFileURL() {
-        return externalFileURL;
     }
 
     public Integer getDocumentNumber() {
         return documentNumber;
     }
 
-    public UUID getLatestRedactedMaterialId() {
-        return latestRedactedMaterialId;
-    }
 }

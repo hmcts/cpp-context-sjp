@@ -15,23 +15,14 @@
         "materialId": {
           "type": "string"
         },
-        "policeName": {
-          "type": "string"
-        },
-        "policeMaterialId": {
-          "type": "string"
-        },
         "documentType": {
           "type": "string"
         },
         "addedAt": {
           "type": "string"
-        },
-        "externalFileURL": {
-          "type": "string"
         }
       },
-      "additionalProperties": false,
+      "additionalProperties": true,
       "required": [
         "id",
         "materialId",
@@ -42,7 +33,7 @@
       "type": "number"
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "caseId",
     "caseDocument",

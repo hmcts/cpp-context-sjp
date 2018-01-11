@@ -52,10 +52,6 @@ public class CancelPleaHelper extends AbstractTestHelper {
         assertThat(response.getStatus(), equalTo(expectedStatus.getStatusCode()));
     }
 
-    public void verifyInActiveMQ() {
-        assertEventData(privateEventsConsumer);
-    }
-
     public void verifyInPublicTopic() {
         assertEventData(publicEventsConsumer);
     }

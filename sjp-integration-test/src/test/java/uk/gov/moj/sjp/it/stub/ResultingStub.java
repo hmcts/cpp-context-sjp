@@ -1,20 +1,22 @@
 package uk.gov.moj.sjp.it.stub;
 
 
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
-
-import javax.json.Json;
-import java.util.UUID;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
-public class ResultingStub extends StubUtil {
+import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
+
+import java.util.UUID;
+
+import javax.json.Json;
+
+public class ResultingStub {
 
     private static final String RESULTING_QUERY_URL = "/resulting-query-api/query/api/rest/resulting/cases/%s/case-decisions";
     private static final String RESULTING_QUERY_MEDIA_TYPE = "application/vnd.resulting.query.case-decisions+json";
@@ -32,7 +34,7 @@ public class ResultingStub extends StubUtil {
         stubFor(get(urlPathMatching(url))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", UUID.randomUUID().toString())
-                        .withHeader("Content-Type", DEFAULT_JSON_CONTENT_TYPE)
+                        .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(responsePayload)));
 
         waitForStubToBeReady(url, RESULTING_QUERY_MEDIA_TYPE);
@@ -46,7 +48,7 @@ public class ResultingStub extends StubUtil {
         stubFor(get(urlPathMatching(url))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", UUID.randomUUID().toString())
-                        .withHeader("Content-Type", DEFAULT_JSON_CONTENT_TYPE)
+                        .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(getPayload("stub-data/resulting.query.case-decisions.json"))));
 
         waitForStubToBeReady(url, RESULTING_QUERY_MEDIA_TYPE);

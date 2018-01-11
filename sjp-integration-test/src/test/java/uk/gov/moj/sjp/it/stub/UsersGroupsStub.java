@@ -6,13 +6,14 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.lang.String.format;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
 import java.util.UUID;
 
-public class UsersGroupsStub extends StubUtil {
+public class UsersGroupsStub {
 
     public static final String TFL_USERS_GROUP = "TFL Users";
     public static final String LEGAL_ADVISERS_GROUP = "Legal Advisers";
@@ -37,7 +38,7 @@ public class UsersGroupsStub extends StubUtil {
         stubFor(get(urlPathMatching(url))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", UUID.randomUUID().toString())
-                        .withHeader("Content-Type", DEFAULT_JSON_CONTENT_TYPE)
+                        .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(responsePayload)));
 
         waitForStubToBeReady(url, USER_GROUPS_USERS_QUERY_MEDIA_TYPE);

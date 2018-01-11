@@ -35,7 +35,7 @@ public class EmployerConverterTest {
         assertThat(employer.getAddress().getAddress2(), is(entity.getAddress2()));
         assertThat(employer.getAddress().getAddress3(), is(entity.getAddress3()));
         assertThat(employer.getAddress().getAddress4(), is(entity.getAddress4()));
-        assertThat(employer.getAddress().getPostCode(), is(entity.getPostCode()));
+        assertThat(employer.getAddress().getPostcode(), is(entity.getPostCode()));
     }
 
     @Test

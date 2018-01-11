@@ -11,6 +11,7 @@ public class DefaultTestData {
     public static final UUID CASE_ID = UUID.randomUUID();
     public static final String CASE_ID_STR = CASE_ID.toString();
 
+    public static final UUID DEFENDANT_ID = UUID.randomUUID();
     public static final UUID CASE_DOCUMENT_ID = UUID.randomUUID();
     public static final String CASE_DOCUMENT_ID_STR = CASE_DOCUMENT_ID.toString();
     public static final String CASE_DOCUMENT_MATERIAL_ID = UUID.randomUUID().toString();

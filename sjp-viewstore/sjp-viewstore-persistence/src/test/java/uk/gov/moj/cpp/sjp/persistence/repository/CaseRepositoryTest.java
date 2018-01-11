@@ -4,8 +4,10 @@ import static java.time.ZoneOffset.UTC;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -27,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -52,9 +55,9 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     private static final UUID VALID_CASE_ID_3 = randomUUID();
     private static final UUID VALID_CASE_ID_4 = randomUUID();
 
-    private static final UUID VALID_PERSON_ID_1 = randomUUID();
-    private static final UUID VALID_PERSON_ID_2 = randomUUID();
-    private static final UUID VALID_PERSON_ID_4 = randomUUID();
+    private static final UUID VALID_DEFENDANT_ID_1 = randomUUID();
+    private static final UUID VALID_DEFENDANT_ID_2 = randomUUID();
+    private static final UUID VALID_DEFENDANT_ID_4 = randomUUID();
     private static final UUID VALID_WITNESS_PERSON_ID = randomUUID();
     private static final UUID VALID_VICTIM_PERSON_ID = randomUUID();
     private static final UUID VALID_MATERIAL_ID = randomUUID();
@@ -73,13 +76,13 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     @Override
     public void setUpBefore() {
         // given 3 cases exist in database
-        CaseDetail case1 = getCase(VALID_CASE_ID_1, VALID_PERSON_ID_1, VALID_WITNESS_PERSON_ID, VALID_VICTIM_PERSON_ID);
+        CaseDetail case1 = getCase(VALID_CASE_ID_1, VALID_DEFENDANT_ID_1, VALID_WITNESS_PERSON_ID, VALID_VICTIM_PERSON_ID);
         case1.setInitiationCode("J");
         case1.setEnterpriseId(ENTERPRISE_ID);
         // case 2 is withdrawn
-        CaseDetail case2 = getCase(VALID_CASE_ID_2, VALID_PERSON_ID_2, VALID_WITNESS_PERSON_ID, VALID_VICTIM_PERSON_ID, VALID_MATERIAL_ID, VALID_BAIL_DOCUMENT_ID_1, true);
+        CaseDetail case2 = getCase(VALID_CASE_ID_2, VALID_DEFENDANT_ID_2, VALID_WITNESS_PERSON_ID, VALID_VICTIM_PERSON_ID, VALID_MATERIAL_ID, VALID_BAIL_DOCUMENT_ID_1, true);
         CaseDetail case3 = getCase(VALID_CASE_ID_3);
-        CaseDetail case4 = getCase(VALID_CASE_ID_4, VALID_PERSON_ID_4, VALID_WITNESS_PERSON_ID, null);
+        CaseDetail case4 = getCase(VALID_CASE_ID_4, VALID_DEFENDANT_ID_4, VALID_WITNESS_PERSON_ID, null);
 
         CaseDocument caseDocument = case2.getCaseDocuments().iterator().next();
 
@@ -125,7 +128,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldFindCaseByPersonId() {
-        List<CaseDetail> caseDetails = caseRepository.findByPersonId(VALID_PERSON_ID_1);
+        List<CaseDetail> caseDetails = caseRepository.findByDefendantId(VALID_DEFENDANT_ID_1);
         assertNotNull(caseDetails);
         assertThat("Should have 1 entry", caseDetails, hasSize(1));
         assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, caseDetails.get(0).getId());
@@ -149,17 +152,9 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldFindCaseDefendants_Success() {
-        List<DefendantDetail> defendants = caseRepository.findCaseDefendants(VALID_CASE_ID_3);
-        assertNotNull(defendants);
-        assertThat("Should have 1 entry", defendants, hasSize(1));
-        assertEquals(VALID_CASE_ID_3, defendants.get(0).getCaseDetail().getId());
-    }
-
-    @Test
-    public void shouldFindCaseDefendants_NoneAssociated() {
-        List<DefendantDetail> defandants = caseRepository.findCaseDefendants(randomUUID());
-        assertNotNull(defandants);
-        assertThat("Should have 0 entries", defandants, hasSize(0));
+        DefendantDetail defendant = caseRepository.findCaseDefendant(VALID_CASE_ID_3);
+        assertNotNull(defendant);
+        assertEquals(VALID_CASE_ID_3, defendant.getCaseDetail().getId());
     }
 
     @Test
@@ -232,14 +227,11 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     public void shouldPersistCurrencyAndOtherSupportingInformation() {
         CaseDetail caseDetail = caseRepository.findBy(VALID_CASE_ID_1);
 
-        assertThat(caseDetail.getDefendants().iterator().next().getNumPreviousConvictions(), is(NUM_PREVIOUS_CONVICTIONS));
+        assertThat(caseDetail.getDefendant().getNumPreviousConvictions(), is(NUM_PREVIOUS_CONVICTIONS));
         assertThat(caseDetail.getCosts(), is(COSTS));
         assertThat(caseDetail.getPostingDate(), is(POSTING_DATE));
-        assertThat(caseDetail.getPtiUrn(), is("pti urn"));
-        assertThat(caseDetail.getLibraOriginatingOrg(), is("libra origin org"));
-        assertThat(caseDetail.getSummonsCode(), is("summons code"));
 
-        DefendantDetail defendantDetail = caseDetail.getDefendants().iterator().next();
+        DefendantDetail defendantDetail = caseDetail.getDefendant();
         OffenceDetail offenceDetail = defendantDetail.getOffences().iterator().next();
 
         assertThat(offenceDetail.getWitnessStatement(), is("witness statement"));
@@ -262,11 +254,6 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
         assertThat(sjpCaseByUrn.getInitiationCode(), is("J"));
         assertThat(sjpCaseByUrn.getId(), is(VALID_CASE_ID_1));
-    }
-
-    @Test
-    public void shouldNotFindCaseByUrnWhenSearchingForSjpCases() {
-        assertNull(caseRepository.findSjpCaseByUrn(VALID_CASE_ID_2.toString().toUpperCase()));
     }
 
     @Test
@@ -298,8 +285,10 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     }
 
     private void checkAllOffencesForACase(CaseDetail caseDetail, boolean withdrawn) {
-        caseDetail.getDefendants().forEach(defendant -> defendant.getOffences()
-                .forEach(offence -> assertEquals(withdrawn, offence.getPendingWithdrawal())));
+        Set<OffenceDetail> offences = caseDetail.getDefendant().getOffences();
+
+        assertThat(offences, not(empty()));
+        offences.forEach(offence -> assertEquals(withdrawn, offence.getPendingWithdrawal()));
     }
 
     private void isCasePendingWithdrawal(CaseDetail caseDetail) {
@@ -310,16 +299,16 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         return getCase(caseId, randomUUID(), randomUUID(), randomUUID());
     }
 
-    private CaseDetail getCase(UUID caseId, UUID defendantPersonId, UUID witnessPersonId, UUID victimPersonId) {
-        return getCase(caseId, defendantPersonId, witnessPersonId, victimPersonId, randomUUID(), randomUUID(), false);
+    private CaseDetail getCase(UUID caseId, UUID defendantId, UUID witnessPersonId, UUID victimPersonId) {
+        return getCase(caseId, defendantId, witnessPersonId, victimPersonId, randomUUID(), randomUUID(), false);
     }
 
-    private CaseDetail getCase(UUID caseId, UUID defendantPersonId, UUID witnessPersonId, UUID victimPersonId,
+    private CaseDetail getCase(UUID caseId, UUID defendantId, UUID witnessPersonId, UUID victimPersonId,
                                UUID materialId, UUID bailDocumentId, boolean withdrawn) {
 
 
         final DefendantDetail defendantDetail = DefendantDetailBuilder.aDefendantDetail()
-                .withPersonId(defendantPersonId)
+                .withId(defendantId)
                 .withOffencePendingWithdrawal(withdrawn)
                 .build();
 
@@ -327,9 +316,6 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         final CaseDetail caseDetail = CaseDetailBuilder.aCase()
                 .withCaseId(caseId)
                 .withUrn(caseId.toString().toUpperCase())
-                .withPtiUrn("pti urn")
-                .withLibraOriginatingOrg("libra origin org")
-                .withSummonsCode("summons code")
                 .withCosts(COSTS)
                 .withPostingDate(POSTING_DATE)
                 .addDefendantDetail(defendantDetail)
@@ -337,7 +323,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
                 .withCreatedOn(caseCreatedOn)
                 .build();
         // assuming there is just one defendant for now
-        caseDetail.getDefendants().iterator().next().setNumPreviousConvictions(NUM_PREVIOUS_CONVICTIONS);
+        caseDetail.getDefendant().setNumPreviousConvictions(NUM_PREVIOUS_CONVICTIONS);
         return caseDetail;
     }
 

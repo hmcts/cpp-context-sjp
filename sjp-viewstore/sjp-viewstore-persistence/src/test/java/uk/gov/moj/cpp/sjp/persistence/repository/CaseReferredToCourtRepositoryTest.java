@@ -53,8 +53,7 @@ public class CaseReferredToCourtRepositoryTest extends BaseTransactionalTest {
     }
 
     private CaseReferredToCourt createCaseReferredToCourt(final LocalDate hearingDate) {
-
-        final UUID personId = UUID.randomUUID();
+        
         final CaseReferredToCourt caseReferredToCourt = new CaseReferredToCourt(
                 UUID.randomUUID(),
                 RandomStringUtils.randomAlphabetic(12),
@@ -64,7 +63,6 @@ public class CaseReferredToCourtRepositoryTest extends BaseTransactionalTest {
                 hearingDate);
 
         final DefendantDetail defendantDetail = DefendantDetailBuilder.aDefendantDetail()
-                .withPersonId(personId)
                 .withInterpreterLanguage(caseReferredToCourt.getInterpreterLanguage())
                 .build();
         final CaseDetail caseDetail = CaseDetailBuilder.aCase()
@@ -76,7 +74,7 @@ public class CaseReferredToCourtRepositoryTest extends BaseTransactionalTest {
         caseRepository.save(caseDetail);
 
         caseSearchResultRepository.save(new CaseSearchResult(UUID.randomUUID(), caseReferredToCourt.getCaseId(),
-                personId, caseReferredToCourt.getFirstName(), caseReferredToCourt.getLastName(),
+                caseReferredToCourt.getFirstName(), caseReferredToCourt.getLastName(),
                 LocalDate.of(1970, 10, 8), "SW17 1AA"));
 
         courtReferralRepository.save(new CourtReferral(caseReferredToCourt.getCaseId(), hearingDate));

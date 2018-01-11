@@ -44,7 +44,6 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantsView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
-import uk.gov.moj.cpp.sjp.query.view.response.SearchCasesView;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.EmployerService;
 import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
@@ -122,21 +121,6 @@ public class StructureQueryViewTest {
         assertEquals(result, outputEnvelope);
         verify(caseService).findCaseByUrn(URN);
         verify(function).apply(caseView);
-    }
-
-    @Test
-    public void shouldSearchByPersonId() {
-        setupExpectations();
-        final String personId = randomUUID().toString();
-        when(payloadObject.getString(FIELD_QUERY)).thenReturn(personId);
-        final SearchCasesView searchCasesView = new SearchCasesView(personId, emptyList());
-        when(caseService.searchCasesByPersonId(personId)).thenReturn(searchCasesView);
-
-        final JsonEnvelope result = sjpQueryView.searchCasesByPersonId(envelope);
-
-        assertEquals(result, outputEnvelope);
-        verify(caseService).searchCasesByPersonId(personId);
-        verify(function).apply(searchCasesView);
     }
 
     @Test
@@ -271,7 +255,7 @@ public class StructureQueryViewTest {
                         withJsonPath("$.address.address2", is(address.getAddress2())),
                         withJsonPath("$.address.address3", is(address.getAddress3())),
                         withJsonPath("$.address.address4", is(address.getAddress4())),
-                        withJsonPath("$.address.postCode", is(address.getPostCode()))
+                        withJsonPath("$.address.postcode", is(address.getPostcode()))
                 ))
         ).thatMatchesSchema());
     }

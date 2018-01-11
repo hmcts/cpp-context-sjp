@@ -1,50 +1,157 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
+import uk.gov.justice.services.core.aggregate.AggregateService;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.eventsourcing.source.core.EventSource;
+import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
-import uk.gov.moj.cpp.sjp.domain.Address;
-import uk.gov.moj.cpp.sjp.domain.Employer;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
+import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
+import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
+import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
 
 import java.util.UUID;
+import java.util.stream.Stream;
+
+import javax.json.JsonObject;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EmployerHandlerTest extends CaseCommandHandlerTest {
+public class EmployerHandlerTest {
 
     @InjectMocks
     private EmployerHandler employerHandler;
 
+    @Mock
+    private EventSource eventSource;
+
+    @Mock
+    private EventStream eventStream;
+
+    @Mock
+    private AggregateService aggregateService;
+
+    @Spy
+    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(EmployerUpdated.class,
+            EmploymentStatusUpdated.class, EmployerDeleted.class);
+
+    @Captor
+    private ArgumentCaptor<Stream<JsonEnvelope>> argumentCaptor;
+
     @Test
     public void shouldUpdateEmployer() throws EventStreamException {
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
 
-        final Employer employer = new Employer(UUID.randomUUID(), "Nando's", null, "0208123123",
-                new Address("123 High St", null, null, null, "PC1 1CP"));
+        final JsonObject payload = createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .add("defendantId", defendantId.toString())
+                .add("name", "Nando's")
+                .add("employeeReference", "123")
+                .add("phone", "0208123123")
+                .add("address", createObjectBuilder()
+                        .add("address1", "123 High St")
+                        .add("address2", "")
+                        .add("address3", "London")
+                        .add("address4", "Croydon")
+                        .add("postcode", "CR01XG")
+                )
+                .build();
 
-        when(converter.convert(jsonObject, Employer.class)).thenReturn(employer);
-        when(caseAggregate.updateEmployer(employer)).thenReturn(events);
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
-        employerHandler.updateEmployer(jsonEnvelope);
+        final JsonEnvelope envelope = EnvelopeFactory.createEnvelope("sjp.command.update-employer", payload);
+        employerHandler.updateEmployer(envelope);
 
-        verify(converter).convert(jsonObject, Employer.class);
-        verify(caseAggregate).updateEmployer(employer);
+        verify(eventStream).append(argumentCaptor.capture());
+
+        final Stream<JsonEnvelope> value = argumentCaptor.getValue();
+        assertThat(value, is(streamContaining(
+                jsonEnvelope(
+                        withMetadataEnvelopedFrom(envelope)
+                                .withName("sjp.events.employer-updated"),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.defendantId", equalTo(defendantId.toString())),
+                                withJsonPath("$.name", equalTo("Nando's")),
+                                withJsonPath("$.employeeReference", equalTo("123")),
+                                withJsonPath("$.phone", equalTo("0208123123")),
+                                withJsonPath("$.address.address1", equalTo("123 High St")),
+                                withJsonPath("$.address.address2", equalTo("")),
+                                withJsonPath("$.address.address3", equalTo("London")),
+                                withJsonPath("$.address.address4", equalTo("Croydon")),
+                                withJsonPath("$.address.postcode", equalTo("CR01XG"))
+
+                        )))
+                        .thatMatchesSchema(),
+                jsonEnvelope(
+                        withMetadataEnvelopedFrom(envelope)
+                                .withName("sjp.events.employment-status-updated"),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.defendantId", equalTo(defendantId.toString())),
+                                withJsonPath("$.employmentStatus", equalTo("EMPLOYED"))
+
+                        )))
+                        .thatMatchesSchema()
+        )));
     }
 
     @Test
     public void shouldDeleteEmployer() throws EventStreamException {
+        final CaseAggregate caseAggregate = new CaseAggregate();
         final UUID defendantId = UUID.randomUUID();
-        when(jsonObject.getString("defendantId")).thenReturn(defendantId.toString());
+        caseAggregate.apply(new EmploymentStatusUpdated(defendantId, "EMPLOYED"));
+        final UUID caseId = UUID.randomUUID();
 
-        when(caseAggregate.deleteEmployer(defendantId)).thenReturn(events);
 
-        employerHandler.deleteEmployer(jsonEnvelope);
+        final JsonObject payload = createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .add("defendantId", defendantId.toString())
+                .build();
 
-        verify(jsonObject).getString("defendantId");
-        verify(caseAggregate).deleteEmployer(defendantId);
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        final JsonEnvelope envelope = EnvelopeFactory.createEnvelope("sjp.command.delete-employer", payload);
+        employerHandler.deleteEmployer(envelope);
+
+        verify(eventStream).append(argumentCaptor.capture());
+
+        final Stream<JsonEnvelope> value = argumentCaptor.getValue();
+        assertThat(value, is(streamContaining(
+                jsonEnvelope(
+                        withMetadataEnvelopedFrom(envelope)
+                                .withName("sjp.events.employer-deleted"),
+                        payloadIsJson(
+                                withJsonPath("$.defendantId", equalTo(defendantId.toString()))
+
+                        ))
+                        .thatMatchesSchema()
+        )));
     }
 }

@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.domain.SjpOffence;
+import uk.gov.moj.cpp.sjp.domain.Offence;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -11,6 +11,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
+/**
+ * @deprecated Replaced by {@link CaseReceived}
+ */
 @Event("sjp.events.sjp-case-created")
 public class SjpCaseCreated {
 
@@ -24,12 +30,11 @@ public class SjpCaseCreated {
     private String libraHearingLocation;
     private LocalDate dateOfHearing;
     private String timeOfHearing;
-    private String personId;
     private UUID defendantId;
     private BigDecimal costs;
     private int numPreviousConvictions;
     private LocalDate postingDate;
-    private List<SjpOffence> offences;
+    private List<Offence> offences;
     private ZonedDateTime createdOn;
 
 
@@ -46,12 +51,11 @@ public class SjpCaseCreated {
                           String libraHearingLocation,
                           LocalDate dateOfHearing,
                           String timeOfHearing,
-                          String personId,
                           UUID defendantId,
                           int numPreviousConvictions,
                           BigDecimal costs,
                           LocalDate postingDate,
-                          List<SjpOffence> offences,
+                          List<Offence> offences,
                           ZonedDateTime createdOn) {
         this.urn = urn;
         this.id = id;
@@ -63,7 +67,6 @@ public class SjpCaseCreated {
         this.libraHearingLocation = libraHearingLocation;
         this.dateOfHearing = dateOfHearing;
         this.timeOfHearing = timeOfHearing;
-        this.personId = personId;
         this.defendantId = defendantId;
         this.numPreviousConvictions = numPreviousConvictions;
         this.costs = costs;
@@ -108,23 +111,15 @@ public class SjpCaseCreated {
         return timeOfHearing;
     }
 
-    public String getPersonId() {
-        return personId;
-    }
-
     public UUID getDefendantId() {
         return defendantId;
     }
 
-    public void setPersonId(String personId) {
-        this.personId = personId;
-    }
-
-    public List<SjpOffence> getOffences() {
+    public List<Offence> getOffences() {
         return offences;
     }
 
-    public void setOffences(List<SjpOffence> offences) {
+    public void setOffences(List<Offence> offences) {
         this.offences = offences;
     }
 
@@ -187,7 +182,6 @@ public class SjpCaseCreated {
                 Objects.equals(libraHearingLocation, that.libraHearingLocation) &&
                 Objects.equals(dateOfHearing, that.dateOfHearing) &&
                 Objects.equals(timeOfHearing, that.timeOfHearing) &&
-                Objects.equals(personId, that.personId) &&
                 Objects.equals(numPreviousConvictions, that.numPreviousConvictions) &&
                 Objects.equals(costs, that.costs) &&
                 Objects.equals(postingDate, that.postingDate) &&
@@ -197,29 +191,12 @@ public class SjpCaseCreated {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, urn, ptiUrn, initiationCode, summonsCode, prosecutingAuthority, libraOriginatingOrg, libraHearingLocation, dateOfHearing, timeOfHearing, personId, numPreviousConvictions, costs, postingDate, offences, createdOn);
+        return Objects.hash(id, urn, ptiUrn, initiationCode, summonsCode, prosecutingAuthority, libraOriginatingOrg, libraHearingLocation, dateOfHearing, timeOfHearing, numPreviousConvictions, costs, postingDate, offences, createdOn);
     }
 
     @Override
     public String toString() {
-        return "SjpCaseCreated{" +
-                "id='" + id + '\'' +
-                ", urn='" + urn + '\'' +
-                ", ptiUrn='" + ptiUrn + '\'' +
-                ", initiationCode='" + initiationCode + '\'' +
-                ", summonsCode='" + summonsCode + '\'' +
-                ", prosecutingAuthority='" + prosecutingAuthority + '\'' +
-                ", libraOriginatingOrg='" + libraOriginatingOrg + '\'' +
-                ", libraHearingLocation='" + libraHearingLocation + '\'' +
-                ", dateOfHearing=" + dateOfHearing +
-                ", timeOfHearing='" + timeOfHearing + '\'' +
-                ", personId='" + personId + '\'' +
-                ", numPreviousConvictions='" + numPreviousConvictions + '\'' +
-                ", costs='" + costs + '\'' +
-                ", offences=" + offences +
-                ", postingDate=" + postingDate +
-                ", createdOn=" + createdOn +
-                '}';
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 
 }

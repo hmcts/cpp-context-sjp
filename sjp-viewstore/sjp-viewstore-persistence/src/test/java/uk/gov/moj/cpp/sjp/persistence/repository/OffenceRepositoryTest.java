@@ -7,8 +7,7 @@ import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
-import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
+import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -47,7 +46,14 @@ public class OffenceRepositoryTest extends BaseTransactionalTest {
     private CaseDetail getCaseWithDefendantOffences() {
         CaseDetail caseDetail = new CaseDetail();
         caseDetail.setId(UUID.randomUUID());
-        caseDetail.addDefendant(new DefendantDetail(UUID.randomUUID(), UUID.randomUUID(), Sets.newHashSet(getOffenceDetail(VALID_OFFENCE_DETAIL_ID))));
+        caseDetail.setDefendant(new DefendantDetail(
+                        UUID.randomUUID(),
+                        new PersonalDetails(),
+                        Sets.newHashSet(getOffenceDetail(VALID_OFFENCE_DETAIL_ID)),
+                        1
+                )
+
+        );
         return caseDetail;
     }
 

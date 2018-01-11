@@ -4,7 +4,6 @@ import static uk.gov.moj.sjp.it.stub.AuthorisationServiceStub.stubEnableAllCapab
 
 import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 import uk.gov.moj.sjp.it.helper.CitizenHelper;
-import uk.gov.moj.sjp.it.stub.PeopleStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
 
 import javax.json.Json;
@@ -15,7 +14,7 @@ import org.junit.Test;
 
 public class GetCaseByUrnAndPostcodeIT {
 
-    private static final String POSTCODE = "CR0 1XG";
+    private static final String POSTCODE = "W1T 1JY";
     private static String urn;
     private CitizenHelper citizenHelper = new CitizenHelper();
 
@@ -27,8 +26,6 @@ public class GetCaseByUrnAndPostcodeIT {
         try (final CaseSjpHelper caseSjpHelper = new CaseSjpHelper()) {
             caseSjpHelper.createCase();
             caseSjpHelper.verifyCaseCreatedUsingId();
-
-            PeopleStub.stubPerson(caseSjpHelper.getDefendantPersonId(), POSTCODE);
 
             urn = caseSjpHelper.getCaseUrn();
         }

@@ -29,16 +29,14 @@ public class InterpreterUpdatedListener {
     @Transactional
     public void interpreterUpdated(final JsonEnvelope envelope) {
         final InterpreterUpdatedForDefendant event = jsonObjectToObjectConverter.convert(
-                        envelope.payloadAsJsonObject(), InterpreterUpdatedForDefendant.class);
+                envelope.payloadAsJsonObject(), InterpreterUpdatedForDefendant.class);
         final CaseDetail caseDetail = caseRepository.findBy(event.getCaseId());
-        final DefendantDetail defendant = caseDetail.getDefendant(event.getDefendantId());
+        final DefendantDetail defendant = caseDetail.getDefendant();
         // This should not happen (because of cancel). But just in case.
         if (event.getInterpreter() == null) {
             defendant.setInterpreter(null);
-        }
-        else {
-            defendant.setInterpreter(new InterpreterDetail(event.getInterpreter().getNeeded(),
-                            event.getInterpreter().getLanguage()));
+        } else {
+            defendant.setInterpreter(new InterpreterDetail(event.getInterpreter().getLanguage()));
         }
     }
 
@@ -48,7 +46,7 @@ public class InterpreterUpdatedListener {
         final InterpreterCancelledForDefendant event = jsonObjectToObjectConverter.convert(
                 envelope.payloadAsJsonObject(), InterpreterCancelledForDefendant.class);
         final CaseDetail caseDetail = caseRepository.findBy(event.getCaseId());
-        final DefendantDetail defendant = caseDetail.getDefendant(event.getDefendantId());
+        final DefendantDetail defendant = caseDetail.getDefendant();
         defendant.setInterpreter(null);
     }
 

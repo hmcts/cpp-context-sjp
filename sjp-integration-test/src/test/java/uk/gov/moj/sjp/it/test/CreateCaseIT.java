@@ -10,8 +10,9 @@ import org.junit.Test;
 public class CreateCaseIT extends BaseIntegrationTest{
 
     @Test
-    public void shouldAssociateEnterpriseIdWithCase() throws Exception {
+    public void shouldAssociateEnterpriseIdWithCase() {
         CaseSjpHelper caseHelper = new CaseSjpHelper();
+
         caseHelper.createCase();
         caseHelper.verifyInPrivateActiveMQ();
         caseHelper.verifyCaseCreatedUsingId();

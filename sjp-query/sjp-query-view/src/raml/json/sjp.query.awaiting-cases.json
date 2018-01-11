@@ -1,11 +1,13 @@
 {
   "awaitingCases": [
     {
-      "personId": "4b7eb63e-43f1-4096-b7a2-dde945f62f5d",
+      "firstName": "John",
+      "lastName": "Travolta",
       "offenceCode": "PS90015"
     },
     {
-      "personId": "c8f9f293-8f07-4418-ac90-16e0a75ed91d",
+      "firstName": "Margaret",
+      "lastName": "Thatcher",
       "offenceId": "PS90010"
     }
   ]

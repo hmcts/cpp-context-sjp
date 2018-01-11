@@ -14,6 +14,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -42,7 +43,8 @@ public class OffenceUpdatedListener {
         offenceDetail.setPleaMethod(event.getPleaMethod());
 
         updatePleaReceivedDate(UUID.fromString(event.getCaseId()),
-                offenceDetail.getDefendantDetail().getPersonId(), now());
+                envelope.metadata().createdAt().map(ZonedDateTime::toLocalDate)
+                        .orElse(now()));
     }
 
     @Handles("sjp.events.plea-cancelled")
@@ -55,14 +57,13 @@ public class OffenceUpdatedListener {
         offenceDetail.setPlea(null);
         offenceDetail.setPleaMethod(null);
 
-        updatePleaReceivedDate(UUID.fromString(event.getCaseId()),
-                offenceDetail.getDefendantDetail().getPersonId(), null);
+        updatePleaReceivedDate(UUID.fromString(event.getCaseId()), null);
 
     }
 
     @Transactional
-    private void updatePleaReceivedDate(final UUID caseId, final UUID personId, final LocalDate pleaReceived) {
-        searchResultRepository.findByCaseIdAndPersonId(caseId, personId)
+    void updatePleaReceivedDate(final UUID caseId, final LocalDate pleaReceived) {
+        searchResultRepository.findByCaseId(caseId)
                 .forEach(searchResult -> searchResult.setPleaDate(pleaReceived));
     }
 

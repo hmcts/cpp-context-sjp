@@ -15,7 +15,7 @@ public class BasePersonInfoHandler {
                 getStringOrNull(address, "address2"),
                 getStringOrNull(address, "address3"),
                 getStringOrNull(address, "address4"),
-                getStringOrNull(address, "postCode"))).orElse(Address.UNKNOWN);
+                getStringOrNull(address, "postcode"))).orElse(Address.UNKNOWN);
     }
 
     protected String getStringOrNull(final JsonObject object, final String fieldName) {

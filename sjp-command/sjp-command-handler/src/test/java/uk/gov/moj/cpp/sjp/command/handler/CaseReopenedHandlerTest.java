@@ -89,7 +89,7 @@ public class CaseReopenedHandlerTest {
         when(eventSource.getStreamById(eq(CASE_ID))).thenReturn(eventStream);
         when(aggregateService.get(any(EventStream.class), eq(CaseAggregate.class))).thenReturn(caseAggregate);
 
-        caseAggregate.createCase(aCase, ZonedDateTime.now());
+        caseAggregate.receiveCase(aCase, ZonedDateTime.now());
     }
 
 

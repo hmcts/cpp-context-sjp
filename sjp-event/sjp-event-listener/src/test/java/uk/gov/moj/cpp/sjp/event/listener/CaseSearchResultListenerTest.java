@@ -126,7 +126,6 @@ public class CaseSearchResultListenerTest {
         final CaseSearchResult caseSearchResult = captor.getValue();
         assertThat(caseSearchResult.getId().toString(), is(id));
         assertThat(caseSearchResult.getCaseId().toString(), is(caseId));
-        assertThat(caseSearchResult.getPersonId().toString(), is(personId));
         assertThat(caseSearchResult.getLastName(), is(lastName));
     }
 
@@ -134,22 +133,21 @@ public class CaseSearchResultListenerTest {
     public void shouldHandlePersonInfoUpdated() {
         final UUID id = UUID.randomUUID();
         final UUID caseId = UUID.randomUUID();
-        final UUID personId = UUID.randomUUID();
         final String firstName = "Teresa";
         final String lastName = "May";
         final LocalDate dateOfBirth = LocalDate.of(1960, 10, 1);
         final String postCode = "SW1A 2AA";
 
 
-        CaseSearchResult caseSearchResult = new CaseSearchResult(id, caseId, personId, firstName, lastName, dateOfBirth, postCode);
-        when(repository.findByPersonId(personId)).thenReturn(newArrayList(caseSearchResult));
+        CaseSearchResult caseSearchResult = new CaseSearchResult(id, caseId, firstName, lastName, dateOfBirth, postCode);
+        when(repository.findByCaseId(caseId)).thenReturn(newArrayList(caseSearchResult));
 
         final String updatedLastName = "June";
         final String updatedFirstName = "Theresa";
         final LocalDate updateDateOfBirth = LocalDate.now();
 
         final JsonEnvelope event = envelope()
-                .withPayloadOf(personId, "personId")
+                .withPayloadOf(caseId, "caseId")
                 .withPayloadOf(updatedLastName, "lastName")
                 .withPayloadOf(LocalDates.to(updateDateOfBirth), "dateOfBirth")
                 .withPayloadOf(updatedFirstName, "firstName")
@@ -164,7 +162,6 @@ public class CaseSearchResultListenerTest {
             @Override
             protected boolean matchesSafely(final CaseSearchResult item) {
                 return item.getCaseId().equals(caseId)
-                        && item.getPersonId().equals(personId)
                         && item.getLastName().equals(updatedLastName)
                         && item.getFirstName().equals(updatedFirstName)
                         && item.getDateOfBirth().equals(updateDateOfBirth)
@@ -175,8 +172,6 @@ public class CaseSearchResultListenerTest {
             public void describeTo(final Description description) {
                 description.appendText("caseSearchResult with(caseId = ")
                         .appendValue(caseId)
-                        .appendText(", personId=")
-                        .appendValue(personId)
                         .appendText(", lastName=")
                         .appendValue(updatedLastName)
                         .appendText(", firstName=")
@@ -192,8 +187,6 @@ public class CaseSearchResultListenerTest {
             protected void describeMismatchSafely(final CaseSearchResult item, final Description mismatchDescription) {
                 mismatchDescription.appendText("caseSearchResult with(caseId = ")
                         .appendValue(item.getCaseId())
-                        .appendText(", personId=")
-                        .appendValue(item.getPersonId())
                         .appendText(", lastName=")
                         .appendValue(item.getLastName())
                         .appendText(", firstName=")

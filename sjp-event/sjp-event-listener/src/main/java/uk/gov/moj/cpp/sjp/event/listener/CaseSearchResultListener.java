@@ -37,21 +37,21 @@ public class CaseSearchResultListener {
         final CaseSearchResult caseSearchResult = new CaseSearchResult(
                 fromString(payload.getString("id")),
                 fromString(payload.getString("caseId")),
-                fromString(payload.getString("personId")),
                 payload.getString("firstName", null),
                 payload.getString("lastName"),
                 ofNullable(payload.getString("dateOfBirth", null))
                         .map(LocalDate::parse).orElse(null),
                 payload.getString("postCode", null)
         );
+        //postCode contains typo and it is already present in old events
         repository.save(caseSearchResult);
     }
 
     @Handles("sjp.events.person-info-updated")
     public void personInfoUpdated(final JsonEnvelope event) {
         final JsonObject eventPayload = event.payloadAsJsonObject();
-        final List<CaseSearchResult> searchResults = repository.findByPersonId(
-                fromString(eventPayload.getString("personId")));
+        final List<CaseSearchResult> searchResults = repository.findByCaseId(
+                fromString(eventPayload.getString("caseId")));
 
         searchResults.forEach(caseSearchResult -> {
 

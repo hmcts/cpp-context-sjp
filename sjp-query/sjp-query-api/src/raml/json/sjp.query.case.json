@@ -18,31 +18,28 @@
       "documentName": "document name"
     }
   ],
-  "defendants": [
-    {
-      "personId": "ab746921-d839-4867-bcf9-b41db8ebc852",
-      "interpreter": {
-        "needed": true,
-        "language": "french"
-      },
-      "numPreviousConvictions": 0,
-      "offences": [
-        {
-          "id": "0baecac5-222b-402d-9047-84803679edad",
-          "offenceCode": "OF61131",
-          "plea": "GUILTY",
-          "indicatedPlea": "GUILTY",
-          "pleaMethod": "POSTAL",
-          "offenceSequenceNumber": 1,
-          "pleaMitigation": "The dog ate my ticket",
-          "chargeDate": "2016-02-18",
-          "wording": "On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable",
-          "pendingWithdrawal": false,
-          "compensation": 1.23,
-          "prosecutionFacts": "No ticket at the gates, forgery"
-        }
-      ]
-    }
-  ],
+  "defendant": {
+    "interpreter": {
+      "needed": true,
+      "language": "french"
+    },
+    "numPreviousConvictions": 0,
+    "offences": [
+      {
+        "id": "0baecac5-222b-402d-9047-84803679edad",
+        "offenceCode": "OF61131",
+        "plea": "GUILTY",
+        "indicatedPlea": "GUILTY",
+        "pleaMethod": "POSTAL",
+        "offenceSequenceNumber": 1,
+        "pleaMitigation": "The dog ate my ticket",
+        "chargeDate": "2016-02-18",
+        "wording": "On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable",
+        "pendingWithdrawal": false,
+        "compensation": 1.23,
+        "prosecutionFacts": "No ticket at the gates, forgery"
+      }
+    ]
+  },
   "prosecutingAuthority": "TFL"
 }

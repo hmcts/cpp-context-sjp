@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.api.accesscontrol;
 
+import static java.util.Collections.singletonList;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -9,7 +11,6 @@ public final class RuleConstants {
     private static final String GROUP_TFL_USERS = "TFL Users";
     private static final String GROUP_LEGAL_ADVISERS = "Legal Advisers";
     private static final String GROUP_COURT_ADMINISTRATORS = "Court Administrators";
-    private static final String GROUP_SUPPORT_USERS = "Support Users";
 
 
     private RuleConstants() {
@@ -17,16 +18,20 @@ public final class RuleConstants {
     }
 
     public static List<String> getCreateSjpCaseActionGroups() {
-        return Arrays.asList(GROUP_TFL_USERS);
+        return singletonList(GROUP_TFL_USERS);
     }
 
     public static List<String> getPleaOnlineActionGroups() {
         //TODO: this needs to be changed TO ONLINE_PLEA_USERS as part of ATCM-2664
-        return Arrays.asList(GROUP_SYSTEM_USERS);
+        return singletonList(GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getAddCaseDocumentActionGroups() {
         return Arrays.asList(GROUP_SYSTEM_USERS, GROUP_TFL_USERS, GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+    }
+
+    public static List<String> getUpdateDefendantNationalInsuranceNumberGroups() {
+        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
     public static List<String> getUploadCaseDocumentActionGroups() {
@@ -58,19 +63,11 @@ public final class RuleConstants {
     }
 
     public static List<String> getRequestWithdrawalOfAllOffencesGroups() {
-        return Arrays.asList(GROUP_TFL_USERS);
+        return singletonList(GROUP_TFL_USERS);
     }
 
     public static List<String> getCancelRequestWithdrawalOfAllOffencesGroups() {
-        return Arrays.asList(GROUP_TFL_USERS);
-    }
-
-    public static List<String> getAddPersonInfoGroups() {
-        return Arrays.asList(GROUP_TFL_USERS);
-    }
-
-    public static List<String> getRemovePersonInfoGroups() {
-        return Arrays.asList(GROUP_SUPPORT_USERS);
+        return singletonList(GROUP_TFL_USERS);
     }
 
     public static List<String> getActionCourtReferralGroups() {

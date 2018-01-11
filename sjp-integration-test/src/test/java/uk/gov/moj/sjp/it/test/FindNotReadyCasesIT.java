@@ -19,8 +19,10 @@ import javax.ws.rs.core.Response;
 import com.jayway.restassured.path.json.JsonPath;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("TODO: ATCM-2683 created to fix the test as it's not testing anything")
 public class FindNotReadyCasesIT extends AbstractTestHelper {
 
     private List<CaseSjpHelper> youngCases;
@@ -30,7 +32,7 @@ public class FindNotReadyCasesIT extends AbstractTestHelper {
     public void init() {
         stubEnableAllCapabilities();
 
-        //TODO Shouldn't these have cases in them?
+        //TODO ATCM-2683 created to fix the test as it's not testing anything
         youngCases = new ArrayList<>();
         midCases = new ArrayList<>();
     }

@@ -18,13 +18,13 @@ public class CancelWithdrawAllOffencesTest extends CaseAggregateBaseTest {
 
     @Test
     public void shouldCancelWithdrawAllOffences() {
-        final List<Object> events = sjpCaseAggregate.cancelRequestWithdrawalAllOffences(UUID.randomUUID().toString()).collect(Collectors.toList());
+        final List<Object> events = caseAggregate.cancelRequestWithdrawalAllOffences(UUID.randomUUID().toString()).collect(Collectors.toList());
 
         assertThat(events.size(), is(1));
 
         final AllOffencesWithdrawalRequestCancelled event = (AllOffencesWithdrawalRequestCancelled) events.get(0);
-        assertEquals(sjpCase.getId(), event.getCaseId());
-        assertThat("Case withdrawl all offences cancelled", sjpCaseAggregate.isWithdrawalAllOffencesRequested(), Matchers.is(false));
+        assertEquals(aCase.getId(), event.getCaseId());
+        assertThat("Case withdrawl all offences cancelled", caseAggregate.isWithdrawalAllOffencesRequested(), Matchers.is(false));
     }
 
     @Test

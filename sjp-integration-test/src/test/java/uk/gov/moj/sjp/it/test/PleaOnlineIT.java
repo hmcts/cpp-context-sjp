@@ -92,8 +92,6 @@ public class PleaOnlineIT extends BaseIntegrationTest {
              final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
                      STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
-            caseSearchResultHelper.addPersonInfo();
-            caseSearchResultHelper.verifyPersonInfoByUrn();
 
             //1) First plea should be successful
             pleaOnlineAndConfirmSuccess(pleaOnlineHelper, updatePleaHelper, caseSearchResultHelper);
@@ -184,7 +182,7 @@ public class PleaOnlineIT extends BaseIntegrationTest {
                 withJsonPath("$.address.address2", equalTo(address.getString("address2"))),
                 withJsonPath("$.address.address3", equalTo(address.getString("address3"))),
                 withJsonPath("$.address.address4", equalTo(address.getString("address4"))),
-                withJsonPath("$.address.postCode", equalTo(address.getString("postCode")))
+                withJsonPath("$.address.postcode", equalTo(address.getString("postcode")))
         );
     }
 

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="05" author="krzysztofo" logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <addColumn tableName="defendant">
+            <column name="title" type="text"/>
+            <column name="first_name" type="text"/>
+            <column name="last_name" type="text"/>
+            <column name="date_of_birth" type="date"/>
+            <column name="gender" type="text"/>
+            <column name="national_insurance_number" type="text"/>
+            <column name="address1" type="text"/>
+            <column name="address2" type="text"/>
+            <column name="address3" type="text"/>
+            <column name="address4" type="text"/>
+            <column name="postcode" type="text"/>
+            <column name="email" type="text"/>
+            <column name="telephone_number_home" type="text"/>
+            <column name="telephone_number_mobile" type="text"/>
+        </addColumn>
+
+        <dropColumn tableName="defendant">
+            <column name="interpreter_needed" />
+        </dropColumn>
+
+    </changeSet>
+
+</databaseChangeLog>

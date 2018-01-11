@@ -104,7 +104,7 @@ public class AddCaseDocumentHandlerTest {
     public void testAddCaseDocument_triggersCaseDocumentAddedEvent() throws Exception {
         JsonEnvelope addCaseDocumentCommand = anAddCaseDocumentCommand()
                 .build();
-        caseAggregate.createCase(CaseBuilder.aDefaultSjpCase().build(), clock.now());
+        caseAggregate.receiveCase(CaseBuilder.aDefaultSjpCase().build(), clock.now());
 
         addCaseDocumentHandler.addCaseDocument(addCaseDocumentCommand);
 
@@ -126,7 +126,7 @@ public class AddCaseDocumentHandlerTest {
 
         JsonEnvelope addCaseDocumentCommand = anAddCaseDocumentCommand()
                 .build();
-        caseAggregate.createCase(CaseBuilder.aDefaultSjpCase().build(), clock.now());
+        caseAggregate.receiveCase(CaseBuilder.aDefaultSjpCase().build(), clock.now());
         caseAggregate.addCaseDocument(CASE_ID, aCaseDocument().build());
 
         addCaseDocumentHandler.addCaseDocument(addCaseDocumentCommand);
@@ -163,7 +163,7 @@ public class AddCaseDocumentHandlerTest {
     @Test
     public void testAddCaseDocument_whenRequiredFieldsOnly_triggersCaseDocumentAddedEvent() throws Exception {
         JsonEnvelope addCaseDocumentCommand = anMinimumAddCaseDocumentCommand().build();
-        caseAggregate.createCase(CaseBuilder.aDefaultSjpCase().build(), clock.now());
+        caseAggregate.receiveCase(CaseBuilder.aDefaultSjpCase().build(), clock.now());
 
         addCaseDocumentHandler.addCaseDocument(addCaseDocumentCommand);
 

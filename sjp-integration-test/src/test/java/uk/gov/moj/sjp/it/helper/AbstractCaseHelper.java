@@ -2,8 +2,6 @@ package uk.gov.moj.sjp.it.helper;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static javax.json.Json.createObjectBuilder;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -20,8 +18,6 @@ import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -76,7 +72,7 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
      */
     public void verifyInPrivateActiveMQ() {
         JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
-        assertThat(jsonResponse.get("id"), is(caseId));
+        assertThat(jsonResponse.get("caseId"), is(caseId));
         assertThat(jsonResponse.get("urn"), is(caseUrn));
     }
 
@@ -176,6 +172,7 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
         request = jsonObject.toString();
         return request;
     }
+
 
     protected String getPayloadForEnterpriseId() {
         final JsonObject payload = createObjectBuilder()

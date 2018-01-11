@@ -7,6 +7,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -24,9 +25,9 @@ public class CaseCreatedProcessor {
     @Inject
     private Sender sender;
 
-    @Handles("sjp.events.sjp-case-created")
+    @Handles(CaseReceived.EVENT_NAME)
     public void publishSjpCaseCreatedPublicEvent(final JsonEnvelope event) {
-        final String caseId = event.payloadAsJsonObject().getString("id");
+        final String caseId = event.payloadAsJsonObject().getString("caseId");
         final String postingDate = event.payloadAsJsonObject().getString("postingDate");
         final JsonObject payload = Json.createObjectBuilder().add("id", caseId).add("postingDate", postingDate).build();
         sender.send(enveloper.withMetadataFrom(event, SJP_CASE_CREATED_PUBLIC_EVENT).apply(payload));

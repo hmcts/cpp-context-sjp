@@ -16,21 +16,21 @@ import org.junit.Test;
 public class CaseStartedTest extends CaseAggregateBaseTest {
 
     @Test
-    public void testApply_whenCaseStartedEvent() throws Exception {
+    public void testApply_whenCaseStartedEvent() {
         CaseStarted caseStarted = new CaseStarted(DefaultTestData.CASE_ID);
 
-        sjpCaseAggregate.apply(caseStarted);
+        caseAggregate.apply(caseStarted);
 
-        assertThat("Sets case id", sjpCaseAggregate.getCaseId(), equalTo(DefaultTestData.CASE_ID));
+        assertThat("Sets case id", caseAggregate.getCaseId(), equalTo(DefaultTestData.CASE_ID));
     }
 
     @Test
-    public void testApply_whenCaseCreatedEvent() throws Exception {
+    public void testApply_whenCaseCreatedEvent() {
         Case aCase = aDefaultSjpCase().build();
-        sjpCaseAggregate.createCase(aCase, ZonedDateTime.now());
+        caseAggregate.receiveCase(aCase, ZonedDateTime.now());
 
-        assertThat("Sets case id", sjpCaseAggregate.getCaseId(), equalTo(DefaultTestData.CASE_ID));
-        assertThat("Sets urn", sjpCaseAggregate.getUrn(), equalTo(URN));
+        assertThat("Sets case id", caseAggregate.getCaseId(), equalTo(DefaultTestData.CASE_ID));
+        assertThat("Sets urn", caseAggregate.getUrn(), equalTo(URN));
     }
 
 

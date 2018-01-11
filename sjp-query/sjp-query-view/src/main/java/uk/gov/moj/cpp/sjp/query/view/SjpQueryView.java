@@ -82,7 +82,7 @@ public class SjpQueryView {
     @Handles("sjp.query.cases-search")
     public JsonEnvelope searchCasesByPersonId(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASES_SEARCH).apply(
-                caseService.searchCasesByPersonId(envelope.payloadAsJsonObject().getString(FIELD_QUERY)));
+                caseService.searchCasesByDefendantId(envelope.payloadAsJsonObject().getString(FIELD_QUERY)));
     }
 
     @Handles("sjp.query.case-search-results")

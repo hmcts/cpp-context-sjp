@@ -7,7 +7,6 @@ import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.PersonInfoDetails;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
@@ -23,41 +22,39 @@ import org.junit.Test;
 
 public class UpdateDefendantDetailsTest {
 
-    final String ADDRESS_1 = "14 Tottenham Court Road";
-    final String ADDRESS_2 = "London";
-    final String ADDRESS_3 = "England";
-    final String ADDRESS_4 = "UK";
-    final String POSTCODE = "W1T 1JY";
-    final UUID defendantId = randomUUID();
-    final UUID caseId = randomUUID();
-    final UUID personId = randomUUID();
-    final String title = "Mr";
-    final String firstName = "test";
-    final String lastName = "lastName";
-    final String email = "email";
-    final String gender = "gender";
-    final String nationalInsuranceNumber = "nationalInsuranceNumber";
-    final String homeNumber = "homeNumber";
-    final String mobileNumber = "mobileNumber";
-    final Address address = new Address(ADDRESS_1, ADDRESS_2, ADDRESS_3, ADDRESS_4, POSTCODE);
-    final LocalDate dateOfBirth = LocalDates.from("1980-07-15");
+    private static final String ADDRESS_1 = "14 Tottenham Court Road";
+    private static final String ADDRESS_2 = "London";
+    private static final String ADDRESS_3 = "England";
+    private static final String ADDRESS_4 = "UK";
+    private static final String POSTCODE = "W1T 1JY";
+    private static final UUID defendantId = randomUUID();
+    private static final UUID caseId = randomUUID();
+    private static final UUID personId = randomUUID();
+    private static final String title = "Mr";
+    private static final String firstName = "test";
+    private static final String lastName = "lastName";
+    private static final String email = "email";
+    private static final String gender = "gender";
+    private static final String nationalInsuranceNumber = "nationalInsuranceNumber";
+    private static final String homeNumber = "homeNumber";
+    private static final String mobileNumber = "mobileNumber";
+    private static final Address address = new Address(ADDRESS_1, ADDRESS_2, ADDRESS_3, ADDRESS_4, POSTCODE);
+    private static final LocalDate dateOfBirth = LocalDate.of(1980, 7, 15);
 
-    private DefendantAggregate defendantAggregate;
+    private CaseAggregate caseAggregate;
 
     @Before
     public void setUp() {
-        defendantAggregate = new DefendantAggregate();
+        caseAggregate = new CaseAggregate();
     }
 
     @Test
     public void shouldCreateUpdateEvent() {
-        Address address = new Address(ADDRESS_1, ADDRESS_2, ADDRESS_3,
-                ADDRESS_4, POSTCODE);
         PersonInfoDetails personInfoDetails = new PersonInfoDetails(personId, title, firstName, lastName,
                 dateOfBirth, address);
-        defendantAggregate.addPersonInfo(defendantId, caseId, personInfoDetails);
+        caseAggregate.addPersonInfo(defendantId, caseId, personInfoDetails);
 
-        Stream<Object> eventStream = defendantAggregate.updateDefendantDetails(caseId, defendantId,
+        Stream<Object> eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
                 gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, personInfoDetails);
 
         List<Object> events = asList(eventStream.toArray());
@@ -75,16 +72,14 @@ public class UpdateDefendantDetailsTest {
 
     @Test
     public void shouldFailValidation() {
-        Address address = new Address(ADDRESS_1, ADDRESS_2, ADDRESS_3,
-                ADDRESS_4, POSTCODE);
         PersonInfoDetails personInfoDetails = new PersonInfoDetails(personId, title, firstName, lastName,
                 dateOfBirth, address);
 
-        defendantAggregate.addPersonInfo(defendantId, caseId, personInfoDetails);
+        caseAggregate.addPersonInfo(defendantId, caseId, personInfoDetails);
 
         PersonInfoDetails personInfoDetailsWithoutTitle = new PersonInfoDetails(personId, null, firstName, lastName,
                 dateOfBirth, address);
-        Stream<Object> eventStream = defendantAggregate.updateDefendantDetails(caseId, defendantId,
+        Stream<Object> eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
                 gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, personInfoDetailsWithoutTitle);
 
         List<Object> events = asList(eventStream.toArray());

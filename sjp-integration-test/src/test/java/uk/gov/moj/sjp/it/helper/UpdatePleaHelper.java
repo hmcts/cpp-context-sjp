@@ -83,8 +83,8 @@ public class UpdatePleaHelper extends AbstractTestHelper {
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
-                                withJsonPath("defendants[0].offences[0].plea", is(plea)),
-                                withJsonPath("defendants[0].offences[0].pleaMethod", is(pleaMethod))
+                                withJsonPath("defendant.offences[0].plea", is(plea)),
+                                withJsonPath("defendant.offences[0].pleaMethod", is(pleaMethod))
                         ))
                 );
     }
@@ -92,7 +92,7 @@ public class UpdatePleaHelper extends AbstractTestHelper {
     public void verifyInterpreterLanguage(final String interpreterLanguage) {
         RestPoller.poll(getCaseById(caseSjpHelper.getCaseId())).until(
                 status().is(OK),
-                payload().isJson(withJsonPath("defendants[0].interpreter.language",
+                payload().isJson(withJsonPath("defendant.interpreter.language",
                         is(interpreterLanguage)))
         );
     }

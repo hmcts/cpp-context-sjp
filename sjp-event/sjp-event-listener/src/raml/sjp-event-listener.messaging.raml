@@ -10,9 +10,9 @@ version: v1
         schema: !include json/schema/sjp.events.case-document-added.json
         example: !include json/sjp.events.case-document-added.json
 
-      application/vnd.sjp.events.sjp-case-created+json:
-        example: !include json/sjp.events.sjp-case-created.json
-        schema: !include json/schema/sjp.events.sjp-case-created.json
+      application/vnd.sjp.events.case-received+json:
+        example: !include json/sjp.events.case-received.json
+        schema: !include json/schema/sjp.events.case-received.json
 
       application/vnd.sjp.events.plea-updated+json:
         schema: !include json/schema/sjp.events.plea-updated.json
@@ -49,6 +49,10 @@ version: v1
       application/vnd.sjp.events.employment-status-updated+json:
         schema: !include json/schema/sjp.events.employment-status-updated.json
         example: !include json/sjp.events.employment-status-updated.json
+
+      application/vnd.sjp.events.defendant-national-insurance-number-updated+json:
+        schema: !include json/schema/sjp.events.defendant-national-insurance-number-updated.json
+        example: !include json/sjp.events.defendant-national-insurance-number-updated.json
 
       application/vnd.sjp.events.interpreter-for-defendant-updated+json:
         schema: !include json/schema/sjp.events.interpreter-for-defendant-updated.json
@@ -105,3 +109,7 @@ version: v1
       application/vnd.sjp.events.person-info-removed+json:
         schema: !include json/schema/sjp.events.person-info-removed.json
         example: !include json/sjp.events.person-info-removed.json
+
+      application/vnd.sjp.events.defendant-details-updated+json:
+        schema: !include json/schema/sjp.events.defendant-details-updated.json
+        example: !include json/sjp.events.defendant-details-updated.json

@@ -74,7 +74,7 @@ public class EmployerListenerTest {
         assertThat(employer.getAddress2(), equalTo(employerUpdated.getAddress().getAddress2()));
         assertThat(employer.getAddress3(), equalTo(employerUpdated.getAddress().getAddress3()));
         assertThat(employer.getAddress4(), equalTo(employerUpdated.getAddress().getAddress4()));
-        assertThat(employer.getPostCode(), equalTo(employerUpdated.getAddress().getPostCode()));
+        assertThat(employer.getPostCode(), equalTo(employerUpdated.getAddress().getPostcode()));
     }
 
     @Test

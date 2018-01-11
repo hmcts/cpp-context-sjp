@@ -18,7 +18,7 @@ public class CaseUpdateRejectedTest extends CaseAggregateBaseTest {
 
     @Test
     public void shouldRejectCaseUpdate() {
-        final List<Object> events = sjpCaseAggregate.caseUpdateRejected(UUID.randomUUID().toString(), CaseUpdateRejected.RejectReason.CASE_COMPLETED)
+        final List<Object> events = caseAggregate.caseUpdateRejected(UUID.randomUUID().toString(), CaseUpdateRejected.RejectReason.CASE_COMPLETED)
                 .collect(Collectors.toList());
 
         Assert.assertEquals(1, events.size());
@@ -27,7 +27,7 @@ public class CaseUpdateRejectedTest extends CaseAggregateBaseTest {
         Assert.assertEquals(CaseUpdateRejected.class, event.getClass());
 
         final CaseUpdateRejected caseUpdateRejectedEvent = (CaseUpdateRejected) event;
-        Assert.assertEquals(sjpCase.getId(), caseUpdateRejectedEvent.getCaseId());
+        Assert.assertEquals(aCase.getId(), caseUpdateRejectedEvent.getCaseId());
         Assert.assertEquals(CaseUpdateRejected.RejectReason.CASE_COMPLETED, caseUpdateRejectedEvent.getReason());
 
     }

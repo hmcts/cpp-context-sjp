@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;
@@ -178,13 +179,13 @@ public class CaseService {
     /**
      * Search case by personId.
      *
-     * @param personId id of the defendant person to find cases for.
+     * @param defendantId id of the defendant to find cases for.
      * @return SearchView containing matched case summaries
      */
-    public SearchCasesView searchCasesByPersonId(final String personId) {
-        final List<SearchCasesHit> cases = caseRepository.findByPersonId(fromString(personId))
+    public SearchCasesView searchCasesByDefendantId(final String defendantId) {
+        final List<SearchCasesHit> cases = caseRepository.findByDefendantId(fromString(defendantId))
                 .stream().map(SearchCasesHit::new).collect(toList());
-        return new SearchCasesView(personId, cases);
+        return new SearchCasesView(defendantId, cases);
     }
 
     public SearchCaseByMaterialIdView searchCaseByMaterialId(final String q) {
@@ -232,9 +233,9 @@ public class CaseService {
      * @return case defendants for the case
      */
     public DefendantsView findCaseDefendants(final String caseId) {
-        List<DefendantView> caseDefendant =
-                caseRepository.findCaseDefendants(fromString(caseId)).stream()
-                        .map(DefendantView::new).collect(toList());
+        List<DefendantView> caseDefendant = Stream.of(
+                caseRepository.findCaseDefendant(fromString(caseId)))
+                .map(DefendantView::new).collect(toList());
         return new DefendantsView(caseDefendant);
     }
 
@@ -260,9 +261,10 @@ public class CaseService {
 
         final JsonArrayBuilder arrayBuilder = createArrayBuilder();
         awaitingSjpCases.forEach(sjpCase -> {
-            final DefendantDetail defendant = sjpCase.getDefendants().iterator().next();
+            final DefendantDetail defendant = sjpCase.getDefendant();
             arrayBuilder.add(createObjectBuilder()
-                    .add("personId", defendant.getPersonId().toString())
+                    .add("firstName", defendant.getPersonalDetails().getFirstName())
+                    .add("lastName", defendant.getPersonalDetails().getLastName())
                     .add("offenceCode", defendant.getOffences().iterator().next().getCode()));
         });
         return createObjectBuilder().add("awaitingCases", arrayBuilder).build();
@@ -302,8 +304,7 @@ public class CaseService {
                     new ResultOrdersView.ResultOrderView.Builder()
                             .setCaseId(caseDocument.getCaseId())
                             .setUrn(caseDetail.getUrn())
-                            .setDefendant(caseDetail.getDefendants().stream()
-                                    .findFirst().get().getPersonId())
+                            .setDefendant(caseDetail.getDefendant().getPersonalDetails())
                             .setOrder(caseDocument.getMaterialId(), caseDocument.getAddedAt())
                             .build());
         };
@@ -356,14 +357,12 @@ public class CaseService {
         final JsonObjectBuilder objectBuilder = createObjectBuilder()
                 .add("id", searchResult.getId().toString())
                 .add("caseId", searchResult.getCaseId().toString())
-                .add("personId", searchResult.getPersonId().toString())
                 .add("lastName", searchResult.getLastName())
                 .add("assigned", searchResult.isAssigned());
         // it may be possible that the person details are added before the case is created
         final CaseSummary caseSummary = searchResult.getCaseSummary();
         if (caseSummary != null) {
             objectBuilder.add("urn", caseSummary.getUrn())
-                    .add("initiationCode", caseSummary.getInitiationCode())
                     .add("prosecutingAuthority", caseSummary.getProsecutingAuthority())
                     .add("postingDate", caseSummary.getPostingDate().toString())
                     .add("completed", caseSummary.isCompleted());

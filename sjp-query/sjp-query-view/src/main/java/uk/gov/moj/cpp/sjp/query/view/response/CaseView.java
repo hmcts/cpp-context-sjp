@@ -13,7 +13,7 @@ public class CaseView {
 
     private final String id;
     private final String urn;
-    private final Set<DefendantView> defendants;
+    private final DefendantView defendant;
     private final ZonedDateTime dateTimeCreated;
     private final Set<CaseDocumentView> caseDocuments;
     private final ProsecutingAuthority prosecutingAuthority;
@@ -32,11 +32,7 @@ public class CaseView {
         this.urn = caseDetail.getUrn();
         this.prosecutingAuthority = ProsecutingAuthority.valueOf(caseDetail.getProsecutingAuthority());
 
-        this.defendants = new LinkedHashSet<>();
-        if (!caseDetail.getDefendants().isEmpty()) {
-            caseDetail.getDefendants().forEach(defendant -> defendants.add(new DefendantView(defendant)));
-        }
-
+        this.defendant = new DefendantView(caseDetail.getDefendant());
         this.dateTimeCreated = caseDetail.getDateTimeCreated();
 
         this.caseDocuments = new LinkedHashSet<>();
@@ -67,8 +63,8 @@ public class CaseView {
         return caseDocuments;
     }
 
-    public Set<DefendantView> getDefendants() {
-        return defendants;
+    public DefendantView getDefendant() {
+        return defendant;
     }
 
     public ProsecutingAuthority getProsecutingAuthority() {

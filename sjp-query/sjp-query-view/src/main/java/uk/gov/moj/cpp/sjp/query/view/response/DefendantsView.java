@@ -18,5 +18,4 @@ public class DefendantsView {
         this.defendants = defendants;
     }
 
-
 }

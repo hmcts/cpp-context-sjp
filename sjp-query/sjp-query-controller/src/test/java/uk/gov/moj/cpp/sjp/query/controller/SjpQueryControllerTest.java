@@ -25,6 +25,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.query.controller.service.PeopleService;
 
+import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.junit.Test;
@@ -99,14 +100,21 @@ public class SjpQueryControllerTest {
                 .withPayloadOf(urn, "urn")
                 .withPayloadOf(postcode, "postcode").build();
 
-        final JsonEnvelope caseDetails = envelope().withPayloadOf("id", randomUUID().toString()).build();
+        final JsonObject address = createObjectBuilder().add("postcode", postcode).build();
+        final JsonObject personalDetails = createObjectBuilder().add("address", address).build();
+        final JsonObject defendant = createObjectBuilder().add("personalDetails", personalDetails).build();
+
+        final JsonEnvelope caseDetails = envelope()
+                .withPayloadOf(randomUUID().toString(), "id")
+                .withPayloadOf(defendant, "defendant")
+                .build();
         when(requester.request(any(JsonEnvelope.class))).thenReturn(validUrn ? caseDetails : envelope().withNullPayload().build());
 
         JsonValue resultPayload = JsonValue.NULL;
-        if (validUrn) {
-            resultPayload = validPostcode ? createObjectBuilder().build() : JsonValue.NULL;
-            when(peopleService.addPersonInfoForDefendantWithMatchingPostcode(postcode,
-                    caseDetails.payloadAsJsonObject(), query)).thenReturn(resultPayload == JsonValue.NULL ? null : resultPayload);
+        if (validUrn && validPostcode) {
+            final JsonObject objectToReturn = createObjectBuilder().build();
+            resultPayload = objectToReturn;
+            when(peopleService.addPersonInfoForDefendantWithMatchingPostcode(caseDetails.payloadAsJsonObject(), query)).thenReturn(objectToReturn);
         }
 
         final JsonEnvelope result = sjpQueryController.findCaseByUrnPostcode(query);
@@ -114,8 +122,8 @@ public class SjpQueryControllerTest {
         verify(requester).request(argThat(jsonEnvelope(metadata().withName("sjp.query.case-by-urn"),
                 payloadIsJson(withJsonPath("$.urn", equalTo(urn))))));
 
-        if (validUrn) {
-            verify(peopleService).addPersonInfoForDefendantWithMatchingPostcode(postcode, caseDetails.payloadAsJsonObject(), query);
+        if (validUrn && validPostcode) {
+            verify(peopleService).addPersonInfoForDefendantWithMatchingPostcode(caseDetails.payloadAsJsonObject(), query);
         }
 
         assertThat(result.metadata().name(), equalTo("sjp.query.case-by-urn-response"));

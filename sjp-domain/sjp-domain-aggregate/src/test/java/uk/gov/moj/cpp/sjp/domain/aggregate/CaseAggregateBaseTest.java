@@ -4,22 +4,37 @@ import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
 
 import java.time.ZonedDateTime;
 
 import org.junit.Before;
 
-public abstract class CaseAggregateBaseTest {
+abstract class CaseAggregateBaseTest {
 
-    protected Clock clock = new StoppedClock(ZonedDateTime.now());
-
-    protected CaseAggregate sjpCaseAggregate;
-    protected Case sjpCase;
+    Clock clock = new StoppedClock(ZonedDateTime.now());
+    CaseAggregate caseAggregate;
+    Case aCase;
+    CaseReceived caseReceivedEvent;
 
     @Before
     public void setUp() {
-        sjpCaseAggregate = new CaseAggregate();
-        sjpCase = CaseBuilder.aDefaultSjpCase().build();
-        sjpCaseAggregate.createCase(sjpCase, clock.now());
+        caseAggregate = new CaseAggregate();
+        aCase = CaseBuilder.aDefaultSjpCase().build();
+        caseReceivedEvent = caseAggregate.receiveCase(aCase, clock.now())
+                .findFirst()
+                .map(CaseReceived.class::cast)
+                .orElseThrow(() -> new AssertionError("Expected just a single instance of " + CaseReceived.class.getSimpleName()));
+    }
+
+    CaseReceived buildCaseReceived(Case aCase) {
+        return new CaseReceived(
+                aCase.getId(),
+                aCase.getUrn(),
+                aCase.getProsecutingAuthority(),
+                aCase.getCosts(),
+                aCase.getPostingDate(),
+                aCase.getDefendant(),
+                clock.now());
     }
 }

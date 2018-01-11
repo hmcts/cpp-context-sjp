@@ -54,7 +54,7 @@ public class InterpreterUpdatedListenerTest {
     @Before
     public void setUp() {
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
-        when(caseDetail.getDefendant(defendantId)).thenReturn(defendant);
+        when(caseDetail.getDefendant()).thenReturn(defendant);
     }
 
     @Test
@@ -71,7 +71,7 @@ public class InterpreterUpdatedListenerTest {
                 .build();
 
         when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), InterpreterUpdatedForDefendant.class)).thenReturn(
-                new InterpreterUpdatedForDefendant(caseId, defendantId, new Interpreter(Boolean.TRUE, language)));
+                new InterpreterUpdatedForDefendant(caseId, defendantId, new Interpreter(language)));
 
         listener.interpreterUpdated(envelope);
 

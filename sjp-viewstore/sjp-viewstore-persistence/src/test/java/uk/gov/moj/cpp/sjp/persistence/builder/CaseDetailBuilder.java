@@ -24,7 +24,7 @@ public class CaseDetailBuilder {
     private String ptiUrn;
     private String prosecutingAuthority = "CPS";
     private Set<CaseDocument> caseDocuments = new LinkedHashSet<>();
-    private Set<DefendantDetail> defendants = new LinkedHashSet<>();
+    private DefendantDetail defendant;
     private String initiationCode;
     private Boolean completed;
     private Boolean assigned;
@@ -35,6 +35,7 @@ public class CaseDetailBuilder {
     private ZonedDateTime createdOn = ZonedDateTime.now(UTC);
 
     private CaseDetailBuilder() {
+        this.defendant = new DefendantDetail();
     }
 
     public static CaseDetailBuilder aCase() {
@@ -97,18 +98,18 @@ public class CaseDetailBuilder {
     }
 
     public CaseDetailBuilder addDefendantDetail(DefendantDetail defendantDetail) {
-        if (defendantDetail == null) {
-            return this;
+        if (defendantDetail != null) {
+            this.defendant = defendantDetail;
         }
-        this.defendants.add(defendantDetail);
+
         return this;
     }
 
     public CaseDetailBuilder addCaseDocument(CaseDocument caseDocument) {
-        if (caseDocument == null) {
-            return this;
+        if (caseDocument != null) {
+            this.caseDocuments.add(caseDocument);
         }
-        this.caseDocuments.add(caseDocument);
+
         return this;
     }
 
@@ -125,21 +126,9 @@ public class CaseDetailBuilder {
                 initiationCode,
                 completed,
                 assigned,
-                createdOn);
+                createdOn, defendant, costs, postingDate);
 
-        caseDetail.setLibraOriginatingOrg(libraOriginatingOrg);
-        caseDetail.setPtiUrn(ptiUrn);
-        caseDetail.setSummonsCode(summonsCode);
-        caseDetail.setCosts(costs);
-        caseDetail.setPostingDate(postingDate);
-
-        defendants.forEach(d -> {
-            d.setCaseDetail(caseDetail);
-            caseDetail.addDefendant(d);
-        });
-        caseDocuments.forEach(d -> {
-            caseDetail.addCaseDocuments(d);
-        });
+        caseDocuments.forEach(caseDetail::addCaseDocuments);
 
         return caseDetail;
     }

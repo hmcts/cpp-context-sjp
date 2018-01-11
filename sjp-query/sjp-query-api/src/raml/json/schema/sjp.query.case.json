@@ -11,87 +11,81 @@
       "id": "/urn",
       "type": "string"
     },
-    "defendants": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "personId": {
-            "type": "string"
-          },
-          "offences": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "offenceCode": {
-                  "type": "string"
-                },
-                "plea": {
-                  "type": "string"
-                },
-                "pleaMethod": {
-                  "enum": [
-                    "ONLINE",
-                    "POSTAL"
-                  ]
-                },
-                "offenceSequenceNumber": {
-                  "type": "integer"
-                },
-                "wording": {
-                  "type": "string"
-                },
-                "cjsCode": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                },
-                "sequenceNumber": {
-                  "type": "integer"
-                },
-                "startDate": {
-                  "type": "string"
-                },
-                "endDate": {
-                  "type": "string"
-                },
-                "pendingWithdrawal": {
-                  "type": "boolean"
-                },
-                "compensation": {
-                  "type": "number"
-                },
-                "prosecutionFacts": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "caseId": {
-            "type": "string"
-          },
-          "interpreter": {
+    "defendant": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "offences": {
+          "type": "array",
+          "items": {
             "type": "object",
             "properties": {
-              "needed": {
+              "id": {
+                "type": "string"
+              },
+              "offenceCode": {
+                "type": "string"
+              },
+              "plea": {
+                "type": "string"
+              },
+              "pleaMethod": {
+                "enum": [
+                  "ONLINE",
+                  "POSTAL"
+                ]
+              },
+              "offenceSequenceNumber": {
+                "type": "integer"
+              },
+              "wording": {
+                "type": "string"
+              },
+              "cjsCode": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "sequenceNumber": {
+                "type": "integer"
+              },
+              "startDate": {
+                "type": "string"
+              },
+              "endDate": {
+                "type": "string"
+              },
+              "pendingWithdrawal": {
                 "type": "boolean"
               },
-              "language": {
+              "compensation": {
+                "type": "number"
+              },
+              "prosecutionFacts": {
                 "type": "string"
               }
             }
-          },
-          "numPreviousConvictions": {
-            "type": "integer"
           }
+        },
+        "caseId": {
+          "type": "string"
+        },
+        "interpreter": {
+          "type": "object",
+          "properties": {
+            "needed": {
+              "type": "boolean"
+            },
+            "language": {
+              "type": "string"
+            }
+          }
+        },
+        "numPreviousConvictions": {
+          "type": "integer"
         }
       }
     },
@@ -164,7 +158,7 @@
       "maxLength": 12
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "id",
     "urn"

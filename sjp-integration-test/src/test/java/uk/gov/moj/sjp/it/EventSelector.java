@@ -1,5 +1,7 @@
 package uk.gov.moj.sjp.it;
 
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
+
 public class EventSelector {
     public static final String EVENT_SELECTOR_CASE_COMPLETED = "sjp.events.case-completed";
     public static final String EVENT_SELECTOR_CASE_DOCUMENT_ADDED = "sjp.events.case-document-added";
@@ -11,7 +13,7 @@ public class EventSelector {
     public static final String EVENT_SELECTOR_PLEA_CANCELLED = "sjp.events.plea-cancelled";
     public static final String PUBLIC_EVENT_SELECTOR_PLEA_UPDATED = "public.structure.plea-updated";
     public static final String PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED = "public.structure.plea-cancelled";
-    public static final String EVENT_SELECTOR_SJP_CASE_CREATED = "sjp.events.sjp-case-created";
+    public static final String EVENT_SELECTOR_CASE_RECEIVED = CaseReceived.EVENT_NAME;
     public static final String PUBLIC_EVENT_SELECTOR_SJP_CASE_CREATED = "public.structure.sjp-case-created";
     public static final String PUBLIC_STRUCTURE_ALL_OFFENCES_WITHDRAWAL_REQUESTED = "public.structure.all-offences-withdrawal-requested";
     public static final String STRUCTURE_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED = "sjp.events.all-offences-withdrawal-requested";
@@ -25,8 +27,4 @@ public class EventSelector {
     public static final String PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UPDATED = "public.structure.case-reopened-in-libra-updated";
     public static final String EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE = "sjp.events.case-reopened-in-libra-undone";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE = "public.structure.case-reopened-in-libra-undone";
-    public static final String EVENT_SELECTOR_ADD_PERSON_INFO = "sjp.events.person-info-added";
-    public static final String PUBLIC_EVENT_SELECTOR_ADD_PERSON_INFO = "public.structure.person-info-added";
-    public static final String EVENT_SELECTOR_REMOVE_PERSON_INFO = "sjp.events.person-info-removed";
-
 }

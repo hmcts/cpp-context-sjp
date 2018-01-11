@@ -4,9 +4,9 @@ import static java.time.ZoneOffset.UTC;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.domain.SjpOffence;
+import uk.gov.moj.cpp.sjp.domain.Offence;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -31,7 +31,9 @@ public class SjpCaseCreatedToCaseTest {
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    @SuppressWarnings("deprecation")
     private SjpCaseCreated event;
+    @SuppressWarnings("deprecation")
     private SjpCaseCreatedToCase caseConverter;
 
     private String caseId = UUID.randomUUID().toString();
@@ -43,9 +45,8 @@ public class SjpCaseCreatedToCaseTest {
     private String libraHearingLocation = "C01CE03";
     private LocalDate dateOfHearing = LocalDate.parse("2016-01-01", formatter);
     private String timeOfHearing = "11:00";
-    private String personId = "7e2f843e-d639-40b3-8611-8015f3a18999";
     private UUID defendantId = UUID.randomUUID();
-    private List<SjpOffence> offences = new ArrayList<>();
+    private List<Offence> offences = new ArrayList<>();
 
     private UUID offenceId = UUID.randomUUID();
     private String prosecutorCaseId = "TFL21345";
@@ -60,10 +61,12 @@ public class SjpCaseCreatedToCaseTest {
     private ZonedDateTime createdOn = ZonedDateTime.now(UTC);
 
     @Before
+    @SuppressWarnings("deprecation")
     public void setup() {
-        SjpOffence offence = new SjpOffence(offenceId, prosecutorCaseId, offenceSequenceNo, libraOffenceCode, chargeDate,
+        Offence offence = new Offence(offenceId, offenceSequenceNo, libraOffenceCode, chargeDate,
                 libraOffenceDateCode, offenceDate, offenceWording, "Prosecution facts", "Witness statement", compensation);
 
+        offences.clear();
         offences.add(offence);
 
         caseConverter = new SjpCaseCreatedToCase();
@@ -72,8 +75,8 @@ public class SjpCaseCreatedToCaseTest {
         int numPreviousConvictions = 30;
         BigDecimal costs = BigDecimal.valueOf(33.5);
         LocalDate postingDate = LocalDate.parse("2016-12-03", formatter);
-        event = new SjpCaseCreated(caseId, urn, ptiUrn, initiationCode, summonsCode, ProsecutingAuthority.TFL, libraOriginatingOrg,
-                libraHearingLocation, dateOfHearing, timeOfHearing, personId, defendantId, numPreviousConvictions, costs, postingDate, offences, createdOn);
+        event = new SjpCaseCreated(caseId, urn, ptiUrn, initiationCode, summonsCode, TFL, libraOriginatingOrg,
+                libraHearingLocation, dateOfHearing, timeOfHearing, defendantId, numPreviousConvictions, costs, postingDate, offences, createdOn);
     }
 
     @Test
@@ -88,29 +91,24 @@ public class SjpCaseCreatedToCaseTest {
         assertThat(kase.getCompleted(), is(false));
         assertThat(kase.getAssigned(), is(false));
 
-        assertThat(kase.getDefendants().iterator().next().getNumPreviousConvictions(), is(30)); // assuming there is just one defendant for now
+        assertThat(kase.getDefendant().getNumPreviousConvictions(), is(30)); // assuming there is just one defendant for now
         assertThat(kase.getCosts(), is(BigDecimal.valueOf(33.5)));
         assertThat(kase.getPostingDate(), is(LocalDate.parse("2016-12-03", formatter)));
-        assertThat(kase.getPtiUrn(), is("TFL243179"));
-        assertThat(kase.getLibraOriginatingOrg(), is("GAFTL00"));
-        assertThat(kase.getSummonsCode(), is("M"));
         assertThat(kase.getDateTimeCreated(), is(createdOn));
     }
 
     @Test
     public void shouldHaveDefendant() {
-        Set<DefendantDetail> defendants = caseConverter.convert(event).getDefendants();
+        DefendantDetail defendant = caseConverter.convert(event).getDefendant();
 
-        assertThat(defendants, is(notNullValue()));
-        assertThat(defendants.size(), is(1));
-        DefendantDetail defendantDetail = defendants.iterator().next();
-        assertThat(defendantDetail.getId(), is(defendantId));
-        assertThat(defendantDetail.getPersonId(), is(UUID.fromString(personId)));
+        assertThat(defendant, is(notNullValue()));
+        assertThat(defendant.getId(), is(defendantId));
     }
 
     @Test
     public void shouldHaveOffences() {
-        Set<OffenceDetail> offences = caseConverter.convert(event).getDefendants().iterator().next().getOffences();
+        DefendantDetail defendant = caseConverter.convert(event).getDefendant();
+        Set<OffenceDetail> offences = defendant.getOffences();
 
         assertThat(offences, is(notNullValue()));
         assertThat(offences.size(), is(1));
@@ -124,5 +122,6 @@ public class SjpCaseCreatedToCaseTest {
         assertThat(offenceDetail.getWitnessStatement(), is("Witness statement"));
         assertThat(offenceDetail.getProsecutionFacts(), is("Prosecution facts"));
         assertThat(offenceDetail.getLibraOffenceDateCode(), is(6));
+        assertThat(offenceDetail.getDefendantDetail(), is(defendant));
     }
 }

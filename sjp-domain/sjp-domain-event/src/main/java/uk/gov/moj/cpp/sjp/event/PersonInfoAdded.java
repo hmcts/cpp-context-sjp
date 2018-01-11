@@ -1,10 +1,11 @@
 package uk.gov.moj.cpp.sjp.event;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.PersonInfoDetails;
 
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 @Event("sjp.events.person-info-added")
 public class PersonInfoAdded {

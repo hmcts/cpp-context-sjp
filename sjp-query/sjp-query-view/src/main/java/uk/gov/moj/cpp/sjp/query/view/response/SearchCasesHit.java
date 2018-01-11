@@ -32,7 +32,7 @@ public class SearchCasesHit {
         postingDate = caseDetail.getPostingDate();
         reopenedDate = caseDetail.getReopenedDate();
         completed = caseDetail.getCompleted();
-        this.plea = caseDetail.getDefendants().stream().map(d -> d.getOffences()).flatMap(s -> s.stream())
+        this.plea = caseDetail.getDefendant().getOffences().stream()
                 .filter(o -> isNotEmpty(o.getPlea())).findFirst().map(OffenceDetail::getPlea).orElse("");
     }
 

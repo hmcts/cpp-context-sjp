@@ -3,15 +3,13 @@ package uk.gov.moj.cpp.sjp.domain.aggregate;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 
-import uk.gov.justice.services.common.util.Clock;
-import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
-import uk.gov.moj.cpp.sjp.domain.Case;
-import uk.gov.moj.cpp.sjp.domain.SjpOffence;
 import uk.gov.moj.cpp.sjp.domain.command.CancelPlea;
 import uk.gov.moj.cpp.sjp.domain.command.UpdatePlea;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
@@ -23,31 +21,27 @@ import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.hamcrest.CoreMatchers;
+import org.junit.Before;
 import org.junit.Test;
 
-public class UpdatePleaTest {
+public class UpdatePleaTest extends CaseAggregateBaseTest {
 
-    private CaseAggregate caseAggregate = new CaseAggregate();
-    private static final UUID caseId = UUID.randomUUID();
-    private static final String urn = "TFL123456";
-    private static final String INITIATION_CODE = "J";
+    private static UUID caseId;
+    private UUID offenceId;
 
-    private static final UUID offenceId = UUID.randomUUID();
-
-    private Clock clock = new StoppedClock(ZonedDateTime.now());
+    @Before
+    public void setup() {
+        setUp();
+        caseId = aCase.getId();
+        offenceId = aCase.getDefendant().getOffences().get(0).getId();
+    }
 
     @Test
     public void shouldUpdatePlea() {
-        //given
-        caseAggregate.createCase(createTestCase(), clock.now());
-
         //when
         final UpdatePlea updatePlea = PleaBuilder.defaultUpdatePlea(offenceId);
         Stream<Object> eventStream = caseAggregate.updatePlea(updatePlea);
@@ -102,28 +96,26 @@ public class UpdatePleaTest {
 
     @Test
     public void shouldAddUpdateAndCancelPleaAndInterpreter() {
-
-        final String maori = "Maori";
-        final String welsh = "Welsh";
-        caseAggregate.createCase(createTestCase(), clock.now());
+        final String interpreterLanguage1 = "Maori";
+        final String interpreterLanguage2 = "Welsh";
 
         // add plea
         shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), null, null);
 
         // add interpreter
-        shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), maori, InterpreterUpdatedForDefendant.class);
+        shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), interpreterLanguage1, InterpreterUpdatedForDefendant.class);
 
         // update just plea
-        shouldUpdatePlea(Plea.Type.NOT_GUILTY.name(), maori, null);
+        shouldUpdatePlea(Plea.Type.NOT_GUILTY.name(), interpreterLanguage1, null);
 
         // update just interpreter
-        shouldUpdatePlea(Plea.Type.NOT_GUILTY.name(), welsh, InterpreterUpdatedForDefendant.class);
+        shouldUpdatePlea(Plea.Type.NOT_GUILTY.name(), interpreterLanguage2, InterpreterUpdatedForDefendant.class);
 
         // cancel the interpreter
         shouldUpdatePlea(Plea.Type.NOT_GUILTY.name(), null, InterpreterCancelledForDefendant.class);
 
         // update plea and interpreter
-        shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), maori, InterpreterUpdatedForDefendant.class);
+        shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), interpreterLanguage1, InterpreterUpdatedForDefendant.class);
 
         // cancel plea (and interpreter)
         shouldCancelPlea(true);
@@ -138,7 +130,6 @@ public class UpdatePleaTest {
     @Test
     public void shouldNotUpdatePleaWhenWithdrawalOffencesRequested() {
         //given
-        caseAggregate.createCase(createTestCase(), clock.now());
         caseAggregate.requestWithdrawalAllOffences(caseId.toString());
 
         //when
@@ -155,7 +146,6 @@ public class UpdatePleaTest {
     @Test
     public void shouldUpdatePleaWhenWithdrawalOffencesRequestCancelled() {
         //given
-        caseAggregate.createCase(createTestCase(), clock.now());
         caseAggregate.requestWithdrawalAllOffences(caseId.toString());
         caseAggregate.cancelRequestWithdrawalAllOffences(caseId.toString());
 
@@ -170,9 +160,6 @@ public class UpdatePleaTest {
 
     @Test
     public void shouldUpdatePleaWhenSjpnIsNotAdded() {
-        //given
-        caseAggregate.createCase(createTestCase(), clock.now());
-
         //when
         final UpdatePlea updatePlea = PleaBuilder.defaultUpdatePlea(offenceId);
         Stream<Object> eventStream = caseAggregate.updatePlea(updatePlea);
@@ -184,27 +171,11 @@ public class UpdatePleaTest {
 
     @Test
     public void shouldNotUpdatePleaWhenOffenceDoesNotExist() {
-        final UpdatePlea updatePlea = PleaBuilder.defaultUpdatePlea(offenceId);
+        final UpdatePlea updatePlea = PleaBuilder.defaultUpdatePlea(UUID.randomUUID());
         List<Object> events = caseAggregate.updatePlea(updatePlea).collect(toList());
 
-
-        assertThat(events.size(), is(1));
-
-        Object object = events.get(0);
-        assertThat(object.getClass() , is(CoreMatchers.equalTo(OffenceNotFound.class)));
-    }
-
-    private Case createTestCase() {
-        SjpOffence offence = new SjpOffence();
-        offence.setId(offenceId);
-
-        return new Case(
-                caseId,
-                urn,
-                null, null, INITIATION_CODE, null, null, null, null,
-                null, null, 0, null, null,
-                new ArrayList<SjpOffence>() {{ add(offence); }}
-        );
+        assertThat(events, hasSize(1));
+        assertThat(events.get(0) , instanceOf(OffenceNotFound.class));
     }
 
 }

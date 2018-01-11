@@ -4,19 +4,20 @@ import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactNumber;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties("personId")
 @Event("sjp.events.defendant-details-updated")
-public class DefendantDetailsUpdated implements Serializable {
+public class DefendantDetailsUpdated {
 
+    private static final long serialVersionUID = 4588504221253549019L;
     private final UUID caseId;
     private final UUID defendantId;
-    private final UUID personId;
     private final String title;
     private final String firstName;
     private final String lastName;
@@ -30,14 +31,13 @@ public class DefendantDetailsUpdated implements Serializable {
     @SuppressWarnings("squid:S00107") //Created builder
     @JsonCreator
     private DefendantDetailsUpdated(@JsonProperty("caseId") UUID caseId, @JsonProperty("defendantId") UUID defendantId,
-                                    @JsonProperty("personId") UUID personId, @JsonProperty("title") String title,
+                                    @JsonProperty("title") String title,
                                     @JsonProperty("firstName") String firstName, @JsonProperty("lastName") String lastName,
                                     @JsonProperty("dateOfBirth") LocalDate dateOfBirth, @JsonProperty("gender") String gender,
                                     @JsonProperty("email") String email, @JsonProperty("nationalInsuranceNumber") String nationalInsuranceNumber,
                                     @JsonProperty("contactNumber") ContactNumber contactNumber, @JsonProperty("address") Address address) {
         this.caseId = caseId;
         this.defendantId = defendantId;
-        this.personId = personId;
         this.title = title;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -52,7 +52,6 @@ public class DefendantDetailsUpdated implements Serializable {
     public static class DefendantDetailsUpdatedBuilder {
         private UUID caseId;
         private UUID defendantId;
-        private UUID personId;
         private String title;
         private String firstName;
         private String lastName;
@@ -74,11 +73,6 @@ public class DefendantDetailsUpdated implements Serializable {
 
         public DefendantDetailsUpdatedBuilder withDefendantId(final UUID defendantId) {
             this.defendantId = defendantId;
-            return this;
-        }
-
-        public DefendantDetailsUpdatedBuilder withPersonId(final UUID personId) {
-            this.personId = personId;
             return this;
         }
 
@@ -128,7 +122,7 @@ public class DefendantDetailsUpdated implements Serializable {
         }
 
         public DefendantDetailsUpdated build() {
-            return new DefendantDetailsUpdated(caseId, defendantId, personId, title, firstName,
+            return new DefendantDetailsUpdated(caseId, defendantId, title, firstName,
                     lastName, dateOfBirth, gender, email, nationalInsuranceNumber, contactNumber,
                     address);
         }
@@ -140,10 +134,6 @@ public class DefendantDetailsUpdated implements Serializable {
 
     public UUID getDefendantId() {
         return defendantId;
-    }
-
-    public UUID getPersonId() {
-        return personId;
     }
 
     public String getTitle() {

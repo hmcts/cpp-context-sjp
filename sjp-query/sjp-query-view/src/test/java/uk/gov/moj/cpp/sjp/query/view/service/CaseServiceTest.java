@@ -5,9 +5,9 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -33,6 +33,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.InterpreterDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
@@ -76,7 +77,6 @@ public class CaseServiceTest {
 
     private static final UUID CASE_ID = randomUUID();
     private static final String URN = "urn";
-    private static final UUID PERSON_ID = randomUUID();
     private static final String PROSECUTING_AUTHORITY = "prosecutingAuthority";
     private static final Boolean COMPLETED = Boolean.TRUE;
     private static final String INITIATION_CODE = "J";
@@ -194,7 +194,7 @@ public class CaseServiceTest {
         LocalDate postingDate = LocalDate.now();
         final CaseDetail caseDetail = aCase().withCaseId(CASE_ID).withUrn(URN)
                 .withPostingDate(postingDate)
-                .addDefendantDetail(aDefendantDetail().withPersonId(PERSON_ID).build())
+                .addDefendantDetail(aDefendantDetail().build())
                 .build();
 
         given(caseRepository.findSjpCaseByUrn(URN)).willReturn(caseDetail);
@@ -204,22 +204,12 @@ public class CaseServiceTest {
         assertThat(caseView.getId(), is(CASE_ID.toString()));
         assertThat(caseView.getUrn(), is(URN));
         assertThat(caseView.getPostingDate(), is(postingDate));
-        assertTrue(caseView.getDefendants().stream()
-                .anyMatch(defendant -> defendant.getPersonId().equals(PERSON_ID)));
     }
 
     @Test
     public void shouldHandleWhenNoCaseFoundForUrn() {
         given(caseRepository.findByUrn(URN)).willThrow(new NoResultException("boom"));
         assertThat(service.findCaseByUrn(URN), nullValue());
-    }
-
-    @Test
-    public void shouldSearchCasesByPersonId() {
-        this.shouldSearchCases(
-                (personId, caseDetailList) -> when(caseRepository.findByPersonId(personId))
-                        .thenReturn(caseDetailList),
-                service::searchCasesByPersonId);
     }
 
     private void shouldSearchCases(final BiFunction<UUID, List<CaseDetail>, Object> setUpFunction,
@@ -235,7 +225,7 @@ public class CaseServiceTest {
         final Set<OffenceDetail> offences = new HashSet<>();
         offences.add(OffenceDetail.builder().setPlea("GUILTY").setId(UUID.randomUUID()).build());
         defendantDetail.setOffences(offences);
-        caseDetailWithPlea.addDefendant(defendantDetail);
+        caseDetailWithPlea.setDefendant(defendantDetail);
         caseDetailList.add(caseDetailWithPlea);
 
         setUpFunction.apply(CASE_ID_TO_FIND, caseDetailList);
@@ -382,24 +372,21 @@ public class CaseServiceTest {
 
     @Test
     public void shouldFindCaseDefendants() {
-        List<DefendantDetail> defendantList = new ArrayList<>();
+
 
         Set<OffenceDetail> offences = new HashSet<>();
 
-        DefendantDetail defendant = new DefendantDetail(ID, PERSON_ID, offences);
+        DefendantDetail defendant = new DefendantDetail(ID, new PersonalDetails(), offences, 1);
         defendant.setCaseDetail(createCaseDetail());
-        defendant.setInterpreter(new InterpreterDetail(Boolean.TRUE, INTERPRETER));
-        defendantList.add(defendant);
+        defendant.setInterpreter(new InterpreterDetail(INTERPRETER));
 
-
-        when(caseRepository.findCaseDefendants(CASE_ID)).thenReturn(defendantList);
+        when(caseRepository.findCaseDefendant(CASE_ID)).thenReturn(defendant);
 
         DefendantsView defendantsView = service.findCaseDefendants(CASE_ID.toString());
 
         assertThat(defendantsView, notNullValue());
 
         assertThat(defendantsView.getDefendants().get(0).getInterpreter().getLanguage(), is(INTERPRETER));
-        assertThat(defendantsView.getDefendants().get(0).getPersonId(), is(PERSON_ID));
         assertThat(defendantsView.getDefendants().get(0).getCaseId(), is(CASE_ID));
         assertThat(defendantsView.getDefendants().get(0).getId(), is(ID));
         assertThat(defendantsView.getDefendants().get(0).getOffences().size(), is(0));
@@ -417,9 +404,7 @@ public class CaseServiceTest {
 
         final JsonObject awaitingCase1 = awaitingCases.getJsonArray("awaitingCases")
                 .getValuesAs(JsonObject.class).get(0);
-        final DefendantDetail defendantDetail = caseDetail.getDefendants().iterator().next();
-        assertThat(awaitingCase1.getString("personId"),
-                is(defendantDetail.getPersonId().toString()));
+        final DefendantDetail defendantDetail = caseDetail.getDefendant();
         final OffenceDetail offenceDetail = defendantDetail.getOffences().iterator().next();
         assertThat(awaitingCase1.getString("offenceCode"), is(offenceDetail.getCode()));
 
@@ -431,11 +416,8 @@ public class CaseServiceTest {
         final LocalDate FROM_DATE = LocalDates.from("2017-01-01");
         final LocalDate TO_DATE = LocalDates.from("2017-01-10");
 
-        DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), UUID.randomUUID(),
-                null);
-        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "URN", null,
-                null, null, null, null);
-        caseDetail.addDefendant(defendantDetail);
+        DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null, 0);
+        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "URN", null, null, null, null, null, defendantDetail, null, null);
 
         CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
@@ -444,8 +426,7 @@ public class CaseServiceTest {
         final ZonedDateTime FROM_DATE_TIME = FROM_DATE.atStartOfDay(ZoneOffset.UTC);
         final ZonedDateTime TO_DATE_TIME = TO_DATE.atStartOfDay(ZoneOffset.UTC);
         when(caseDocumentRepository.findCaseDocumentsOrderedByAddedByDescending(FROM_DATE_TIME,
-                TO_DATE_TIME, CaseDocument.RESULT_ORDER_DOCUMENT_TYPE)).thenReturn(
-                Arrays.asList(caseDocument));
+                TO_DATE_TIME, CaseDocument.RESULT_ORDER_DOCUMENT_TYPE)).thenReturn(singletonList(caseDocument));
         when(caseRepository.findBy(caseDetail.getId())).thenReturn(caseDetail);
         //when
         final ResultOrdersView resultOrdersView = service.findResultOrders(FROM_DATE, TO_DATE);
@@ -454,8 +435,6 @@ public class CaseServiceTest {
                 resultOrdersView.getResultOrders().get(0).getCaseId());
         assertEquals(caseDetail.getUrn(),
                 resultOrdersView.getResultOrders().get(0).getUrn());
-        assertEquals(caseDetail.getDefendants().stream().findFirst().get().getPersonId(),
-                resultOrdersView.getResultOrders().get(0).getDefendant().getPersonId());
         assertEquals(caseDocument.getMaterialId(),
                 resultOrdersView.getResultOrders().get(0).getOrder().getMaterialId());
         assertEquals(caseDocument.getAddedAt(),
@@ -468,11 +447,8 @@ public class CaseServiceTest {
         final LocalDate FROM_DATE = LocalDates.from("2017-01-01");
         final LocalDate TO_DATE = LocalDates.from("2017-01-10");
 
-        DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), UUID.randomUUID(),
-                null);
-        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "URN", null, null,
-                null, null, null);
-        caseDetail.addDefendant(defendantDetail);
+        DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null, 0);
+        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "URN", null, null, null, null, null, defendantDetail, null, null);
         CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
                 ZonedDateTime.now(), caseDetail.getId(), null);
@@ -548,17 +524,15 @@ public class CaseServiceTest {
         assertThat(result.getString("caseId"), equalTo(CASE_ID.toString()));
         assertThat(result.getString("urn"), equalTo(URN));
         assertThat(result.getString("enterpriseId"), equalTo(ENTERPRISE_ID));
-        assertThat(result.getString("initiationCode"), equalTo(INITIATION_CODE));
         assertThat(result.getString("prosecutingAuthority"), equalTo(PROSECUTING_AUTHORITY));
         assertThat(result.getString("postingDate"), equalTo(POSTING_DATE.toString()));
-        assertThat(result.getString("personId"), equalTo(PERSON_ID.toString()));
         assertThat(result.getString("firstName"), equalTo(FIRST_NAME));
         assertThat(result.getString("lastName"), equalTo(LAST_NAME));
     }
 
     private CaseDetail createCaseDetail() {
         return new CaseDetail(CASE_ID, URN, PROSECUTING_AUTHORITY_CPS,
-                null, COMPLETED, false, clock.now());
+                null, COMPLETED, false, clock.now(), new DefendantDetail(), null, null);
     }
 
     private CaseDetail createCaseDetailWithDocumentTypes(String... documentTypes) {
@@ -590,7 +564,6 @@ public class CaseServiceTest {
         caseSearchResult.setId(randomUUID());
         caseSearchResult.setCaseId(CASE_ID);
         caseSearchResult.setCaseSummary(caseSummary);
-        caseSearchResult.setPersonId(PERSON_ID);
         caseSearchResult.setFirstName(FIRST_NAME);
         caseSearchResult.setLastName(LAST_NAME);
         // not resulted

@@ -20,7 +20,7 @@ public class NotReadyCaseRepository {
             "from case_details c " +
             "join defendant d on c.id = d.case_id " +
             "join offence o on d.id = o.defendant_id " +
-            "where completed is false and initiation_code = 'J' " +
+            "where completed is false " +
             "and c.posting_date > current_date - 28 " +
             "and o.plea is null and o.pending_withdrawal is not true) as case_posting_dates " +
             "group by age order by age";

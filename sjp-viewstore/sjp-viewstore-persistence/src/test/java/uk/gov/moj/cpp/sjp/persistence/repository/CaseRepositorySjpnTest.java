@@ -12,7 +12,6 @@ import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
-import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -35,7 +34,6 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
     @Inject
     private CaseRepository caseRepository;
 
-    private List<CaseDetail> nonSjpCases;
     private List<CaseDetail> sjpCasesWithSjpn;
     private List<CaseDetail> uncompletedSjpCasesWithSjpn;
     private List<CaseDetail> uncompletedSjpCasesWithoutSjpn;
@@ -43,8 +41,6 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
 
     @Before
     public void addCasesAndDocuments() {
-
-        nonSjpCases = createCases(1, "O");
 
         final List<CaseDetail> sjpCases = createCases(8, "J");
 
@@ -90,7 +86,6 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
         assertThat(actualCaseIds, hasSize(limit));
         assertThat(actualCaseIds, everyItem(isIn(extractCaseIds(uncompletedSjpCasesWithoutSjpn))));
         assertThat(Collections.disjoint(actualCaseIds, extractCaseIds(sjpCasesWithSjpn)), is(true));
-        assertThat(Collections.disjoint(actualCaseIds, extractCaseIds(nonSjpCases)), is(true));
         assertThat(Collections.disjoint(actualCaseIds, extractCaseIds(completedSjpCasesWithoutSjpn)), is(true));
     }
 

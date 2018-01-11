@@ -106,6 +106,34 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
+/cases/{caseId}/defendants/{defendantId}/nationalInsuranceNumber:
+  uriParameters:
+    caseId:
+      description: The ID of the case to modify
+      type: string
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  post:
+    description: |
+      Update defendant's national insurance number
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.update-defendant-national-insurance-number+json
+          name: sjp.update-defendant-national-insurance-number
+      ...
+    body:
+      application/vnd.sjp.update-defendant-national-insurance-number+json:
+        example:
+          !include json/sjp.update-defendant-national-insurance-number.json
+        schema:
+          !include json/schema/sjp.update-defendant-national-insurance-number.json
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted
+
 /cases/{caseId}/defendants/{defendantId}:
   uriParameters:
     caseId:
@@ -390,52 +418,6 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
     responses:
       202:
         description: Accepted
-
-/cases/{caseId}/add-person-info:
-  post:
-    description: |
-      Add personal details of the defendant for searching
-      ...
-      (mapping):
-          requestType: application/vnd.sjp.add-person-info+json
-          name: sjp.add-person-info
-      ...
-    body:
-      application/vnd.sjp.add-person-info+json:
-        example:
-          !include json/sjp.add-person-info.json
-        schema:
-          !include json/schema/sjp.add-person-info.json
-    responses:
-      202:
-        description: Accepted
-
-/cases/{caseId}/person-info/{personInfoId}:
-  uriParameters:
-    caseId:
-      description: The ID of a case to remove the person info
-      type: string
-    personInfoId:
-      description: personInfoId
-      type: string
-  post:
-    description: |
-      Remove person info
-      ...
-      (mapping):
-          requestType: application/vnd.sjp.remove-person-info+json
-          name: sjp.remove-person-info
-      ...
-    body:
-      application/vnd.sjp.remove-person-info+json:
-        example:
-          !include json/sjp.remove-person-info.json
-        schema:
-          !include json/schema/sjp.remove-person-info.json
-    responses:
-      202:
-        description: Accepted
-
 
 /cases/{caseId}/court-referral:
   post:

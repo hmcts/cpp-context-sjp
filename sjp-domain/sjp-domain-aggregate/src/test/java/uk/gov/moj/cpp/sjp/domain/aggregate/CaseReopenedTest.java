@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -31,8 +32,9 @@ public class CaseReopenedTest extends CaseAggregateBaseTest {
 
     @Before
     public void setupCaseReopenDetails() {
+        super.setUp();
         caseReopenDetails = new CaseReopenDetails(
-                sjpCaseAggregate.getCaseId().toString(),
+                caseAggregate.getCaseId().toString(),
                 LocalDates.from(REOPENED_DATE),
                 LIBRA_CASE_NUMBER,
                 REASON
@@ -42,11 +44,10 @@ public class CaseReopenedTest extends CaseAggregateBaseTest {
     @Test
     public void shouldMarkCaseReopened() {
         final List<Object> events = reopenCase();
-
-        assertEquals(1, events.size());
+        assertThat(events, hasSize(1));
 
         final Object event = events.get(0);
-        assertEquals(CaseReopened.class, event.getClass());
+        assertThat(event, instanceOf(CaseReopened.class));
         assertCaseReopenedDetails(((CaseReopened) event).getCaseReopenDetails());
     }
 
@@ -57,29 +58,29 @@ public class CaseReopenedTest extends CaseAggregateBaseTest {
         final Stream<Object> eventStream = aggregateWithNoHistory.markCaseReopened(caseReopenDetails);
 
         final List<Object> events = asList(eventStream.toArray());
-        assertEquals(1, events.size());
-        assertEquals(CaseNotFound.class, events.get(0).getClass());
+        assertThat(events, hasSize(1));
+        assertThat(events.get(0), instanceOf(CaseNotFound.class));
     }
 
     @Test
     public void shouldNotMarkCaseReopenedWhenCaseAlreadyReopened() {
         reopenCase();
 
-        final List<Object> events = sjpCaseAggregate.markCaseReopened(caseReopenDetails).collect(Collectors.toList());
+        final List<Object> events = caseAggregate.markCaseReopened(caseReopenDetails).collect(Collectors.toList());
 
-        assertEquals(1, events.size());
-        assertEquals(CaseAlreadyReopened.class, events.get(0).getClass());
+        assertThat(events, hasSize(1));
+        assertThat(events.get(0), instanceOf(CaseAlreadyReopened.class));
     }
 
     @Test
     public void shouldUpdateReopenedCase() {
         reopenCase();
 
-        final List<Object> events = sjpCaseAggregate.updateCaseReopened(caseReopenDetails).collect(Collectors.toList());
-        assertEquals(1, events.size());
+        final List<Object> events = caseAggregate.updateCaseReopened(caseReopenDetails).collect(Collectors.toList());
+        assertThat(events, hasSize(1));
 
         final Object event = events.get(0);
-        assertEquals(CaseReopenedUpdated.class, event.getClass());
+        assertThat(event, instanceOf(CaseReopenedUpdated.class));
         assertCaseReopenedDetails(((CaseReopenedUpdated) event).getCaseReopenDetails());
     }
 
@@ -91,24 +92,36 @@ public class CaseReopenedTest extends CaseAggregateBaseTest {
 
         final List<Object> events = asList(eventStream.toArray());
 
-        assertEquals(1, events.size());
-        assertEquals(CaseNotFound.class, events.get(0).getClass());
+        assertThat(events, hasSize(1));
+        assertThat(events.get(0), instanceOf(CaseNotFound.class));
     }
 
     @Test
     public void shouldNotUpdateCaseReopenedWhenCaseNotReopenedBefore() {
-        final List<Object> events = sjpCaseAggregate.updateCaseReopened(caseReopenDetails).collect(Collectors.toList());
+        final List<Object> events = caseAggregate.updateCaseReopened(caseReopenDetails).collect(Collectors.toList());
 
-        assertThat(events.size(), is(1));
-        assertThat(events.get(0), is(instanceOf(CaseNotReopened.class)));
+        assertThat(events, hasSize(1));
+        assertThat(events.get(0), instanceOf(CaseNotReopened.class));
+    }
+
+    @Test
+    public void shouldNotUpdateCaseWhenCaseIdNotValid() {
+        final List<Object> events = caseAggregate.updateCaseReopened(new CaseReopenDetails(null, null, null, null)).collect(Collectors.toList());
+
+        assertThat(events, hasSize(1));
+        assertThat(events.get(0), instanceOf(CaseNotFound.class));
     }
 
     private List<Object> reopenCase() {
-        return sjpCaseAggregate.markCaseReopened(caseReopenDetails).collect(Collectors.toList());
+        assertThat(caseAggregate.isCaseReopened(), is(false));
+        List<Object> collect = caseAggregate.markCaseReopened(caseReopenDetails).collect(Collectors.toList());
+        assertThat(caseAggregate.isCaseReopened(), is(true));
+
+        return collect;
     }
 
     private void assertCaseReopenedDetails(CaseReopenDetails caseReopenDetails) {
-        assertEquals(sjpCase.getId().toString(), caseReopenDetails.getCaseId());
+        assertEquals(aCase.getId().toString(), caseReopenDetails.getCaseId());
         assertEquals(LIBRA_CASE_NUMBER, caseReopenDetails.getLibraCaseNumber());
         assertEquals(REOPENED_DATE, caseReopenDetails.getReopenedDate().toString());
         assertEquals(REASON, caseReopenDetails.getReason());

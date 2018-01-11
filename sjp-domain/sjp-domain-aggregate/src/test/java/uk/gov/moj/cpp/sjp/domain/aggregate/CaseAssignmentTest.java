@@ -26,16 +26,17 @@ public class CaseAssignmentTest extends CaseAggregateBaseTest {
 
     @Before
     public void setup() {
+        super.setUp();
         caseAssignment = new CaseAssignment(
-                sjpCaseAggregate.getCaseId().toString(),
+                caseAggregate.getCaseId().toString(),
                 CASE_ASSIGNMENT_TYPE.toString());
     }
 
     @Test
     public void shouldMarkCaseAssigned() {
-        final List<Object> events = when(sjpCaseAggregate::caseAssignmentCreated);
+        final List<Object> events = when(caseAggregate::caseAssignmentCreated);
 
-        assertThat(sjpCaseAggregate.isCaseAssigned(), is(true));
+        assertThat(caseAggregate.isCaseAssigned(), is(true));
 
         assertThat(events.size(), is(1));
 
@@ -47,9 +48,9 @@ public class CaseAssignmentTest extends CaseAggregateBaseTest {
 
     @Test
     public void shouldMarkCaseUnassigned() {
-        final List<Object> events = when(sjpCaseAggregate::caseAssignmentDeleted);
+        final List<Object> events = when(caseAggregate::caseAssignmentDeleted);
 
-        assertThat(sjpCaseAggregate.isCaseAssigned(), is(false));
+        assertThat(caseAggregate.isCaseAssigned(), is(false));
 
         assertThat(events.size(), is(1));
 
@@ -64,7 +65,7 @@ public class CaseAssignmentTest extends CaseAggregateBaseTest {
     }
 
     private void verify(CaseAssignment caseAssignment) {
-        assertEquals(sjpCase.getId().toString(), caseAssignment.getCaseId());
+        assertEquals(aCase.getId().toString(), caseAssignment.getCaseId());
         assertEquals(CASE_ASSIGNMENT_TYPE, caseAssignment.getCaseAssignmentType());
     }
 }

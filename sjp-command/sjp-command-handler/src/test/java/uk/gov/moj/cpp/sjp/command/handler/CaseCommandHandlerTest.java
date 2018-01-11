@@ -23,14 +23,9 @@ import javax.json.JsonObject;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
-//TODO Because this class is extended by other classes it should be abstract and not have it's own tests
-@RunWith(MockitoJUnitRunner.class)
 public class CaseCommandHandlerTest {
 
     protected static final UUID CASE_ID = UUID.randomUUID();
@@ -116,10 +111,5 @@ public class CaseCommandHandlerTest {
         verifyNoMoreInteractions(function);
         verifyNoMoreInteractions(events);
         verifyNoMoreInteractions(jsonEvents);
-    }
-
-    @Test
-    public void testApplyToCaseAggregate() throws EventStreamException {
-        caseCommandHandler.applyToCaseAggregate(jsonEnvelope, aggregateFunction);
     }
 }

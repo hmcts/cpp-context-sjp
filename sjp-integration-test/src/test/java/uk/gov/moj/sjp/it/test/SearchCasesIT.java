@@ -1,23 +1,36 @@
 package uk.gov.moj.sjp.it.test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+
+import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
 import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
+import uk.gov.moj.sjp.it.helper.DefendantDetailsHelper;
+import uk.gov.moj.sjp.it.util.FileUtil;
 
+import java.io.IOException;
+
+import javax.json.JsonObject;
+
+import com.jayway.restassured.path.json.JsonPath;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class SearchCasesIT extends BaseIntegrationTest {
 
-    private static CaseSjpHelper caseSjpHelper;
-    private static CaseSearchResultHelper caseSearchResultHelper;
+    private CaseSjpHelper caseSjpHelper;
+    private CaseSearchResultHelper caseSearchResultHelper;
+    private DefendantDetailsHelper defendantDetailsHelper;
 
     @Before
     public void createSjpCaseAndVerifyInQueue() {
+        defendantDetailsHelper = new DefendantDetailsHelper();
         caseSjpHelper = new CaseSjpHelper();
         caseSjpHelper.createCase();
-        //TODO: looks like we are testing case creation not search here
-        caseSjpHelper.verifyInPrivateActiveMQ();
+        //This is required, otherwise get method for defendant id can't be invoked
+        caseSjpHelper.verifyCaseCreatedUsingId();
 
         caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
     }
@@ -26,24 +39,31 @@ public class SearchCasesIT extends BaseIntegrationTest {
     public void tearDown() {
         caseSjpHelper.close();
         caseSearchResultHelper.close();
+        defendantDetailsHelper.close();
     }
 
     @Test
-    public void verifyAddAndUpdatePersonInfo() {
-        caseSearchResultHelper.addPersonInfo();
+    public void verifyInitialSearchDetailsAndUpdateToDefendantDetails() throws IOException {
         caseSearchResultHelper.verifyPersonInfoByUrn();
         caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth(caseSearchResultHelper.getLastName(), caseSearchResultHelper.getDateOfBirth());
 
-        caseSearchResultHelper.updatePersonInfo();
-        caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth(caseSearchResultHelper.getUpdatedLastName(), caseSearchResultHelper.getUpdatedDateOfBirth());
-        caseSearchResultHelper.verifyPersonNotFound(caseSearchResultHelper.getLastName());
+        JsonObject updatedDefendantPayload = FileUtil.givenPayload("/payload/sjp.update-defendant-details.json");
+
+        defendantDetailsHelper.updateDefendantDetails(caseSjpHelper.getCaseId(), caseSjpHelper.getSingleDefendantId(), updatedDefendantPayload);
+        caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth("SMITH", LocalDates.from("1980-07-15"));
+        caseSearchResultHelper.verifyPersonNotFound(caseSjpHelper.getCaseUrn(), caseSearchResultHelper.getLastName());
+
+        final JsonPath updatedCase = caseSjpHelper.getCaseResponseUsingId();
+        final String firstName = updatedCase.getString("defendant.personalDetails.firstName");
+        final String lastName = updatedCase.getString("defendant.personalDetails.lastName");
+
+        assertThat(firstName, is("David"));
+        assertThat(lastName, is("SMITH"));
     }
 
     @Test
     public void verifyAssignmentCreationAndDeletionIsReflected() {
-        // given
-        caseSearchResultHelper.addPersonInfo();
-
+        //given case is created
         // then
         caseSearchResultHelper.verifyAssignment(false);
 
@@ -57,6 +77,4 @@ public class SearchCasesIT extends BaseIntegrationTest {
         // then
         caseSearchResultHelper.verifyAssignment(false);
     }
-
-
 }

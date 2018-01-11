@@ -55,7 +55,6 @@ public class AllOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
                         STRUCTURE_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_STRUCTURE_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
                 final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper)) {
 
-            caseSearchResultHelper.addPersonInfo();
             caseSearchResultHelper.verifyPersonInfoByUrn();
 
             //check successful standard withdrawal request
@@ -84,7 +83,6 @@ public class AllOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
                         STRUCTURE_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_STRUCTURE_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
                 final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper)) {
 
-            caseSearchResultHelper.addPersonInfo();
             caseSearchResultHelper.verifyPersonInfoByUrn();
 
             //check successful standard withdrawal request

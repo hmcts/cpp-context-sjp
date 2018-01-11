@@ -14,9 +14,6 @@ baseUri: message://event/processor/message/sjp
       application/vnd.sjp.events.all-offences-withdrawal-request-cancelled+json:
           schema: !include json/schema/sjp.events.all-offences-withdrawal-request-cancelled.json
           example: !include json/sjp.events.all-offences-withdrawal-request-cancelled.json
-      application/vnd.sjp.events.sjp-case-created+json:
-          schema: !include json/schema/sjp.events.sjp-case-created.json
-          example: !include json/sjp.events.sjp-case-created.json
       application/vnd.sjp.events.case-creation-failed-because-case-already-existed+json:
           schema: !include json/schema/sjp.events.case-creation-failed-because-case-already-existed.json
           example: !include json/sjp.events.case-creation-failed-because-case-already-existed.json
@@ -77,14 +74,15 @@ baseUri: message://event/processor/message/sjp
       application/vnd.sjp.events.court-referral-actioned+json:
         schema: !include json/schema/sjp.events.court-referral-actioned.json
         example: !include json/sjp.events.court-referral-actioned.json
+      application/vnd.sjp.events.case-received+json:
+        example: !include json/sjp.events.case-received.json
+        schema: !include json/schema/sjp.events.case-received.json
+
 
 
 /public.event:
   post:
     body:
-      application/vnd.people.personal-details-updated+json:
-        schema: !include json/schema/people.personal-details-updated.json
-        example: !include json/people.personal-details-updated.json
       application/vnd.public.resulting.referenced-decisions-saved+json:
           schema: !include json/schema/public.resulting.referenced-decisions-saved.json
           example: !include json/public.resulting.referenced-decisions-saved.json

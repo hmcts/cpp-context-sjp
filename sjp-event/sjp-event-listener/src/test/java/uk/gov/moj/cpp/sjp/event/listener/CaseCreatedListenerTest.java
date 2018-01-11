@@ -25,6 +25,7 @@ public class CaseCreatedListenerTest {
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     @Mock
+    @SuppressWarnings("deprecation")
     private SjpCaseCreatedToCase sjpConverter;
 
     @Mock
@@ -46,6 +47,7 @@ public class CaseCreatedListenerTest {
     private CaseCreatedListener listener;
 
     @Test
+    @SuppressWarnings("deprecation")
     public void shouldHandleCreateSjpCaseEvent() {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, SjpCaseCreated.class)).thenReturn(sjpEvent);
@@ -55,4 +57,5 @@ public class CaseCreatedListenerTest {
 
         verify(caseRepository).save(caseDetail);
     }
+
 }

@@ -10,7 +10,7 @@
       "address2": "London",
       "address3": "England",
       "address4": "UK",
-      "postCode": "W1T 1JY"
+      "postcode": "W1T 1JY"
     },
     "homeTelephone": "0208000888",
     "mobile": "07890123123",
@@ -50,7 +50,7 @@
       "address2": "London",
       "address3": "England",
       "address4": "UK",
-      "postCode": "W1T 1JY"
+      "postcode": "W1T 1JY"
     }
   },
   "outgoings": [

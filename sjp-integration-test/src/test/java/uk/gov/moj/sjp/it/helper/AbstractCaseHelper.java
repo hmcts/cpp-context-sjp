@@ -62,11 +62,6 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
         createCase(payload);
     }
 
-    public void createCaseWith(List<Map<String, String>> caseMarkers) {
-        String payload = getPayloadForCreatingCaseWithCaseMarkers(caseMarkers);
-        createCase(payload);
-    }
-
     private void createCase(String payload) {
         makePostCall(getWriteUrl("/cases"), getWriteMediaType(), payload);
     }
@@ -103,12 +98,6 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
 
     }
 
-    public void verifyCaseQueryReturnsNotAvailable() {
-        poll(getCaseById(caseId))
-                .until(status().is(FORBIDDEN)
-                );
-    }
-
     public void verifyCaseCreatedUsingUrn() {
         final ResponseData caseResponse = poll(getCaseById(caseId))
                 .until(
@@ -142,30 +131,12 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
         doAdditionalReadCallResponseVerification(jsonRequest, jsonResponse);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void assertQueryCallResponseStatusIs(Response.Status status) {
-        assertQueryCallResponseStatusIs(status, USER_ID);
-    }
-
     public void assertQueryCallResponseStatusIs(Response.Status status, String userId) {
         Response response = makeGetCall(getReadUrl("/cases/" + caseId), GET_CASE_BY_ID_MEDIA_TYPE, userId);
         assertThat("Response status code should be " + status, response.getStatus(), is(status.getStatusCode()));
 
         response = makeGetCall(getReadUrl("/cases?urn=" + caseUrn), GET_CASE_BY_URN_MEDIA_TYPE, userId);
         assertThat("Response status code should be " + status, response.getStatus(), is(status.getStatusCode()));
-    }
-
-    public int getCaseVersion() {
-        final ResponseData caseResponse = poll(getCaseById(caseId))
-                .until(
-                        status().is(OK)
-                );
-
-        final JsonPath jsonResponse = new JsonPath(caseResponse.getPayload());
-        return jsonResponse.getInt("version");
     }
 
     public String getCaseResponseDataUsingId() {
@@ -182,13 +153,6 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
 
     public JsonPath getCaseResponseUsingId() {
         return new JsonPath(getCaseResponseDataUsingId());
-    }
-
-    public void assertCaseDoesNotExist(String caseIdentifier) {
-        poll(getCaseById(caseIdentifier))
-                .until(
-                        status().is(NOT_FOUND)
-                );
     }
 
     /**
@@ -218,18 +182,6 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
                 .add("enterpriseId", "2K2SLYFC743H").build();
 
         return payload.toString();
-    }
-
-    protected String getPayloadForCreatingCaseWithCaseMarkers(List<Map<String, String>> caseMarkers) {
-        String templateRequest = getPayload(getTemplatePayloadPath());
-
-        // updating case ID and URN to ensure uniqueness when test runs
-        JSONObject jsonObject = new JSONObject(templateRequest);
-        jsonObject.put("id", caseId);
-        jsonObject.put("urn", caseUrn);
-        jsonObject.put("caseMarkers", caseMarkers);
-        request = jsonObject.toString();
-        return request;
     }
 
     protected abstract void doAdditionalReadCallResponseVerification(JsonPath jsonRequest, JsonPath jsonResponse);

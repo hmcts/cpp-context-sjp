@@ -1,7 +1,6 @@
 package uk.gov.moj.sjp.it.helper;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -67,10 +66,6 @@ public class UpdatePleaHelper extends AbstractTestHelper {
         updatePlea(payload.toString(), "application/vnd.sjp.update-plea+json", expectedStatus);
     }
 
-    public void verifyInActiveMQ(final String plea, final String denialReason) {
-        assertEventData(privateEventsConsumer, plea, denialReason);
-    }
-
     public void verifyInPublicTopic(final String plea, final String denialReason) {
         assertEventData(publicEventsConsumer, plea, denialReason);
     }
@@ -99,13 +94,6 @@ public class UpdatePleaHelper extends AbstractTestHelper {
                 status().is(OK),
                 payload().isJson(withJsonPath("defendants[0].interpreter.language",
                         is(interpreterLanguage)))
-        );
-    }
-
-    public void verifyNoInterpreterLanguage() {
-        RestPoller.poll(getCaseById(caseSjpHelper.getCaseId())).until(
-                status().is(OK),
-                payload().isJson(withoutJsonPath("defendants[0].interpreter.language"))
         );
     }
 

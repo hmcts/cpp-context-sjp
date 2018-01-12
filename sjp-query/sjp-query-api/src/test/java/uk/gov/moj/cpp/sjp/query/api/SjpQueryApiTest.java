@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class StructureQueryApiTest {
+public class SjpQueryApiTest {
 
     @Test
     public void shouldHandlesQueries() {

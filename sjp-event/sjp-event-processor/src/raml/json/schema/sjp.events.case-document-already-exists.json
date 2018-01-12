@@ -15,19 +15,10 @@
         "materialId": {
           "type": "string"
         },
-        "policeName": {
-          "type": "string"
-        },
-        "policeMaterialId": {
-          "type": "string"
-        },
         "documentType": {
           "enum": ["SJPN", "CITN", "PLEA", "FINANCIAL_MEANS", "WS", "RESULT_ORDER"]
         },
         "addedAt": {
-          "type": "string"
-        },
-        "externalFileURL": {
           "type": "string"
         }
       },

@@ -5,9 +5,6 @@
   "completed": false,
   "caseDocuments": [
     {
-      "policeMaterialId": "policeMaterialId",
-      "policeName": "policeName",
-      "description": "description",
       "id": "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95",
       "materialId": "670490ee-95be-4e3e-af8b-9bef865e26ba"
     }
@@ -15,15 +12,6 @@
   "defendants": [
     {
       "personId": "ab746921-d839-4867-bcf9-b41db8ebc852",
-      "bailStatus": "conditional",
-      "defendantBailDocuments": [
-        {
-          "id": "e1a5765b-55c4-40a4-9bd9-240e67b53107",
-          "documentId": "documentMaterialId2",
-          "active": true
-        }
-      ],
-      "defenceSolicitorFirm": "xyz solicitor",
       "interpreter": {
         "needed": true,
         "language": "french"
@@ -33,11 +21,9 @@
           "id": "0baecac5-222b-402d-9047-84803679edad",
           "offenceCode": "H8198",
           "plea": "GUILTY",
-          "indicatedPlea": "GUILTY",
           "offenceSequenceNumber": 1,
           "pleaMitigation": "The dog ate my ticket",
           "pleaMethod": "POSTAL",
-          "chargeDate": "2016-02-18",
           "wording": "On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable",
           "pendingWithdrawal": false
         }

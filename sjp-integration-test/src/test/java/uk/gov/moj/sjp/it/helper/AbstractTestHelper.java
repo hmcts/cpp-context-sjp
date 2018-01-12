@@ -2,9 +2,7 @@ package uk.gov.moj.sjp.it.helper;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetAssignmentsPreChargeReviewNotAssigned;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubAllGroupsForUser;
-import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.justice.services.common.http.HeaderConstants;
@@ -25,7 +23,6 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import com.google.common.base.Joiner;
-import com.jayway.restassured.path.json.JsonPath;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +63,6 @@ public abstract class AbstractTestHelper implements AutoCloseable {
         InternalEndpointMockUtils.stubPingFor("usersgroups-query-api");
         stubAllGroupsForUser(USER_ID);
         stubAllGroupsForUser(STRUCTURE_SYSTEM_USER);
-        stubGetAssignmentsPreChargeReviewNotAssigned();
     }
 
     protected void makePostCall(String url, String mediaType, String payload) {
@@ -80,7 +76,7 @@ public abstract class AbstractTestHelper implements AutoCloseable {
         Response response = restClient.postCommand(url, mediaType, payload, map);
         assertThat(response.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
     }
-    
+
     protected void makeMultipartFormPostCall(UUID userId, String url, String fileFieldName, String fileName) {
         File file = new File(fileName);
 
@@ -98,18 +94,6 @@ public abstract class AbstractTestHelper implements AutoCloseable {
         assertThat(response.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
     }
 
-    protected void makeMultipartFormPostCall(String url, String fileFieldName, String fileName) {
-    	makeMultipartFormPostCall(UUID.fromString(USER_ID),url, fileFieldName, fileName);
-    }
-
-    protected void makePostCallWithUserId(String url, String mediaType, String payload, String userId) {
-        MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
-        headers.putSingle(HeaderConstants.USER_ID, userId);
-        LOGGER.info("Post call made: \n\n\tURL = {} \n\tMedia type = {} \n\tHeaders = {} \n\tPayload = {}\n\n", url, mediaType, headers, payload, userId);
-        Response response = restClient.postCommand(url, mediaType, payload, headers);
-        assertThat(response.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
-    }
-
     protected Response makeGetCall(String url, String mediaType) {
         return makeGetCall(url, mediaType, USER_ID);
     }
@@ -122,22 +106,6 @@ public abstract class AbstractTestHelper implements AutoCloseable {
         Response response = restClient.query(url, mediaType, map);
         LOGGER.info("Get call made: \n\n\tEndpoint = {} \n\tMedia type = {}\n\n", url, mediaType, userId);
         return response;
-    }
-
-    /**
-     * Additional verification method for each helper class to ensure that query operations are
-     * restricted.  Each concrete sub-class should override this appropriately
-     */
-    public void assertQueryCallResponseStatusIs(Response.Status status) {
-
-    }
-
-    public JsonPath getMessage() {
-        return retrieveMessage(privateEventsConsumer);
-    }
-
-    public JsonPath getMessage(long customTimeoutInMillis) {
-        return retrieveMessage(privateEventsConsumer, customTimeoutInMillis).orElse(null);
     }
 
     @Override

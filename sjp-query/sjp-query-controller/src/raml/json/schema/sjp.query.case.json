@@ -106,18 +106,6 @@
         "id": "/caseDocuments/0",
         "type": "object",
         "properties": {
-          "policeMaterialId": {
-            "id": "/caseDocuments/0/policeMaterialId",
-            "type": "string"
-          },
-          "policeName": {
-            "id": "/caseDocuments/0/policeName",
-            "type": "string"
-          },
-          "description": {
-            "id": "/caseDocuments/0/description",
-            "type": "string"
-          },
           "id": {
             "id": "/caseDocuments/0/id",
             "type": "string"
@@ -131,10 +119,6 @@
           },
           "documentNumber": {
             "type": "integer"
-          },
-          "latestRedactedMaterialId": {
-            "id": "/caseDocuments/0/latestRedactedMaterialId",
-            "type": "string"
           }
         }
       }

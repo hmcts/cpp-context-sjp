@@ -6,21 +6,9 @@ version: v1
 /sjp.event:
   post:
     body:
-      application/vnd.sjp.events.defendant-added+json:
-          schema: !include json/schema/sjp.events.defendant-added.json
-          example: !include json/sjp.events.defendant-added.json
-
-      application/vnd.sjp.events.storage-reference-set+json:
-        schema: !include json/schema/sjp.events.storage-reference-set.json
-        example: !include json/sjp.events.storage-reference-set.json
-
       application/vnd.sjp.events.case-document-added+json:
         schema: !include json/schema/sjp.events.case-document-added.json
         example: !include json/sjp.events.case-document-added.json
-
-      application/vnd.sjp.events.case-created+json:
-        schema: !include json/schema/sjp.events.case-created.json
-        example: !include json/sjp.events.case-created.json
 
       application/vnd.sjp.events.sjp-case-created+json:
         example: !include json/sjp.events.sjp-case-created.json
@@ -37,10 +25,6 @@ version: v1
       application/vnd.sjp.events.case-completed+json:
         schema: !include json/schema/sjp.events.case-completed.json
         example: !include json/sjp.events.case-completed.json
-
-      application/vnd.sjp.events.person-type-updated+json:
-        schema: !include json/schema/sjp.events.person-type-updated.json
-        example: !include json/sjp.events.person-type-updated.json
 
       application/vnd.sjp.events.court-referral-created+json:
         schema: !include json/schema/sjp.events.court-referral-created.json

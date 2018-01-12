@@ -1,10 +1,8 @@
 package uk.gov.moj.sjp.it.helper;
 
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_SJP_CASE_CREATED;
-import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
 import uk.gov.moj.sjp.it.EventSelector;
 
@@ -74,12 +72,6 @@ public class CaseSjpHelper extends AbstractCaseHelper {
     @Override
     protected String getPublicEventSelector() {
         return EventSelector.PUBLIC_EVENT_SELECTOR_SJP_CASE_CREATED;
-    }
-
-    public void verifyInPublicActiveMQ() {
-        JsonPath jsonResponse = retrieveMessage(publicEventsConsumer);
-        assertThat(jsonResponse.get("id"), equalTo(caseId));
-        assertThat(jsonResponse.get("postingDate"), equalTo(postingDate.format(ISO_LOCAL_DATE)));
     }
 
     public String getSingleDefendantId() {

@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
@@ -13,14 +14,10 @@ import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
 import javax.json.JsonObjectBuilder;
 
-public class PeopleStub extends StubUtil {
-
-    static {
-        InternalEndpointMockUtils.stubPingFor("people-query-api");
-    }
+public class PeopleStub {
 
     public static void stubPerson(final String personId, final String postcode) {
-
+        InternalEndpointMockUtils.stubPingFor("people-query-api");
         final JsonObjectBuilder objectBuilder = createObjectBuilder()
                 .add("id", personId)
                 .add("firstName", "firstName")
@@ -41,7 +38,7 @@ public class PeopleStub extends StubUtil {
         stubFor(get(urlMatching(urlPath))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", randomUUID().toString())
-                        .withHeader("Content-Type", DEFAULT_JSON_CONTENT_TYPE)
+                        .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(objectBuilder.build().toString())));
 
         waitForStubToBeReady(urlPath, "application/vnd.people.query.person+json");

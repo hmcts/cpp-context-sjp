@@ -15,7 +15,7 @@ public class CaseReceivedToCase implements Converter<CaseReceived, CaseDetail> {
                 event.getProsecutingAuthority().toString(),
                 null,
                 false,
-                false,
+                null,
                 event.getCreatedOn(),
                 defendantToDefendantDetailsConverter.convert(event.getDefendant()),
                 event.getCosts(),

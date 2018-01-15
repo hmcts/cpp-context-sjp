@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.event.listener.converter;
 
 import static java.time.ZoneOffset.UTC;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
@@ -90,7 +91,7 @@ public class SjpCaseCreatedToCaseTest {
         assertThat(kase.getProsecutingAuthority(), is("TFL"));
         assertThat(kase.getInitiationCode(), is(initiationCode));
         assertThat(kase.getCompleted(), is(false));
-        assertThat(kase.getAssigned(), is(false));
+        assertThat(kase.getAssigneeId(), nullValue());
 
         assertThat(kase.getDefendant().getNumPreviousConvictions(), is(30)); // assuming there is just one defendant for now
         assertThat(kase.getCosts(), is(BigDecimal.valueOf(33.5)));

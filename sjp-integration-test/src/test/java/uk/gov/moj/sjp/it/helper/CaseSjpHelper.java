@@ -35,6 +35,7 @@ public class CaseSjpHelper extends AbstractCaseHelper {
     private static final String TEMPLATE_CASE_SJP_CREATE_PAYLOAD = "raml/json/sjp.create-sjp-case.json";
 
     private final LocalDate postingDate;
+    private String prosecutor;
 
     private final PersonalDetails personalDetails = new PersonalDetails("Mr","David", "LLOYD", LocalDates.from("1980-07-15"),
             "Male", "nationalInsuranceNumber",
@@ -44,11 +45,16 @@ public class CaseSjpHelper extends AbstractCaseHelper {
 
 
     public CaseSjpHelper() {
-        this(LocalDate.of(2015, 12, 2));
+        this(LocalDate.of(2015, 12, 2), "TFL");
     }
 
     public CaseSjpHelper(final LocalDate postingDate) {
+        this(postingDate, "TFL");
+    }
+
+    public CaseSjpHelper(final LocalDate postingDate, String prosecutor) {
         this.postingDate = postingDate;
+        this.prosecutor = prosecutor;
     }
 
     @Override
@@ -91,6 +97,7 @@ public class CaseSjpHelper extends AbstractCaseHelper {
         jsonObject.put("postingDate", postingDate);
         final JSONObject defendant = jsonObject.getJSONObject("defendant");
         defendant.getJSONArray("offences").getJSONObject(0).put("id", offenceId);
+        jsonObject.put("prosecutingAuthority", prosecutor);
     }
 
     public void verifyPersonInfo() {

@@ -1,40 +1,37 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.CaseAssignment;
+import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 
-import javax.inject.Inject;
+import java.util.UUID;
+
 import javax.json.JsonObject;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class CaseAssignmentHandler extends CaseCommandHandler {
 
-    private static final String SJP_COMMAND_HANDLER_ASSIGNMENT_CREATED = "sjp.command.case-assignment-created";
-    private static final String SJP_COMMAND_HANDLER_ASSIGNMENT_DELETED = "sjp.command.case-assignment-deleted";
-
-    @Inject
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Handles(SJP_COMMAND_HANDLER_ASSIGNMENT_CREATED)
+    @Handles("sjp.command.case-assignment-created")
     public void assignmentCreated(final JsonEnvelope command) throws EventStreamException {
         final JsonObject payload = command.payloadAsJsonObject();
 
-        final CaseAssignment caseAssignment = jsonObjectToObjectConverter.convert(payload, CaseAssignment.class);
+        final UUID caseId = UUID.fromString(payload.getString("caseId"));
+        final UUID assigneeId = UUID.fromString(payload.getString("assigneeId"));
+        final CaseAssignmentType caseAssignmentType = CaseAssignmentType.from(payload.getString("caseAssignmentType")).get();
 
-        applyToCaseAggregate(command, aCase -> aCase.caseAssignmentCreated(caseAssignment));
+        applyToCaseAggregate(command, aCase -> aCase.caseAssignmentCreated(caseId, assigneeId, caseAssignmentType));
     }
 
-    @Handles(SJP_COMMAND_HANDLER_ASSIGNMENT_DELETED)
+    @Handles("sjp.command.case-assignment-deleted")
     public void assignmentDeleted(final JsonEnvelope command) throws EventStreamException {
         final JsonObject payload = command.payloadAsJsonObject();
 
-        final CaseAssignment caseAssignment = jsonObjectToObjectConverter.convert(payload, CaseAssignment.class);
+        final UUID caseId = UUID.fromString(payload.getString("caseId"));
+        final CaseAssignmentType caseAssignmentType = CaseAssignmentType.from(payload.getString("caseAssignmentType")).get();
 
-        applyToCaseAggregate(command, aCase -> aCase.caseAssignmentDeleted(caseAssignment));
+        applyToCaseAggregate(command, aCase -> aCase.caseAssignmentDeleted(caseId, caseAssignmentType));
     }
 }

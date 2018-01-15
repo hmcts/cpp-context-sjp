@@ -539,7 +539,7 @@ public class CaseServiceTest {
 
     private CaseDetail createCaseDetail() {
         return new CaseDetail(CASE_ID, URN, PROSECUTING_AUTHORITY_CPS,
-                null, COMPLETED, false, clock.now(), new DefendantDetail(), null, null);
+                null, COMPLETED, null, clock.now(), new DefendantDetail(), null, null);
     }
 
     private CaseDetail createCaseDetailWithDocumentTypes(String... documentTypes) {

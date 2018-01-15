@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.sjp.query.view;
 
 import static java.util.Optional.empty;
+import static java.util.stream.Collectors.toSet;
+import static javax.json.Json.createObjectBuilder;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.core.annotation.Component;
@@ -8,18 +10,26 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
+import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
+import uk.gov.moj.cpp.sjp.query.view.service.AssignmentService;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.EmployerService;
 import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
 @SuppressWarnings("WeakerAccess")
@@ -44,6 +54,9 @@ public class SjpQueryView {
 
     @Inject
     private CaseService caseService;
+
+    @Inject
+    private AssignmentService assignmentService;
 
     @Inject
     private FinancialMeansService financialMeansService;
@@ -201,4 +214,35 @@ public class SjpQueryView {
         return enveloper.withMetadataFrom(envelope, "sjp.query.defendants-online-plea")
                 .apply(onlinePleaRepository.findBy(caseId));
     }
+
+    @Handles("sjp.query.assignment-candidates")
+    public JsonEnvelope findAssignmentCandidates(final JsonEnvelope envelope) {
+        final JsonObject queryOptions = envelope.payloadAsJsonObject();
+
+        final UUID assigneeId = UUID.fromString(queryOptions.getString("assigneeId"));
+        final SessionType sessionType = SessionType.valueOf(queryOptions.getString("sessionType"));
+        final int limit = queryOptions.getInt("limit");
+        final String excludedProsecutingAuthoritiesAsString = queryOptions.getString("excludedProsecutingAuthorities", "");
+
+        final Set<String> excludedProsecutingAuthorities = Stream.of(excludedProsecutingAuthoritiesAsString.split(","))
+                .map(String::trim)
+                .filter(prosecutor -> !prosecutor.isEmpty())
+                .collect(toSet());
+
+        final List<AssignmentCandidate> assignmentCandidatesList = assignmentService.getAssignmentCandidates(assigneeId, sessionType, excludedProsecutingAuthorities, limit);
+
+        final JsonArrayBuilder casesReadyForDecisionBuilder = Json.createArrayBuilder();
+
+        assignmentCandidatesList.forEach(assignmentCandidate -> casesReadyForDecisionBuilder.add(createObjectBuilder()
+                .add("caseId", assignmentCandidate.getCaseId().toString())
+                .add("caseStreamVersion", assignmentCandidate.getCaseStreamVersion())
+        ));
+
+        final JsonObject casesReadyForDecision = createObjectBuilder()
+                .add("assignmentCandidates", casesReadyForDecisionBuilder.build())
+                .build();
+
+        return enveloper.withMetadataFrom(envelope, "sjp.query.assignment-candidates").apply(casesReadyForDecision);
+    }
+
 }

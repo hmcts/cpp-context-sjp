@@ -22,11 +22,7 @@
     },
     "prosecutingAuthority": {
       "id": "/prosecutingAuthority",
-      "type": "string",
-      "enum": [
-        "CPS",
-        "TFL"
-      ]
+      "type": "string"
     },
     "postingDate": {
       "type": "string"

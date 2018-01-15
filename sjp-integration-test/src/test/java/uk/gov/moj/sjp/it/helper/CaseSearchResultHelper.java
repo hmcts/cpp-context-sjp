@@ -23,6 +23,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import javax.json.JsonObject;
 
@@ -42,9 +43,10 @@ public class CaseSearchResultHelper extends AbstractTestHelper {
 
     }
 
-    public void assignmentCreated()  {
+    public void assignmentCreated() {
         final JsonObject payload = createObjectBuilder()
                 .add("domainObjectId", caseSjpHelper.getCaseId())
+                .add("assignee", UUID.randomUUID().toString())
                 .add("assignmentNatureType", assignmentNatureType)
                 .build();
 
@@ -57,7 +59,7 @@ public class CaseSearchResultHelper extends AbstractTestHelper {
         }
     }
 
-    public void assignmentDeleted()  {
+    public void assignmentDeleted() {
         final JsonObject payload = createObjectBuilder()
                 .add("domainObjectId", caseSjpHelper.getCaseId())
                 .add("assignmentNatureType", assignmentNatureType)
@@ -75,7 +77,7 @@ public class CaseSearchResultHelper extends AbstractTestHelper {
     public void verifyPersonNotFound(final String urn, final String lastName) {
         poll(searchCases(lastName))
                 .until(status().is(OK), payload().isJson(
-                        withJsonPath("$.results[?(@.urn=='"+urn+"')]", hasSize(0))
+                        withJsonPath("$.results[?(@.urn=='" + urn + "')]", hasSize(0))
                 ));
     }
 

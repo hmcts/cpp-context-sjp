@@ -77,7 +77,12 @@ baseUri: message://event/processor/message/sjp
       application/vnd.sjp.events.online-plea-received+json:
         schema: !include json/schema/sjp.events.online-plea-received.json
         example: !include json/sjp.events.online-plea-received.json
-
+      application/vnd.sjp.events.magistrate-session-started+json:
+        schema: !include json/schema/sjp.events.magistrate-session-started.json
+        example: !include json/sjp.events.magistrate-session-started.json
+      application/vnd.sjp.events.delegated-powers-session-started+json:
+        schema: !include json/schema/sjp.events.delegated-powers-session-started.json
+        example: !include json/sjp.events.delegated-powers-session-started.json
 
 /public.event:
   post:

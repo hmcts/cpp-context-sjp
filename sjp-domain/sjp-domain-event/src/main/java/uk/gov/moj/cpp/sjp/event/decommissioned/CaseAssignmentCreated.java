@@ -1,27 +1,31 @@
-package uk.gov.moj.cpp.sjp.domain;
+package uk.gov.moj.cpp.sjp.event.decommissioned;
+
+import uk.gov.justice.domain.annotation.Event;
+import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class CaseAssignment implements Serializable {
+@Event("sjp.events.case-assignment-created")
+public final class CaseAssignmentCreated implements Serializable {
 
-    private static final long serialVersionUID = 3422623804809271943L;
+    private static final long serialVersionUID = 2L;
 
-    private final String caseId;
-    private final CaseAssignmentType caseAssignmentType;
+    final UUID caseId;
+    final CaseAssignmentType caseAssignmentType;
 
     @JsonCreator
-    public CaseAssignment(@JsonProperty("caseId") String caseId,
-                          @JsonProperty("caseAssignmentType") String caseAssignmentType) {
+    public CaseAssignmentCreated(@JsonProperty("caseId") final UUID caseId, @JsonProperty("caseAssignmentType") final CaseAssignmentType caseAssignmentType) {
         this.caseId = caseId;
-        this.caseAssignmentType = CaseAssignmentType.from(caseAssignmentType).get();
+        this.caseAssignmentType = caseAssignmentType;
     }
 
-    public String getCaseId() {
+    public UUID getCaseId() {
         return caseId;
     }
 

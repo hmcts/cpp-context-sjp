@@ -13,7 +13,7 @@ import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.moj.cpp.sjp.CourtReferralNotFound;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
-import uk.gov.moj.cpp.sjp.domain.CaseAssignment;
+import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
@@ -38,7 +38,7 @@ import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.CaseAlreadyCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseAlreadyReopened;
-import uk.gov.moj.cpp.sjp.event.CaseAssignmentCreated;
+import uk.gov.moj.cpp.sjp.event.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.CaseAssignmentDeleted;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseCreationFailedBecauseCaseAlreadyExisted;
@@ -76,6 +76,7 @@ import uk.gov.moj.cpp.sjp.event.PleaUpdateDenied;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
+import uk.gov.moj.cpp.sjp.event.decommissioned.CaseAssignmentCreated;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -109,7 +110,7 @@ public class CaseAggregate implements Aggregate {
     private boolean caseCompleted = false;
     private boolean withdrawalAllOffencesRequested = false;
     private boolean hasCourtReferral;
-    private boolean caseAssigned = false;
+    private boolean assigned = false;
     private String defendantTitle;
     private LocalDate defendantDateOfBirth;
     private Address defendantAddress;
@@ -273,7 +274,7 @@ public class CaseAggregate implements Aggregate {
             return apply(Stream.of(new OffenceNotFound(offenceId, "Update Plea")));
         }
 
-        if (caseAssigned) {
+        if (isCaseAssigned()) {
             return caseUpdateRejected(changePleaCommand.getCaseId().toString(), CASE_ASSIGNED);
         }
 
@@ -365,7 +366,7 @@ public class CaseAggregate implements Aggregate {
     public Stream<Object> pleadOnline(final UUID caseId, final PleadOnline pleadOnline, final ZonedDateTime createdOn) {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         final UUID defendantId = UUID.fromString(pleadOnline.getDefendantId());
-        if (caseAssigned) {
+        if (isCaseAssigned()) {
             streamBuilder.add(generateCaseUpdateRejected(caseId.toString(), CASE_ASSIGNED));
             return apply(streamBuilder.build());
         }
@@ -565,12 +566,16 @@ public class CaseAggregate implements Aggregate {
         return apply(Stream.of(new CaseReopenedUndone(caseId, caseReopenedDate)));
     }
 
-    public Stream<Object> caseAssignmentCreated(final CaseAssignment caseAssignment) {
-        return apply(Stream.builder().add(new CaseAssignmentCreated(caseAssignment)).build());
+    public Stream<Object> assignCase(final UUID sessionId, final UUID assigneeId, final CaseAssignmentType assignmentType) {
+        return apply(Stream.builder().add(new CaseAssigned(caseId, sessionId, assigneeId, assignmentType)).build());
     }
 
-    public Stream<Object> caseAssignmentDeleted(final CaseAssignment caseAssignment) {
-        return apply(Stream.builder().add(new CaseAssignmentDeleted(caseAssignment)).build());
+    public Stream<Object> caseAssignmentCreated(final UUID caseId, final UUID assigneeId, final CaseAssignmentType caseAssignmentType) {
+        return apply(Stream.builder().add(new CaseAssigned(caseId, null, assigneeId, caseAssignmentType)).build());
+    }
+
+    public Stream<Object> caseAssignmentDeleted(final UUID caseId, final CaseAssignmentType caseAssignmentType) {
+        return apply(Stream.builder().add(new CaseAssignmentDeleted(caseId, caseAssignmentType)).build());
     }
 
     private void validateDefendant(String title, LocalDate dateOfBirth, Address address) {
@@ -804,8 +809,10 @@ public class CaseAggregate implements Aggregate {
                 when(CourtReferralNotFound.class).apply(e -> {
                     //nothing to update
                 }),
-                when(CaseAssignmentCreated.class).apply(ignored -> caseAssigned = true),
-                when(CaseAssignmentDeleted.class).apply(ignored -> caseAssigned = false),
+                when(CaseAssigned.class).apply(caseAssignment -> assigned = true),
+                when(CaseAssignmentCreated.class).apply(caseAssignment -> assigned = true),
+                when(CaseAssignmentDeleted.class).apply(ignored -> assigned = false),
+
                 when(DefendantDetailsUpdated.class).apply(e -> {
                     defendantTitle = e.getTitle();
                     defendantDateOfBirth = e.getDateOfBirth();
@@ -874,7 +881,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     public boolean isCaseAssigned() {
-        return caseAssigned;
+        return assigned;
     }
 
 }

@@ -1,7 +1,8 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 
@@ -39,10 +40,12 @@ public class CaseSearchResultListenerTest {
     private ArgumentCaptor<CaseSearchResult> captor;
 
     @Test
-    public void caseAssignmentCreated() {
+    public void shouldHandleCaseAssigned() {
         final UUID caseId = UUID.randomUUID();
+        final UUID assigneeId = UUID.randomUUID();
         final JsonEnvelope event = envelope()
                 .withPayloadOf(caseId.toString(), "caseId")
+                .withPayloadOf(assigneeId.toString(), "assigneeId")
                 .build();
         final List<CaseSearchResult> searchResults = Arrays.asList(new CaseSearchResult(), new CaseSearchResult());
         when(repository.findByCaseId(caseId)).thenReturn(searchResults);
@@ -54,21 +57,22 @@ public class CaseSearchResultListenerTest {
         searchResults.forEach(searchResult -> {
             assertThat(searchResult.isAssigned(), is(false));
         });
-        assertThat(caseDetail.getAssigned(), is(false));
+        assertThat(caseDetail.getAssigneeId(), nullValue());
 
         //when
-        caseSearchResultListener.caseAssignmentCreated(event);
+        caseSearchResultListener.caseAssigned(event);
 
         //then
         searchResults.forEach(searchResult -> {
             assertThat(searchResult.isAssigned(), is(true));
         });
-        assertThat(caseDetail.getAssigned(), is(true));
+        assertThat(caseDetail.getAssigneeId(), is(assigneeId));
     }
 
     @Test
-    public void caseAssignmentDeleted() {
+    public void shouldHandleCaseAssignmentDeleted() {
         final UUID caseId = UUID.randomUUID();
+        final UUID assigneeId = UUID.randomUUID();
         final JsonEnvelope event = envelope()
                 .withPayloadOf(caseId.toString(), "caseId")
                 .build();
@@ -80,14 +84,14 @@ public class CaseSearchResultListenerTest {
         when(repository.findByCaseId(caseId)).thenReturn(searchResults);
 
         final CaseDetail caseDetail = new CaseDetail();
-        caseDetail.setAssigned(true);
+        caseDetail.setAssigneeId(assigneeId);
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
 
         //given
         searchResults.forEach(searchResult -> {
             assertThat(searchResult.isAssigned(), is(true));
         });
-        assertThat(caseDetail.getAssigned(), is(true));
+        assertThat(caseDetail.getAssigneeId(), is(assigneeId));
 
         //when
         caseSearchResultListener.caseAssignmentDeleted(event);
@@ -96,6 +100,6 @@ public class CaseSearchResultListenerTest {
         searchResults.forEach(searchResult -> {
             assertThat(searchResult.isAssigned(), is(false));
         });
-        assertThat(caseDetail.getAssigned(), is(false));
+        assertThat(caseDetail.getAssigneeId(), nullValue());
     }
 }

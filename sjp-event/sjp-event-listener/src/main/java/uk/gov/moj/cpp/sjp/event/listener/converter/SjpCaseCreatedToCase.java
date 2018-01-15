@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.sjp.event.listener.converter;
 import static java.util.stream.Collectors.toSet;
 
 import uk.gov.justice.services.common.converter.Converter;
-import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -25,7 +24,7 @@ public class SjpCaseCreatedToCase implements Converter<SjpCaseCreated, CaseDetai
                 event.getProsecutingAuthority().toString(),
                 event.getInitiationCode(),
                 false,
-                false,
+                null,
                 event.getCreatedOn(), createDefendantDetail(event), event.getCosts(), event.getPostingDate());
     }
 

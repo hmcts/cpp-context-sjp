@@ -10,10 +10,18 @@
   "properties": {
     "caseId": {
       "$ref": "#/definitions/uuid"
+    },
+    "assigneeId": {
+      "$ref": "#/definitions/uuid"
+    },
+    "caseAssignmentType": {
+      "type": "string"
     }
   },
   "additionalProperties": true,
   "required": [
-    "caseId"
+    "caseId",
+    "assigneeId",
+    "caseAssignmentType"
   ]
 }

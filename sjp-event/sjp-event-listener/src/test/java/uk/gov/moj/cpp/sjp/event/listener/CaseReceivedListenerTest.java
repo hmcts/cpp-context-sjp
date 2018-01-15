@@ -130,7 +130,7 @@ public class CaseReceivedListenerTest {
                 prosecutingAuthority,
                 null,
                 false,
-                false,
+                null,
                 ZonedDateTimes.fromString(caseCreatedOn),
                 new DefendantDetail(
                         defendantId,

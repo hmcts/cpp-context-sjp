@@ -27,7 +27,7 @@ public class CaseDetailBuilder {
     //TODO no longer used
     private String initiationCode;
     private Boolean completed;
-    private Boolean assigned;
+    private UUID assigneeId;
     private BigDecimal costs;
     private LocalDate postingDate;
     private ZonedDateTime createdOn = ZonedDateTime.now(UTC);
@@ -60,8 +60,8 @@ public class CaseDetailBuilder {
         return this;
     }
 
-    public CaseDetailBuilder withAssigned(boolean assigned) {
-        this.assigned = assigned;
+    public CaseDetailBuilder withAssigneeId(UUID assigneeId) {
+        this.assigneeId = assigneeId;
         return this;
     }
 
@@ -108,7 +108,7 @@ public class CaseDetailBuilder {
                 prosecutingAuthority,
                 initiationCode,
                 completed,
-                assigned,
+                assigneeId,
                 createdOn, defendant, costs, postingDate);
 
         caseDocuments.forEach(caseDetail::addCaseDocuments);

@@ -59,7 +59,7 @@ public class CaseReceivedToCaseTest {
                 event.getProsecutingAuthority().toString(),
                 null,
                 false,
-                false,
+                null,
                 event.getCreatedOn(),
                 defendantToDefendantDetails.convert(event.getDefendant()),
                 event.getCosts(),

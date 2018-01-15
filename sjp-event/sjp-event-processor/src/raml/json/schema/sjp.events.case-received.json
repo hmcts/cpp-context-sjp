@@ -10,10 +10,7 @@
       "type": "string"
     },
     "prosecutingAuthority": {
-      "type": "string",
-      "enum": [
-        "TFL"
-      ]
+      "type": "string"
     },
     "costs": {
       "type": "number"

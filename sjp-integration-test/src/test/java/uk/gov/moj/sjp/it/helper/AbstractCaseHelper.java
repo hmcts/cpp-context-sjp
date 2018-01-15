@@ -129,14 +129,6 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
         doAdditionalReadCallResponseVerification(jsonRequest, jsonResponse);
     }
 
-    public void assertQueryCallResponseStatusIs(Response.Status status, String userId) {
-        Response response = makeGetCall(getReadUrl("/cases/" + caseId), GET_CASE_BY_ID_MEDIA_TYPE, userId);
-        assertThat("Response status code should be " + status, response.getStatus(), is(status.getStatusCode()));
-
-        response = makeGetCall(getReadUrl("/cases?urn=" + caseUrn), GET_CASE_BY_URN_MEDIA_TYPE, userId);
-        assertThat("Response status code should be " + status, response.getStatus(), is(status.getStatusCode()));
-    }
-
     public String getCaseResponseDataUsingId() {
         final ResponseData caseResponse = poll(getCaseById(caseId))
                 .until(

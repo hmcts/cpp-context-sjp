@@ -41,7 +41,7 @@ public class CaseView {
         }
 
         completed = caseDetail.getCompleted();
-        assigned = caseDetail.getAssigned();
+        assigned = caseDetail.getAssigneeId() == null ? false : true;
 
         this.costs = caseDetail.getCosts();
         this.postingDate = caseDetail.getPostingDate();

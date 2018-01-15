@@ -460,3 +460,21 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
+/session/{sessionId}:
+  post:
+    description: |
+      Sjp session related commands
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.start-session+json
+          name: sjp.start-session
+      ...
+    body:
+      application/vnd.sjp.start-session+json:
+        example:
+          !include json/sjp.start-session.json
+        schema:
+          !include json/schema/sjp.start-session.json
+    responses:
+      202:
+        description: Accepted

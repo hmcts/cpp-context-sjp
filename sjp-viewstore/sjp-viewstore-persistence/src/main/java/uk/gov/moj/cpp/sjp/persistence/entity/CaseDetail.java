@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.persistence.entity;
 import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
 
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
+import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseReferredToCourt;
 
@@ -51,6 +52,14 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
                                 @ColumnResult(name = "last_name", type = String.class),
                                 @ColumnResult(name = "interpreter_language", type = String.class),
                                 @ColumnResult(name = "hearing_date", type = LocalDate.class)
+                        })),
+        @SqlResultSetMapping(
+                name = "assignmentCandidates",
+                classes = @ConstructorResult(
+                        targetClass = AssignmentCandidate.class,
+                        columns = {
+                                @ColumnResult(name = "case_id", type = UUID.class),
+                                @ColumnResult(name = "case_stream_version", type = Integer.class)
                         }))
 })
 @Entity
@@ -93,8 +102,8 @@ public class CaseDetail implements Serializable {
     @Column(name = "completed")
     private Boolean completed = Boolean.FALSE;
 
-    @Column(name = "assigned")
-    private Boolean assigned = Boolean.FALSE;
+    @Column(name = "assignee_id")
+    private UUID assigneeId;
 
     @Column(name = "summons_code")
     private String summonsCode;
@@ -127,7 +136,7 @@ public class CaseDetail implements Serializable {
                       final String prosecutingAuthority,
                       final String initiationCode,
                       final Boolean completed,
-                      final Boolean assigned,
+                      final UUID assigneeId,
                       final ZonedDateTime createdOn, final DefendantDetail defendantDetail, final BigDecimal costs, final LocalDate postingDate) {
         this();
         this.id = id;
@@ -135,7 +144,7 @@ public class CaseDetail implements Serializable {
         this.prosecutingAuthority = prosecutingAuthority;
         this.initiationCode = initiationCode;
         this.completed = completed;
-        this.assigned = assigned;
+        this.assigneeId = assigneeId;
         this.dateTimeCreated = createdOn;
         setDefendant(defendantDetail);
         this.costs = costs;
@@ -209,12 +218,12 @@ public class CaseDetail implements Serializable {
         this.completed = completed;
     }
 
-    public Boolean getAssigned() {
-        return assigned;
+    public UUID getAssigneeId() {
+        return assigneeId;
     }
 
-    public void setAssigned(Boolean assigned) {
-        this.assigned = assigned;
+    public void setAssigneeId(final UUID assigneeId) {
+        this.assigneeId = assigneeId;
     }
 
     public String getSummonsCode() {

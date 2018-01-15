@@ -11,10 +11,10 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.json.JsonObject;
 import javax.transaction.Transactional;
 
 @ServiceComponent(EVENT_LISTENER)
@@ -26,29 +26,33 @@ public class CaseSearchResultListener {
     @Inject
     private CaseSearchResultRepository repository;
 
-    @Handles("sjp.events.case-assignment-created")
+    @Handles("sjp.events.case-assigned")
     @Transactional
-    public void caseAssignmentCreated(final JsonEnvelope envelope) {
-        updateCaseAssignment(envelope, true);
-        updateCaseDetailsAssignment(envelope, true);
+    public void caseAssigned(final JsonEnvelope envelope) {
+        final JsonObject assignment = envelope.payloadAsJsonObject();
+        final UUID caseId = UUID.fromString(assignment.getString("caseId"));
+        final UUID assigneeId = UUID.fromString(assignment.getString("assigneeId"));
+
+        updateCaseAssignment(caseId, true);
+        updateCaseDetailsAssignment(caseId, assigneeId);
     }
 
     @Handles("sjp.events.case-assignment-deleted")
     @Transactional
     public void caseAssignmentDeleted(final JsonEnvelope envelope) {
-        updateCaseAssignment(envelope, false);
-        updateCaseDetailsAssignment(envelope, false);
+        final UUID caseId = UUID.fromString(envelope.payloadAsJsonObject().getString("caseId"));
+
+        updateCaseAssignment(caseId, false);
+        updateCaseDetailsAssignment(caseId, null);
     }
 
-    private void updateCaseAssignment(final JsonEnvelope envelope, final boolean assigned) {
-        final UUID caseId = UUID.fromString(envelope.payloadAsJsonObject().getString("caseId"));
+    private void updateCaseAssignment(final UUID caseId, boolean assigned) {
         final List<CaseSearchResult> results = repository.findByCaseId(caseId);
         results.forEach(result -> result.setAssigned(assigned));
     }
 
-    private void updateCaseDetailsAssignment(final JsonEnvelope envelope, final boolean assigned) {
-        final UUID caseId = UUID.fromString(envelope.payloadAsJsonObject().getString("caseId"));
+    private void updateCaseDetailsAssignment(final UUID caseId, final UUID assigneeId) {
         final CaseDetail caseDetail = caseRepository.findBy(caseId);
-        caseDetail.setAssigned(assigned);
+        caseDetail.setAssigneeId(assigneeId);
     }
 }

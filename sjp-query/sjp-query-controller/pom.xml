@@ -46,18 +46,6 @@
                         </exclusions>
                     </dependency>
                     <dependency>
-                        <groupId>uk.gov.moj.cpp.charging</groupId>
-                        <artifactId>charging-query-api</artifactId>
-                        <version>${charging.version}</version>
-                        <classifier>raml</classifier>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
                         <groupId>uk.gov.moj.cpp.people</groupId>
                         <artifactId>people-query-api</artifactId>
                         <version>${people.version}</version>

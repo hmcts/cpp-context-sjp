@@ -105,8 +105,8 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     @Query(value = "SELECT cd.defendants FROM CaseDetail cd where cd.id = :caseId")
     public abstract List<DefendantDetail> findCaseDefendants(@QueryParam("caseId") final UUID caseId);
 
-    @Query(isNative = true, value = "select * from case_details sc where \n" +
-            "sc.id=(select scd.case_id from case_document scd where sc.id=scd.case_id and scd.material_id=:materialId)" )
+    @Query(value = "select cd from CaseDetail cd JOIN cd.caseDocuments cdocs " +
+            "WHERE cdocs.materialId = :materialId" )
     public abstract CaseDetail findByMaterialId(@QueryParam("materialId") final UUID materialId);
 
     @Query(value = "SELECT DISTINCT cd FROM CaseDetail cd JOIN cd.caseDocuments doc ON doc.documentType = 'SJPN' " +

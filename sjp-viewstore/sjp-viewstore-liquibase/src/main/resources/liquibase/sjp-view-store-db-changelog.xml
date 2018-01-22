@@ -7,6 +7,6 @@
     <include file="liquibase/sjp-view-store-db-changesets/001-initial-schema.changelog.xml"/>
     <include file="liquibase/sjp-view-store-db-changesets/002-add-case-assignment.xml"/>
     <include file="liquibase/sjp-view-store-db-changesets/003-add-assigned-to-case-details.xml"/>
-
+    <include file="liquibase/sjp-view-store-db-changesets/004-add-indexes-for-material-queries.xml"/>
 
 </databaseChangeLog>

@@ -20,10 +20,6 @@
           "minimum": 0
         }
       },
-      "required": [
-        "frequency",
-        "amount"
-      ],
       "additionalProperties": false
     },
     "benefits": {
@@ -39,10 +35,6 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "claimed",
-        "type"
-      ],
       "additionalProperties": false
     },
     "employmentStatus": {

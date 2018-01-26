@@ -8,6 +8,7 @@ import java.util.List;
 public final class RuleConstants {
 
     private static final String GROUP_SYSTEM_USERS = "System Users";
+    private static final String GROUP_ONLINE_PLEA_SYSTEM_USERS = "Online Plea System Users";
     private static final String GROUP_TFL_USERS = "TFL Users";
     private static final String GROUP_LEGAL_ADVISERS = "Legal Advisers";
     private static final String GROUP_COURT_ADMINISTRATORS = "Court Administrators";
@@ -22,8 +23,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getPleaOnlineActionGroups() {
-        //TODO: this needs to be changed TO ONLINE_PLEA_USERS as part of ATCM-2664
-        return singletonList(GROUP_SYSTEM_USERS);
+        return Arrays.asList(GROUP_ONLINE_PLEA_SYSTEM_USERS);
     }
 
     public static List<String> getAddCaseDocumentActionGroups() {

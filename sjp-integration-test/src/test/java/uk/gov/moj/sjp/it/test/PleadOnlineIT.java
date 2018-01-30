@@ -14,6 +14,8 @@ import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_STRUCTURE_CASE_UPDATE_REJEC
 import static uk.gov.moj.sjp.it.EventSelector.STRUCTURE_EVENTS_CASE_UPDATE_REJECTED;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
+import static uk.gov.moj.sjp.it.stub.NotifyStub.stubNotifications;
+import static uk.gov.moj.sjp.it.stub.NotifyStub.verifyNotification;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithDecision;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
@@ -63,6 +65,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         financialMeansHelper = new FinancialMeansHelper();
 
         stubGetCaseDecisionsWithNoDecision(caseSjpHelper.getCaseId());
+        stubNotifications();
     }
 
     @After
@@ -135,6 +138,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         //verify online-plea
         final Matcher expectedResult = getSavedOnlinePleaPayloadContentMatcher(pleaType, pleaPayload, caseSjpHelper.getCaseId(), defendantId);
         pleadOnlineHelper.getOnlinePlea(caseSjpHelper.getCaseId(), expectedResult);
+
+        verifyNotification("criminal@gmail.com", caseSjpHelper.getCaseUrn());
     }
 
     @Test

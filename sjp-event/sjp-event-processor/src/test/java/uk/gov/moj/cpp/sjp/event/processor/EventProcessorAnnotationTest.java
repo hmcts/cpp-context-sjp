@@ -35,13 +35,13 @@ public class EventProcessorAnnotationTest {
         });
     }
 
-    private final Class listener;
+    private final Class<Object> listener;
 
     private final String eventName;
 
     private final String methodName;
 
-    public EventProcessorAnnotationTest(Class listener, String eventName, String methodName) {
+    public EventProcessorAnnotationTest(Class<Object> listener, String eventName, String methodName) {
         this.listener = listener;
         this.eventName = eventName;
         this.methodName = methodName;

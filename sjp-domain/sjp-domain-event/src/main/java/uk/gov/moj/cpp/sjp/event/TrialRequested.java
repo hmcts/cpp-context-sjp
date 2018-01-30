@@ -14,7 +14,7 @@ public class TrialRequested {
     private final String unavailability;
     private final String witnessDetails;
     private final String witnessDispute;
-    private ZonedDateTime updatedDate;
+    private final ZonedDateTime updatedDate;
 
     @JsonCreator
     public TrialRequested(@JsonProperty(value = "caseId") final UUID caseId,

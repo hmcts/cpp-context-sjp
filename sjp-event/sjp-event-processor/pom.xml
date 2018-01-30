@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-event</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>0.0.27-ATCM-SNAPSHOT</version>
+        <version>0.0.28-ATCM-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -94,6 +94,12 @@
                 <groupId>uk.gov.justice.maven</groupId>
                 <artifactId>raml-maven-plugin</artifactId>
                 <dependencies>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.notification.notify</groupId>
+                        <artifactId>notificationnotify-command-api</artifactId>
+                        <version>${notification.notify.version}</version>
+                        <classifier>raml</classifier>
+                    </dependency>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.material</groupId>
                         <artifactId>material-command-api</artifactId>

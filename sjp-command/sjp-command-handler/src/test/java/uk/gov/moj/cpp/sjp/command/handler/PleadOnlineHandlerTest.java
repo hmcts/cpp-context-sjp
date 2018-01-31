@@ -9,10 +9,12 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
+import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 
 import java.math.BigDecimal;
@@ -27,20 +29,24 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class PleaOnlineHandlerTest extends CaseCommandHandlerTest {
+public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
 
     @InjectMocks
-    private PleaOnlineHandler pleaOnlineHandler;
+    private PleadOnlineHandler pleadOnlineHandler;
 
     @Spy
     private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
 
     @Test
-    public void shouldPleaOnline() throws EventStreamException {
+    public void shouldPleadOnline() throws EventStreamException {
         final UUID defendantId = UUID.randomUUID();
         final PleadOnline pleadOnline = new PleadOnline(
                 defendantId.toString(), new ArrayList<>(), "unavailability",
                 "French", "witnessDetails", "witnessDispute",
+                new PersonalDetails(UUID.randomUUID(), "firstName", "lastName",
+                        new Address("address"),
+                        new ContactDetails("email", "homeTelephone", "mobile"),
+                        null, "nationalInsuranceNumber"),
                 new FinancialMeans(
                     defendantId, new Income(IncomeFrequency.WEEKLY, BigDecimal.valueOf(2000.22)), new Benefits(), "employmentStatus"
                 ),
@@ -51,11 +57,11 @@ public class PleaOnlineHandlerTest extends CaseCommandHandlerTest {
         );
 
         when(converter.convert(jsonObject, PleadOnline.class)).thenReturn(pleadOnline);
-        when(caseAggregate.pleaOnline(CASE_ID, pleadOnline, clock.now())).thenReturn(events);
+        when(caseAggregate.pleadOnline(CASE_ID, pleadOnline, clock.now())).thenReturn(events);
 
-        pleaOnlineHandler.pleaOnline(jsonEnvelope);
+        pleadOnlineHandler.pleadOnline(jsonEnvelope);
 
         verify(converter).convert(jsonObject, PleadOnline.class);
-        verify(caseAggregate).pleaOnline(CASE_ID, pleadOnline, clock.now());
+        verify(caseAggregate).pleadOnline(CASE_ID, pleadOnline, clock.now());
     }
 }

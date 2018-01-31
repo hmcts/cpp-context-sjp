@@ -1,5 +1,9 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
+
+import java.time.LocalDate;
+
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
@@ -28,9 +32,23 @@ public class OnlinePleaPersonalDetails {
     @Column(name = "personal_details_email")
     private String email;
     @Column(name = "personal_details_date_of_birth")
-    private String dateOfBirth;
+    private LocalDate dateOfBirth;
     @Column(name = "personal_details_national_insurance_number")
     private String nationalInsuranceNumber;
+
+    public OnlinePleaPersonalDetails() {}
+
+    public OnlinePleaPersonalDetails(final DefendantDetailsUpdated defendantDetailsUpdated) {
+        this.firstName = defendantDetailsUpdated.getFirstName();
+        this.lastName = defendantDetailsUpdated.getLastName();
+        this.address = new Address(defendantDetailsUpdated.getAddress().getAddress1(), defendantDetailsUpdated.getAddress().getAddress2(), defendantDetailsUpdated.getAddress().getAddress3(),
+                defendantDetailsUpdated.getAddress().getAddress4(), defendantDetailsUpdated.getAddress().getPostcode());
+        this.homeTelephone = defendantDetailsUpdated.getContactDetails().getHome();
+        this.mobile = defendantDetailsUpdated.getContactDetails().getMobile();
+        this.email = defendantDetailsUpdated.getContactDetails().getEmail();
+        this.dateOfBirth = defendantDetailsUpdated.getDateOfBirth();
+        this.nationalInsuranceNumber = defendantDetailsUpdated.getNationalInsuranceNumber();
+    }
 
     public String getFirstName() {
         return firstName;
@@ -80,11 +98,11 @@ public class OnlinePleaPersonalDetails {
         this.email = email;
     }
 
-    public String getDateOfBirth() {
+    public LocalDate getDateOfBirth() {
         return dateOfBirth;
     }
 
-    public void setDateOfBirth(String dateOfBirth) {
+    public void setDateOfBirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 
@@ -95,5 +113,4 @@ public class OnlinePleaPersonalDetails {
     public void setNationalInsuranceNumber(String nationalInsuranceNumber) {
         this.nationalInsuranceNumber = nationalInsuranceNumber;
     }
-
 }

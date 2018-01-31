@@ -7,20 +7,16 @@ import static uk.gov.moj.cpp.sjp.domain.IncomeFrequency.FORTNIGHTLY;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
-import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.Outgoing;
-import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
-import uk.gov.moj.cpp.sjp.event.TrialRequested;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaOutgoingOption;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -168,50 +164,5 @@ public class OnlinePleaConverterTest {
                 income, benefits, OnlinePleaConverter.OnlinePleaEmploymentStatus.UNEMPLOYED.name(), outgoings, now);
 
         onlinePleaConverter.convertToOnlinePleaEntity(defendantDetail, financialMeansUpdated);
-    }
-
-    @Test
-    public void shouldConvertToOnlinePleaEntityForEmployer() {
-        final EmployerUpdated employerUpdated = EmployerUpdated.createEventForOnlinePlea(
-                defendantId,
-                new uk.gov.moj.cpp.sjp.domain.Employer(defendantId, "name", "employeeReference", "phone",
-                new Address("address1", "address2", "address3", "address4", "postCode")
-        ), now);
-
-        final OnlinePlea onlinePlea = onlinePleaConverter.convertToOnlinePleaEntity(defendantDetail, employerUpdated);
-
-        assertThat(onlinePlea.getCaseId(), equalTo(defendantDetail.getCaseDetail().getId()));
-        assertThat(onlinePlea.getEmployer().getName(), equalTo(employerUpdated.getName()));
-        assertThat(onlinePlea.getEmployer().getEmployeeReference(), equalTo(employerUpdated.getEmployeeReference()));
-        assertThat(onlinePlea.getEmployer().getPhone(), equalTo(employerUpdated.getPhone()));
-        assertThat(onlinePlea.getEmployer().getAddress().getAddress1(), equalTo(employerUpdated.getAddress().getAddress1()));
-        assertThat(onlinePlea.getSubmittedOn(), equalTo(employerUpdated.getUpdatedDate()));
-    }
-
-
-    @Test
-    public void shouldConvertToOnlinePleaEntityForTrial() {
-        final TrialRequested trialRequested = new TrialRequested(UUID.randomUUID(), "unavailability", "witnessDetails",
-                "witnessDispute", now);
-
-        final OnlinePlea onlinePlea = onlinePleaConverter.convertToOnlinePleaEntity(trialRequested);
-
-        assertThat(onlinePlea.getCaseId(), equalTo(trialRequested.getCaseId()));
-        assertThat(onlinePlea.getPleaDetails().getUnavailability(), equalTo(trialRequested.getUnavailability()));
-        assertThat(onlinePlea.getPleaDetails().getWitnessDetails(), equalTo(trialRequested.getWitnessDetails()));
-        assertThat(onlinePlea.getPleaDetails().getWitnessDispute(), equalTo(trialRequested.getWitnessDispute()));
-        assertThat(onlinePlea.getSubmittedOn(), equalTo(trialRequested.getUpdatedDate()));
-    }
-
-    @Test
-    public void shouldConvertToOnlinePleaEntityForInterpreter() {
-        final UUID caseId = UUID.randomUUID();
-        final String interpreterLanguage = "French";
-
-        final OnlinePlea onlinePlea = onlinePleaConverter.convertToOnlinePleaEntity(caseId, interpreterLanguage, now);
-
-        assertThat(onlinePlea.getCaseId(), equalTo(caseId));
-        assertThat(onlinePlea.getPleaDetails().getInterpreterLanguage(), equalTo(interpreterLanguage));
-        assertThat(onlinePlea.getSubmittedOn(), equalTo(now));
     }
 }

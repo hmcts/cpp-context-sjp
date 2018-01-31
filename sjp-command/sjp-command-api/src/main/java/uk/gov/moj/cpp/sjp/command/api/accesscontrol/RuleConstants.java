@@ -22,7 +22,7 @@ public final class RuleConstants {
         return singletonList(GROUP_TFL_USERS);
     }
 
-    public static List<String> getPleaOnlineActionGroups() {
+    public static List<String> getPleadOnlineActionGroups() {
         return Arrays.asList(GROUP_ONLINE_PLEA_SYSTEM_USERS);
     }
 

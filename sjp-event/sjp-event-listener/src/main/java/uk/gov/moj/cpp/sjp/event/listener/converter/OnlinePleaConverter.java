@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.listener.converter;
 
 import uk.gov.moj.cpp.sjp.domain.Outgoing;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
@@ -64,17 +65,4 @@ public class OnlinePleaConverter {
         }
         return new OnlinePlea(caseId, financialMeansUpdated, OnlinePleaEmploymentStatus.OTHER.name(), financialMeansUpdated.getEmploymentStatus(), outgoings);
     }
-
-    public OnlinePlea convertToOnlinePleaEntity(final DefendantDetail defendantDetail, final EmployerUpdated employerUpdated) {
-        return new OnlinePlea(defendantDetail.getCaseDetail().getId(), employerUpdated);
-    }
-
-    public OnlinePlea convertToOnlinePleaEntity(final TrialRequested trialRequested) {
-        return new OnlinePlea(trialRequested);
-    }
-
-    public OnlinePlea convertToOnlinePleaEntity(final UUID caseId, final String interpreterLanguage, ZonedDateTime localDateTime) {
-        return new OnlinePlea(caseId, interpreterLanguage, localDateTime);
-    }
-
 }

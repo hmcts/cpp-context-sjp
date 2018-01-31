@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.persistence.entity;
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
 import uk.gov.moj.cpp.sjp.domain.PleaType;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
@@ -83,6 +84,13 @@ public class OnlinePlea {
         this.caseId = caseId;
         this.pleaDetails = new PleaDetails(interpreterLanguage);
         this.submittedOn = updatedDate;
+    }
+
+    public OnlinePlea(final DefendantDetailsUpdated defendantDetailsUpdated) {
+        this.caseId = defendantDetailsUpdated.getCaseId();
+        this.defendantDetail = new DefendantDetail(defendantDetailsUpdated.getDefendantId());
+        this.personalDetails = new OnlinePleaPersonalDetails(defendantDetailsUpdated);
+        this.submittedOn = defendantDetailsUpdated.getUpdatedDate();
     }
 
     public UUID getCaseId() {

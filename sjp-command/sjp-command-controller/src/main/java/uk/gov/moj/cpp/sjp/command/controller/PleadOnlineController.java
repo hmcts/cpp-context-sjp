@@ -13,7 +13,7 @@ import java.util.Optional;
 import javax.inject.Inject;
 
 @ServiceComponent(Component.COMMAND_CONTROLLER)
-public class PleaOnlineController {
+public class PleadOnlineController {
 
     @Inject
     private Sender sender;
@@ -25,8 +25,8 @@ public class PleaOnlineController {
     private Enveloper enveloper;
 
 
-    @Handles("sjp.command.plea-online")
-    public void onlinePlea(final JsonEnvelope envelope) {
+    @Handles("sjp.command.plead-online")
+    public void pleadOnline(final JsonEnvelope envelope) {
         final Optional<JsonEnvelope> rejectCommandEnvelope = caseUpdateHelper.checkForCaseUpdateRejectReasons(envelope);
         sender.send(rejectCommandEnvelope.orElse(envelope));
     }

@@ -25,10 +25,10 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class PleaOnlineApiTest {
+public class PleadOnlineApiTest {
 
-    private static final String PLEA_ONLINE_COMMAND_NAME = "sjp.plea-online";
-    private static final String CONTROLLER_PLEA_ONLINE_COMMAND_NAME = "sjp.command.plea-online";
+    private static final String PLEAD_ONLINE_COMMAND_NAME = "sjp.plead-online";
+    private static final String CONTROLLER_PLEAD_ONLINE_COMMAND_NAME = "sjp.command.plead-online";
 
     @Mock
     private Sender sender;
@@ -45,18 +45,18 @@ public class PleaOnlineApiTest {
 
 
     @InjectMocks
-    private PleaOnlineApi pleaOnlineApi;
+    private PleadOnlineApi pleadOnlineApi;
 
     @Test
-    public void shouldPleaOnline() {
-        final JsonEnvelope command = envelope().with(metadataWithRandomUUID(PLEA_ONLINE_COMMAND_NAME)).build();
+    public void shouldPleadOnline() {
+        final JsonEnvelope command = envelope().with(metadataWithRandomUUID(PLEAD_ONLINE_COMMAND_NAME)).build();
 
-        pleaOnlineApi.pleaOnline(command);
+        pleadOnlineApi.pleadOnline(command);
 
         verify(sender, times(1)).send(envelopeCaptor.capture());
 
         final JsonEnvelope newCommand = envelopeCaptor.getValue();
-        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName(CONTROLLER_PLEA_ONLINE_COMMAND_NAME));
+        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName(CONTROLLER_PLEAD_ONLINE_COMMAND_NAME));
         assertThat(newCommand.payloadAsJsonObject(), equalTo(command.payloadAsJsonObject()));
     }
 }

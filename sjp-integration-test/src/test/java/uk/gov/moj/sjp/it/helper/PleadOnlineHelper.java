@@ -7,7 +7,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -19,24 +18,24 @@ import org.hamcrest.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PleaOnlineHelper extends AbstractTestHelper {
+public class PleadOnlineHelper extends AbstractTestHelper {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PleaOnlineHelper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PleadOnlineHelper.class);
 
     private String caseId;
     private String defendantId;
     private final String writeUrl;
     private final MultivaluedMap<String, Object> headers;
 
-    public PleaOnlineHelper(CaseSjpHelper caseSjpHelper) {
+    public PleadOnlineHelper(CaseSjpHelper caseSjpHelper) {
         headers = new MultivaluedHashMap<>();
         headers.add(HeaderConstants.USER_ID, USER_ID);
         this.caseId = caseSjpHelper.getCaseId();
         this.defendantId = caseSjpHelper.getSingleDefendantId();
-        writeUrl = String.format("/cases/%s/defendants/%s/plea-online", caseId, defendantId);
+        writeUrl = String.format("/cases/%s/defendants/%s/plead-online", caseId, defendantId);
     }
 
-    private void pleaOnline(final String payload,
+    private void pleadOnline(final String payload,
                             final String contentType,
                             final Response.StatusType expectedStatus) {
         LOGGER.info("Request payload: {}", new JsonPath(payload).prettify());
@@ -46,12 +45,12 @@ public class PleaOnlineHelper extends AbstractTestHelper {
         assertThat(response.getStatus(), equalTo(expectedStatus.getStatusCode()));
     }
 
-    public void pleaOnline(final String payload) {
-        pleaOnline(payload, Response.Status.ACCEPTED);
+    public void pleadOnline(final String payload) {
+        pleadOnline(payload, Response.Status.ACCEPTED);
     }
 
-    public void pleaOnline(final String payload, final Response.StatusType expectedStatus) {
-        pleaOnline(payload, "application/vnd.sjp.plea-online+json", expectedStatus);
+    public void pleadOnline(final String payload, final Response.StatusType expectedStatus) {
+        pleadOnline(payload, "application/vnd.sjp.plead-online+json", expectedStatus);
     }
 
     public Response getOnlinePlea(final String caseId) {

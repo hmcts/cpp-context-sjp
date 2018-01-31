@@ -45,6 +45,7 @@ public class FinancialMeansListener {
         final FinancialMeans financialMeans = financialMeansConverter.convertToFinancialMeansEntity(financialMeansUpdated);
         financialMeansRepository.save(financialMeans);
 
+        //this listener updates two tables for the case where the event is fired via plead-online command
         if (financialMeansUpdated.isUpdatedByOnlinePlea()) {
             final DefendantDetail defendantDetail = defendantRepository.findBy(financialMeansUpdated.getDefendantId());
             final OnlinePlea onlinePlea = onlinePleaConverter.convertToOnlinePleaEntity(defendantDetail, financialMeansUpdated);

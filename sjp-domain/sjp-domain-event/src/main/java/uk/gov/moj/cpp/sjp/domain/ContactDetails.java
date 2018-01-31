@@ -2,13 +2,15 @@ package uk.gov.moj.cpp.sjp.domain;
 
 import java.io.Serializable;
 
-public class ContactNumber implements Serializable {
+public class ContactDetails implements Serializable {
     private final String home;
     private final String mobile;
+    private final String email;
 
-    public ContactNumber(final String home, final String mobile) {
+    public ContactDetails(final String home, final String mobile, final String email) {
         this.home = home;
         this.mobile = mobile;
+        this.email = email;
     }
 
     public String getHome() {
@@ -17,5 +19,9 @@ public class ContactNumber implements Serializable {
 
     public String getMobile() {
         return mobile;
+    }
+
+    public String getEmail() {
+        return email;
     }
 }

@@ -14,17 +14,17 @@ import javax.inject.Inject;
 import javax.json.JsonObject;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
-public class PleaOnlineHandler extends CaseCommandHandler {
+public class PleadOnlineHandler extends CaseCommandHandler {
 
     @Inject
     private Clock clock;
 
-    @Handles("sjp.command.plea-online")
-    public void pleaOnline(final JsonEnvelope command) throws EventStreamException {
+    @Handles("sjp.command.plead-online")
+    public void pleadOnline(final JsonEnvelope command) throws EventStreamException {
         final JsonObject payload = command.payloadAsJsonObject();
         final UUID caseId = getCaseId(payload);
         final PleadOnline pleadOnline = converter.convert(payload, PleadOnline.class);
 
-        applyToCaseAggregate(command, aCase -> aCase.pleaOnline(caseId, pleadOnline, clock.now()));
+        applyToCaseAggregate(command, aCase -> aCase.pleadOnline(caseId, pleadOnline, clock.now()));
     }
 }

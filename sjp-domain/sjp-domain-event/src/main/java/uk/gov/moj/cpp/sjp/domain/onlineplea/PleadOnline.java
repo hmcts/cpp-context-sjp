@@ -18,6 +18,7 @@ public class PleadOnline {
     private String interpreterLanguage;
     private String witnessDetails;
     private String witnessDispute;
+    private PersonalDetails personalDetails;
     private FinancialMeans financialMeans;
     private Employer employer;
     private List<Outgoing> outgoings;
@@ -29,6 +30,7 @@ public class PleadOnline {
                        @JsonProperty(value = "interpreterLanguage") final String interpreterLanguage,
                        @JsonProperty(value = "witnessDetails") final String witnessDetails,
                        @JsonProperty(value = "witnessDispute") final String witnessDispute,
+                       @JsonProperty(value = "personalDetails") final PersonalDetails personalDetails,
                        @JsonProperty(value = "financialMeans") final FinancialMeans financialMeans,
                        @JsonProperty(value = "employer") final Employer employer,
                        @JsonProperty(value = "outgoings") final List<Outgoing> outgoings) {
@@ -38,6 +40,7 @@ public class PleadOnline {
         this.interpreterLanguage = interpreterLanguage;
         this.witnessDetails = witnessDetails;
         this.witnessDispute = witnessDispute;
+        this.personalDetails = personalDetails;
         this.financialMeans = financialMeans;
         this.employer = employer;
         this.outgoings = outgoings;
@@ -65,6 +68,10 @@ public class PleadOnline {
 
     public String getWitnessDispute() {
         return witnessDispute;
+    }
+
+    public PersonalDetails getPersonalDetails() {
+        return personalDetails;
     }
 
     public FinancialMeans getFinancialMeans() {

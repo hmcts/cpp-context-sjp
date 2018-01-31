@@ -8,7 +8,6 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
-import uk.gov.moj.cpp.sjp.event.listener.converter.OnlinePleaConverter;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.InterpreterDetail;
@@ -29,9 +28,6 @@ public class InterpreterUpdatedListener {
     private CaseRepository caseRepository;
 
     @Inject
-    private OnlinePleaConverter onlinePleaConverter;
-
-    @Inject
     private OnlinePleaRepository.InterpreterLanguageOnlinePleaRepository onlinePleaRepository;
 
     @Handles("sjp.events.interpreter-for-defendant-updated")
@@ -48,8 +44,9 @@ public class InterpreterUpdatedListener {
             defendant.setInterpreter(new InterpreterDetail(event.getInterpreter().getLanguage()));
         }
 
+        //this listener updates two tables for the case where the event is fired via plead-online command
         if (event.isUpdatedByOnlinePlea()) {
-            final OnlinePlea onlinePlea = onlinePleaConverter.convertToOnlinePleaEntity(event.getCaseId(),
+            final OnlinePlea onlinePlea = new OnlinePlea(event.getCaseId(),
                     event.getInterpreter() != null ? event.getInterpreter().getLanguage(): null, event.getUpdatedDate());
             onlinePleaRepository.saveOnlinePlea(onlinePlea);
         }

@@ -1,9 +1,10 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,7 +18,6 @@ import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
-import uk.gov.moj.cpp.sjp.event.listener.converter.OnlinePleaConverter;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.InterpreterDetail;
@@ -25,7 +25,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -35,6 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -61,13 +61,13 @@ public class InterpreterUpdatedListenerTest {
     private OnlinePleaRepository.InterpreterLanguageOnlinePleaRepository onlinePleaRepository;
 
     @Mock
-    private OnlinePleaConverter onlinePleaConverter;
-
-    @Mock
     private OnlinePlea onlinePlea;
 
     @InjectMocks
     private InterpreterUpdatedListener listener;
+
+    @Captor
+    private ArgumentCaptor<OnlinePlea> onlinePleaCaptor;
 
     private Clock clock = new StoppedClock(ZonedDateTime.now());
 
@@ -97,8 +97,6 @@ public class InterpreterUpdatedListenerTest {
 
         when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), InterpreterUpdatedForDefendant.class))
                 .thenReturn(interpreterUpdatedForDefendant);
-        when(onlinePleaConverter.convertToOnlinePleaEntity(caseId, language, now)).thenReturn(onlinePlea);
-
         return envelope;
     }
 
@@ -110,13 +108,11 @@ public class InterpreterUpdatedListenerTest {
 
         listener.interpreterUpdated(envelope);
 
-        final ArgumentCaptor<InterpreterDetail> captor =
-                        ArgumentCaptor.forClass(InterpreterDetail.class);
+        final ArgumentCaptor<InterpreterDetail> captor = ArgumentCaptor.forClass(InterpreterDetail.class);
 
         verify(defendant).setInterpreter(captor.capture());
         verify(jsonObjectToObjectConverter).convert(envelope.payloadAsJsonObject(), InterpreterUpdatedForDefendant.class);
-        verify(onlinePleaConverter, never()).convertToOnlinePleaEntity(caseId, language, now);
-        verify(onlinePleaRepository, never()).saveOnlinePlea(eq(onlinePlea));
+        verify(onlinePleaRepository, never()).saveOnlinePlea(anyObject());
 
         assertThat(captor.getValue().getLanguage(), is(language));
         assertThat(captor.getValue().getNeeded(), is(Boolean.TRUE));
@@ -130,16 +126,17 @@ public class InterpreterUpdatedListenerTest {
 
         listener.interpreterUpdated(envelope);
 
-        final ArgumentCaptor<InterpreterDetail> captor =
-                ArgumentCaptor.forClass(InterpreterDetail.class);
+        final ArgumentCaptor<InterpreterDetail> captor = ArgumentCaptor.forClass(InterpreterDetail.class);
 
         verify(defendant).setInterpreter(captor.capture());
         verify(jsonObjectToObjectConverter).convert(envelope.payloadAsJsonObject(), InterpreterUpdatedForDefendant.class);
-        verify(onlinePleaConverter).convertToOnlinePleaEntity(eq(caseId), eq(language), eq(now));
-        verify(onlinePleaRepository).saveOnlinePlea(onlinePlea);
+        verify(onlinePleaRepository).saveOnlinePlea(onlinePleaCaptor.capture());
 
         assertThat(captor.getValue().getLanguage(), is(language));
         assertThat(captor.getValue().getNeeded(), is(Boolean.TRUE));
+        assertThat(onlinePleaCaptor.getValue().getCaseId(), equalTo(caseId));
+        assertThat(onlinePleaCaptor.getValue().getPleaDetails().getInterpreterLanguage(), equalTo(language));
+        assertThat(onlinePleaCaptor.getValue().getSubmittedOn(), equalTo(now));
     }
 
     @Test

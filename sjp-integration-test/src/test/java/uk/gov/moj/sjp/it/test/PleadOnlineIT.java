@@ -20,14 +20,18 @@ import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.moj.cpp.sjp.domain.PleaType;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
+import uk.gov.moj.cpp.sjp.persistence.entity.Address;
+import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
+import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
 import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 import uk.gov.moj.sjp.it.helper.CaseUpdateRejectedHelper;
 import uk.gov.moj.sjp.it.helper.EmployerHelper;
 import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
-import uk.gov.moj.sjp.it.helper.PleaOnlineHelper;
+import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -40,15 +44,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class PleaOnlineIT extends BaseIntegrationTest {
+public class PleadOnlineIT extends BaseIntegrationTest {
 
     private CaseSjpHelper caseSjpHelper;
     private EmployerHelper employerHelper;
     private FinancialMeansHelper financialMeansHelper;
 
-    private static final String TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD = "raml/json/sjp.command.plea-online__not-guilty.json";
-    private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD = "raml/json/sjp.command.plea-online__guilty.json";
-    private static final String TEMPLATE_PLEA_GUILTY_REQUEST_HEARING_PAYLOAD = "raml/json/sjp.command.plea-online__guilty_request_hearing.json";
+    private static final String TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__not-guilty.json";
+    private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__guilty.json";
+    private static final String TEMPLATE_PLEA_GUILTY_REQUEST_HEARING_PAYLOAD = "raml/json/sjp.command.plead-online__guilty_request_hearing.json";
 
     @Before
     public void setUp() {
@@ -68,13 +72,47 @@ public class PleaOnlineIT extends BaseIntegrationTest {
         financialMeansHelper.close();
     }
 
-    private void pleaOnlineAndConfirmSuccess(final PleaType pleaType, final PleaOnlineHelper pleaOnlineHelper,
+    private PersonalDetails generateExpectedPersonDetails(final JSONObject payload, final CaseSearchResultHelper caseSearchResultHelper) {
+        final JSONObject person = payload.getJSONObject("personalDetails");
+        final String firstName =  person.getString("firstName");
+        final String lastName = person.getString("lastName");
+        final String nationalInsuranceNumber = person.getString("nationalInsuranceNumber");
+        final String dateOfBirth = person.getString("dateOfBirth");
+
+        final JSONObject contactDetails = person.getJSONObject("contactDetails");
+        final String homeNumber = contactDetails.getString("home");
+        final String mobileNumber = contactDetails.getString("mobile");
+        final String email = contactDetails.getString("email");
+
+        final JSONObject address = person.getJSONObject("address");
+        final String address1 = address.getString("address1");
+        final String address2 = address.getString("address2");
+        final String address3 = address.getString("address3");
+        final String address4 = address.getString("address4");
+        final String postcode = address.getString("postcode");
+
+        //fields that we do not override
+        final String title = caseSearchResultHelper.getPersonalDetails().getTitle();
+        final String gender = caseSearchResultHelper.getPersonalDetails().getGender();
+
+        return new PersonalDetails(title, firstName, lastName, LocalDate.parse(dateOfBirth), gender, nationalInsuranceNumber,
+                new Address(address1, address2, address3, address4, postcode),
+                new ContactDetails(email, homeNumber, mobileNumber)
+        );
+    }
+
+    private void pleadOnlineAndConfirmSuccess(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper,
                                              final UpdatePleaHelper updatePleaHelper, final CaseSearchResultHelper caseSearchResultHelper) {
         final String pleaMethod = "ONLINE";
         final String defendantId = caseSjpHelper.getSingleDefendantId();
 
+        //checks person-info before plead-online
+        caseSearchResultHelper.verifyPersonInfo();
+        caseSearchResultHelper.verifyPersonInfo(caseSearchResultHelper.getPersonalDetails(), false);
+
+        //runs plea-online
         final JSONObject pleaPayload = getOnlinePleaPayload(pleaType);
-        pleaOnlineHelper.pleaOnline(pleaPayload.toString());
+        pleadOnlineHelper.pleadOnline(pleaPayload.toString());
 
         //verify plea
         updatePleaHelper.verifyInPublicTopic(pleaType.name(), null);
@@ -89,26 +127,31 @@ public class PleaOnlineIT extends BaseIntegrationTest {
         financialMeansHelper.getFinancialMeans(defendantId, getFinancialMeansUpdatedPayloadContentMatcher(pleaPayload, defendantId));
         financialMeansHelper.getEventFromPublicTopic(getFinancialMeansUpdatedPayloadContentMatcher(pleaPayload, defendantId));
 
+        //verifies person-info has changed
+        final PersonalDetails expectedPersonalDetails = generateExpectedPersonDetails(pleaPayload, caseSearchResultHelper);
+        caseSearchResultHelper.verifyPersonInfo(expectedPersonalDetails, true);
+        caseSearchResultHelper.verifyPersonNotFound(caseSjpHelper.getCaseUrn(), caseSearchResultHelper.getPersonalDetails().getLastName());
+
         //verify online-plea
         final Matcher expectedResult = getSavedOnlinePleaPayloadContentMatcher(pleaType, pleaPayload, caseSjpHelper.getCaseId(), defendantId);
-        pleaOnlineHelper.getOnlinePlea(caseSjpHelper.getCaseId(), expectedResult);
+        pleadOnlineHelper.getOnlinePlea(caseSjpHelper.getCaseId(), expectedResult);
     }
 
     @Test
     public void shouldPleadNotGuiltyOnlineThenFailWithSecondPleadAttemptAsNotAllowedTwoPleasAgainstSameOffence() {
         stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
-        try (final PleaOnlineHelper pleaOnlineHelper = new PleaOnlineHelper(caseSjpHelper);
+        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
              final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
              final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
                      STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
 
             //1) First plea should be successful
-            pleaOnlineAndConfirmSuccess(PleaType.NOT_GUILTY, pleaOnlineHelper, updatePleaHelper, caseSearchResultHelper);
+            pleadOnlineAndConfirmSuccess(PleaType.NOT_GUILTY, pleadOnlineHelper, updatePleaHelper, caseSearchResultHelper);
 
             //2) Second plea should fail as cannot plea twice
             final JSONObject pleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
-            pleaOnlineHelper.pleaOnline(pleaPayload.toString());
+            pleadOnlineHelper.pleadOnline(pleaPayload.toString());
             caseUpdateRejectedHelper.verifyCaseUpdateRejectedPrivateInActiveMQ(CaseUpdateRejected.RejectReason.PLEA_ALREADY_SUBMITTED.name());
         }
     }
@@ -116,40 +159,37 @@ public class PleaOnlineIT extends BaseIntegrationTest {
     @Test
     public void shouldPleadGuiltyOnline() {
         stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
-        try (final PleaOnlineHelper pleaOnlineHelper = new PleaOnlineHelper(caseSjpHelper);
+        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
              final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
              final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
                      STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
-            caseSearchResultHelper.verifyPersonInfoByUrn();
 
-            pleaOnlineAndConfirmSuccess(PleaType.GUILTY, pleaOnlineHelper, updatePleaHelper, caseSearchResultHelper);
+            pleadOnlineAndConfirmSuccess(PleaType.GUILTY, pleadOnlineHelper, updatePleaHelper, caseSearchResultHelper);
         }
     }
 
     @Test
     public void shouldPleadGuiltyRequestHearingOnline() {
         stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
-        try (final PleaOnlineHelper pleaOnlineHelper = new PleaOnlineHelper(caseSjpHelper);
+        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
              final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
              final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
                      STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
-            caseSearchResultHelper.verifyPersonInfoByUrn();
-
-            pleaOnlineAndConfirmSuccess(PleaType.GUILTY_REQUEST_HEARING, pleaOnlineHelper, updatePleaHelper, caseSearchResultHelper);
+            pleadOnlineAndConfirmSuccess(PleaType.GUILTY_REQUEST_HEARING, pleadOnlineHelper, updatePleaHelper, caseSearchResultHelper);
         }
     }
 
     @Test
-    public void shouldRejectPleaOnlineWhenCaseAssigned() {
+    public void shouldRejectPleadOnlineWhenCaseAssigned() {
         stubGetAssignmentsByDomainObjectId(caseSjpHelper.getCaseId(), randomUUID());
-        try (final PleaOnlineHelper pleaOnlineHelper = new PleaOnlineHelper(caseSjpHelper);
+        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
                      STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
 
             final JSONObject onlinePleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
-            pleaOnlineHelper.pleaOnline(onlinePleaPayload.toString());
+            pleadOnlineHelper.pleadOnline(onlinePleaPayload.toString());
 
             caseUpdateRejectedHelper.verifyCaseUpdateRejectedPrivateInActiveMQ(CaseUpdateRejected.RejectReason.CASE_ASSIGNED.name());
             caseUpdateRejectedHelper.verifyCaseUpdateRejectedPublicInActiveMQ(CaseUpdateRejected.RejectReason.CASE_ASSIGNED.name());
@@ -160,27 +200,27 @@ public class PleaOnlineIT extends BaseIntegrationTest {
      * Do twice to check serialization works correctly
      */
     @Test
-    public void shouldRejectPleaOnlineWhenCaseCompletedTwice() {
+    public void shouldRejectPleadOnlineWhenCaseCompletedTwice() {
         stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
         stubGetCaseDecisionsWithDecision(caseSjpHelper.getCaseId());
 
-        try (final PleaOnlineHelper pleaOnlineHelper = new PleaOnlineHelper(caseSjpHelper);
+        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
                      STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
 
             final JSONObject onlinePleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
-            pleaOnlineHelper.pleaOnline(onlinePleaPayload.toString());
+            pleadOnlineHelper.pleadOnline(onlinePleaPayload.toString());
 
             caseUpdateRejectedHelper.verifyCaseUpdateRejectedPrivateInActiveMQ(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name());
             caseUpdateRejectedHelper.verifyCaseUpdateRejectedPublicInActiveMQ(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name());
         }
 
-        try (final PleaOnlineHelper pleaOnlineHelper = new PleaOnlineHelper(caseSjpHelper);
+        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
                      STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
 
             final JSONObject onlinePleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
-            pleaOnlineHelper.pleaOnline(onlinePleaPayload.toString());
+            pleadOnlineHelper.pleadOnline(onlinePleaPayload.toString());
 
             caseUpdateRejectedHelper.verifyCaseUpdateRejectedPrivateInActiveMQ(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name());
             caseUpdateRejectedHelper.verifyCaseUpdateRejectedPublicInActiveMQ(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name());
@@ -262,6 +302,9 @@ public class PleaOnlineIT extends BaseIntegrationTest {
     }
 
     private List<Matcher> getCommonFieldMatchers(final JSONObject onlinePleaPayload, final String caseId, final String defendantId) {
+        final JSONObject person = onlinePleaPayload.getJSONObject("personalDetails");
+        final JSONObject personAddress = person.getJSONObject("address");
+        final JSONObject personContactDetails = person.getJSONObject("contactDetails");
         final JSONObject financialMeans = onlinePleaPayload.getJSONObject("financialMeans");
         final JSONObject employer = onlinePleaPayload.getJSONObject("employer");
         final JSONObject employerAddress = employer.getJSONObject("address");
@@ -301,7 +344,21 @@ public class PleaOnlineIT extends BaseIntegrationTest {
                 withJsonPath("$.outgoings.childMaintenanceAmount", equalTo(childMaintenanceOutgoing.getDouble("amount"))),
                 withJsonPath("$.outgoings.otherDescription", equalTo(otherOutgoing.getString("description"))),
                 withJsonPath("$.outgoings.otherAmount", equalTo(otherOutgoing.getDouble("amount"))),
-                withJsonPath("$.outgoings.monthlyAmount", equalTo(1772.3))
+                withJsonPath("$.outgoings.monthlyAmount", equalTo(1772.3)),
+
+                //person
+                withJsonPath("$.personalDetails.firstName", equalTo(person.getString("firstName"))),
+                withJsonPath("$.personalDetails.lastName", equalTo(person.getString("lastName"))),
+                withJsonPath("$.personalDetails.homeTelephone", equalTo(personContactDetails.getString("home"))),
+                withJsonPath("$.personalDetails.mobile", equalTo(personContactDetails.getString("mobile"))),
+                withJsonPath("$.personalDetails.email", equalTo(personContactDetails.getString("email"))),
+                withJsonPath("$.personalDetails.dateOfBirth", equalTo(person.getString("dateOfBirth"))),
+                withJsonPath("$.personalDetails.nationalInsuranceNumber", equalTo(person.getString("nationalInsuranceNumber"))),
+                withJsonPath("$.personalDetails.address.address1", equalTo(personAddress.getString("address1"))),
+                withJsonPath("$.personalDetails.address.address2", equalTo(personAddress.getString("address2"))),
+                withJsonPath("$.personalDetails.address.address3", equalTo(personAddress.getString("address3"))),
+                withJsonPath("$.personalDetails.address.address4", equalTo(personAddress.getString("address4"))),
+                withJsonPath("$.personalDetails.address.postcode", equalTo(personAddress.getString("postcode")))
         );
     }
 

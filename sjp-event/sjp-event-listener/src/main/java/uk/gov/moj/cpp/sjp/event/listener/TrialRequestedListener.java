@@ -22,13 +22,10 @@ public class TrialRequestedListener {
     @Inject
     private OnlinePleaRepository.TrialOnlinePleaRepository onlinePleaRepository;
 
-    @Inject
-    private OnlinePleaConverter onlinePleaConverter;
-
     @Handles("sjp.events.trial-requested")
     public void updateTrial(final JsonEnvelope event) {
         final TrialRequested trialRequested = jsonObjectConverter.convert(event.payloadAsJsonObject(), TrialRequested.class);
-        final OnlinePlea onlinePlea = onlinePleaConverter.convertToOnlinePleaEntity(trialRequested);
+        final OnlinePlea onlinePlea = new OnlinePlea(trialRequested);
         onlinePleaRepository.saveOnlinePlea(onlinePlea);
     }
 }

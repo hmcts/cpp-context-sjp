@@ -53,7 +53,7 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
         final Address address =  createAddressFrom(payload);
         final LocalDate birthDate = LocalDate.parse(dateOfBirth);
 
-        final EventStream eventStream = eventSource.getStreamById(defendantId);
+        final EventStream eventStream = eventSource.getStreamById(caseId);
 
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
 

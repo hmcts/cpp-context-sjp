@@ -2,9 +2,10 @@ package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.Address;
-import uk.gov.moj.cpp.sjp.domain.ContactNumber;
+import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -23,10 +24,11 @@ public class DefendantDetailsUpdated {
     private final String lastName;
     private final LocalDate dateOfBirth;
     private final String gender;
-    private final String email;
     private final String nationalInsuranceNumber;
     private final Address address;
-    private final ContactNumber contactNumber;
+    private final ContactDetails contactDetails;
+    private final boolean updateByOnlinePlea;
+    private final ZonedDateTime updatedDate;
 
     @SuppressWarnings("squid:S00107") //Created builder
     @JsonCreator
@@ -34,8 +36,10 @@ public class DefendantDetailsUpdated {
                                     @JsonProperty("title") String title,
                                     @JsonProperty("firstName") String firstName, @JsonProperty("lastName") String lastName,
                                     @JsonProperty("dateOfBirth") LocalDate dateOfBirth, @JsonProperty("gender") String gender,
-                                    @JsonProperty("email") String email, @JsonProperty("nationalInsuranceNumber") String nationalInsuranceNumber,
-                                    @JsonProperty("contactNumber") ContactNumber contactNumber, @JsonProperty("address") Address address) {
+                                    @JsonProperty("nationalInsuranceNumber") String nationalInsuranceNumber,
+                                    @JsonProperty("contactDetails") ContactDetails contactDetails, @JsonProperty("address") Address address,
+                                    @JsonProperty("updateByOnlinePlea") boolean updateByOnlinePlea,
+                                    @JsonProperty("updatedDate") ZonedDateTime updatedDate) {
         this.caseId = caseId;
         this.defendantId = defendantId;
         this.title = title;
@@ -43,10 +47,11 @@ public class DefendantDetailsUpdated {
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
-        this.email = email;
         this.nationalInsuranceNumber = nationalInsuranceNumber;
-        this.contactNumber = contactNumber;
+        this.contactDetails = contactDetails;
         this.address = address;
+        this.updateByOnlinePlea = updateByOnlinePlea;
+        this.updatedDate = updatedDate;
     }
 
     public static class DefendantDetailsUpdatedBuilder {
@@ -57,10 +62,11 @@ public class DefendantDetailsUpdated {
         private String lastName;
         private LocalDate dateOfBirth;
         private String gender;
-        private String email;
         private String nationalInsuranceNumber;
         private Address address;
-        private ContactNumber contactNumber;
+        private ContactDetails contactDetails;
+        private boolean updateByOnlinePlea;
+        private ZonedDateTime updatedDate;
 
         public static DefendantDetailsUpdatedBuilder defendantDetailsUpdated() {
             return new DefendantDetailsUpdatedBuilder();
@@ -101,11 +107,6 @@ public class DefendantDetailsUpdated {
             return this;
         }
 
-        public DefendantDetailsUpdatedBuilder withEmail(final String email) {
-            this.email = email;
-            return this;
-        }
-
         public DefendantDetailsUpdatedBuilder withNationalInsuranceNumber(final String nationalInsuranceNumber) {
             this.nationalInsuranceNumber = nationalInsuranceNumber;
             return this;
@@ -116,15 +117,25 @@ public class DefendantDetailsUpdated {
             return this;
         }
 
-        public DefendantDetailsUpdatedBuilder withContactNumber(final ContactNumber contactNumber) {
-            this.contactNumber = contactNumber;
+        public DefendantDetailsUpdatedBuilder withContactDetails(final ContactDetails contactDetails) {
+            this.contactDetails = contactDetails;
+            return this;
+        }
+
+        public DefendantDetailsUpdatedBuilder withUpdateByOnlinePlea(final boolean updateByOnlinePlea) {
+            this.updateByOnlinePlea = updateByOnlinePlea;
+            return this;
+        }
+
+        public DefendantDetailsUpdatedBuilder withUpdatedDate(final ZonedDateTime updatedDate) {
+            this.updatedDate = updatedDate;
             return this;
         }
 
         public DefendantDetailsUpdated build() {
             return new DefendantDetailsUpdated(caseId, defendantId, title, firstName,
-                    lastName, dateOfBirth, gender, email, nationalInsuranceNumber, contactNumber,
-                    address);
+                    lastName, dateOfBirth, gender, nationalInsuranceNumber, contactDetails,
+                    address, updateByOnlinePlea, updatedDate);
         }
     }
 
@@ -156,10 +167,6 @@ public class DefendantDetailsUpdated {
         return gender;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
     public String getNationalInsuranceNumber() {
         return nationalInsuranceNumber;
     }
@@ -168,7 +175,15 @@ public class DefendantDetailsUpdated {
         return address;
     }
 
-    public ContactNumber getContactNumber() {
-        return contactNumber;
+    public ContactDetails getContactDetails() {
+        return contactDetails;
+    }
+
+    public boolean isUpdateByOnlinePlea() {
+        return updateByOnlinePlea;
+    }
+
+    public ZonedDateTime getUpdatedDate() {
+        return updatedDate;
     }
 }

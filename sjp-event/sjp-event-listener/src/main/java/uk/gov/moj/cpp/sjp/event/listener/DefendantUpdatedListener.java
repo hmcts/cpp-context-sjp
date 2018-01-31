@@ -15,9 +15,11 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
 import java.util.List;
 
@@ -29,6 +31,9 @@ public class DefendantUpdatedListener {
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Inject
+    private OnlinePleaRepository.PersonDetailsOnlinePleaRepository onlinePleaRepository;
 
     @Inject
     private CaseRepository caseRepository;
@@ -72,14 +77,26 @@ public class DefendantUpdatedListener {
             repository.save(caseSearchResult);
         });
 
+        //this listener updates two tables for the case where the event is fired via plead-online command
+        if (defendantDetailsUpdated.isUpdateByOnlinePlea()) {
+            final OnlinePlea onlinePlea = new OnlinePlea(defendantDetailsUpdated);
+            onlinePleaRepository.saveOnlinePlea(onlinePlea);
+        }
     }
 
-    private void updateDefendant(PersonalDetails entity, DefendantDetailsUpdated newData) {
+    private void updateDefendant(final PersonalDetails entity, final DefendantDetailsUpdated newData) {
         entity.setFirstName(newData.getFirstName());
         entity.setLastName(newData.getLastName());
-        entity.setGender(newData.getGender());
-        entity.setTitle(newData.getTitle());
-        entity.setNationalInsuranceNumber(newData.getNationalInsuranceNumber());
+        if (newData.isUpdateByOnlinePlea()) {
+            if (newData.getNationalInsuranceNumber() != null) {
+                entity.setNationalInsuranceNumber(newData.getNationalInsuranceNumber());
+            }
+        }
+        else {
+            entity.setGender(newData.getGender());
+            entity.setTitle(newData.getTitle());
+            entity.setNationalInsuranceNumber(newData.getNationalInsuranceNumber());
+        }
         entity.setDateOfBirth(newData.getDateOfBirth());
 
         entity.setAddress(new Address(
@@ -91,9 +108,9 @@ public class DefendantUpdatedListener {
         ));
 
         entity.setContactDetails(new ContactDetails(
-                newData.getEmail(),
-                newData.getContactNumber().getHome(),
-                newData.getContactNumber().getMobile()
+                newData.getContactDetails().getEmail(),
+                newData.getContactDetails().getHome(),
+                newData.getContactDetails().getMobile()
         ));
     }
 }

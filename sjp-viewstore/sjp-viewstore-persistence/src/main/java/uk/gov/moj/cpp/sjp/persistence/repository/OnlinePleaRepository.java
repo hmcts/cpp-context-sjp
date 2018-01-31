@@ -26,13 +26,24 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_OTHER_AMOUNT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_OTHER_DESCRIPTION;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_TRAVEL_EXPENSES_AMOUNT;
-import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.UNAVAILABLITTY;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_ADDRESS_1;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_ADDRESS_2;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_ADDRESS_3;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_ADDRESS_4;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_DOB;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_EMAIL;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_FIRST_NAME;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_LAST_NAME;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_NI_NUMBER;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_POSTCODE;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_TELEPHONE_HOME;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_TELEPHONE_MOBILE;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.UNAVAILABILITY;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.WITNESS_DETAILS;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.WITNESS_DISPUTE;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
@@ -110,8 +121,21 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
 
         WITNESS_DISPUTE(o -> o.getPleaDetails().getWitnessDispute(), "pleaDetails", "witnessDispute"),
         WITNESS_DETAILS(o -> o.getPleaDetails().getWitnessDetails(), "pleaDetails", "witnessDetails"),
-        UNAVAILABLITTY(o -> o.getPleaDetails().getUnavailability(), "pleaDetails", "unavailability"),
-        INTERPRETER_LANGUAGE(o -> o.getPleaDetails().getInterpreterLanguage(), "pleaDetails", "interpreterLanguage");
+        UNAVAILABILITY(o -> o.getPleaDetails().getUnavailability(), "pleaDetails", "unavailability"),
+        INTERPRETER_LANGUAGE(o -> o.getPleaDetails().getInterpreterLanguage(), "pleaDetails", "interpreterLanguage"),
+
+        PERSON_FIRST_NAME(o -> o.getPersonalDetails().getFirstName(), "personalDetails", "firstName"),
+        PERSON_LAST_NAME(o -> o.getPersonalDetails().getLastName(), "personalDetails", "lastName"),
+        PERSON_TELEPHONE_HOME(o -> o.getPersonalDetails().getHomeTelephone(), "personalDetails", "homeTelephone"),
+        PERSON_TELEPHONE_MOBILE(o -> o.getPersonalDetails().getMobile(), "personalDetails", "mobile"),
+        PERSON_EMAIL(o -> o.getPersonalDetails().getEmail(), "personalDetails", "email"),
+        PERSON_DOB(o -> o.getPersonalDetails().getDateOfBirth(), "personalDetails", "dateOfBirth"),
+        PERSON_NI_NUMBER(o -> o.getPersonalDetails().getNationalInsuranceNumber(), "personalDetails", "nationalInsuranceNumber"),
+        PERSON_ADDRESS_1(o -> o.getPersonalDetails().getAddress().getAddress1(), "personalDetails", "address", "address1"),
+        PERSON_ADDRESS_2(o -> o.getPersonalDetails().getAddress().getAddress2(), "personalDetails", "address", "address2"),
+        PERSON_ADDRESS_3(o -> o.getPersonalDetails().getAddress().getAddress3(), "personalDetails", "address", "address3"),
+        PERSON_ADDRESS_4(o -> o.getPersonalDetails().getAddress().getAddress4(), "personalDetails", "address", "address4"),
+        PERSON_POSTCODE(o -> o.getPersonalDetails().getAddress().getPostcode(), "personalDetails", "address", "postcode");
 
         private String[] fieldPath;
         private Function<OnlinePlea, Object> fieldGetter;
@@ -189,7 +213,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
                     CASE_ID,
                     WITNESS_DISPUTE,
                     WITNESS_DETAILS,
-                    UNAVAILABLITTY
+                    UNAVAILABILITY
             );
         }
     }
@@ -199,6 +223,27 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         @Override
         final List<FIELDS> getFieldsToUpdate(){
             return asList(INTERPRETER_LANGUAGE);
+        }
+    }
+
+    @Repository
+    public static abstract class PersonDetailsOnlinePleaRepository extends OnlinePleaRepository {
+        @Override
+        final List<FIELDS> getFieldsToUpdate(){
+            return asList(
+                    PERSON_FIRST_NAME,
+                    PERSON_LAST_NAME,
+                    PERSON_TELEPHONE_HOME,
+                    PERSON_TELEPHONE_MOBILE,
+                    PERSON_EMAIL,
+                    PERSON_DOB,
+                    PERSON_NI_NUMBER,
+                    PERSON_ADDRESS_1,
+                    PERSON_ADDRESS_2,
+                    PERSON_ADDRESS_3,
+                    PERSON_ADDRESS_4,
+                    PERSON_POSTCODE
+            );
         }
     }
 }

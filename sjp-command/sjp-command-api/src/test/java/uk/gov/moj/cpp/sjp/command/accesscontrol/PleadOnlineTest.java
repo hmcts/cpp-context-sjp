@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.accesscontrol;
 
 import static org.mockito.BDDMockito.given;
-import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getPleaOnlineActionGroups;
+import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getPleadOnlineActionGroups;
 
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
@@ -15,17 +15,17 @@ import org.junit.Test;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.Mock;
 
-public class PleaOnlineTest extends BaseDroolsAccessControlTest {
+public class PleadOnlineTest extends BaseDroolsAccessControlTest {
 
-    private static final String SJP_COMMAND_PLEA_ONLINE = "sjp.plea-online";
+    private static final String SJP_COMMAND_PLEAD_ONLINE = "sjp.plead-online";
 
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToUpdatePlea() {
-        final Action action = createActionFor(SJP_COMMAND_PLEA_ONLINE);
-        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getPleaOnlineActionGroups()))
+        final Action action = createActionFor(SJP_COMMAND_PLEAD_ONLINE);
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getPleadOnlineActionGroups()))
                 .willReturn(true);
 
         final ExecutionResults results = executeRulesWith(action);
@@ -34,7 +34,7 @@ public class PleaOnlineTest extends BaseDroolsAccessControlTest {
 
     @Test
     public void shouldNotAllowUserNotInAuthorisedGroupToUpdatePlea() {
-        final Action action = createActionFor(SJP_COMMAND_PLEA_ONLINE);
+        final Action action = createActionFor(SJP_COMMAND_PLEAD_ONLINE);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, Arrays.asList("random group")))
                 .willReturn(true);
 

@@ -6,11 +6,11 @@ import uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants;
 
 global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
 
-rule "Command API - Rule for Plea Online"
+rule "Command API - Rule for Plead Online"
   when
     $outcome: Outcome();
-    $action: Action(name == "sjp.plea-online");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getPleaOnlineActionGroups()));
+    $action: Action(name == "sjp.plead-online");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getPleadOnlineActionGroups()));
 
   then
     $outcome.setSuccess(true);

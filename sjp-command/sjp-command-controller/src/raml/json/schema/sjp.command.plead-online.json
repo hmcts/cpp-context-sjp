@@ -20,12 +20,22 @@
           "type": "string"
         }
       },
+      "required": [
+        "address1",
+        "postcode"
+      ],
       "additionalProperties": false
     }
   },
   "type": "object",
   "properties": {
-    "person": {
+    "caseId": {
+      "type": "string"
+    },
+    "defendantId": {
+      "type": "string"
+    },
+    "personalDetails": {
       "type": "object",
       "properties": {
         "id": {
@@ -40,14 +50,23 @@
         "address": {
           "$ref": "#/definitions/address"
         },
-        "homeTelephone": {
-          "type": "string"
-        },
-        "mobile": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
+        "contactDetails": {
+          "type": "object",
+          "properties": {
+            "home": {
+              "type": "string"
+            },
+            "mobile": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "email"
+          ],
+          "additionalProperties": false
         },
         "dateOfBirth": {
           "type": "string"
@@ -61,7 +80,7 @@
         "firstName",
         "lastName",
         "address",
-        "email",
+        "contactDetails",
         "dateOfBirth"
       ],
       "additionalProperties": false
@@ -199,7 +218,9 @@
     }
   },
   "required": [
-    "person",
+    "caseId",
+    "defendantId",
+    "personalDetails",
     "offences",
     "financialMeans"
   ],

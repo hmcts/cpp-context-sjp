@@ -81,7 +81,7 @@ public class UpdateDefendantDetailsHandlerTest {
                 gender, nationalInsuranceNumber, homeNumber, mobileNumber, address, dateOfBirth);
 
         EventStream eventStream = Mockito.mock(EventStream.class);
-        when(eventSource.getStreamById(defendantId)).thenReturn(eventStream);
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
         updateDefendantDetailsHandler.updateDefendantDetails(command);
@@ -96,11 +96,11 @@ public class UpdateDefendantDetailsHandlerTest {
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
                                         withJsonPath("$.firstName", equalTo(firstName)),
                                         withJsonPath("$.lastName", equalTo(lastName)),
-                                        withJsonPath("$.email", equalTo(email)),
                                         withJsonPath("$.gender", equalTo(gender)),
                                         withJsonPath("$.nationalInsuranceNumber", equalTo(nationalInsuranceNumber)),
-                                        withJsonPath("$.contactNumber.home", equalTo(homeNumber)),
-                                        withJsonPath("$.contactNumber.mobile", equalTo(mobileNumber)),
+                                        withJsonPath("$.contactDetails.email", equalTo(email)),
+                                        withJsonPath("$.contactDetails.home", equalTo(homeNumber)),
+                                        withJsonPath("$.contactDetails.mobile", equalTo(mobileNumber)),
                                         withJsonPath("$.dateOfBirth", equalTo(dateOfBirth))
                                 )))
                 )));

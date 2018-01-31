@@ -3,13 +3,16 @@ package uk.gov.moj.sjp.it.test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-import uk.gov.justice.services.common.converter.LocalDates;
+import uk.gov.moj.cpp.sjp.persistence.entity.Address;
+import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
+import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
 import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 import uk.gov.moj.sjp.it.helper.DefendantDetailsHelper;
 import uk.gov.moj.sjp.it.util.FileUtil;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 import javax.json.JsonObject;
 
@@ -42,16 +45,43 @@ public class SearchCasesIT extends BaseIntegrationTest {
         defendantDetailsHelper.close();
     }
 
+    private PersonalDetails generateExpectedPersonDetails(JsonObject payload) {
+        final String title =  payload.getString("title");
+        final String firstName =  payload.getString("firstName");
+        final String lastName = payload.getString("lastName");
+        final String gender = payload.getString("gender");
+        final String nationalInsuranceNumber = payload.getString("nationalInsuranceNumber");
+        final String dateOfBirth = payload.getString("dateOfBirth");
+        final String email = payload.getString("email");
+
+        final JsonObject contactNumberPayload = payload.getJsonObject("contactNumber");
+        final String homeNumber = contactNumberPayload.getString("home");
+        final String mobileNumber = contactNumberPayload.getString("mobile");
+
+        final JsonObject address = payload.getJsonObject("address");
+        final String address1 = address.getString("address1");
+        final String address2 = address.getString("address2");
+        final String address3 = address.getString("address3");
+        final String address4 = address.getString("address4");
+        final String postcode = address.getString("postcode");
+
+        return new PersonalDetails(title, firstName, lastName, LocalDate.parse(dateOfBirth), gender, nationalInsuranceNumber,
+                new Address(address1, address2, address3, address4, postcode),
+                new ContactDetails(email, homeNumber, mobileNumber)
+        );
+    }
+
     @Test
     public void verifyInitialSearchDetailsAndUpdateToDefendantDetails() throws IOException {
-        caseSearchResultHelper.verifyPersonInfoByUrn();
-        caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth(caseSearchResultHelper.getLastName(), caseSearchResultHelper.getDateOfBirth());
+        caseSearchResultHelper.verifyPersonInfo(caseSearchResultHelper.getPersonalDetails(), false);
 
         JsonObject updatedDefendantPayload = FileUtil.givenPayload("/payload/sjp.update-defendant-details.json");
 
         defendantDetailsHelper.updateDefendantDetails(caseSjpHelper.getCaseId(), caseSjpHelper.getSingleDefendantId(), updatedDefendantPayload);
-        caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth("SMITH", LocalDates.from("1980-07-15"));
-        caseSearchResultHelper.verifyPersonNotFound(caseSjpHelper.getCaseUrn(), caseSearchResultHelper.getLastName());
+
+        final PersonalDetails expectedPersonalDetails = generateExpectedPersonDetails(updatedDefendantPayload);
+        caseSearchResultHelper.verifyPersonInfo(expectedPersonalDetails, true);
+        caseSearchResultHelper.verifyPersonNotFound(caseSjpHelper.getCaseUrn(), caseSearchResultHelper.getPersonalDetails().getLastName());
 
         final JsonPath updatedCase = caseSjpHelper.getCaseResponseUsingId();
         final String firstName = updatedCase.getString("defendant.personalDetails.firstName");

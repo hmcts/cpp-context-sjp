@@ -7,7 +7,6 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
-import uk.gov.moj.cpp.sjp.event.listener.converter.OnlinePleaConverter;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.Employer;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
@@ -36,9 +35,6 @@ public class EmployerListener {
     @Inject
     private OnlinePleaRepository.EmployerOnlinePleaRepository onlinePleaRepository;
 
-    @Inject
-    private OnlinePleaConverter onlinePleaConverter;
-
     @Transactional
     @Handles("sjp.events.employer-updated")
     public void updateEmployer(final JsonEnvelope event) {
@@ -56,9 +52,10 @@ public class EmployerListener {
         }
         employerRepository.save(employer);
 
+        //this listener updates two tables for the case where the event is fired via plead-online command
         if (employerUpdated.isUpdatedByOnlinePlea()) {
             final DefendantDetail defendantDetail = defendantRepository.findBy(employerUpdated.getDefendantId());
-            final OnlinePlea onlinePlea = onlinePleaConverter.convertToOnlinePleaEntity(defendantDetail, employerUpdated);
+            final OnlinePlea onlinePlea = new OnlinePlea(defendantDetail.getCaseDetail().getId(), employerUpdated);
             onlinePleaRepository.saveOnlinePlea(onlinePlea);
         }
     }

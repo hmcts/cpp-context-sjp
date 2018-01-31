@@ -10,7 +10,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>0.0.11-ATCM-SNAPSHOT</version>
+    <version>0.0.12-ATCM-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -18,7 +18,7 @@
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
         <assignment.version>2.0.95</assignment.version>
-        <resulting.version>2.0.178-ATCM-SNAPSHOT</resulting.version>
+        <resulting.version>2.0.180-ATCM-SNAPSHOT</resulting.version>
         <material.version>2.0.99-structurerefactor-SNAPSHOT</material.version>
         <referencedata.version>2.0.139</referencedata.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>

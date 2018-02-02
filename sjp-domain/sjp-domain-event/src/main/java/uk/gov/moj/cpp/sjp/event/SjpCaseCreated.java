@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.Offence;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -18,6 +19,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @deprecated Replaced by {@link CaseReceived}
  */
 @Event("sjp.events.sjp-case-created")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SjpCaseCreated {
 
     private String id;

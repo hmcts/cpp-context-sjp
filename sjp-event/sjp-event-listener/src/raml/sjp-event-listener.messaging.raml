@@ -14,6 +14,10 @@ version: v1
         example: !include json/sjp.events.case-received.json
         schema: !include json/schema/sjp.events.case-received.json
 
+      application/vnd.sjp.events.sjp-case-created+json:
+        example: !include json/sjp.events.sjp-case-created.json
+        schema: !include json/schema/sjp.events.sjp-case-created.json
+
       application/vnd.sjp.events.plea-updated+json:
         schema: !include json/schema/sjp.events.plea-updated.json
         example: !include json/sjp.events.plea-updated.json
@@ -114,6 +118,10 @@ version: v1
         schema: !include json/schema/sjp.events.defendant-details-updated.json
         example: !include json/sjp.events.defendant-details-updated.json
 
+      application/vnd.sjp.events.defendant-details-moved-from-people+json:
+        schema: !include json/schema/sjp.events.defendant-details-moved-from-people.json
+        example: !include json/sjp.events.defendant-details-moved-from-people.json
+
       application/vnd.sjp.events.trial-requested+json:
-              schema: !include json/schema/sjp.events.trial-requested.json
-              example: !include json/sjp.events.trial-requested.json
+        schema: !include json/schema/sjp.events.trial-requested.json
+        example: !include json/sjp.events.trial-requested.json

@@ -57,6 +57,7 @@ import uk.gov.moj.cpp.sjp.event.CaseStarted;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.CourtReferralActioned;
 import uk.gov.moj.cpp.sjp.event.CourtReferralCreated;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsMovedFromPeople;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantNotEmployed;
@@ -603,6 +604,27 @@ public class CaseAggregate implements Aggregate {
         if (StringUtils.isBlank(title) && StringUtils.isNotBlank(this.defendantTitle)) {
             throw new IllegalArgumentException(String.format("title parameter can not be null as previous value is : %s", this.defendantTitle));
         }
+    }
+
+    public Stream<Object> fixDefendantDetails(UUID caseId, UUID personId, String gender,
+                                                 String nationalInsuranceNumber,String email,
+                                                 String homeNumber, String mobileNumber,
+                                                 Person person) {
+
+        final DefendantDetailsMovedFromPeople defendantDetailsMovedFromPeople = new DefendantDetailsMovedFromPeople.DefendantDetailsMovedFromPeopleBuilder()
+                .withCaseId(caseId)
+                .withPersonId(personId)
+                .withTitle(person.getTitle())
+                .withFirstName(person.getFirstName())
+                .withLastName(person.getLastName())
+                .withDateOfBirth(person.getDateOfBirth())
+                .withGender(gender)
+                .withEmail(email)
+                .withNationalInsuranceNumber(nationalInsuranceNumber)
+                .withContactNumber(new ContactDetails(homeNumber, mobileNumber, email))
+                .withAddress(person.getAddress())
+                .build();
+        return apply(Stream.of(defendantDetailsMovedFromPeople));
     }
 
     @SuppressWarnings("squid:S00107") //Proper fix requires proper remodelling / guidance

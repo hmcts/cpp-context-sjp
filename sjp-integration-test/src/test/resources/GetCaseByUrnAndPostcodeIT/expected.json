@@ -1,5 +1,6 @@
 {
   "id": "a224e325-22f7-45ab-a595-954ed0bffbdd",
+  "urn": "urn",
   "completed": false,
   "assigned": false,
   "defendant": {
@@ -23,6 +24,7 @@
       {
         "id": "c84cbf19-9b10-46c4-9408-1059af51376d",
         "title": "Public service vehicle - passenger use altered / defaced   ticket",
+        "legislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
         "wording": "Committed some offence",
         "pendingWithdrawal": false,
         "plea": ""

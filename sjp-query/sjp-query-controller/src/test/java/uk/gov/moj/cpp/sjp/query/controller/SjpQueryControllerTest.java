@@ -23,7 +23,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.sjp.query.controller.service.PeopleService;
+import uk.gov.moj.cpp.sjp.query.controller.converter.CaseConverter;
 
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -51,7 +51,7 @@ public class SjpQueryControllerTest {
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
     @Mock
-    private PeopleService peopleService;
+    private CaseConverter caseConverter;
 
     @InjectMocks
     private SjpQueryController sjpQueryController;
@@ -114,7 +114,7 @@ public class SjpQueryControllerTest {
         if (validUrn && validPostcode) {
             final JsonObject objectToReturn = createObjectBuilder().build();
             resultPayload = objectToReturn;
-            when(peopleService.addPersonInfoForDefendantWithMatchingPostcode(caseDetails.payloadAsJsonObject(), query)).thenReturn(objectToReturn);
+            when(caseConverter.addOffenceReferenceDataToOffences(caseDetails.payloadAsJsonObject(), query)).thenReturn(objectToReturn);
         }
 
         final JsonEnvelope result = sjpQueryController.findCaseByUrnPostcode(query);
@@ -123,7 +123,7 @@ public class SjpQueryControllerTest {
                 payloadIsJson(withJsonPath("$.urn", equalTo(urn))))));
 
         if (validUrn && validPostcode) {
-            verify(peopleService).addPersonInfoForDefendantWithMatchingPostcode(caseDetails.payloadAsJsonObject(), query);
+            verify(caseConverter).addOffenceReferenceDataToOffences(caseDetails.payloadAsJsonObject(), query);
         }
 
         assertThat(result.metadata().name(), equalTo("sjp.query.case-by-urn-response"));

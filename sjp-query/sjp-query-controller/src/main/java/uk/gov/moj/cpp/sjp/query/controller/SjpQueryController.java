@@ -9,7 +9,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.query.controller.service.PeopleService;
+import uk.gov.moj.cpp.sjp.query.controller.converter.CaseConverter;
 import uk.gov.moj.cpp.sjp.query.controller.service.UserAndGroupsService;
 
 import javax.inject.Inject;
@@ -29,7 +29,7 @@ public class SjpQueryController {
     private UserAndGroupsService userAndGroupsService;
 
     @Inject
-    private PeopleService peopleService;
+    private CaseConverter caseConverter;
 
     @Inject
     private Enveloper enveloper;
@@ -76,14 +76,13 @@ public class SjpQueryController {
             responsePayload = null;
         }
         else {
-            JsonObject caseJsonObject = (JsonObject) caseDetails;
-            JsonObject address = caseJsonObject.getJsonObject("defendant")
+            final JsonObject caseJsonObject = (JsonObject) caseDetails;
+            final JsonObject address = caseJsonObject.getJsonObject("defendant")
                     .getJsonObject("personalDetails")
                     .getJsonObject("address");
 
             if (deleteWhitespace(postcode).equals(deleteWhitespace(address.getString("postcode")))) {
-                //TODO rename / refactor as part of title story
-                responsePayload = peopleService.addPersonInfoForDefendantWithMatchingPostcode((JsonObject) caseDetails, query);
+                responsePayload = caseConverter.addOffenceReferenceDataToOffences((JsonObject) caseDetails, query);
             }
             else {
                 responsePayload = null;
@@ -94,7 +93,6 @@ public class SjpQueryController {
         return enveloper.withMetadataFrom(query, "sjp.query.case-by-urn-response")
                 .apply(responsePayload);
     }
-
 
     @Handles("sjp.query.financial-means")
     public JsonEnvelope findFinancialMeans(final JsonEnvelope query) {

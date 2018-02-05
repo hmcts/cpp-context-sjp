@@ -17,7 +17,9 @@ import java.util.UUID;
 
 public class DefendantDetailBuilder {
 
-    public final UUID DEFENDANT_ID = UUID.randomUUID();
+    private static final String DEFAULT_POSTCODE = "SW1A 2AA";
+
+    private final UUID DEFENDANT_ID = UUID.randomUUID();
 
     private DefendantDetail defendantDetail;
 
@@ -34,7 +36,7 @@ public class DefendantDetailBuilder {
                         LocalDates.from("1960-10-08"),
                         "Female",
                         null,
-                        new Address(),
+                        new Address("10 Downing St", "Westminster", "London", "England", DEFAULT_POSTCODE),
                         new ContactDetails()
                 )
         );

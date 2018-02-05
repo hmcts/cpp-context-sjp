@@ -35,6 +35,9 @@
         "title": {
           "type": "string"
         },
+        "legislation": {
+          "type": "string"
+        },
         "wording": {
           "type": "string"
         },
@@ -48,11 +51,28 @@
       "additionalProperties": false,
       "required": [
         "id",
+        "title",
+        "legislation",
         "wording",
         "pendingWithdrawal"
       ]
     },
-    "person": {
+    "contactDetails": {
+      "type": "object",
+      "properties": {
+        "home": {
+          "type": "string"
+        },
+        "mobile": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "personalDetails": {
       "type": "object",
       "properties": {
         "id": {
@@ -67,17 +87,11 @@
         "dateOfBirth": {
           "type": "string"
         },
-        "homeTelephone": {
-          "type": "string"
-        },
-        "mobile": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
         "nationalInsuranceNumber": {
           "type": "string"
+        },
+        "contactDetails": {
+          "$ref": "#/definitions/contactDetails"
         },
         "address": {
           "$ref": "#/definitions/address"
@@ -98,8 +112,8 @@
         "id": {
           "type": "string"
         },
-        "person": {
-          "$ref": "#/definitions/person"
+        "personalDetails": {
+          "$ref": "#/definitions/personalDetails"
         },
         "offences": {
           "type": "array",
@@ -112,7 +126,7 @@
       "additionalProperties": false,
       "required": [
         "id",
-        "person",
+        "personalDetails",
         "offences"
       ]
     }
@@ -122,25 +136,25 @@
     "id": {
       "type": "string"
     },
+    "urn": {
+      "type": "string"
+    },
     "completed": {
       "type": "boolean"
     },
     "assigned": {
       "type": "boolean"
     },
-    "defendants": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/defendant"
-      },
-      "minItems": 1
+    "defendant": {
+      "$ref": "#/definitions/defendant"
     }
   },
   "additionalProperties": false,
   "required": [
     "id",
+    "urn",
     "completed",
     "assigned",
-    "defendants"
+    "defendant"
   ]
 }

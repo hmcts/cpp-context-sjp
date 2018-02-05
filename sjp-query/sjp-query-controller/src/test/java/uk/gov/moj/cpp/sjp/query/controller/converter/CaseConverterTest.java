@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.sjp.query.controller.service;
+package uk.gov.moj.cpp.sjp.query.controller.converter;
 
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -10,10 +10,12 @@ import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuil
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.query.controller.service.ReferenceDataService;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -23,11 +25,10 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class PeopleServiceTest {
-
+public class CaseConverterTest {
 
     @InjectMocks
-    private PeopleService peopleService;
+    private CaseConverter caseConverter;
 
     @Mock
     private ReferenceDataService referenceDataService;
@@ -35,6 +36,7 @@ public class PeopleServiceTest {
     @Test
     public void shouldAddPersonInfoForDefendantWithMatchingPostcode() {
         final UUID caseId = UUID.randomUUID();
+        final String urn = "TFL123456";
         final UUID defendantId = UUID.randomUUID();
         final UUID offenceId = UUID.randomUUID();
         final boolean completed = false;
@@ -56,11 +58,13 @@ public class PeopleServiceTest {
         final boolean pendingWithdrawal = true;
 
         final String wording = "this is offence wording";
+        final String legislation = "legislation";
 
         final String offenceTitle = "this is offence title";
 
         final JsonObject caseDetails = createObjectBuilder()
                 .add("id", caseId.toString())
+                .add("urn", urn)
                 .add("completed", completed)
                 .add("assigned", assigned)
                 .add("defendant", createObjectBuilder()
@@ -92,31 +96,35 @@ public class PeopleServiceTest {
         JsonEnvelope request = envelope()
                 .with(metadataWithRandomUUID("sjp.query.case-by-urn-postcode")).build();
 
-        when(referenceDataService.resolveOffenceTitle(request, offenceCode, offenceStartDate)).thenReturn(offenceTitle);
-        final JsonObject result = peopleService.addPersonInfoForDefendantWithMatchingPostcode(caseDetails, request);
+        final JsonObject offenceReferenceData = expectedOffenceReferenceData(offenceTitle, legislation);
+
+        when(referenceDataService.getOffenceReferenceData(request, offenceCode, offenceStartDate)).thenReturn(offenceReferenceData);
+        final JsonObject result = caseConverter.addOffenceReferenceDataToOffences(caseDetails, request);
 
         final JsonObject expectedResult = createObjectBuilder()
                 .add("id", caseId.toString())
+                .add("urn", urn)
                 .add("completed", completed)
                 .add("assigned", assigned)
                 .add("defendant", createObjectBuilder()
                         .add("id", defendantId.toString())
                         .add("personalDetails", createObjectBuilder()
-                            .add("firstName", firstName)
-                            .add("lastName", lastName)
-                            .add("dateOfBirth", LocalDates.to(dob))
-                            .add("address", createObjectBuilder()
-                                    .add("address1", address1)
-                                    .add("address2", address2)
-                                    .add("address3", address3)
-                                    .add("address4", address4)
-                                    .add("postcode", postcode)
-                            )
+                                .add("firstName", firstName)
+                                .add("lastName", lastName)
+                                .add("dateOfBirth", LocalDates.to(dob))
+                                .add("address", createObjectBuilder()
+                                        .add("address1", address1)
+                                        .add("address2", address2)
+                                        .add("address3", address3)
+                                        .add("address4", address4)
+                                        .add("postcode", postcode)
+                                )
                         )
                         .add("offences", createArrayBuilder()
                                 .add(createObjectBuilder()
                                         .add("id", offenceId.toString())
                                         .add("title", offenceTitle)
+                                        .add("legislation", legislation)
                                         .add("wording", wording)
                                         .add("pendingWithdrawal", pendingWithdrawal)
                                         .add("plea", plea)
@@ -125,5 +133,13 @@ public class PeopleServiceTest {
                 ).build();
 
         assertThat(result, is(expectedResult));
+    }
+
+    private JsonObject expectedOffenceReferenceData(final String title, final String legislation) {
+
+        return Json.createObjectBuilder()
+                .add("title", title)
+                .add("legislation", legislation)
+                .build();
     }
 }

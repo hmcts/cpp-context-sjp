@@ -9,7 +9,7 @@ global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAn
 rule "Command - Rule for Update defendant national insurance number"
   when
     $outcome: Outcome();
-    $action: Action(name == "sjp.update-defendant-national-insurance-number");
+    $action: Action(name == "sjp.command.update-defendant-national-insurance-number");
   then
     $outcome.setSuccess(true);
 end

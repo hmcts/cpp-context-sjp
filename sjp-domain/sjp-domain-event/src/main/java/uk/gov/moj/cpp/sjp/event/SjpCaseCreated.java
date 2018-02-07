@@ -8,10 +8,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -19,7 +20,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @deprecated Replaced by {@link CaseReceived}
  */
 @Event("sjp.events.sjp-case-created")
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties("personId")
 public class SjpCaseCreated {
 
     private String id;
@@ -117,6 +118,10 @@ public class SjpCaseCreated {
         return defendantId;
     }
 
+    public void setDefendantId(UUID defendantId) {
+        this.defendantId = defendantId;
+    }
+
     public List<Offence> getOffences() {
         return offences;
     }
@@ -167,38 +172,16 @@ public class SjpCaseCreated {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        SjpCaseCreated that = (SjpCaseCreated) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(urn, that.urn) &&
-                Objects.equals(ptiUrn, that.ptiUrn) &&
-                Objects.equals(initiationCode, that.initiationCode) &&
-                Objects.equals(summonsCode, that.summonsCode) &&
-                Objects.equals(prosecutingAuthority, that.prosecutingAuthority) &&
-                Objects.equals(libraOriginatingOrg, that.libraOriginatingOrg) &&
-                Objects.equals(libraHearingLocation, that.libraHearingLocation) &&
-                Objects.equals(dateOfHearing, that.dateOfHearing) &&
-                Objects.equals(timeOfHearing, that.timeOfHearing) &&
-                Objects.equals(numPreviousConvictions, that.numPreviousConvictions) &&
-                Objects.equals(costs, that.costs) &&
-                Objects.equals(postingDate, that.postingDate) &&
-                Objects.equals(offences, that.offences) &&
-                Objects.equals(createdOn, that.createdOn);
+        return EqualsBuilder.reflectionEquals(this, o);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, urn, ptiUrn, initiationCode, summonsCode, prosecutingAuthority, libraOriginatingOrg, libraHearingLocation, dateOfHearing, timeOfHearing, numPreviousConvictions, costs, postingDate, offences, createdOn);
+        return HashCodeBuilder.reflectionHashCode(this);
     }
 
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
-
 }

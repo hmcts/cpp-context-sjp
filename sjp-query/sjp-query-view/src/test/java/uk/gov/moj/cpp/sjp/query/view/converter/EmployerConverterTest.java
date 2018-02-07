@@ -25,9 +25,10 @@ public class EmployerConverterTest {
         entity.setAddress2("address2");
         entity.setAddress3("address3");
         entity.setAddress4("address4");
-        entity.setPostCode("postCode");
+        entity.setPostcode("postCode");
         final uk.gov.moj.cpp.sjp.domain.Employer employer = employerConverter.convertToEmployer(entity);
 
+        assertThat(employer.getDefendantId(), is(entity.getDefendantId()));
         assertThat(employer.getName(), is(entity.getName()));
         assertThat(employer.getEmployeeReference(), is(entity.getEmployeeReference()));
         assertThat(employer.getPhone(), is(entity.getPhone()));
@@ -35,7 +36,7 @@ public class EmployerConverterTest {
         assertThat(employer.getAddress().getAddress2(), is(entity.getAddress2()));
         assertThat(employer.getAddress().getAddress3(), is(entity.getAddress3()));
         assertThat(employer.getAddress().getAddress4(), is(entity.getAddress4()));
-        assertThat(employer.getAddress().getPostcode(), is(entity.getPostCode()));
+        assertThat(employer.getAddress().getPostcode(), is(entity.getPostcode()));
     }
 
     @Test

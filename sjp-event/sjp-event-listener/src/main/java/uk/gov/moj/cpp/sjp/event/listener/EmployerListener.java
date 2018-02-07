@@ -48,7 +48,7 @@ public class EmployerListener {
             employer.setAddress2(employerUpdated.getAddress().getAddress2());
             employer.setAddress3(employerUpdated.getAddress().getAddress3());
             employer.setAddress4(employerUpdated.getAddress().getAddress4());
-            employer.setPostCode(employerUpdated.getAddress().getPostcode());
+            employer.setPostcode(employerUpdated.getAddress().getPostcode());
         }
         employerRepository.save(employer);
 

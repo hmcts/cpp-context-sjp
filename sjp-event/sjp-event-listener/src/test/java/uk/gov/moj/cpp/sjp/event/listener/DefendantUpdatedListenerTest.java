@@ -6,7 +6,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -64,9 +63,6 @@ public class DefendantUpdatedListenerTest {
     @Mock
     private CaseSearchResultRepository caseSearchResultRepository;
 
-    @Mock(answer = RETURNS_DEEP_STUBS)
-    private CaseDetail caseDetail;
-
     @Mock
     private JsonEnvelope jsonEnvelope;
 
@@ -75,6 +71,8 @@ public class DefendantUpdatedListenerTest {
 
     @Captor
     private ArgumentCaptor<OnlinePlea> onlinePleaCaptor;
+
+    private CaseDetail caseDetail = new CaseDetail();
 
     private final Clock clock = new StoppedClock(ZonedDateTime.now());
     private final ZonedDateTime now = clock.now();
@@ -101,7 +99,7 @@ public class DefendantUpdatedListenerTest {
 
     private void setupMocks(DefendantDetailsUpdated defendantDetailsUpdated) throws JsonProcessingException {
         when(caseRepository.findBy(defendantDetailsUpdated.getCaseId())).thenReturn(caseDetail);
-        when(caseDetail.getDefendant().getPersonalDetails()).thenReturn(
+        caseDetail.getDefendant().setPersonalDetails(
                 new PersonalDetails(
                         previousTitle, "Joe", "Blogs", LocalDate.of(1965, 8, 6),
                         previousGender, previousNiNumber,

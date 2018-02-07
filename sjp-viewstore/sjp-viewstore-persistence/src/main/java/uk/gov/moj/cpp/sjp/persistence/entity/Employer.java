@@ -36,8 +36,8 @@ public class Employer {
     @Column(name = "address_4")
     private String address4;
 
-    @Column(name = "post_code")
-    private String postCode;
+    @Column(name = "postcode")
+    private String postcode;
 
     public Employer() {
         //required for hibernate
@@ -107,11 +107,11 @@ public class Employer {
         this.address4 = address4;
     }
 
-    public String getPostCode() {
-        return postCode;
+    public String getPostcode() {
+        return postcode;
     }
 
-    public void setPostCode(String postCode) {
-        this.postCode = postCode;
+    public void setPostcode(String postcode) {
+        this.postcode = postcode;
     }
 }

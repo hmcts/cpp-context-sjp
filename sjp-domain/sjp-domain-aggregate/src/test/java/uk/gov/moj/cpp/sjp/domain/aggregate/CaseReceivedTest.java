@@ -21,6 +21,7 @@ import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.junit.After;
@@ -75,11 +76,11 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
             assertThat("Case urn does not match", caseAggregate.getUrn(), equalTo(caseReceived.getUrn()));
             assertThat("Case prosecutingAuthority does not match", caseAggregate.getProsecutingAuthority(), equalTo(caseReceived.getProsecutingAuthority()));
             assertThat("Case offenceIdsByDefendantId does not match", caseAggregate.getOffenceIdsByDefendantId(),
-            equalTo(singletonMap(
-                    caseReceived.getDefendant().getId(),
-                    caseReceived.getDefendant().getOffences().stream()
-                            .map(Offence::getId)
-                            .collect(Collectors.toSet()))));
+                    equalTo(singletonMap(
+                            caseReceived.getDefendant().getId(),
+                            caseReceived.getDefendant().getOffences().stream()
+                                    .map(Offence::getId)
+                                    .collect(Collectors.toSet()))));
         });
     }
 
@@ -114,9 +115,6 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
 
     /**
      * To ensure backward compatibility
-     *
-     * @param aCase
-     * @return
      */
     @SuppressWarnings("deprecation")
     private SjpCaseCreated buildSjpCaseCreated(Case aCase) {

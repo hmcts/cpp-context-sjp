@@ -7,6 +7,7 @@ import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.util.UUID;
 
@@ -31,7 +32,7 @@ public class SjpCaseCreatedToCase implements Converter<SjpCaseCreated, CaseDetai
     private DefendantDetail createDefendantDetail(SjpCaseCreated sjpCaseCreated) {
         return new DefendantDetail(
                 sjpCaseCreated.getDefendantId(),
-                null,
+                new PersonalDetails(),
                 sjpCaseCreated.getOffences().stream().map(offenceToOffenceDetailConverter::convert).collect(toSet()),
                 sjpCaseCreated.getNumPreviousConvictions());
     }

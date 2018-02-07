@@ -39,6 +39,10 @@
         "postcode": {
           "type": "string",
           "maxLength": 10
+        },
+        "postCode": {
+          "type": "string",
+          "maxLength": 10
         }
       },
       "additionalProperties": false

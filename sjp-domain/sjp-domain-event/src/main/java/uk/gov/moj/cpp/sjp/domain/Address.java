@@ -18,24 +18,30 @@ public class Address implements Serializable {
     private final String address4;
     private final String postcode;
 
-    public static final Address UNKNOWN = new Address(null, null, null, null, null);
+    public static final Address UNKNOWN = new Address(null, null, null, null, null, null);
 
     @JsonCreator
-    public Address(@JsonProperty("address1") String address1,
-                   @JsonProperty("address2") String address2,
-                   @JsonProperty("address3") String address3,
-                   @JsonProperty("address4") String address4,
-                   @JsonProperty("postcode") String postcode) {
-        this.address1 = address1;
-        this.address2 = address2;
-        this.address3 = address3;
-        this.address4 = address4;
-        this.postcode = postcode;
+    Address(@JsonProperty("address1") String address1,
+            @JsonProperty("address2") String address2,
+            @JsonProperty("address3") String address3,
+            @JsonProperty("address4") String address4,
+            @JsonProperty("postcode") String postcode,
+            // Backward compatibility
+            @JsonProperty("postCode") String postCode) {
+        this(address1, address2, address3, address4, postcode != null ? postcode : postCode);
     }
 
     @JsonCreator(mode = Mode.DISABLED)
     public Address(String address1) {
         this(address1, null, null, null, null);
+    }
+
+    public Address(String address1, String address2, String address3, String address4, String postcode) {
+        this.address1 = address1;
+        this.address2 = address2;
+        this.address3 = address3;
+        this.address4 = address4;
+        this.postcode = postcode;
     }
 
     public String getAddress1() {

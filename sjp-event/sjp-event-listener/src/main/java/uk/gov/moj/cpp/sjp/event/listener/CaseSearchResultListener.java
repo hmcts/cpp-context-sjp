@@ -14,6 +14,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -50,8 +51,11 @@ public class CaseSearchResultListener {
     @Handles("sjp.events.person-info-updated")
     public void personInfoUpdated(final JsonEnvelope event) {
         final JsonObject eventPayload = event.payloadAsJsonObject();
-        final List<CaseSearchResult> searchResults = repository.findByCaseId(
-                fromString(eventPayload.getString("caseId")));
+        final String caseId = eventPayload.getString("caseId", null);
+
+        Objects.requireNonNull(caseId, "Unable to update case search results based on the personal details if case identifier is not provided");
+
+        final List<CaseSearchResult> searchResults = repository.findByCaseId(fromString(caseId));
 
         searchResults.forEach(caseSearchResult -> {
 

@@ -76,7 +76,8 @@ public class SjpCaseCreatedToCaseTest {
         BigDecimal costs = BigDecimal.valueOf(33.5);
         LocalDate postingDate = LocalDate.parse("2016-12-03", formatter);
         event = new SjpCaseCreated(caseId, urn, ptiUrn, initiationCode, summonsCode, TFL, libraOriginatingOrg,
-                libraHearingLocation, dateOfHearing, timeOfHearing, defendantId, numPreviousConvictions, costs, postingDate, offences, createdOn);
+                libraHearingLocation, dateOfHearing, timeOfHearing, defendantId,
+                numPreviousConvictions, costs, postingDate, offences, createdOn);
     }
 
     @Test

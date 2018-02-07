@@ -123,7 +123,7 @@ public class EmployerListenerTest {
         assertThat(employer.getAddress2(), equalTo(employerUpdated.getAddress().getAddress2()));
         assertThat(employer.getAddress3(), equalTo(employerUpdated.getAddress().getAddress3()));
         assertThat(employer.getAddress4(), equalTo(employerUpdated.getAddress().getAddress4()));
-        assertThat(employer.getPostCode(), equalTo(employerUpdated.getAddress().getPostcode()));
+        assertThat(employer.getPostcode(), equalTo(employerUpdated.getAddress().getPostcode()));
     }
 
     @Test
@@ -151,7 +151,7 @@ public class EmployerListenerTest {
         assertThat(employer.getAddress2(), equalTo(employerUpdated.getAddress().getAddress2()));
         assertThat(employer.getAddress3(), equalTo(employerUpdated.getAddress().getAddress3()));
         assertThat(employer.getAddress4(), equalTo(employerUpdated.getAddress().getAddress4()));
-        assertThat(employer.getPostCode(), equalTo(employerUpdated.getAddress().getPostcode()));
+        assertThat(employer.getPostcode(), equalTo(employerUpdated.getAddress().getPostcode()));
 
         //check that OnlinePlea is contructed properly
         assertThat(onlinePleaCaptor.getValue().getCaseId(), equalTo(defendantDetail.getCaseDetail().getId()));
@@ -187,7 +187,7 @@ public class EmployerListenerTest {
         assertThat(employer.getAddress2(), nullValue());
         assertThat(employer.getAddress3(), nullValue());
         assertThat(employer.getAddress4(), nullValue());
-        assertThat(employer.getPostCode(), nullValue());
+        assertThat(employer.getPostcode(), nullValue());
     }
 
     @Test

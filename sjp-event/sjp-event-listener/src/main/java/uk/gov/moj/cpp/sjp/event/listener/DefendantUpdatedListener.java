@@ -63,7 +63,11 @@ public class DefendantUpdatedListener {
 
         CaseDetail caseDetail = caseRepository.findBy(defendantDetailsUpdated.getCaseId());
 
-        updateDefendant(caseDetail.getDefendant().getPersonalDetails(), defendantDetailsUpdated);
+        if (caseDetail == null) {
+            throw new IllegalArgumentException("Unable to update defendant's details of a case that does not exist: " + defendantDetailsUpdated.getCaseId());
+        }
+
+        updateDefendant(caseDetail.getDefendant(), defendantDetailsUpdated);
         caseRepository.save(caseDetail);
 
         final List<CaseSearchResult> searchResults = repository.findByCaseId(defendantDetailsUpdated.getCaseId());
@@ -84,7 +88,13 @@ public class DefendantUpdatedListener {
         }
     }
 
-    private void updateDefendant(final PersonalDetails entity, final DefendantDetailsUpdated newData) {
+    private void updateDefendant(DefendantDetail defendantDetailEntity, DefendantDetailsUpdated newData) {
+        if (defendantDetailEntity.getPersonalDetails() == null) {
+            defendantDetailEntity.setPersonalDetails(new PersonalDetails());
+        }
+
+        PersonalDetails entity = defendantDetailEntity.getPersonalDetails();
+
         entity.setFirstName(newData.getFirstName());
         entity.setLastName(newData.getLastName());
         if (newData.isUpdateByOnlinePlea()) {

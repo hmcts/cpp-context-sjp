@@ -32,7 +32,7 @@ public class DefendantDetail implements Serializable {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "defendantDetail", orphanRemoval = true)
     @OrderBy("orderIndex ASC")
-    private Set<OffenceDetail> offences = new HashSet<>();
+    private Set<OffenceDetail> offences;
 
     @Embedded
     private PersonalDetails personalDetails;
@@ -48,21 +48,18 @@ public class DefendantDetail implements Serializable {
     private CaseDetail caseDetail;
 
     public DefendantDetail() {
-        super();
-        this.personalDetails = new PersonalDetails();
-        this.id = UUID.randomUUID();
+        this(UUID.randomUUID());
     }
 
     public DefendantDetail(final UUID id) {
-        this.id = id;
+        this(id, null, null, 0);
     }
 
     public DefendantDetail(final UUID id, final PersonalDetails personalDetails, final Set<OffenceDetail> offences, final Integer numPreviousConvictions) {
-        this();
         this.id = id;
-        this.personalDetails = personalDetails;
         this.numPreviousConvictions = numPreviousConvictions;
         setOffences(offences);
+        setPersonalDetails(personalDetails);
     }
 
     @Override
@@ -95,7 +92,7 @@ public class DefendantDetail implements Serializable {
     }
 
     public void setPersonalDetails(PersonalDetails personalDetails) {
-        this.personalDetails = personalDetails;
+        this.personalDetails = Optional.ofNullable(personalDetails).orElseGet(PersonalDetails::new);
     }
 
     public Set<OffenceDetail> getOffences() {

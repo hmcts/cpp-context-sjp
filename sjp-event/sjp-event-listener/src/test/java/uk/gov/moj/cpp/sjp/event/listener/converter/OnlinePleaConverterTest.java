@@ -147,6 +147,32 @@ public class OnlinePleaConverterTest {
         assertNull(onlinePlea.getEmployment().getEmploymentStatusDetails());
     }
 
+    @Test
+    public void shouldConvertToOnlinePleaEntityForFinancialMeansWithOneOtherOutgoingWithoutDescription() {
+        final BigDecimal otherAmount = BigDecimal.valueOf(6000);
+        final List<Outgoing> outgoings = generateOutgoings(null, null, null,
+                null, null, null, otherAmount, null, null);
+        final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEventForOnlinePlea(defendantId,
+                income, benefits, OnlinePleaConverter.OnlinePleaEmploymentStatus.UNEMPLOYED.name(), outgoings, now);
+
+        final OnlinePlea onlinePlea = onlinePleaConverter.convertToOnlinePleaEntity(defendantDetail, financialMeansUpdated);
+
+        //assertions for outgoings
+        assertThat(onlinePlea.getOutgoings().getAccommodationAmount(), equalTo(null));
+        assertThat(onlinePlea.getOutgoings().getCouncilTaxAmount(), equalTo(null));
+        assertThat(onlinePlea.getOutgoings().getHouseholdBillsAmount(), equalTo(null));
+        assertThat(onlinePlea.getOutgoings().getTravelExpensesAmount(), equalTo(null));
+        assertThat(onlinePlea.getOutgoings().getChildMaintenanceAmount(), equalTo(null));
+        assertThat(onlinePlea.getOutgoings().getOtherDescription(), equalTo(null));
+        assertThat(onlinePlea.getOutgoings().getOtherAmount(), equalTo(otherAmount));
+        assertThat(onlinePlea.getOutgoings().getMonthlyAmount(), equalTo(BigDecimal.valueOf(6000)));
+
+        //common assertions
+        commonAssertionsForFinancialMeansFields(onlinePlea, financialMeansUpdated);
+        assertThat(onlinePlea.getEmployment().getEmploymentStatus(), equalTo(OnlinePleaConverter.OnlinePleaEmploymentStatus.UNEMPLOYED.name()));
+        assertNull(onlinePlea.getEmployment().getEmploymentStatusDetails());
+    }
+
     @Test(expected = IllegalStateException.class)
     public void shouldThrowExceptionWhenMoreThanOneUnknownOutgoingIsSubmitted() {
         final BigDecimal accommodationAmount = BigDecimal.valueOf(2344.55);

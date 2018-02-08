@@ -1,15 +1,11 @@
 package uk.gov.moj.cpp.sjp.event.listener.converter;
 
 import uk.gov.moj.cpp.sjp.domain.Outgoing;
-import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
-import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
-import uk.gov.moj.cpp.sjp.event.TrialRequested;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaOutgoingOption;
 
-import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -33,15 +29,15 @@ public class OnlinePleaConverter {
         final OnlinePlea.Outgoings outgoings = new OnlinePlea.Outgoings();
         if (!CollectionUtils.isEmpty(outgoingList)) {
             outgoingList.forEach(outgoing -> {
-                if (outgoing.getDescription().equalsIgnoreCase(OnlinePleaOutgoingOption.ACCOMMODATION.getDescription())) {
+                if (!StringUtils.isEmpty(outgoing.getDescription()) && outgoing.getDescription().equalsIgnoreCase(OnlinePleaOutgoingOption.ACCOMMODATION.getDescription())) {
                     outgoings.setAccommodationAmount(outgoing.getAmount());
-                } else if (outgoing.getDescription().equalsIgnoreCase(OnlinePleaOutgoingOption.COUNCIL_TAX.getDescription())) {
+                } else if (!StringUtils.isEmpty(outgoing.getDescription()) && outgoing.getDescription().equalsIgnoreCase(OnlinePleaOutgoingOption.COUNCIL_TAX.getDescription())) {
                     outgoings.setCouncilTaxAmount(outgoing.getAmount());
-                } else if (outgoing.getDescription().equalsIgnoreCase(OnlinePleaOutgoingOption.HOUSEHOLD_BILLS.getDescription())) {
+                } else if (!StringUtils.isEmpty(outgoing.getDescription()) && outgoing.getDescription().equalsIgnoreCase(OnlinePleaOutgoingOption.HOUSEHOLD_BILLS.getDescription())) {
                     outgoings.setHouseholdBillsAmount(outgoing.getAmount());
-                } else if (outgoing.getDescription().equalsIgnoreCase(OnlinePleaOutgoingOption.TRAVEL_EXPENSES.getDescription())) {
+                } else if (!StringUtils.isEmpty(outgoing.getDescription()) && outgoing.getDescription().equalsIgnoreCase(OnlinePleaOutgoingOption.TRAVEL_EXPENSES.getDescription())) {
                     outgoings.setTravelExpensesAmount(outgoing.getAmount());
-                } else if (outgoing.getDescription().equalsIgnoreCase(OnlinePleaOutgoingOption.CHILD_MAINTENANCE.getDescription())) {
+                } else if (!StringUtils.isEmpty(outgoing.getDescription()) && outgoing.getDescription().equalsIgnoreCase(OnlinePleaOutgoingOption.CHILD_MAINTENANCE.getDescription())) {
                     outgoings.setChildMaintenanceAmount(outgoing.getAmount());
                 } else if (StringUtils.isEmpty(outgoings.getOtherDescription())) {
                     outgoings.setOtherDescription(outgoing.getDescription());

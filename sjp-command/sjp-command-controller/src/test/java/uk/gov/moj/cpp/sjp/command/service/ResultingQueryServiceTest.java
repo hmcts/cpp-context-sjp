@@ -53,7 +53,7 @@ public class ResultingQueryServiceTest {
         final JsonEnvelope command = createEnvelope(SJP_COMMAND_REQUEST_WITHDRAWAL_ALL_OFFENCES,
                 Json.createObjectBuilder().add("caseId", CASE_ID.toString())
                         .build());
-        when(requester.request(captor.capture())).thenReturn(null);
+        when(requester.requestAsAdmin(captor.capture())).thenReturn(null);
 
         resultingQueryService.findCaseDecision(command);
 

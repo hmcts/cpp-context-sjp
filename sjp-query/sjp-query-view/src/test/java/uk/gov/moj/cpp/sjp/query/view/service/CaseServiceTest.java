@@ -190,23 +190,6 @@ public class CaseServiceTest {
     }
 
     @Test
-    public void shouldFindSjpCaseByUrn() {
-        LocalDate postingDate = LocalDate.now();
-        final CaseDetail caseDetail = aCase().withCaseId(CASE_ID).withUrn(URN)
-                .withPostingDate(postingDate)
-                .addDefendantDetail(aDefendantDetail().build())
-                .build();
-
-        given(caseRepository.findSjpCaseByUrn(URN)).willReturn(caseDetail);
-        CaseView caseView = service.findSjpCaseByUrn(URN);
-
-        assertThat(caseView, notNullValue());
-        assertThat(caseView.getId(), is(CASE_ID.toString()));
-        assertThat(caseView.getUrn(), is(URN));
-        assertThat(caseView.getPostingDate(), is(postingDate));
-    }
-
-    @Test
     public void shouldHandleWhenNoCaseFoundForUrn() {
         given(caseRepository.findByUrn(URN)).willThrow(new NoResultException("boom"));
         assertThat(service.findCaseByUrn(URN), nullValue());

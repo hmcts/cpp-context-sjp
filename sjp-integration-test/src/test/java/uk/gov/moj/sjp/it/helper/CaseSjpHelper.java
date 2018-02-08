@@ -15,8 +15,6 @@ public class CaseSjpHelper extends AbstractCaseHelper {
 
     private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.create-sjp-case+json";
 
-    public static final String GET_SJP_CASE_BY_URN_MEDIA_TYPE = "application/vnd.sjp.query.sjp-case-by-urn+json";
-
     private static final String TEMPLATE_CASE_SJP_CREATE_PAYLOAD = "raml/json/sjp.create-sjp-case.json";
 
     private final LocalDate postingDate;

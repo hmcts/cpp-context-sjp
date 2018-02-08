@@ -39,9 +39,6 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
       (mapping):
           responseType: application/vnd.sjp.query.case-by-urn+json
           name: sjp.query.case-by-urn
-      (mapping):
-          responseType: application/vnd.sjp.query.sjp-case-by-urn+json
-          name: sjp.query.sjp-case-by-urn
       ...
     queryParameters:
       urn:
@@ -53,10 +50,6 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
           description: OK
           body:
                 application/vnd.sjp.query.case-by-urn+json:
-                  schema: !include json/schema/sjp.query.case.json
-                  example: !include json/sjp.query.case.json
-
-                application/vnd.sjp.query.sjp-case-by-urn+json:
                   schema: !include json/schema/sjp.query.case.json
                   example: !include json/sjp.query.case.json
 

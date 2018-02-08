@@ -52,9 +52,6 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     @Query(value = "FROM CaseDetail cd WHERE UPPER(cd.urn) = UPPER(:urn)")
     public abstract CaseDetail findByUrn(@QueryParam("urn") String urn);
 
-    @Query(value = "FROM CaseDetail cd WHERE UPPER(cd.urn) = UPPER(:urn)", singleResult = SingleResultType.OPTIONAL)
-    public abstract CaseDetail findSjpCaseByUrn(@QueryParam("urn") String urn);
-
     @Query(value = "select cd from CaseDetail cd INNER JOIN cd.defendant dd WHERE dd.id = :defendantId")
     public abstract List<CaseDetail> findByDefendantId(@QueryParam("defendantId") final UUID defendantId);
 

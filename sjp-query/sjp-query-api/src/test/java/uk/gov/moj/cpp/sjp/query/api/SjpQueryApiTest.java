@@ -18,7 +18,6 @@ public class SjpQueryApiTest {
     public void shouldHandlesQueries() {
         assertThat(SjpQueryApi.class, isHandlerClass(Component.QUERY_API)
                 .with(allOf(
-                        method("findSjpCaseByUrn").thatHandles("sjp.query.sjp-case-by-urn").withRequesterPassThrough(),
                         method("getNotReadyCasesGroupedByAge").thatHandles("sjp.query.not-ready-cases-grouped-by-age").withRequesterPassThrough(),
                         method("getOldestCaseAge").thatHandles("sjp.query.oldest-case-age").withRequesterPassThrough(),
                         method("findCase").thatHandles("sjp.query.case").withRequesterPassThrough(),

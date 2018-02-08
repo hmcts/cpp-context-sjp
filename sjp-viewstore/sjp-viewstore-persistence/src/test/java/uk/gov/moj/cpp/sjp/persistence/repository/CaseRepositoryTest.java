@@ -58,10 +58,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     private static final UUID VALID_DEFENDANT_ID_1 = randomUUID();
     private static final UUID VALID_DEFENDANT_ID_2 = randomUUID();
     private static final UUID VALID_DEFENDANT_ID_4 = randomUUID();
-    private static final UUID VALID_WITNESS_PERSON_ID = randomUUID();
-    private static final UUID VALID_VICTIM_PERSON_ID = randomUUID();
     private static final UUID VALID_MATERIAL_ID = randomUUID();
-    private static final UUID VALID_BAIL_DOCUMENT_ID_1 = randomUUID();
 
     private static final int NUM_PREVIOUS_CONVICTIONS = 3;
     private static final BigDecimal COSTS = BigDecimal.valueOf(10.33);
@@ -76,15 +73,12 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     @Override
     public void setUpBefore() {
         // given 3 cases exist in database
-        CaseDetail case1 = getCase(VALID_CASE_ID_1, VALID_DEFENDANT_ID_1, VALID_WITNESS_PERSON_ID, VALID_VICTIM_PERSON_ID);
-        case1.setInitiationCode("J");
+        CaseDetail case1 = getCase(VALID_CASE_ID_1, VALID_DEFENDANT_ID_1);
         case1.setEnterpriseId(ENTERPRISE_ID);
         // case 2 is withdrawn
-        CaseDetail case2 = getCase(VALID_CASE_ID_2, VALID_DEFENDANT_ID_2, VALID_WITNESS_PERSON_ID, VALID_VICTIM_PERSON_ID, VALID_MATERIAL_ID, VALID_BAIL_DOCUMENT_ID_1, true);
+        CaseDetail case2 = getCase(VALID_CASE_ID_2, VALID_DEFENDANT_ID_2, VALID_MATERIAL_ID, true);
         CaseDetail case3 = getCase(VALID_CASE_ID_3);
-        CaseDetail case4 = getCase(VALID_CASE_ID_4, VALID_DEFENDANT_ID_4, VALID_WITNESS_PERSON_ID, null);
-
-        CaseDocument caseDocument = case2.getCaseDocuments().iterator().next();
+        CaseDetail case4 = getCase(VALID_CASE_ID_4, VALID_DEFENDANT_ID_4);
 
         caseRepository.save(case1);
         caseRepository.save(case2);
@@ -112,7 +106,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldFindCaseMatchingUrn() {
-        CaseDetail actualCase = caseRepository.findByUrn(VALID_CASE_ID_1.toString());
+        CaseDetail actualCase = caseRepository.findByUrn(getUrnForCaseId(VALID_CASE_ID_1));
         assertNotNull(actualCase);
         assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
         assertThat(caseCreatedOn, is(actualCase.getDateTimeCreated()));
@@ -121,7 +115,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldFindCaseMatchingUrnIgnoringCase() {
-        CaseDetail actualCase = caseRepository.findByUrn(VALID_CASE_ID_1.toString().toLowerCase());
+        CaseDetail actualCase = caseRepository.findByUrn(getUrnForCaseId(VALID_CASE_ID_1).toLowerCase());
         assertNotNull(actualCase);
         assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
     }
@@ -171,7 +165,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     public void shouldUpdateLibraCaseReopenedDetails() {
         LocalDate reopenedDate = LocalDate.now();
         final String reason = "REASON";
-        CaseDetail actualCase = caseRepository.findByUrn(VALID_CASE_ID_1.toString());
+        CaseDetail actualCase = caseRepository.findByUrn(getUrnForCaseId(VALID_CASE_ID_1));
         actualCase.setLibraCaseNumber("LIBRA12345");
         actualCase.setReopenedDate(reopenedDate);
         actualCase.setReopenedInLibraReason(reason);
@@ -183,7 +177,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     }
 
     @Test
-    public void shouldPersistWithdrawnInformation() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException {
+    public void shouldPersistWithdrawnInformation() {
         //given case_2 is withdrawn
 
         CaseDetail caseDetailForWithdrawnCase = caseRepository.findBy(VALID_CASE_ID_2);
@@ -201,7 +195,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     }
 
     @Test
-    public void shouldPersistCancelWithdrawnInformation() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException {
+    public void shouldPersistCancelWithdrawnInformation() {
         //given: case_2 is withdrawn
         isCasePendingWithdrawal(caseRepository.findBy(VALID_CASE_ID_2));
 
@@ -213,9 +207,9 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     }
 
     @Test
-    public void shouldfindCaseByMaterialIdWhenMaterialIsDocument() {
+    public void shouldFindCaseByMaterialIdWhenMaterialIsDocument() {
 
-        CaseDetail actualCase = caseRepository.findByUrn(VALID_CASE_ID_2.toString());
+        CaseDetail actualCase = caseRepository.findByUrn(getUrnForCaseId(VALID_CASE_ID_2));
 
         CaseDetail caseReturned = caseRepository.findByMaterialId(VALID_MATERIAL_ID);
 
@@ -241,19 +235,11 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     }
 
     @Test
-    public void shouldNotFindNonExistingCase() throws Exception {
+    public void shouldNotFindNonExistingCase() {
         final UUID unkownId = UUID.randomUUID();
         final CaseDetail caseDetail = caseRepository.findBy(unkownId);
 
         assertThat(caseDetail, nullValue());
-    }
-
-    @Test
-    public void shouldFindSjpCaseByUrnWhenSearchingForSjpCases() {
-        CaseDetail sjpCaseByUrn = caseRepository.findSjpCaseByUrn(VALID_CASE_ID_1.toString().toUpperCase());
-
-        assertThat(sjpCaseByUrn.getInitiationCode(), is("J"));
-        assertThat(sjpCaseByUrn.getId(), is(VALID_CASE_ID_1));
     }
 
     @Test
@@ -262,13 +248,11 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         final LocalDate oldestPostingDate = POSTING_DATE.minusDays(1);
 
         final CaseDetail oldestUncompletedCase = getCase(randomUUID());
-        oldestUncompletedCase.setInitiationCode("J");
         oldestUncompletedCase.setCompleted(false);
         oldestUncompletedCase.setPostingDate(oldestPostingDate);
         caseRepository.save(oldestUncompletedCase);
 
         final CaseDetail completedCase = getCase(randomUUID());
-        completedCase.setInitiationCode("J");
         completedCase.setCompleted(true);
         completedCase.setPostingDate(POSTING_DATE.minusDays(2));
         caseRepository.save(completedCase);
@@ -296,15 +280,14 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     }
 
     private CaseDetail getCase(UUID caseId) {
-        return getCase(caseId, randomUUID(), randomUUID(), randomUUID());
+        return getCase(caseId, randomUUID());
     }
 
-    private CaseDetail getCase(UUID caseId, UUID defendantId, UUID witnessPersonId, UUID victimPersonId) {
-        return getCase(caseId, defendantId, witnessPersonId, victimPersonId, randomUUID(), randomUUID(), false);
+    private CaseDetail getCase(UUID caseId, UUID defendantId) {
+        return getCase(caseId, defendantId, randomUUID(), false);
     }
 
-    private CaseDetail getCase(UUID caseId, UUID defendantId, UUID witnessPersonId, UUID victimPersonId,
-                               UUID materialId, UUID bailDocumentId, boolean withdrawn) {
+    private CaseDetail getCase(UUID caseId, UUID defendantId, UUID materialId, boolean withdrawn) {
 
 
         final DefendantDetail defendantDetail = DefendantDetailBuilder.aDefendantDetail()
@@ -312,10 +295,9 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
                 .withOffencePendingWithdrawal(withdrawn)
                 .build();
 
-
         final CaseDetail caseDetail = CaseDetailBuilder.aCase()
                 .withCaseId(caseId)
-                .withUrn(caseId.toString().toUpperCase())
+                .withUrn(getUrnForCaseId(caseId))
                 .withCosts(COSTS)
                 .withPostingDate(POSTING_DATE)
                 .addDefendantDetail(defendantDetail)
@@ -330,6 +312,10 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     private CaseDocument getCaseDocument(UUID caseId, UUID materialId) {
         return new CaseDocument(randomUUID(), materialId, "SJPN", ZonedDateTime.now(), caseId, 1);
+    }
+
+    private String getUrnForCaseId(final UUID caseId) {
+        return "TFL" + caseId.toString();
     }
 
 }

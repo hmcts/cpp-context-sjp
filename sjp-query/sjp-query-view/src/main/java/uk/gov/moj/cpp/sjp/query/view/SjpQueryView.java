@@ -77,12 +77,6 @@ public class SjpQueryView {
                 caseService.findCaseByUrn(envelope.payloadAsJsonObject().getString(FIELD_URN)));
     }
 
-    @Handles("sjp.query.sjp-case-by-urn")
-    public JsonEnvelope findSjpCaseByUrn(final JsonEnvelope envelope) {
-        final CaseView sjpCaseByUrn = caseService.findSjpCaseByUrn(envelope.payloadAsJsonObject().getString(FIELD_URN));
-        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(sjpCaseByUrn);
-    }
-
     @Handles("sjp.query.cases-search")
     public JsonEnvelope searchCasesByPersonId(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASES_SEARCH).apply(

@@ -21,15 +21,13 @@ public class CaseDetailBuilder {
 
     private UUID id = CASE_ID;
     private String urn = URN;
-    private String ptiUrn;
     private String prosecutingAuthority = "CPS";
     private Set<CaseDocument> caseDocuments = new LinkedHashSet<>();
     private DefendantDetail defendant;
+    //TODO no longer used
     private String initiationCode;
     private Boolean completed;
     private Boolean assigned;
-    private String summonsCode;
-    private String libraOriginatingOrg;
     private BigDecimal costs;
     private LocalDate postingDate;
     private ZonedDateTime createdOn = ZonedDateTime.now(UTC);
@@ -52,11 +50,6 @@ public class CaseDetailBuilder {
         return this;
     }
 
-    public CaseDetailBuilder withPtiUrn(String ptiUrn) {
-        this.ptiUrn = ptiUrn;
-        return this;
-    }
-
     public CaseDetailBuilder withProsecutingAuthority(String prosecutingAuthority) {
         this.prosecutingAuthority = prosecutingAuthority;
         return this;
@@ -74,16 +67,6 @@ public class CaseDetailBuilder {
 
     public CaseDetailBuilder withInitiationCode(String initiationCode) {
         this.initiationCode = initiationCode;
-        return this;
-    }
-
-    public CaseDetailBuilder withLibraOriginatingOrg(String libraOriginatingOrg) {
-        this.libraOriginatingOrg = libraOriginatingOrg;
-        return this;
-    }
-
-    public CaseDetailBuilder withSummonsCode(String summonsCode) {
-        this.summonsCode = summonsCode;
         return this;
     }
 

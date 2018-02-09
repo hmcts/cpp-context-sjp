@@ -1,32 +1,36 @@
 {
   "id": "b1ae452f-da24-48ac-bac3-d13e528c2da6",
+  "urn": "TFL1234567",
   "completed": true,
   "assigned": true,
-  "defendants": [
-    {
-      "id": "1613a21d-d627-46f7-95f0-c9dd7b32c39e",
-      "person": {
-        "id": "ab1df96b-9528-4123-9081-03b3974e0150",
-        "firstName": "John",
-        "lastName": "Protractor-3076799829",
-        "dateOfBirth": "1977-10-17",
-        "address": {
-          "address1": "Flat 55",
-          "address2": "1 Oxford Road",
-          "address3": "Croydon",
-          "address4": "Surrey",
-          "postCode": "SW99 1AA"
-        }
+  "defendant": {
+    "id": "1613a21d-d627-46f7-95f0-c9dd7b32c39e",
+    "personalDetails": {
+      "id": "ab1df96b-9528-4123-9081-03b3974e0150",
+      "firstName": "John",
+      "lastName": "Protractor-3076799829",
+      "dateOfBirth": "1977-10-17",
+      "address": {
+        "address1": "Flat 55",
+        "address2": "1 Oxford Road",
+        "address3": "Croydon",
+        "address4": "Surrey",
+        "postCode": "SW99 1AA"
       },
-      "offences": [
-        {
-          "id": "8fd81570-65d3-4424-b630-537006afeb62",
-          "title": "Public service vehicle - passenger use altered / defaced   ticket",
-          "wording": "On 10/08/2016 At threadneedle street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction",
-          "pendingWithdrawal": true,
-          "plea": "GUILTY"
-        }
-      ]
-    }
-  ]
+      "contactDetails": {
+        "home": "123456789",
+        "mobile": "1234566789",
+        "email": "test@test.com"
+      }
+    },
+    "offences": [
+      {
+        "id": "8fd81570-65d3-4424-b630-537006afeb62",
+        "title": "Public service vehicle - passenger use altered / defaced   ticket",
+        "wording": "On 10/08/2016 At threadneedle street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction",
+        "pendingWithdrawal": true,
+        "plea": "GUILTY"
+      }
+    ]
+  }
 }

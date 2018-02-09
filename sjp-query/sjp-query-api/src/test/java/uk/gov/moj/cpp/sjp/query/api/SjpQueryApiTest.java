@@ -23,7 +23,6 @@ public class SjpQueryApiTest {
                         method("getOldestCaseAge").thatHandles("sjp.query.oldest-case-age").withRequesterPassThrough(),
                         method("findCase").thatHandles("sjp.query.case").withRequesterPassThrough(),
                         method("findCaseByUrn").thatHandles("sjp.query.case-by-urn").withRequesterPassThrough(),
-                        method("findSjpCaseByUrn").thatHandles("sjp.query.sjp-case-by-urn").withRequesterPassThrough(),
                         method("findCaseByUrnPostcode").thatHandles("sjp.query.case-by-urn-postcode").withRequesterPassThrough(),
                         method("findFinancialMeans").thatHandles("sjp.query.financial-means").withRequesterPassThrough(),
                         method("findEmployer").thatHandles("sjp.query.employer").withRequesterPassThrough(),

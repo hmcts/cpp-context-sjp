@@ -20,6 +20,8 @@ public class CitizenHelper {
         poll(getCaseByUrnAndPostcode(urn, postcode))
                 .until(
                         status().is(OK),
+                        payload().isJson(withJsonPath("$.id")),
+                        payload().isJson(withJsonPath("$.urn", equalTo(urn))),
                         payload().isJson(withJsonPath("$.completed", equalTo(expected.getBoolean("completed")))),
                         payload().isJson(withJsonPath("$.assigned", equalTo(expected.getBoolean("assigned")))),
                         payload().isJson(withJsonPath("$.defendant.personalDetails.firstName", equalTo(person(expected).getString("firstName")))),
@@ -31,6 +33,7 @@ public class CitizenHelper {
                         payload().isJson(withJsonPath("$.defendant.personalDetails.address.address4", equalTo(address(expected).getString("address4")))),
                         payload().isJson(withJsonPath("$.defendant.personalDetails.address.postcode", equalTo(postcode))),
                         payload().isJson(withJsonPath("$.defendant.offences[0].title", equalTo(offence(expected).getString("title")))),
+                        payload().isJson(withJsonPath("$.defendant.offences[0].legislation", equalTo(offence(expected).getString("legislation")))),
                         payload().isJson(withJsonPath("$.defendant.offences[0].wording", equalTo(offence(expected).getString("wording")))),
                         payload().isJson(withJsonPath("$.defendant.offences[0].pendingWithdrawal", equalTo(offence(expected).getBoolean("pendingWithdrawal"))))
                 );

@@ -52,11 +52,6 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
-    @Handles("sjp.query.sjp-case-by-urn")
-    public JsonEnvelope findSjpCaseByUrn(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
     @Handles("sjp.query.case-by-urn-postcode")
     public JsonEnvelope findCaseByUrnPostcode(final JsonEnvelope query) {
 

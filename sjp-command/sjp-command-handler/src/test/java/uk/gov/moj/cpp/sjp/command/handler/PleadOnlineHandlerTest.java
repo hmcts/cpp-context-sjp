@@ -43,7 +43,7 @@ public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
         final PleadOnline pleadOnline = new PleadOnline(
                 defendantId.toString(), new ArrayList<>(), "unavailability",
                 "French", "witnessDetails", "witnessDispute",
-                new PersonalDetails(UUID.randomUUID(), "firstName", "lastName",
+                new PersonalDetails("firstName", "lastName",
                         new Address("address"),
                         new ContactDetails("email", "homeTelephone", "mobile"),
                         null, "nationalInsuranceNumber"),

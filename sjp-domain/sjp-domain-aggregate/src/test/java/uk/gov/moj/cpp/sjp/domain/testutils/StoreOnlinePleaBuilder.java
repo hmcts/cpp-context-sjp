@@ -81,7 +81,7 @@ public class StoreOnlinePleaBuilder {
     }
 
     private static PleadOnline generatePleadOnline(final boolean includeTrialRequestedFields, final String defendantId, final List<Offence> offences, final String interpreterLanguage) {
-        final PersonalDetails person = new PersonalDetails(UUID.fromString(defendantId), PERSON_FIRST_NAME, PERSON_LAST_NAME,
+        final PersonalDetails person = new PersonalDetails(PERSON_FIRST_NAME, PERSON_LAST_NAME,
                 new Address(PERSON_ADDRESS_1, PERSON_ADDRESS_2, PERSON_ADDRESS_3, PERSON_ADDRESS_4, PERSON_POSTCODE),
                 new ContactDetails(PERSON_EMAIL, PERSON_HOME_PHONE, PERSON_MOBILE), PERSON_DOB, PERSON_NI_NUMBER);
         final FinancialMeans financialMeans = new FinancialMeans(null, new Income(IncomeFrequency.MONTHLY, INCOME_AMOUNT),
@@ -119,7 +119,7 @@ public class StoreOnlinePleaBuilder {
                 })
                 .collect(Collectors.toList());
 
-        final PersonalDetails person = new PersonalDetails(UUID.fromString(defendantId), PERSON_FIRST_NAME, PERSON_LAST_NAME,
+        final PersonalDetails person = new PersonalDetails(PERSON_FIRST_NAME, PERSON_LAST_NAME,
                 new Address(PERSON_ADDRESS_1, PERSON_ADDRESS_2, PERSON_ADDRESS_3, PERSON_ADDRESS_4, PERSON_POSTCODE),
                 new ContactDetails(PERSON_EMAIL, PERSON_HOME_PHONE, PERSON_MOBILE), PERSON_DOB, PERSON_NI_NUMBER);
         final FinancialMeans financialMeans = new FinancialMeans(null, new Income(IncomeFrequency.MONTHLY, INCOME_AMOUNT),

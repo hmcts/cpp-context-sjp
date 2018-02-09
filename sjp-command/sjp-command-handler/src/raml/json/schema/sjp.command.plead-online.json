@@ -38,9 +38,6 @@
     "personalDetails": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string"
-        },
         "firstName": {
           "type": "string"
         },
@@ -76,7 +73,6 @@
         }
       },
       "required": [
-        "id",
         "firstName",
         "lastName",
         "address",

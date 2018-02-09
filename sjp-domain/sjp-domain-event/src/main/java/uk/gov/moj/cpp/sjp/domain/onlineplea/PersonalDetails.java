@@ -7,7 +7,6 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public class PersonalDetails {
-    private final UUID id;
     private final String firstName;
     private final String lastName;
     private final Address address;
@@ -15,19 +14,14 @@ public class PersonalDetails {
     private final LocalDate dateOfBirth;
     private final String nationalInsuranceNumber;
 
-    public PersonalDetails(final UUID id, final String firstName, final String lastName, final Address address, final ContactDetails contactDetails,
+    public PersonalDetails(final String firstName, final String lastName, final Address address, final ContactDetails contactDetails,
                            final LocalDate dateOfBirth, final String nationalInsuranceNumber) {
-        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
         this.contactDetails = contactDetails;
         this.dateOfBirth = dateOfBirth;
         this.nationalInsuranceNumber = nationalInsuranceNumber;
-    }
-
-    public UUID getId() {
-        return id;
     }
 
     public String getFirstName() {

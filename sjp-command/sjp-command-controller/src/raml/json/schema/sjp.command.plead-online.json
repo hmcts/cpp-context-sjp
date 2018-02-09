@@ -206,9 +206,6 @@
             "type": "number"
           }
         },
-        "required" : [
-          "amount"
-        ],
         "additionalProperties": false
       }
     }

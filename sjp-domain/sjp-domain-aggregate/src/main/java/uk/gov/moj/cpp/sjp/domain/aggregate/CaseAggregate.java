@@ -22,7 +22,6 @@ import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.Person;
-import uk.gov.moj.cpp.sjp.domain.PersonInfoDetails;
 import uk.gov.moj.cpp.sjp.domain.PleaType;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
@@ -71,8 +70,6 @@ import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
-import uk.gov.moj.cpp.sjp.event.PersonInfoAdded;
-import uk.gov.moj.cpp.sjp.event.PersonInfoUpdated;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdateDenied;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
@@ -100,7 +97,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseAggregate.class);
 
@@ -655,12 +652,6 @@ public class CaseAggregate implements Aggregate {
         return apply(Stream.of(defendantDetailsUpdated));
     }
 
-    public Stream<Object> addPersonInfo(UUID id, UUID caseId, PersonInfoDetails personInfoDetails) {
-        return apply(Stream.of(
-                new PersonInfoAdded(id, caseId, personInfoDetails)
-        ));
-    }
-
     private boolean assertCaseIdNotNullAndMatch(String caseId) {
         if (caseId == null) {
             LOGGER.warn("Case ID is null");
@@ -690,6 +681,11 @@ public class CaseAggregate implements Aggregate {
                             .addAll(e.getDefendant().getOffences().stream()
                                     .map(uk.gov.moj.cpp.sjp.domain.Offence::getId)
                                     .collect(Collectors.toSet()));
+
+                    defendantTitle = e.getDefendant().getTitle();
+                    defendantDateOfBirth = e.getDefendant().getDateOfBirth();
+                    defendantAddress = e.getDefendant().getAddress();
+
                 }),
                 when(CaseCompleted.class)
                         .apply(e -> this.caseCompleted = true),
@@ -807,15 +803,7 @@ public class CaseAggregate implements Aggregate {
                     defendantDateOfBirth = e.getDateOfBirth();
                     defendantAddress = e.getAddress();
                 }),
-                when(PersonInfoAdded.class).apply(e -> {
-                    defendantTitle = e.getPersonInfoDetails().getTitle();
-                    defendantDateOfBirth = e.getPersonInfoDetails().getDateOfBirth();
-                    defendantAddress = e.getPersonInfoDetails().getAddress();
-                }),
                 when(DefendantDetailsUpdateFailed.class).apply(e -> {
-                    // no change in aggregate state
-                }),
-                when(PersonInfoUpdated.class).apply(e -> {
                     // no change in aggregate state
                 }),
                 when(SjpCaseCreated.class).apply(e -> apply(Stream.of(convertSjpCaseCreatedToCaseReceived(e)))),

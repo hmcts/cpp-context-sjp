@@ -7,16 +7,20 @@ import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateDefendantTest.Def
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.cpp.sjp.domain.Address;
-import uk.gov.moj.cpp.sjp.domain.PersonInfoDetails;
+import uk.gov.moj.cpp.sjp.domain.Defendant;
+import uk.gov.moj.cpp.sjp.domain.Person;
+import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.collect.Lists;
 import org.junit.Test;
 
 public class CaseAggregateDefendantTest {
@@ -25,7 +29,6 @@ public class CaseAggregateDefendantTest {
 
     private static final UUID id = UUID.randomUUID();
     private static final UUID caseId = UUID.randomUUID();
-    private static final UUID personId = UUID.randomUUID();
     private static final UUID defendantId = UUID.randomUUID();
     private static final String gender = "M";
     private static final String firstName = "Random";
@@ -50,7 +53,7 @@ public class CaseAggregateDefendantTest {
     }
 
     private void updatesToValidTitle(String validTitle) {
-        givenDefaultPersonInfoWasAdded();
+        givenCaseWasReceivedWithDetaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 defaultDefendantData().withNewTitle(validTitle)
@@ -64,7 +67,7 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void rejectsNullTitleIfPreviouslySet() {
-        givenDefaultPersonInfoWasAdded();
+        givenCaseWasReceivedWithDetaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 defaultDefendantData().withNewTitle(null)
@@ -80,7 +83,7 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void rejectsEmptyTitleIfPreviouslySet() {
-        givenDefaultPersonInfoWasAdded();
+        givenCaseWasReceivedWithDetaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 defaultDefendantData().withNewTitle(" ")
@@ -96,7 +99,7 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void acceptsEmptyTitleIfPreviouslyNotSet() {
-        givenDefendantPersonInfoWasAdded(defaultDefendantData().withNewTitle(" "));
+        givenCaseWasReceivedWithDefendant(defaultDefendantData().withNewTitle(" "));
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 defaultDefendantData().withNewTitle("")
@@ -139,7 +142,7 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void rejectsNullDateOfBirth() {
-        givenDefaultPersonInfoWasAdded();
+        givenCaseWasReceivedWithDetaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 defaultDefendantData().withNewDateOfBirth(null)
@@ -155,7 +158,7 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void acceptsNewDateOfBirth() {
-        givenDefaultPersonInfoWasAdded();
+        givenCaseWasReceivedWithDetaultDefendantData();
 
         final LocalDate newDateOfBirth = LocalDates.from("1990-05-05");
         final List<Object> events = whenTheDefendantIsUpdated(
@@ -170,7 +173,7 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void rejectsAddressWithMissingStreet() {
-        givenDefaultPersonInfoWasAdded();
+        givenCaseWasReceivedWithDetaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 defaultDefendantData().withNewAddress(new Address(" ", "address2",
@@ -187,7 +190,7 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void rejectsAddressWithMissingTown() {
-        givenDefaultPersonInfoWasAdded();
+        givenCaseWasReceivedWithDetaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 defaultDefendantData().withNewAddress(new Address("address1", "address2",
@@ -204,7 +207,7 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void rejectsAddressWithMissingPostCode() {
-        givenDefaultPersonInfoWasAdded();
+        givenCaseWasReceivedWithDetaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 defaultDefendantData().withNewAddress(new Address("address1", "address2",
@@ -221,7 +224,7 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void acceptsNewAddress() {
-        givenDefaultPersonInfoWasAdded();
+        givenCaseWasReceivedWithDetaultDefendantData();
 
         final Address newAddress = new Address("new street", "", "", "new town", "CR02FT");
         final List<Object> events = whenTheDefendantIsUpdated(
@@ -244,7 +247,6 @@ public class CaseAggregateDefendantTest {
     static class DefendantData {
         UUID id = CaseAggregateDefendantTest.id;
         UUID caseId = CaseAggregateDefendantTest.caseId;
-        UUID personId = CaseAggregateDefendantTest.personId;
         UUID defendantId = CaseAggregateDefendantTest.defendantId;
         String gender = CaseAggregateDefendantTest.gender;
         String firstName = CaseAggregateDefendantTest.firstName;
@@ -288,24 +290,36 @@ public class CaseAggregateDefendantTest {
         }
     }
 
-    private void givenDefaultPersonInfoWasAdded() {
-        givenDefendantPersonInfoWasAdded(defaultDefendantData());
+    private void givenCaseWasReceivedWithDetaultDefendantData() {
+        givenCaseWasReceivedWithDefendant(defaultDefendantData());
     }
 
-    private void givenDefendantPersonInfoWasAdded(DefendantData defendantData) {
-        PersonInfoDetails personInfoDetails = new PersonInfoDetails(defendantData.personId, defendantData.title,
-                defendantData.firstName, defendantData.lastName, defendantData.dateOfBirth, defendantData.address);
-        caseAggregate.addPersonInfo(defendantData.id, defendantData.caseId, personInfoDetails);
+    private void givenCaseWasReceivedWithDefendant(DefendantData defendantData) {
+        caseAggregate.receiveCase(
+                CaseBuilder.aDefaultSjpCase().withDefendant(new Defendant(
+                        defendantData.id,
+                        defendantData.title,
+                        defendantData.firstName,
+                        defendantData.lastName,
+                        defendantData.dateOfBirth,
+                        defendantData.gender,
+                        defendantData.address,
+                        0,
+                        Lists.newArrayList()
+                )).build(),
+                ZonedDateTime.now()
+        );
     }
 
     private List<Object> whenTheDefendantIsUpdated(final DefendantData updatedDefendantData) {
-        PersonInfoDetails personInfoDetails = new PersonInfoDetails(updatedDefendantData.personId, updatedDefendantData.title,
-                updatedDefendantData.firstName, updatedDefendantData.lastName, updatedDefendantData.dateOfBirth, updatedDefendantData.address);
+        Person person = new Person(updatedDefendantData.title,
+                updatedDefendantData.firstName, updatedDefendantData.lastName, updatedDefendantData.dateOfBirth, 
+                updatedDefendantData.gender, updatedDefendantData.address);
 
         final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(updatedDefendantData.caseId,
                 updatedDefendantData.defendantId, updatedDefendantData.gender, updatedDefendantData.nationalInsuranceNumber,
                 updatedDefendantData.email, updatedDefendantData.homeNumber, updatedDefendantData.mobileNumber,
-                personInfoDetails);
+                person);
 
         return eventStream.collect(Collectors.toList());
     }

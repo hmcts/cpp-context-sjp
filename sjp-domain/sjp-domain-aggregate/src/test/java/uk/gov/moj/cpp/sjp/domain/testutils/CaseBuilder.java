@@ -25,7 +25,7 @@ public class CaseBuilder {
     public static final String TIME_OF_HEARING = "11:00";
     private static BigDecimal COMPENSATION = BigDecimal.valueOf(11.11);
     public static final List<Offence> OFFENCES = Collections.singletonList(
-            new Offence(UUID.randomUUID(),0, null, null, 0, null, null, null, null, COMPENSATION)
+            new Offence(UUID.randomUUID(), 0, null, null, 0, null, null, null, null, COMPENSATION)
     );
     public static final int NUM_PREVIOUS_CONVICTIONS = 3;
     public static BigDecimal COSTS = BigDecimal.valueOf(33.33);
@@ -60,6 +60,11 @@ public class CaseBuilder {
 
     public static CaseBuilder aDefaultSjpCase() {
         return new CaseBuilder();
+    }
+
+    public CaseBuilder withDefendant(Defendant defendant) {
+        this.defendant = defendant;
+        return this;
     }
 
     public Case build() {

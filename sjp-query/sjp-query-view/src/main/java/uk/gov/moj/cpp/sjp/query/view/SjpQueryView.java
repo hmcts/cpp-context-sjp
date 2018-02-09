@@ -12,9 +12,8 @@ import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
-import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
-import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.service.EmployerService;
+import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -29,6 +28,7 @@ public class SjpQueryView {
 
     static final String FIELD_CASE_ID = "caseId";
     static final String FIELD_URN = "urn";
+    static final String FIELD_POSTCODE = "postcode";
     static final String FIELD_QUERY = "q";
     static final String FIELD_DEFENDANT_ID = "defendantId";
     static final String FIELD_DAYS_SINCE_POSTING = "daysSincePosting";
@@ -75,6 +75,13 @@ public class SjpQueryView {
     public JsonEnvelope findCaseByUrn(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(
                 caseService.findCaseByUrn(envelope.payloadAsJsonObject().getString(FIELD_URN)));
+    }
+
+    @Handles("sjp.query.case-by-urn-postcode")
+    public JsonEnvelope findCaseByUrnPostcode(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(
+                caseService.findCaseByUrnPostcode(envelope.payloadAsJsonObject().getString(FIELD_URN),
+                        envelope.payloadAsJsonObject().getString(FIELD_POSTCODE)));
     }
 
     @Handles("sjp.query.cases-search")

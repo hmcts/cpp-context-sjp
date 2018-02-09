@@ -13,7 +13,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 
+import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
@@ -33,10 +35,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
+import javax.persistence.NonUniqueResultException;
 
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.After;
@@ -50,10 +49,17 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     private static final Map<UUID, CaseDetail> CASE_HOLDER = new HashMap<>();
 
+    private static final String PROSECUTING_AUTHORITY_PREFIX = TFL.name();
+
     private static final UUID VALID_CASE_ID_1 = randomUUID();
     private static final UUID VALID_CASE_ID_2 = randomUUID();
     private static final UUID VALID_CASE_ID_3 = randomUUID();
     private static final UUID VALID_CASE_ID_4 = randomUUID();
+
+    private static final String VALID_URN_1 = randomUrn();
+    private static final String VALID_URN_2 = randomUrn();
+    private static final String VALID_URN_3 = randomUrn();
+    private static final String VALID_URN_4 = randomUrn();
 
     private static final UUID VALID_DEFENDANT_ID_1 = randomUUID();
     private static final UUID VALID_DEFENDANT_ID_2 = randomUUID();
@@ -64,6 +70,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     private static final BigDecimal COSTS = BigDecimal.valueOf(10.33);
     private static final LocalDate POSTING_DATE = LocalDate.parse("2015-12-02", FORMATTER);
     private static final String ENTERPRISE_ID = "2K2SLYFC743H";
+    private static final String POSTCODE = "CR0 1AB";
 
     @Inject
     private CaseRepository caseRepository;
@@ -73,12 +80,15 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     @Override
     public void setUpBefore() {
         // given 3 cases exist in database
-        CaseDetail case1 = getCase(VALID_CASE_ID_1, VALID_DEFENDANT_ID_1);
+        CaseDetail case1 = getCase(VALID_CASE_ID_1, VALID_URN_1, VALID_DEFENDANT_ID_1);
+        case1.setInitiationCode("J");
         case1.setEnterpriseId(ENTERPRISE_ID);
         // case 2 is withdrawn
-        CaseDetail case2 = getCase(VALID_CASE_ID_2, VALID_DEFENDANT_ID_2, VALID_MATERIAL_ID, true);
-        CaseDetail case3 = getCase(VALID_CASE_ID_3);
-        CaseDetail case4 = getCase(VALID_CASE_ID_4, VALID_DEFENDANT_ID_4);
+        CaseDetail case2 = getCase(VALID_CASE_ID_2, VALID_URN_2, VALID_DEFENDANT_ID_2, VALID_MATERIAL_ID, true, POSTCODE);
+        CaseDetail case3 = getCase(VALID_CASE_ID_3, VALID_URN_3);
+        CaseDetail case4 = getCase(VALID_CASE_ID_4, VALID_URN_4, VALID_DEFENDANT_ID_4);
+
+        CaseDocument caseDocument = case2.getCaseDocuments().iterator().next();
 
         caseRepository.save(case1);
         caseRepository.save(case2);
@@ -106,7 +116,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldFindCaseMatchingUrn() {
-        CaseDetail actualCase = caseRepository.findByUrn(getUrnForCaseId(VALID_CASE_ID_1));
+        CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_1);
         assertNotNull(actualCase);
         assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
         assertThat(caseCreatedOn, is(actualCase.getDateTimeCreated()));
@@ -115,7 +125,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldFindCaseMatchingUrnIgnoringCase() {
-        CaseDetail actualCase = caseRepository.findByUrn(getUrnForCaseId(VALID_CASE_ID_1).toLowerCase());
+        CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_1.toLowerCase());
         assertNotNull(actualCase);
         assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
     }
@@ -165,7 +175,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     public void shouldUpdateLibraCaseReopenedDetails() {
         LocalDate reopenedDate = LocalDate.now();
         final String reason = "REASON";
-        CaseDetail actualCase = caseRepository.findByUrn(getUrnForCaseId(VALID_CASE_ID_1));
+        CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_1);
         actualCase.setLibraCaseNumber("LIBRA12345");
         actualCase.setReopenedDate(reopenedDate);
         actualCase.setReopenedInLibraReason(reason);
@@ -209,7 +219,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     @Test
     public void shouldFindCaseByMaterialIdWhenMaterialIsDocument() {
 
-        CaseDetail actualCase = caseRepository.findByUrn(getUrnForCaseId(VALID_CASE_ID_2));
+        CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_2);
 
         CaseDetail caseReturned = caseRepository.findByMaterialId(VALID_MATERIAL_ID);
 
@@ -235,7 +245,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     }
 
     @Test
-    public void shouldNotFindNonExistingCase() {
+    public void shouldNotFindNonExistingCase() throws Exception {
         final UUID unkownId = UUID.randomUUID();
         final CaseDetail caseDetail = caseRepository.findBy(unkownId);
 
@@ -247,12 +257,14 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
         final LocalDate oldestPostingDate = POSTING_DATE.minusDays(1);
 
-        final CaseDetail oldestUncompletedCase = getCase(randomUUID());
+        final CaseDetail oldestUncompletedCase = getCase(randomUUID(), randomUrn());
+        oldestUncompletedCase.setInitiationCode("J");
         oldestUncompletedCase.setCompleted(false);
         oldestUncompletedCase.setPostingDate(oldestPostingDate);
         caseRepository.save(oldestUncompletedCase);
 
-        final CaseDetail completedCase = getCase(randomUUID());
+        final CaseDetail completedCase = getCase(randomUUID(), randomUrn());
+        completedCase.setInitiationCode("J");
         completedCase.setCompleted(true);
         completedCase.setPostingDate(POSTING_DATE.minusDays(2));
         caseRepository.save(completedCase);
@@ -262,6 +274,85 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         CASE_HOLDER.put(oldestUncompletedCase.getId(), oldestUncompletedCase);
 
         assertThat(caseRepository.findOldestUncompletedPostingDate(), equalTo(oldestPostingDate));
+    }
+
+    @Test
+    public void shouldFindCaseMatchingUrnWithPrefixAndPostcode() {
+        final CaseDetail actualCase = caseRepository.findByUrnPostcode(VALID_URN_1, POSTCODE);
+
+        assertNotNull(actualCase);
+        assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
+        assertEquals("URN should match URN of case 1", VALID_URN_1, actualCase.getUrn());
+
+    }
+
+    @Test
+    public void shouldFindCaseMatchingUrnWithPrefixAndPostcodeWithExtraSpaces() {
+        final CaseDetail actualCase = caseRepository.findByUrnPostcode(VALID_URN_1, String.format("  %s   ", POSTCODE));
+
+        assertNotNull(actualCase);
+        assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
+        assertEquals("URN should match URN of case 1", VALID_URN_1, actualCase.getUrn());
+
+    }
+
+    @Test
+    public void shouldFindCaseMatchingUrnWithoutPrefixAndPostcode() {
+        final CaseDetail actualCase = caseRepository.findByUrnPostcode(VALID_URN_1.replace(PROSECUTING_AUTHORITY_PREFIX, ""), POSTCODE);
+
+        assertNotNull(actualCase);
+        assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
+        assertEquals("URN should match URN of case 1", VALID_URN_1, actualCase.getUrn());
+
+    }
+
+    @Test
+    public void shouldFindCaseWhenUrnWithoutPrefixSameButPostcodeDifferent() {
+
+        //given
+        final String urn1 = "TFL12345678A";
+        final String postcode1 = "AB1 2CD";
+
+        final String urn2 = "TVL12345678A";
+        final String postcode2 = "EF1 2GH";
+
+        final CaseDetail caseDetail1 = getCase(randomUUID(), urn1, postcode1);
+        final CaseDetail caseDetail2 = getCase(randomUUID(), urn2, postcode2);
+
+        caseRepository.save(caseDetail1);
+        caseRepository.save(caseDetail2);
+        CASE_HOLDER.put(caseDetail1.getId(), caseDetail1);
+        CASE_HOLDER.put(caseDetail2.getId(), caseDetail2);
+
+        //when
+        final CaseDetail actualCase = caseRepository.findByUrnPostcode("12345678A", postcode1);
+
+        //then
+        assertEquals(urn1, actualCase.getUrn());
+    }
+
+    @Test(expected = NonUniqueResultException.class)
+    public void shouldThrowExceptionWhenTwoCasesHaveSameUrnWithoutPrefixAndPostcode() {
+
+        //given
+        final String urn1 = "TFL12345678A";
+        final String postcode1 = "AB1 2CD";
+
+        final String urn2 = "TVL12345678A";
+        final String postcode2 = "AB1 2CD";
+
+        final CaseDetail caseDetail1 = getCase(randomUUID(), urn1, postcode1);
+        final CaseDetail caseDetail2 = getCase(randomUUID(), urn2, postcode2);
+
+        caseRepository.save(caseDetail1);
+        caseRepository.save(caseDetail2);
+        CASE_HOLDER.put(caseDetail1.getId(), caseDetail1);
+        CASE_HOLDER.put(caseDetail2.getId(), caseDetail2);
+
+        //when
+        final CaseDetail actualCase = caseRepository.findByUrnPostcode("12345678A", postcode1);
+
+        //then throws exception
     }
 
     private void isCaseNotPendingWithdrawal(CaseDetail caseDetail) {
@@ -279,25 +370,31 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         checkAllOffencesForACase(caseDetail, true);
     }
 
-    private CaseDetail getCase(UUID caseId) {
-        return getCase(caseId, randomUUID());
+    private CaseDetail getCase(UUID caseId, String urn) {
+        return getCase(caseId, urn, randomUUID());
     }
 
-    private CaseDetail getCase(UUID caseId, UUID defendantId) {
-        return getCase(caseId, defendantId, randomUUID(), false);
+    private CaseDetail getCase(UUID caseId, String urn, String postcode) {
+        return getCase(caseId, urn, randomUUID(), randomUUID(), false, postcode);
     }
 
-    private CaseDetail getCase(UUID caseId, UUID defendantId, UUID materialId, boolean withdrawn) {
+    private CaseDetail getCase(UUID caseId, String urn, UUID defendantId) {
+        return getCase(caseId, urn, defendantId, randomUUID(), false, POSTCODE);
+    }
 
+    private CaseDetail getCase(UUID caseId, String urn, UUID defendantId,  UUID materialId, boolean withdrawn, String postcode) {
 
         final DefendantDetail defendantDetail = DefendantDetailBuilder.aDefendantDetail()
                 .withId(defendantId)
                 .withOffencePendingWithdrawal(withdrawn)
+                .withPostcode(postcode)
                 .build();
+
 
         final CaseDetail caseDetail = CaseDetailBuilder.aCase()
                 .withCaseId(caseId)
-                .withUrn(getUrnForCaseId(caseId))
+                .withUrn(urn)
+                .withProsecutingAuthority(PROSECUTING_AUTHORITY_PREFIX)
                 .withCosts(COSTS)
                 .withPostingDate(POSTING_DATE)
                 .addDefendantDetail(defendantDetail)
@@ -314,8 +411,8 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         return new CaseDocument(randomUUID(), materialId, "SJPN", ZonedDateTime.now(), caseId, 1);
     }
 
-    private String getUrnForCaseId(final UUID caseId) {
-        return "TFL" + caseId.toString();
+    private static String randomUrn() {
+        return PROSECUTING_AUTHORITY_PREFIX + RandomGenerator.integer(100000000, 999999999).next();
     }
 
 }

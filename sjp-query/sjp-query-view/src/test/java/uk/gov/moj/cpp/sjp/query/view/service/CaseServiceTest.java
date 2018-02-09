@@ -64,6 +64,7 @@ import java.util.stream.Collectors;
 
 import javax.json.JsonObject;
 import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -76,7 +77,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class CaseServiceTest {
 
     private static final UUID CASE_ID = randomUUID();
-    private static final String URN = "urn";
+    private static final String URN = "TFL1234";
     private static final String PROSECUTING_AUTHORITY = "prosecutingAuthority";
     private static final Boolean COMPLETED = Boolean.TRUE;
     private static final String INITIATION_CODE = "J";
@@ -94,6 +95,7 @@ public class CaseServiceTest {
     private static final LocalDate POSTING_DATE = LocalDate.now();
     private static final String FIRST_NAME = "Adam";
     private static final String LAST_NAME = "Zuma";
+    private static final String POSTCODE = "AB1 2CD";
 
     private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
 
@@ -193,6 +195,28 @@ public class CaseServiceTest {
     public void shouldHandleWhenNoCaseFoundForUrn() {
         given(caseRepository.findByUrn(URN)).willThrow(new NoResultException("boom"));
         assertThat(service.findCaseByUrn(URN), nullValue());
+    }
+
+    @Test
+    public void shouldFindByUrnPostcode() {
+        CaseDetail caseDetail = createCaseDetail();
+
+        given(caseRepository.findByUrnPostcode(URN, POSTCODE)).willReturn(caseDetail);
+        CaseView caseView = service.findCaseByUrnPostcode(URN, POSTCODE);
+
+        assertThat(caseView.getId(), is(CASE_ID.toString()));
+    }
+
+    @Test
+    public void shouldReturnNullWhenNoCaseFoundForUrnAndPostcode() {
+        given(caseRepository.findByUrnPostcode(URN, POSTCODE)).willReturn(null);
+        assertThat(service.findCaseByUrnPostcode(URN, POSTCODE), nullValue());
+    }
+
+    @Test
+    public void shouldReturnNullWhenMultipleCaseFoundForUrnAndPostcode() {
+        given(caseRepository.findByUrnPostcode(URN, POSTCODE)).willThrow(new NonUniqueResultException());
+        assertThat(service.findCaseByUrnPostcode(URN, POSTCODE), nullValue());
     }
 
     private void shouldSearchCases(final BiFunction<UUID, List<CaseDetail>, Object> setUpFunction,
@@ -400,7 +424,7 @@ public class CaseServiceTest {
         final LocalDate TO_DATE = LocalDates.from("2017-01-10");
 
         DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null, 0);
-        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "URN", null, null, null, null, null, defendantDetail, null, null);
+        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", null, null, null, null, null, defendantDetail, null, null);
 
         CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
@@ -431,7 +455,7 @@ public class CaseServiceTest {
         final LocalDate TO_DATE = LocalDates.from("2017-01-10");
 
         DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null, 0);
-        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "URN", null, null, null, null, null, defendantDetail, null, null);
+        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", null, null, null, null, null, defendantDetail, null, null);
         CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
                 ZonedDateTime.now(), caseDetail.getId(), null);

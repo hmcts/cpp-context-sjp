@@ -118,14 +118,14 @@ public class SjpQueryControllerTest {
 
         final JsonEnvelope result = sjpQueryController.findCaseByUrnPostcode(query);
 
-        verify(requester).request(argThat(jsonEnvelope(metadata().withName("sjp.query.case-by-urn"),
+        verify(requester).request(argThat(jsonEnvelope(metadata().withName("sjp.query.case-by-urn-postcode"),
                 payloadIsJson(withJsonPath("$.urn", equalTo(urn))))));
 
         if (validUrn && validPostcode) {
             verify(caseConverter).addOffenceReferenceDataToOffences(caseDetails.payloadAsJsonObject(), query);
         }
 
-        assertThat(result.metadata().name(), equalTo("sjp.query.case-by-urn-response"));
+        assertThat(result.metadata().name(), equalTo("sjp.query.case-by-urn-postcode"));
         assertThat(result.payload(), equalTo(resultPayload));
     }
 

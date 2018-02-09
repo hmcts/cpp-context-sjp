@@ -52,6 +52,13 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     @Query(value = "FROM CaseDetail cd WHERE UPPER(cd.urn) = UPPER(:urn)")
     public abstract CaseDetail findByUrn(@QueryParam("urn") String urn);
 
+    @Query(value = "SELECT cd FROM CaseDetail cd " +
+            "INNER JOIN cd.defendant dd " +
+            "WHERE (UPPER(cd.urn) = UPPER(:urn) OR UPPER(REGEXP_REPLACE(cd.urn, '^[a-zA-Z]+', '')) = UPPER(:urn)) " +
+            "AND UPPER(REPLACE(dd.personalDetails.address.postcode,' ','')) = UPPER(REPLACE(:postcode, ' ',''))", singleResult = SingleResultType.OPTIONAL)
+    public abstract CaseDetail findByUrnPostcode(@QueryParam("urn") String urn,
+                                                 @QueryParam("postcode") String postcode);
+
     @Query(value = "select cd from CaseDetail cd INNER JOIN cd.defendant dd WHERE dd.id = :defendantId")
     public abstract List<CaseDetail> findByDefendantId(@QueryParam("defendantId") final UUID defendantId);
 

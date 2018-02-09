@@ -48,12 +48,6 @@ public class CitizenHelper {
                 .getJsonObject("personalDetails");
     }
 
-    private JsonObject contactDetails(JsonObject caseObject) {
-        return caseObject.getJsonObject("defendant")
-                .getJsonObject("personalDetails")
-                .getJsonObject("contactDetails");
-    }
-
     private JsonObject offence(JsonObject caseObject) {
         return caseObject.getJsonObject("defendant")
                 .getJsonArray("offences")

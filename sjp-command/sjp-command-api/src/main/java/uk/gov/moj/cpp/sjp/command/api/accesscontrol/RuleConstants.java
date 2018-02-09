@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.command.api.accesscontrol;
 import static java.util.Collections.singletonList;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public final class RuleConstants {
@@ -72,6 +73,10 @@ public final class RuleConstants {
 
     public static List<String> getActionCourtReferralGroups() {
         return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+    }
+
+    public static List<String> getFixDefendantDetails() {
+        return Collections.singletonList(GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getUpdateDefendantDetails() {

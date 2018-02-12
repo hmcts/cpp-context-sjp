@@ -13,8 +13,11 @@ import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
+import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,6 +33,7 @@ import org.junit.Test;
 public class UpdateDefendantDetailsTest {
 
     private static final String ADDRESS_1 = "14 Tottenham Court Road";
+    private static final String ADDRESS_1_UPDATED = "15 Tottenham Court Road";
     private static final String ADDRESS_2 = "London";
     private static final String ADDRESS_3 = "England";
     private static final String ADDRESS_4 = "UK";
@@ -38,6 +42,7 @@ public class UpdateDefendantDetailsTest {
     private static final UUID caseId = randomUUID();
     private static final String title = "Mr";
     private static final String firstName = "test";
+    private static final String firstNameUpdated = "tester";
     private static final String lastName = "lastName";
     private static final String email = "email";
     private static final String gender = "gender";
@@ -45,7 +50,9 @@ public class UpdateDefendantDetailsTest {
     private static final String homeNumber = "homeNumber";
     private static final String mobileNumber = "mobileNumber";
     private static final Address address = new Address(ADDRESS_1, ADDRESS_2, ADDRESS_3, ADDRESS_4, POSTCODE);
+    private static final Address addressUpdated = new Address(ADDRESS_1_UPDATED, ADDRESS_2, ADDRESS_3, ADDRESS_4, POSTCODE);
     private static final LocalDate dateOfBirth = LocalDate.of(1980, 7, 15);
+    private static final LocalDate dateOfBirthUpdated = LocalDate.of(1980, 6, 15);
 
     private CaseAggregate caseAggregate;
 
@@ -55,7 +62,7 @@ public class UpdateDefendantDetailsTest {
     }
 
     @Test
-    public void shouldCreateUpdateEvent() {
+    public void shouldCreateUpdateEvents() {
         Person person = new Person(title, firstName, lastName,
                 dateOfBirth, gender, address);
         caseAggregate.receiveCase(
@@ -87,6 +94,29 @@ public class UpdateDefendantDetailsTest {
         assertThat(defendantDetailsUpdated.getLastName(), is(lastName));
         assertThat(defendantDetailsUpdated.getTitle(), is(title));
 
+        Person updatedPerson = new Person(title, firstNameUpdated, lastName,
+                dateOfBirthUpdated, gender, addressUpdated);
+
+        eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
+                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, updatedPerson);
+
+        events = asList(eventStream.toArray());
+
+        assertThat("Has defendant details updated events", events.size(),
+                is(4)
+        );
+
+        DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = (DefendantDateOfBirthUpdated) events.get(0);
+        assertThat(defendantDateOfBirthUpdated.getOldDateOfBirth(), is(dateOfBirth));
+        assertThat(defendantDateOfBirthUpdated.getNewDateOfBirth(), is(dateOfBirthUpdated));
+
+        DefendantAddressUpdated defendantAddressUpdated = (DefendantAddressUpdated) events.get(1);
+        assertThat(defendantAddressUpdated.getOldAddress().getAddress1(), is(ADDRESS_1));
+        assertThat(defendantAddressUpdated.getNewAddress().getAddress1(), is(ADDRESS_1_UPDATED));
+
+        DefendantPersonalNameUpdated defendantPersonalNameUpdated = (DefendantPersonalNameUpdated) events.get(2);
+        assertThat(defendantPersonalNameUpdated.getOldPersonalName().getFirstName(), is(firstName));
+        assertThat(defendantPersonalNameUpdated.getNewPersonalName().getFirstName(), is(firstNameUpdated));
     }
 
     @Test

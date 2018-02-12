@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.persistence.entity;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -36,6 +35,16 @@ public class PersonalDetails implements Serializable {
 
     @Embedded
     private ContactDetails contactDetails;
+
+    @Column(name = "address_changed")
+    private Boolean addressChanged;
+
+    @Column(name = "dob_changed")
+    private Boolean dobChanged;
+
+    @Column(name = "personal_name_changed")
+    private Boolean nameChanged;
+
 
     public PersonalDetails() {
         this.address = new Address();
@@ -123,5 +132,23 @@ public class PersonalDetails implements Serializable {
     public void setContactDetails(ContactDetails contactDetails) {
         this.contactDetails = contactDetails;
     }
+
+    public Boolean getAddressChanged() {
+        return addressChanged;
+    }
+
+    public void setAddressChanged(Boolean addressChanged) { this.addressChanged = addressChanged; }
+
+    public Boolean getDobChanged() {
+        return dobChanged;
+    }
+
+    public void setDobChanged(Boolean dobChanged) { this.dobChanged = dobChanged; }
+
+    public Boolean getNameChanged() {
+        return nameChanged;
+    }
+
+    public void setNameChanged(Boolean nameChanged) { this.nameChanged = nameChanged; }
 
 }

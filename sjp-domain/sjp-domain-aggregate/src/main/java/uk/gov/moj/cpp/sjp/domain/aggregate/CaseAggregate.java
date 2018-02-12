@@ -22,6 +22,7 @@ import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.Person;
+import uk.gov.moj.cpp.sjp.domain.PersonalName;
 import uk.gov.moj.cpp.sjp.domain.PleaType;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
@@ -57,10 +58,13 @@ import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.CourtReferralActioned;
 import uk.gov.moj.cpp.sjp.event.CourtReferralCreated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsMovedFromPeople;
+import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantNotEmployed;
 import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
+import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantsNationalInsuranceNumberUpdated;
 import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
@@ -98,7 +102,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 3L;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseAggregate.class);
 
@@ -111,6 +115,8 @@ public class CaseAggregate implements Aggregate {
     private boolean hasCourtReferral;
     private boolean caseAssigned = false;
     private String defendantTitle;
+    private String defendantFirstName;
+    private String defendantLastName;
     private LocalDate defendantDateOfBirth;
     private Address defendantAddress;
 
@@ -612,9 +618,9 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> fixDefendantDetails(UUID caseId, UUID personId, String gender,
-                                                 String nationalInsuranceNumber,String email,
-                                                 String homeNumber, String mobileNumber,
-                                                 Person person) {
+                                              String nationalInsuranceNumber,String email,
+                                              String homeNumber, String mobileNumber,
+                                              Person person) {
 
         final DefendantDetailsMovedFromPeople defendantDetailsMovedFromPeople = new DefendantDetailsMovedFromPeople.DefendantDetailsMovedFromPeopleBuilder()
                 .withCaseId(caseId)
@@ -637,11 +643,34 @@ public class CaseAggregate implements Aggregate {
                                                  String nationalInsuranceNumber, String email,
                                                  String homeNumber, String mobileNumber,
                                                  Person person) {
+
+        Stream.Builder<Object> events = Stream.builder();
+
         try {
             validateDefendant(person.getTitle(), person.getDateOfBirth(), person.getAddress());
         } catch (IllegalArgumentException | IllegalStateException e) {
             LOGGER.error("Defendant details update failed for ID: {} with message {} ", defendantId, e);
             return apply(Stream.of(new DefendantDetailsUpdateFailed(caseId.toString(), defendantId.toString(), e.getMessage())));
+        }
+
+        if ((defendantDateOfBirth != null) && (!person.getDateOfBirth().isEqual(defendantDateOfBirth))) {
+            final DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = new DefendantDateOfBirthUpdated(caseId, defendantDateOfBirth, person.getDateOfBirth());
+            events.add(defendantDateOfBirthUpdated);
+        }
+
+        if((defendantAddress != null) && (!defendantAddress.equals(person.getAddress()))) {
+            final DefendantAddressUpdated defendantAddressUpdated = new DefendantAddressUpdated(caseId, defendantAddress, person.getAddress());
+            events.add(defendantAddressUpdated);
+        }
+
+        if ((defendantTitle != null) && ((!defendantTitle.equalsIgnoreCase(person.getTitle())) ||
+                (!defendantFirstName.equalsIgnoreCase(person.getFirstName())) ||
+                (!defendantLastName.equalsIgnoreCase(person.getLastName())))
+                ) {
+            final DefendantPersonalNameUpdated defendantPersonalNameUpdated = new DefendantPersonalNameUpdated(caseId,
+                    new PersonalName(defendantTitle, defendantFirstName, defendantLastName),
+                    new PersonalName(person.getTitle(), person.getFirstName(), person.getLastName()));
+            events.add(defendantPersonalNameUpdated);
         }
 
         final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdated()
@@ -657,7 +686,8 @@ public class CaseAggregate implements Aggregate {
                 .withAddress(person.getAddress())
                 .withUpdateByOnlinePlea(false)
                 .build();
-        return apply(Stream.of(defendantDetailsUpdated));
+        events.add(defendantDetailsUpdated);
+        return apply(events.build());
     }
 
     private boolean assertCaseIdNotNullAndMatch(String caseId) {
@@ -689,11 +719,11 @@ public class CaseAggregate implements Aggregate {
                             .addAll(e.getDefendant().getOffences().stream()
                                     .map(uk.gov.moj.cpp.sjp.domain.Offence::getId)
                                     .collect(Collectors.toSet()));
-
                     defendantTitle = e.getDefendant().getTitle();
+                    defendantFirstName = e.getDefendant().getFirstName();
+                    defendantLastName = e.getDefendant().getLastName();
                     defendantDateOfBirth = e.getDefendant().getDateOfBirth();
                     defendantAddress = e.getDefendant().getAddress();
-
                 }),
                 when(CaseCompleted.class)
                         .apply(e -> this.caseCompleted = true),
@@ -808,10 +838,21 @@ public class CaseAggregate implements Aggregate {
                 when(CaseAssignmentDeleted.class).apply(ignored -> caseAssigned = false),
                 when(DefendantDetailsUpdated.class).apply(e -> {
                     defendantTitle = e.getTitle();
+                    defendantFirstName = e.getFirstName();
+                    defendantLastName = e.getLastName();
                     defendantDateOfBirth = e.getDateOfBirth();
                     defendantAddress = e.getAddress();
                 }),
                 when(DefendantDetailsUpdateFailed.class).apply(e -> {
+                    // no change in aggregate state
+                }),
+                when(DefendantDateOfBirthUpdated.class).apply(e -> {
+                    // no change in aggregate state
+                }),
+                when(DefendantPersonalNameUpdated.class).apply(e -> {
+                    // no change in aggregate state
+                }),
+                when(DefendantAddressUpdated.class).apply(e -> {
                     // no change in aggregate state
                 }),
                 when(SjpCaseCreated.class).apply(e -> apply(Stream.of(convertSjpCaseCreatedToCaseReceived(e)))),
@@ -875,6 +916,26 @@ public class CaseAggregate implements Aggregate {
 
     public boolean isCaseAssigned() {
         return caseAssigned;
+    }
+
+    public String getDefendantLastName() {
+        return defendantLastName;
+    }
+
+    public String getDefendantFirstName() {
+        return defendantFirstName;
+    }
+
+    public String getDefendantTitle() {
+        return defendantTitle;
+    }
+
+    public Address getDefendantAddress() {
+        return defendantAddress;
+    }
+
+    public LocalDate getDefendantDob() {
+        return defendantDateOfBirth;
     }
 
 }

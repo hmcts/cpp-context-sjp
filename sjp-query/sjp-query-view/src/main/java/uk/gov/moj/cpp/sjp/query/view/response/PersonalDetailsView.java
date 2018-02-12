@@ -22,6 +22,12 @@ public class PersonalDetailsView {
 
     private ContactDetailsView contactDetails;
 
+    private Boolean dobChanged;
+
+    private Boolean addressChanged;
+
+    private Boolean nameChanged;
+
     public PersonalDetailsView(final PersonalDetails personalDetails) {
         if (personalDetails != null) {
             this.title = personalDetails.getTitle();
@@ -32,6 +38,9 @@ public class PersonalDetailsView {
             this.nationalInsuranceNumber = personalDetails.getNationalInsuranceNumber();
             this.address = new PersonalAddressView(personalDetails.getAddress());
             this.contactDetails = new ContactDetailsView(personalDetails.getContactDetails());
+            this.addressChanged = personalDetails.getAddressChanged();
+            this.dobChanged = personalDetails.getDobChanged();
+            this.nameChanged = personalDetails.getNameChanged();
         }
     }
 
@@ -66,4 +75,17 @@ public class PersonalDetailsView {
     public ContactDetailsView getContactDetails() {
         return contactDetails;
     }
+
+    public Boolean isNameChanged() {
+        return nameChanged;
+    }
+
+    public Boolean isAddressChanged() {
+        return addressChanged;
+    }
+
+    public Boolean isDobChanged() {
+        return dobChanged;
+    }
+
 }

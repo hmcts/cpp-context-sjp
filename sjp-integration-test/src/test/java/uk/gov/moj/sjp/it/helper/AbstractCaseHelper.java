@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
@@ -37,6 +38,7 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
     public static final String GET_CASE_BY_ID_MEDIA_TYPE = "application/vnd.sjp.query.case+json";
     public static final String GET_CASE_BY_URN_MEDIA_TYPE = "application/vnd.sjp.query.case-by-urn+json";
     public static final String ASSOCIATE_ENTERPRISE_ID_CONTENT_TYPE = "application/vnd.enterprise-id+json";
+    public static final String PROSECUTING_AUTHORITY_PREFIX = TFL.name();
     protected String caseId;
     protected String offenceId;
     protected String request;
@@ -46,7 +48,7 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
     public AbstractCaseHelper() {
         caseId = UUID.randomUUID().toString();
         offenceId = UUID.randomUUID().toString();
-        caseUrn = RandomGenerator.integer(10, 99).next() + "GD" + RandomGenerator.integer(10000, 99999).next() + "16";
+        caseUrn = PROSECUTING_AUTHORITY_PREFIX + RandomGenerator.integer(100000000, 999999999).next();
         privateEventsConsumer = QueueUtil.privateEvents.createConsumer(getEventSelector());
         publicEventsConsumer = QueueUtil.publicEvents.createConsumer(getPublicEventSelector());
     }

@@ -23,6 +23,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
+import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
 import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.FIELD_CASE_ID;
 import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.FIELD_QUERY;
 import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.FIELD_URN;
@@ -41,6 +43,8 @@ import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
 import uk.gov.moj.cpp.sjp.domain.PleaType;
+import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
@@ -57,7 +61,6 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -132,6 +135,38 @@ public class StructureQueryViewTest {
         assertEquals(result, outputEnvelope);
         verify(caseService).findCaseByUrn(URN);
         verify(function).apply(caseView);
+    }
+
+    @Test
+    public void shouldFindCaseByUrnPostcode() {
+
+        final String urn = "TFL1234567";
+        final String postcode = "AB1 2CD";
+
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataWithRandomUUID("sjp.query.case-by-urn-postcode"))
+                .withPayloadOf(urn, "urn")
+                .withPayloadOf(postcode, "postcode")
+                .build();
+
+        final CaseDetail caseDetail = CaseDetailBuilder.aCase().addDefendantDetail(
+                aDefendantDetail().withPostcode(postcode).withId(UUID.randomUUID()).build())
+                .withCompleted(false).withProsecutingAuthority(TFL.name())
+                .withCaseId(UUID.randomUUID()).withUrn(urn).build();
+
+        final CaseView caseView = new CaseView(caseDetail);
+
+        when(caseService.findCaseByUrnPostcode(urn, postcode)).thenReturn(caseView);
+
+        final JsonEnvelope result = sjpQueryView.findCaseByUrnPostcode(queryEnvelope);
+
+        assertThat(result, jsonEnvelope(metadata().withName("sjp.query.case-response"),
+                payload().isJson(allOf(
+                        withJsonPath("$.urn", is(urn)),
+                        withJsonPath("$.defendant.personalDetails.address.postcode", is(postcode)),
+                        withJsonPath("$.completed", is(false))
+                ))
+        ));
     }
 
     @Test

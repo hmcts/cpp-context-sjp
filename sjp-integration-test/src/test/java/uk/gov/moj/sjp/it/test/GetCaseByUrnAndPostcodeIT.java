@@ -1,5 +1,6 @@
 package uk.gov.moj.sjp.it.test;
 
+import static uk.gov.moj.sjp.it.helper.AbstractCaseHelper.PROSECUTING_AUTHORITY_PREFIX;
 import static uk.gov.moj.sjp.it.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 
 import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
@@ -47,5 +48,12 @@ public class GetCaseByUrnAndPostcodeIT {
     @Test
     public void shouldNotFindCaseByInvalidUrnAndPostcode() {
         citizenHelper.verifyNoCaseByPersonUrnAndPostcode("INVALID", POSTCODE);
+    }
+
+    @Test
+    public void shouldFindCaseByUrnWithoutPrefixAndPostcode() {
+        final JsonObject expected = Json.createReader(getClass().getResourceAsStream("/GetCaseByUrnAndPostcodeIT/expected.json")).readObject();
+        String urnWithoutPrefix = urn.replace(PROSECUTING_AUTHORITY_PREFIX, "");
+        citizenHelper.verifyCaseByPersonUrnAndPostcode(expected, urnWithoutPrefix, POSTCODE);
     }
 }

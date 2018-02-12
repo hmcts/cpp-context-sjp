@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.controller;
 
 import static javax.json.Json.createObjectBuilder;
-import static org.apache.commons.lang3.StringUtils.deleteWhitespace;
 
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -55,37 +54,12 @@ public class SjpQueryController {
     @Handles("sjp.query.case-by-urn-postcode")
     public JsonEnvelope findCaseByUrnPostcode(final JsonEnvelope query) {
 
-        final JsonObject payload = query.payloadAsJsonObject();
-        final String urn = payload.getString("urn");
-        final String postcode = payload.getString("postcode");
+        final JsonValue caseDetails = requester.request(query).payload();
 
-        // Find the case by urn
-        final JsonValue caseDetails = requester.request(enveloper.withMetadataFrom(query,
-                "sjp.query.case-by-urn").apply(createObjectBuilder()
-                .add("urn", urn).build())).payload();
+        final JsonValue responsePayload = !JsonValue.NULL.equals(caseDetails) ?
+                caseConverter.addOffenceReferenceDataToOffences((JsonObject) caseDetails, query) : null;
 
-        // Check that postcode matches.
-
-        final JsonValue responsePayload;
-        if (JsonValue.NULL.equals(caseDetails)) {
-            responsePayload = null;
-        }
-        else {
-            final JsonObject caseJsonObject = (JsonObject) caseDetails;
-            final JsonObject address = caseJsonObject.getJsonObject("defendant")
-                    .getJsonObject("personalDetails")
-                    .getJsonObject("address");
-
-            if (deleteWhitespace(postcode).equals(deleteWhitespace(address.getString("postcode")))) {
-                responsePayload = caseConverter.addOffenceReferenceDataToOffences((JsonObject) caseDetails, query);
-            }
-            else {
-                responsePayload = null;
-            }
-        }
-
-        //Payload json with json path "$['defendant']['personalDetails']['firstName']" evaluated to "firstName" and Payload json with json path "$['defendant']['personalDetails']['lastName']" evaluated to "lastName" and Payload json with json path "$['defendant']['personalDetails']['dateOfBirth']" evaluated to "1980-07-15" and Payload json with json path "$['defendant']['personalDetails']['home']" evaluated to "02012345678" and Payload json with json path "$['defendant']['personalDetails']['mobile']" evaluated to "07777888999" and Payload json with json path "$['defendant']['personalDetails']['email']" evaluated to "email@email.com" and Payload json with json path "$['defendant']['personalDetails']['nationalInsuranceNumber']" evaluated to "AA123456C" and Payload json with json path "$['defendant']['personalDetails']['address']['address1']" evaluated to "address1" and Payload json with json path "$['defendant']['personalDetails']['address']['address2']" evaluated to "address2" and Payload json with json path "$['defendant']['personalDetails']['address']['address3']" evaluated to "address3" and Payload json with json path "$['defendant']['personalDetails']['address']['address4']" evaluated to "address4" and Payload json with json path "$['defendant']['personalDetails']['address']['postcode']" evaluated to "W1T 1JY" and Payload json with json path "$['defendant']['offences'][0]['title']" evaluated to "Public service vehicle - passenger use altered / defaced   ticket" and Payload json with json path "$['defendant']['offences'][0]['wording']" evaluated to "Committed some offence" and Payload json with json path "$['defendant']['offences'][0]['pendingWithdrawal']" evaluated to <false>)
-        return enveloper.withMetadataFrom(query, "sjp.query.case-by-urn-response")
+        return enveloper.withMetadataFrom(query, "sjp.query.case-by-urn-postcode")
                 .apply(responsePayload);
     }
 

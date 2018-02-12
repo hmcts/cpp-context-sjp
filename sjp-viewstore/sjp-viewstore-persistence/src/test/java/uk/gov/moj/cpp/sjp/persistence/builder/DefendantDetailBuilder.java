@@ -17,7 +17,7 @@ import java.util.UUID;
 
 public class DefendantDetailBuilder {
 
-    private static final String DEFAULT_POSTCODE = "SW1A 2AA";
+    private static final String DEFAULT_POSTCODE = "CR0 1AB";
 
     private final UUID DEFENDANT_ID = UUID.randomUUID();
 
@@ -64,6 +64,11 @@ public class DefendantDetailBuilder {
 
     public DefendantDetailBuilder withInterpreterLanguage(final String interpreterLanguage) {
         defendantDetail.setInterpreter(new InterpreterDetail(interpreterLanguage));
+        return this;
+    }
+
+    public DefendantDetailBuilder withPostcode(final String postcode) {
+        defendantDetail.getPersonalDetails().setAddress(new Address("addr1", "addr2", "addr3", "addr4", postcode));
         return this;
     }
 

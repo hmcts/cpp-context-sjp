@@ -42,7 +42,7 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
       ...
     queryParameters:
       urn:
-        description: URN
+        description: Unique Reference Number
         type: string
         required: false
     responses:
@@ -183,11 +183,11 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
       ...
     queryParameters:
       urn:
-        description: URN
+        description: Unique Reference Number. Can be without prefix (e.g. TFL) in case-by-urn-postcode
         type: string
         required: true
       postcode:
-        description: Postcode
+        description: Postcode. Spaces are ignored
         type: string
         required: true
 

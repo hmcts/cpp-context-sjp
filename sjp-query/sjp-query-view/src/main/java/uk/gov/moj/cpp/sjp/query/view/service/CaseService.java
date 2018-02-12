@@ -57,6 +57,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
@@ -117,20 +118,17 @@ public class CaseService {
 
         if (limit.isPresent() && limit.get() < 1) {
             casesDetails = Collections.emptyList();
-        }
-        else {
+        } else {
             QueryResult<CaseDetail> caseDetailsResult;
             if (postedBefore.isPresent()) {
                 caseDetailsResult = caseRepository.findCasesMissingSjpn(postedBefore.get());
-            }
-            else {
+            } else {
                 caseDetailsResult = caseRepository.findCasesMissingSjpn();
             }
 
             if (limit.isPresent()) {
                 casesDetails = caseDetailsResult.maxResults(limit.get()).getResultList();
-            }
-            else {
+            } else {
                 casesDetails = caseDetailsResult.getResultList();
             }
         }
@@ -152,8 +150,7 @@ public class CaseService {
         List<CaseDetailMissingSjpn> caseDetailMissingSjpnResult;
         if (postedBefore.isPresent()) {
             caseDetailMissingSjpnResult = caseRepository.findCasesMissingSjpnWithDetails(postedBefore.get());
-        }
-        else {
+        } else {
             caseDetailMissingSjpnResult = caseRepository.findCasesMissingSjpnWithDetails();
         }
         final int casesCount = caseDetailMissingSjpnResult.size();
@@ -170,9 +167,17 @@ public class CaseService {
     public CaseView findCaseByUrn(final String urn) {
         try {
             return getCaseView(caseRepository.findByUrn(urn));
-        }
-        catch (NoResultException e) {
+        } catch (NoResultException e) {
             LOGGER.debug("No case found with URN='{}'", urn, e);
+            return null;
+        }
+    }
+
+    public CaseView findCaseByUrnPostcode(final String urn, final String postcode) {
+        try {
+            return getCaseView(caseRepository.findByUrnPostcode(urn, postcode));
+        } catch (NonUniqueResultException e) {
+            LOGGER.warn("Multiple cases found for URN (ignoring prefix) and postcode. URN='{}', postcode='{}'", urn, postcode, e);
             return null;
         }
     }
@@ -197,8 +202,7 @@ public class CaseService {
                 String caseId = caseDetail.getId().toString();
                 ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.valueOf(caseDetail.getProsecutingAuthority());
                 searchCaseByMaterialIdView = new SearchCaseByMaterialIdView(caseId, prosecutingAuthority);
-            }
-            else {
+            } else {
                 searchCaseByMaterialIdView = new SearchCaseByMaterialIdView(null, null);
             }
         } catch (NoResultException e) {
@@ -221,7 +225,7 @@ public class CaseService {
     }
 
     public CaseDocumentsView findCaseDocumentsFilterOtherAndFinancialMeans(String caseId) {
-        final List<CaseDocumentView> caseDocuments = caseRepository.findCaseDocuments(fromString(caseId)).stream().map(CaseDocumentView::new).collect(toList());
+        List<CaseDocumentView> caseDocuments = caseRepository.findCaseDocuments(fromString(caseId)).stream().map(CaseDocumentView::new).collect(toList());
         caseDocuments.sort(CaseDocumentView.BY_DOCUMENT_TYPE_AND_NUMBER);
         final CaseDocumentsView caseDocumentsView = new CaseDocumentsView(caseDocuments);
         filterOtherAndFinancialMeansDocuments(caseDocumentsView.getCaseDocuments());
@@ -235,7 +239,7 @@ public class CaseService {
      * @return case defendants for the case
      */
     public DefendantsView findCaseDefendants(final String caseId) {
-        final List<DefendantView> caseDefendant = Stream.of(
+        List<DefendantView> caseDefendant = Stream.of(
                 caseRepository.findCaseDefendant(fromString(caseId)))
                 .map(DefendantView::new).collect(toList());
         return new DefendantsView(caseDefendant);
@@ -300,8 +304,8 @@ public class CaseService {
                         toDate.atStartOfDay(ZoneOffset.UTC),
                         CaseDocument.RESULT_ORDER_DOCUMENT_TYPE);
 
-        final Consumer<CaseDocument> caseDocumentConsumer = caseDocument -> {
-            final CaseDetail caseDetail = caseRepository.findBy(caseDocument.getCaseId());
+        Consumer<CaseDocument> caseDocumentConsumer = caseDocument -> {
+            CaseDetail caseDetail = caseRepository.findBy(caseDocument.getCaseId());
             resultOrdersView.addResultOrder(
                     new ResultOrdersView.ResultOrderView.Builder()
                             .setCaseId(caseDocument.getCaseId())
@@ -397,7 +401,7 @@ public class CaseService {
     }
 
     private void filterOtherAndFinancialMeansDocuments(Collection<CaseDocumentView> caseDocumentsView) {
-        final Set<String> documentsTypeToRetain = Sets.newHashSet("SJPN", "PLEA", "CITN");
+        Set<String> documentsTypeToRetain = Sets.newHashSet("SJPN", "PLEA", "CITN");
         caseDocumentsView.removeIf(
                 documentView -> !documentsTypeToRetain.contains(documentView.getDocumentType())
         );

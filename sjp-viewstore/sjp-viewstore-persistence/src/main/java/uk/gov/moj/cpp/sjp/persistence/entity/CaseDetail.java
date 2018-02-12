@@ -122,13 +122,13 @@ public class CaseDetail implements Serializable {
         defendant.setCaseDetail(this);
     }
 
-    public CaseDetail(UUID id,
-                      String urn,
-                      String prosecutingAuthority,
-                      String initiationCode,
-                      Boolean completed,
-                      Boolean assigned,
-                      ZonedDateTime createdOn, final DefendantDetail defendantDetail, final BigDecimal costs, final LocalDate postingDate) {
+    public CaseDetail(final UUID id,
+                      final String urn,
+                      final String prosecutingAuthority,
+                      final String initiationCode,
+                      final Boolean completed,
+                      final Boolean assigned,
+                      final ZonedDateTime createdOn, final DefendantDetail defendantDetail, final BigDecimal costs, final LocalDate postingDate) {
         this();
         this.id = id;
         this.urn = urn;

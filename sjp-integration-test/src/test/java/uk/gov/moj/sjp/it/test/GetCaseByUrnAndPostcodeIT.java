@@ -54,6 +54,6 @@ public class GetCaseByUrnAndPostcodeIT {
     public void shouldFindCaseByUrnWithoutPrefixAndPostcode() {
         final JsonObject expected = Json.createReader(getClass().getResourceAsStream("/GetCaseByUrnAndPostcodeIT/expected.json")).readObject();
         String urnWithoutPrefix = urn.replace(PROSECUTING_AUTHORITY_PREFIX, "");
-        citizenHelper.verifyCaseByPersonUrnAndPostcode(expected, urnWithoutPrefix, POSTCODE);
+        citizenHelper.verifyCaseByPersonUrnWithoutPrefixAndPostcode(expected, urnWithoutPrefix, urn, POSTCODE);
     }
 }

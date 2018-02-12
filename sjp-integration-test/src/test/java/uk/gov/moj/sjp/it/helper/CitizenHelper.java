@@ -3,6 +3,7 @@ package uk.gov.moj.sjp.it.helper;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
@@ -20,23 +21,34 @@ public class CitizenHelper {
         poll(getCaseByUrnAndPostcode(urn, postcode))
                 .until(
                         status().is(OK),
-                        payload().isJson(withJsonPath("$.id")),
-                        payload().isJson(withJsonPath("$.urn", equalTo(urn))),
-                        payload().isJson(withJsonPath("$.completed", equalTo(expected.getBoolean("completed")))),
-                        payload().isJson(withJsonPath("$.assigned", equalTo(expected.getBoolean("assigned")))),
-                        payload().isJson(withJsonPath("$.defendant.personalDetails.firstName", equalTo(person(expected).getString("firstName")))),
-                        payload().isJson(withJsonPath("$.defendant.personalDetails.lastName", equalTo(person(expected).getString("lastName")))),
-                        payload().isJson(withJsonPath("$.defendant.personalDetails.dateOfBirth", equalTo(person(expected).getString("dateOfBirth")))),
-                        payload().isJson(withJsonPath("$.defendant.personalDetails.address.address1", equalTo(address(expected).getString("address1")))),
-                        payload().isJson(withJsonPath("$.defendant.personalDetails.address.address2", equalTo(address(expected).getString("address2")))),
-                        payload().isJson(withJsonPath("$.defendant.personalDetails.address.address3", equalTo(address(expected).getString("address3")))),
-                        payload().isJson(withJsonPath("$.defendant.personalDetails.address.address4", equalTo(address(expected).getString("address4")))),
-                        payload().isJson(withJsonPath("$.defendant.personalDetails.address.postcode", equalTo(postcode))),
-                        payload().isJson(withJsonPath("$.defendant.offences[0].title", equalTo(offence(expected).getString("title")))),
-                        payload().isJson(withJsonPath("$.defendant.offences[0].legislation", equalTo(offence(expected).getString("legislation")))),
-                        payload().isJson(withJsonPath("$.defendant.offences[0].wording", equalTo(offence(expected).getString("wording")))),
-                        payload().isJson(withJsonPath("$.defendant.offences[0].pendingWithdrawal", equalTo(offence(expected).getBoolean("pendingWithdrawal"))))
-                );
+                        payload().isJson(allOf(withJsonPath("$.id"),
+                                withJsonPath("$.urn", equalTo(urn)),
+                                withJsonPath("$.completed", equalTo(expected.getBoolean("completed"))),
+                                withJsonPath("$.assigned", equalTo(expected.getBoolean("assigned"))),
+                                withJsonPath("$.defendant.personalDetails.firstName", equalTo(person(expected).getString("firstName"))),
+                                withJsonPath("$.defendant.personalDetails.lastName", equalTo(person(expected).getString("lastName"))),
+                                withJsonPath("$.defendant.personalDetails.dateOfBirth", equalTo(person(expected).getString("dateOfBirth"))),
+                                withJsonPath("$.defendant.personalDetails.address.address1", equalTo(address(expected).getString("address1"))),
+                                withJsonPath("$.defendant.personalDetails.address.address2", equalTo(address(expected).getString("address2"))),
+                                withJsonPath("$.defendant.personalDetails.address.address3", equalTo(address(expected).getString("address3"))),
+                                withJsonPath("$.defendant.personalDetails.address.address4", equalTo(address(expected).getString("address4"))),
+                                withJsonPath("$.defendant.personalDetails.address.postcode", equalTo(postcode)),
+                                withJsonPath("$.defendant.offences[0].title", equalTo(offence(expected).getString("title"))),
+                                withJsonPath("$.defendant.offences[0].legislation", equalTo(offence(expected).getString("legislation"))),
+                                withJsonPath("$.defendant.offences[0].wording", equalTo(offence(expected).getString("wording"))),
+                                withJsonPath("$.defendant.offences[0].pendingWithdrawal", equalTo(offence(expected).getBoolean("pendingWithdrawal")))
+                        )));
+    }
+
+    public void verifyCaseByPersonUrnWithoutPrefixAndPostcode(final JsonObject expected, final String urnWithoutPrefix, String urn, final String postcode) {
+        poll(getCaseByUrnAndPostcode(urnWithoutPrefix, postcode))
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.id"),
+                                withJsonPath("$.urn", equalTo(urn)),
+                                withJsonPath("$.defendant.personalDetails.address.postcode", equalTo(postcode))
+                        )));
     }
 
     private JsonObject address(JsonObject expected) {

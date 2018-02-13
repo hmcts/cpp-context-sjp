@@ -24,7 +24,7 @@ public class AllOffencesWithdrawalRequestCancelledProcessor {
     @Handles("sjp.events.all-offences-withdrawal-request-cancelled")
     public void publishAllOffencesWithdrawalRequestCancelledEvent(final JsonEnvelope event) {
         final JsonEnvelope newEventEnvelope = enveloper.withMetadataFrom(event,
-                "public.structure.all-offences-withdrawal-request-cancelled")
+                "public.sjp.all-offences-withdrawal-request-cancelled")
                 .apply(createObjectBuilder()
                         .add(CASE_ID, event.payloadAsJsonObject().getString(CASE_ID))
                         .build());

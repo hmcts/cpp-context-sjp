@@ -75,7 +75,7 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class StructureQueryViewTest {
+public class SjpQueryViewTest {
 
     private static final String CASE_ID = "caseId";
     private static final String URN = "urn";

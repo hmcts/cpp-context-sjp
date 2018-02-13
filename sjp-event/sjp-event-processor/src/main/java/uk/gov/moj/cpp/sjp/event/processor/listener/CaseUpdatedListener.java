@@ -22,9 +22,9 @@ import org.slf4j.LoggerFactory;
 @ServiceComponent(EVENT_PROCESSOR)
 public class CaseUpdatedListener {
 
-    static final String CASE_REOPENED_IN_LIBRA_PUBLIC_EVENT = "public.structure.case-reopened-in-libra";
-    static final String CASE_REOPENED_IN_LIBRA_UPDATED_PUBLIC_EVENT = "public.structure.case-reopened-in-libra-updated";
-    static final String CASE_REOPENED_IN_LIBRA_UNDONE_PUBLIC_EVENT = "public.structure.case-reopened-in-libra-undone";
+    static final String CASE_REOPENED_IN_LIBRA_PUBLIC_EVENT = "public.sjp.case-reopened-in-libra";
+    static final String CASE_REOPENED_IN_LIBRA_UPDATED_PUBLIC_EVENT = "public.sjp.case-reopened-in-libra-updated";
+    static final String CASE_REOPENED_IN_LIBRA_UNDONE_PUBLIC_EVENT = "public.sjp.case-reopened-in-libra-undone";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseUpdatedListener.class.getCanonicalName());
 

@@ -102,7 +102,7 @@ public class UpdateInterpreterIT extends BaseIntegrationTest {
                 withJsonPath("$.reason", is(reason)));
 
         return jsonEnvelope()
-                .withMetadataOf(metadata().withName("public.structure.case-update-rejected"))
+                .withMetadataOf(metadata().withName("public.sjp.case-update-rejected"))
                 .withPayloadOf(payloadIsJson(payloadMatcher));
     }
 

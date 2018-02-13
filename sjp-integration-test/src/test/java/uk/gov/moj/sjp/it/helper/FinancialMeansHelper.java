@@ -33,7 +33,7 @@ public class FinancialMeansHelper implements AutoCloseable {
         headers = new MultivaluedHashMap<>();
         headers.add(USER_ID, UUID.randomUUID());
         messageConsumer = QueueUtil.publicEvents.createConsumerForMultipleSelectors(
-                "public.structure.financial-means-updated", "public.structure.case-update-rejected");
+                "public.sjp.financial-means-updated", "public.sjp.case-update-rejected");
     }
 
     public Response updateFinancialMeans(final String caseId, final String defendantId, final JsonObject payload) {

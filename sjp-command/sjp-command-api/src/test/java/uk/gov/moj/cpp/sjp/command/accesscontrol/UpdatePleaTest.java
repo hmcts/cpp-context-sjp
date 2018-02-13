@@ -18,15 +18,15 @@ import org.mockito.Mock;
 
 public class UpdatePleaTest extends BaseDroolsAccessControlTest {
 
-    private static final String STRUCTURE_COMMAND_UPDATE_PLEA = "sjp.update-plea";
-    private static final String STRUCTURE_COMMAND_CANCEL_PLEA = "sjp.cancel-plea";
+    private static final String SJP_COMMAND_UPDATE_PLEA = "sjp.update-plea";
+    private static final String SJP_COMMAND_CANCEL_PLEA = "sjp.cancel-plea";
 
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToUpdatePlea() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_UPDATE_PLEA);
+        final Action action = createActionFor(SJP_COMMAND_UPDATE_PLEA);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getUpdatePleaActionGroups()))
                 .willReturn(true);
 
@@ -36,7 +36,7 @@ public class UpdatePleaTest extends BaseDroolsAccessControlTest {
 
     @Test
     public void shouldAllowUserInAuthorisedGroupToCancelPlea() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_CANCEL_PLEA);
+        final Action action = createActionFor(SJP_COMMAND_CANCEL_PLEA);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getCancelPleaActionGroups()))
                 .willReturn(true);
 
@@ -46,7 +46,7 @@ public class UpdatePleaTest extends BaseDroolsAccessControlTest {
 
     @Test
     public void shouldNotAllowUserNotInAuthorisedGroupToUpdateCpsPlea() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_UPDATE_PLEA);
+        final Action action = createActionFor(SJP_COMMAND_UPDATE_PLEA);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, Arrays.asList("random group")))
                 .willReturn(true);
 
@@ -56,7 +56,7 @@ public class UpdatePleaTest extends BaseDroolsAccessControlTest {
 
     @Test
     public void shouldNotAllowUserNotInAuthorisedGroupToUpdatePlea() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_UPDATE_PLEA);
+        final Action action = createActionFor(SJP_COMMAND_UPDATE_PLEA);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, Arrays.asList("random group")))
                 .willReturn(true);
 
@@ -66,7 +66,7 @@ public class UpdatePleaTest extends BaseDroolsAccessControlTest {
 
     @Test
     public void shouldNotAllowUserNotInAuthorisedGroupToCancelPlea() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_CANCEL_PLEA);
+        final Action action = createActionFor(SJP_COMMAND_CANCEL_PLEA);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, Arrays.asList("random group")))
                 .willReturn(true);
 

@@ -154,13 +154,13 @@ public class EmployerIT extends BaseIntegrationTest {
     private Matcher getEmployerUpdatedPublicEventMatcher(final JsonObject employer) {
         final Matcher payloadContentMatcher = getEmployerUpdatedPayloadContentMatcher(employer);
         return jsonEnvelope()
-                .withMetadataOf(metadata().withName("public.structure.employer-updated"))
+                .withMetadataOf(metadata().withName("public.sjp.employer-updated"))
                 .withPayloadOf(payloadIsJson(payloadContentMatcher));
     }
 
     private Matcher getEmployerDeletedPublicEventMatcher(final String defendantId) {
         return jsonEnvelope()
-                .withMetadataOf(metadata().withName("public.structure.employer-deleted"))
+                .withMetadataOf(metadata().withName("public.sjp.employer-deleted"))
                 .withPayloadOf(payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId.toString()))));
     }
 
@@ -170,7 +170,7 @@ public class EmployerIT extends BaseIntegrationTest {
                 withJsonPath("$.reason", is(reason)));
 
         return jsonEnvelope()
-                .withMetadataOf(metadata().withName("public.structure.case-update-rejected"))
+                .withMetadataOf(metadata().withName("public.sjp.case-update-rejected"))
                 .withPayloadOf(payloadIsJson(payloadMatcher));
     }
 

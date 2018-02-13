@@ -82,7 +82,7 @@ public class UploadFileTest {
         final JsonEnvelope capturedPublicEventCommand = envelopeCaptor.getAllValues().get(1);
         assertThat(capturedPublicEventCommand, jsonEnvelope(
                 metadata()
-                        .withName("public.structure.case-document-uploaded"),
+                        .withName("public.sjp.case-document-uploaded"),
                 payloadIsJson(allOf(
                         withJsonPath("$.documentId", is(documentReference.toString()))
                 ))

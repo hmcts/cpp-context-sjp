@@ -36,9 +36,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class CaseReopenedProcessorTest {
 
-    static final String EVENT_PUBLIC_CASE_REOPENED_IN_LIBRA = "public.structure.case-reopened-in-libra";
-    static final String EVENT_PUBLIC_CASE_REOPENED_IN_LIBRA_UPDATED = "public.structure.case-reopened-in-libra-updated";
-    static final String EVENT_PUBLIC_CASE_REOPENED_IN_LIBRA_UNDONE = "public.structure.case-reopened-in-libra-undone";
+    static final String EVENT_PUBLIC_CASE_REOPENED_IN_LIBRA = "public.sjp.case-reopened-in-libra";
+    static final String EVENT_PUBLIC_CASE_REOPENED_IN_LIBRA_UPDATED = "public.sjp.case-reopened-in-libra-updated";
+    static final String EVENT_PUBLIC_CASE_REOPENED_IN_LIBRA_UNDONE = "public.sjp.case-reopened-in-libra-undone";
 
     private static final String CASE_ID = UUID.randomUUID().toString();
 
@@ -46,10 +46,6 @@ public class CaseReopenedProcessorTest {
     private CaseUpdatedListener caseUpdatedListener;
     @Mock
     private Sender sender;
-    @Mock
-    private JsonObject jsonObject;
-    @Mock
-    private JsonEnvelope messageToPublish;
     @Captor
     private ArgumentCaptor<JsonEnvelope> captor;
     @Spy

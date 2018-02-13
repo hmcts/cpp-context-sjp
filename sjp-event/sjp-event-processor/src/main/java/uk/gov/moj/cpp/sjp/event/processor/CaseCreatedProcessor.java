@@ -17,7 +17,7 @@ import javax.json.JsonObject;
 @ServiceComponent(EVENT_PROCESSOR)
 public class CaseCreatedProcessor {
 
-    private static final String SJP_CASE_CREATED_PUBLIC_EVENT = "public.structure.sjp-case-created";
+    private static final String SJP_CASE_CREATED_PUBLIC_EVENT = "public.sjp.sjp-case-created";
 
     @Inject
     private Enveloper enveloper;

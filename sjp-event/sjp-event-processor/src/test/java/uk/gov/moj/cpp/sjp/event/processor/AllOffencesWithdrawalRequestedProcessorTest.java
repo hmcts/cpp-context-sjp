@@ -51,7 +51,7 @@ public class AllOffencesWithdrawalRequestedProcessorTest {
         verify(sender).send(captor.capture());
         final JsonEnvelope publicEvent = captor.getValue();
         assertThat(publicEvent, jsonEnvelope(
-                metadata().withName("public.structure.all-offences-withdrawal-requested"),
+                metadata().withName("public.sjp.all-offences-withdrawal-requested"),
                 payloadIsJson(withJsonPath("$.caseId", equalTo(CASE_ID)))
         ));
     }

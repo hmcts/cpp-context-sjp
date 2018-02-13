@@ -29,7 +29,7 @@ public class CaseSearchResult implements Serializable {
     @Column(name = "case_id", updatable = false)
     private UUID caseId;
 
-    //structure (offence)
+    //sjp (offence)
     @Column(name = "plea_date")
     private LocalDate pleaDate;
     @Column(name = "withdrawal_requested_date")

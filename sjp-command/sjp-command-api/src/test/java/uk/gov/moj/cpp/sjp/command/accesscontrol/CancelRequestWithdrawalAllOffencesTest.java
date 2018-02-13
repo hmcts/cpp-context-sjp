@@ -16,13 +16,13 @@ import org.mockito.Mock;
 
 public class CancelRequestWithdrawalAllOffencesTest extends BaseDroolsAccessControlTest {
 
-    private static final String STRUCTURE_COMMAND_CANCEL_REQUEST_WITHDRAWAL_ALL_OFFENCES = "sjp.cancel-request-withdrawal-all-offences";
+    private static final String SJP_COMMAND_CANCEL_REQUEST_WITHDRAWAL_ALL_OFFENCES = "sjp.cancel-request-withdrawal-all-offences";
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
 
     @Test
     public void shouldAcceptWithdrawalOffencesRequestCancelForAppriopriateUsers() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_CANCEL_REQUEST_WITHDRAWAL_ALL_OFFENCES);
+        final Action action = createActionFor(SJP_COMMAND_CANCEL_REQUEST_WITHDRAWAL_ALL_OFFENCES);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getCancelRequestWithdrawalOfAllOffencesGroups()))
                 .willReturn(true);
 
@@ -32,7 +32,7 @@ public class CancelRequestWithdrawalAllOffencesTest extends BaseDroolsAccessCont
 
     @Test
     public void shouldRejectTheWithdrawalRequestCancel() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_CANCEL_REQUEST_WITHDRAWAL_ALL_OFFENCES);
+        final Action action = createActionFor(SJP_COMMAND_CANCEL_REQUEST_WITHDRAWAL_ALL_OFFENCES);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getCancelRequestWithdrawalOfAllOffencesGroups()))
                 .willReturn(false);
 

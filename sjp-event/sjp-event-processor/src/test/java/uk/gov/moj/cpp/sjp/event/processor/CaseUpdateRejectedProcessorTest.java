@@ -58,7 +58,7 @@ public class CaseUpdateRejectedProcessorTest {
         final JsonEnvelope publicEvent = captor.getValue();
 
         assertThat(publicEvent, jsonEnvelope(
-                metadata().withName("public.structure.case-update-rejected"),
+                metadata().withName("public.sjp.case-update-rejected"),
                 payloadIsJson(allOf(withJsonPath("$.caseId", equalTo(CASE_ID)),
                         withJsonPath("$.reason", equalTo(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name()))))
         ));

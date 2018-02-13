@@ -67,7 +67,7 @@ public class FinancialMeansProcessorTest {
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(privateEventEnvelope)
-                        .withName("public.structure.financial-means-updated"),
+                        .withName("public.sjp.financial-means-updated"),
                 payloadIsJson(allOf(
                         withJsonPath("$.defendantId", is(defendantId.toString())),
                         withJsonPath("$.income.amount", is(incomeAmount)),

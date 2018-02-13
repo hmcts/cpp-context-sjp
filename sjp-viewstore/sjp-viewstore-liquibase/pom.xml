@@ -7,7 +7,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-viewstore</artifactId>
-        <version>0.0.31-ATCM-SNAPSHOT</version>
+        <version>0.0.32-ATCM-SNAPSHOT</version>
     </parent>
 
     <artifactId>sjp-viewstore-liquibase</artifactId>

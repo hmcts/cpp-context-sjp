@@ -4,8 +4,8 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
-import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED;
-import static uk.gov.moj.sjp.it.EventSelector.STRUCTURE_EVENTS_CASE_UPDATE_REJECTED;
+import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_SJP_CASE_UPDATE_REJECTED;
+import static uk.gov.moj.sjp.it.EventSelector.SJP_EVENTS_CASE_UPDATE_REJECTED;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithDecision;
@@ -86,7 +86,7 @@ public class UpdatePleaIT extends BaseIntegrationTest {
         stubGetAssignmentsByDomainObjectId(caseSjpHelper.getCaseId(), randomUUID());
         try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
-                     STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
+                     SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
 
             updatePleaHelper.updatePlea(getPleaPayload(PLEA_GUILTY));
             caseUpdateRejectedHelper.verifyCaseUpdateRejectedPrivateInActiveMQ(CaseUpdateRejected.RejectReason.CASE_ASSIGNED.name());
@@ -101,7 +101,7 @@ public class UpdatePleaIT extends BaseIntegrationTest {
 
         try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
-                     STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
+                     SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
 
             updatePleaHelper.updatePlea(getPleaPayload(PLEA_GUILTY));
             caseUpdateRejectedHelper.verifyCaseUpdateRejectedPrivateInActiveMQ(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name());
@@ -118,9 +118,9 @@ public class UpdatePleaIT extends BaseIntegrationTest {
         stubGetCaseDecisionsWithDecision(caseSjpHelper.getCaseId());
 
         try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper,
-                STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED);
+                SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
-                     STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
+                     SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
 
             updatePleaHelper.updatePlea(getPleaPayload(PLEA_GUILTY));
             caseUpdateRejectedHelper.verifyCaseUpdateRejectedPrivateInActiveMQ(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name());
@@ -128,9 +128,9 @@ public class UpdatePleaIT extends BaseIntegrationTest {
         }
 
         try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper,
-                STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED);
+                SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
-                     STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
+                     SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
 
             updatePleaHelper.updatePlea(getPleaPayload(PLEA_GUILTY));
             caseUpdateRejectedHelper.verifyCaseUpdateRejectedPrivateInActiveMQ(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name());

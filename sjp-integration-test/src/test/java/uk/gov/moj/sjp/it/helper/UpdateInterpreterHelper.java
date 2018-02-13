@@ -39,7 +39,7 @@ public class UpdateInterpreterHelper implements AutoCloseable {
         restClient = new RestClient();
         headers = new MultivaluedHashMap<>();
         headers.add(USER_ID, UUID.randomUUID());
-        messageConsumer = QueueUtil.publicEvents.createConsumer("public.structure.case-update-rejected");
+        messageConsumer = QueueUtil.publicEvents.createConsumer("public.sjp.case-update-rejected");
     }
 
     public Response updateInterpreter(final String caseId, final String defendantId, final JsonObject payload) {

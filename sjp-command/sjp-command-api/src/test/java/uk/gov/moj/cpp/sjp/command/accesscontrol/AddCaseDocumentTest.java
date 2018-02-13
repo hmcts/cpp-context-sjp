@@ -17,13 +17,13 @@ import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getAddC
 
 public class AddCaseDocumentTest extends BaseDroolsAccessControlTest {
 
-    private static final String STRUCTURE_COMMAND_ADD_CASE_DOCUMENT = "sjp.add-case-document";
+    private static final String SJP_COMMAND_ADD_CASE_DOCUMENT = "sjp.add-case-document";
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
 
     @Test
     public void shouldAllowAuthorisedUserToAddCaseDocument() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_ADD_CASE_DOCUMENT);
+        final Action action = createActionFor(SJP_COMMAND_ADD_CASE_DOCUMENT);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getAddCaseDocumentActionGroups()))
                 .willReturn(true);
         final ExecutionResults results = executeRulesWith(action);
@@ -32,7 +32,7 @@ public class AddCaseDocumentTest extends BaseDroolsAccessControlTest {
 
     @Test
     public void shouldNotAllowUnauthorisedUserToAddCaseDocument() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_ADD_CASE_DOCUMENT);
+        final Action action = createActionFor(SJP_COMMAND_ADD_CASE_DOCUMENT);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, Arrays.asList("Random group")))
                 .willReturn(false);
         final ExecutionResults results = executeRulesWith(action);

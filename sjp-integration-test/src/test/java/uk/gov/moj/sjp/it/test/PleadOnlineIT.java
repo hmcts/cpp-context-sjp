@@ -10,8 +10,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
-import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED;
-import static uk.gov.moj.sjp.it.EventSelector.STRUCTURE_EVENTS_CASE_UPDATE_REJECTED;
+import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_SJP_CASE_UPDATE_REJECTED;
+import static uk.gov.moj.sjp.it.EventSelector.SJP_EVENTS_CASE_UPDATE_REJECTED;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.stubNotifications;
@@ -149,7 +149,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
              final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
              final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
-                     STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
+                     SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
 
             //1) First plea should be successful
             pleadOnlineAndConfirmSuccess(PleaType.NOT_GUILTY, pleadOnlineHelper, updatePleaHelper, caseSearchResultHelper);
@@ -168,7 +168,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
              final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
              final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
-                     STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
+                     SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
 
             pleadOnlineAndConfirmSuccess(PleaType.GUILTY, pleadOnlineHelper, updatePleaHelper, caseSearchResultHelper);
         }
@@ -181,7 +181,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
              final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
              final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
-                     STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
+                     SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
             pleadOnlineAndConfirmSuccess(PleaType.GUILTY_REQUEST_HEARING, pleadOnlineHelper, updatePleaHelper, caseSearchResultHelper);
         }
     }
@@ -191,7 +191,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         stubGetAssignmentsByDomainObjectId(caseSjpHelper.getCaseId(), randomUUID());
         try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
-                     STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
+                     SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
 
             final JSONObject onlinePleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
             pleadOnlineHelper.pleadOnline(onlinePleaPayload.toString());
@@ -211,7 +211,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
         try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
-                     STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
+                     SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
 
             final JSONObject onlinePleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
             pleadOnlineHelper.pleadOnline(onlinePleaPayload.toString());
@@ -222,7 +222,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
         try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
-                     STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
+                     SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
 
             final JSONObject onlinePleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
             pleadOnlineHelper.pleadOnline(onlinePleaPayload.toString());
@@ -256,7 +256,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private Matcher getEmployerUpdatedPublicEventMatcher(final JSONObject employer) {
         final Matcher payloadContentMatcher = getEmployerUpdatedPayloadContentMatcher(employer);
         return jsonEnvelope()
-                .withMetadataOf(metadata().withName("public.structure.employer-updated"))
+                .withMetadataOf(metadata().withName("public.sjp.employer-updated"))
                 .withPayloadOf(payloadIsJson(payloadContentMatcher));
     }
 

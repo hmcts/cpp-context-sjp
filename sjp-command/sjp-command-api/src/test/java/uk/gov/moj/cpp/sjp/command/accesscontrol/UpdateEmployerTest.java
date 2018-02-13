@@ -16,14 +16,14 @@ import org.mockito.Mock;
 
 public class UpdateEmployerTest extends BaseDroolsAccessControlTest {
 
-    private static final String STRUCTURE_COMMAND_UPDATE_EMPLOYER = "sjp.update-employer";
+    private static final String SJP_COMMAND_UPDATE_EMPLOYER = "sjp.update-employer";
 
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
 
     @Test
     public void shouldAllowUserInAuthorisedGroup() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_UPDATE_EMPLOYER);
+        final Action action = createActionFor(SJP_COMMAND_UPDATE_EMPLOYER);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getUpdateEmployerGroups())).willReturn(true);
 
         assertSuccessfulOutcome(executeRulesWith(action));
@@ -31,7 +31,7 @@ public class UpdateEmployerTest extends BaseDroolsAccessControlTest {
 
     @Test
     public void shouldNotAllowUserNotInAuthorisedGroup() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_UPDATE_EMPLOYER);
+        final Action action = createActionFor(SJP_COMMAND_UPDATE_EMPLOYER);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, Arrays.asList("random group"))).willReturn(false);
 
         assertFailureOutcome(executeRulesWith(action));

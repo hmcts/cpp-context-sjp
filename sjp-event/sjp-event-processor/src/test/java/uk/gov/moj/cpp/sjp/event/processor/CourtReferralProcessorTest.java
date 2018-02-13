@@ -62,7 +62,7 @@ public class CourtReferralProcessorTest {
         verify(sender).send(captor.capture());
         final JsonEnvelope publicEvent = captor.getValue();
         assertThat(publicEvent, jsonEnvelope(
-                metadata().withName("public.structure.court-referral-actioned"),
+                metadata().withName("public.sjp.court-referral-actioned"),
                 payloadIsJson(allOf(
                         withJsonPath("$.caseId", equalTo(CASE_ID)),
                         withJsonPath("$.actioned", equalTo(actioned.toString()))))

@@ -83,7 +83,7 @@ public class AssignmentProcessorTest {
                 assignmentProcessor::handleAssignmentDeleted);
     }
 
-    private void shouldHandleCaseAssignment(final String assignmentEventName, final String structureHandlerName, final Consumer<JsonEnvelope> consumer) {
+    private void shouldHandleCaseAssignment(final String assignmentEventName, final String sjpHandlerName, final Consumer<JsonEnvelope> consumer) {
         // given
         final JsonEnvelope event = EnvelopeFactory.createEnvelope(
                 assignmentEventName,
@@ -97,14 +97,14 @@ public class AssignmentProcessorTest {
         // then
         verify(sender).send(captor.capture());
         assertThat(captor.getValue(), jsonEnvelope(
-                metadata().withName(structureHandlerName),
+                metadata().withName(sjpHandlerName),
                 payloadIsJson(allOf(
                         withJsonPath("$." + EventProcessorConstants.CASE_ID, equalTo(CASE_ID)),
                         withJsonPath("$." + CASE_ASSIGNMENT_TYPE, equalTo(TYPE.toString()))))
         ));
     }
 
-    private void shouldHandleCaseAssignmentForEmptyNatureType(final String assignmentEventName, final String structureHandlerName, final Consumer<JsonEnvelope> consumer) {
+    private void shouldHandleCaseAssignmentForEmptyNatureType(final String assignmentEventName, final String sjpHandlerName, final Consumer<JsonEnvelope> consumer) {
         // given
         final JsonEnvelope event = EnvelopeFactory.createEnvelope(
                 assignmentEventName,
@@ -118,7 +118,7 @@ public class AssignmentProcessorTest {
         // then
         verify(sender).send(captor.capture());
         assertThat(captor.getValue(), jsonEnvelope(
-                metadata().withName(structureHandlerName),
+                metadata().withName(sjpHandlerName),
                 payloadIsJson(allOf(
                         withJsonPath("$." + EventProcessorConstants.CASE_ID, equalTo(CASE_ID)),
                         withJsonPath("$." + CASE_ASSIGNMENT_TYPE, equalTo("unknown"))))

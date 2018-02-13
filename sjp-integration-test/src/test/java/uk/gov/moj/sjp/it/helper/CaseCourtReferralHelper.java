@@ -31,7 +31,7 @@ public class CaseCourtReferralHelper extends AbstractTestHelper {
     private final LocalDate hearingDate;
 
     public CaseCourtReferralHelper() {
-        publicConsumer.startConsumer("public.structure.court-referral-actioned", PUBLIC_ACTIVE_MQ_TOPIC);
+        publicConsumer.startConsumer("public.sjp.court-referral-actioned", PUBLIC_ACTIVE_MQ_TOPIC);
         this.hearingDate = LocalDate.now().plusWeeks(1);
     }
 

@@ -22,11 +22,11 @@ import org.junit.Test;
 public class SjpCaseCreationFailedBecauseCaseAlreadyExistedIT extends BaseIntegrationTest{
 
     private MessageConsumer sjpCaseCreated =
-            QueueUtil.publicEvents.createConsumer("public.structure.sjp-case-created");
+            QueueUtil.publicEvents.createConsumer("public.sjp.sjp-case-created");
 
     private MessageConsumer caseCreationFailedBecauseCaseAlreadyExisted =
             QueueUtil.publicEvents.createConsumer(
-                    "public.structure.case-creation-failed-because-case-already-existed");
+                    "public.sjp.case-creation-failed-because-case-already-existed");
 
     private CaseSjpHelper caseSjpHelper;
 

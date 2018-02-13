@@ -59,7 +59,7 @@ public class AddCaseDocumentCommandBuilder {
         }
 
         return envelopeFrom(
-                metadataOf(UUID.randomUUID(), "structure.command.add-case-document"),
+                metadataOf(UUID.randomUUID(), "sjp.command.add-case-document"),
                 victim.build()
         );
     }

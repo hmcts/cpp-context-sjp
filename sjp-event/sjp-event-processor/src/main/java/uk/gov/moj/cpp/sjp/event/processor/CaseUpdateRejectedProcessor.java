@@ -30,7 +30,7 @@ public class CaseUpdateRejectedProcessor {
                 .add("reason", payload.getString("reason"))
                 .build();
         final JsonEnvelope newEventEnvelope = enveloper.withMetadataFrom(event,
-                "public.structure.case-update-rejected").apply(newPayload);
+                "public.sjp.case-update-rejected").apply(newPayload);
         sender.send(newEventEnvelope);
     }
 }

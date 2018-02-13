@@ -39,8 +39,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseDocumentUpdatedListenerTest {
-    private static final String PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT = "public.structure.case-document-added";
-    private static final String PUBLIC_CASE_DOCUMENT_ALREADY_EXISTS_PUBLIC_EVENT = "public.structure.case-document-already-exists";
+    private static final String PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT = "public.sjp.case-document-added";
+    private static final String PUBLIC_CASE_DOCUMENT_ALREADY_EXISTS_PUBLIC_EVENT = "public.sjp.case-document-already-exists";
 
     private static final String VALUE_CASE_ID = UUID.randomUUID().toString();
     private static final String VALUE_MATERIAL_ID = UUID.randomUUID().toString();

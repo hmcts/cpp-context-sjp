@@ -34,7 +34,7 @@ public abstract class AbstractTestHelper implements AutoCloseable {
 
     public static final String PUBLIC_ACTIVE_MQ_TOPIC = "public.event";
     public static final String USER_ID = UUID.randomUUID().toString();
-    private static final String STRUCTURE_SYSTEM_USER = "38e4b0c2-b4d4-4078-a857-7a5570e7ae73";
+    private static final String SJP_SYSTEM_USER = "38e4b0c2-b4d4-4078-a857-7a5570e7ae73";
 
     protected static final String BASE_URI = System.getProperty("baseUri", "http://localhost:8080");
     protected static final String SJP_EVENT_TOPIC = "sjp.event";
@@ -62,7 +62,7 @@ public abstract class AbstractTestHelper implements AutoCloseable {
     public static void doAllStubbing() {
         InternalEndpointMockUtils.stubPingFor("usersgroups-query-api");
         stubAllGroupsForUser(USER_ID);
-        stubAllGroupsForUser(STRUCTURE_SYSTEM_USER);
+        stubAllGroupsForUser(SJP_SYSTEM_USER);
     }
 
     protected void makePostCall(String url, String mediaType, String payload) {

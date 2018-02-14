@@ -156,8 +156,7 @@
             }
           },
           "required": [
-            "claimed",
-            "deductPenaltyPreference"
+            "claimed"
           ],
           "additionalProperties": false
         },

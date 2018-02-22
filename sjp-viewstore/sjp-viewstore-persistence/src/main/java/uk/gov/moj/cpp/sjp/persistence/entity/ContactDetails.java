@@ -59,8 +59,12 @@ public class ContactDetails implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ContactDetails that = (ContactDetails) o;
         return Objects.equals(email, that.email) &&
                 Objects.equals(home, that.home) &&

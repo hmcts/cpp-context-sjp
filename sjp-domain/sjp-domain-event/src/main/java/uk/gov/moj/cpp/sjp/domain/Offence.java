@@ -88,8 +88,13 @@ public class Offence {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        
         Offence that = (Offence) o;
 
         return offenceSequenceNo == that.offenceSequenceNo &&

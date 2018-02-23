@@ -45,7 +45,7 @@ public class EmployerIT extends BaseIntegrationTest {
     private static final String FIELD_ADDRESS_2 = "address2";
     private static final String FIELD_ADDRESS_3 = "address3";
     private static final String FIELD_ADDRESS_4 = "address4";
-    private static final String FIELD_POST_CODE = "postCode";
+    private static final String FIELD_POST_CODE = "postcode";
 
     @Before
     public void setUp() {
@@ -143,7 +143,7 @@ public class EmployerIT extends BaseIntegrationTest {
                 withJsonPath("$.address.address2", equalTo(address.getString(FIELD_ADDRESS_2))),
                 withJsonPath("$.address.address3", equalTo(address.getString(FIELD_ADDRESS_3))),
                 withJsonPath("$.address.address4", equalTo(address.getString(FIELD_ADDRESS_4))),
-                withJsonPath("$.address.postCode", equalTo(address.getString(FIELD_POST_CODE)))
+                withJsonPath("$.address.postcode", equalTo(address.getString(FIELD_POST_CODE)))
         );
     }
 
@@ -154,13 +154,13 @@ public class EmployerIT extends BaseIntegrationTest {
     private Matcher getEmployerUpdatedPublicEventMatcher(final JsonObject employer) {
         final Matcher payloadContentMatcher = getEmployerUpdatedPayloadContentMatcher(employer);
         return jsonEnvelope()
-                .withMetadataOf(metadata().withName("public.structure.employer-updated"))
+                .withMetadataOf(metadata().withName("public.sjp.employer-updated"))
                 .withPayloadOf(payloadIsJson(payloadContentMatcher));
     }
 
     private Matcher getEmployerDeletedPublicEventMatcher(final String defendantId) {
         return jsonEnvelope()
-                .withMetadataOf(metadata().withName("public.structure.employer-deleted"))
+                .withMetadataOf(metadata().withName("public.sjp.employer-deleted"))
                 .withPayloadOf(payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId.toString()))));
     }
 
@@ -170,7 +170,7 @@ public class EmployerIT extends BaseIntegrationTest {
                 withJsonPath("$.reason", is(reason)));
 
         return jsonEnvelope()
-                .withMetadataOf(metadata().withName("public.structure.case-update-rejected"))
+                .withMetadataOf(metadata().withName("public.sjp.case-update-rejected"))
                 .withPayloadOf(payloadIsJson(payloadMatcher));
     }
 

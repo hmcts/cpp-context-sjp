@@ -16,6 +16,12 @@
     },
     "pleaDetails": {
       "type": "object"
+    },
+    "mitigation": {
+      "type": "string"
+    },
+    "notGuiltyBecause": {
+      "type": "string"
     }
   },
   "required": [

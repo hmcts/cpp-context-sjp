@@ -52,10 +52,6 @@ public class CancelPleaHelper extends AbstractTestHelper {
         assertThat(response.getStatus(), equalTo(expectedStatus.getStatusCode()));
     }
 
-    public void verifyInActiveMQ() {
-        assertEventData(privateEventsConsumer);
-    }
-
     public void verifyInPublicTopic() {
         assertEventData(publicEventsConsumer);
     }
@@ -70,8 +66,8 @@ public class CancelPleaHelper extends AbstractTestHelper {
         RestPoller.poll(getCaseById(caseSjpHelper.getCaseId())).until(
                 status().is(OK),
                 payload().isJson(allOf(
-                        withoutJsonPath("defendants[0].offences[0].plea"),
-                        withoutJsonPath("defendants[0].offences[0].pleaMethod")))
+                        withoutJsonPath("defendant.offences[0].plea"),
+                        withoutJsonPath("defendant.offences[0].pleaMethod")))
         );
     }
 

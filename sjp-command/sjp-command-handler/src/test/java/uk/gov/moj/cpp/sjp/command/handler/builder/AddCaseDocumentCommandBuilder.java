@@ -6,8 +6,6 @@ import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataOf;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_DOCUMENT_ID;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_DOCUMENT_MATERIAL_ID;
-import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_DOCUMENT_POLICE_MATERIAL_ID;
-import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_DOCUMENT_POLICE_NAME;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_DOCUMENT_TYPE_SJPN;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_ID;
 
@@ -22,8 +20,6 @@ public class AddCaseDocumentCommandBuilder {
     private UUID caseId = CASE_ID;
     private UUID id = CASE_DOCUMENT_ID;
     private String materialId = CASE_DOCUMENT_MATERIAL_ID;
-    private String policeName = CASE_DOCUMENT_POLICE_NAME;
-    private String policeMaterialId = CASE_DOCUMENT_POLICE_MATERIAL_ID;
     private String documentType;
 
     private AddCaseDocumentCommandBuilder() {
@@ -47,29 +43,23 @@ public class AddCaseDocumentCommandBuilder {
         return this;
     }
 
-    public AddCaseDocumentCommandBuilder withPoliceMaterialId(String policeMaterialId) {
-        this.policeMaterialId = policeMaterialId;
-        return this;
-    }
 
     public JsonEnvelope build() {
-        if (caseId == null || id == null || materialId == null || policeName == null || policeMaterialId == null) {
-            throw new RuntimeException("CaseId, id, materialId, policeName and policeMaterialId are required by the AddCaseDocument command.");
+        if (caseId == null || id == null || materialId == null) {
+            throw new RuntimeException("CaseId, id, materialId required by the AddCaseDocument command.");
         }
 
         JsonObjectBuilder victim = createObjectBuilder()
                 .add("caseId", caseId.toString())
                 .add("id", id.toString())
-                .add("materialId", materialId)
-                .add("policeName", policeName)
-                .add("policeMaterialId", policeMaterialId);
+                .add("materialId", materialId);
 
         if (this.documentType != null) {
             victim.add("documentType", documentType);
         }
 
         return envelopeFrom(
-                metadataOf(UUID.randomUUID(), "structure.command.add-case-document"),
+                metadataOf(UUID.randomUUID(), "sjp.command.add-case-document"),
                 victim.build()
         );
     }

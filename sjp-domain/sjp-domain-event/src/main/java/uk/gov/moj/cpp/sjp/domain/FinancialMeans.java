@@ -14,7 +14,8 @@ public class FinancialMeans implements Serializable {
     private final Benefits benefits;
     private final String employmentStatus;
 
-    public FinancialMeans(final UUID defendantId, final Income income, final Benefits benefits, final String employmentStatus) {
+    public FinancialMeans(final UUID defendantId, final Income income, final Benefits benefits,
+                          final String employmentStatus) {
         this.defendantId = defendantId;
         this.income = income;
         this.benefits = benefits;

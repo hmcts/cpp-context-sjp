@@ -23,12 +23,12 @@ public class PleaUpdatedProcessor {
 
     @Handles("sjp.events.plea-updated")
     public void updatePlea(final JsonEnvelope envelope) {
-        publishPublicEvent(envelope, "public.structure.plea-updated");
+        publishPublicEvent(envelope, "public.sjp.plea-updated");
     }
 
     @Handles("sjp.events.plea-cancelled")
     public void cancelPlea(final JsonEnvelope envelope) {
-        publishPublicEvent(envelope, "public.structure.plea-cancelled");
+        publishPublicEvent(envelope, "public.sjp.plea-cancelled");
     }
 
     private void publishPublicEvent(final JsonEnvelope envelope, final String eventName) {

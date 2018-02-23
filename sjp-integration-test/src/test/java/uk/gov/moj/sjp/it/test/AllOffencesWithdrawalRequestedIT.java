@@ -1,12 +1,12 @@
 package uk.gov.moj.sjp.it.test;
 
 import static java.util.UUID.randomUUID;
-import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_STRUCTURE_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
-import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_STRUCTURE_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED;
-import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED;
-import static uk.gov.moj.sjp.it.EventSelector.STRUCTURE_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
-import static uk.gov.moj.sjp.it.EventSelector.STRUCTURE_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED;
-import static uk.gov.moj.sjp.it.EventSelector.STRUCTURE_EVENTS_CASE_UPDATE_REJECTED;
+import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
+import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED;
+import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_SJP_CASE_UPDATE_REJECTED;
+import static uk.gov.moj.sjp.it.EventSelector.SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
+import static uk.gov.moj.sjp.it.EventSelector.SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED;
+import static uk.gov.moj.sjp.it.EventSelector.SJP_EVENTS_CASE_UPDATE_REJECTED;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithDecision;
@@ -50,13 +50,12 @@ public class AllOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
         stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
         try (
                 final OffencesWithdrawalRequestCancelHelper offencesWithdrawalRequestCancelHelper = new OffencesWithdrawalRequestCancelHelper(caseSjpHelper,
-                        STRUCTURE_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED, PUBLIC_STRUCTURE_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED);
+                        SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED, PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED);
                 final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(caseSjpHelper,
-                        STRUCTURE_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_STRUCTURE_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
+                        SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
                 final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper)) {
 
-            caseSearchResultHelper.addPersonInfo();
-            caseSearchResultHelper.verifyPersonInfoByUrn();
+            caseSearchResultHelper.verifyPersonInfo();
 
             //check successful standard withdrawal request
             offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(userId);
@@ -79,13 +78,12 @@ public class AllOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
         stubGetAssignmentsByDomainObjectId(caseSjpHelper.getCaseId(), userId);
         try (
                 final OffencesWithdrawalRequestCancelHelper offencesWithdrawalRequestCancelHelper = new OffencesWithdrawalRequestCancelHelper(caseSjpHelper,
-                        STRUCTURE_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED, PUBLIC_STRUCTURE_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED);
+                        SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED, PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED);
                 final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(caseSjpHelper,
-                        STRUCTURE_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_STRUCTURE_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
+                        SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
                 final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper)) {
 
-            caseSearchResultHelper.addPersonInfo();
-            caseSearchResultHelper.verifyPersonInfoByUrn();
+            caseSearchResultHelper.verifyPersonInfo();
 
             //check successful standard withdrawal request
             offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(userId);
@@ -107,7 +105,7 @@ public class AllOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
     public void shouldRejectWithdrawalWhenCaseAssignedToSomebodyElse() {
         stubGetAssignmentsByDomainObjectId(caseSjpHelper.getCaseId(), otherUserId);
         try (final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(caseSjpHelper,
-                STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
+                SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
             offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(userId);
             offencesWithdrawalRequestHelper.verifyCaseUpdateRejectedPrivateInActiveMQ(CaseUpdateRejected.RejectReason.CASE_ASSIGNED.name());
             offencesWithdrawalRequestHelper.verifyCaseUpdateRejectedPublicInActiveMQ(CaseUpdateRejected.RejectReason.CASE_ASSIGNED.name());
@@ -119,7 +117,7 @@ public class AllOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
         stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
         stubGetCaseDecisionsWithDecision(caseSjpHelper.getCaseId());
         try (final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(caseSjpHelper,
-                STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)) {
+                SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
             offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(userId);
             offencesWithdrawalRequestHelper.verifyCaseUpdateRejectedPrivateInActiveMQ(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name());
             offencesWithdrawalRequestHelper.verifyCaseUpdateRejectedPublicInActiveMQ(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name());
@@ -131,11 +129,11 @@ public class AllOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
         stubGetAssignmentsByDomainObjectId(caseSjpHelper.getCaseId(), otherUserId);
         try (
                 final OffencesWithdrawalRequestCancelHelper offencesWithdrawalRequestCancelHelper = new OffencesWithdrawalRequestCancelHelper(caseSjpHelper,
-                        STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED);
+                        SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED);
                 final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(caseSjpHelper,
-                        STRUCTURE_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_STRUCTURE_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
+                        SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
                 final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
-                        STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)
+                        SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)
         ) {
             offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(userId);
             offencesWithdrawalRequestCancelHelper.cancelRequestWithdrawalForAllOffences(userId);
@@ -150,11 +148,11 @@ public class AllOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
         stubGetCaseDecisionsWithDecision(caseSjpHelper.getCaseId());
         try (
                 final OffencesWithdrawalRequestCancelHelper offencesWithdrawalRequestCancelHelper = new OffencesWithdrawalRequestCancelHelper(caseSjpHelper,
-                        STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED);
+                        SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED);
                 final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(caseSjpHelper,
-                        STRUCTURE_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_STRUCTURE_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
+                        SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
                 final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
-                        STRUCTURE_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_STRUCTURE_CASE_UPDATE_REJECTED)
+                        SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)
         ) {
             offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(userId);
             offencesWithdrawalRequestCancelHelper.cancelRequestWithdrawalForAllOffences(userId);

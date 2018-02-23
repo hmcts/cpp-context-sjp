@@ -25,7 +25,7 @@ public class EnterpriseIdAssociatedListener {
     public void enterpriseIdAssociated(final JsonEnvelope event) {
         final JsonObject payload = buildPublicPayloadFrom(event.payloadAsJsonObject());
 
-        final JsonEnvelope publicEvent = enveloper.withMetadataFrom(event, "public.structure.enterprise-id-associated").apply(payload);
+        final JsonEnvelope publicEvent = enveloper.withMetadataFrom(event, "public.sjp.enterprise-id-associated").apply(payload);
 
         sender.send(publicEvent);
     }

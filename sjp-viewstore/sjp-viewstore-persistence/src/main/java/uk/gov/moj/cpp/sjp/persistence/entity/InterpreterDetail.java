@@ -5,35 +5,31 @@ import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 @Embeddable
 public class InterpreterDetail implements Serializable{
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 6565253161566539015L;
 
-    @Column(name="interpreter_needed")
-    private Boolean needed;
-    
     @Column(name="interpreter_language")
     private String language;
 
-    public InterpreterDetail(Boolean needed, String language) {
-        this.needed = needed;
-        this.language = language;
+    public InterpreterDetail(String language){
+        setLanguage(language);
     }
     
     public InterpreterDetail(){
     }
 
-    public Boolean getNeeded() {
-        return needed;
-    }
-
-    public void setNeeded(Boolean needed) {
-        this.needed = needed;
-    }
-
     public String getLanguage() {
         return language;
+    }
+
+    public Boolean getNeeded() {
+        return ! StringUtils.isEmpty(language);
     }
 
     public void setLanguage(String language) {
@@ -42,8 +38,7 @@ public class InterpreterDetail implements Serializable{
 
     @Override
     public String toString() {
-        return "InterpreterDetail [needed=" + needed + ", language=" + language + "]";
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
-    
     
 }

@@ -25,8 +25,8 @@ public class CaseDocumentUpdatedListener {
     @Inject
     private Enveloper enveloper;
 
-    static final String PUBLIC_CASE_DOCUMENT_ALREADY_ADDED_PUBLIC_EVENT = "public.structure.case-document-already-exists";
-    private static final String PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT = "public.structure.case-document-added";
+    static final String PUBLIC_CASE_DOCUMENT_ALREADY_ADDED_PUBLIC_EVENT = "public.sjp.case-document-already-exists";
+    private static final String PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT = "public.sjp.case-document-added";
 
     @Handles("sjp.events.case-document-added")
     public void handleCaseDocumentAdded(final JsonEnvelope jsonEnvelope) {

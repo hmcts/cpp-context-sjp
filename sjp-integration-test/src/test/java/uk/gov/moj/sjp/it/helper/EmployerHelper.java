@@ -34,7 +34,7 @@ public class EmployerHelper implements AutoCloseable {
         headers = new MultivaluedHashMap<>();
         headers.add(USER_ID, UUID.randomUUID());
         messageConsumer = QueueUtil.publicEvents.createConsumerForMultipleSelectors(
-                "public.structure.employer-updated", "public.structure.employer-deleted", "public.structure.case-update-rejected");
+                "public.sjp.employer-updated", "public.sjp.employer-deleted", "public.sjp.case-update-rejected");
     }
 
     public Response updateEmployer(final String caseId, final String defendantId, final JsonObject payload) {

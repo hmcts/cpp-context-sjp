@@ -35,9 +35,6 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
       (mapping):
           responseType: application/vnd.sjp.query.case-by-urn+json
           name: sjp.query.case-by-urn
-      (mapping):
-          responseType: application/vnd.sjp.query.sjp-case-by-urn+json
-          name: sjp.query.sjp-case-by-urn
       ...
     queryParameters:
       urn:
@@ -48,10 +45,6 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
         200:
           description: OK
           body:
-                application/vnd.sjp.query.sjp-case-by-urn+json:
-                  schema: !include json/schema/sjp.query.case.json
-                  example: !include json/sjp.query.case.json
-
                 application/vnd.sjp.query.case-by-urn+json:
                   schema: !include json/schema/sjp.query.case.json
                   example: !include json/sjp.query.case.json
@@ -348,3 +341,21 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
                 application/vnd.sjp.query.case-by-urn-postcode+json:
                   schema: !include json/schema/sjp.query.case-by-urn-postcode.json
                   example: !include json/sjp.query.case-by-urn-postcode.json
+
+/cases/{caseId}/defendants-online-plea:
+  get:
+    description: |
+      Get defendant's online plea on a case.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.defendants-online-plea+json
+          name: sjp.query.defendants-online-plea
+      ...
+    queryParameters:
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.defendants-online-plea+json:
+                  schema: !include json/schema/sjp.query.defendants-online-plea.json
+                  example: !include json/sjp.query.defendants-online-plea.json

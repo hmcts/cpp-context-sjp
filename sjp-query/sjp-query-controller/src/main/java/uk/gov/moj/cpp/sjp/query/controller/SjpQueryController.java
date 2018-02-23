@@ -8,7 +8,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.query.controller.service.PeopleService;
+import uk.gov.moj.cpp.sjp.query.controller.converter.CaseConverter;
 import uk.gov.moj.cpp.sjp.query.controller.service.UserAndGroupsService;
 
 import javax.inject.Inject;
@@ -28,7 +28,7 @@ public class SjpQueryController {
     private UserAndGroupsService userAndGroupsService;
 
     @Inject
-    private PeopleService peopleService;
+    private CaseConverter caseConverter;
 
     @Inject
     private Enveloper enveloper;
@@ -51,31 +51,17 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
-    @Handles("sjp.query.sjp-case-by-urn")
-    public JsonEnvelope findSjpCaseByUrn(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
     @Handles("sjp.query.case-by-urn-postcode")
     public JsonEnvelope findCaseByUrnPostcode(final JsonEnvelope query) {
 
-        final JsonObject payload = query.payloadAsJsonObject();
-        final String urn = payload.getString("urn");
-        final String postcode = payload.getString("postcode");
+        final JsonValue caseDetails = requester.request(query).payload();
 
-        // Find the case by urn
-        final JsonValue caseDetails = requester.request(enveloper.withMetadataFrom(query,
-                "sjp.query.case-by-urn").apply(createObjectBuilder()
-                .add("urn", urn).build())).payload();
+        final JsonValue responsePayload = !JsonValue.NULL.equals(caseDetails) ?
+                caseConverter.addOffenceReferenceDataToOffences((JsonObject) caseDetails, query) : null;
 
-        // Find the person and check that the postcode matches
-        final JsonValue responsePayload = JsonValue.NULL.equals(caseDetails) ? null :
-                peopleService.addPersonInfoForDefendantWithMatchingPostcode(postcode, (JsonObject) caseDetails, query);
-
-        return enveloper.withMetadataFrom(query, "sjp.query.case-by-urn-response")
+        return enveloper.withMetadataFrom(query, "sjp.query.case-by-urn-postcode")
                 .apply(responsePayload);
     }
-
 
     @Handles("sjp.query.financial-means")
     public JsonEnvelope findFinancialMeans(final JsonEnvelope query) {
@@ -155,4 +141,8 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.defendants-online-plea")
+    public JsonEnvelope getDefendantsOnlinePlea(final JsonEnvelope query) {
+        return requester.request(query);
+    }
 }

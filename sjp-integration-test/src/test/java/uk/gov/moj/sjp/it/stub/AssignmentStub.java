@@ -6,14 +6,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static java.lang.String.format;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
-import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,28 +21,10 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-public class AssignmentStub extends StubUtil {
+public class AssignmentStub {
 
     private static final String ASSIGNMENTS_QUERY_URL = "/assignment-query-api/query/api/rest/assignment/assignments";
     private static final String ASSIGNMENTS_QUERY_MEDIA_TYPE = "application/vnd.assignment.query.assignments+json";
-
-    public static void stubGetAssignmentsPreChargeReviewNotAssigned() {
-        InternalEndpointMockUtils.stubPingFor("assignment-query-api");
-
-        stubFor(get(urlPathEqualTo(ASSIGNMENTS_QUERY_URL))
-                .withQueryParam("assignmentNature", equalTo("PRE_CHARGE_REVIEW"))
-                .withQueryParam("assigned", equalTo("false"))
-                .willReturn(aResponse().withStatus(SC_OK)
-                        .withHeader("CPPID", UUID.randomUUID().toString())
-                        .withHeader("Content-Type", DEFAULT_JSON_CONTENT_TYPE)
-                        .withBody(getPayload("stub-data/assignment-unassigned-reviews.json"))));
-
-        Map<String, String> queryParams = new HashMap<>();
-        queryParams.put("assignmentNature", "PRE_CHARGE_REVIEW");
-        queryParams.put("assigned", "false");
-
-        waitForStubToBeReady(withMultipleQueryParams(ASSIGNMENTS_QUERY_URL, queryParams), ASSIGNMENTS_QUERY_MEDIA_TYPE);
-    }
 
     public static void stubGetEmptyAssignmentsByDomainObjectId(final String caseId) {
         stubGetAssignmentsByDomainObjectId(caseId);
@@ -69,13 +50,14 @@ public class AssignmentStub extends StubUtil {
                 .withQueryParam("domainObjectId", equalTo(caseId))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", UUID.randomUUID().toString())
-                        .withHeader("Content-Type", DEFAULT_JSON_CONTENT_TYPE)
+                        .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(payload.toString())));
 
-        waitForStubToBeReady(withQueryParam(ASSIGNMENTS_QUERY_URL, "domainObjectId", caseId), ASSIGNMENTS_QUERY_MEDIA_TYPE);
+        waitForStubToBeReady(format("%s?%s=%s", ASSIGNMENTS_QUERY_URL, "domainObjectId", caseId), ASSIGNMENTS_QUERY_MEDIA_TYPE);
     }
 
     public static void stubGetAssignmentsByDomainObjectId(final String caseId, final UUID... assignees) {
         stubGetAssignmentsByDomainObjectId(caseId, Optional.empty(), assignees);
     }
+
 }

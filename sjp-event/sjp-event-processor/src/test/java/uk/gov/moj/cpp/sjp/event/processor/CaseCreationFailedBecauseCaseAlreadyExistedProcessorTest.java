@@ -55,7 +55,7 @@ public class CaseCreationFailedBecauseCaseAlreadyExistedProcessorTest {
 
         //then
         verify(sender).send(argThat(
-                jsonEnvelope(metadata().withName("public.structure.case-creation-failed-because-case-already-existed"),
+                jsonEnvelope(metadata().withName("public.sjp.case-creation-failed-because-case-already-existed"),
                         payloadIsJson(allOf(
                                         withJsonPath("$.caseId", is(CASE_ID)),
                                         withJsonPath("$.urn", is(URN)))))

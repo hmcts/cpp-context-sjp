@@ -22,11 +22,9 @@ import org.slf4j.LoggerFactory;
 @ServiceComponent(EVENT_PROCESSOR)
 public class CaseUpdatedListener {
 
-    static final String DEFENDANT_ADDED_PUBLIC_EVENT = "public.structure.defendant-added";
-    static final String DEFENDANT_ADDITION_FAILED_PUBLIC_EVENT = "public.structure.defendant-addition-failed";
-    static final String CASE_REOPENED_IN_LIBRA_PUBLIC_EVENT = "public.structure.case-reopened-in-libra";
-    static final String CASE_REOPENED_IN_LIBRA_UPDATED_PUBLIC_EVENT = "public.structure.case-reopened-in-libra-updated";
-    static final String CASE_REOPENED_IN_LIBRA_UNDONE_PUBLIC_EVENT = "public.structure.case-reopened-in-libra-undone";
+    static final String CASE_REOPENED_IN_LIBRA_PUBLIC_EVENT = "public.sjp.case-reopened-in-libra";
+    static final String CASE_REOPENED_IN_LIBRA_UPDATED_PUBLIC_EVENT = "public.sjp.case-reopened-in-libra-updated";
+    static final String CASE_REOPENED_IN_LIBRA_UNDONE_PUBLIC_EVENT = "public.sjp.case-reopened-in-libra-undone";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseUpdatedListener.class.getCanonicalName());
 
@@ -35,38 +33,6 @@ public class CaseUpdatedListener {
 
     @Inject
     private Enveloper enveloper;
-
-    @Handles("sjp.events.defendant-added")
-    public void handleDefendantAddedEvent(final JsonEnvelope jsonEnvelope) {
-        JsonObject privateEventPayload = jsonEnvelope.payloadAsJsonObject();
-        final String caseId = privateEventPayload.getString(CASE_ID);
-        final String defendantId = privateEventPayload.getString(DEFENDANT_ID);
-
-        LOGGER.debug("Defendant with ID '{}' added for case with ID '{}' ", defendantId, caseId);
-
-        JsonObject publicEventPayload = Json.createObjectBuilder()
-                .add(CASE_ID, caseId)
-                .add(DEFENDANT_ID, defendantId).build();
-
-        sender.send(enveloper.withMetadataFrom(jsonEnvelope, DEFENDANT_ADDED_PUBLIC_EVENT).apply(publicEventPayload));
-    }
-
-    @Handles("sjp.events.defendant-addition-failed")
-    public void handleDefendantAdditionFailedEvent(final JsonEnvelope jsonEnvelope) {
-        JsonObject privateEventPayload = jsonEnvelope.payloadAsJsonObject();
-        String caseId = privateEventPayload.getString(CASE_ID);
-        String defendantId = privateEventPayload.getString(DEFENDANT_ID);
-        String description = privateEventPayload.getString(DESCRIPTION);
-
-        LOGGER.debug("Defendant addition failed for defendant ID: {}", defendantId);
-
-        JsonObject publicEventPayload = Json.createObjectBuilder()
-                .add(CASE_ID, caseId)
-                .add(DEFENDANT_ID, defendantId)
-                .add(DESCRIPTION, description).build();
-
-        sender.send(enveloper.withMetadataFrom(jsonEnvelope, DEFENDANT_ADDITION_FAILED_PUBLIC_EVENT).apply(publicEventPayload));
-    }
 
     @Handles("sjp.events.case-reopened-in-libra")
     public void handleCaseReopenedInLibra(final JsonEnvelope jsonEnvelope) {

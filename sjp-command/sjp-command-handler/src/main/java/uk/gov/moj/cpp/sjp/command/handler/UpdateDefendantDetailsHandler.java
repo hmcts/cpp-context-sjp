@@ -10,8 +10,8 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.Address;
-import uk.gov.moj.cpp.sjp.domain.PersonInfoDetails;
-import uk.gov.moj.cpp.sjp.domain.aggregate.DefendantAggregate;
+import uk.gov.moj.cpp.sjp.domain.Person;
+import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -38,7 +38,6 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
 
         final UUID caseId = UUID.fromString(payload.getString("caseId"));
         final UUID defendantId = UUID.fromString(payload.getString("defendantId"));
-        final UUID personId = UUID.fromString(payload.getString("personId"));
 
         final String title =  getStringOrNull(payload, "title");
         final String firstName =  getStringOrNull(payload, "firstName");
@@ -54,13 +53,13 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
         final Address address =  createAddressFrom(payload);
         final LocalDate birthDate = LocalDate.parse(dateOfBirth);
 
-        final EventStream eventStream = eventSource.getStreamById(personId);
+        final EventStream eventStream = eventSource.getStreamById(caseId);
 
-        final DefendantAggregate defendantAggregate = aggregateService.get(eventStream, DefendantAggregate.class);
+        final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
 
-        final PersonInfoDetails personInfoDetails = new PersonInfoDetails(personId, title, firstName, lastName,
-                birthDate, address);
-        final Stream<Object> events = defendantAggregate.updateDefendantDetails(caseId, defendantId, gender,
+        final Person personInfoDetails = new Person(title, firstName, lastName,
+                birthDate, gender, address);
+        final Stream<Object> events = caseAggregate.updateDefendantDetails(caseId, defendantId, gender,
                 nationalInsuranceNumber, email, homeNumber, mobileNumber, personInfoDetails);
 
         eventStream.append(events.map(enveloper.withMetadataFrom(command)));

@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.event.processor.CaseCreatedProcessor;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -52,7 +51,7 @@ public class CaseCreatedProcessorTest {
 
     @Before
     public void before() {
-        when(jsonObject.getString("id")).thenReturn(CASE_ID);
+        when(jsonObject.getString("caseId")).thenReturn(CASE_ID);
         when(event.payloadAsJsonObject()).thenReturn(jsonObject);
         when(enveloper.withMetadataFrom(eq(event), any())).thenReturn((t) -> {
             when(messageToPublish.payload()).thenReturn((JsonValue) t);

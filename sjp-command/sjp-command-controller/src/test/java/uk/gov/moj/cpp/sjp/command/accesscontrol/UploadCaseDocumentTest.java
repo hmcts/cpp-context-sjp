@@ -17,13 +17,13 @@ import org.mockito.Mock;
 
 public class UploadCaseDocumentTest extends BaseDroolsAccessControlTest {
 
-    private static final String STRUCTURE_COMMAND_ADD_CASE_DOCUMENT = "sjp.command.upload-case-document";
+    private static final String SJP_COMMAND_ADD_CASE_DOCUMENT = "sjp.command.upload-case-document";
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
 
     @Test
     public void shouldAllowAuthorisedUserToAddCaseDocument() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_ADD_CASE_DOCUMENT);
+        final Action action = createActionFor(SJP_COMMAND_ADD_CASE_DOCUMENT);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, RuleConstants.getUploadCaseDocumentActionGroups()))
                 .willReturn(true);
         final ExecutionResults results = executeRulesWith(action);
@@ -32,7 +32,7 @@ public class UploadCaseDocumentTest extends BaseDroolsAccessControlTest {
 
     @Test
     public void shouldNotAllowUnauthorisedUserToAddCaseDocument() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_ADD_CASE_DOCUMENT);
+        final Action action = createActionFor(SJP_COMMAND_ADD_CASE_DOCUMENT);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, Arrays.asList("Random group")))
                 .willReturn(false);
         final ExecutionResults results = executeRulesWith(action);

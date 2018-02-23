@@ -1,10 +1,10 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
-import static java.util.Collections.unmodifiableSet;
+import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
 
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
-import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseReferredToCourt;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
+import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseReferredToCourt;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -24,9 +24,12 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.SqlResultSetMapping;
 import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @SqlResultSetMappings({
         @SqlResultSetMapping(
@@ -75,8 +78,8 @@ public class CaseDetail implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "caseId")
     private Set<CaseSearchResult> caseSearchResults = new LinkedHashSet<>();
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "caseDetail")
-    private Set<DefendantDetail> defendants = new LinkedHashSet<>();
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "caseDetail")
+    private DefendantDetail defendant = new DefendantDetail();
 
     @Column(name = "date_time_created")
     private ZonedDateTime dateTimeCreated;
@@ -116,10 +119,17 @@ public class CaseDetail implements Serializable {
     private String reopenedInLibraReason;
 
     public CaseDetail() {
-        super();
+        defendant.setCaseDetail(this);
     }
 
-    public CaseDetail(UUID id, String urn, String prosecutingAuthority, String initiationCode, Boolean completed, Boolean assigned, ZonedDateTime createdOn) {
+    public CaseDetail(final UUID id,
+                      final String urn,
+                      final String prosecutingAuthority,
+                      final String initiationCode,
+                      final Boolean completed,
+                      final Boolean assigned,
+                      final ZonedDateTime createdOn, final DefendantDetail defendantDetail, final BigDecimal costs, final LocalDate postingDate) {
+        this();
         this.id = id;
         this.urn = urn;
         this.prosecutingAuthority = prosecutingAuthority;
@@ -127,6 +137,9 @@ public class CaseDetail implements Serializable {
         this.completed = completed;
         this.assigned = assigned;
         this.dateTimeCreated = createdOn;
+        setDefendant(defendantDetail);
+        this.costs = costs;
+        this.postingDate = postingDate;
     }
 
     public String getUrn() {
@@ -154,19 +167,14 @@ public class CaseDetail implements Serializable {
         caseDocument.setCaseId(this.id);
     }
 
-    public Set<DefendantDetail> getDefendants() {
-        return unmodifiableSet(defendants);
+    public DefendantDetail getDefendant() {
+        return defendant;
     }
 
-    public DefendantDetail getDefendant(UUID defendentId) {
-        return defendants.stream().filter(defendent -> defendent.getId().equals(defendentId))
-                .findFirst().orElse(null);
-    }
-
-    public void addDefendant(DefendantDetail defendantDetail) {
+    public void setDefendant(DefendantDetail defendantDetail) {
         Objects.requireNonNull(defendantDetail);
-        defendants.add(defendantDetail);
         defendantDetail.setCaseDetail(this);
+        this.defendant = defendantDetail;
     }
 
     public ZonedDateTime getDateTimeCreated() {
@@ -281,27 +289,6 @@ public class CaseDetail implements Serializable {
         this.libraCaseNumber = null;
     }
 
-    @Override
-    public String toString() {
-        return "CaseDetail{" +
-                "id=" + id +
-                ", urn='" + urn + '\'' +
-                ", caseDocuments=" + caseDocuments +
-                ", defendants=" + defendants +
-                ", dateTimeCreated=" + dateTimeCreated +
-                ", initiationCode='" + initiationCode + '\'' +
-                ", prosecutingAuthority='" + prosecutingAuthority + '\'' +
-                ", completed=" + completed +
-                ", summonsCode=" + summonsCode +
-                ", libraOriginatingOrg=" + libraOriginatingOrg +
-                ", ptiUrn=" + ptiUrn +
-                ", costs=" + costs +
-                ", postingDate=" + postingDate +
-                ", reopenedInLibraReason=" + reopenedInLibraReason +
-                ", enterpriseId=" + enterpriseId +
-                '}';
-    }
-
     public String getEnterpriseId() {
         return enterpriseId;
     }
@@ -316,5 +303,10 @@ public class CaseDetail implements Serializable {
 
     public void setCaseSearchResults(Set<CaseSearchResult> caseSearchResults) {
         this.caseSearchResults = caseSearchResults;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, SHORT_PREFIX_STYLE);
     }
 }

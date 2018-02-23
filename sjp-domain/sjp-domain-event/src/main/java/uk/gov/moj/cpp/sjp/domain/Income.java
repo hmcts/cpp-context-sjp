@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class Income  implements Serializable {
+public class Income implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private final IncomeFrequency frequency;

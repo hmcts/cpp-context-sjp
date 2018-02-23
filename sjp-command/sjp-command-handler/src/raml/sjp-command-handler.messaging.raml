@@ -38,6 +38,10 @@ version: v1
           schema: !include json/schema/sjp.command.cancel-plea.json
           example: !include json/sjp.command.cancel-plea.json
 
+      application/vnd.sjp.command.plead-online+json:
+          schema: !include json/schema/sjp.command.plead-online.json
+          example: !include json/sjp.command.plead-online.json
+
       application/vnd.sjp.command.complete-case+json:
         schema: !include json/schema/sjp.command.complete-case.json
         example: !include json/sjp.command.complete-case.json
@@ -70,17 +74,13 @@ version: v1
         schema: !include json/schema/sjp.command.associate-enterprise-id.json
         example: !include json/sjp.command.associate-enterprise-id.json
 
-      application/vnd.sjp.command.add-person-info+json:
-        schema: !include json/schema/sjp.command.add-person-info.json
-        example: !include json/sjp.command.add-person-info.json
-
-      application/vnd.sjp.command.update-person-info+json:
-        schema: !include json/schema/sjp.command.update-person-info.json
-        example: !include json/sjp.command.update-person-info.json
-
       application/vnd.sjp.command.update-defendant-details+json:
         schema: !include json/schema/sjp.command.update-defendant-details.json
         example: !include json/sjp.command.update-defendant-details.json
+
+      application/vnd.sjp.command.fix-defendant-details+json:
+        schema: !include json/schema/sjp.command.fix-defendant-details.json
+        example: !include json/sjp.command.fix-defendant-details.json
 
       application/vnd.sjp.command.create-court-referral+json:
         schema: !include json/schema/sjp.command.create-court-referral.json
@@ -94,6 +94,10 @@ version: v1
         schema: !include json/schema/sjp.command.update-interpreter.json
         example: !include json/sjp.command.update-interpreter.json
 
+      application/vnd.sjp.command.update-defendant-national-insurance-number+json:
+        schema: !include json/schema/sjp.command.update-defendant-national-insurance-number.json
+        example: !include json/sjp.command.update-defendant-national-insurance-number.json
+
       application/vnd.sjp.command.case-assignment-created+json:
           schema: !include json/schema/sjp.command.case-assignment-created.json
           example: !include json/sjp.command.case-assignment-created.json
@@ -101,7 +105,3 @@ version: v1
       application/vnd.sjp.command.case-assignment-deleted+json:
           schema: !include json/schema/sjp.command.case-assignment-deleted.json
           example: !include json/sjp.command.case-assignment-deleted.json
-
-      application/vnd.sjp.command.remove-person-info+json:
-        schema: !include json/schema/sjp.command.remove-person-info.json
-        example: !include json/sjp.command.remove-person-info.json

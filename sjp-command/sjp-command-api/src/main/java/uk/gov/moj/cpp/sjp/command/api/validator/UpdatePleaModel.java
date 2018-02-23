@@ -9,10 +9,6 @@ public class UpdatePleaModel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdatePleaModel.class);
 
-    public enum PleaType {
-        GUILTY, NOT_GUILTY, GUILTY_REQUEST_HEARING
-    }
-
     public static final String FIELD_PLEA = "plea";
 
     public static final String FIELD_INTERPRETER_REQUIRED = "interpreterRequired";

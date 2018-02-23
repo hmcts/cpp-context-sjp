@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.persistence.entity;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -13,8 +14,8 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -31,10 +32,10 @@ public class DefendantDetail implements Serializable {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "defendantDetail", orphanRemoval = true)
     @OrderBy("orderIndex ASC")
-    private Set<OffenceDetail> offences = new HashSet<>();
+    private Set<OffenceDetail> offences;
 
-    @Column(name = "person_id")
-    private UUID personId;
+    @Embedded
+    private PersonalDetails personalDetails;
 
     @Embedded
     private InterpreterDetail interpreter;
@@ -42,18 +43,23 @@ public class DefendantDetail implements Serializable {
     @Column(name = "num_previous_convictions")
     private Integer numPreviousConvictions;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "case_id", nullable = false)
     private CaseDetail caseDetail;
 
     public DefendantDetail() {
-        super();
+        this(UUID.randomUUID());
     }
 
-    public DefendantDetail(final UUID id, final UUID personId, final Set<OffenceDetail> offences) {
+    public DefendantDetail(final UUID id) {
+        this(id, null, null, 0);
+    }
+
+    public DefendantDetail(final UUID id, final PersonalDetails personalDetails, final Set<OffenceDetail> offences, final Integer numPreviousConvictions) {
         this.id = id;
-        this.personId = personId;
+        this.numPreviousConvictions = numPreviousConvictions;
         setOffences(offences);
+        setPersonalDetails(personalDetails);
     }
 
     @Override
@@ -65,12 +71,12 @@ public class DefendantDetail implements Serializable {
             return false;
         }
         DefendantDetail that = (DefendantDetail) o;
-        return Objects.equals(id, that.id) && Objects.equals(personId, that.personId);
+        return Objects.equals(id, that.id) && Objects.equals(personalDetails, that.personalDetails);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, personId);
+        return Objects.hash(id, personalDetails);
     }
 
     public UUID getId() {
@@ -81,13 +87,12 @@ public class DefendantDetail implements Serializable {
         this.id = id;
     }
 
-    public UUID getPersonId() {
-        return personId;
+    public PersonalDetails getPersonalDetails() {
+        return personalDetails;
     }
 
-
-    public void setPersonId(UUID personId) {
-        this.personId = personId;
+    public void setPersonalDetails(PersonalDetails personalDetails) {
+        this.personalDetails = Optional.ofNullable(personalDetails).orElseGet(PersonalDetails::new);
     }
 
     public Set<OffenceDetail> getOffences() {
@@ -95,12 +100,8 @@ public class DefendantDetail implements Serializable {
     }
 
     public void setOffences(Set<OffenceDetail> offences) {
-        if (offences != null) {
-            this.offences = new HashSet<>(offences);
-            this.offences.forEach(offence -> offence.setDefendantDetail(this));
-        } else {
-            this.offences = new HashSet<>();
-        }
+        this.offences = Optional.ofNullable(offences).orElseGet(HashSet::new);
+        this.offences.forEach(offence -> offence.setDefendantDetail(this));
     }
 
     public CaseDetail getCaseDetail() {

@@ -12,7 +12,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.CASE_DOCUMENT;
 import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.DOCUMENT_TYPE;
-import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.EXTERNAL_FILE_URL;
 import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.ID;
 import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.MATERIAL_ID;
 
@@ -21,7 +20,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.authorisation.client.AuthorisationServiceClient;
-import uk.gov.moj.cpp.sjp.event.processor.listener.CaseDocumentUpdatedListener;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -41,21 +39,14 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseDocumentUpdatedListenerTest {
-    private static final String PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT = "public.structure.case-document-added";
-    private static final String PUBLIC_CASE_DOCUMENT_ALREADY_EXISTS_PUBLIC_EVENT = "public.structure.case-document-already-exists";
+    private static final String PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT = "public.sjp.case-document-added";
+    private static final String PUBLIC_CASE_DOCUMENT_ALREADY_EXISTS_PUBLIC_EVENT = "public.sjp.case-document-already-exists";
 
     private static final String VALUE_CASE_ID = UUID.randomUUID().toString();
     private static final String VALUE_MATERIAL_ID = UUID.randomUUID().toString();
     private static final String VALUE_CASE_DOCUMENT_ID = UUID.randomUUID().toString();
-    private static final String VALUE_CLASSIFICATION_ID = UUID.randomUUID().toString();
     private static final String VALUE_USER_ID = UUID.randomUUID().toString();
     private static final String VALUE_DOCUMENT_TYPE = "SJPN";
-    private static final String VALUE_POLICE_NAME = "Richard Prett file";
-    private static final String VALUE_POLICE_MATERIAL_ID = "x1234";
-    private static final String VALUE_CLASSIFICATION_TYPE = "classification Type Example";
-    private static final String VALUE_CLASSIFICATION_CODE = "classification Code Example";
-    private static final String VALUE_CLASSIFICATION_VALUE = "classification Value Example";
-    private static final String VALUE_EXTERNAL_FILE_URL = "";
 
     @InjectMocks
     private CaseDocumentUpdatedListener caseDocumentUpdatedListener;
@@ -142,7 +133,6 @@ public class CaseDocumentUpdatedListenerTest {
                 createObjectBuilder()
                         .add(CASE_ID, VALUE_CASE_ID)
                         .add(CASE_DOCUMENT, documentBuilder.build())
-                        .add(EXTERNAL_FILE_URL, VALUE_EXTERNAL_FILE_URL)
                         .build());
     }
 }

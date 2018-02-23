@@ -27,6 +27,6 @@ public class AssignmentQueryService {
                 .apply(Json.createObjectBuilder()
                         .add("domainObjectId", envelope.payloadAsJsonObject().getString("caseId"))
                         .build());
-        return requester.request(requestEnvelope);
+        return requester.requestAsAdmin(requestEnvelope);
     }
 }

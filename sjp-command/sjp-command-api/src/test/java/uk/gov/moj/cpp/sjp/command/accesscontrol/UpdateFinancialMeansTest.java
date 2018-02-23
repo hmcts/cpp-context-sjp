@@ -16,14 +16,14 @@ import org.mockito.Mock;
 
 public class UpdateFinancialMeansTest extends BaseDroolsAccessControlTest {
 
-    private static final String STRUCTURE_COMMAND_UPDATE_FINANCIAL_MEANS = "sjp.update-financial-means";
+    private static final String SJP_COMMAND_UPDATE_FINANCIAL_MEANS = "sjp.update-financial-means";
 
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
 
     @Test
     public void shouldAllowUserInAuthorisedGroup() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_UPDATE_FINANCIAL_MEANS);
+        final Action action = createActionFor(SJP_COMMAND_UPDATE_FINANCIAL_MEANS);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getUpdateFinancialMeansGroups())).willReturn(true);
 
         assertSuccessfulOutcome(executeRulesWith(action));
@@ -31,7 +31,7 @@ public class UpdateFinancialMeansTest extends BaseDroolsAccessControlTest {
 
     @Test
     public void shouldNotAllowUserNotInAuthorisedGroup() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_UPDATE_FINANCIAL_MEANS);
+        final Action action = createActionFor(SJP_COMMAND_UPDATE_FINANCIAL_MEANS);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, Arrays.asList("random group"))).willReturn(false);
 
         assertFailureOutcome(executeRulesWith(action));

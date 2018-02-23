@@ -36,12 +36,23 @@
           "type": "string",
           "maxLength": 32
         },
+        "postcode": {
+          "type": "string",
+          "maxLength": 10
+        },
         "postCode": {
           "type": "string",
           "maxLength": 10
         }
       },
       "additionalProperties": false
+    },
+    "updatedByOnlinePlea": {
+      "type": "boolean"
+    },
+    "updatedDate": {
+      "type": "string",
+      "format": "date-time"
     }
   },
   "required": [ "defendantId" ],

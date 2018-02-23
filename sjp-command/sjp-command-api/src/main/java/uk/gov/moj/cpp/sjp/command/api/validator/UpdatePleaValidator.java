@@ -13,7 +13,7 @@ public class UpdatePleaValidator {
 
         final Map<String, List<String>> validationErrors = new HashMap<>();
 
-        if (UpdatePleaModel.PleaType.GUILTY.equals(updatePleaModel.getPleaType())) {
+        if (PleaType.GUILTY.equals(updatePleaModel.getPleaType())) {
             if (updatePleaModel.getInterpreterRequired() != null) {
                 addError(validationErrors, UpdatePleaModel.FIELD_INTERPRETER_REQUIRED, UpdatePleaValidationErrorMessages.INTERPRETER_NOT_ALLOWED_WHEN_GUILTY);
             }

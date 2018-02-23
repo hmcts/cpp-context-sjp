@@ -16,14 +16,14 @@ import org.mockito.Mock;
 
 public class DeleteEmployerTest extends BaseDroolsAccessControlTest {
 
-    private static final String STRUCTURE_COMMAND_DELETE_EMPLOYER = "sjp.delete-employer";
+    private static final String SJP_COMMAND_DELETE_EMPLOYER = "sjp.delete-employer";
 
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
 
     @Test
     public void shouldAllowUserInAuthorisedGroup() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_DELETE_EMPLOYER);
+        final Action action = createActionFor(SJP_COMMAND_DELETE_EMPLOYER);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getDeleteEmployerGroups())).willReturn(true);
 
         assertSuccessfulOutcome(executeRulesWith(action));
@@ -31,7 +31,7 @@ public class DeleteEmployerTest extends BaseDroolsAccessControlTest {
 
     @Test
     public void shouldNotAllowUserNotInAuthorisedGroup() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_DELETE_EMPLOYER);
+        final Action action = createActionFor(SJP_COMMAND_DELETE_EMPLOYER);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, Arrays.asList("random group"))).willReturn(false);
 
         assertFailureOutcome(executeRulesWith(action));

@@ -21,20 +21,19 @@ public class CaseDetailBuilder {
 
     private UUID id = CASE_ID;
     private String urn = URN;
-    private String ptiUrn;
     private String prosecutingAuthority = "CPS";
     private Set<CaseDocument> caseDocuments = new LinkedHashSet<>();
-    private Set<DefendantDetail> defendants = new LinkedHashSet<>();
+    private DefendantDetail defendant;
+    //TODO no longer used
     private String initiationCode;
     private Boolean completed;
     private Boolean assigned;
-    private String summonsCode;
-    private String libraOriginatingOrg;
     private BigDecimal costs;
     private LocalDate postingDate;
     private ZonedDateTime createdOn = ZonedDateTime.now(UTC);
 
     private CaseDetailBuilder() {
+        this.defendant = new DefendantDetail();
     }
 
     public static CaseDetailBuilder aCase() {
@@ -48,11 +47,6 @@ public class CaseDetailBuilder {
 
     public CaseDetailBuilder withUrn(String urn) {
         this.urn = urn;
-        return this;
-    }
-
-    public CaseDetailBuilder withPtiUrn(String ptiUrn) {
-        this.ptiUrn = ptiUrn;
         return this;
     }
 
@@ -76,16 +70,6 @@ public class CaseDetailBuilder {
         return this;
     }
 
-    public CaseDetailBuilder withLibraOriginatingOrg(String libraOriginatingOrg) {
-        this.libraOriginatingOrg = libraOriginatingOrg;
-        return this;
-    }
-
-    public CaseDetailBuilder withSummonsCode(String summonsCode) {
-        this.summonsCode = summonsCode;
-        return this;
-    }
-
     public CaseDetailBuilder withCosts(BigDecimal costs) {
         this.costs = costs;
         return this;
@@ -97,18 +81,18 @@ public class CaseDetailBuilder {
     }
 
     public CaseDetailBuilder addDefendantDetail(DefendantDetail defendantDetail) {
-        if (defendantDetail == null) {
-            return this;
+        if (defendantDetail != null) {
+            this.defendant = defendantDetail;
         }
-        this.defendants.add(defendantDetail);
+
         return this;
     }
 
     public CaseDetailBuilder addCaseDocument(CaseDocument caseDocument) {
-        if (caseDocument == null) {
-            return this;
+        if (caseDocument != null) {
+            this.caseDocuments.add(caseDocument);
         }
-        this.caseDocuments.add(caseDocument);
+
         return this;
     }
 
@@ -125,21 +109,9 @@ public class CaseDetailBuilder {
                 initiationCode,
                 completed,
                 assigned,
-                createdOn);
+                createdOn, defendant, costs, postingDate);
 
-        caseDetail.setLibraOriginatingOrg(libraOriginatingOrg);
-        caseDetail.setPtiUrn(ptiUrn);
-        caseDetail.setSummonsCode(summonsCode);
-        caseDetail.setCosts(costs);
-        caseDetail.setPostingDate(postingDate);
-
-        defendants.forEach(d -> {
-            d.setCaseDetail(caseDetail);
-            caseDetail.addDefendant(d);
-        });
-        caseDocuments.forEach(d -> {
-            caseDetail.addCaseDocuments(d);
-        });
+        caseDocuments.forEach(caseDetail::addCaseDocuments);
 
         return caseDetail;
     }

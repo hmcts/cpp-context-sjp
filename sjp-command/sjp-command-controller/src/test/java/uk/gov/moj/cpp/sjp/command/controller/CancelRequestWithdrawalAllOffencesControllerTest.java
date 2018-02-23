@@ -28,8 +28,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class CancelRequestWithdrawalAllOffencesControllerTest {
 
     private static final UUID CASE_ID = UUID.randomUUID();
-    private static final String STRUCTURE_COMMAND_CASE_UPDATE_REJECTED = "sjp.command.case-update-rejected";
-    private static final String STRUCTURE_COMMAND_CANCEL_REQUEST_WITHDRAWAL_ALL_OFFENCES = "sjp.command.cancel-request-withdrawal-all-offences";
+    private static final String SJP_COMMAND_CASE_UPDATE_REJECTED = "sjp.command.case-update-rejected";
+    private static final String SJP_COMMAND_CANCEL_REQUEST_WITHDRAWAL_ALL_OFFENCES = "sjp.command.cancel-request-withdrawal-all-offences";
 
     @Mock
     private Sender sender;
@@ -57,7 +57,7 @@ public class CancelRequestWithdrawalAllOffencesControllerTest {
                 .add("caseId", CASE_ID.toString())
                 .add("reason", CaseUpdateHelper.RejectReason.CASE_COMPLETED.name())
                 .build();
-        final JsonEnvelope envelope = createEnvelope(STRUCTURE_COMMAND_CASE_UPDATE_REJECTED, caseUpdateRejectedPayload);
+        final JsonEnvelope envelope = createEnvelope(SJP_COMMAND_CASE_UPDATE_REJECTED, caseUpdateRejectedPayload);
 
         when(caseUpdateHelper.checkForCaseUpdateRejectReasons(command))
                 .thenReturn(Optional.of(envelope));
@@ -72,13 +72,13 @@ public class CancelRequestWithdrawalAllOffencesControllerTest {
         Method cancelRequestWithdrawalMethod = CancelRequestWithdrawalAllOffencesController.class.getMethod("cancelRequestWithdrawalAllOffences", JsonEnvelope.class);
 
         Handles annotation = cancelRequestWithdrawalMethod.getAnnotation(Handles.class);
-        assertEquals(STRUCTURE_COMMAND_CANCEL_REQUEST_WITHDRAWAL_ALL_OFFENCES, annotation.value());
+        assertEquals(SJP_COMMAND_CANCEL_REQUEST_WITHDRAWAL_ALL_OFFENCES, annotation.value());
     }
 
     private JsonEnvelope getCancelWithdrawCommandEnvelope() {
         final JsonObject payload = Json.createObjectBuilder()
                 .add("caseId", CASE_ID.toString())
                 .build();
-        return createEnvelope(STRUCTURE_COMMAND_CANCEL_REQUEST_WITHDRAWAL_ALL_OFFENCES, payload);
+        return createEnvelope(SJP_COMMAND_CANCEL_REQUEST_WITHDRAWAL_ALL_OFFENCES, payload);
     }
 }

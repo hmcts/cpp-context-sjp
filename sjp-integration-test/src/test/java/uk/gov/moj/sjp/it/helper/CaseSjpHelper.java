@@ -1,15 +1,12 @@
 package uk.gov.moj.sjp.it.helper;
 
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_SJP_CASE_CREATED;
-import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
+import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_CASE_RECEIVED;
 
 import uk.gov.moj.sjp.it.EventSelector;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 import com.jayway.restassured.path.json.JsonPath;
 import org.json.JSONObject;
@@ -18,35 +15,36 @@ public class CaseSjpHelper extends AbstractCaseHelper {
 
     private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.create-sjp-case+json";
 
-    public static final String GET_SJP_CASE_BY_URN_MEDIA_TYPE = "application/vnd.sjp.query.sjp-case-by-urn+json";
-
     private static final String TEMPLATE_CASE_SJP_CREATE_PAYLOAD = "raml/json/sjp.create-sjp-case.json";
 
     private final LocalDate postingDate;
-    private String personId;
 
     public CaseSjpHelper() {
-        this(LocalDate.of(2015, 12, 2), UUID.randomUUID().toString());
+        this(LocalDate.of(2015, 12, 2));
     }
 
     public CaseSjpHelper(final LocalDate postingDate) {
-        this(postingDate, UUID.randomUUID().toString());
-    }
-
-    public CaseSjpHelper(final LocalDate postingDate, final String personId) {
         this.postingDate = postingDate;
-        this.personId = personId;
     }
 
     @Override
     protected void doAdditionalReadCallResponseVerification(JsonPath jsonRequest, JsonPath jsonResponse) {
         assertThat(jsonResponse.get("caseId"), equalTo(jsonRequest.get("caseId")));
         assertThat(jsonResponse.get("urn"), equalTo(jsonRequest.get("urn")));
-        assertThat(jsonResponse.get("defendants[0].personId"), equalTo(jsonRequest.get("personId")));
-        assertThat(jsonResponse.get("defendants[0].offences[0].offenceCode"), equalTo(jsonRequest.get("offences[0].libraOffenceCode")));
-        assertThat(jsonResponse.get("defendants[0].offences[0].offenceSequenceNumber"), equalTo(jsonRequest.get("offences[0].offenceSequenceNo")));
-        assertThat(jsonResponse.get("defendants[0].offences[0].wording"), equalTo(jsonRequest.get("offences[0].offenceWording")));
-        assertThat(jsonResponse.get("defendants[0].offences[0].chargeDate"), equalTo(jsonRequest.get("offences[0].chargeDate")));
+        assertThat(jsonResponse.get("defendant.personalDetails.title"), equalTo(jsonRequest.get("defendant.title")));
+        assertThat(jsonResponse.get("defendant.personalDetails.firstName"), equalTo(jsonRequest.get("defendant.firstName")));
+        assertThat(jsonResponse.get("defendant.personalDetails.lastName"), equalTo(jsonRequest.get("defendant.lastName")));
+        assertThat(jsonResponse.get("defendant.personalDetails.dateOfBirth"), equalTo(jsonRequest.get("defendant.dateOfBirth")));
+        assertThat(jsonResponse.get("defendant.personalDetails.gender"), equalTo(jsonRequest.get("defendant.gender")));
+        assertThat(jsonResponse.get("defendant.numPreviousConvictions"), equalTo(jsonRequest.get("defendant.numPreviousConvictions")));
+        assertThat(jsonResponse.get("defendant.personalDetails.address.address1"), equalTo(jsonRequest.get("defendant.address.address1")));
+        assertThat(jsonResponse.get("defendant.personalDetails.address.address2"), equalTo(jsonRequest.get("defendant.address.address2")));
+        assertThat(jsonResponse.get("defendant.personalDetails.address.address3"), equalTo(jsonRequest.get("defendant.address.address3")));
+        assertThat(jsonResponse.get("defendant.personalDetails.address.address4"), equalTo(jsonRequest.get("defendant.address.address4")));
+        assertThat(jsonResponse.get("defendant.personalDetails.address.postcode"), equalTo(jsonRequest.get("defendant.address.postcode")));
+        assertThat(jsonResponse.get("defendant.offences[0].offenceSequenceNumber"), equalTo(jsonRequest.get("defendant.offences[0].offenceSequenceNo")));
+        assertThat(jsonResponse.get("defendant.offences[0].wording"), equalTo(jsonRequest.get("defendant.offences[0].offenceWording")));
+        assertThat(jsonResponse.get("defendant.offences[0].chargeDate"), equalTo(jsonRequest.get("defendant.offences[0].chargeDate")));
     }
 
     @Override
@@ -61,14 +59,14 @@ public class CaseSjpHelper extends AbstractCaseHelper {
 
     @Override
     protected String getEventSelector() {
-        return EVENT_SELECTOR_SJP_CASE_CREATED;
+        return EVENT_SELECTOR_CASE_RECEIVED;
     }
 
     @Override
     protected void doAdditionalReplacementOfValues(JSONObject jsonObject) {
         jsonObject.put("postingDate", postingDate);
-        jsonObject.getJSONArray("offences").getJSONObject(0).put("id", offenceId);
-        jsonObject.put("personId", personId);
+        final JSONObject defendant = jsonObject.getJSONObject("defendant");
+        defendant.getJSONArray("offences").getJSONObject(0).put("id", offenceId);
     }
 
     @Override
@@ -76,21 +74,11 @@ public class CaseSjpHelper extends AbstractCaseHelper {
         return EventSelector.PUBLIC_EVENT_SELECTOR_SJP_CASE_CREATED;
     }
 
-    public void verifyInPublicActiveMQ() {
-        JsonPath jsonResponse = retrieveMessage(publicEventsConsumer);
-        assertThat(jsonResponse.get("id"), equalTo(caseId));
-        assertThat(jsonResponse.get("postingDate"), equalTo(postingDate.format(ISO_LOCAL_DATE)));
-    }
-
     public String getSingleDefendantId() {
-        return jsonResponse.get("defendants[0].id");
-    }
-
-    public String getDefendantPersonId() {
-        return personId;
+        return jsonResponse.get("defendant.id");
     }
 
     public String getSingleOffenceId() {
-        return jsonResponse.get("defendants[0].offences[0].id");
+        return jsonResponse.get("defendant.offences[0].id");
     }
 }

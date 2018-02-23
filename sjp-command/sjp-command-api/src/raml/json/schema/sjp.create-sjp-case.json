@@ -46,14 +46,6 @@
       "id": "/timeOfHearing",
       "type": "string"
     },
-    "personId": {
-      "id": "/personId",
-      "type": "string"
-    },
-    "numPreviousConvictions": {
-      "id": "/numPreviousConvictions",
-      "type": "integer"
-    },
     "costs": {
       "id": "/costs",
       "type": "number"
@@ -62,55 +54,104 @@
       "id": "/postingDate",
       "type": "string"
     },
-    "offences": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "prosecutorCaseId": {
-            "type": "string"
-          },
-          "offenceSequenceNo": {
-            "type": "integer"
-          },
-          "libraOffenceCode": {
-            "type": "string"
-          },
-          "chargeDate": {
-            "type": "string"
-          },
-          "libraOffenceDateCode": {
-            "type": "integer"
-          },
-          "offenceDate": {
-            "type": "string"
-          },
-          "offenceWording": {
-            "type": "string"
-          },
-          "prosecutionFacts": {
-            "type": "string"
-          },
-          "witnessStatement": {
-            "type": "string"
-          },
-          "compensation": {
-            "type": "number"
+    "defendant": {
+      "id": "/defendant",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "dateOfBirth": {
+          "type": "string"
+        },
+        "gender": {
+          "description": "The person gender",
+          "enum": [
+            "Male",
+            "Female",
+            "Not Specified"
+          ]
+        },
+        "numPreviousConvictions": {
+          "type": "integer"
+        },
+        "address": {
+          "type": "object",
+          "properties": {
+            "address1": {
+              "type": "string"
+            },
+            "address2": {
+              "type": "string"
+            },
+            "address3": {
+              "type": "string"
+            },
+            "address4": {
+              "type": "string"
+            },
+            "postcode": {
+              "type": "string"
+            }
           }
         },
-        "required" : [
-          "id",
-          "prosecutorCaseId",
-          "offenceSequenceNo",
-          "libraOffenceCode",
-          "chargeDate",
-          "libraOffenceDateCode",
-          "offenceDate",
-          "offenceWording"
-        ]
+        "offences": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "prosecutorCaseId": {
+                "type": "string"
+              },
+              "offenceSequenceNo": {
+                "type": "integer"
+              },
+              "libraOffenceCode": {
+                "type": "string"
+              },
+              "chargeDate": {
+                "type": "string"
+              },
+              "libraOffenceDateCode": {
+                "type": "integer"
+              },
+              "offenceDate": {
+                "type": "string"
+              },
+              "offenceWording": {
+                "type": "string"
+              },
+              "prosecutionFacts": {
+                "type": "string"
+              },
+              "witnessStatement": {
+                "type": "string"
+              },
+              "compensation": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id",
+              "prosecutorCaseId",
+              "offenceSequenceNo",
+              "libraOffenceCode",
+              "chargeDate",
+              "libraOffenceDateCode",
+              "offenceDate",
+              "offenceWording"
+            ]
+          }
+        }
       }
     }
   },
@@ -118,6 +159,7 @@
     "urn",
     "id",
     "prosecutingAuthority",
-    "postingDate"
+    "postingDate",
+    "defendant"
   ]
 }

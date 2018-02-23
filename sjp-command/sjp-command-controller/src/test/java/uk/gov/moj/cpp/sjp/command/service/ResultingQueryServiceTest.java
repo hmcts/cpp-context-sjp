@@ -33,7 +33,7 @@ public class ResultingQueryServiceTest {
 
     private static final UUID CASE_ID = UUID.randomUUID();
 
-    private static final String STRUCTURE_COMMAND_REQUEST_WITHDRAWAL_ALL_OFFENCES = "sjp.command.request-withdrawal-all-offences";
+    private static final String SJP_COMMAND_REQUEST_WITHDRAWAL_ALL_OFFENCES = "sjp.command.request-withdrawal-all-offences";
 
     @InjectMocks
     private ResultingQueryService resultingQueryService;
@@ -50,10 +50,10 @@ public class ResultingQueryServiceTest {
     @Test
     public void shouldFindCaseDecision() throws Exception {
         //Given
-        final JsonEnvelope command = createEnvelope(STRUCTURE_COMMAND_REQUEST_WITHDRAWAL_ALL_OFFENCES,
+        final JsonEnvelope command = createEnvelope(SJP_COMMAND_REQUEST_WITHDRAWAL_ALL_OFFENCES,
                 Json.createObjectBuilder().add("caseId", CASE_ID.toString())
                         .build());
-        when(requester.request(captor.capture())).thenReturn(null);
+        when(requester.requestAsAdmin(captor.capture())).thenReturn(null);
 
         resultingQueryService.findCaseDecision(command);
 

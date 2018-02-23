@@ -8,10 +8,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.moj.cpp.sjp.domain.testutils.CaseDocumentBuilder.defaultCaseDocument;
 
-import uk.gov.moj.cpp.sjp.domain.testutils.CaseDocumentBuilder;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
+import uk.gov.moj.cpp.sjp.domain.testutils.CaseDocumentBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAlreadyExists;
 
@@ -45,7 +44,7 @@ public class AddCaseDocumentTest extends CaseAggregateBaseTest {
 
     private void assertUploadCaseDocument(String documentType, int expectedIndexWithinDocumentType) {
         //when
-        Stream<Object> eventStream = sjpCaseAggregate.addCaseDocument(UUID.randomUUID(), new CaseDocument(UUID.randomUUID().toString(), UUID.randomUUID().toString(), documentType, null));
+        Stream<Object> eventStream = caseAggregate.addCaseDocument(UUID.randomUUID(), new CaseDocument(UUID.randomUUID().toString(), UUID.randomUUID().toString(), documentType, null));
         List<Object> events = asList(eventStream.toArray());
 
         //then
@@ -58,23 +57,23 @@ public class AddCaseDocumentTest extends CaseAggregateBaseTest {
         //given
         CaseDocument sjpn =
                 new CaseDocument(UUID.randomUUID().toString(), UUID.randomUUID().toString(), "SJPN", null);
-        sjpCaseAggregate.apply(new CaseDocumentAdded(UUID.randomUUID().toString(), sjpn, 1));
-        sjpCaseAggregate.apply(new CaseDocumentAdded(UUID.randomUUID().toString(), sjpn, 2));
-        assertEquals(2, sjpCaseAggregate.getNumberOfDocumentOfGivenType("SJPN"));
+        caseAggregate.apply(new CaseDocumentAdded(UUID.randomUUID().toString(), sjpn, 1));
+        caseAggregate.apply(new CaseDocumentAdded(UUID.randomUUID().toString(), sjpn, 2));
+        assertEquals(2, caseAggregate.getNumberOfDocumentOfGivenType("SJPN"));
 
         //when
-        Stream<Object> eventStream = sjpCaseAggregate.addCaseDocument(sjpCase.getId(), new CaseDocument(UUID.randomUUID().toString(), UUID.randomUUID().toString(), "SJPN", null));
+        Stream<Object> eventStream = caseAggregate.addCaseDocument(aCase.getId(), new CaseDocument(UUID.randomUUID().toString(), UUID.randomUUID().toString(), "SJPN", null));
         List<Object> events = asList(eventStream.toArray());
 
         //then
-        assertEquals(3, sjpCaseAggregate.getNumberOfDocumentOfGivenType("SJPN"));
+        assertEquals(3, caseAggregate.getNumberOfDocumentOfGivenType("SJPN"));
         assertEquals(1, events.size());
         assertEquals(3, ((CaseDocumentAdded) events.get(0)).getIndexWithinDocumentType());
     }
 
     @Test
     public void testAddCaseDocument_shouldTriggerCaseDocumentAdded() {
-        Stream<Object> eventStream = sjpCaseAggregate.addCaseDocument(sjpCase.getId(), caseDocument);
+        Stream<Object> eventStream = caseAggregate.addCaseDocument(aCase.getId(), caseDocument);
 
         List<Object> events = asList(eventStream.toArray());
         assertThat("Has caseDocumentAdded Event", events, hasItem(isA(CaseDocumentAdded.class)));
@@ -83,7 +82,7 @@ public class AddCaseDocumentTest extends CaseAggregateBaseTest {
                 .findFirst()
                 .get();
         assertThat("CaseDocumentAdded case id", caseDocumentAddedEvent.getCaseId(), is(
-                sjpCase.getId().toString()));
+                aCase.getId().toString()));
         assertThat("CaseDocumentAdded id", caseDocumentAddedEvent.getCaseDocument().getId(), is(caseDocument.getId()));
         assertThat("CaseDocumentAdded material id", caseDocumentAddedEvent.getCaseDocument().getMaterialId(), is(caseDocument.getMaterialId()));
         assertThat("CaseDocumentAdded type", caseDocumentAddedEvent.getCaseDocument().getDocumentType(), is(caseDocument.getDocumentType()));
@@ -91,11 +90,11 @@ public class AddCaseDocumentTest extends CaseAggregateBaseTest {
 
     @Test
     public void testAddCaseDocument_shouldUpdateAggState() {
-        sjpCaseAggregate.addCaseDocument(sjpCase.getId(), caseDocument);
+        caseAggregate.addCaseDocument(aCase.getId(), caseDocument);
 
         UUID caseDocumentId = UUID.fromString(caseDocument.getId());
-        assertTrue("Aggregate state contains the new case document", sjpCaseAggregate.getCaseDocuments().containsKey(caseDocumentId));
-        CaseDocument caseDocumentAggState = sjpCaseAggregate.getCaseDocuments().get(caseDocumentId);
+        assertTrue("Aggregate state contains the new case document", caseAggregate.getCaseDocuments().containsKey(caseDocumentId));
+        CaseDocument caseDocumentAggState = caseAggregate.getCaseDocuments().get(caseDocumentId);
         assertThat("Document id", caseDocumentAggState.getId(), is(caseDocument.getId()));
         assertThat("Document material id", caseDocumentAggState.getMaterialId(), is(caseDocument.getMaterialId()));
         assertThat("Document type", caseDocumentAggState.getDocumentType(), is(caseDocument.getDocumentType()));
@@ -104,10 +103,10 @@ public class AddCaseDocumentTest extends CaseAggregateBaseTest {
     @Test
     public void shouldReturnCaseDocumentAlreadyExistsWhenCaseDocumentAlreadyExists_shouldThrowException() {
         // given
-        sjpCaseAggregate.addCaseDocument(sjpCase.getId(), caseDocument);
+        caseAggregate.addCaseDocument(aCase.getId(), caseDocument);
 
         // when
-        final List<Object> objects = sjpCaseAggregate.addCaseDocument(sjpCase.getId(), caseDocument).collect(toList());
+        final List<Object> objects = caseAggregate.addCaseDocument(aCase.getId(), caseDocument).collect(toList());
 
         // then
         assertThat(objects.size(), is(1));

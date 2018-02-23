@@ -23,8 +23,9 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.sjp.query.controller.service.PeopleService;
+import uk.gov.moj.cpp.sjp.query.controller.converter.CaseConverter;
 
+import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.junit.Test;
@@ -50,7 +51,7 @@ public class SjpQueryControllerTest {
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
     @Mock
-    private PeopleService peopleService;
+    private CaseConverter caseConverter;
 
     @InjectMocks
     private SjpQueryController sjpQueryController;
@@ -60,7 +61,6 @@ public class SjpQueryControllerTest {
         assertThat(SjpQueryController.class, isHandlerClass(Component.QUERY_CONTROLLER)
                 .with(allOf(
                         method("findCaseByUrn").thatHandles("sjp.query.case-by-urn").withRequesterPassThrough(),
-                        method("findSjpCaseByUrn").thatHandles("sjp.query.sjp-case-by-urn").withRequesterPassThrough(),
                         method("findFinancialMeans").thatHandles("sjp.query.financial-means").withRequesterPassThrough(),
                         method("findEmployer").thatHandles("sjp.query.employer").withRequesterPassThrough(),
                         method("searchCasesByPersonId").thatHandles("sjp.query.cases-search").withRequesterPassThrough(),
@@ -99,26 +99,33 @@ public class SjpQueryControllerTest {
                 .withPayloadOf(urn, "urn")
                 .withPayloadOf(postcode, "postcode").build();
 
-        final JsonEnvelope caseDetails = envelope().withPayloadOf("id", randomUUID().toString()).build();
+        final JsonObject address = createObjectBuilder().add("postcode", postcode).build();
+        final JsonObject personalDetails = createObjectBuilder().add("address", address).build();
+        final JsonObject defendant = createObjectBuilder().add("personalDetails", personalDetails).build();
+
+        final JsonEnvelope caseDetails = envelope()
+                .withPayloadOf(randomUUID().toString(), "id")
+                .withPayloadOf(defendant, "defendant")
+                .build();
         when(requester.request(any(JsonEnvelope.class))).thenReturn(validUrn ? caseDetails : envelope().withNullPayload().build());
 
         JsonValue resultPayload = JsonValue.NULL;
-        if (validUrn) {
-            resultPayload = validPostcode ? createObjectBuilder().build() : JsonValue.NULL;
-            when(peopleService.addPersonInfoForDefendantWithMatchingPostcode(postcode,
-                    caseDetails.payloadAsJsonObject(), query)).thenReturn(resultPayload == JsonValue.NULL ? null : resultPayload);
+        if (validUrn && validPostcode) {
+            final JsonObject objectToReturn = createObjectBuilder().build();
+            resultPayload = objectToReturn;
+            when(caseConverter.addOffenceReferenceDataToOffences(caseDetails.payloadAsJsonObject(), query)).thenReturn(objectToReturn);
         }
 
         final JsonEnvelope result = sjpQueryController.findCaseByUrnPostcode(query);
 
-        verify(requester).request(argThat(jsonEnvelope(metadata().withName("sjp.query.case-by-urn"),
+        verify(requester).request(argThat(jsonEnvelope(metadata().withName("sjp.query.case-by-urn-postcode"),
                 payloadIsJson(withJsonPath("$.urn", equalTo(urn))))));
 
-        if (validUrn) {
-            verify(peopleService).addPersonInfoForDefendantWithMatchingPostcode(postcode, caseDetails.payloadAsJsonObject(), query);
+        if (validUrn && validPostcode) {
+            verify(caseConverter).addOffenceReferenceDataToOffences(caseDetails.payloadAsJsonObject(), query);
         }
 
-        assertThat(result.metadata().name(), equalTo("sjp.query.case-by-urn-response"));
+        assertThat(result.metadata().name(), equalTo("sjp.query.case-by-urn-postcode"));
         assertThat(result.payload(), equalTo(resultPayload));
     }
 

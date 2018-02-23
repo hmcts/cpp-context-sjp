@@ -13,6 +13,7 @@ import uk.gov.justice.services.messaging.JsonObjectMetadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
 import javax.json.Json;
+import javax.json.JsonObject;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,9 +49,10 @@ public class ReferenceDataServiceTest {
 
         //when
         final JsonEnvelope envelope = envelope().with(JsonObjectMetadata.metadataWithRandomUUIDAndName()).build();
-        String offenceTitle = referenceDataService.resolveOffenceTitle(envelope, offenceCode, date);
+        final JsonObject offenceReferenceData = referenceDataService.getOffenceReferenceData(envelope, offenceCode, date);
 
         //then
-        assertThat(offenceTitle, is("Public service vehicle - passenger use ticket issued for another person"));
+        assertThat(offenceReferenceData.getString("title"), is("Public service vehicle - passenger use ticket issued for another person"));
+        assertThat(offenceReferenceData.getString("legislation"), is("Contrary to regulation 7(1)(b) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981."));
     }
 }

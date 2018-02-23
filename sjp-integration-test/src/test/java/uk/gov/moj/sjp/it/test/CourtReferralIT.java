@@ -6,7 +6,6 @@ import static uk.gov.moj.sjp.it.test.UpdatePleaIT.PLEA_NOT_GUILTY;
 import static uk.gov.moj.sjp.it.test.UpdatePleaInterpreterIT.getPleaPayload;
 
 import uk.gov.moj.sjp.it.helper.CaseCourtReferralHelper;
-import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
 import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 
@@ -18,7 +17,6 @@ import org.junit.Test;
 public class CourtReferralIT extends BaseIntegrationTest {
 
     private CaseSjpHelper caseSjpHelper;
-    private CaseSearchResultHelper caseSearchResultHelper;
     private UpdatePleaHelper updatePleaHelper;
 
     private String caseId;
@@ -30,9 +28,6 @@ public class CourtReferralIT extends BaseIntegrationTest {
         caseSjpHelper = new CaseSjpHelper();
         caseSjpHelper.createCase();
         caseId = caseSjpHelper.getCaseId();
-
-        caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
-        caseSearchResultHelper.addPersonInfo();
 
         // needed before adding an interpreter language
         stubGetCaseDecisionsWithNoDecision(caseId);
@@ -47,7 +42,6 @@ public class CourtReferralIT extends BaseIntegrationTest {
     @After
     public void tearDown() {
         caseSjpHelper.close();
-        caseSearchResultHelper.close();
         updatePleaHelper.close();
     }
 
@@ -56,7 +50,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
         try (final CaseCourtReferralHelper caseCourtReferralHelper = new CaseCourtReferralHelper()) {
             caseCourtReferralHelper.createCourtReferral(caseId);
             caseCourtReferralHelper.verifyCaseCourtReferral(caseId, caseSjpHelper.getCaseUrn(),
-                    caseSearchResultHelper.getFirstName(), caseSearchResultHelper.getLastName(), interpreterLanguage);
+                    "David", "LLOYD", interpreterLanguage);
 
             caseCourtReferralHelper.actionCourtReferral(caseId);
             caseCourtReferralHelper.verifyCaseCourtReferralActioned(caseId);

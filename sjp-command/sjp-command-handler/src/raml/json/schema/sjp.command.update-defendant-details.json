@@ -39,7 +39,7 @@
         "address4": {
           "type": "string"
         },
-        "postCode": {
+        "postcode": {
           "type": "string"
         }
       }

@@ -16,43 +16,6 @@
           "personId": {
             "type": "string"
           },
-          "policeDefendantId": {
-            "type": "string"
-          },
-          "bailStatus": {
-            "type": "string"
-          },
-          "defendantBailDocuments": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "documentId": {
-                  "type": "string"
-                },
-                "active": {
-                  "type": "boolean"
-                }
-              },
-              "required": [
-                "id",
-                "documentId",
-                "active"
-              ]
-            }
-          },
-          "custodyTimeLimitDate": {
-            "type": "string"
-          },
-          "defenceSolicitorFirm": {
-            "type": "string"
-          },
-          "allocationDecision": {
-            "type": "string"
-          },
           "interpreter":{
             "type": "object",
             "properties": {
@@ -84,9 +47,6 @@
                 "section": {
                   "type": "string"
                 },
-                "indicatedPlea": {
-                  "enum": [ "GUILTY", "NOT_GUILTY", "NO_PLEA" ]
-                },
                 "offenceSequenceNumber": {
                   "type": "integer"
                 },
@@ -96,38 +56,8 @@
                 "wording": {
                   "type": "string"
                 },
-                "policeOffenceId": {
-                  "type": "string"
-                },
-                "cprDefendantOffenderYear": {
-                  "type": "string"
-                },
-                "cprDefendantOffenderOrganisationUnit": {
-                  "type": "string"
-                },
-                "cprDefendantOffenderNumber": {
-                  "type": "string"
-                },
-                "cprDefendantOffenderCheckDigit": {
-                  "type": "string"
-                },
-                "cjsCode": {
-                  "type": "string"
-                },
                 "sequenceNumber": {
                   "type": "integer"
-                },
-                "asnSequenceNumber": {
-                  "type": "integer"
-                },
-                "reason": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                },
-                "category": {
-                  "type": "string"
                 },
                 "pendingWithdrawal": {
                   "type": "boolean"
@@ -138,41 +68,21 @@
                 "prosecutionFacts": {
                   "type": "string"
                 },
-                "arrestDate": {
-                  "type": "string"
-                },
                 "startDate": {
-                  "type": "string"
-                },
-                "endDate": {
                   "type": "string"
                 },
                 "chargeDate": {
                   "type": "string"
-                },
-                "count": {
-                  "type": "integer"
                 }
               },
               "required": [
                 "id",
                 "offenceCode",
                 "plea",
-                "indicatedPlea",
                 "offenceSequenceNumber",
                 "pleaMitigation",
                 "wording",
-                "policeOffenceId",
-                "cprDefendantOffenderYear",
-                "cprDefendantOffenderOrganisationUnit",
-                "cprDefendantOffenderNumber",
-                "cprDefendantOffenderCheckDigit",
-                "cjsCode",
                 "sequenceNumber",
-                "asnSequenceNumber",
-                "reason",
-                "description",
-                "category",
                 "startDate"
               ]
             }
@@ -182,9 +92,6 @@
           "id",
           "caseId",
           "personId",
-          "policeDefendantId",
-          "bailStatus",
-          "defenceSolicitorFirm",
           "offences"
         ]
       }

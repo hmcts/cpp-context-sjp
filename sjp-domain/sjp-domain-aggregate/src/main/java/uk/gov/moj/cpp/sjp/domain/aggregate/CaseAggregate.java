@@ -6,24 +6,32 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoN
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus.EMPLOYED;
 import static uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason.CASE_ASSIGNED;
+import static uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason.PLEA_ALREADY_SUBMITTED;
+import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
 
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.moj.cpp.sjp.CourtReferralNotFound;
+import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignment;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
+import uk.gov.moj.cpp.sjp.domain.ContactDetails;
+import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
+import uk.gov.moj.cpp.sjp.domain.Person;
+import uk.gov.moj.cpp.sjp.domain.PleaType;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.domain.SjpOffence;
 import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
+import uk.gov.moj.cpp.sjp.domain.aggregate.domain.PleadOnlineOutcomes;
 import uk.gov.moj.cpp.sjp.domain.command.CancelPlea;
 import uk.gov.moj.cpp.sjp.domain.command.ChangePlea;
 import uk.gov.moj.cpp.sjp.domain.command.CompleteCase;
 import uk.gov.moj.cpp.sjp.domain.command.UpdatePlea;
-import uk.gov.moj.cpp.sjp.domain.plea.Plea;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalDenied;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
@@ -40,6 +48,7 @@ import uk.gov.moj.cpp.sjp.event.CaseDocumentAlreadyExists;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentUploaded;
 import uk.gov.moj.cpp.sjp.event.CaseNotFound;
 import uk.gov.moj.cpp.sjp.event.CaseNotReopened;
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.CaseReopened;
 import uk.gov.moj.cpp.sjp.event.CaseReopenedUndone;
 import uk.gov.moj.cpp.sjp.event.CaseReopenedUpdated;
@@ -47,8 +56,12 @@ import uk.gov.moj.cpp.sjp.event.CaseStarted;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.CourtReferralActioned;
 import uk.gov.moj.cpp.sjp.event.CourtReferralCreated;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsMovedFromPeople;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantNotEmployed;
 import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
+import uk.gov.moj.cpp.sjp.event.DefendantsNationalInsuranceNumberUpdated;
 import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
@@ -57,15 +70,19 @@ import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
+import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdateDenied;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
+import uk.gov.moj.cpp.sjp.event.TrialRequested;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -74,13 +91,14 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseAggregate.class);
 
@@ -92,12 +110,15 @@ public class CaseAggregate implements Aggregate {
     private boolean withdrawalAllOffencesRequested = false;
     private boolean hasCourtReferral;
     private boolean caseAssigned = false;
-
+    private String defendantTitle;
+    private LocalDate defendantDateOfBirth;
+    private Address defendantAddress;
 
     private Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
 
     private Map<UUID, CaseDocument> caseDocuments = new HashMap<>();
-    private Map<UUID, Plea.Type> offencePleas = new HashMap<>();
+    private List<String> offenceIdsWithPleas = new ArrayList<>();
+
     private Map<UUID, String> defendantInterpreterLanguages = new HashMap<>();
 
     private DocumentCountByDocumentType documentCountByDocumentType = new DocumentCountByDocumentType();
@@ -106,31 +127,36 @@ public class CaseAggregate implements Aggregate {
 
     private final Map<UUID, String> employmentStatusByDefendantId = new HashMap<>();
 
-
-    public Stream<Object> createCase(final Case aCase, final ZonedDateTime now) {
-        final Stream.Builder<Object> events = Stream.builder();
+    public Stream<Object> receiveCase(final Case aCase, final ZonedDateTime createdOn) {
+        final Object event;
 
         if (this.caseId != null && this.urn != null) {
-            events.add(new CaseCreationFailedBecauseCaseAlreadyExisted(this.caseId, this.urn));
+            event = new CaseCreationFailedBecauseCaseAlreadyExisted(this.caseId, this.urn);
         } else {
-            final SjpCaseCreated sjpCaseCreated =
-                    new SjpCaseCreated(
-                            aCase.getId().toString(), aCase.getUrn(),
-                            aCase.getPtiUrn(), aCase.getInitiationCode(),
-                            aCase.getSummonsCode(), aCase.getProsecutingAuthority(),
-                            aCase.getLibraOriginatingOrg(),
-                            aCase.getLibraHearingLocation(),
-                            aCase.getDateOfHearing(), aCase.getTimeOfHearing(),
-                            aCase.getPersonId(),
-                            UUID.randomUUID(),
-                            aCase.getNumPreviousConvictions(),
-                            aCase.getCosts(),
-                            aCase.getPostingDate(),
-                            aCase.getOffences(),
-                            now);
-            events.add(sjpCaseCreated);
+            Defendant caseDefendant = aCase.getDefendant();
+            Defendant eventDefendant = new Defendant(
+                    UUID.randomUUID(),
+                    caseDefendant.getTitle(),
+                    caseDefendant.getFirstName(),
+                    caseDefendant.getLastName(),
+                    caseDefendant.getDateOfBirth(),
+                    caseDefendant.getGender(),
+                    caseDefendant.getAddress(),
+                    caseDefendant.getNumPreviousConvictions(),
+                    caseDefendant.getOffences()
+            );
+
+            event = new CaseReceived(
+                    aCase.getId(),
+                    aCase.getUrn(),
+                    aCase.getProsecutingAuthority(),
+                    aCase.getCosts(),
+                    aCase.getPostingDate(),
+                    eventDefendant,
+                    createdOn);
         }
-        return apply(events.build());
+
+        return apply(Stream.of(event));
     }
 
     public Stream<Object> updateFinancialMeans(final FinancialMeans financialMeans) {
@@ -138,7 +164,7 @@ public class CaseAggregate implements Aggregate {
         final Object event;
 
         if (hasDefendant(defendantId)) {
-            event = new FinancialMeansUpdated(financialMeans.getDefendantId(), financialMeans.getIncome(),
+            event = FinancialMeansUpdated.createEvent(financialMeans.getDefendantId(), financialMeans.getIncome(),
                     financialMeans.getBenefits(), financialMeans.getEmploymentStatus());
         } else {
             event = new DefendantNotFound(defendantId.toString(), "Update financial means");
@@ -149,34 +175,40 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> updateEmployer(final Employer employer) {
         final UUID defendantId = employer.getDefendantId();
-        final Stream.Builder streamBuilder = Stream.builder();
-
-        if (hasDefendant(defendantId)) {
-            streamBuilder.add(new EmployerUpdated(employer));
-
-            final String actualEmploymentStatus = employmentStatusByDefendantId.get(defendantId);
-
-            if (!EMPLOYED.name().equals(actualEmploymentStatus)) {
-                streamBuilder.add(new EmploymentStatusUpdated(defendantId, EMPLOYED.name()));
-            }
-        } else {
-            streamBuilder.add(new DefendantNotFound(defendantId.toString(), "Update employer"));
-        }
-
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        addEmployerEventToStream(streamBuilder, employer, defendantId, false);
         return apply(streamBuilder.build());
     }
 
-    public Stream<Object> deleteEmployer(final UUID defendantId) {
-        final Stream.Builder streamBuilder = Stream.builder();
+    private void addEmployerEventToStream(final Stream.Builder<Object> streamBuilder, final Employer employer,
+                                          final UUID defendantId, final boolean updatedByOnlinePlea) {
+        addEmployerEventToStream(streamBuilder, employer, defendantId, updatedByOnlinePlea, null);
+    }
 
-        if (hasDefendant(defendantId)) {
-            if (employmentStatusByDefendantId.containsKey(defendantId)) {
-                streamBuilder.add(new EmployerDeleted(defendantId));
-            } else {
-                streamBuilder.add(new DefendantNotEmployed(defendantId));
-            }
+    private void addEmployerEventToStream(final Stream.Builder streamBuilder, final Employer employer,
+                                          final UUID defendantId, final boolean updatedByOnlinePlea,
+                                          final ZonedDateTime createdOn) {
+        if (updatedByOnlinePlea) {
+            streamBuilder.add(EmployerUpdated.createEventForOnlinePlea(defendantId, employer, createdOn));
+        }
+        else {
+            streamBuilder.add(EmployerUpdated.createEvent(defendantId, employer));
+        }
+
+        final String actualEmploymentStatus = employmentStatusByDefendantId.get(defendantId);
+
+        if (!EMPLOYED.name().equals(actualEmploymentStatus)) {
+            streamBuilder.add(new EmploymentStatusUpdated(defendantId, EMPLOYED.name()));
+        }
+    }
+
+    public Stream<Object> deleteEmployer(final UUID defendantId) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        if (employmentStatusByDefendantId.containsKey(defendantId)) {
+            streamBuilder.add(new EmployerDeleted(defendantId));
         } else {
-            streamBuilder.add(new DefendantNotFound(defendantId.toString(), "Update employer"));
+            streamBuilder.add(new DefendantNotEmployed(defendantId));
         }
 
         return apply(streamBuilder.build());
@@ -221,7 +253,6 @@ public class CaseAggregate implements Aggregate {
         return apply(Stream.of(new CaseCompleted(completeCase.getCaseId())));
     }
 
-
     private Optional<UUID> getDefendantIdByOffenceId(final UUID offenceId) {
         return offenceIdsByDefendantId.entrySet().stream().filter(
                 entry -> entry.getValue().contains(offenceId)
@@ -230,19 +261,16 @@ public class CaseAggregate implements Aggregate {
 
     private boolean offenceExists(final UUID offenceId) {
         return offenceIdsByDefendantId.values().stream()
-                .anyMatch(offenceIds -> offenceIds.contains(offenceId));
+                .flatMap(Set::stream)
+                .anyMatch(offenceId::equals);
     }
 
     public Stream<Object> changePlea(final ChangePlea changePleaCommand) {
-        if (!offenceExists(changePleaCommand.getOffenceId())) {
-            LOGGER.warn("Cannot update plea for offence which doesn't exist, ID: {}", changePleaCommand.getOffenceId());
-            return apply(Stream.of(new OffenceNotFound(changePleaCommand.getOffenceId().toString(), "Update Plea")));
-        }
-
         final Optional<UUID> defendantId = getDefendantIdByOffenceId(changePleaCommand.getOffenceId());
         if (!defendantId.isPresent()) {
-            LOGGER.warn("Cannot update plea for defendant which doesn't exist, offence ID: {}", changePleaCommand.getOffenceId());
-            return apply(Stream.of(new DefendantNotFound(changePleaCommand.getOffenceId().toString(), "Update Plea")));
+            final String offenceId = changePleaCommand.getOffenceId().toString();
+            LOGGER.warn("Cannot update plea for offence which doesn't exist, ID: {}", offenceId);
+            return apply(Stream.of(new OffenceNotFound(offenceId, "Update Plea")));
         }
 
         if (caseAssigned) {
@@ -265,7 +293,7 @@ public class CaseAggregate implements Aggregate {
 
             streamBuilder.add(pleaUpdated);
 
-            updateInterpreter(updatePlea.getInterpreterLanguage(), defendantId.get())
+            updateInterpreter(updatePlea.getInterpreterLanguage(), defendantId.get(), false)
                     .ifPresent(streamBuilder::add);
 
         } else if (changePleaCommand instanceof CancelPlea) {
@@ -275,16 +303,16 @@ public class CaseAggregate implements Aggregate {
                     cancelPlea.getOffenceId().toString());
 
             streamBuilder.add(pleaCancelled);
-            updateInterpreter(null, defendantId.get())
+            updateInterpreter(null, defendantId.get(), false)
                     .ifPresent(streamBuilder::add);
         }
         return apply(streamBuilder.build());
     }
 
     public Stream<Object> updateInterpreter(final UUID defendantId, final String language) {
-        final Stream.Builder streamBuilder = Stream.builder();
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
         if (hasDefendant(defendantId)) {
-            updateInterpreter(language, defendantId).ifPresent(streamBuilder::add);
+            updateInterpreter(language, defendantId, false).ifPresent(streamBuilder::add);
         } else {
             streamBuilder.add(new DefendantNotFound(defendantId.toString(), "Update interpreter"));
         }
@@ -292,7 +320,23 @@ public class CaseAggregate implements Aggregate {
 
     }
 
-    private Optional<Object> updateInterpreter(final String newInterpreterLanguage, final UUID defendantId) {
+    public Stream<Object> updateDefendantNationalInsuranceNumber(final UUID defendantId, final String newNationalInsuranceNumber) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        if (hasDefendant(defendantId)) {
+            streamBuilder.add(new DefendantsNationalInsuranceNumberUpdated(caseId, defendantId, newNationalInsuranceNumber));
+        } else {
+            streamBuilder.add(new DefendantNotFound(defendantId.toString(), "Update defendant's national insurance number"));
+        }
+        return apply(streamBuilder.build());
+    }
+
+    private Optional<Object> updateInterpreter(final String newInterpreterLanguage, final UUID defendantId,
+                                               boolean updatedByOnlinePlea) {
+        return updateInterpreter(newInterpreterLanguage, defendantId, updatedByOnlinePlea, null);
+    }
+
+    private Optional<Object> updateInterpreter(final String newInterpreterLanguage, final UUID defendantId,
+                                               boolean updatedByOnlinePlea, final ZonedDateTime createdOn) {
         // Assuming that if there is an interpreterLanguage interpreterRequired should always be true
         final String existingInterpreterLanguage = this.defendantInterpreterLanguages.get(defendantId);
         Object event = null;
@@ -300,7 +344,12 @@ public class CaseAggregate implements Aggregate {
         if (existingInterpreterLanguage != null && newInterpreterLanguage == null) {
             event = new InterpreterCancelledForDefendant(caseId, defendantId);
         } else if (!Objects.equals(existingInterpreterLanguage, newInterpreterLanguage)) {
-            event = new InterpreterUpdatedForDefendant(caseId, defendantId, new Interpreter(true, newInterpreterLanguage));
+            if (updatedByOnlinePlea) {
+                event = InterpreterUpdatedForDefendant.createEventForOnlinePlea(caseId, defendantId, new Interpreter(newInterpreterLanguage), createdOn);
+            }
+            else {
+                event = InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, new Interpreter(newInterpreterLanguage));
+            }
         }
         return Optional.ofNullable(event);
     }
@@ -311,6 +360,109 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> cancelPlea(final CancelPlea cancelPleaCommand) {
         return changePlea(cancelPleaCommand);
+    }
+
+    public Stream<Object> pleadOnline(final UUID caseId, final PleadOnline pleadOnline, final ZonedDateTime createdOn) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        final UUID defendantId = UUID.fromString(pleadOnline.getDefendantId());
+        if (caseAssigned) {
+            streamBuilder.add(generateCaseUpdateRejected(caseId.toString(), CASE_ASSIGNED));
+            return apply(streamBuilder.build());
+        }
+        if (withdrawalAllOffencesRequested) {
+            return apply(Stream.of(new CaseUpdateRejected(caseId, CaseUpdateRejected.RejectReason.WITHDRAWAL_PENDING)));
+        }
+        if (!hasDefendant(defendantId)) {
+            return apply(Stream.of(new DefendantNotFound(caseId.toString(), "Store Online Plea")));
+        }
+        final PleadOnlineOutcomes pleadOnlineOutcomes = addPleaEventsToStreamForStoreOnlinePlea(caseId, pleadOnline, streamBuilder);
+        if (pleadOnlineOutcomes.isPleaForOffencePreviouslySubmitted()) {
+            Object caseUpdateRejectedEvent = generateCaseUpdateRejected(caseId.toString(), PLEA_ALREADY_SUBMITTED);
+            return apply(Stream.of(caseUpdateRejectedEvent));
+        }
+        if (!pleadOnlineOutcomes.getOffenceNotFoundIds().isEmpty()) {
+            final Stream.Builder<Object> offenceNotFoundStreamBuilder = Stream.builder();
+            pleadOnlineOutcomes.getOffenceNotFoundIds().forEach(offenceNotFoundId ->
+                offenceNotFoundStreamBuilder.add(new OffenceNotFound(offenceNotFoundId, "Store Online Plea"))
+            );
+            return apply(offenceNotFoundStreamBuilder.build());
+        }
+        if (pleadOnlineOutcomes.isTrialRequested()) {
+            streamBuilder.add(new TrialRequested(caseId, pleadOnline.getUnavailability(), pleadOnline.getWitnessDetails(),
+                    pleadOnline.getWitnessDispute(), createdOn));
+        }
+        addAdditionalEventsToStreamForStoreOnlinePlea(streamBuilder, pleadOnline, defendantId, createdOn);
+        return apply(streamBuilder.build());
+    }
+
+    private PleadOnlineOutcomes addPleaEventsToStreamForStoreOnlinePlea(final UUID caseId,
+                                                                        final PleadOnline pleadOnline,
+                                                                        final Stream.Builder<Object> streamBuilder) {
+        final PleadOnlineOutcomes pleadOnlineOutcomes = new PleadOnlineOutcomes();
+        pleadOnline.getOffences().forEach(offence -> {
+            if (canPleaOnOffence(offence, pleadOnlineOutcomes)) {
+                PleaType pleaType = offence.getPlea();
+                if (pleaType.equals(PleaType.GUILTY) && offence.getComeToCourt() != null && offence.getComeToCourt()) {
+                    pleaType = PleaType.GUILTY_REQUEST_HEARING;
+                }
+                final PleaUpdated pleaUpdated = new PleaUpdated(
+                        caseId.toString(),
+                        offence.getId(),
+                        pleaType.name(),
+                        offence.getMitigation(),
+                        offence.getNotGuiltyBecause(),
+                        PleaMethod.ONLINE);
+                streamBuilder.add(pleaUpdated);
+                if (pleaType.equals(PleaType.NOT_GUILTY)) {
+                    pleadOnlineOutcomes.setTrialRequested(true);
+                }
+            }
+        });
+        return pleadOnlineOutcomes;
+    }
+
+    private boolean canPleaOnOffence(Offence offence, final PleadOnlineOutcomes pleadOnlineOutcomes) {
+        if (!offenceExists(UUID.fromString(offence.getId()))) {
+            LOGGER.warn("Cannot update plea for offence which doesn't exist, ID: {}", offence.getId());
+            pleadOnlineOutcomes.getOffenceNotFoundIds().add(offence.getId());
+            return false;
+        } else if (this.offenceIdsWithPleas.contains(offence.getId())) {
+            pleadOnlineOutcomes.setPleaForOffencePreviouslySubmitted(true);
+            return false;
+        }
+        return true;
+    }
+
+    private void addAdditionalEventsToStreamForStoreOnlinePlea(final Stream.Builder<Object> streamBuilder,
+                                                               final PleadOnline pleadOnline,
+                                                               final UUID defendantId,
+                                                               final ZonedDateTime createdOn) {
+        //TODO: we need to query the defendant to see if any of the incoming defendant data is different from the pre-existing defendant data. If no changes, no event
+        final ContactDetails contactDetails = pleadOnline.getPersonalDetails().getContactDetails();
+        final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdated()
+                .withCaseId(caseId)
+                .withDefendantId(defendantId)
+                .withFirstName(pleadOnline.getPersonalDetails().getFirstName())
+                .withLastName(pleadOnline.getPersonalDetails().getLastName())
+                .withDateOfBirth(pleadOnline.getPersonalDetails().getDateOfBirth())
+                .withNationalInsuranceNumber(pleadOnline.getPersonalDetails().getNationalInsuranceNumber())
+                .withContactDetails(new ContactDetails(contactDetails.getHome(), contactDetails.getMobile(), contactDetails.getEmail()))
+                .withAddress(pleadOnline.getPersonalDetails().getAddress())
+                .withUpdateByOnlinePlea(true)
+                .withUpdatedDate(createdOn)
+                .build();
+        streamBuilder.add(defendantDetailsUpdated);
+        streamBuilder.add(FinancialMeansUpdated.createEventForOnlinePlea(defendantId, pleadOnline.getFinancialMeans().getIncome(),
+                pleadOnline.getFinancialMeans().getBenefits(), pleadOnline.getFinancialMeans().getEmploymentStatus(),
+                pleadOnline.getOutgoings(), createdOn));
+        if (pleadOnline.getEmployer() != null) {
+            addEmployerEventToStream(streamBuilder, pleadOnline.getEmployer(), defendantId, true, createdOn);
+        }
+        updateInterpreter(pleadOnline.getInterpreterLanguage(), defendantId, true, createdOn)
+                .ifPresent(streamBuilder::add);
+        streamBuilder.add(new OnlinePleaReceived(urn, this.caseId.toString(), pleadOnline.getDefendantId(), pleadOnline.getUnavailability(), pleadOnline.getInterpreterLanguage(),
+                pleadOnline.getWitnessDetails(), pleadOnline.getWitnessDispute(), pleadOnline.getPersonalDetails(),
+                pleadOnline.getFinancialMeans(), pleadOnline.getEmployer(), pleadOnline.getOutgoings()));
     }
 
     public Stream<Object> createCourtReferral(final String caseId, final LocalDate hearingDate) {
@@ -343,12 +495,14 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> caseUpdateRejected(final String caseId, final CaseUpdateRejected.RejectReason reason) {
+        return apply(Stream.of(generateCaseUpdateRejected(caseId, reason)));
+    }
+
+    private Object generateCaseUpdateRejected(final String caseId, final CaseUpdateRejected.RejectReason reason) {
         if (this.caseId == null) {
-            return apply(Stream.of(new CaseNotFound(caseId, "Case not found when attempting to apply update reject command")));
+            return new CaseNotFound(caseId, "Case not found when attempting to apply update reject command");
         }
-        return apply(Stream.of(
-                new CaseUpdateRejected(this.caseId, reason)
-        ));
+        return new CaseUpdateRejected(this.caseId, reason);
     }
 
     public Stream<Object> cancelRequestWithdrawalAllOffences(final String caseId) {
@@ -419,6 +573,92 @@ public class CaseAggregate implements Aggregate {
         return apply(Stream.builder().add(new CaseAssignmentDeleted(caseAssignment)).build());
     }
 
+    private void validateDefendant(String title, LocalDate dateOfBirth, Address address) {
+        validateDefendantTitle(title);
+        validateDefendantDateOfBirth(dateOfBirth);
+        validateDefendantAddress(address);
+    }
+
+    private void validateDefendantAddress(final Address address) {
+        if (this.defendantAddress != null) {
+            ensureFieldIsNotBlankIfWasDefined(this.defendantAddress.getAddress1(), address.getAddress1(),
+                    "street (address1) can not be blank as previous value is: " + this.defendantAddress.getAddress1());
+
+            ensureFieldIsNotBlankIfWasDefined(this.defendantAddress.getAddress4(), address.getAddress4(),
+                    "town (address4) can not be blank as previous value is: " + this.defendantAddress.getAddress4());
+
+            ensureFieldIsNotBlankIfWasDefined(this.defendantAddress.getPostcode(), address.getPostcode(),
+                    "postcode can not be blank as previous value is: " + this.defendantAddress.getPostcode());
+        }
+    }
+
+    private void ensureFieldIsNotBlankIfWasDefined(String oldValue, String newValue, String errorMessage) {
+        if (StringUtils.isNotBlank(oldValue) && StringUtils.isBlank(newValue)) {
+            throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
+    private void validateDefendantDateOfBirth(final LocalDate dateOfBirth) {
+        if (this.defendantDateOfBirth != null && dateOfBirth == null) {
+            throw new IllegalArgumentException(
+                    "dob parameter can not be null");
+        }
+    }
+
+    private void validateDefendantTitle(final String title) {
+        if (StringUtils.isBlank(title) && StringUtils.isNotBlank(this.defendantTitle)) {
+            throw new IllegalArgumentException(String.format("title parameter can not be null as previous value is : %s", this.defendantTitle));
+        }
+    }
+
+    public Stream<Object> fixDefendantDetails(UUID caseId, UUID personId, String gender,
+                                                 String nationalInsuranceNumber,String email,
+                                                 String homeNumber, String mobileNumber,
+                                                 Person person) {
+
+        final DefendantDetailsMovedFromPeople defendantDetailsMovedFromPeople = new DefendantDetailsMovedFromPeople.DefendantDetailsMovedFromPeopleBuilder()
+                .withCaseId(caseId)
+                .withPersonId(personId)
+                .withTitle(person.getTitle())
+                .withFirstName(person.getFirstName())
+                .withLastName(person.getLastName())
+                .withDateOfBirth(person.getDateOfBirth())
+                .withGender(gender)
+                .withEmail(email)
+                .withNationalInsuranceNumber(nationalInsuranceNumber)
+                .withContactNumber(new ContactDetails(homeNumber, mobileNumber, email))
+                .withAddress(person.getAddress())
+                .build();
+        return apply(Stream.of(defendantDetailsMovedFromPeople));
+    }
+
+    @SuppressWarnings("squid:S00107") //Proper fix requires proper remodelling / guidance
+    public Stream<Object> updateDefendantDetails(UUID caseId, UUID defendantId, String gender,
+                                                 String nationalInsuranceNumber, String email,
+                                                 String homeNumber, String mobileNumber,
+                                                 Person person) {
+        try {
+            validateDefendant(person.getTitle(), person.getDateOfBirth(), person.getAddress());
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            LOGGER.error("Defendant details update failed for ID: {} with message {} ", defendantId, e);
+            return apply(Stream.of(new DefendantDetailsUpdateFailed(caseId.toString(), defendantId.toString(), e.getMessage())));
+        }
+
+        final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdated()
+                .withCaseId(caseId)
+                .withDefendantId(defendantId)
+                .withTitle(person.getTitle())
+                .withFirstName(person.getFirstName())
+                .withLastName(person.getLastName())
+                .withDateOfBirth(person.getDateOfBirth())
+                .withGender(gender)
+                .withNationalInsuranceNumber(nationalInsuranceNumber)
+                .withContactDetails(new ContactDetails(homeNumber, mobileNumber, email))
+                .withAddress(person.getAddress())
+                .withUpdateByOnlinePlea(false)
+                .build();
+        return apply(Stream.of(defendantDetailsUpdated));
+    }
 
     private boolean assertCaseIdNotNullAndMatch(String caseId) {
         if (caseId == null) {
@@ -433,6 +673,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public Object apply(Object event) {
         return match(event).with(
                 when(CaseCreationFailedBecauseCaseAlreadyExisted.class).apply(e -> {
@@ -440,17 +681,19 @@ public class CaseAggregate implements Aggregate {
                 }),
                 when(CaseStarted.class)
                         .apply(e -> caseId = e.getId()),
-                when(SjpCaseCreated.class).apply(e -> {
-                    caseId = UUID.fromString(e.getId());
+                when(CaseReceived.class).apply(e -> {
+                    caseId = e.getCaseId();
                     urn = e.getUrn();
                     prosecutingAuthority = e.getProsecutingAuthority();
-                    offenceIdsByDefendantId.putIfAbsent(e.getDefendantId(), new HashSet<>());
-                    offenceIdsByDefendantId.get(e.getDefendantId()).addAll(
-                            e.getOffences()
-                                    .stream()
-                                    .map(SjpOffence::getId)
-                                    .collect(Collectors.toSet())
-                    );
+                    offenceIdsByDefendantId.computeIfAbsent(e.getDefendant().getId(), id -> new HashSet<>())
+                            .addAll(e.getDefendant().getOffences().stream()
+                                    .map(uk.gov.moj.cpp.sjp.domain.Offence::getId)
+                                    .collect(Collectors.toSet()));
+
+                    defendantTitle = e.getDefendant().getTitle();
+                    defendantDateOfBirth = e.getDefendant().getDateOfBirth();
+                    defendantAddress = e.getDefendant().getAddress();
+
                 }),
                 when(CaseCompleted.class)
                         .apply(e -> this.caseCompleted = true),
@@ -461,14 +704,20 @@ public class CaseAggregate implements Aggregate {
                 when(CaseDocumentUploaded.class).apply(e -> {
                     //nothing to update
                 }),
-                when(PleaUpdated.class).apply(e ->
-                        this.offencePleas.put(UUID.fromString(e.getOffenceId()), Plea.Type.valueOf(e.getPlea()))),
-                when(PleaCancelled.class).apply(e ->
-                        //TODO: check there is a plea
-                        this.offencePleas.remove(e.getOffenceId())
-                ),
+                when(PleaUpdated.class).apply(e -> {
+                    this.offenceIdsWithPleas.add(e.getOffenceId());
+                }),
+                when(PleaCancelled.class).apply(e -> {
+                    this.offenceIdsWithPleas.remove(e.getOffenceId());
+                }),
                 // Old event. Replaced by CaseUpdateRejected
                 when(PleaUpdateDenied.class).apply(e -> {
+                    //nothing to update
+                }),
+                when(TrialRequested.class).apply(e -> {
+                    //nothing to update
+                }),
+                when(DefendantsNationalInsuranceNumberUpdated.class).apply(e -> {
                     //nothing to update
                 }),
                 when(InterpreterUpdatedForDefendant.class).apply(e -> {
@@ -557,8 +806,35 @@ public class CaseAggregate implements Aggregate {
                 }),
                 when(CaseAssignmentCreated.class).apply(ignored -> caseAssigned = true),
                 when(CaseAssignmentDeleted.class).apply(ignored -> caseAssigned = false),
+                when(DefendantDetailsUpdated.class).apply(e -> {
+                    defendantTitle = e.getTitle();
+                    defendantDateOfBirth = e.getDateOfBirth();
+                    defendantAddress = e.getAddress();
+                }),
+                when(DefendantDetailsUpdateFailed.class).apply(e -> {
+                    // no change in aggregate state
+                }),
+                when(SjpCaseCreated.class).apply(e -> apply(Stream.of(convertSjpCaseCreatedToCaseReceived(e)))),
                 otherwiseDoNothing()
         );
+    }
+
+    /**
+     * Ensure backward compatibility for {@link SjpCaseCreated} events
+     *
+     * @param sjpCaseCreated deprecated case creation event
+     * @return conversion to new event
+     */
+    @SuppressWarnings("deprecation")
+    private static CaseReceived convertSjpCaseCreatedToCaseReceived(SjpCaseCreated sjpCaseCreated) {
+        Defendant defendant = new Defendant(sjpCaseCreated.getDefendantId(),
+                null, null, null, null, null, null,
+                sjpCaseCreated.getNumPreviousConvictions(),
+                sjpCaseCreated.getOffences());
+
+        return new CaseReceived(UUID.fromString(sjpCaseCreated.getId()), sjpCaseCreated.getUrn(),
+                sjpCaseCreated.getProsecutingAuthority(), sjpCaseCreated.getCosts(), sjpCaseCreated.getPostingDate(),
+                defendant, sjpCaseCreated.getCreatedOn());
     }
 
     public UUID getCaseId() {
@@ -594,10 +870,11 @@ public class CaseAggregate implements Aggregate {
     }
 
     private boolean hasDefendant(final UUID defendantId) {
-        return offenceIdsByDefendantId.keySet().contains(defendantId);
+        return offenceIdsByDefendantId.containsKey(defendantId);
     }
 
     public boolean isCaseAssigned() {
         return caseAssigned;
     }
+
 }

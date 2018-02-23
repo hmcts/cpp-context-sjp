@@ -59,7 +59,7 @@ public class PleaUpdatedProcessorTest {
 
         verify(sender).send(argThat(
                 jsonEnvelope(
-                        metadata().withName("public.structure.plea-updated"),
+                        metadata().withName("public.sjp.plea-updated"),
                         payload().isJson(allOf(
                                 withJsonPath("$.caseId", equalTo(caseId)),
                                 withJsonPath("$.offenceId", equalTo(offenceId)),
@@ -82,7 +82,7 @@ public class PleaUpdatedProcessorTest {
 
         verify(sender).send(argThat(
                 jsonEnvelope(
-                        metadata().withName("public.structure.plea-cancelled"),
+                        metadata().withName("public.sjp.plea-cancelled"),
                         payload().isJson(allOf(
                                 withJsonPath("$.caseId", equalTo(caseId)),
                                 withJsonPath("$.offenceId", equalTo(offenceId))

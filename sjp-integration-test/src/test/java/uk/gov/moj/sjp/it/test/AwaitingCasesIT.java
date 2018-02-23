@@ -22,7 +22,6 @@ public class AwaitingCasesIT extends BaseIntegrationTest {
 
     private CaseSjpHelper caseSjpHelper;
     private CaseDocumentHelper caseDocumentHelper;
-    private String personId;
     private String offenceCode;
 
     @Before
@@ -35,8 +34,7 @@ public class AwaitingCasesIT extends BaseIntegrationTest {
         caseDocumentHelper = new CaseDocumentHelper(caseSjpHelper.getCaseId());
         caseDocumentHelper.addDocumentAndVerifyAdded(); // add an SJPN document
 
-        personId = caseSjpHelper.getDefendantPersonId();
-        offenceCode = caseSjpHelper.getCaseResponseUsingId().get("defendants[0].offences[0].offenceCode");
+        offenceCode = caseSjpHelper.getCaseResponseUsingId().get("defendant.offences[0].offenceCode");
     }
 
     @After
@@ -49,7 +47,7 @@ public class AwaitingCasesIT extends BaseIntegrationTest {
     public void shouldFindAwaitingCases() {
         poll(findAwaitingCases()).until(status().is(OK),
                 payload().isJson(withJsonPath("$.awaitingCases[?]",
-                        filter(where("personId").is(personId)
+                        filter(where("firstName").is("David")
                                 .and("offenceCode").is(offenceCode)))));
     }
 }

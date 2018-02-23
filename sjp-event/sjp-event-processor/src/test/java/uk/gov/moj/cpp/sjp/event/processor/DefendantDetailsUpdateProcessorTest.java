@@ -50,7 +50,7 @@ public class DefendantDetailsUpdateProcessorTest {
 
         // then
         verify(sender).send(envelopeCaptor.capture());
-        assertThat(envelopeCaptor.getValue().metadata().name(), is("people.command.update-personal-details"));
+        assertThat(envelopeCaptor.getValue().metadata().name(), is("public.sjp.events.defendant-details-updated"));
         assertThat(envelopeCaptor.getValue().payloadAsJsonObject(), is(eventPayload));
     }
 }

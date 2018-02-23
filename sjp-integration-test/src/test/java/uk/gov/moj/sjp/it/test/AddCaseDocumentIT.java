@@ -9,7 +9,6 @@ import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 
 import java.util.UUID;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,13 +19,9 @@ import org.junit.Test;
 public class AddCaseDocumentIT extends BaseIntegrationTest {
 
     private CaseSjpHelper caseHelper;
-    private final static String RESOURCES_PATH = "src/test/resources";
-    private final static String TRAVEL_CARD_PATH = RESOURCES_PATH + "/travel-card";
-
 
     @Before
-    public void setUp() throws Exception {
-        WireMock.resetAllRequests();
+    public void setUp() {
         caseHelper = new CaseSjpHelper();
         caseHelper.createAndVerifyCase();
     }
@@ -86,7 +81,7 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldUploadPleaCaseDocument() throws InterruptedException {
+    public void shouldUploadPleaCaseDocument() {
         stubAddCaseMaterial();
         try (CaseSjpHelper sjpHelper = new CaseSjpHelper()) {
             sjpHelper.createAndVerifyCase();

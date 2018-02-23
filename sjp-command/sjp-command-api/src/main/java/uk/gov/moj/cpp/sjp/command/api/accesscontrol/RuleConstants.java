@@ -1,15 +1,18 @@
 package uk.gov.moj.cpp.sjp.command.api.accesscontrol;
 
+import static java.util.Collections.singletonList;
+
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public final class RuleConstants {
 
     private static final String GROUP_SYSTEM_USERS = "System Users";
+    private static final String GROUP_ONLINE_PLEA_SYSTEM_USERS = "Online Plea System Users";
     private static final String GROUP_TFL_USERS = "TFL Users";
     private static final String GROUP_LEGAL_ADVISERS = "Legal Advisers";
     private static final String GROUP_COURT_ADMINISTRATORS = "Court Administrators";
-    private static final String GROUP_SUPPORT_USERS = "Support Users";
 
 
     private RuleConstants() {
@@ -17,11 +20,19 @@ public final class RuleConstants {
     }
 
     public static List<String> getCreateSjpCaseActionGroups() {
-        return Arrays.asList(GROUP_TFL_USERS);
+        return singletonList(GROUP_TFL_USERS);
+    }
+
+    public static List<String> getPleadOnlineActionGroups() {
+        return Arrays.asList(GROUP_ONLINE_PLEA_SYSTEM_USERS);
     }
 
     public static List<String> getAddCaseDocumentActionGroups() {
         return Arrays.asList(GROUP_SYSTEM_USERS, GROUP_TFL_USERS, GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+    }
+
+    public static List<String> getUpdateDefendantNationalInsuranceNumberGroups() {
+        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
     public static List<String> getUploadCaseDocumentActionGroups() {
@@ -53,23 +64,19 @@ public final class RuleConstants {
     }
 
     public static List<String> getRequestWithdrawalOfAllOffencesGroups() {
-        return Arrays.asList(GROUP_TFL_USERS);
+        return singletonList(GROUP_TFL_USERS);
     }
 
     public static List<String> getCancelRequestWithdrawalOfAllOffencesGroups() {
-        return Arrays.asList(GROUP_TFL_USERS);
-    }
-
-    public static List<String> getAddPersonInfoGroups() {
-        return Arrays.asList(GROUP_TFL_USERS);
-    }
-
-    public static List<String> getRemovePersonInfoGroups() {
-        return Arrays.asList(GROUP_SUPPORT_USERS);
+        return singletonList(GROUP_TFL_USERS);
     }
 
     public static List<String> getActionCourtReferralGroups() {
         return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+    }
+
+    public static List<String> getFixDefendantDetails() {
+        return Collections.singletonList(GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getUpdateDefendantDetails() {

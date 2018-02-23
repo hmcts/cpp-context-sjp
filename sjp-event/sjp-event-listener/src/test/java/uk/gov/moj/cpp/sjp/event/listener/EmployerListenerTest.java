@@ -6,24 +6,35 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.Employer;
+import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
+import uk.gov.moj.cpp.sjp.persistence.repository.DefendantRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.EmployerRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -45,26 +56,64 @@ public class EmployerListenerTest {
     @Mock
     private EmployerRepository employerRepository;
 
+    @Mock
+    private OnlinePleaRepository.EmployerOnlinePleaRepository onlinePleaRepository;
+
+    @Mock
+    private OnlinePlea onlinePlea;
+
+    @Mock
+    private DefendantRepository defendantRepository;
+
     @InjectMocks
     private EmployerListener employerListener = new EmployerListener();
 
     @Captor
     private ArgumentCaptor<Employer> captor;
 
+    @Captor
+    private ArgumentCaptor<OnlinePlea> onlinePleaCaptor;
+
+    private Clock clock = new StoppedClock(ZonedDateTime.now());
+    private ZonedDateTime now = clock.now();
+    private DefendantDetail defendantDetail;
+
+    @Before
+    public void setUp() {
+        defendantDetail = new DefendantDetail();
+        defendantDetail.setCaseDetail(new CaseDetail());
+        defendantDetail.getCaseDetail().setId(UUID.randomUUID());
+    }
+
+    private EmployerUpdated stubEmployerUpdatedEvent(boolean updatedByOnlinePlea) {
+        final UUID defendantId = UUID.randomUUID();
+        final uk.gov.moj.cpp.sjp.domain.Employer employer = new uk.gov.moj.cpp.sjp.domain.Employer(defendantId,"Test",
+                "123", "07777888999",
+                new Address("street", "suburb", "town", "county", "AA1 2BB"));
+        if (updatedByOnlinePlea) {
+            return EmployerUpdated.createEventForOnlinePlea(defendantId, employer, now);
+        }
+        else {
+            return EmployerUpdated.createEvent(defendantId, employer);
+        }
+    }
+
     @Test
     public void shouldSaveEmployerUpdatedEvent() {
-
-        final EmployerUpdated employerUpdated = new EmployerUpdated(UUID.randomUUID(), "Test",
-                "123", "07777888999", new Address("street",
-                "suburb", "town", "county", "AA1 2BB"));
+        final EmployerUpdated employerUpdated = stubEmployerUpdatedEvent(false);
 
         final JsonObject payload = createObjectBuilder().build();
         when(eventEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectConverter.convert(payload, EmployerUpdated.class)).thenReturn(employerUpdated);
+        when(defendantRepository.findBy(employerUpdated.getDefendantId())).thenReturn(defendantDetail);
 
         employerListener.updateEmployer(eventEnvelope);
 
         verify(employerRepository).save(captor.capture());
+        verify(jsonObjectConverter).convert(payload, EmployerUpdated.class);
+        verify(defendantRepository, never()).findBy(employerUpdated.getDefendantId());
+        verify(onlinePleaRepository, never()).saveOnlinePlea(anyObject());
+
         final Employer employer = captor.getValue();
         assertThat(employer.getDefendantId(), equalTo(employerUpdated.getDefendantId()));
         assertThat(employer.getName(), equalTo(employerUpdated.getName()));
@@ -74,22 +123,61 @@ public class EmployerListenerTest {
         assertThat(employer.getAddress2(), equalTo(employerUpdated.getAddress().getAddress2()));
         assertThat(employer.getAddress3(), equalTo(employerUpdated.getAddress().getAddress3()));
         assertThat(employer.getAddress4(), equalTo(employerUpdated.getAddress().getAddress4()));
-        assertThat(employer.getPostCode(), equalTo(employerUpdated.getAddress().getPostCode()));
+        assertThat(employer.getPostcode(), equalTo(employerUpdated.getAddress().getPostcode()));
     }
 
     @Test
-    public void shouldSaveEmptyEmployerUpdatedEvent() {
-
-        final EmployerUpdated employerUpdated = new EmployerUpdated(UUID.randomUUID(), null,
-                null, null, null);
+    public void shouldSaveEmployerUpdatedEventForOnlinePlea() {
+        final EmployerUpdated employerUpdated = stubEmployerUpdatedEvent(true);
 
         final JsonObject payload = createObjectBuilder().build();
         when(eventEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectConverter.convert(payload, EmployerUpdated.class)).thenReturn(employerUpdated);
+        when(defendantRepository.findBy(employerUpdated.getDefendantId())).thenReturn(defendantDetail);
 
         employerListener.updateEmployer(eventEnvelope);
 
         verify(employerRepository).save(captor.capture());
+        verify(jsonObjectConverter).convert(payload, EmployerUpdated.class);
+        verify(defendantRepository).findBy(employerUpdated.getDefendantId());
+        verify(onlinePleaRepository).saveOnlinePlea(onlinePleaCaptor.capture());
+
+        final Employer employer = captor.getValue();
+        assertThat(employer.getDefendantId(), equalTo(employerUpdated.getDefendantId()));
+        assertThat(employer.getName(), equalTo(employerUpdated.getName()));
+        assertThat(employer.getEmployeeReference(), equalTo(employerUpdated.getEmployeeReference()));
+        assertThat(employer.getPhone(), equalTo(employerUpdated.getPhone()));
+        assertThat(employer.getAddress1(), equalTo(employerUpdated.getAddress().getAddress1()));
+        assertThat(employer.getAddress2(), equalTo(employerUpdated.getAddress().getAddress2()));
+        assertThat(employer.getAddress3(), equalTo(employerUpdated.getAddress().getAddress3()));
+        assertThat(employer.getAddress4(), equalTo(employerUpdated.getAddress().getAddress4()));
+        assertThat(employer.getPostcode(), equalTo(employerUpdated.getAddress().getPostcode()));
+
+        //check that OnlinePlea is contructed properly
+        assertThat(onlinePleaCaptor.getValue().getCaseId(), equalTo(defendantDetail.getCaseDetail().getId()));
+        assertThat(onlinePleaCaptor.getValue().getEmployer().getName(), equalTo(employerUpdated.getName()));
+        assertThat(onlinePleaCaptor.getValue().getEmployer().getEmployeeReference(), equalTo(employerUpdated.getEmployeeReference()));
+        assertThat(onlinePleaCaptor.getValue().getEmployer().getPhone(), equalTo(employerUpdated.getPhone()));
+        assertThat(onlinePleaCaptor.getValue().getEmployer().getAddress().getAddress1(), equalTo(employerUpdated.getAddress().getAddress1()));
+        assertThat(onlinePleaCaptor.getValue().getSubmittedOn(), equalTo(employerUpdated.getUpdatedDate()));
+    }
+
+    @Test
+    public void shouldSaveEmptyEmployerUpdatedEvent() {
+        final EmployerUpdated employerUpdated = EmployerUpdated.createEvent(UUID.randomUUID(),
+                new uk.gov.moj.cpp.sjp.domain.Employer(null, null, null, null, null));
+
+        final JsonObject payload = createObjectBuilder().build();
+        when(eventEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectConverter.convert(payload, EmployerUpdated.class)).thenReturn(employerUpdated);
+        when(defendantRepository.findBy(employerUpdated.getDefendantId())).thenReturn(defendantDetail);
+
+        employerListener.updateEmployer(eventEnvelope);
+
+        verify(employerRepository, times(1)).save(captor.capture());
+        verify(jsonObjectConverter, times(1)).convert(payload, EmployerUpdated.class);
+        verify(defendantRepository, never()).findBy(defendantDetail);
+        verify(onlinePleaRepository, never()).saveOnlinePlea(anyObject());
         final Employer employer = captor.getValue();
         assertThat(employer.getDefendantId(), equalTo(employerUpdated.getDefendantId()));
         assertThat(employer.getName(), nullValue());
@@ -99,7 +187,7 @@ public class EmployerListenerTest {
         assertThat(employer.getAddress2(), nullValue());
         assertThat(employer.getAddress3(), nullValue());
         assertThat(employer.getAddress4(), nullValue());
-        assertThat(employer.getPostCode(), nullValue());
+        assertThat(employer.getPostcode(), nullValue());
     }
 
     @Test
@@ -135,6 +223,5 @@ public class EmployerListenerTest {
                 .withPayloadOf(defendantId.toString(), "defendantId")
                 .build();
     }
-
 
 }

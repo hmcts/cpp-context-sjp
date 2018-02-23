@@ -19,9 +19,5 @@ public interface CaseSearchResultRepository extends EntityRepository<CaseSearchR
     @Query("from CaseSearchResult as r inner join fetch r.caseSummary where upper(r.caseSummary.urn) = upper(:urn)")
     List<CaseSearchResult> findByCaseSummary_urn(@QueryParam("urn") String urn);
 
-    List<CaseSearchResult> findByCaseIdAndPersonId(UUID caseId, UUID personId);
-
-    List<CaseSearchResult> findByPersonId(UUID personId);
-
     List<CaseSearchResult> findByCaseId(UUID caseId);
 }

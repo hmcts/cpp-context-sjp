@@ -16,12 +16,12 @@ import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseDocumentAddedToCaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -59,8 +59,7 @@ public class CaseUpdatedListener {
         final AllOffencesWithdrawalRequested event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), AllOffencesWithdrawalRequested.class);
         caseRepository.requestWithdrawalAllOffences(event.getCaseId());
 
-        //TODO: would be better if we could get the updated date time from the event
-        updateWithdrawalRequestedDate(event.getCaseId(), now());
+        updateWithdrawalRequestedDate(event.getCaseId(), envelope.metadata().createdAt().map(ZonedDateTime::toLocalDate).orElse(now()));
     }
 
     @Handles("sjp.events.all-offences-withdrawal-request-cancelled")
@@ -118,10 +117,7 @@ public class CaseUpdatedListener {
     }
 
     private void updateWithdrawalRequestedDate(final UUID caseId, final LocalDate withdrawalRequestedDate) {
-        caseRepository.findBy(caseId).getDefendants().stream()
-                .map(DefendantDetail::getPersonId).forEach(personId ->
-                searchResultRepository.findByCaseIdAndPersonId(caseId, personId)
-                        .forEach(searchResult -> searchResult.setWithdrawalRequestedDate(withdrawalRequestedDate))
-        );
+        searchResultRepository.findByCaseId(caseId).forEach(searchResult ->
+                searchResult.setWithdrawalRequestedDate(withdrawalRequestedDate));
     }
 }

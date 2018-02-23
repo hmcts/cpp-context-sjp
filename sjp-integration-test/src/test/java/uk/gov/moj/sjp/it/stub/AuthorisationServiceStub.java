@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static java.lang.String.format;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
@@ -15,7 +16,7 @@ import java.util.UUID;
 
 import javax.json.Json;
 
-public class AuthorisationServiceStub extends StubUtil {
+public class AuthorisationServiceStub {
 
     private static final String CAPABILITY_ENABLEMENT_QUERY_URL = "/authorisation-service-server/rest/capabilities/%s";
     private static final String CAPABILITY_ENABLEMENT_QUERY_MEDIA_TYPE = "application/vnd.authorisation.capability+json";
@@ -38,7 +39,7 @@ public class AuthorisationServiceStub extends StubUtil {
         stubFor(get(urlMatching(stubUrl))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", UUID.randomUUID().toString())
-                        .withHeader("Content-Type", DEFAULT_JSON_CONTENT_TYPE)
+                        .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(responsePayload)));
 
         waitForStubToBeReady(stubUrl, CAPABILITY_ENABLEMENT_QUERY_MEDIA_TYPE);

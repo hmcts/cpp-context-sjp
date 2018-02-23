@@ -39,7 +39,7 @@
           "type": "string",
           "maxLength": 32
         },
-        "postCode": {
+        "postcode": {
           "type": "string",
           "maxLength": 10
         }

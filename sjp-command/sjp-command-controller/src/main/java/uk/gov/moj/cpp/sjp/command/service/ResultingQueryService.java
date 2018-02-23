@@ -27,6 +27,6 @@ public class ResultingQueryService {
                 .apply(Json.createObjectBuilder()
                         .add("caseId", envelope.payloadAsJsonObject().getString("caseId"))
                         .build());
-        return requester.request(requestEnvelope);
+        return requester.requestAsAdmin(requestEnvelope);
     }
 }

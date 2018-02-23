@@ -24,15 +24,6 @@ rule "sjp.query.case-by-urn"
     $outcome.setSuccess(true);
 end
 
-rule "sjp.query.sjp-case-by-urn"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.sjp-case-by-urn");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQuerySjpCaseByUrnActionGroups()))
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "sjp.query.case-documents"
   when
     $outcome: Outcome();
@@ -165,6 +156,15 @@ rule "sjp - Query - API - Get result orders"
     $outcome: Outcome();
     $action: Action(name == "sjp.query.result-orders");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryResultOrders()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get defendant's online plea"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.defendants-online-plea");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryDefendantsOnlinePleaGroups()))
   then
     $outcome.setSuccess(true);
 end

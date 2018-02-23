@@ -2,8 +2,6 @@ package uk.gov.moj.sjp.it.helper;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static javax.json.Json.createObjectBuilder;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -11,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
@@ -20,8 +19,6 @@ import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -41,6 +38,7 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
     public static final String GET_CASE_BY_ID_MEDIA_TYPE = "application/vnd.sjp.query.case+json";
     public static final String GET_CASE_BY_URN_MEDIA_TYPE = "application/vnd.sjp.query.case-by-urn+json";
     public static final String ASSOCIATE_ENTERPRISE_ID_CONTENT_TYPE = "application/vnd.enterprise-id+json";
+    public static final String PROSECUTING_AUTHORITY_PREFIX = TFL.name();
     protected String caseId;
     protected String offenceId;
     protected String request;
@@ -50,7 +48,7 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
     public AbstractCaseHelper() {
         caseId = UUID.randomUUID().toString();
         offenceId = UUID.randomUUID().toString();
-        caseUrn = RandomGenerator.integer(10, 99).next() + "GD" + RandomGenerator.integer(10000, 99999).next() + "16";
+        caseUrn = PROSECUTING_AUTHORITY_PREFIX + RandomGenerator.integer(100000000, 999999999).next();
         privateEventsConsumer = QueueUtil.privateEvents.createConsumer(getEventSelector());
         publicEventsConsumer = QueueUtil.publicEvents.createConsumer(getPublicEventSelector());
     }
@@ -59,11 +57,6 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
 
     public void createCase() {
         String payload = getPayloadForCreatingCase();
-        createCase(payload);
-    }
-
-    public void createCaseWith(List<Map<String, String>> caseMarkers) {
-        String payload = getPayloadForCreatingCaseWithCaseMarkers(caseMarkers);
         createCase(payload);
     }
 
@@ -81,7 +74,7 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
      */
     public void verifyInPrivateActiveMQ() {
         JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
-        assertThat(jsonResponse.get("id"), is(caseId));
+        assertThat(jsonResponse.get("caseId"), is(caseId));
         assertThat(jsonResponse.get("urn"), is(caseUrn));
     }
 
@@ -101,12 +94,6 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
         JsonPath jsonRequest = new JsonPath(request);
         doAdditionalReadCallResponseVerification(jsonRequest, jsonResponse);
 
-    }
-
-    public void verifyCaseQueryReturnsNotAvailable() {
-        poll(getCaseById(caseId))
-                .until(status().is(FORBIDDEN)
-                );
     }
 
     public void verifyCaseCreatedUsingUrn() {
@@ -142,30 +129,12 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
         doAdditionalReadCallResponseVerification(jsonRequest, jsonResponse);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void assertQueryCallResponseStatusIs(Response.Status status) {
-        assertQueryCallResponseStatusIs(status, USER_ID);
-    }
-
     public void assertQueryCallResponseStatusIs(Response.Status status, String userId) {
         Response response = makeGetCall(getReadUrl("/cases/" + caseId), GET_CASE_BY_ID_MEDIA_TYPE, userId);
         assertThat("Response status code should be " + status, response.getStatus(), is(status.getStatusCode()));
 
         response = makeGetCall(getReadUrl("/cases?urn=" + caseUrn), GET_CASE_BY_URN_MEDIA_TYPE, userId);
         assertThat("Response status code should be " + status, response.getStatus(), is(status.getStatusCode()));
-    }
-
-    public int getCaseVersion() {
-        final ResponseData caseResponse = poll(getCaseById(caseId))
-                .until(
-                        status().is(OK)
-                );
-
-        final JsonPath jsonResponse = new JsonPath(caseResponse.getPayload());
-        return jsonResponse.getInt("version");
     }
 
     public String getCaseResponseDataUsingId() {
@@ -182,13 +151,6 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
 
     public JsonPath getCaseResponseUsingId() {
         return new JsonPath(getCaseResponseDataUsingId());
-    }
-
-    public void assertCaseDoesNotExist(String caseIdentifier) {
-        poll(getCaseById(caseIdentifier))
-                .until(
-                        status().is(NOT_FOUND)
-                );
     }
 
     /**
@@ -213,23 +175,12 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
         return request;
     }
 
+
     protected String getPayloadForEnterpriseId() {
         final JsonObject payload = createObjectBuilder()
                 .add("enterpriseId", "2K2SLYFC743H").build();
 
         return payload.toString();
-    }
-
-    protected String getPayloadForCreatingCaseWithCaseMarkers(List<Map<String, String>> caseMarkers) {
-        String templateRequest = getPayload(getTemplatePayloadPath());
-
-        // updating case ID and URN to ensure uniqueness when test runs
-        JSONObject jsonObject = new JSONObject(templateRequest);
-        jsonObject.put("id", caseId);
-        jsonObject.put("urn", caseUrn);
-        jsonObject.put("caseMarkers", caseMarkers);
-        request = jsonObject.toString();
-        return request;
     }
 
     protected abstract void doAdditionalReadCallResponseVerification(JsonPath jsonRequest, JsonPath jsonResponse);

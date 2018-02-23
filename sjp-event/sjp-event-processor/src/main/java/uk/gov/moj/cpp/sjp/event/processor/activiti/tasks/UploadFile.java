@@ -59,7 +59,7 @@ public class UploadFile implements JavaDelegate {
                 execution.getId());
 
         final JsonEnvelope fileUploadedEvent = envelopeFrom(
-                metadataFrom(originalMetadata).withName("public.structure.case-document-uploaded"),
+                metadataFrom(originalMetadata).withName("public.sjp.case-document-uploaded"),
                 fileUploadedEventPayload);
 
         sender.send(uploadFileCommand);

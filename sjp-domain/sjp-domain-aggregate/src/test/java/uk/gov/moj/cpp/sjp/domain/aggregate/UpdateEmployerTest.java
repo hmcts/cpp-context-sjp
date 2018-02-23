@@ -1,9 +1,8 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
-import static java.util.UUID.randomUUID;
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
@@ -11,11 +10,11 @@ import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
+import uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
-import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
-import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -29,17 +28,19 @@ public class UpdateEmployerTest {
 
     private CaseAggregate caseAggregate;
 
+    private UUID defendantId;
+
+    private Employer employer;
+
     @Before
     public void init() {
         caseAggregate = new CaseAggregate();
+        defendantId = receiveCase().getDefendant().getId();
+        employer = getEmployer(defendantId);
     }
 
     @Test
     public void shouldCreateEmployerUpdatedAndEmploymentStatusUpdatedEventsIfDefendantDoesNotHaveEmploymentStatus() {
-
-        final UUID defendantId = createSjpCase().getDefendantId();
-        final Employer employer = getEmployer(defendantId);
-
         final Stream<Object> eventStream = caseAggregate.updateEmployer(employer);
         final List<Object> events = eventStream.collect(toList());
 
@@ -56,10 +57,7 @@ public class UpdateEmployerTest {
 
     @Test
     public void shouldCreateOnlyEmployerUpdatedEventIfDefendantEmploymentStatusIsEmployed() {
-
-        final UUID defendantId = createSjpCase().getDefendantId();
-        final Employer employer = getEmployer(defendantId);
-        final FinancialMeans financialMeans = getFinancialMeans(defendantId, "EMPLOYED");
+        final FinancialMeans financialMeans = getFinancialMeans(defendantId, EmploymentStatus.EMPLOYED);
 
         caseAggregate.updateFinancialMeans(financialMeans);
 
@@ -69,16 +67,12 @@ public class UpdateEmployerTest {
         assertThat(events, hasSize(1));
 
         final EmployerUpdated employerUpdated = (EmployerUpdated) events.get(0);
-
         assertEmployer(employerUpdated, employer);
     }
 
     @Test
     public void shouldCreateEmployerUpdatedAndEmploymentStatusUpdatedEventsIfDefendantEmploymentStatusIsDifferentThanEmployed() {
-
-        final UUID defendantId = createSjpCase().getDefendantId();
-        final Employer employer = getEmployer(defendantId);
-        final FinancialMeans financialMeans = getFinancialMeans(defendantId, "SELF-EMPLOYED");
+        final FinancialMeans financialMeans = getFinancialMeans(defendantId, EmploymentStatus.SELF_EMPLOYED);
 
         caseAggregate.updateFinancialMeans(financialMeans);
 
@@ -88,43 +82,29 @@ public class UpdateEmployerTest {
         assertThat(events, hasSize(2));
 
         final EmployerUpdated employerUpdated = (EmployerUpdated) events.get(0);
-        final EmploymentStatusUpdated employmentStatusUpdated = (EmploymentStatusUpdated) events.get(1);
-
         assertEmployer(employerUpdated, employer);
 
+        final EmploymentStatusUpdated employmentStatusUpdated = (EmploymentStatusUpdated) events.get(1);
         assertThat(employmentStatusUpdated.getDefendantId(), is(defendantId));
-        assertThat(employmentStatusUpdated.getEmploymentStatus(), is("EMPLOYED"));
+        assertThat(employmentStatusUpdated.getEmploymentStatus(), is(EmploymentStatus.EMPLOYED.name()));
     }
 
-    @Test
-    public void shouldCreateDefendantNotFoundEventIfDefendantDoesNotExist() {
-        final UUID defendantId = randomUUID();
-        final Employer employer = getEmployer(defendantId);
-
-        final Stream<Object> eventStream = caseAggregate.updateEmployer(employer);
-        final List<Object> events = eventStream.collect(toList());
-
-        assertThat(events, hasSize(1));
-
-        final DefendantNotFound defendantNotFound = (DefendantNotFound) events.get(0);
-
-        assertThat(defendantNotFound.getDefendantId(), equalTo(defendantId.toString()));
-        assertThat(defendantNotFound.getDescription(), equalTo("Update employer"));
-    }
-
-    private SjpCaseCreated createSjpCase() {
+    private CaseReceived receiveCase() {
         final Case sjpCase = CaseBuilder.aDefaultSjpCase().build();
-        final Stream<Object> caseCreatedEvents = caseAggregate.createCase(sjpCase, ZonedDateTime.now());
-        return caseCreatedEvents.filter(SjpCaseCreated.class::isInstance).map(SjpCaseCreated.class::cast).findFirst().get();
+        final Stream<Object> caseCreatedEvents = caseAggregate.receiveCase(sjpCase, ZonedDateTime.now());
+        return caseCreatedEvents.filter(CaseReceived.class::isInstance)
+                .map(CaseReceived.class::cast)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError(format("No event of type %s found.", CaseReceived.class.getSimpleName())));
     }
 
-    private Employer getEmployer(final UUID defendantId) {
+    private static Employer getEmployer(final UUID defendantId) {
         return new Employer(defendantId, "Burger King", "12345", "023402340234",
                 new Address("street", "suburb", "town", "county", "ZY9 8 XW"));
     }
 
-    private FinancialMeans getFinancialMeans(final UUID defendantId, final String employmentStatus) {
-        return new FinancialMeans(defendantId, null, null, employmentStatus);
+    private static FinancialMeans getFinancialMeans(final UUID defendantId, final EmploymentStatus employmentStatus) {
+        return new FinancialMeans(defendantId, null, null, employmentStatus.name());
     }
 
     private void assertEmployer(final EmployerUpdated employerUpdated, final Employer sourceEmployer) {

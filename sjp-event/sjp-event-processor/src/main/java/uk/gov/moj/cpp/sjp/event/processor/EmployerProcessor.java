@@ -20,13 +20,13 @@ public class EmployerProcessor {
 
     @Handles("sjp.events.employer-updated")
     public void updateEmployer(final JsonEnvelope envelope) {
-        sender.send(enveloper.withMetadataFrom(envelope, "public.structure.employer-updated")
+        sender.send(enveloper.withMetadataFrom(envelope, "public.sjp.employer-updated")
                 .apply(envelope.payloadAsJsonObject()));
     }
 
     @Handles("sjp.events.employer-deleted")
     public void deleteEmployer(final JsonEnvelope envelope) {
-        sender.send(enveloper.withMetadataFrom(envelope, "public.structure.employer-deleted")
+        sender.send(enveloper.withMetadataFrom(envelope, "public.sjp.employer-deleted")
                 .apply(envelope.payloadAsJsonObject()));
     }
 

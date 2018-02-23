@@ -17,12 +17,14 @@ import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -46,7 +48,7 @@ public class OffenceUpdatedListenerTest {
     @InjectMocks
     private OffenceUpdatedListener listener;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private JsonEnvelope envelope;
 
     @Mock
@@ -70,6 +72,7 @@ public class OffenceUpdatedListenerTest {
     @Test
     public void shouldUpdatePlea() {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(envelope.metadata().createdAt()).thenReturn(Optional.empty());
         when(jsonObjectToObjectConverter.convert(payload, PleaUpdated.class)).thenReturn(pleaUpdatedEvent);
         when(pleaUpdatedEvent.getPlea()).thenReturn(Plea.Type.GUILTY.toString());
         when(pleaUpdatedEvent.getOffenceId()).thenReturn(offenceId.toString());
@@ -77,8 +80,7 @@ public class OffenceUpdatedListenerTest {
         when(offenceRepository.findBy(offenceId)).thenReturn(offence);
         when(pleaUpdatedEvent.getCaseId()).thenReturn(caseId.toString());
         when(offence.getDefendantDetail()).thenReturn(defendant);
-        when(defendant.getPersonId()).thenReturn(personId);
-        when(searchResultRepository.findByCaseIdAndPersonId(caseId, personId)).thenReturn(asList(searchResult));
+        when(searchResultRepository.findByCaseId(caseId)).thenReturn(asList(searchResult));
 
         listener.updatePlea(envelope);
 
@@ -96,8 +98,7 @@ public class OffenceUpdatedListenerTest {
         when(offenceRepository.findBy(offenceId)).thenReturn(offence);
         when(pleaCancelled.getCaseId()).thenReturn(caseId.toString());
         when(offence.getDefendantDetail()).thenReturn(defendant);
-        when(defendant.getPersonId()).thenReturn(personId);
-        when(searchResultRepository.findByCaseIdAndPersonId(caseId, personId)).thenReturn(asList(searchResult));
+        when(searchResultRepository.findByCaseId(caseId)).thenReturn(asList(searchResult));
 
         listener.cancelPlea(envelope);
 

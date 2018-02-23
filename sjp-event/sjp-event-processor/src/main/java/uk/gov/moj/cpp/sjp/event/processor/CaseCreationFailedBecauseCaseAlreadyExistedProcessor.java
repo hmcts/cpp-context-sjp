@@ -24,6 +24,6 @@ public class CaseCreationFailedBecauseCaseAlreadyExistedProcessor {
     public void publish(final JsonEnvelope event) {
         final JsonObject payload = event.payloadAsJsonObject();
         sender.send(enveloper.withMetadataFrom(event,
-                "public.structure.case-creation-failed-because-case-already-existed").apply(payload));
+                "public.sjp.case-creation-failed-because-case-already-existed").apply(payload));
     }
 }

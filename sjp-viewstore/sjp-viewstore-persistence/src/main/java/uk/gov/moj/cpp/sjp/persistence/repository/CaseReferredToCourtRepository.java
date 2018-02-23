@@ -21,7 +21,7 @@ public class CaseReferredToCourtRepository {
             "join case_search_result sr " +
             "on cr.case_id = sr.case_id " +
             "join defendant d " +
-            "on cr.case_id = d.case_id and sr.person_id = d.person_id " +
+            "on cr.case_id = d.case_id " +
             "where cr.actioned is null " +
             "order by cr.hearing_date";
 

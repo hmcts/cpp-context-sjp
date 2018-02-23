@@ -6,8 +6,11 @@ import static org.mockito.Mockito.when;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.runners.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ActionCourtReferralHandlerTest extends CaseCommandHandlerTest {
 
     @InjectMocks

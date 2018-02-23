@@ -43,10 +43,11 @@
         "address4": {
           "type": "string"
         },
-        "postCode": {
+        "postcode": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "contactNumber": {
       "type": "object",

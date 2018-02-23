@@ -21,14 +21,14 @@ public class EmployerConverter {
                 entity.getAddress2(),
                 entity.getAddress3(),
                 entity.getAddress4(),
-                entity.getPostCode()).anyMatch(Objects::nonNull);
+                entity.getPostcode()).anyMatch(Objects::nonNull);
         return nonEmptyAddress ?
                 Optional.of(new Address(
                         entity.getAddress1(),
                         entity.getAddress2(),
                         entity.getAddress3(),
                         entity.getAddress4(),
-                        entity.getPostCode()))
+                        entity.getPostcode()))
                 : Optional.empty();
     }
 }

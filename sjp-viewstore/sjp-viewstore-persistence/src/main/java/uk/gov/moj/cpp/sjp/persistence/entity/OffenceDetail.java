@@ -71,6 +71,12 @@ public class OffenceDetail implements Serializable {
     @Column(name = "order_index")
     private int orderIndex;
 
+    @Column(name = "mitigation")
+    private String mitigation;
+
+    @Column(name = "not_guilty_because")
+    private String notGuiltyBecause;
+
     public OffenceDetail() {
         super();
     }
@@ -91,6 +97,8 @@ public class OffenceDetail implements Serializable {
         this.libraOffenceDateCode = builder.libraOffenceDateCode;
         this.compensation = builder.compensation;
         this.orderIndex = builder.orderIndex;
+        this.mitigation = builder.mitigation;
+        this.notGuiltyBecause = builder.notGuiltyBecause;
     }
 
     public static OffenceDetailBuilder builder() {
@@ -217,6 +225,22 @@ public class OffenceDetail implements Serializable {
         this.orderIndex = orderIndex;
     }
 
+    public String getMitigation() {
+        return mitigation;
+    }
+
+    public void setMitigation(final String mitigation) {
+        this.mitigation = mitigation;
+    }
+
+    public String getNotGuiltyBecause() {
+        return notGuiltyBecause;
+    }
+
+    public void setNotGuiltyBecause(final String notGuiltyBecause) {
+        this.notGuiltyBecause = notGuiltyBecause;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -253,6 +277,8 @@ public class OffenceDetail implements Serializable {
         private int libraOffenceDateCode;
         private BigDecimal compensation;
         private int orderIndex;
+        private String mitigation;
+        private String notGuiltyBecause;
 
         public OffenceDetail build() {
             return new OffenceDetail(this);
@@ -329,6 +355,15 @@ public class OffenceDetail implements Serializable {
             return this;
         }
 
+        public OffenceDetailBuilder withMitigation(String mitigation) {
+            this.mitigation = mitigation;
+            return this;
+        }
+
+        public OffenceDetailBuilder withNotGuiltyBecause(String notGuiltyBecause) {
+            this.notGuiltyBecause = notGuiltyBecause;
+            return this;
+        }
     }
 
 }

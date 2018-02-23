@@ -20,23 +20,23 @@ public class CompleteCaseTest extends CaseAggregateBaseTest {
 
     @Test
     public void shouldMarkCaseAsCompleted() {
-        CompleteCase caseCompleted = new CompleteCase(sjpCase.getId().toString());
+        CompleteCase caseCompleted = new CompleteCase(aCase.getId().toString());
 
-        Stream<Object> eventStream = sjpCaseAggregate.completeCase(caseCompleted);
+        Stream<Object> eventStream = caseAggregate.completeCase(caseCompleted);
         List<Object> events = asList(eventStream.toArray());
 
         assertThat("Has CaseCompleted event", events, hasItem(isA(CaseCompleted.class)));
-        assertThat("Case marked as completed", sjpCaseAggregate.isCaseCompleted(), is(true));
+        assertThat("Case marked as completed", caseAggregate.isCaseCompleted(), is(true));
     }
 
     @Test
     public void shouldThrowExceptionIfCaseIsAlreadyCompleted() {
-        CompleteCase caseCompleted = new CompleteCase(sjpCase.getId().toString());
+        CompleteCase caseCompleted = new CompleteCase(aCase.getId().toString());
 
-        sjpCaseAggregate.completeCase(caseCompleted);
+        caseAggregate.completeCase(caseCompleted);
 
         try {
-            Stream<Object> eventStream = sjpCaseAggregate.completeCase(caseCompleted);
+            Stream<Object> eventStream = caseAggregate.completeCase(caseCompleted);
         } catch (Exception e) {
             assertThat(e.getMessage(), is("CaseAggregate has already been completed " + caseCompleted.getCaseId()));
         }
@@ -44,7 +44,7 @@ public class CompleteCaseTest extends CaseAggregateBaseTest {
 
     @Test
     public void shouldSerilazeAggregateObjectGraph(){
-        byte[] result = serialize(sjpCaseAggregate);
+        byte[] result = serialize(caseAggregate);
         assertTrue(result != null);
     }
 }

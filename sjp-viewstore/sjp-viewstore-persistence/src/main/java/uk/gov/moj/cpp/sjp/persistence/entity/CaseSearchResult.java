@@ -19,24 +19,21 @@ public class CaseSearchResult implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @Column(name="id")
+    @Column(name = "id")
     private UUID id;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="case_id", nullable=false, updatable=false, insertable=false)
+    @JoinColumn(name = "case_id", nullable = false, updatable = false, insertable = false)
     private CaseSummary caseSummary;
     // because there is no foreign key we can create this entity before the CaseSummary if we want
-    @Column(name="case_id", updatable=false)
+    @Column(name = "case_id", updatable = false)
     private UUID caseId;
 
-    //structure (offence)
+    //sjp (offence)
     @Column(name = "plea_date")
     private LocalDate pleaDate;
     @Column(name = "withdrawal_requested_date")
     private LocalDate withdrawalRequestedDate;
-    // people (defendant)
-    @Column(name = "person_id")
-    private UUID personId;
     @Column(name = "first_name")
     private String firstName;
     @Column(name = "last_name")
@@ -53,10 +50,9 @@ public class CaseSearchResult implements Serializable {
     public CaseSearchResult() {
     }
 
-    public CaseSearchResult(UUID id, UUID caseId, UUID personId, String firstName, String lastName, LocalDate dateOfBirth, String postCode) {
+    public CaseSearchResult(UUID id, UUID caseId, String firstName, String lastName, LocalDate dateOfBirth, String postCode) {
         this.id = id;
         this.caseId = caseId;
-        this.personId = personId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
@@ -101,14 +97,6 @@ public class CaseSearchResult implements Serializable {
 
     public void setWithdrawalRequestedDate(LocalDate withdrawalRequestedDate) {
         this.withdrawalRequestedDate = withdrawalRequestedDate;
-    }
-
-    public UUID getPersonId() {
-        return personId;
-    }
-
-    public void setPersonId(UUID personId) {
-        this.personId = personId;
     }
 
     public String getFirstName() {

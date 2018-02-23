@@ -1,0 +1,81 @@
+package uk.gov.moj.cpp.sjp.event.listener;
+
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.core.annotation.Handles;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsMovedFromPeople;
+import uk.gov.moj.cpp.sjp.persistence.entity.Address;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
+import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
+import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
+
+import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.transaction.Transactional;
+
+@ServiceComponent(EVENT_LISTENER)
+public class DefendantDetailsMovedFromPeopleListener {
+
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Inject
+    private CaseRepository caseRepository;
+
+    @Inject
+    private CaseSearchResultRepository caseSearchResultRepository;
+
+    @Handles("sjp.events.defendant-details-moved-from-people")
+    @Transactional
+    public void defendantDetailsUpdated(final JsonEnvelope envelope) {
+
+        DefendantDetailsMovedFromPeople defendantDetailsMovedFromPeople = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantDetailsMovedFromPeople.class);
+
+        CaseDetail caseDetail = caseRepository.findBy(defendantDetailsMovedFromPeople.getCaseId());
+
+        PersonalDetails personalDetails = createPersonalDetails(defendantDetailsMovedFromPeople);
+        caseDetail.getDefendant().setPersonalDetails(personalDetails);
+        caseRepository.save(caseDetail);
+
+        final CaseSearchResult caseSearchResult = new CaseSearchResult(
+                UUID.randomUUID(),
+                caseDetail.getId(),
+                caseDetail.getDefendant().getPersonalDetails().getFirstName(),
+                caseDetail.getDefendant().getPersonalDetails().getLastName(),
+                caseDetail.getDefendant().getPersonalDetails().getDateOfBirth(),
+                caseDetail.getDefendant().getPersonalDetails().getAddress().getPostcode()
+        );
+
+        caseSearchResultRepository.save(caseSearchResult);
+    }
+
+    private PersonalDetails createPersonalDetails(DefendantDetailsMovedFromPeople event) {
+        final PersonalDetails personalDetails = new PersonalDetails();
+        personalDetails.setFirstName(event.getFirstName());
+        personalDetails.setLastName(event.getLastName());
+        personalDetails.setGender(event.getGender());
+        personalDetails.setTitle(event.getTitle());
+        personalDetails.setNationalInsuranceNumber(event.getNationalInsuranceNumber());
+        personalDetails.setDateOfBirth(event.getDateOfBirth());
+        personalDetails.setAddress(new Address(
+                event.getAddress().getAddress1(),
+                event.getAddress().getAddress2(),
+                event.getAddress().getAddress3(),
+                event.getAddress().getAddress4(),
+                event.getAddress().getPostcode()
+        ));
+        personalDetails.setContactDetails(new ContactDetails(
+                event.getContactNumber().getEmail(),
+                event.getContactNumber().getHome(),
+                event.getContactNumber().getMobile()
+        ));
+        return personalDetails;
+    }
+}

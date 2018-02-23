@@ -4,9 +4,6 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
 
-    <include file="liquibase/sjp-view-store-db-changesets/001-initial-schema.changelog.xml"/>
-    <include file="liquibase/sjp-view-store-db-changesets/002-add-case-assignment.xml"/>
-    <include file="liquibase/sjp-view-store-db-changesets/003-add-assigned-to-case-details.xml"/>
-    <include file="liquibase/sjp-view-store-db-changesets/004-add-indexes-for-material-queries.xml"/>
+    <includeAll path="liquibase/sjp-view-store-db-changesets"/>
 
 </databaseChangeLog>

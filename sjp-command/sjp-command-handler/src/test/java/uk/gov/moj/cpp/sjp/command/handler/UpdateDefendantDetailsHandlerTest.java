@@ -23,7 +23,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 import uk.gov.moj.cpp.sjp.domain.Address;
-import uk.gov.moj.cpp.sjp.domain.aggregate.DefendantAggregate;
+import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 
 import java.time.LocalDate;
@@ -41,7 +41,7 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UpdateDefendantDetailsHandlerTest extends BasePersonInfoHandlerTest{
+public class UpdateDefendantDetailsHandlerTest {
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(DefendantDetailsUpdated.class);
@@ -55,30 +55,34 @@ public class UpdateDefendantDetailsHandlerTest extends BasePersonInfoHandlerTest
     @Mock
     private AggregateService aggregateService;
 
-    private final UUID defendantId = randomUUID();
-    private final UUID caseId = randomUUID();
-    private final UUID personId = randomUUID();
-    private final String title = "Mr";
-    private final String firstName = "test";
-    private final String lastName = "lastName";
-    private final String email = "email";
-    private final String gender = "gender";
-    private final String nationalInsuranceNumber = "nationalInsuranceNumber";
-    private final String homeNumber = "homeNumber";
-    private final Address address = new Address(ADDRESS_1,ADDRESS_2,ADDRESS_3,ADDRESS_4,POSTCODE);
-    private final String dateOfBirth = "1980-07-15";
+    private static final UUID defendantId = randomUUID();
+    private static final UUID caseId = randomUUID();
+    private static final String firstName = "test";
+    private static final String lastName = "lastName";
+    private static final String email = "email";
+    private static final String mobileNumber = "mobileNumber";
+    private static final String gender = "gender";
+    private static final String nationalInsuranceNumber = "nationalInsuranceNumber";
+    private static final String homeNumber = "homeNumber";
+    private static final String dateOfBirth = LocalDate.parse("1980-07-15").toString();
+
+    private static final String ADDRESS_1 = "14 Tottenham Court Road";
+    private static final String ADDRESS_2 = "London";
+    private static final String ADDRESS_3 = "England";
+    private static final String ADDRESS_4 = "UK";
+    private static final String POSTCODE = "W1T 1JY";
+    private static final Address address = new Address(ADDRESS_1,ADDRESS_2,ADDRESS_3,ADDRESS_4,POSTCODE);
 
     @Test
     public void verifyExistenceOfDefendantDetailsUpdatedEvent() throws EventStreamException {
-        final DefendantAggregate defendantAggregate = new DefendantAggregate();
-        LocalDate birthDate = LocalDate.parse(dateOfBirth);
+        final CaseAggregate caseAggregate = new CaseAggregate();
 
-        final JsonEnvelope command = createDefendantIdHandlerCommand(caseId,defendantId,personId, firstName,lastName,email,
-                gender,nationalInsuranceNumber,homeNumber,address,birthDate);
+        final JsonEnvelope command = createDefendantIdHandlerCommand(caseId,defendantId, firstName, lastName, email,
+                gender, nationalInsuranceNumber, homeNumber, mobileNumber, address, dateOfBirth);
 
         EventStream eventStream = Mockito.mock(EventStream.class);
-        when(eventSource.getStreamById(personId)).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, DefendantAggregate.class)).thenReturn(defendantAggregate);
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
         updateDefendantDetailsHandler.updateDefendantDetails(command);
 
@@ -90,43 +94,53 @@ public class UpdateDefendantDetailsHandlerTest extends BasePersonInfoHandlerTest
                                 payloadIsJson(allOf(
                                         withJsonPath("$.defendantId", equalTo(defendantId.toString())),
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
-
                                         withJsonPath("$.firstName", equalTo(firstName)),
                                         withJsonPath("$.lastName", equalTo(lastName)),
-                                        withJsonPath("$.email", equalTo(email)),
                                         withJsonPath("$.gender", equalTo(gender)),
                                         withJsonPath("$.nationalInsuranceNumber", equalTo(nationalInsuranceNumber)),
-                                        withJsonPath("$.contactNumber.home", equalTo(homeNumber)),
-                                        withJsonPath("$.contactNumber.mobile", equalTo(mobileNumber)),
+                                        withJsonPath("$.contactDetails.email", equalTo(email)),
+                                        withJsonPath("$.contactDetails.home", equalTo(homeNumber)),
+                                        withJsonPath("$.contactDetails.mobile", equalTo(mobileNumber)),
                                         withJsonPath("$.dateOfBirth", equalTo(dateOfBirth))
                                 )))
                 )));
     }
 
-    private JsonEnvelope createDefendantIdHandlerCommand(UUID caseId, final UUID defendantId, final UUID personId, String firstName,
+    private static JsonEnvelope createDefendantIdHandlerCommand(UUID caseId, UUID defendantId, String firstName,
                                                            String lastName, String email, String gender,
-                                                           String nationalInsuranceNumber, String homeNumber, Address address,
-                                                           LocalDate dateOfBirth) {
-        final JsonObject contactNumber = createObjectBuilder()
+                                                           String nationalInsuranceNumber, String homeNumber,
+                                                           String mobileNumber, Address address,
+                                                           String dateOfBirth) {
+        JsonObject contactNumber = createObjectBuilder()
                 .add("home", homeNumber)
                 .add("mobile", mobileNumber)
                 .build();
-        final JsonObjectBuilder payload = createObjectBuilder()
+
+        JsonObjectBuilder payload = createObjectBuilder()
                 .add("defendantId", defendantId.toString())
                 .add("caseId", caseId.toString())
-                .add("personId", personId.toString())
                 .add("firstName", firstName)
                 .add("lastName", lastName)
-                .add("dateOfBirth", dateOfBirth.toString())
+                .add("dateOfBirth", dateOfBirth)
                 .add("email", email)
                 .add("gender", gender)
                 .add("nationalInsuranceNumber", nationalInsuranceNumber)
                 .add("contactNumber", contactNumber)
-                .add("address", addAddressToPayload(address));
+                .add("address", toJsonObject(address));
 
         return JsonEnvelopeBuilder.envelopeFrom(
                 metadataOf(randomUUID(), "sjp.command.update-defendant-details"),
                 payload.build());
+    }
+
+    private static JsonObject toJsonObject(Address address){
+        return createObjectBuilder()
+                .add("address1", address.getAddress1())
+                .add("address2", address.getAddress2())
+                .add("address3", address.getAddress3())
+                .add("address4", address.getAddress4())
+                .add("postcode", address.getPostcode())
+                .build();
     }
 
 }

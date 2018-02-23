@@ -1,5 +1,9 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
+import uk.gov.moj.cpp.sjp.persistence.entity.Address;
+import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
+
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,12 +61,17 @@ public class ResultOrdersView {
                 return this;
             }
 
-            public Builder setDefendant(UUID personId) {
-                casesWithOrderView.defendant = new DefendantView(personId);
+            public Builder setDefendant(final PersonalDetails personalDetails) {
+                casesWithOrderView.defendant = new DefendantView(
+                        personalDetails.getTitle(),
+                        personalDetails.getFirstName(),
+                        personalDetails.getLastName(),
+                        personalDetails.getDateOfBirth(),
+                        new DefendantView.DefendantAddressView(personalDetails.getAddress()));
                 return this;
             }
 
-            public Builder setOrder(UUID materialId, ZonedDateTime dateMaterialAdded) {
+            public Builder setOrder(final UUID materialId, final ZonedDateTime dateMaterialAdded) {
                 casesWithOrderView.order = new OrderView(materialId, dateMaterialAdded);
                 return this;
             }
@@ -77,14 +86,74 @@ public class ResultOrdersView {
         }
 
         public static class DefendantView {
-            private UUID personId;
+            private final String title;
+            private final String firstName;
+            private final String lastName;
+            private final LocalDate dateOfBirth;
+            private final DefendantAddressView address;
 
-            public DefendantView(UUID personId) {
-                this.personId = personId;
+            public DefendantView(final String title, final String firstName, final String lastName, final LocalDate dateOfBirth, final DefendantAddressView address) {
+                this.title = title;
+                this.firstName = firstName;
+                this.lastName = lastName;
+                this.dateOfBirth = dateOfBirth;
+                this.address = address;
             }
 
-            public UUID getPersonId() {
-                return personId;
+            public String getTitle() {
+                return title;
+            }
+
+            public String getFirstName() {
+                return firstName;
+            }
+
+            public String getLastName() {
+                return lastName;
+            }
+
+            public LocalDate getDateOfBirth() {
+                return dateOfBirth;
+            }
+
+            public DefendantAddressView getAddress() {
+                return address;
+            }
+
+            public static class DefendantAddressView {
+                private final String address1;
+                private final String address2;
+                private final String address3;
+                private final String address4;
+                private final String postCode;
+
+                public DefendantAddressView(final Address address) {
+                    this.address1 = address.getAddress1();
+                    this.address2 = address.getAddress2();
+                    this.address3 = address.getAddress3();
+                    this.address4 = address.getAddress4();
+                    this.postCode = address.getPostcode();
+                }
+
+                public String getAddress1() {
+                    return address1;
+                }
+
+                public String getAddress2() {
+                    return address2;
+                }
+
+                public String getAddress3() {
+                    return address3;
+                }
+
+                public String getAddress4() {
+                    return address4;
+                }
+
+                public String getPostCode() {
+                    return postCode;
+                }
             }
         }
 

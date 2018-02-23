@@ -12,6 +12,7 @@ import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.persistence.entity.FinancialMeans;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;
@@ -36,10 +37,10 @@ public class FinancialMeansConverterTest {
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {new Income(FORTNIGHTLY, BigDecimal.valueOf(1.0)), new Benefits(true, "type"), "EMPLOYED"},
-                {new Income(MONTHLY, BigDecimal.valueOf(0)), new Benefits(false, ""), "SELF_EMPLOYED"},
-                {new Income(WEEKLY, null), new Benefits(null, null), "UNEMPLOYED"},
-                {new Income(null, null), new Benefits(null, null), null},
+                {new Income(FORTNIGHTLY, BigDecimal.valueOf(1.0)), new Benefits(true, "type", true), "EMPLOYED"},
+                {new Income(MONTHLY, BigDecimal.valueOf(0)), new Benefits(false, "", false), "SELF_EMPLOYED"},
+                {new Income(WEEKLY, null), new Benefits(null, null, false), "UNEMPLOYED"},
+                {new Income(null, null), new Benefits(null, null, false), null},
         });
     }
 
@@ -52,8 +53,9 @@ public class FinancialMeansConverterTest {
 
     @Test
     public void shouldConvertToFinancialMeansEntity() {
-        final FinancialMeansUpdated financialMeansUpdated = new FinancialMeansUpdated(UUID.randomUUID(),
+        final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEvent(UUID.randomUUID(),
                 income, benefits, employmentStatus);
+
 
         final FinancialMeans financialMeans = financialMeansConverter.convertToFinancialMeansEntity(financialMeansUpdated);
 

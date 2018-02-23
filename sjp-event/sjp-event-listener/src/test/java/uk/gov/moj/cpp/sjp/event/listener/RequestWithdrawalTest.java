@@ -60,12 +60,11 @@ public class RequestWithdrawalTest {
         this.caseId = UUID.randomUUID();
 
         final DefendantDetail defendantDetail = new DefendantDetail();
-        defendantDetail.setPersonId(UUID.randomUUID());
         final CaseDetail caseDetail = new CaseDetail();
-        caseDetail.addDefendant(defendantDetail);
+        caseDetail.setDefendant(defendantDetail);
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
 
-        when(searchResultRepository.findByCaseIdAndPersonId(caseId, defendantDetail.getPersonId()))
+        when(searchResultRepository.findByCaseId(caseId))
                 .thenReturn(asList(caseSearchResult));
 
         // Super class because the converter is modified by mockito so it does not have this field

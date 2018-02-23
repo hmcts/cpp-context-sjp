@@ -17,14 +17,14 @@ import org.mockito.Mock;
 
 public class CreateCaseTest extends BaseDroolsAccessControlTest {
 
-    private static final String STRUCTURE_COMMAND_CREATE_CASE = "sjp.create-sjp-case";
+    private static final String SJP_COMMAND_CREATE_CASE = "sjp.create-sjp-case";
 
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
 
     @Test
     public void shouldAllowAuthorisedUserToCreateCase() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_CREATE_CASE);
+        final Action action = createActionFor(SJP_COMMAND_CREATE_CASE);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getCreateSjpCaseActionGroups()))
                 .willReturn(true);
 
@@ -35,7 +35,7 @@ public class CreateCaseTest extends BaseDroolsAccessControlTest {
     @Test
     public void shouldNotAllowUnathrorisedUserToCreateCase() {
         final String unAllowedGroup = "un allowed group";
-        final Action action = createActionFor(STRUCTURE_COMMAND_CREATE_CASE);
+        final Action action = createActionFor(SJP_COMMAND_CREATE_CASE);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, Arrays.asList(unAllowedGroup)))
                 .willReturn(false);
 

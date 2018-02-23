@@ -17,7 +17,7 @@ import javax.json.JsonObject;
 
 import com.google.common.collect.Range;
 
-class ReferenceDataService {
+public class ReferenceDataService {
 
     @Inject
     private Enveloper enveloper;
@@ -26,12 +26,10 @@ class ReferenceDataService {
     @ServiceComponent(QUERY_CONTROLLER)
     private Requester requester;
 
-    String resolveOffenceTitle(final JsonEnvelope envelope, final String offenceCode, final String date) {
+    public JsonObject getOffenceReferenceData(final JsonEnvelope envelope, final String offenceCode, final String date) {
         final JsonArray offences = requestOffences(envelope, offenceCode)
                 .getJsonArray("offences");
-        return findOffence(offences, offenceCode, date)
-                .map(offence -> offence.getString("title"))
-                .orElse(null);
+        return findOffence(offences, offenceCode, date).orElse(null);
     }
 
     private Optional<JsonObject> findOffence(final JsonArray offences, final String offenceCode, final String date) {

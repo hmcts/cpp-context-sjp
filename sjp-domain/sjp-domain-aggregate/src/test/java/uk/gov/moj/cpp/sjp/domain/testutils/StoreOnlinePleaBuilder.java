@@ -1,0 +1,136 @@
+package uk.gov.moj.cpp.sjp.domain.testutils;
+
+import uk.gov.moj.cpp.sjp.domain.Address;
+import uk.gov.moj.cpp.sjp.domain.Benefits;
+import uk.gov.moj.cpp.sjp.domain.ContactDetails;
+import uk.gov.moj.cpp.sjp.domain.Employer;
+import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
+import uk.gov.moj.cpp.sjp.domain.Income;
+import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
+import uk.gov.moj.cpp.sjp.domain.Outgoing;
+import uk.gov.moj.cpp.sjp.domain.PleaType;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+public class StoreOnlinePleaBuilder {
+
+    private static final String MITIGATION = "It was an accident";
+    private static final String NOT_GUILTY_BECAUSE = "I wasn't there";
+    private static final String WITNESS_DISPUTE = "They were not there";
+    private static final String WITNESS_DETAILS = "Job Bloggs";
+    private static final String UNAVAILABILITY = "Not avaailble from 12th Jan to 12th Feb";
+
+    private static final BigDecimal INCOME_AMOUNT = BigDecimal.valueOf(100.50);
+    private static final Boolean BENEFITS_CLAIMED = true;
+    private static final String BENEFITS_TYPE = "Jobseekers allowance";
+    private static final Boolean BENEFITS_DEDUCT = true;
+    private static final String EMPLOYMENT_STATUS = "EMPLOYED";
+    private static final String EMPLOYER_NAME = "Rightmove";
+    private static final String EMPLOYER_REFERENCE = "12345";
+    private static final String EMPLOYER_PHONE = "07471390873";
+    private static final String EMPLOYER_ADDRESS_1 = "1 test lane";
+    private static final String EMPLOYER_ADDRESS_2 = "Abbeymead";
+    private static final String EMPLOYER_ADDRESS_3 = "Cheltenham";
+    private static final String EMPLOYER_ADDRESS_4 = "Gloucestershire";
+    private static final String EMPLOYER_POSTCODE = "GL538FB";
+
+    private static final String PERSON_FIRST_NAME = "Derek";
+    private static final String PERSON_LAST_NAME = "Smith";
+    private static final String PERSON_ADDRESS_1 = "1 test road";
+    private static final String PERSON_ADDRESS_2 = "Tulse Hill";
+    private static final String PERSON_ADDRESS_3 = "Brixton";
+    private static final String PERSON_ADDRESS_4 = "London";
+    private static final String PERSON_POSTCODE = "SE249HG";
+    private static final String PERSON_HOME_PHONE = "020734887";
+    private static final String PERSON_MOBILE = "020734887";
+    private static final String PERSON_EMAIL = "020734887";
+    private static final LocalDate PERSON_DOB = LocalDate.of(1981, 10, 1);
+    private static final String PERSON_NI_NUMBER = "020734887";
+
+    private static final String OUTGOING_DESCRIPTION = "Accomodation";
+    private static final BigDecimal OUTGOING_AMOUNT = BigDecimal.valueOf(400.50);
+
+    public static PleadOnline defaultStoreOnlinePleaWithGuiltyPlea(final UUID offenceId, final String defendantId) {
+        final List<Offence> offences = Arrays.asList(
+                new Offence(offenceId.toString(), PleaType.GUILTY, false, MITIGATION, null)
+        );
+        return generatePleadOnline(false, defendantId, offences, null);
+    }
+
+    public static PleadOnline defaultStoreOnlinePleaWithGuiltyRequestHearingPlea(final UUID offenceId, final String defendantId, final String interpreterLanguage) {
+        final List<Offence> offences = Arrays.asList(
+                new Offence(offenceId.toString(), PleaType.GUILTY, true, MITIGATION, null)
+        );
+        return generatePleadOnline(false, defendantId, offences, interpreterLanguage);
+    }
+
+    public static PleadOnline defaultStoreOnlinePleaWithNotGuiltyPlea(UUID offenceId, String defendantId, String interpreterLanguage, boolean includeTrialRequestedFields) {
+        final List<Offence> offences = Arrays.asList(
+                new Offence(offenceId.toString(), PleaType.NOT_GUILTY, true, null, NOT_GUILTY_BECAUSE)
+        );
+        return generatePleadOnline(includeTrialRequestedFields, defendantId, offences, interpreterLanguage);
+
+    }
+
+    private static PleadOnline generatePleadOnline(final boolean includeTrialRequestedFields, final String defendantId, final List<Offence> offences, final String interpreterLanguage) {
+        final PersonalDetails person = new PersonalDetails(PERSON_FIRST_NAME, PERSON_LAST_NAME,
+                new Address(PERSON_ADDRESS_1, PERSON_ADDRESS_2, PERSON_ADDRESS_3, PERSON_ADDRESS_4, PERSON_POSTCODE),
+                new ContactDetails(PERSON_EMAIL, PERSON_HOME_PHONE, PERSON_MOBILE), PERSON_DOB, PERSON_NI_NUMBER);
+        final FinancialMeans financialMeans = new FinancialMeans(null, new Income(IncomeFrequency.MONTHLY, INCOME_AMOUNT),
+                new Benefits(BENEFITS_CLAIMED, BENEFITS_TYPE, BENEFITS_DEDUCT), EMPLOYMENT_STATUS);
+        final Employer employer = new Employer(null, EMPLOYER_NAME, EMPLOYER_REFERENCE, EMPLOYER_PHONE,
+                new Address(EMPLOYER_ADDRESS_1, EMPLOYER_ADDRESS_2, EMPLOYER_ADDRESS_3, EMPLOYER_ADDRESS_4, EMPLOYER_POSTCODE));
+
+        final List<Outgoing> outgoings = Arrays.asList(
+                new Outgoing(OUTGOING_DESCRIPTION, OUTGOING_AMOUNT)
+        );
+        if (includeTrialRequestedFields) {
+            return new PleadOnline(defendantId, offences, UNAVAILABILITY, interpreterLanguage,
+                    WITNESS_DETAILS, WITNESS_DISPUTE, person, financialMeans, employer, outgoings);
+        }
+        else {
+            return new PleadOnline(defendantId, offences, null, interpreterLanguage,
+                    null, null, person, financialMeans, employer, outgoings);
+        }
+    }
+
+    public static PleadOnline defaultStoreOnlinePleaForMultipleOffences(Object[][] pleaInformationArray, String defendantId, String interpreterLanguage) {
+        List<Offence> offences = Arrays.stream(pleaInformationArray)
+                .map(pleaInformation -> {
+                    boolean comeToCourt = (Boolean) pleaInformation[2];
+                    if (pleaInformation[1].equals(PleaType.GUILTY) && !comeToCourt) {
+                        return new Offence(pleaInformation[0].toString(), PleaType.GUILTY, false, MITIGATION, null);
+                    }
+                    else if (pleaInformation[1].equals(PleaType.GUILTY) && comeToCourt) {
+                        return new Offence(pleaInformation[0].toString(), PleaType.GUILTY, true, MITIGATION, null);
+                    }
+                    else if (pleaInformation[1].equals(PleaType.NOT_GUILTY) ) {
+                        return new Offence(pleaInformation[0].toString(), PleaType.NOT_GUILTY, true, null, NOT_GUILTY_BECAUSE);
+                    }
+                    return null;
+                })
+                .collect(Collectors.toList());
+
+        final PersonalDetails person = new PersonalDetails(PERSON_FIRST_NAME, PERSON_LAST_NAME,
+                new Address(PERSON_ADDRESS_1, PERSON_ADDRESS_2, PERSON_ADDRESS_3, PERSON_ADDRESS_4, PERSON_POSTCODE),
+                new ContactDetails(PERSON_EMAIL, PERSON_HOME_PHONE, PERSON_MOBILE), PERSON_DOB, PERSON_NI_NUMBER);
+        final FinancialMeans financialMeans = new FinancialMeans(null, new Income(IncomeFrequency.MONTHLY, INCOME_AMOUNT),
+                new Benefits(BENEFITS_CLAIMED, BENEFITS_TYPE, BENEFITS_DEDUCT), EMPLOYMENT_STATUS);
+        final Employer employer = new Employer(null, EMPLOYER_NAME, EMPLOYER_REFERENCE, EMPLOYER_PHONE,
+                new Address(EMPLOYER_ADDRESS_1, EMPLOYER_ADDRESS_2, EMPLOYER_ADDRESS_3, EMPLOYER_ADDRESS_4, EMPLOYER_POSTCODE));
+
+        final List<Outgoing> outgoings = Arrays.asList(
+                new Outgoing(OUTGOING_DESCRIPTION, OUTGOING_AMOUNT)
+        );
+        return new PleadOnline(defendantId, offences, UNAVAILABILITY, interpreterLanguage,
+                WITNESS_DETAILS, WITNESS_DISPUTE, person, financialMeans, employer, outgoings);
+    }
+}

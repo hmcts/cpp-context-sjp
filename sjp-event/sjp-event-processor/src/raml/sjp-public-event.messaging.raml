@@ -7,91 +7,70 @@ baseUri: message://event/processor/message/sjp
       responses:
           200:
               body:
-                  application/vnd.public.structure.case-started+json:
-                      schema: !include json/schema/public.structure.case-started.json
-                      example: !include json/public.structure.case-started.json
-                  application/vnd.public.structure.sjp-case-created+json:
-                      schema: !include json/schema/public.structure.sjp-case-created.json
-                      example: !include json/public.structure.sjp-case-created.json
-                  application/vnd.public.structure.case-creation-failed-because-case-already-existed+json:
-                      schema: !include json/schema/public.structure.case-creation-failed-because-case-already-existed.json
-                      example: !include json/public.structure.case-creation-failed-because-case-already-existed.json
-                  application/vnd.public.structure.all-offences-withdrawal-requested+json:
-                      schema: !include json/schema/public.structure.all-offences-withdrawal-requested.json
-                      example: !include json/public.structure.all-offences-withdrawal-requested.json
-                  application/vnd.public.structure.all-offences-withdrawal-request-cancelled+json:
-                      schema: !include json/schema/public.structure.all-offences-withdrawal-request-cancelled.json
-                      example: !include json/public.structure.all-offences-withdrawal-request-cancelled.json
-                  application/vnd.public.structure.storage-reference-updated+json:
-                    schema: !include json/schema/public.structure.storage-reference-updated.json
-                    example: !include json/public.structure.storage-reference-updated.json
-                  application/vnd.public.structure.defendant-added+json:
-                      schema: !include json/schema/public.structure.defendant-added.json
-                      example: !include json/public.structure.defendant-added.json
-                  application/vnd.public.structure.person-info-added+json:
-                      schema: !include json/schema/public.structure.person-info-added.json
-                      example: !include json/public.structure.person-info-added.json
-                  application/vnd.public.structure.case-document-added+json:
-                      schema: !include json/schema/public.structure.case-document-added.json
-                      example: !include json/public.structure.case-document-added.json
-                  application/vnd.public.structure.case-document-already-exists+json:
-                      schema: !include json/schema/public.structure.case-document-already-exists.json
-                      example: !include json/public.structure.case-document-already-exists.json
-                  application/vnd.public.structure.case-created+json:
-                      schema: !include json/schema/public.structure.case-created.json
-                      example: !include json/public.structure.case-created.json
-                  application/vnd.public.structure.case-update-rejected+json:
-                      schema: !include json/schema/public.structure.case-update-rejected.json
-                      example: !include json/public.structure.case-update-rejected.json
-                  application/vnd.public.structure.material-read-recorded+json:
-                      schema: !include json/schema/public.structure.material-read-recorded.json
-                      example: !include json/public.structure.material-read-recorded.json
-                  application/vnd.public.structure.material-read-not-recorded+json:
-                      schema: !include json/schema/public.structure.material-read-not-recorded.json
-                      example: !include json/public.structure.material-read-not-recorded.json
-                  application/vnd.public.structure.case-reopened-in-libra+json:
-                      schema: !include json/schema/public.structure.case-reopened-in-libra.json
-                      example: !include json/public.structure.case-reopened-in-libra.json
-                  application/vnd.public.structure.case-reopened-in-libra-updated+json:
-                      schema: !include json/schema/public.structure.case-reopened-in-libra-updated.json
-                      example: !include json/public.structure.case-reopened-in-libra.json
-                  application/vnd.public.structure.case-reopened-in-libra-undone+json:
-                      schema: !include json/schema/public.structure.case-reopened-in-libra-undone.json
-                      example: !include json/public.structure.case-reopened-in-libra-undone.json
-                  application/vnd.public.structure.plea-updated+json:
-                      schema: !include json/schema/public.structure.plea-updated.json
-                      example: !include json/public.structure.plea-updated.json
-                  application/vnd.public.structure.plea-cancelled+json:
-                      schema: !include json/schema/public.structure.plea-cancelled.json
-                      example: !include json/public.structure.plea-cancelled.json
-                  application/vnd.public.structure.defendant-addition-failed+json:
-                      schema: !include json/schema/public.structure.defendant-addition-failed.json
-                      example: !include json/public.structure.defendant-addition-failed.json
-                  application/vnd.public.structure.enterprise-id-associated+json:
-                      schema: !include json/schema/public.structure.enterprise-id-associated.json
-                      example: !include json/public.structure.enterprise-id-associated.json
-                  application/vnd.public.structure.case-document-uploaded+json:
-                      schema: !include json/schema/public.structure.case-document-uploaded.json
-                      example: !include json/public.structure.case-document-uploaded.json
-                  application/vnd.people.personal-details-updated+json:
-                      schema: !include json/schema/people.personal-details-updated.json
-                      example: !include json/people.personal-details-updated.json
-                  application/vnd.public.structure.financial-means-updated+json:
-                      schema: !include json/schema/public.structure.financial-means-updated.json
-                      example: !include json/public.structure.financial-means-updated.json
-                  application/vnd.public.structure.employer-updated+json:
-                      schema: !include json/schema/public.structure.employer-updated.json
-                      example: !include json/public.structure.employer-updated.json
-                  application/vnd.public.structure.employer-deleted+json:
-                      schema: !include json/schema/public.structure.employer-deleted.json
-                      example: !include json/public.structure.employer-deleted.json
-                  application/vnd.public.structure.events.offences-for-defendant-updated+json:
-                       schema: !include json/schema/public.structure.events.offences-for-defendant-updated.json
-                       example: !include json/public.structure.events.offences-for-defendant-updated.json
-                  application/vnd.public.structure.events.defendant-offences-does-not-have-required-modeoftrial+json:
-                       schema: !include json/schema/public.structure.events.defendant-offences-does-not-have-required-modeoftrial.json
-                       example: !include json/public.structure.events.defendant-offences-does-not-have-required-modeoftrial.json
-                  application/vnd.public.structure.court-referral-actioned+json:
-                      schema: !include json/schema/public.structure.court-referral-actioned.json
-                      example: !include json/public.structure.court-referral-actioned.json
-
+                  application/vnd.public.sjp.case-started+json:
+                      schema: !include json/schema/public.sjp.case-started.json
+                      example: !include json/public.sjp.case-started.json
+                  application/vnd.public.sjp.sjp-case-created+json:
+                      schema: !include json/schema/public.sjp.sjp-case-created.json
+                      example: !include json/public.sjp.sjp-case-created.json
+                  application/vnd.public.sjp.case-creation-failed-because-case-already-existed+json:
+                      schema: !include json/schema/public.sjp.case-creation-failed-because-case-already-existed.json
+                      example: !include json/public.sjp.case-creation-failed-because-case-already-existed.json
+                  application/vnd.public.sjp.all-offences-withdrawal-requested+json:
+                      schema: !include json/schema/public.sjp.all-offences-withdrawal-requested.json
+                      example: !include json/public.sjp.all-offences-withdrawal-requested.json
+                  application/vnd.public.sjp.all-offences-withdrawal-request-cancelled+json:
+                      schema: !include json/schema/public.sjp.all-offences-withdrawal-request-cancelled.json
+                      example: !include json/public.sjp.all-offences-withdrawal-request-cancelled.json
+                  application/vnd.public.sjp.case-document-added+json:
+                      schema: !include json/schema/public.sjp.case-document-added.json
+                      example: !include json/public.sjp.case-document-added.json
+                  application/vnd.public.sjp.case-document-already-exists+json:
+                      schema: !include json/schema/public.sjp.case-document-already-exists.json
+                      example: !include json/public.sjp.case-document-already-exists.json
+                  application/vnd.public.sjp.case-created+json:
+                      schema: !include json/schema/public.sjp.case-created.json
+                      example: !include json/public.sjp.case-created.json
+                  application/vnd.public.sjp.case-update-rejected+json:
+                      schema: !include json/schema/public.sjp.case-update-rejected.json
+                      example: !include json/public.sjp.case-update-rejected.json
+                  application/vnd.public.sjp.case-reopened-in-libra+json:
+                      schema: !include json/schema/public.sjp.case-reopened-in-libra.json
+                      example: !include json/public.sjp.case-reopened-in-libra.json
+                  application/vnd.public.sjp.case-reopened-in-libra-updated+json:
+                      schema: !include json/schema/public.sjp.case-reopened-in-libra-updated.json
+                      example: !include json/public.sjp.case-reopened-in-libra.json
+                  application/vnd.public.sjp.case-reopened-in-libra-undone+json:
+                      schema: !include json/schema/public.sjp.case-reopened-in-libra-undone.json
+                      example: !include json/public.sjp.case-reopened-in-libra-undone.json
+                  application/vnd.public.sjp.plea-updated+json:
+                      schema: !include json/schema/public.sjp.plea-updated.json
+                      example: !include json/public.sjp.plea-updated.json
+                  application/vnd.public.sjp.plea-cancelled+json:
+                      schema: !include json/schema/public.sjp.plea-cancelled.json
+                      example: !include json/public.sjp.plea-cancelled.json
+                  application/vnd.public.sjp.enterprise-id-associated+json:
+                      schema: !include json/schema/public.sjp.enterprise-id-associated.json
+                      example: !include json/public.sjp.enterprise-id-associated.json
+                  application/vnd.public.sjp.case-document-uploaded+json:
+                      schema: !include json/schema/public.sjp.case-document-uploaded.json
+                      example: !include json/public.sjp.case-document-uploaded.json
+                  application/vnd.public.sjp.financial-means-updated+json:
+                      schema: !include json/schema/public.sjp.financial-means-updated.json
+                      example: !include json/public.sjp.financial-means-updated.json
+                  application/vnd.public.sjp.employer-updated+json:
+                      schema: !include json/schema/public.sjp.employer-updated.json
+                      example: !include json/public.sjp.employer-updated.json
+                  application/vnd.public.sjp.employer-deleted+json:
+                      schema: !include json/schema/public.sjp.employer-deleted.json
+                      example: !include json/public.sjp.employer-deleted.json
+                  application/vnd.public.sjp.events.offences-for-defendant-updated+json:
+                       schema: !include json/schema/public.sjp.events.offences-for-defendant-updated.json
+                       example: !include json/public.sjp.events.offences-for-defendant-updated.json
+                  application/vnd.public.sjp.events.defendant-offences-does-not-have-required-modeoftrial+json:
+                       schema: !include json/schema/public.sjp.events.defendant-offences-does-not-have-required-modeoftrial.json
+                       example: !include json/public.sjp.events.defendant-offences-does-not-have-required-modeoftrial.json
+                  application/vnd.public.sjp.court-referral-actioned+json:
+                      schema: !include json/schema/public.sjp.court-referral-actioned.json
+                      example: !include json/public.sjp.court-referral-actioned.json
+                  application/vnd.public.sjp.events.defendant-details-updated+json: !!null

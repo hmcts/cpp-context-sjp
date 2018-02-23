@@ -15,13 +15,13 @@ import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getRequ
 
 public class RequestWithdrawalAllOffencesTest extends BaseDroolsAccessControlTest {
 
-    private static final String STRUCTURE_COMMAND_REQUEST_WITHDRAWAL_ALL_OFFENCES = "sjp.request-withdrawal-all-offences";
+    private static final String SJP_COMMAND_REQUEST_WITHDRAWAL_ALL_OFFENCES = "sjp.request-withdrawal-all-offences";
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
 
     @Test
     public void shouldAcceptWithdrawalOffencesRequestForAppriopriateUsers() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_REQUEST_WITHDRAWAL_ALL_OFFENCES);
+        final Action action = createActionFor(SJP_COMMAND_REQUEST_WITHDRAWAL_ALL_OFFENCES);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getRequestWithdrawalOfAllOffencesGroups()))
                 .willReturn(true);
 
@@ -31,7 +31,7 @@ public class RequestWithdrawalAllOffencesTest extends BaseDroolsAccessControlTes
 
     @Test
     public void shouldRejectTheWithdrawalRequest() {
-        final Action action = createActionFor(STRUCTURE_COMMAND_REQUEST_WITHDRAWAL_ALL_OFFENCES);
+        final Action action = createActionFor(SJP_COMMAND_REQUEST_WITHDRAWAL_ALL_OFFENCES);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getRequestWithdrawalOfAllOffencesGroups()))
                 .willReturn(false);
 

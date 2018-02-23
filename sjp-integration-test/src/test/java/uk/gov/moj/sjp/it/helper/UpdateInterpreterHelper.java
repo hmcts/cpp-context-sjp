@@ -7,7 +7,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.moj.sjp.it.helper.AbstractTestHelper.getReadUrl;
@@ -40,7 +39,7 @@ public class UpdateInterpreterHelper implements AutoCloseable {
         restClient = new RestClient();
         headers = new MultivaluedHashMap<>();
         headers.add(USER_ID, UUID.randomUUID());
-        messageConsumer = QueueUtil.publicEvents.createConsumer("public.structure.case-update-rejected");
+        messageConsumer = QueueUtil.publicEvents.createConsumer("public.sjp.case-update-rejected");
     }
 
     public Response updateInterpreter(final String caseId, final String defendantId, final JsonObject payload) {
@@ -66,18 +65,18 @@ public class UpdateInterpreterHelper implements AutoCloseable {
     public String pollForEmptyInterpreter(final String caseId, final String defendantId) {
         final Matcher interpreterMatcher = allOf(
                 withoutJsonPath("language"),
-                withoutJsonPath("needed")
+                withJsonPath("needed", equalTo(false))
         );
         return pollForInterpreter(caseId, defendantId, interpreterMatcher);
     }
 
     private String pollForInterpreter(final String caseId, final String defendantId, final Matcher interpreterMatcher) {
         return await().atMost(20, TimeUnit.SECONDS).until(() -> getCase(caseId.toString()).readEntity(String.class),
-                isJson(withJsonPath("$.defendants",
-                        hasItem(isJson(allOf(
+                isJson(withJsonPath("$.defendant",
+                        isJson(allOf(
                                 withJsonPath("id", is(defendantId.toString())),
                                 withJsonPath("interpreter", isJson(interpreterMatcher)))
-                        )))));
+                        ))));
     }
 
     public JsonEnvelope getEventFromPublicTopic() {

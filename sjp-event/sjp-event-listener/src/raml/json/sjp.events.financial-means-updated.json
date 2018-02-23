@@ -6,7 +6,20 @@
   },
   "benefits": {
     "claimed": true,
-    "type": "free text describing benefits type"
+    "type": "free text describing benefits type",
+    "deductPenaltyPreference": false
   },
-  "employmentStatus": "EMPLOYED"
+  "employmentStatus": "EMPLOYED",
+  "outgoings": [
+    {
+      "description": "Accommodation",
+      "amount": 50
+    },
+    {
+      "description": "Council Tax",
+      "amount": 50
+    }
+  ],
+  "updatedByOnlinePlea": false,
+  "updatedDate": "2018-02-05T15:14:29.894Z"
 }

@@ -95,22 +95,16 @@
                 <artifactId>raml-maven-plugin</artifactId>
                 <dependencies>
                     <dependency>
+                        <groupId>uk.gov.moj.cpp.notification.notify</groupId>
+                        <artifactId>notificationnotify-command-api</artifactId>
+                        <version>${notification.notify.version}</version>
+                        <classifier>raml</classifier>
+                    </dependency>
+                    <dependency>
                         <groupId>uk.gov.moj.cpp.material</groupId>
                         <artifactId>material-command-api</artifactId>
                         <version>${material.version}</version>
                         <classifier>raml</classifier>
-                    </dependency>
-                    <dependency>
-                        <groupId>uk.gov.moj.cpp.people</groupId>
-                        <artifactId>people-command-api</artifactId>
-                        <version>${people.version}</version>
-                        <classifier>raml</classifier>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
                     </dependency>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.sjp</groupId>

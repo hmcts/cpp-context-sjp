@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
 
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
-import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
@@ -28,39 +27,6 @@ public class NotReadyCaseRepositoryTest extends BaseTransactionalTest {
 
     @Inject
     private NotReadyCaseRepository notReadyCaseRepository;
-
-    @Test
-    public void shouldIncludeOnlyNotReadySjpCases() {
-        final LocalDate now = LocalDate.now();
-        final CaseDetail notCompletedNonSjpCase = CaseDetailBuilder.aCase()
-                .withCompleted(false).withPostingDate(now)
-                .addDefendantDetail(aDefendantDetail().build()).build();
-        final CaseDetail notCompletedSjpCase = CaseDetailBuilder.aCase()
-                .withCompleted(false).withInitiationCode("J").withPostingDate(now.minusDays(1))
-                .addDefendantDetail(aDefendantDetail().build()).build();
-        final CaseDetail completedNonSjpCase = CaseDetailBuilder.aCase()
-                .withCompleted(true).withPostingDate(now.minusDays(2))
-                .addDefendantDetail(aDefendantDetail().build()).build();
-        final CaseDetail completedSjpCase = CaseDetailBuilder.aCase()
-                .withCompleted(true).withInitiationCode("J").withPostingDate(now.minusDays(3))
-                .addDefendantDetail(aDefendantDetail().build()).build();
-        final CaseDetail withdrawalRequestedSjpCase = CaseDetailBuilder.aCase().withInitiationCode("J").withPostingDate(now.minusDays(3))
-                .addDefendantDetail(aDefendantDetail().withOffencePendingWithdrawal(true).build()).build();
-        final CaseDetail pleaSjpCase = CaseDetailBuilder.aCase().withInitiationCode("J").withPostingDate(now.minusDays(3))
-                .addDefendantDetail(aDefendantDetail().withPlea(Plea.Type.GUILTY).build()).build();
-
-        caseRepository.save(notCompletedNonSjpCase);
-        caseRepository.save(notCompletedSjpCase);
-        caseRepository.save(completedNonSjpCase);
-        caseRepository.save(completedSjpCase);
-        caseRepository.save(withdrawalRequestedSjpCase);
-        caseRepository.save(pleaSjpCase);
-
-        final List<CaseCountByAgeView> casesCountByAge = notReadyCaseRepository.getCountOfCasesByAge();
-        assertThat(casesCountByAge, hasSize(is(1)));
-        assertThat(casesCountByAge.get(0).getAge(), is(1));
-        assertThat(casesCountByAge.get(0).getCount(), is(1));
-    }
 
     @Test
     public void shouldGroupByAge() {

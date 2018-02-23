@@ -24,4 +24,8 @@ public class UpdateDefendantDetailsApi {
         sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.update-defendant-details").apply(envelope.payloadAsJsonObject()));
     }
 
+    @Handles("sjp.update-defendant-national-insurance-number")
+    public void updateDefendantNationalInsuranceNumber(final JsonEnvelope envelope) {
+        sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.update-defendant-national-insurance-number").apply(envelope.payloadAsJsonObject()));
+    }
 }

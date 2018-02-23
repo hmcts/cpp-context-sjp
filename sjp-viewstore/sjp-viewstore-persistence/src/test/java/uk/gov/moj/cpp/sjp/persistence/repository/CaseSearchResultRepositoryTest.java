@@ -79,29 +79,11 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
 
         final CaseSearchResult caseSearchResult = createCaseSearchResult();
         final UUID caseId = caseSearchResult.getCaseId();
-        final UUID personId = caseSearchResult.getPersonId();
 
-        final List<CaseSearchResult> results = caseSearchResultRepository.findByCaseIdAndPersonId(caseId, personId);
-
-        assertThat(results.get(0).getLastName(), equalTo(LAST_NAME));
-        assertThat(results.get(0).getCaseSummary().getUrn(), equalTo(URN));
-        assertThat(results.get(0).getPersonId(), equalTo(personId));
-        assertThat(results.get(0).getCaseSummary().getId(), equalTo(caseId));
-
-        assertThat(results.size(), is(1));
-    }
-
-    @Test
-    public void shouldFindByPersonId() {
-        final CaseSearchResult caseSearchResult = createCaseSearchResult();
-        final UUID caseId = caseSearchResult.getCaseId();
-        final UUID personId = caseSearchResult.getPersonId();
-
-        final List<CaseSearchResult> results = caseSearchResultRepository.findByPersonId(personId);
+        final List<CaseSearchResult> results = caseSearchResultRepository.findByCaseId(caseId);
 
         assertThat(results.get(0).getLastName(), equalTo(LAST_NAME));
         assertThat(results.get(0).getCaseSummary().getUrn(), equalTo(URN));
-        assertThat(results.get(0).getPersonId(), equalTo(personId));
         assertThat(results.get(0).getCaseSummary().getId(), equalTo(caseId));
 
         assertThat(results.size(), is(1));
@@ -112,7 +94,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
 
         final UUID id = UUID.randomUUID();
 
-        final CaseSearchResult caseSearchResult = new CaseSearchResult(id, UUID.randomUUID(),  UUID.randomUUID(),
+        final CaseSearchResult caseSearchResult = new CaseSearchResult(id, UUID.randomUUID(),
                 "firstName", "lastName", now(), "postCode");
 
         caseSearchResultRepository.save(caseSearchResult);
@@ -134,7 +116,6 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
         caseSearchResult.setId(UUID.randomUUID());
         caseSearchResult.setCaseId(caseSummary.getId());
         caseSearchResult.setCaseSummary(caseSummary);
-        caseSearchResult.setPersonId(UUID.randomUUID());
         caseSearchResult.setFirstName(firstName);
         caseSearchResult.setLastName(LAST_NAME);
         return caseSearchResultRepository.save(caseSearchResult);

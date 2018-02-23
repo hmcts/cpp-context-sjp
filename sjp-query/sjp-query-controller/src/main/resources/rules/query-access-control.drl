@@ -19,14 +19,6 @@ rule "sjp.query.case-by-urn"
     $outcome.setSuccess(true);
 end
 
-rule "sjp.query.sjp-case-by-urn"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.sjp-case-by-urn");
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "sjp.query.financial-means"
   when
     $outcome: Outcome();
@@ -143,6 +135,14 @@ rule "sjp.query.result-orders"
   when
     $outcome: Outcome();
     $action: Action(name == "sjp.query.result-orders");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.defendants-online-plea"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.defendants-online-plea");
   then
     $outcome.setSuccess(true);
 end

@@ -1,36 +1,34 @@
 {
   "id": "a224e325-22f7-45ab-a595-954ed0bffbdd",
+  "urn": "urn",
   "completed": false,
   "assigned": false,
-  "defendants": [
-    {
-      "id": "3a586aed-aee0-4cc8-a1eb-fcf80196a4aa",
-      "person": {
-        "id": "4f743dd7-8932-4d21-9b88-b85da175d502",
-        "firstName": "firstName",
-        "lastName": "lastName",
-        "dateOfBirth": "1980-07-15",
-        "homeTelephone": "02012345678",
-        "mobile": "07777888999",
-        "email": "email@email.com",
-        "nationalInsuranceNumber": "AA123456C",
-        "address": {
-          "address1": "address1",
-          "address2": "address2",
-          "address3": "address3",
-          "address4": "address4",
-          "postCode": "CR0 1XG"
-        }
+  "defendant": {
+    "id": "3a586aed-aee0-4cc8-a1eb-fcf80196a4aa",
+    "personalDetails": {
+      "firstName": "David",
+      "lastName": "LLOYD",
+      "dateOfBirth": "1980-07-15",
+      "contactDetails": {
+
       },
-      "offences": [
-        {
-          "id": "c84cbf19-9b10-46c4-9408-1059af51376d",
-          "title": "Public service vehicle - passenger use altered / defaced   ticket",
-          "wording": "Committed some offence",
-          "pendingWithdrawal": false,
-          "plea": ""
-        }
-      ]
-    }
-  ]
+      "address": {
+        "address1": "14 Tottenham Court Road",
+        "address2": "London",
+        "address3": "England",
+        "address4": "UK",
+        "postcode": "W1T 1JY"
+      }
+    },
+    "offences": [
+      {
+        "id": "c84cbf19-9b10-46c4-9408-1059af51376d",
+        "title": "Public service vehicle - passenger use altered / defaced   ticket",
+        "legislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+        "wording": "Committed some offence",
+        "pendingWithdrawal": false,
+        "plea": ""
+      }
+    ]
+  }
 }

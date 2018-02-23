@@ -3,18 +3,23 @@ package uk.gov.moj.cpp.sjp.persistence.builder;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
+import uk.gov.moj.cpp.sjp.persistence.entity.Address;
+import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.InterpreterDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
 public class DefendantDetailBuilder {
 
-    public final UUID DEFENDANT_ID = UUID.randomUUID();
-    public final UUID PERSON_ID = UUID.randomUUID();
+    private static final String DEFAULT_POSTCODE = "CR0 1AB";
+
+    private final UUID DEFENDANT_ID = UUID.randomUUID();
 
     private DefendantDetail defendantDetail;
 
@@ -23,7 +28,18 @@ public class DefendantDetailBuilder {
     private DefendantDetailBuilder() {
         defendantDetail = new DefendantDetail();
         defendantDetail.setId(DEFENDANT_ID);
-        defendantDetail.setPersonId(PERSON_ID);
+        defendantDetail.setPersonalDetails(
+                new PersonalDetails(
+                        "Mrs",
+                        "Theresa",
+                        "May",
+                        LocalDates.from("1960-10-08"),
+                        "Female",
+                        null,
+                        new Address("10 Downing St", "Westminster", "London", "England", DEFAULT_POSTCODE),
+                        new ContactDetails()
+                )
+        );
         offenceBuilder = prepareOffenceBuilder();
     }
 
@@ -31,8 +47,8 @@ public class DefendantDetailBuilder {
         return new DefendantDetailBuilder();
     }
 
-    public DefendantDetailBuilder withPersonId(UUID personId) {
-        defendantDetail.setPersonId(personId);
+    public DefendantDetailBuilder withId(final UUID defendantId) {
+        defendantDetail.setId(defendantId);
         return this;
     }
 
@@ -47,7 +63,12 @@ public class DefendantDetailBuilder {
     }
 
     public DefendantDetailBuilder withInterpreterLanguage(final String interpreterLanguage) {
-        defendantDetail.setInterpreter(new InterpreterDetail(true, interpreterLanguage));
+        defendantDetail.setInterpreter(new InterpreterDetail(interpreterLanguage));
+        return this;
+    }
+
+    public DefendantDetailBuilder withPostcode(final String postcode) {
+        defendantDetail.getPersonalDetails().setAddress(new Address("addr1", "addr2", "addr3", "addr4", postcode));
         return this;
     }
 

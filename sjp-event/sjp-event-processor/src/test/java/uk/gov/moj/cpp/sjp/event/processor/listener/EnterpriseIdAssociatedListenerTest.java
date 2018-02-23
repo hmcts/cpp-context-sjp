@@ -29,7 +29,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class EnterpriseIdAssociatedListenerTest {
 
-    private static final String PUBLIC_EVENT_NAME = "public.structure.enterprise-id-associated";
+    private static final String PUBLIC_EVENT_NAME = "public.sjp.enterprise-id-associated";
     private static final String PRIVATE_EVENT_NAME = "sjp.events.enterprise-id-associated";
 
     @Mock

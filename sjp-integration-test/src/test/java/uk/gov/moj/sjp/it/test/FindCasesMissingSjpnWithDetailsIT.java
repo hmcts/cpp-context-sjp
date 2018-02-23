@@ -7,7 +7,6 @@ import static uk.gov.moj.sjp.it.stub.AuthorisationServiceStub.stubEnableAllCapab
 
 import uk.gov.moj.sjp.it.helper.AbstractTestHelper;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
-import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
 import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 
 import java.io.StringReader;
@@ -42,8 +41,6 @@ public class FindCasesMissingSjpnWithDetailsIT extends AbstractTestHelper {
     private List<CaseSjpHelper> combinedSjpCasesOlderThan21Days;
 
     private List<CaseDocumentHelper> sjpnDocuments;
-    private List<CaseSearchResultHelper> sjpCasesPersonDetails;
-
 
     @Before
     public void init() {
@@ -67,16 +64,11 @@ public class FindCasesMissingSjpnWithDetailsIT extends AbstractTestHelper {
                 .map(caseHelper -> new CaseDocumentHelper(caseHelper.getCaseId())).collect(toList());
 
         sjpCases = Stream.concat(combinedSjpCasesYoungerThan21Days.stream(), combinedSjpCasesOlderThan21Days.stream()).collect(toList());
-
-        sjpCasesPersonDetails = sjpCases.stream()
-                .map(caseSjpPHelper -> createPerson(caseSjpPHelper)).collect(toList());
-
     }
 
     @After
     public void tearDown() {
         sjpCases.forEach(CaseSjpHelper::close);
-        sjpCasesPersonDetails.forEach(CaseSearchResultHelper::close);
     }
 
     @Test
@@ -115,11 +107,4 @@ public class FindCasesMissingSjpnWithDetailsIT extends AbstractTestHelper {
         assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
         return Json.createReader(new StringReader(response.readEntity(String.class))).readObject();
     }
-
-    private CaseSearchResultHelper createPerson(final CaseSjpHelper caseSjpHelper) {
-        CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
-        caseSearchResultHelper.addPersonInfo();
-        return caseSearchResultHelper;
-    }
-
 }

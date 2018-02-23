@@ -35,10 +35,10 @@ public class FinancialMeansConverterTest {
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {new Income(FORTNIGHTLY, BigDecimal.valueOf(1.0)), new Benefits(true, "type"), "EMPLOYED"},
-                {new Income(MONTHLY, BigDecimal.valueOf(0)), new Benefits(false, ""),"SELF_EMPLOYED"},
-                {new Income(WEEKLY, null), new Benefits(null, null), "UNEMPLOYED"},
-                {new Income(null, null), new Benefits(null, null), null},
+                {new Income(FORTNIGHTLY, BigDecimal.valueOf(1.0)), new Benefits(true, "type", null), "EMPLOYED"},
+                {new Income(MONTHLY, BigDecimal.valueOf(0)), new Benefits(false, "", null),"SELF_EMPLOYED"},
+                {new Income(WEEKLY, null), new Benefits(null, null, null), "UNEMPLOYED"},
+                {new Income(null, null), new Benefits(null, null, null), null},
         });
     }
 

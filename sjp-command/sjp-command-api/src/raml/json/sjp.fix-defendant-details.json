@@ -1,0 +1,21 @@
+{
+  "personId": "5c4c39cc-41b1-4b42-9fc9-4adeb81ff27e",
+  "title":"Mr",
+  "firstName": "David",
+  "lastName": "SMITH",
+  "dateOfBirth": "1980-07-15",
+  "gender": "Male",
+  "email": "email@email.com",
+  "address": {
+    "address1": "14 Shaftesbury Road",
+    "address2": "London",
+    "address3": "England",
+    "address4": "UK",
+    "postcode": "W1T 1JY"
+  },
+  "contactNumber": {
+    "home": "02087654321",
+    "mobile": "07123456789"
+  },
+  "nationalInsuranceNumber": "QQ 12 34 56 C"
+}

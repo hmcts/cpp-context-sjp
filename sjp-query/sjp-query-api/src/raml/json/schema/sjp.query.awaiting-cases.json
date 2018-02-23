@@ -7,7 +7,10 @@
       "items": {
         "type": "object",
         "properties": {
-          "personId": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
             "type": "string"
           },
           "offenceCode": {
@@ -16,7 +19,8 @@
         },
         "additionalProperties": false,
         "required": [
-          "personId",
+          "firstName",
+          "lastName",
           "offenceCode"
         ]
       }

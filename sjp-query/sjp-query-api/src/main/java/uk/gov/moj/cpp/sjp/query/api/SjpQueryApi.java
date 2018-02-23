@@ -25,11 +25,6 @@ public class SjpQueryApi {
         return requester.request(query);
     }
 
-    @Handles("sjp.query.sjp-case-by-urn")
-    public JsonEnvelope findSjpCaseByUrn(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
     @Handles("sjp.query.case-by-urn-postcode")
     public JsonEnvelope findCaseByUrnPostcode(final JsonEnvelope query) {
         return requester.request(query);
@@ -103,6 +98,11 @@ public class SjpQueryApi {
 
     @Handles("sjp.query.result-orders")
     public JsonEnvelope getResultOrders(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
+    @Handles("sjp.query.defendants-online-plea")
+    public JsonEnvelope getDefendantsOnlinePlea(final JsonEnvelope query) {
         return requester.request(query);
     }
 }

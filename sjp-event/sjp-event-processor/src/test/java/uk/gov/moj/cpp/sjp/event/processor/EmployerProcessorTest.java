@@ -50,7 +50,7 @@ public class EmployerProcessorTest {
         verify(sender).send(envelopeCaptor.capture());
 
         final JsonEnvelope publicEvent = envelopeCaptor.getValue();
-        assertThat(publicEvent.metadata(), withMetadataEnvelopedFrom(privateEvent).withName("public.structure.employer-updated"));
+        assertThat(publicEvent.metadata(), withMetadataEnvelopedFrom(privateEvent).withName("public.sjp.employer-updated"));
         assertThat(publicEvent.payloadAsJsonObject(), equalTo(privateEvent.payloadAsJsonObject()));
     }
 
@@ -66,7 +66,7 @@ public class EmployerProcessorTest {
         verify(sender).send(envelopeCaptor.capture());
 
         final JsonEnvelope publicEvent = envelopeCaptor.getValue();
-        assertThat(publicEvent.metadata(), withMetadataEnvelopedFrom(privateEvent).withName("public.structure.employer-deleted"));
+        assertThat(publicEvent.metadata(), withMetadataEnvelopedFrom(privateEvent).withName("public.sjp.employer-deleted"));
         assertThat(publicEvent.payloadAsJsonObject(), equalTo(privateEvent.payloadAsJsonObject()));
     }
 }

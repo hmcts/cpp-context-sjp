@@ -6,12 +6,21 @@ import java.util.Objects;
 public class Benefits implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private final String type;
-    private final Boolean claimed;
+    private String type;
+    private Boolean claimed;
+    private Boolean deductPenaltyPreference;
+
+    public Benefits() {}
 
     public Benefits(final Boolean claimed, final String type) {
         this.claimed = claimed;
         this.type = type;
+    }
+
+    public Benefits(final Boolean claimed, final String type, final Boolean deductPenaltyPreference) {
+        this.claimed = claimed;
+        this.type = type;
+        this.deductPenaltyPreference = deductPenaltyPreference;
     }
 
     public String getType() {
@@ -20,6 +29,10 @@ public class Benefits implements Serializable {
 
     public Boolean getClaimed() {
         return claimed;
+    }
+
+    public Boolean getDeductPenaltyPreference() {
+        return deductPenaltyPreference;
     }
 
     @Override

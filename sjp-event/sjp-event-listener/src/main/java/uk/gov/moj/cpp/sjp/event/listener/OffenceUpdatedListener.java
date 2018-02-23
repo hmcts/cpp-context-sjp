@@ -7,6 +7,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
@@ -14,6 +15,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -40,9 +42,12 @@ public class OffenceUpdatedListener {
 
         offenceDetail.setPlea(event.getPlea());
         offenceDetail.setPleaMethod(event.getPleaMethod());
+        offenceDetail.setMitigation(event.getMitigation());
+        offenceDetail.setNotGuiltyBecause(event.getNotGuiltyBecause());
 
         updatePleaReceivedDate(UUID.fromString(event.getCaseId()),
-                offenceDetail.getDefendantDetail().getPersonId(), now());
+                envelope.metadata().createdAt().map(ZonedDateTime::toLocalDate)
+                        .orElse(now()));
     }
 
     @Handles("sjp.events.plea-cancelled")
@@ -55,14 +60,13 @@ public class OffenceUpdatedListener {
         offenceDetail.setPlea(null);
         offenceDetail.setPleaMethod(null);
 
-        updatePleaReceivedDate(UUID.fromString(event.getCaseId()),
-                offenceDetail.getDefendantDetail().getPersonId(), null);
+        updatePleaReceivedDate(UUID.fromString(event.getCaseId()), null);
 
     }
 
     @Transactional
-    private void updatePleaReceivedDate(final UUID caseId, final UUID personId, final LocalDate pleaReceived) {
-        searchResultRepository.findByCaseIdAndPersonId(caseId, personId)
+    void updatePleaReceivedDate(final UUID caseId, final LocalDate pleaReceived) {
+        searchResultRepository.findByCaseId(caseId)
                 .forEach(searchResult -> searchResult.setPleaDate(pleaReceived));
     }
 

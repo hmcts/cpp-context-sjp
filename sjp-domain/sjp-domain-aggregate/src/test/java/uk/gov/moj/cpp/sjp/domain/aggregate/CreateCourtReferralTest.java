@@ -32,7 +32,7 @@ public class CreateCourtReferralTest {
     public void shouldCreateCourtReferral() {
 
         final Case caseDetail = CaseBuilder.aDefaultSjpCase().build();
-        caseAggregate.createCase(caseDetail, ZonedDateTime.now());
+        caseAggregate.receiveCase(caseDetail, ZonedDateTime.now());
 
         final LocalDate hearingDate = LocalDate.now().plusWeeks(1);
 

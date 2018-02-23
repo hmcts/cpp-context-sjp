@@ -20,23 +20,7 @@
           "chargeDate":"2016-06-21",
           "sequenceNumber": 1
         }
-      ],
-      "personalDetails": {
-        "title": "Mr",
-        "firstName": "Fahads",
-        "lastName": "Atherton",
-        "dateOfBirth": "1965-12-27",
-        "gender": "Male",
-        "address": {
-          "address1": "Flat 1, Armageddon House",
-          "address2": "13 Old Road",
-          "address3": "Giggleswick",
-          "address4": "Merton",
-          "postcode": "TW11 1AB"
-        },
-        "contactDetails": {},
-        "nameChanged": true
-      }
+      ]
     }
   ]
 }

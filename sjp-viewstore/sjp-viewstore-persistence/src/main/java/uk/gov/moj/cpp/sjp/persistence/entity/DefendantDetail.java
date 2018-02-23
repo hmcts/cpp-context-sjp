@@ -127,5 +127,4 @@ public class DefendantDetail implements Serializable {
     public void setInterpreter(InterpreterDetail interpreter) {
         this.interpreter = interpreter;
     }
-
 }

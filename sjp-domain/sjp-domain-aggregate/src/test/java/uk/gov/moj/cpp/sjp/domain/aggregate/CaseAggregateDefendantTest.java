@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.StringContains.containsString;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateDefendantTest.DefendantData.defaultDefendantData;
@@ -11,11 +10,8 @@ import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
-import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
-import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
-import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -63,9 +59,9 @@ public class CaseAggregateDefendantTest {
                 defaultDefendantData().withNewTitle(validTitle)
         );
 
-        assertThat(events.size(), greaterThan(0));
+        assertThat(events.size(), is(1));
 
-        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(events.size()-1);
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(0);
         assertThat(defendantDetailsUpdated.getTitle(), is(validTitle));
     }
 
@@ -109,12 +105,8 @@ public class CaseAggregateDefendantTest {
                 defaultDefendantData().withNewTitle("")
         );
 
-        assertThat(events.size(), is(2));
-        final DefendantPersonalNameUpdated defendantPersonalNameUpdated = (DefendantPersonalNameUpdated) events.get(0);
-        assertThat(defendantPersonalNameUpdated.getOldPersonalName().getTitle(), is(" "));
-        assertThat(defendantPersonalNameUpdated.getNewPersonalName().getTitle(), is(""));
-
-        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(1);
+        assertThat(events.size(), is(1));
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(0);
         assertThat(defendantDetailsUpdated.getTitle(), is(""));
     }
 
@@ -173,13 +165,9 @@ public class CaseAggregateDefendantTest {
                 defaultDefendantData().withNewDateOfBirth(newDateOfBirth)
         );
 
-        assertThat(events.size(), is(2));
+        assertThat(events.size(), is(1));
 
-        final DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = (DefendantDateOfBirthUpdated) events.get(0);
-        assertThat(defendantDateOfBirthUpdated.getOldDateOfBirth(), is(dateOfBirth));
-        assertThat(defendantDateOfBirthUpdated.getNewDateOfBirth(), is(newDateOfBirth));
-
-        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(1);
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(0);
         assertThat(defendantDetailsUpdated.getDateOfBirth(), is(newDateOfBirth));
     }
 
@@ -243,14 +231,14 @@ public class CaseAggregateDefendantTest {
                 defaultDefendantData().withNewAddress(newAddress)
         );
 
-        assertThat(events.size(), is(2));
+        assertThat(events.size(), is(1));
 
-        final DefendantAddressUpdated defendantAddressUpdated = (DefendantAddressUpdated) events.get(0);
-        assertThat(defendantAddressUpdated.getNewAddress(), is(newAddress));
-        assertThat(defendantAddressUpdated.getOldAddress(), is(address));
-
-        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(1);
-        assertThat(defendantDetailsUpdated.getAddress(), is(newAddress));
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(0);
+        assertThat(defendantDetailsUpdated.getAddress().getAddress1(), is(newAddress.getAddress1()));
+        assertThat(defendantDetailsUpdated.getAddress().getAddress2(), is(newAddress.getAddress2()));
+        assertThat(defendantDetailsUpdated.getAddress().getAddress3(), is(newAddress.getAddress3()));
+        assertThat(defendantDetailsUpdated.getAddress().getAddress4(), is(newAddress.getAddress4()));
+        assertThat(defendantDetailsUpdated.getAddress().getPostcode(), is(newAddress.getPostcode()));
     }
 
     private void givenNoPersonInfoWasAdded() {
@@ -325,7 +313,7 @@ public class CaseAggregateDefendantTest {
 
     private List<Object> whenTheDefendantIsUpdated(final DefendantData updatedDefendantData) {
         Person person = new Person(updatedDefendantData.title,
-                updatedDefendantData.firstName, updatedDefendantData.lastName, updatedDefendantData.dateOfBirth,
+                updatedDefendantData.firstName, updatedDefendantData.lastName, updatedDefendantData.dateOfBirth, 
                 updatedDefendantData.gender, updatedDefendantData.address);
 
         final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(updatedDefendantData.caseId,

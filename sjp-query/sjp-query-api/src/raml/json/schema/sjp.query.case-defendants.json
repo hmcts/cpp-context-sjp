@@ -30,6 +30,75 @@
           "numPreviousConvictions": {
             "type": "integer"
           },
+          "personalDetails":{
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "firstName": {
+                "type": "string"
+              },
+              "lastName": {
+                "type": "string"
+              },
+              "dateOfBirth": {
+                "type": "string"
+              },
+              "gender": {
+                "type": "string"
+              },
+              "nameChanged": {
+                "type": "boolean"
+              },
+              "dobChanged": {
+                "type": "boolean"
+              },
+              "addressChanged": {
+                "type": "boolean"
+              },
+              "contactDetails": {
+                "type": "object",
+                "properties": {
+                  "home": {
+                    "type": "string"
+                  },
+                  "mobile": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "address": {
+                "type": "object",
+                "properties": {
+                  "address1": {
+                    "type": "string",
+                    "maxLength": 32
+                  },
+                  "address2": {
+                    "type": "string",
+                    "maxLength": 32
+                  },
+                  "address3": {
+                    "type": "string",
+                    "maxLength": 32
+                  },
+                  "address4": {
+                    "type": "string",
+                    "maxLength": 32
+                  },
+                  "postcode": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
           "offences": {
             "type": "array",
             "items": {

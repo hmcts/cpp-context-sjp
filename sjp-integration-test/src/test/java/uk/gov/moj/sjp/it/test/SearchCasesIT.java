@@ -3,6 +3,7 @@ package uk.gov.moj.sjp.it.test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
+import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
@@ -73,15 +74,14 @@ public class SearchCasesIT extends BaseIntegrationTest {
 
     @Test
     public void verifyInitialSearchDetailsAndUpdateToDefendantDetails() throws IOException {
-        caseSearchResultHelper.verifyPersonInfo(caseSearchResultHelper.getPersonalDetails(), false);
+        caseSearchResultHelper.verifyPersonInfoByUrn();
+        caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth(caseSearchResultHelper.getLastName(), caseSearchResultHelper.getDateOfBirth());
 
         JsonObject updatedDefendantPayload = FileUtil.givenPayload("/payload/sjp.update-defendant-details.json");
 
         defendantDetailsHelper.updateDefendantDetails(caseSjpHelper.getCaseId(), caseSjpHelper.getSingleDefendantId(), updatedDefendantPayload);
-
-        final PersonalDetails expectedPersonalDetails = generateExpectedPersonDetails(updatedDefendantPayload);
-        caseSearchResultHelper.verifyPersonInfo(expectedPersonalDetails, true);
-        caseSearchResultHelper.verifyPersonNotFound(caseSjpHelper.getCaseUrn(), caseSearchResultHelper.getPersonalDetails().getLastName());
+        caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth("SMITH", LocalDates.from("1980-07-15"));
+        caseSearchResultHelper.verifyPersonNotFound(caseSjpHelper.getCaseUrn(), caseSearchResultHelper.getLastName());
 
         final JsonPath updatedCase = caseSjpHelper.getCaseResponseUsingId();
         final String firstName = updatedCase.getString("defendant.personalDetails.firstName");

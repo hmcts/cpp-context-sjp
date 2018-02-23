@@ -56,7 +56,7 @@ public class UpdatePleaIT extends BaseIntegrationTest {
                      EVENT_SELECTOR_PLEA_CANCELLED, PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED);
              final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper)) {
 
-            caseSearchResultHelper.verifyPersonInfo();
+            caseSearchResultHelper.verifyPersonInfoByUrn();
 
             String plea = PLEA_GUILTY;
             final String pleaMethod = "POSTAL";

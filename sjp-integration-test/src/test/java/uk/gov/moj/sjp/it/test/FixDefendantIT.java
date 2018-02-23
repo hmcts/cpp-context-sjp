@@ -11,7 +11,6 @@ import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
-import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
 import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 import uk.gov.moj.sjp.it.helper.FixDefendantDetailsHelper;
 import uk.gov.moj.sjp.it.util.FileUtil;
@@ -38,8 +37,6 @@ public class FixDefendantIT extends BaseIntegrationTest {
         protected void doAdditionalReadCallResponseVerification(JsonPath jsonRequest, JsonPath jsonResponse) {
         }
     };
-
-    private CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
 
     @Before
     public void createSjpCaseAndVerifyInQueue() throws IOException {
@@ -90,7 +87,7 @@ public class FixDefendantIT extends BaseIntegrationTest {
                         payload.getJsonObject("contactNumber").getString("home"),
                         payload.getJsonObject("contactNumber").getString("mobile"))
         );
-        caseSearchResultHelper.verifyPersonInfo(personalDetails, true);
+        caseSjpHelper.verifyPersonInfo(personalDetails, true);
 
         final JsonPath updatedCase = caseSjpHelper.getCaseResponseUsingId();
 
@@ -103,7 +100,6 @@ public class FixDefendantIT extends BaseIntegrationTest {
     @After
     public void tearDown() {
         caseSjpHelper.close();
-        caseSearchResultHelper.close();
         fixDefendantDetailsHelper.close();
     }
 

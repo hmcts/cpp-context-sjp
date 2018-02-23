@@ -95,8 +95,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final String postcode = address.getString("postcode");
 
         //fields that we do not override
-        final String title = caseSearchResultHelper.getPersonalDetails().getTitle();
-        final String gender = caseSearchResultHelper.getPersonalDetails().getGender();
+        final String title = caseSjpHelper.getPersonalDetails().getTitle();
+        final String gender = caseSjpHelper.getPersonalDetails().getGender();
 
         return new PersonalDetails(title, firstName, lastName, LocalDate.parse(dateOfBirth), gender, nationalInsuranceNumber,
                 new Address(address1, address2, address3, address4, postcode),
@@ -110,8 +110,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final String defendantId = caseSjpHelper.getSingleDefendantId();
 
         //checks person-info before plead-online
-        caseSearchResultHelper.verifyPersonInfo();
-        caseSearchResultHelper.verifyPersonInfo(caseSearchResultHelper.getPersonalDetails(), false);
+        caseSjpHelper.verifyPersonInfo();
 
         //runs plea-online
         final JSONObject pleaPayload = getOnlinePleaPayload(pleaType);
@@ -132,8 +131,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
         //verifies person-info has changed
         final PersonalDetails expectedPersonalDetails = generateExpectedPersonDetails(pleaPayload, caseSearchResultHelper);
-        caseSearchResultHelper.verifyPersonInfo(expectedPersonalDetails, true);
-        caseSearchResultHelper.verifyPersonNotFound(caseSjpHelper.getCaseUrn(), caseSearchResultHelper.getPersonalDetails().getLastName());
+        caseSjpHelper.verifyPersonInfo(expectedPersonalDetails, true);
+        caseSearchResultHelper.verifyPersonNotFound(caseSjpHelper.getCaseUrn(), caseSjpHelper.getPersonalDetails().getLastName());
 
         //verify online-plea
         final Matcher expectedResult = getSavedOnlinePleaPayloadContentMatcher(pleaType, pleaPayload, caseSjpHelper.getCaseId(), defendantId);

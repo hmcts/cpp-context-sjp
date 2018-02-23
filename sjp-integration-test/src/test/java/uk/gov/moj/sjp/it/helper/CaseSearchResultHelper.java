@@ -1,11 +1,13 @@
 package uk.gov.moj.sjp.it.helper;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.hasSize;
@@ -14,45 +16,30 @@ import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
-import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
-import uk.gov.moj.cpp.sjp.persistence.entity.Address;
-import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
-import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.json.JsonObject;
-
-import org.hamcrest.Matcher;
 
 public class CaseSearchResultHelper extends AbstractTestHelper {
 
     public static final String CASE_SEARCH_RESULTS_MEDIA_TYPE = "application/vnd.sjp.query.case-search-results+json";
 
-    private final PersonalDetails personalDetails = new PersonalDetails("Mr","David", "LLOYD", LocalDates.from("1980-07-15"),
-            "Male", "nationalInsuranceNumber",
-            new Address("14 Tottenham Court Road", "London", "England", "UK", "W1T 1JY"),
-            new ContactDetails(null, null, null)
-    );
-    private final String updatedLastName;
-    private final LocalDate updatedDateOfBirth;
     private final String assignmentNatureType = "for-magistrate-decision";
     private final CaseSjpHelper caseSjpHelper;
+    private final String lastName;
+    private final LocalDate dateOfBirth;
 
     public CaseSearchResultHelper(CaseSjpHelper caseSjpHelper) {
         this.caseSjpHelper = caseSjpHelper;
-        this.updatedLastName = this.personalDetails.getLastName() + "updated";
-        this.updatedDateOfBirth = LocalDate.now().minusYears(20);
+        this.lastName = "LLOYD";
+        this.dateOfBirth = LocalDates.from("1980-07-15");
+
     }
 
     public void assignmentCreated()  {
@@ -83,48 +70,6 @@ public class CaseSearchResultHelper extends AbstractTestHelper {
             producerClient.startProducer("public.event");
             producerClient.sendMessage("assignment.assignment-deleted", eventEnvelope);
         }
-    }
-
-    public void verifyPersonInfo() {
-        verifyPersonInfo(this.personalDetails, false);
-    }
-
-    public void verifyPersonInfo(final PersonalDetails personalDetails, final boolean includeContactsAndNiNumberFields) {
-        List<Matcher> fieldMatchers = getCommonFieldMatchers(personalDetails);
-        if (includeContactsAndNiNumberFields) {
-            fieldMatchers = Stream.of(fieldMatchers, getContactsAndNiNumberMatchers(personalDetails))
-                    .flatMap(Collection::stream)
-                    .collect(Collectors.toList());
-        }
-        poll(getCaseById(caseSjpHelper.getCaseId()))
-                .until(status().is(OK), payload().isJson(allOf(
-                        fieldMatchers.toArray(new Matcher[fieldMatchers.size()])
-                )));
-    }
-
-    private List<Matcher> getCommonFieldMatchers(final PersonalDetails personalDetails) {
-        return Arrays.asList(
-                withJsonPath("urn", equalTo(caseSjpHelper.getCaseUrn())),
-                withJsonPath("$.defendant.personalDetails.title", equalTo(personalDetails.getTitle())),
-                withJsonPath("$.defendant.personalDetails.firstName", equalTo(personalDetails.getFirstName())),
-                withJsonPath("$.defendant.personalDetails.lastName", equalTo(personalDetails.getLastName())),
-                withJsonPath("$.defendant.personalDetails.gender", equalTo(personalDetails.getGender())),
-                withJsonPath("$.defendant.personalDetails.dateOfBirth", equalTo(LocalDates.to(personalDetails.getDateOfBirth()))),
-                withJsonPath("$.defendant.personalDetails.address.address1", equalTo(personalDetails.getAddress().getAddress1())),
-                withJsonPath("$.defendant.personalDetails.address.address2", equalTo(personalDetails.getAddress().getAddress2())),
-                withJsonPath("$.defendant.personalDetails.address.address3", equalTo(personalDetails.getAddress().getAddress3())),
-                withJsonPath("$.defendant.personalDetails.address.address4", equalTo(personalDetails.getAddress().getAddress4())),
-                withJsonPath("$.defendant.personalDetails.address.postcode", equalTo(personalDetails.getAddress().getPostcode()))
-        );
-    }
-
-    private List<Matcher> getContactsAndNiNumberMatchers(final PersonalDetails personalDetails) {
-        return Arrays.asList(
-                withJsonPath("$.defendant.personalDetails.nationalInsuranceNumber", equalTo(personalDetails.getNationalInsuranceNumber())),
-                withJsonPath("$.defendant.personalDetails.contactDetails.email", equalTo(personalDetails.getContactDetails().getEmail())),
-                withJsonPath("$.defendant.personalDetails.contactDetails.home", equalTo(personalDetails.getContactDetails().getHome())),
-                withJsonPath("$.defendant.personalDetails.contactDetails.mobile", equalTo(personalDetails.getContactDetails().getMobile()))
-        );
     }
 
     public void verifyPersonNotFound(final String urn, final String lastName) {
@@ -177,15 +122,30 @@ public class CaseSearchResultHelper extends AbstractTestHelper {
                         withJsonPath("$.results", hasSize(expectedHits)))));
     }
 
-    public String getUpdatedLastName() {
-        return updatedLastName;
+    public void verifyPersonInfoByUrn() {
+        verifyPersonInfo(caseSjpHelper.getCaseUrn(), lastName, dateOfBirth);
     }
 
-    public LocalDate getUpdatedDateOfBirth() {
-        return updatedDateOfBirth;
+    public void verifyPersonInfoByLastNameAndDateOfBirth(String lastName, LocalDate dateOfBirth) {
+        verifyPersonInfo(lastName, lastName, dateOfBirth);
     }
 
-    public PersonalDetails getPersonalDetails() {
-        return personalDetails;
+    private void verifyPersonInfo(final String query, final String lastName, final LocalDate dateOfBirth) {
+        poll(searchCases(query))
+                .until(status().is(OK), payload().isJson(allOf(
+                        withJsonPath("$.results[*]", hasItem(isJson(
+                                allOf(
+                                        withJsonPath("urn", equalTo(caseSjpHelper.getCaseUrn())),
+                                        withJsonPath("lastName", equalTo(lastName)),
+                                        withJsonPath("dateOfBirth", equalTo(LocalDates.to(dateOfBirth)))
+                                )))))));
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
     }
 }

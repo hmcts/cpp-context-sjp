@@ -80,7 +80,7 @@ public class SearchCasesIT extends BaseIntegrationTest {
         JsonObject updatedDefendantPayload = FileUtil.givenPayload("/payload/sjp.update-defendant-details.json");
 
         defendantDetailsHelper.updateDefendantDetails(caseSjpHelper.getCaseId(), caseSjpHelper.getSingleDefendantId(), updatedDefendantPayload);
-        caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth("SMITH", LocalDates.from("1980-07-15"));
+        caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth("SMITH", LocalDates.from("1980-07-16"));
         caseSearchResultHelper.verifyPersonNotFound(caseSjpHelper.getCaseUrn(), caseSearchResultHelper.getLastName());
         caseSjpHelper.verifyPersonInfo(generateExpectedPersonDetails(updatedDefendantPayload), true);
 

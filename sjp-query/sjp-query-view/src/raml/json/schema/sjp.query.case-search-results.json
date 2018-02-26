@@ -25,7 +25,8 @@
       "type": "string",
       "enum": [
         "TFL",
-        "TVL"
+        "TVL",
+        "DVLA"
       ]
     },
     "postingDate": {

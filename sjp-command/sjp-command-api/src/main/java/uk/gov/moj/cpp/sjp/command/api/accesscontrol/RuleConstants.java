@@ -20,7 +20,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getCreateSjpCaseActionGroups() {
-        return singletonList(GROUP_TFL_USERS);
+        return Arrays.asList(GROUP_TFL_USERS, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getPleadOnlineActionGroups() {

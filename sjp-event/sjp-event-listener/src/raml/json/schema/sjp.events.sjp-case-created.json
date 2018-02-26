@@ -32,7 +32,8 @@
       "id": "/prosecutingAuthority",
       "type": "string",
       "enum": [
-        "TFL"
+        "TFL",
+        "TVL"
       ]
     },
     "libraOriginatingOrg": {

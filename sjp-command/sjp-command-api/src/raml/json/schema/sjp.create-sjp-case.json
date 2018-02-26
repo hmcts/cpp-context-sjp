@@ -17,7 +17,11 @@
     },
     "prosecutingAuthority": {
       "id": "/prosecutingAuthority",
-      "type": "string"
+      "type": "string",
+      "enum": [
+        "TFL",
+        "TVL"
+      ]
     },
     "initiationCode": {
       "id": "/initiationCode",

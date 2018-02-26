@@ -119,7 +119,11 @@
     },
     "prosecutingAuthority": {
       "id": "/prosecutingAuthority",
-      "type": "string"
+      "type": "string",
+      "enum": [
+        "TFL",
+        "TVL"
+      ]
     },
     "completed": {
       "id": "/completed",

@@ -16,6 +16,7 @@ import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
 
 import uk.gov.justice.services.common.converter.LocalDates;
@@ -37,12 +38,22 @@ public class CaseSearchResultHelper  {
     private final String urn;
     private final String lastName;
     private final LocalDate dateOfBirth;
+    private final String searchUserId;
+
+    public CaseSearchResultHelper(final String searchUserId) {
+        this(null, null, null, null, searchUserId);
+    }
 
     public CaseSearchResultHelper(final UUID caseId, final String urn, final String defendantLastName, final LocalDate dateOfBirth) {
+        this(caseId, urn, defendantLastName, dateOfBirth, USER_ID);
+    }
+
+    private CaseSearchResultHelper(final UUID caseId, final String urn, final String defendantLastName, final LocalDate dateOfBirth, final String searchUserId) {
         this.caseId = caseId;
         this.urn = urn;
         this.lastName = defendantLastName;
         this.dateOfBirth = dateOfBirth;
+        this.searchUserId = searchUserId;
     }
 
     public void assignmentCreated() {
@@ -76,8 +87,15 @@ public class CaseSearchResultHelper  {
         }
     }
 
+    public void verifyPersonFound(final String urn, final String lastName) {
+        poll(searchCases(lastName, searchUserId))
+                .until(status().is(OK), payload().isJson(
+                        withJsonPath("$.results[?(@.urn=='" + urn + "')]", hasSize(1))
+                ));
+    }
+
     public void verifyPersonNotFound(final String urn, final String lastName) {
-        poll(searchCases(lastName))
+        poll(searchCases(lastName, searchUserId))
                 .timeout(5, TimeUnit.SECONDS)
                 .until(status().is(OK), payload().isJson(
                         withJsonPath("$.results[?(@.urn=='" + urn + "')]", hasSize(0))
@@ -85,28 +103,28 @@ public class CaseSearchResultHelper  {
     }
 
     public void verifyPleaReceivedDate() {
-        poll(searchCases(urn))
+        poll(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(
                         withJsonPath("$.results[0].pleaDate", notNullValue())
                 ));
     }
 
     public void verifyNoPleaReceivedDate() {
-        poll(searchCases(urn))
+        poll(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(
                         withoutJsonPath("$.results[0].pleaDate")
                 ));
     }
 
     public void verifyWithdrawalRequestedDate() {
-        poll(searchCases(urn))
+        poll(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(
                         withJsonPath("$.results[0].withdrawalRequestedDate", notNullValue())
                 ));
     }
 
     public void verifyNoWithdrawalRequestedDate() {
-        poll(searchCases(urn))
+        poll(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(
                         withoutJsonPath("$.results[0].withdrawalRequestedDate")
                 ));
@@ -114,12 +132,24 @@ public class CaseSearchResultHelper  {
 
 
     public void verifyAssignment(final boolean assigned) {
-        poll(searchCases(urn))
+        poll(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(allOf(
                         withJsonPath("$.results[0].urn", is(urn)),
                         withJsonPath("$.results[0].assigned", is(assigned)))));
     }
 
+
+    public void verifyUrnFound(final String urn) {
+        poll(searchCases(urn, searchUserId))
+                .until(status().is(OK), payload().isJson(allOf(
+                        withJsonPath("$.results", hasSize(1)))));
+    }
+
+    public void verifyUrnNotFound(final String urn) {
+        poll(searchCases(urn, searchUserId))
+                .until(status().is(OK), payload().isJson(allOf(
+                        withJsonPath("$.results", hasSize(0)))));
+    }
 
     public void verifyPersonInfoByUrn() {
         verifyPersonInfo(urn, lastName, dateOfBirth);
@@ -130,7 +160,7 @@ public class CaseSearchResultHelper  {
     }
 
     private void verifyPersonInfo(final String query, final String lastName, final LocalDate dateOfBirth) {
-        poll(searchCases(query))
+        poll(searchCases(query, searchUserId))
                 .until(status().is(OK), payload().isJson(allOf(
                         withJsonPath("$.results[*]", hasItem(isJson(
                                 allOf(

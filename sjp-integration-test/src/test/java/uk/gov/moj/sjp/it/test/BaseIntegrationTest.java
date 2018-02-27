@@ -3,6 +3,7 @@ package uk.gov.moj.sjp.it.test;
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static uk.gov.moj.sjp.it.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubAllGroupsForUser;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
@@ -27,5 +28,6 @@ public abstract class BaseIntegrationTest {
         InternalEndpointMockUtils.stubPingFor("usersgroups-query-api");
         stubAllGroupsForUser(USER_ID);
         stubAllGroupsForUser(SJP_SYSTEM_USER);
+        stubForUserDetails(USER_ID, "ALL");
     }
 }

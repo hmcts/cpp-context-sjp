@@ -55,6 +55,5 @@ target/
 deployWars.sh
 buildContexts.sh
 
-
 lightning-jenkins.properties
 

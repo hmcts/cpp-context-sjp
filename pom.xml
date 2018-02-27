@@ -12,7 +12,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>0.0.47-ATCM-SNAPSHOT</version>
+    <version>0.0.48-ATCM-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -25,6 +25,8 @@
         <referencedata.version>2.0.141</referencedata.version>
         <resulting.version>2.0.180-ATCM-SNAPSHOT</resulting.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
+        <usersgroups.version>2.0.88-ATCM-SNAPSHOT</usersgroups.version>
+        <access-control-sjp-providers.version>3.2.9</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
     </properties>

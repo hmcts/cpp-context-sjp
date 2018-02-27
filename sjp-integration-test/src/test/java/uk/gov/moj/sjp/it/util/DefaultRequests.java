@@ -30,9 +30,9 @@ public class DefaultRequests {
                 .withHeader(HeaderConstants.USER_ID, userId);
     }
 
-    public static RequestParamsBuilder searchCases(final String query) {
+    public static RequestParamsBuilder searchCases(final String query, final String userId) {
         return requestParams(getReadUrl("/search?q=" + query), CASE_SEARCH_RESULTS_MEDIA_TYPE)
-                .withHeader(HeaderConstants.USER_ID, USER_ID);
+                .withHeader(HeaderConstants.USER_ID, userId);
     }
 
     public static RequestParamsBuilder findAwaitingCases() {

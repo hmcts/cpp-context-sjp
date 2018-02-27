@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-query</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>0.0.47-ATCM-SNAPSHOT</version>
+        <version>0.0.48-ATCM-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -14,7 +14,40 @@
         <cpp.service-component>QUERY_VIEW</cpp.service-component>
     </properties>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>uk.gov.justice.maven</groupId>
+                <artifactId>raml-maven-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.usersgroups</groupId>
+                        <artifactId>usersgroups-query-api</artifactId>
+                        <version>${usersgroups.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <generatorProperties>
+                        <actionMapping>${cpp.framework.action.mapping.enabled}</actionMapping>
+                    </generatorProperties>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
+        <!-- TODO - remove once newer framework version is released with added dependencies. -->
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>framework-api-rest-client</artifactId>
+        </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.common</groupId>
             <artifactId>query-view</artifactId>
@@ -31,6 +64,12 @@
             <artifactId>sjp-viewstore-persistence</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.access-control</groupId>
+            <artifactId>access-control-sjp-providers</artifactId>
+            <version>${access-control-sjp-providers.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>

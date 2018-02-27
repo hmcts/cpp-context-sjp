@@ -178,13 +178,13 @@ public class SjpQueryViewTest {
         setupExpectations();
         final String query = "query";
 
-        when(caseService.searchCases(query)).thenReturn(caseSearchResultsView);
+        when(caseService.searchCases(envelope, query)).thenReturn(caseSearchResultsView);
         when(payloadObject.getString(FIELD_QUERY)).thenReturn(query);
 
         final JsonEnvelope result = sjpQueryView.findCaseSearchResults(envelope);
 
         assertEquals(result, outputEnvelope);
-        verify(caseService).searchCases(query);
+        verify(caseService).searchCases(envelope, query);
         verify(function).apply(caseSearchResultsView);
     }
 

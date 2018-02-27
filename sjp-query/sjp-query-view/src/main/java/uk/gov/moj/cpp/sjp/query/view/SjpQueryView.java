@@ -106,7 +106,7 @@ public class SjpQueryView {
     @Handles("sjp.query.case-search-results")
     public JsonEnvelope findCaseSearchResults(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASES_SEARCH).apply(
-                caseService.searchCases(envelope.payloadAsJsonObject().getString(FIELD_QUERY)));
+                caseService.searchCases(envelope, envelope.payloadAsJsonObject().getString(FIELD_QUERY)));
     }
 
     @Handles("sjp.query.cases-missing-sjpn")

@@ -9,7 +9,7 @@ import static org.hamcrest.core.AllOf.allOf;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.*;
+import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
 
@@ -72,7 +72,7 @@ public class SearchCasesIT extends BaseIntegrationTest {
         UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseId, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id")), updatedDefendantPayload);
 
         // then the first case (and second) will be found and system will mark the name as outdated
-        poll(searchCases("deHistorical"))
+        poll(searchCases("deHistorical", USER_ID))
                 .until(
                         status().is(OK),
                         payload().isJson(

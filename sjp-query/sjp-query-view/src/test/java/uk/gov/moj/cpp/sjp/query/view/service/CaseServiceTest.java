@@ -17,13 +17,18 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder.aCase;
 import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDocumentBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -39,6 +44,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.NotReadyCaseRepository;
+import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
@@ -112,6 +118,15 @@ public class CaseServiceTest {
 
     @Mock
     private CaseSearchResultRepository caseSearchResultRepository;
+
+    @Mock
+    private ProsecutingAuthorityProvider prosecutingAuthorityProvider;
+
+    @Mock
+    private ProsecutingAuthorityAccessFilterConverter prosecutingAuthorityAccessFilterConverter;
+
+    @Mock
+    private JsonEnvelope envelope;
 
     @InjectMocks
     private CaseService service;
@@ -510,22 +525,42 @@ public class CaseServiceTest {
     @Test
     public void shouldSearchCasesByUrn() {
         final String query = URN;
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = mock(ProsecutingAuthorityAccess.class);
+        final String prosecutingAuthorityAccessFilterValue = "SOME_FILTER";
 
-        when(caseSearchResultRepository.findByCaseSummary_urn(query)).thenReturn(asList(createCaseSearchResult()));
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope))
+                .thenReturn(prosecutingAuthorityAccess);
+        when(prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess))
+                .thenReturn(prosecutingAuthorityAccessFilterValue);
+        when(caseSearchResultRepository.findByUrn(prosecutingAuthorityAccessFilterValue, query))
+                .thenReturn(asList(createCaseSearchResult()));
 
-        final CaseSearchResultsView cases = service.searchCases(query);
+        final CaseSearchResultsView cases = service.searchCases(envelope, query);
 
         assertThat(cases.getResults().get(0).getUrn(), equalTo(URN));
+
+        verify(prosecutingAuthorityProvider).getCurrentUsersProsecutingAuthorityAccess(envelope);
     }
 
     @Test
     public void shouldSearchCasesByLastName() {
         final String query = LAST_NAME;
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = mock(ProsecutingAuthorityAccess.class);
+        final String prosecutingAuthorityAccessFilterValue = "SOME_FILTER";
 
-        when(caseSearchResultRepository.findByCaseSummary_urn(query)).thenReturn(emptyList());
-        when(caseSearchResultRepository.findByLastName(query)).thenReturn(asList(createCaseSearchResult()));
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope))
+                .thenReturn(prosecutingAuthorityAccess);
+        when(prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess))
+                .thenReturn(prosecutingAuthorityAccessFilterValue);
 
-        final CaseSearchResultsView cases = service.searchCases(query);
+        when(caseSearchResultRepository.findByUrn(prosecutingAuthorityAccessFilterValue, query))
+                .thenReturn(emptyList());
+        when(caseSearchResultRepository.findByLastName(prosecutingAuthorityAccessFilterValue, query))
+                .thenReturn(asList(createCaseSearchResult()));
+
+        final CaseSearchResultsView cases = service.searchCases(envelope, query);
+
+        verify(prosecutingAuthorityProvider).getCurrentUsersProsecutingAuthorityAccess(envelope);
 
         final CaseSearchResultsView.CaseSearchResultView result = cases.getResults().get(0);
         assertThat(result.getCaseId(), equalTo(CASE_ID));

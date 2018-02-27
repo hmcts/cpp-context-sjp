@@ -160,6 +160,11 @@ public class CreateCase {
             return this;
         }
 
+        public CreateCasePayloadBuilder withDefendantBuilder(final DefendantBuilder defendantBuilder) {
+            this.defendantBuilder = defendantBuilder;
+            return this;
+        }
+
         public OffenceBuilder getOffenceBuilder() {
             return offenceBuilders.get(0);
         }
@@ -179,6 +184,7 @@ public class CreateCase {
         public String getUrn() {
             return urn;
         }
+
     }
 
     public static class DefendantBuilder {

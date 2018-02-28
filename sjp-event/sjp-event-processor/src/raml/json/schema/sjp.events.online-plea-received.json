@@ -29,6 +29,9 @@
   },
   "type": "object",
   "properties": {
+    "urn": {
+      "type": "string"
+    },
     "caseId": {
       "type": "string"
     },
@@ -80,35 +83,6 @@
         "dateOfBirth"
       ],
       "additionalProperties": false
-    },
-    "offences": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "plea": {
-            "type": "string",
-            "enum": ["NOT_GUILTY", "GUILTY"]
-          },
-          "comeToCourt": {
-            "type": "boolean"
-          },
-          "mitigation": {
-            "type": "string"
-          },
-          "notGuiltyBecause": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "plea"
-        ],
-        "additionalProperties": false
-      }
     },
     "witnessDispute": {
       "type": "string"
@@ -214,7 +188,6 @@
     "caseId",
     "defendantId",
     "personalDetails",
-    "offences",
     "financialMeans"
   ],
   "additionalProperties": false

@@ -21,7 +21,7 @@ public class UserAndGroupsService {
     @Inject
     private Enveloper enveloper;
 
-    private static final String PROSECUTOR_GROUP = "TFL Users";
+    private static final String PROSECUTOR_GROUP = "SJP Prosecutors";
     final private String LEGAL_ADVISOR_GROUP = "Legal Advisers";
     final private String COURT_ADMINISTRATOR_GROUP = "Court Administrators";
 

@@ -100,7 +100,6 @@ public class FixDefendantIT extends BaseIntegrationTest {
     @After
     public void tearDown() {
         caseSjpHelper.close();
-        fixDefendantDetailsHelper.close();
     }
 
 }

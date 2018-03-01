@@ -5,8 +5,8 @@ import static java.lang.Integer.valueOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static uk.gov.moj.sjp.it.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
 
-import uk.gov.moj.sjp.it.helper.AbstractTestHelper;
 import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 
 import java.io.IOException;
@@ -23,7 +23,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 @Ignore("TODO: ATCM-2683 created to fix the test as it's not testing anything")
-public class FindNotReadyCasesIT extends AbstractTestHelper {
+public class FindNotReadyCasesIT extends BaseIntegrationTest {
 
     private List<CaseSjpHelper> youngCases;
     private List<CaseSjpHelper> midCases;
@@ -64,7 +64,7 @@ public class FindNotReadyCasesIT extends AbstractTestHelper {
     }
 
     private JsonPath getNotReadyCases() {
-        final Response response = makeGetCall(getReadUrl("/cases/not-ready-grouped-by-age"), "application/vnd.sjp.query.not-ready-cases-grouped-by-age+json");
+        final Response response = makeGetCall("/cases/not-ready-grouped-by-age", "application/vnd.sjp.query.not-ready-cases-grouped-by-age+json");
         return JsonPath.with(response.readEntity(String.class));
     }
 }

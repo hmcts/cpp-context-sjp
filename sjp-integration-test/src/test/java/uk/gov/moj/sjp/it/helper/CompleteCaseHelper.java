@@ -15,9 +15,11 @@ import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_CASE_COMPLETED;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
+import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
+import javax.jms.MessageConsumer;
 import javax.json.Json;
 import javax.json.JsonObject;
 
@@ -26,13 +28,13 @@ import com.jayway.restassured.path.json.JsonPath;
 /**
  * Helper class for Complete Case IT.
  */
-public class CompleteCaseHelper extends AbstractTestHelper {
-
-    private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.command.complete-case+json";
+public class CompleteCaseHelper implements AutoCloseable {
 
     private static final String CASE_ID_PROPERTY = "caseId";
 
     private AbstractCaseHelper caseHelper;
+    private MessageConsumerClient publicConsumer = new MessageConsumerClient();
+    private MessageConsumer privateEventsConsumer;
 
     public CompleteCaseHelper(AbstractCaseHelper caseHelper) {
         this.caseHelper = caseHelper;
@@ -65,5 +67,10 @@ public class CompleteCaseHelper extends AbstractTestHelper {
                                 withJsonPath("$.completed", is(true))
                         ))
                 );
+    }
+
+    @Override
+    public void close() {
+        publicConsumer.close();
     }
 }

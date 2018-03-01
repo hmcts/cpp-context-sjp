@@ -61,7 +61,7 @@ public class UpdatePleaInterpreterIT extends BaseIntegrationTest {
             updatePleaHelper.updatePlea(addInterpreterRequest);
             updatePleaHelper.verifyInterpreterLanguage(language);
 
-            cancelPleaHelper.cancelPlea(Response.Status.ACCEPTED);
+            cancelPleaHelper.cancelPlea();
             cancelPleaHelper.verifyInterpreterCancelled();
         }
     }
@@ -72,7 +72,7 @@ public class UpdatePleaInterpreterIT extends BaseIntegrationTest {
         try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper)) {
             // Interpreter fields shouldn't be set for GUILTY pleas
             final JsonObject addPleaRequest = getPleaPayload(PLEA_GUILTY, true, "Swedish");
-            updatePleaHelper.updatePlea(addPleaRequest, Response.Status.BAD_REQUEST);
+            updatePleaHelper.updatePleaAndExpectBadRequest(addPleaRequest);
         }
     }
 

@@ -11,29 +11,30 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMat
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_PLEA_UPDATED;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_PLEA_UPDATED;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
-import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.http.RestPoller;
+import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
 import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import com.jayway.restassured.path.json.JsonPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UpdatePleaHelper extends AbstractTestHelper {
+public class UpdatePleaHelper implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdatePleaHelper.class);
 
     private CaseSjpHelper caseSjpHelper;
     private String offenceId;
     private final String writeUrl;
+    private MessageConsumerClient publicConsumer = new MessageConsumerClient();
+    private MessageConsumer publicEventsConsumer;
 
     public UpdatePleaHelper(CaseSjpHelper caseSjpHelper) {
         this(caseSjpHelper, EVENT_SELECTOR_PLEA_UPDATED, PUBLIC_EVENT_SELECTOR_PLEA_UPDATED);
@@ -42,28 +43,24 @@ public class UpdatePleaHelper extends AbstractTestHelper {
     public UpdatePleaHelper(CaseSjpHelper caseSjpHelper, String privateEvent, String publicEvent) {
         this.caseSjpHelper = caseSjpHelper;
         this.offenceId = caseSjpHelper.getSingleOffenceId();
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer(privateEvent);
         publicEventsConsumer = QueueUtil.publicEvents.createConsumer(publicEvent);
         writeUrl = String.format("/cases/%s/offences/%s/pleas", caseSjpHelper.getCaseId(), offenceId);
     }
 
-    private void updatePlea(final String payload,
-                            final String contentType,
-                            final Response.StatusType expectedStatus) {
+    private void requestHttpCallWithPayloadAndStatus(final String payload,
+                            final Response.Status expectedStatus) {
 
         LOGGER.info("Request payload: {}", new JsonPath(payload).prettify());
-        final MultivaluedMap<String, Object> map = new MultivaluedHashMap<>();
-        map.add(HeaderConstants.USER_ID, USER_ID);
-        final Response response = restClient.postCommand(getWriteUrl(writeUrl), contentType, payload, map);
-        assertThat(response.getStatus(), equalTo(expectedStatus.getStatusCode()));
+        
+        makePostCall(writeUrl, "application/vnd.sjp.update-plea+json", payload, expectedStatus); 
+    }
+    
+    public void updatePleaAndExpectBadRequest(final JsonObject payload) {
+        requestHttpCallWithPayloadAndStatus(payload.toString(), Response.Status.BAD_REQUEST);
     }
 
     public void updatePlea(final JsonObject payload) {
-        updatePlea(payload, Response.Status.ACCEPTED);
-    }
-
-    public void updatePlea(final JsonObject payload, final Response.StatusType expectedStatus) {
-        updatePlea(payload.toString(), "application/vnd.sjp.update-plea+json", expectedStatus);
+        requestHttpCallWithPayloadAndStatus(payload.toString(), Response.Status.ACCEPTED);
     }
 
     public void verifyInPublicTopic(final String plea, final String denialReason) {
@@ -97,4 +94,8 @@ public class UpdatePleaHelper extends AbstractTestHelper {
         );
     }
 
+    @Override
+    public void close() {
+        publicConsumer.close();
+    }
 }

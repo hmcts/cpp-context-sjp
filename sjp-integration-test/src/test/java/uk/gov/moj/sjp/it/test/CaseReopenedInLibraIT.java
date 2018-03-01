@@ -15,7 +15,7 @@ public class CaseReopenedInLibraIT extends BaseIntegrationTest {
     private CaseSjpHelper caseSjpHelper;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp()  {
         caseSjpHelper = new CaseSjpHelper();
         caseSjpHelper.createCase();
         caseSjpHelper.verifyCaseCreatedUsingId();

@@ -2,8 +2,8 @@ package uk.gov.moj.sjp.it.test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
 
-import uk.gov.moj.sjp.it.helper.AbstractTestHelper;
 import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 import uk.gov.moj.sjp.it.stub.AuthorisationServiceStub;
 
@@ -19,7 +19,7 @@ import javax.ws.rs.core.Response;
 import org.junit.Before;
 import org.junit.Test;
 
-public class OldestCaseAgeIT extends AbstractTestHelper {
+public class OldestCaseAgeIT extends BaseIntegrationTest {
 
     private long oldestCaseAge;
 
@@ -36,7 +36,7 @@ public class OldestCaseAgeIT extends AbstractTestHelper {
 
     @Test
     public void shouldGetOldestCaseAge() {
-        final Response response = makeGetCall(getReadUrl("/cases/oldest-age"),
+        final Response response = makeGetCall("/cases/oldest-age",
                 "application/vnd.sjp.query.oldest-case-age+json");
 
         try (final JsonReader jsonReader = Json.createReader(new StringReader(response.readEntity(String.class)))) {

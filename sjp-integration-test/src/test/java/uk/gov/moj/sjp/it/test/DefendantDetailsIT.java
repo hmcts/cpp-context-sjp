@@ -30,9 +30,8 @@ public class DefendantDetailsIT extends BaseIntegrationTest{
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown()  {
         caseSjpHelper.close();
-        defendantDetailsHelper.close();
     }
 
     @Test

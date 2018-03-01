@@ -4,17 +4,21 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
+import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
 import javax.jms.MessageConsumer;
 
 import com.jayway.restassured.path.json.JsonPath;
 
-public class CaseUpdateRejectedHelper extends AbstractTestHelper {
+public class CaseUpdateRejectedHelper implements AutoCloseable {
 
     private static final String CASE_ID = "caseId";
 
     private CaseSjpHelper caseSjpHelper;
+    private MessageConsumerClient publicConsumer = new MessageConsumerClient();
+    private MessageConsumer privateEventsConsumer;
+    private MessageConsumer publicEventsConsumer;
 
     public CaseUpdateRejectedHelper(CaseSjpHelper caseSjpHelper, String privateEvent, String publicEvent) {
         this.caseSjpHelper = caseSjpHelper;
@@ -36,4 +40,8 @@ public class CaseUpdateRejectedHelper extends AbstractTestHelper {
         assertThat(messageInQueue.get("reason"), equalTo(reasonExpected));
     }
 
+    @Override
+    public void close() {
+        publicConsumer.close();
+    }
 }

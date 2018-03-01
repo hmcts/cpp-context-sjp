@@ -20,7 +20,6 @@ import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.ws.rs.core.Response;
 
 import org.junit.After;
 import org.junit.Before;
@@ -54,8 +53,9 @@ public class UpdatePleaIT extends BaseIntegrationTest {
         try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
              final CancelPleaHelper cancelPleaHelper = new CancelPleaHelper(caseSjpHelper,
                      EVENT_SELECTOR_PLEA_CANCELLED, PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED);
-             final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper)) {
-
+             ) {
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
+                    
             caseSearchResultHelper.verifyPersonInfoByUrn();
 
             String plea = PLEA_GUILTY;
@@ -73,7 +73,7 @@ public class UpdatePleaIT extends BaseIntegrationTest {
             updatePleaHelper.verifyInPublicTopic(plea, null);
             updatePleaHelper.verifyPleaUpdated(plea, pleaMethod);
 
-            cancelPleaHelper.cancelPlea(Response.Status.ACCEPTED);
+            cancelPleaHelper.cancelPlea();
             cancelPleaHelper.verifyInPublicTopic();
             cancelPleaHelper.verifyPleaCancelled();
 

@@ -27,7 +27,7 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-public class CaseSearchResultHelper extends AbstractTestHelper {
+public class CaseSearchResultHelper  {
 
     public static final String CASE_SEARCH_RESULTS_MEDIA_TYPE = "application/vnd.sjp.query.case-search-results+json";
 
@@ -40,7 +40,6 @@ public class CaseSearchResultHelper extends AbstractTestHelper {
         this.caseSjpHelper = caseSjpHelper;
         this.lastName = "LLOYD";
         this.dateOfBirth = LocalDates.from("1980-07-15");
-
     }
 
     public void assignmentCreated() {

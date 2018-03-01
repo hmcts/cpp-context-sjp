@@ -2,7 +2,6 @@ package uk.gov.moj.sjp.it.test;
 
 import static uk.gov.moj.sjp.it.stub.MaterialStub.stubAddCaseMaterial;
 
-import uk.gov.moj.sjp.it.helper.AbstractTestHelper;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
 import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
@@ -12,6 +11,7 @@ import java.util.UUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 
 /**
  * Integration test for Add case document.
@@ -101,7 +101,7 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
             caseDocumentHelper.verifyInActiveMQ();
             caseDocumentHelper.verifyInPublicTopic();
             caseDocumentHelper.assertDocumentAdded();
-            caseDocumentHelper.assertDocumentNumber(UUID.fromString(AbstractTestHelper.USER_ID), 0, "SJPN", 1);
+            caseDocumentHelper.assertDocumentNumber(UUID.fromString(USER_ID), 0, "SJPN", 1);
         }
     }
 }

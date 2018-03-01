@@ -42,8 +42,6 @@ public class SearchCasesIT extends BaseIntegrationTest {
     @After
     public void tearDown() {
         caseSjpHelper.close();
-        caseSearchResultHelper.close();
-        defendantDetailsHelper.close();
     }
 
     private PersonalDetails generateExpectedPersonDetails(JsonObject payload) {
@@ -91,7 +89,7 @@ public class SearchCasesIT extends BaseIntegrationTest {
         assertThat(firstName, is("David"));
         assertThat(lastName, is("SMITH"));
     }
-
+    
     @Test
     public void verifyAssignmentCreationAndDeletionIsReflected() {
         //given case is created

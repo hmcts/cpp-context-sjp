@@ -20,18 +20,21 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.matchers.UuidStringMatcher.isAUuid;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
-import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED;
+import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseDocumentsByCaseId;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeMultipartFormPostCall;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
 import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.justice.services.test.utils.core.http.RestPoller;
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
+import uk.gov.moj.sjp.it.EventSelector;
 import uk.gov.moj.sjp.it.stub.MaterialStub;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
@@ -39,6 +42,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.jms.MessageConsumer;
+import javax.ws.rs.core.Response;
 
 import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy;
@@ -54,7 +58,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Helper for CaseDocument.
  */
-public class CaseDocumentHelper extends AbstractTestHelper {
+public class CaseDocumentHelper implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseDocumentHelper.class);
 
@@ -76,20 +80,20 @@ public class CaseDocumentHelper extends AbstractTestHelper {
     private UUID id;
     private String materialId;
 
-    private MessageConsumer privateCaseDocumentAlreadyExistsEventsConsumer;
     private MessageConsumerClient publicCaseDocumentAlreadyExistsConsumer = new MessageConsumerClient();
     private MessageConsumerClient publicCaseDocumentUploaded = new MessageConsumerClient();
+    private MessageConsumerClient publicConsumer = new MessageConsumerClient();
+    private MessageConsumer privateEventsConsumer;
 
     public CaseDocumentHelper(String caseId) {
         this.id = UUID.randomUUID();
         this.materialId = UUID.randomUUID().toString();
         this.caseId = caseId;
         privateEventsConsumer = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_CASE_DOCUMENT_ADDED);
-        publicConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED, PUBLIC_ACTIVE_MQ_TOPIC);
+        publicConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED, EventSelector.PUBLIC_ACTIVE_MQ_TOPIC);
 
-        privateCaseDocumentAlreadyExistsEventsConsumer = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS);
-        publicCaseDocumentAlreadyExistsConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS, PUBLIC_ACTIVE_MQ_TOPIC);
-        publicCaseDocumentUploaded.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED, PUBLIC_ACTIVE_MQ_TOPIC);
+        publicCaseDocumentAlreadyExistsConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS, EventSelector.PUBLIC_ACTIVE_MQ_TOPIC);
+        publicCaseDocumentUploaded.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED, EventSelector.PUBLIC_ACTIVE_MQ_TOPIC);
     }
 
     private void addCaseDocument(String payload, String documentType) {
@@ -109,7 +113,7 @@ public class CaseDocumentHelper extends AbstractTestHelper {
 
         request = jsonObject.toString();
         LOGGER.info("Adding case document with payload: {}", request);
-        makePostCall(userId, getWriteUrl(writeUrl), WRITE_MEDIA_TYPE, request);
+        makePostCall(userId, writeUrl, WRITE_MEDIA_TYPE, request, Response.Status.ACCEPTED);
     }
 
     public void addCaseDocument(String payload) {
@@ -140,7 +144,7 @@ public class CaseDocumentHelper extends AbstractTestHelper {
                 .replace("DOCUMENTTYPE", documentType);
         request = fileName;
         LOGGER.info("Uploading case document with payload from file: {}", request);
-        makeMultipartFormPostCall(userId, getWriteUrl(writeUrl), "caseDocument", request);
+        makeMultipartFormPostCall(userId, writeUrl, "caseDocument", request);
     }
 
     public void verifyInActiveMQ() {
@@ -257,7 +261,7 @@ public class CaseDocumentHelper extends AbstractTestHelper {
 
     @Override
     public void close() {
-        super.close();
+        publicConsumer.close();
         publicCaseDocumentAlreadyExistsConsumer.close();
         publicCaseDocumentUploaded.close();
     }

@@ -144,12 +144,11 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     @Test
     public void shouldPleadNotGuiltyOnlineThenFailWithSecondPleadAttemptAsNotAllowedTwoPleasAgainstSameOffence() {
         stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
-        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
-             final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
-             final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
                      SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
-
+            final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
             //1) First plea should be successful
             pleadOnlineAndConfirmSuccess(PleaType.NOT_GUILTY, pleadOnlineHelper, updatePleaHelper, caseSearchResultHelper);
 
@@ -163,12 +162,9 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     @Test
     public void shouldPleadGuiltyOnline() {
         stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
-        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
-             final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
-             final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
-             final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
-                     SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
-
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper)) {
+            final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
             pleadOnlineAndConfirmSuccess(PleaType.GUILTY, pleadOnlineHelper, updatePleaHelper, caseSearchResultHelper);
         }
     }
@@ -176,11 +172,9 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     @Test
     public void shouldPleadGuiltyRequestHearingOnline() {
         stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
-        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
-             final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
-             final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
-             final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
-                     SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper)) {
+            final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
             pleadOnlineAndConfirmSuccess(PleaType.GUILTY_REQUEST_HEARING, pleadOnlineHelper, updatePleaHelper, caseSearchResultHelper);
         }
     }
@@ -188,10 +182,9 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     @Test
     public void shouldRejectPleadOnlineWhenCaseAssigned() {
         stubGetAssignmentsByDomainObjectId(caseSjpHelper.getCaseId(), randomUUID());
-        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
-             final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
+        try (final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
                      SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
-
+            final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
             final JSONObject onlinePleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
             pleadOnlineHelper.pleadOnline(onlinePleaPayload.toString());
 
@@ -208,10 +201,9 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
         stubGetCaseDecisionsWithDecision(caseSjpHelper.getCaseId());
 
-        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
-             final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
+        try (final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
                      SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
-
+            final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
             final JSONObject onlinePleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
             pleadOnlineHelper.pleadOnline(onlinePleaPayload.toString());
 
@@ -219,10 +211,9 @@ public class PleadOnlineIT extends BaseIntegrationTest {
             caseUpdateRejectedHelper.verifyCaseUpdateRejectedPublicInActiveMQ(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name());
         }
 
-        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
-             final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
+        try (final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
                      SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
-
+            final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseSjpHelper);
             final JSONObject onlinePleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
             pleadOnlineHelper.pleadOnline(onlinePleaPayload.toString());
 

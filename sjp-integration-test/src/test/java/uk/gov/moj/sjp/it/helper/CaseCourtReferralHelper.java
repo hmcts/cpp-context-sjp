@@ -12,8 +12,11 @@ import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCasesReferredToCourt;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
+import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
+import uk.gov.moj.sjp.it.EventSelector;
 
 import java.time.LocalDate;
 import java.util.concurrent.TimeUnit;
@@ -21,17 +24,17 @@ import java.util.concurrent.TimeUnit;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-public class CaseCourtReferralHelper extends AbstractTestHelper {
+public class CaseCourtReferralHelper implements AutoCloseable {
 
     private static final String COMMAND_URL = "/cases/%s/court-referral";
-    private static final String CREATE_COURT_REFERRAL_MEDIA_TYPE = "application/vnd.sjp.create-court-referral+json";
     private static final String ACTION_COURT_REFERRAL_MEDIA_TYPE = "application/vnd.sjp.action-court-referral+json";
     public static final String CASES_REFERRED_TO_COURT_MEDIA_TYPE = "application/vnd.sjp.query.cases-referred-to-court+json";
 
     private final LocalDate hearingDate;
+    private MessageConsumerClient publicConsumer = new MessageConsumerClient();
 
     public CaseCourtReferralHelper() {
-        publicConsumer.startConsumer("public.sjp.court-referral-actioned", PUBLIC_ACTIVE_MQ_TOPIC);
+        publicConsumer.startConsumer("public.sjp.court-referral-actioned", EventSelector.PUBLIC_ACTIVE_MQ_TOPIC);
         this.hearingDate = LocalDate.now().plusWeeks(1);
     }
 
@@ -49,7 +52,7 @@ public class CaseCourtReferralHelper extends AbstractTestHelper {
 
     public void actionCourtReferral(final String caseId) {
 
-        makePostCall(getWriteUrl(String.format(COMMAND_URL, caseId)),
+        makePostCall(String.format(COMMAND_URL, caseId),
                 ACTION_COURT_REFERRAL_MEDIA_TYPE, "{}");
     }
 
@@ -83,4 +86,8 @@ public class CaseCourtReferralHelper extends AbstractTestHelper {
         return event;
     }
 
+    @Override
+    public void close() {
+        publicConsumer.close();
+    }
 }

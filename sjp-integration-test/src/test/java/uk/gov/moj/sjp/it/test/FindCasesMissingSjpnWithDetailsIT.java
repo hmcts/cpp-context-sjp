@@ -4,8 +4,8 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static uk.gov.moj.sjp.it.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
 
-import uk.gov.moj.sjp.it.helper.AbstractTestHelper;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
 import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 
@@ -23,7 +23,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class FindCasesMissingSjpnWithDetailsIT extends AbstractTestHelper {
+public class FindCasesMissingSjpnWithDetailsIT extends BaseIntegrationTest {
 
     private List<CaseSjpHelper> sjpCases;
     private List<CaseSjpHelper> sjpCasesWithSjpn;
@@ -94,11 +94,11 @@ public class FindCasesMissingSjpnWithDetailsIT extends AbstractTestHelper {
     }
 
     private JsonObject getCasesMissingSjpn() {
-        return getCasesMissingSjpnHelper(getReadUrl("/cases-missing-sjpn-with-details"));
+        return getCasesMissingSjpnHelper("/cases-missing-sjpn-with-details");
     }
 
     private JsonObject getCasesMissingSjpnPostedDaysAgo(int postedDaysAgo) {
-        String url = getReadUrl("/cases-missing-sjpn-with-details") + String.format("/?daysSincePosting=%d", postedDaysAgo);
+        String url = "/cases-missing-sjpn-with-details" + String.format("/?daysSincePosting=%d", postedDaysAgo);
         return getCasesMissingSjpnHelper(url);
     }
 

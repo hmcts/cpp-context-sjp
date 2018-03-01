@@ -15,7 +15,6 @@ import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
-import uk.gov.moj.sjp.it.EventSelector;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -140,12 +139,6 @@ public class CaseSjpHelper extends AbstractCaseHelper {
                 withJsonPath("$.defendant.personalDetails.contactDetails.home", equalTo(personalDetails.getContactDetails().getHome())),
                 withJsonPath("$.defendant.personalDetails.contactDetails.mobile", equalTo(personalDetails.getContactDetails().getMobile()))
         );
-    }
-
-
-    @Override
-    protected String getPublicEventSelector() {
-        return EventSelector.PUBLIC_EVENT_SELECTOR_SJP_CASE_CREATED;
     }
 
     public String getSingleDefendantId() {

@@ -19,6 +19,7 @@ import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_REOPENE
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UPDATED;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
@@ -26,14 +27,22 @@ import uk.gov.moj.sjp.it.util.QueueUtil;
 
 import java.time.LocalDate;
 
+import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 
 import com.jayway.restassured.path.json.JsonPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Helper class for Case reopened in libra IT.
  */
-public abstract class CaseReopenedInLibraHelper extends AbstractTestHelper {
+public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(CaseReopenedInLibraHelper.class);
+    
+    protected final MessageConsumer privateEventsConsumer;
+    protected final MessageConsumer publicEventsConsumer;
 
     public static class MarkCaseReopenedInLibraHelper extends CaseReopenedInLibraHelper {
         public MarkCaseReopenedInLibraHelper(final CaseSjpHelper caseSjpHelper) {
@@ -180,7 +189,7 @@ public abstract class CaseReopenedInLibraHelper extends AbstractTestHelper {
     protected void markCaseReopenedInLibra() {
         final String writeUrl = "/cases/CASEID/mark-reopened-in-libra".replace("CASEID", caseSjpHelper.getCaseId());
         final String request = getPayload(TEMPLATE_CASE_REOPENED_IN_LIBRA_PAYLOAD);
-        makePostCall(getWriteUrl(writeUrl), MARK_WRITE_MEDIA_TYPE, request);
+        makePostCall(writeUrl, MARK_WRITE_MEDIA_TYPE, request);
     }
 
     protected void updateCaseReopenedInLibra() {
@@ -190,13 +199,13 @@ public abstract class CaseReopenedInLibraHelper extends AbstractTestHelper {
                 .replace(markCaseReopenDetails.getReopenedDate().toString(), updateCaseReopenDetails.getReopenedDate().toString())
                 .replace(markCaseReopenDetails.getReason(), updateCaseReopenDetails.getReason());
 
-        makePostCall(getWriteUrl(writeUrl), UPDATE_WRITE_MEDIA_TYPE, request);
+        makePostCall(writeUrl, UPDATE_WRITE_MEDIA_TYPE, request);
     }
 
     protected void undoCaseReopenedInLibra() {
         final String writeUrl = "/cases/CASEID/undo-reopened-in-libra".replace("CASEID", caseSjpHelper.getCaseId());
 
-        makePostCall(getWriteUrl(writeUrl), UNDO_WRITE_MEDIA_TYPE, "{}");
+        makePostCall(writeUrl, UNDO_WRITE_MEDIA_TYPE, "{}");
     }
 
     public abstract void verifyEventInActiveMQ();
@@ -206,4 +215,14 @@ public abstract class CaseReopenedInLibraHelper extends AbstractTestHelper {
     public abstract void assertCaseReopenedDetailsSet();
 
     public abstract void call();
+
+    @Override
+    public void close()  {
+        try {
+            privateEventsConsumer.close();
+            publicEventsConsumer.close();
+        } catch (JMSException e) {
+            LOGGER.warn("Exception while closing consumers", e);
+        }
+    }
 }

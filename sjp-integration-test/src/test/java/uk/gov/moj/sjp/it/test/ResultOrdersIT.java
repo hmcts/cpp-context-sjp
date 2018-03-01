@@ -9,8 +9,7 @@ import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.sjp.it.helper.AbstractTestHelper.USER_ID;
-import static uk.gov.moj.sjp.it.helper.AbstractTestHelper.getReadUrl;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;

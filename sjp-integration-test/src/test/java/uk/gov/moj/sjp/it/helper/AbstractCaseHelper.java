@@ -12,18 +12,20 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMat
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 import static uk.gov.moj.sjp.it.util.SchemaValidatorUtil.validateAgainstSchema;
 
 import uk.gov.justice.services.test.utils.core.http.ResponseData;
+import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
 
 import com.jayway.restassured.path.json.JsonPath;
 import org.json.JSONObject;
@@ -33,10 +35,9 @@ import org.json.JSONObject;
  * Helper to class to support Write / Read operations for assignment
  */
 @SuppressWarnings("WeakerAccess")
-public abstract class AbstractCaseHelper extends AbstractTestHelper {
+public abstract class AbstractCaseHelper implements AutoCloseable {
 
     public static final String GET_CASE_BY_ID_MEDIA_TYPE = "application/vnd.sjp.query.case+json";
-    public static final String GET_CASE_BY_URN_MEDIA_TYPE = "application/vnd.sjp.query.case-by-urn+json";
     public static final String ASSOCIATE_ENTERPRISE_ID_CONTENT_TYPE = "application/vnd.enterprise-id+json";
     public static final String PROSECUTING_AUTHORITY_PREFIX = TFL.name();
     protected String caseId;
@@ -44,16 +45,15 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
     protected String request;
     protected String caseUrn;
     protected JsonPath jsonResponse;
+    private MessageConsumerClient publicConsumer = new MessageConsumerClient();
+    private MessageConsumer privateEventsConsumer;
 
     public AbstractCaseHelper() {
         caseId = UUID.randomUUID().toString();
         offenceId = UUID.randomUUID().toString();
         caseUrn = PROSECUTING_AUTHORITY_PREFIX + RandomGenerator.integer(100000000, 999999999).next();
         privateEventsConsumer = QueueUtil.privateEvents.createConsumer(getEventSelector());
-        publicEventsConsumer = QueueUtil.publicEvents.createConsumer(getPublicEventSelector());
     }
-
-    protected abstract String getPublicEventSelector();
 
     public void createCase() {
         String payload = getPayloadForCreatingCase();
@@ -61,12 +61,12 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
     }
 
     private void createCase(String payload) {
-        makePostCall(getWriteUrl("/cases"), getWriteMediaType(), payload);
+        makePostCall("/cases", getWriteMediaType(), payload);
     }
 
     public void associateEnterpriseIdWIthCase() {
         final String payload = getPayloadForEnterpriseId();
-        makePostCall(getWriteUrl("/cases/" + getCaseId()), ASSOCIATE_ENTERPRISE_ID_CONTENT_TYPE, payload);
+        makePostCall("/cases/" + getCaseId(), ASSOCIATE_ENTERPRISE_ID_CONTENT_TYPE, payload);
     }
 
     /**
@@ -191,5 +191,10 @@ public abstract class AbstractCaseHelper extends AbstractTestHelper {
 
     public String getCaseUrn() {
         return caseUrn;
+    }
+
+    @Override
+    public void close() {
+        publicConsumer.close();
     }
 }

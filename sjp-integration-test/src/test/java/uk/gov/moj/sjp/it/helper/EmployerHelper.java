@@ -9,6 +9,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.MessageConsumer;
@@ -26,7 +27,7 @@ public class EmployerHelper implements AutoCloseable {
                 "public.sjp.employer-updated", "public.sjp.employer-deleted", "public.sjp.case-update-rejected");
     }
 
-    public void updateEmployer(final String caseId, final String defendantId, final JsonObject payload) {
+    public void updateEmployer(final UUID caseId, final String defendantId, final JsonObject payload) {
         final String resource = String.format("/cases/%s/defendant/%s/employer", caseId, defendantId);
         final String contentType = "application/vnd.sjp.update-employer+json";
         HttpClientUtil.makePostCall(resource, contentType, payload.toString());

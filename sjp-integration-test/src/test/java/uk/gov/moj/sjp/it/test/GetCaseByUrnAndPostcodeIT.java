@@ -1,9 +1,8 @@
 package uk.gov.moj.sjp.it.test;
 
-import static uk.gov.moj.sjp.it.helper.AbstractCaseHelper.PROSECUTING_AUTHORITY_PREFIX;
 import static uk.gov.moj.sjp.it.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 
-import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CitizenHelper;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
 
@@ -24,12 +23,10 @@ public class GetCaseByUrnAndPostcodeIT {
         // Stub feature switching (Authorisation service)
         stubEnableAllCapabilities();
 
-        try (final CaseSjpHelper caseSjpHelper = new CaseSjpHelper()) {
-            caseSjpHelper.createCase();
-            caseSjpHelper.verifyCaseCreatedUsingId();
+        CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
 
-            urn = caseSjpHelper.getCaseUrn();
-        }
+        urn = createCasePayloadBuilder.getUrn();
 
         ReferenceDataStub.stubQueryOffences("/GetCaseByUrnAndPostcodeIT/referencedata.query.offences.json");
     }
@@ -53,7 +50,7 @@ public class GetCaseByUrnAndPostcodeIT {
     @Test
     public void shouldFindCaseByUrnWithoutPrefixAndPostcode() {
         final JsonObject expected = Json.createReader(getClass().getResourceAsStream("/GetCaseByUrnAndPostcodeIT/expected.json")).readObject();
-        String urnWithoutPrefix = urn.replace(PROSECUTING_AUTHORITY_PREFIX, "");
+        String urnWithoutPrefix = urn.replace(CreateCase.CreateCasePayloadBuilder.PROSECUTING_AUTHORITY_PREFIX, "");
         citizenHelper.verifyCaseByPersonUrnWithoutPrefixAndPostcode(expected, urnWithoutPrefix, urn, POSTCODE);
     }
 }

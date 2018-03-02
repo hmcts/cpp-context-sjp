@@ -10,15 +10,15 @@ import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.sjp.it.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
 
-import uk.gov.moj.sjp.it.helper.AbstractCaseHelper;
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
-import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.json.Json;
@@ -31,13 +31,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
-    private List<CaseSjpHelper> sjpCases;
-    private List<CaseSjpHelper> sjpCasesWithoutSjpn;
-    private List<CaseSjpHelper> sjpCasesWithSjpn;
+    private List<CreateCase.CreateCasePayloadBuilder> sjpCases;
+    private List<CreateCase.CreateCasePayloadBuilder> sjpCasesWithoutSjpn;
+    private List<CreateCase.CreateCasePayloadBuilder> sjpCasesWithSjpn;
     private List<CaseDocumentHelper> sjpnDocuments;
 
-    private List<CaseSjpHelper> sjpCasesYoungerThan3Days;
-    private List<CaseSjpHelper> sjpCasesOlderThan3Days;
+    private List<CreateCase.CreateCasePayloadBuilder> sjpCasesYoungerThan3Days;
+    private List<CreateCase.CreateCasePayloadBuilder> sjpCasesOlderThan3Days;
 
 
     // TODO: close Helpers
@@ -46,8 +46,16 @@ public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
     public void init() {
         stubEnableAllCapabilities();
         final LocalDate now = LocalDate.now();
-        sjpCasesYoungerThan3Days = Arrays.asList(new CaseSjpHelper(now.minusDays(1)), new CaseSjpHelper(now.minusDays(2)), new CaseSjpHelper(now.minusDays(3)));
-        sjpCasesOlderThan3Days = Arrays.asList(new CaseSjpHelper(now.minusDays(4)), new CaseSjpHelper(now.minusDays(5)), new CaseSjpHelper(now.minusDays(6)));
+        sjpCasesYoungerThan3Days = Arrays.asList(
+                CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(1)),
+                CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(2)),
+                CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(3))
+        );
+        sjpCasesOlderThan3Days = Arrays.asList(
+                CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(4)),
+                CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(5)),
+                CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(6))
+        );
 
         sjpCases = Stream.concat(sjpCasesYoungerThan3Days.stream(), sjpCasesOlderThan3Days.stream()).collect(toList());
 
@@ -55,12 +63,11 @@ public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
         sjpCasesWithoutSjpn = sjpCases.subList(2, sjpCases.size());
 
         sjpnDocuments = sjpCasesWithSjpn.stream()
-                .map(caseHelper -> new CaseDocumentHelper(caseHelper.getCaseId())).collect(toList());
+                .map(caseHelper -> new CaseDocumentHelper(caseHelper.getId().toString())).collect(toList());
     }
 
     @After
     public void tearDown() {
-        sjpCases.forEach(CaseSjpHelper::close);
         sjpnDocuments.forEach(CaseDocumentHelper::close);
     }
 
@@ -77,8 +84,8 @@ public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
         final JsonObject casesWithoutIds = getCasesMissingSjpn(0);
         final JsonObject casesOlderThan3DaysWithId = getCasesMissingSjpnPostedDaysAgo(3);
         final JsonObject casesOlderThan3DaysWithoutId = getCasesMissingSjpnPostedDaysAgo(3, 0);
-        final List<String> actualCaseIds = extractCaseIds(casesWithIds);
-        final List<String> actualCasesOlderThan3DaysIds = extractCaseIds(casesOlderThan3DaysWithId);
+        final List<UUID> actualCaseIds = extractCaseIds(casesWithIds);
+        final List<UUID> actualCasesOlderThan3DaysIds = extractCaseIds(casesOlderThan3DaysWithId);
 
         assertTrue(actualCaseIds.containsAll(extractCaseIds(sjpCasesWithoutSjpn)));
         assertTrue(disjoint(actualCaseIds, extractCaseIds(sjpCasesWithSjpn)));
@@ -95,7 +102,7 @@ public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
     }
 
     private void createCasesAndDocuments() {
-        sjpCases.forEach(CaseSjpHelper::createAndVerifyCase);
+        sjpCases.forEach(CreateCase::createCaseForPayloadBuilder);
         sjpnDocuments.forEach(CaseDocumentHelper::addDocumentAndVerifyAdded);
     }
 
@@ -124,13 +131,13 @@ public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
         return Json.createReader(new StringReader(response.readEntity(String.class))).readObject();
     }
 
-    private List<String> extractCaseIds(List<? extends AbstractCaseHelper> cases) {
+    private List<UUID> extractCaseIds(List<CreateCase.CreateCasePayloadBuilder> cases) {
         return cases.stream()
-                .map(AbstractCaseHelper::getCaseId)
+                .map(CreateCase.CreateCasePayloadBuilder::getId)
                 .collect(toList());
     }
 
-    private List<String> extractCaseIds(final JsonObject cases) {
-        return cases.getJsonArray("ids").getValuesAs(JsonString.class).stream().map(JsonString::getString).collect(toList());
+    private List<UUID> extractCaseIds(final JsonObject cases) {
+        return cases.getJsonArray("ids").getValuesAs(JsonString.class).stream().map(JsonString::getString).map(UUID::fromString).collect(toList());
     }
 }

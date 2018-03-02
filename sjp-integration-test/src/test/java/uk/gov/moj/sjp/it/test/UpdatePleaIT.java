@@ -12,49 +12,40 @@ import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithDecis
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
-import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 import uk.gov.moj.sjp.it.helper.CaseUpdateRejectedHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class UpdatePleaIT extends BaseIntegrationTest {
 
-    private CaseSjpHelper caseSjpHelper;
-
     static final String PLEA_GUILTY = "GUILTY";
     static final String PLEA_GUILTY_REQUEST_HEARING = "PLEA_GUILTY_REQUEST_HEARING";
     static final String PLEA_NOT_GUILTY = "NOT_GUILTY";
+    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
     @Before
     public void setUp() {
-        caseSjpHelper = new CaseSjpHelper();
-        caseSjpHelper.createCase();
-        caseSjpHelper.verifyCaseCreatedUsingId();
-
-        stubGetCaseDecisionsWithNoDecision(caseSjpHelper.getCaseId());
-    }
-
-    @After
-    public void tearDown() {
-        caseSjpHelper.close();
+        this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
+        stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
     }
 
     @Test
     public void shouldAddUpdateAndCancelPlea() {
-        stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
-        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
-             final CancelPleaHelper cancelPleaHelper = new CancelPleaHelper(caseSjpHelper,
+        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId());
+             final CancelPleaHelper cancelPleaHelper = new CancelPleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(),
                      EVENT_SELECTOR_PLEA_CANCELLED, PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED);
              ) {
-            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(createCasePayloadBuilder);
                     
             caseSearchResultHelper.verifyPersonInfoByUrn();
 
@@ -83,9 +74,9 @@ public class UpdatePleaIT extends BaseIntegrationTest {
 
     @Test
     public void shouldRejectAddPleaWhenCaseAssigned() {
-        stubGetAssignmentsByDomainObjectId(caseSjpHelper.getCaseId(), randomUUID());
-        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
-             final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
+        stubGetAssignmentsByDomainObjectId(createCasePayloadBuilder.getId(), randomUUID());
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId());
+             final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(createCasePayloadBuilder.getId(),
                      SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
 
             updatePleaHelper.updatePlea(getPleaPayload(PLEA_GUILTY));
@@ -96,11 +87,11 @@ public class UpdatePleaIT extends BaseIntegrationTest {
 
     @Test
     public void shouldRejectAddPleaWhenCaseCompleted() {
-        stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
-        stubGetCaseDecisionsWithDecision(caseSjpHelper.getCaseId());
+        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
+        stubGetCaseDecisionsWithDecision(createCasePayloadBuilder.getId());
 
-        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
-             final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId());
+             final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(createCasePayloadBuilder.getId(),
                      SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
 
             updatePleaHelper.updatePlea(getPleaPayload(PLEA_GUILTY));
@@ -114,12 +105,12 @@ public class UpdatePleaIT extends BaseIntegrationTest {
      */
     @Test
     public void shouldRejectAddPleaWhenCaseCompletedTwice() {
-        stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
-        stubGetCaseDecisionsWithDecision(caseSjpHelper.getCaseId());
+        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
+        stubGetCaseDecisionsWithDecision(createCasePayloadBuilder.getId());
 
-        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper,
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(),
                 SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED);
-             final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
+             final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(createCasePayloadBuilder.getId(),
                      SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
 
             updatePleaHelper.updatePlea(getPleaPayload(PLEA_GUILTY));
@@ -127,9 +118,9 @@ public class UpdatePleaIT extends BaseIntegrationTest {
             caseUpdateRejectedHelper.verifyCaseUpdateRejectedPublicInActiveMQ(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name());
         }
 
-        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper,
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(),
                 SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED);
-             final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(caseSjpHelper,
+             final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(createCasePayloadBuilder.getId(),
                      SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
 
             updatePleaHelper.updatePlea(getPleaPayload(PLEA_GUILTY));

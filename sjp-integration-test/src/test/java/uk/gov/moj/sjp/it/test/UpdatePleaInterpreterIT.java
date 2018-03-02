@@ -6,40 +6,32 @@ import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDec
 import static uk.gov.moj.sjp.it.test.UpdatePleaIT.PLEA_GUILTY;
 import static uk.gov.moj.sjp.it.test.UpdatePleaIT.PLEA_NOT_GUILTY;
 
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
-import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.ws.rs.core.Response;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class UpdatePleaInterpreterIT extends BaseIntegrationTest {
 
-    private CaseSjpHelper caseSjpHelper;
+    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
     @Before
     public void setUp() {
-        caseSjpHelper = new CaseSjpHelper();
-        caseSjpHelper.createCase();
-        caseSjpHelper.verifyCaseCreatedUsingId();
-        stubGetCaseDecisionsWithNoDecision(caseSjpHelper.getCaseId());
-        stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
-    }
-
-    @After
-    public void tearDown() {
-        caseSjpHelper.close();
+        this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
+        stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
+        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
     }
 
     @Test
     public void shouldAddUpdateAndCancelPleaAndInterpreterLanguage() {
-        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper);
-             final CancelPleaHelper cancelPleaHelper = new CancelPleaHelper(caseSjpHelper)) {
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId());
+             final CancelPleaHelper cancelPleaHelper = new CancelPleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId())) {
 
             String language = "Swahili";
             final JsonObject addPleaRequest = getPleaPayload(PLEA_NOT_GUILTY, true, language);
@@ -69,7 +61,7 @@ public class UpdatePleaInterpreterIT extends BaseIntegrationTest {
     // We could also test other invalid bad requests but these should already be covered by unit tests
     @Test
     public void shouldRejectInvalidInterpreterRequest() {
-        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(caseSjpHelper)) {
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId())) {
             // Interpreter fields shouldn't be set for GUILTY pleas
             final JsonObject addPleaRequest = getPleaPayload(PLEA_GUILTY, true, "Swedish");
             updatePleaHelper.updatePleaAndExpectBadRequest(addPleaRequest);

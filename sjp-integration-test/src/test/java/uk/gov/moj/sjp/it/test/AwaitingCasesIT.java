@@ -9,8 +9,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.findAwaitingCases;
 
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
-import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 
 import org.junit.After;
 import org.junit.Before;
@@ -20,26 +20,22 @@ public class AwaitingCasesIT extends BaseIntegrationTest {
 
     public static final String AWAITING_CASES_MEDIA_TYPE = "application/vnd.sjp.query.awaiting-cases+json";
 
-    private CaseSjpHelper caseSjpHelper;
     private CaseDocumentHelper caseDocumentHelper;
     private String offenceCode;
 
     @Before
-    public void setUp() throws Exception {
-
-        caseSjpHelper = new CaseSjpHelper();
-        caseSjpHelper.createCase();
-        caseSjpHelper.verifyCaseCreatedUsingId();
-
-        caseDocumentHelper = new CaseDocumentHelper(caseSjpHelper.getCaseId());
+    public void setUp()  {
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
+        
+        caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId().toString());
         caseDocumentHelper.addDocumentAndVerifyAdded(); // add an SJPN document
 
-        offenceCode = caseSjpHelper.getCaseResponseUsingId().get("defendant.offences[0].offenceCode");
+        offenceCode = createCasePayloadBuilder.getOffenceBuilder().getLibraOffenceCode();
     }
 
     @After
     public void tearDown() {
-        caseSjpHelper.close();
         caseDocumentHelper.close();
     }
 

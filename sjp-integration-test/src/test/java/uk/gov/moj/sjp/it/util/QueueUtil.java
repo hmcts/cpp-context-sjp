@@ -1,9 +1,13 @@
 package uk.gov.moj.sjp.it.util;
 
+import static java.util.stream.Collectors.joining;
+import static org.apache.commons.lang3.StringUtils.wrap;
 import static uk.gov.moj.sjp.it.util.OptionalPresent.ifPresent;
 
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.Function;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -20,7 +24,7 @@ import org.apache.activemq.artemis.jms.client.ActiveMQTopic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class QueueUtil {
+public class QueueUtil implements  AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QueueUtil.class);
 
@@ -37,7 +41,6 @@ public class QueueUtil {
     private Topic topic;
 
     public static final QueueUtil privateEvents = new QueueUtil("sjp.event");
-
     public static final QueueUtil publicEvents = new QueueUtil("public.event");
 
     private QueueUtil(final String topicName) {
@@ -63,18 +66,14 @@ public class QueueUtil {
     }
 
     public MessageConsumer createConsumerForMultipleSelectors(final String... eventSelectors) {
-        StringBuffer str = new StringBuffer("CPPNAME IN (");
-        for (int i = 0; i < eventSelectors.length; i++) {
-            if (i != 0) {
-                str.append(", ");
-            }
-
-            str.append("'" + eventSelectors[i] + "'");
-        }
-        str.append(")");
+        final Function<String, String> wrapInQuotes = (str) -> wrap(str, "'");
+        
+        final String eventSelectorsExpression = Arrays.stream(eventSelectors)
+                .map(wrapInQuotes)
+                .collect(joining(",", "CPPNAME IN (", ")"));
 
         try {
-            return session.createConsumer(topic, str.toString());
+            return session.createConsumer(topic, eventSelectorsExpression);
         } catch (JMSException e) {
             throw new RuntimeException(e);
         }
@@ -107,5 +106,10 @@ public class QueueUtil {
         } catch (JMSException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void close() throws Exception {
+        connection.close();
     }
 }

@@ -8,6 +8,7 @@ import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessageAsJsonObject;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.MessageConsumer;
@@ -25,7 +26,7 @@ public class FinancialMeansHelper implements AutoCloseable {
                 "public.sjp.financial-means-updated", "public.sjp.case-update-rejected");
     }
 
-    public void updateFinancialMeans(final String caseId, final String defendantId, final JsonObject payload) {
+    public void updateFinancialMeans(final UUID caseId, final String defendantId, final JsonObject payload) {
         final String resource = String.format("/cases/%s/defendant/%s/financial-means", caseId, defendantId);
         final String contentType = "application/vnd.sjp.update-financial-means+json";
         HttpClientUtil.makePostCall(resource, contentType, payload.toString());

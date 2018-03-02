@@ -3,8 +3,10 @@ package uk.gov.moj.sjp.it.helper;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.lang.String.format;
 
+import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Response;
@@ -18,13 +20,11 @@ public class PleadOnlineHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PleadOnlineHelper.class);
 
-    private String caseId;
-    private String defendantId;
     private final String writeUrl;
 
-    public PleadOnlineHelper(CaseSjpHelper caseSjpHelper) {
-        this.caseId = caseSjpHelper.getCaseId();
-        this.defendantId = caseSjpHelper.getSingleDefendantId();
+    public PleadOnlineHelper(UUID caseId) {
+        
+        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
         writeUrl = String.format("/cases/%s/defendants/%s/plead-online", caseId, defendantId);
     }
 

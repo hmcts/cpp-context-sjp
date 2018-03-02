@@ -17,8 +17,11 @@ import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDec
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
-import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.UpdateInterpreterHelper;
+import uk.gov.moj.sjp.it.pollingquery.CasePoller;
+
+import java.util.UUID;
 
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -32,29 +35,27 @@ import org.junit.Test;
 public class UpdateInterpreterIT extends BaseIntegrationTest {
 
     private UpdateInterpreterHelper updateInterpreterHelper;
-    private CaseSjpHelper caseSjpHelper;
+    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
     @Before
     public void setUp() {
         updateInterpreterHelper = new UpdateInterpreterHelper();
-        caseSjpHelper = new CaseSjpHelper();
-        caseSjpHelper.createCase();
-        caseSjpHelper.verifyCaseCreatedUsingId();
+        this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
     }
 
     @After
     public void tearDown() throws Exception {
-        caseSjpHelper.close();
         updateInterpreterHelper.close();
     }
 
     @Test
     public void shouldUpdateInterpreter() {
-        stubGetCaseDecisionsWithNoDecision(caseSjpHelper.getCaseId());
-        stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
+        stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
+        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
 
-        final String defendantId = caseSjpHelper.getSingleDefendantId();
-        final String caseId = caseSjpHelper.getCaseId();
+        final UUID caseId = createCasePayloadBuilder.getId();
+        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
 
         updateInterpreterHelper.updateInterpreter(caseId, defendantId, updateInterpreterPayload("french"));
 
@@ -71,10 +72,10 @@ public class UpdateInterpreterIT extends BaseIntegrationTest {
 
     @Test
     public void shouldRejectInterpreterUpdateIfCaseIsAlreadyCompleted() {
-        stubGetCaseDecisionsWithDecision(caseSjpHelper.getCaseId());
+        stubGetCaseDecisionsWithDecision(createCasePayloadBuilder.getId());
 
-        final String defendantId = caseSjpHelper.getSingleDefendantId();
-        final String caseId = caseSjpHelper.getCaseId();
+        final UUID caseId = createCasePayloadBuilder.getId();
+        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
 
         updateInterpreterHelper.updateInterpreter(caseId, defendantId, updateInterpreterPayload("french"));
 
@@ -84,11 +85,11 @@ public class UpdateInterpreterIT extends BaseIntegrationTest {
 
     @Test
     public void shouldRejectInterpreterUpdateIfCaseIsAssignedToSomebodyElse() {
-        stubGetCaseDecisionsWithNoDecision(caseSjpHelper.getCaseId());
-        stubGetAssignmentsByDomainObjectId(caseSjpHelper.getCaseId(), randomUUID());
+        stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
+        stubGetAssignmentsByDomainObjectId(createCasePayloadBuilder.getId(), randomUUID());
 
-        final String defendantId = caseSjpHelper.getSingleDefendantId();
-        final String caseId = caseSjpHelper.getCaseId();
+        final UUID caseId = createCasePayloadBuilder.getId();
+        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
 
         updateInterpreterHelper.updateInterpreter(caseId, defendantId, updateInterpreterPayload("french"));
 
@@ -96,9 +97,9 @@ public class UpdateInterpreterIT extends BaseIntegrationTest {
         assertThat(event, getCaseUpdateRejectedPublicEventMatcher(caseId, CaseUpdateRejected.RejectReason.CASE_ASSIGNED.name()));
     }
 
-    private Matcher getCaseUpdateRejectedPublicEventMatcher(final String caseId, final String reason) {
+    private Matcher getCaseUpdateRejectedPublicEventMatcher(final UUID caseId, final String reason) {
         final Matcher payloadMatcher = allOf(
-                withJsonPath("$.caseId", is(caseId)),
+                withJsonPath("$.caseId", is(caseId.toString())),
                 withJsonPath("$.reason", is(reason)));
 
         return jsonEnvelope()

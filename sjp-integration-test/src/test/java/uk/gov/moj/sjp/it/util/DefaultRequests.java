@@ -2,7 +2,6 @@ package uk.gov.moj.sjp.it.util;
 
 
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.moj.sjp.it.helper.AbstractCaseHelper.GET_CASE_BY_ID_MEDIA_TYPE;
 import static uk.gov.moj.sjp.it.helper.CaseCourtReferralHelper.CASES_REFERRED_TO_COURT_MEDIA_TYPE;
 import static uk.gov.moj.sjp.it.helper.CaseDocumentHelper.GET_CASE_DOCUMENTS_MEDIA_TYPE;
 import static uk.gov.moj.sjp.it.helper.CaseSearchResultHelper.CASE_SEARCH_RESULTS_MEDIA_TYPE;
@@ -15,6 +14,7 @@ import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 
 public class DefaultRequests {
+    private static final String GET_CASE_BY_ID_MEDIA_TYPE = "application/vnd.sjp.query.case+json";
 
     public static RequestParamsBuilder getCaseById(final String caseId) {
         return getCaseById(caseId, USER_ID);

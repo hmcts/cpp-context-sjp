@@ -21,7 +21,8 @@ import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDom
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
@@ -44,57 +45,76 @@ public class AssignmentIT extends BaseIntegrationTest {
 
     private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
 
-    private static final String TFL = "TFL", TVL = "TVL", DVLA = "DVLA";
     private static final String GUILTY = "GUILTY", NOT_GUILTY = "NOT_GUILTY", GUILTY_REQUEST_HEARING = "GUILTY_REQUEST_HEARING";
     private static final String LONDON_COURT = "2572", WEST_MIDLANDS_COURT = "2905", OTHER_COURT = "3000";
     private static final String MAGISTRATE = "Alan Smith";
 
-    private CaseSjpHelper tflPiaCaseHelper, tflPleadedGuiltyCaseHelper, tflPleadedNotGuiltyCaseHelper, tflPendingWithdrawalCaseHelper,
-            tvlPiaCaseHelper, tvlPleadedNotGuiltyCaseHelper, dvlaPiaCaseHelper, dvlaPleadedNotGuiltyCaseHelper;
+    private CreateCase.CreateCasePayloadBuilder tflPiaCasePayloadBuilder, tflPleadedGuiltyCasePayloadBuilder, tflPleadedNotGuiltyCasePayloadBuilder, tflPendingWithdrawalCasePayloadBuilder,
+            tvlPiaCasePayloadBuilder, tvlPleadedGuiltyRequestHearingCasePayloadBuilder, dvlaPiaCasePayloadBuilder, dvlaPleadedNotGuiltyCasePayloadBuilder;
 
     private SessionHelper sessionHelper;
-
-    private List<CaseSjpHelper> caseHelpers;
 
     @Before
     public void init() throws Exception {
         sessionHelper = new SessionHelper();
 
-        tflPiaCaseHelper = new CaseSjpHelper(now().minusDays(30), TFL);
-        tflPleadedGuiltyCaseHelper = new CaseSjpHelper(now().minusDays(10), TFL);
-        tflPleadedNotGuiltyCaseHelper = new CaseSjpHelper(now().minusDays(10), TFL);
-        tflPendingWithdrawalCaseHelper = new CaseSjpHelper(now().minusDays(5), TFL);
-        tvlPiaCaseHelper = new CaseSjpHelper(now().minusDays(30), TVL);
-        tvlPleadedNotGuiltyCaseHelper = new CaseSjpHelper(now().minusDays(10), TVL);
-        dvlaPiaCaseHelper = new CaseSjpHelper(now().minusDays(31), DVLA);
-        dvlaPleadedNotGuiltyCaseHelper = new CaseSjpHelper(now().minusDays(5), DVLA);
+        tflPiaCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
+                .withPostingDate(now().minusDays(30));
+
+        tflPleadedGuiltyCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
+                .withPostingDate(now().minusDays(10));
+
+
+        tflPleadedNotGuiltyCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
+                .withPostingDate(now().minusDays(10));
+        
+        tflPendingWithdrawalCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
+                .withPostingDate(now().minusDays(5));
+        
+        tvlPiaCasePayloadBuilder = 
+                CreateCase.CreateCasePayloadBuilder.withDefaults()
+                        .withPostingDate(now().minusDays(30))
+                        .withProsecutingAuthority(ProsecutingAuthority.TVL);
+        
+        
+        tvlPleadedGuiltyRequestHearingCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
+                .withPostingDate(now().minusDays(10))
+                .withProsecutingAuthority(ProsecutingAuthority.TVL);
+        
+        
+        dvlaPiaCasePayloadBuilder =CreateCase.CreateCasePayloadBuilder.withDefaults()
+                .withPostingDate(now().minusDays(31))
+                .withProsecutingAuthority(ProsecutingAuthority.DVLA);
+
+        dvlaPleadedNotGuiltyCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
+                .withPostingDate(now().minusDays(5))
+                .withProsecutingAuthority(ProsecutingAuthority.DVLA);
 
         databaseCleaner.cleanAll();
 
-        caseHelpers = Arrays.asList(
-                tflPiaCaseHelper,
-                tflPleadedGuiltyCaseHelper,
-                tflPleadedNotGuiltyCaseHelper,
-                tflPendingWithdrawalCaseHelper,
-                tvlPleadedNotGuiltyCaseHelper,
-                tvlPiaCaseHelper,
-                dvlaPleadedNotGuiltyCaseHelper,
-                dvlaPiaCaseHelper);
+        final List<CreateCase.CreateCasePayloadBuilder> caseHelpers = Arrays.asList(
+                tflPiaCasePayloadBuilder,
+                tflPleadedGuiltyCasePayloadBuilder,
+                tflPleadedNotGuiltyCasePayloadBuilder,
+                tflPendingWithdrawalCasePayloadBuilder,
+                tvlPleadedGuiltyRequestHearingCasePayloadBuilder,
+                tvlPiaCasePayloadBuilder,
+                dvlaPleadedNotGuiltyCasePayloadBuilder,
+                dvlaPiaCasePayloadBuilder);
 
         caseHelpers.forEach(helper -> {
-            stubGetEmptyAssignmentsByDomainObjectId(helper.getCaseId());
-            stubGetCaseDecisionsWithNoDecision(helper.getCaseId());
+            stubGetEmptyAssignmentsByDomainObjectId(helper.getId());
+            stubGetCaseDecisionsWithNoDecision(helper.getId());
         });
 
-        caseHelpers.forEach(CaseSjpHelper::createCase);
-        caseHelpers.forEach(CaseSjpHelper::verifyCaseCreatedUsingId);
+        caseHelpers.forEach(CreateCase::createCaseForPayloadBuilder);
 
-        new UpdatePleaHelper(tflPleadedGuiltyCaseHelper).updatePlea(pleaPayload(GUILTY));
-        new UpdatePleaHelper(tflPleadedNotGuiltyCaseHelper).updatePlea(pleaPayload(NOT_GUILTY));
-        new UpdatePleaHelper(tvlPleadedNotGuiltyCaseHelper).updatePlea(pleaPayload(GUILTY_REQUEST_HEARING));
-        new UpdatePleaHelper(dvlaPleadedNotGuiltyCaseHelper).updatePlea(pleaPayload(NOT_GUILTY));
+        new UpdatePleaHelper(tflPleadedGuiltyCasePayloadBuilder.getId(), tflPleadedGuiltyCasePayloadBuilder.getOffenceId()).updatePlea(pleaPayload(GUILTY));
+        new UpdatePleaHelper(tflPleadedNotGuiltyCasePayloadBuilder.getId(), tflPleadedNotGuiltyCasePayloadBuilder.getOffenceId()).updatePlea(pleaPayload(NOT_GUILTY));
+        new UpdatePleaHelper(tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getId(), tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getOffenceId()).updatePlea(pleaPayload(GUILTY_REQUEST_HEARING));
+        new UpdatePleaHelper(dvlaPleadedNotGuiltyCasePayloadBuilder.getId(), dvlaPleadedNotGuiltyCasePayloadBuilder.getOffenceId()).updatePlea(pleaPayload(NOT_GUILTY));
 
-        final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(tflPendingWithdrawalCaseHelper, SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
+        final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(tflPendingWithdrawalCasePayloadBuilder.getId(), SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
 
         offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(UUID.randomUUID());
         offencesWithdrawalRequestHelper.verifyAllOffencesWithdrawalRequestedInPublicActiveMQ();
@@ -103,49 +123,48 @@ public class AssignmentIT extends BaseIntegrationTest {
     @After
     public void close() throws Exception {
         sessionHelper.close();
-        caseHelpers.forEach(CaseSjpHelper::close);
     }
 
     @Test
     public void shouldAssignCasesAccordingToSessionTypeAndLocationAndPriorities() {
-        verifyCaseAssignedFromMagistrateSession(OTHER_COURT, dvlaPiaCaseHelper.getCaseId());
+        verifyCaseAssignedFromMagistrateSession(OTHER_COURT, dvlaPiaCasePayloadBuilder.getId());
         verifyCaseNotFoundInMagistrateSession(OTHER_COURT);
-        verifyCaseAssignedFromMagistrateSession(WEST_MIDLANDS_COURT, tvlPiaCaseHelper.getCaseId());
+        verifyCaseAssignedFromMagistrateSession(WEST_MIDLANDS_COURT, tvlPiaCasePayloadBuilder.getId());
         verifyCaseNotFoundInMagistrateSession(WEST_MIDLANDS_COURT);
-        verifyCaseAssignedFromMagistrateSession(LONDON_COURT, tflPleadedGuiltyCaseHelper.getCaseId());
-        verifyCaseAssignedFromMagistrateSession(LONDON_COURT, tflPiaCaseHelper.getCaseId());
+        verifyCaseAssignedFromMagistrateSession(LONDON_COURT, tflPleadedGuiltyCasePayloadBuilder.getId());
+        verifyCaseAssignedFromMagistrateSession(LONDON_COURT, tflPiaCasePayloadBuilder.getId());
         verifyCaseNotFoundInMagistrateSession(LONDON_COURT);
 
-        verifyCaseAssignedFromDelegatedPowersSession(OTHER_COURT, dvlaPleadedNotGuiltyCaseHelper.getCaseId());
+        verifyCaseAssignedFromDelegatedPowersSession(OTHER_COURT, dvlaPleadedNotGuiltyCasePayloadBuilder.getId());
         verifyCaseNotFoundInDelegatedPowersSession(OTHER_COURT);
-        verifyCaseAssignedFromDelegatedPowersSession(WEST_MIDLANDS_COURT, tvlPleadedNotGuiltyCaseHelper.getCaseId());
+        verifyCaseAssignedFromDelegatedPowersSession(WEST_MIDLANDS_COURT, tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getId());
         verifyCaseNotFoundInDelegatedPowersSession(WEST_MIDLANDS_COURT);
-        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT, tflPendingWithdrawalCaseHelper.getCaseId());
-        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT, tflPleadedNotGuiltyCaseHelper.getCaseId());
+        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT, tflPendingWithdrawalCasePayloadBuilder.getId());
+        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT, tflPleadedNotGuiltyCasePayloadBuilder.getId());
         verifyCaseNotFoundInDelegatedPowersSession(LONDON_COURT);
     }
 
     @Test
     public void londonCourtCanHandleNonTvlCases() {
-        verifyCaseAssignedFromMagistrateSession(LONDON_COURT, tflPleadedGuiltyCaseHelper.getCaseId());
-        verifyCaseAssignedFromMagistrateSession(LONDON_COURT, dvlaPiaCaseHelper.getCaseId());
-        verifyCaseAssignedFromMagistrateSession(LONDON_COURT, tflPiaCaseHelper.getCaseId());
+        verifyCaseAssignedFromMagistrateSession(LONDON_COURT, tflPleadedGuiltyCasePayloadBuilder.getId());
+        verifyCaseAssignedFromMagistrateSession(LONDON_COURT, dvlaPiaCasePayloadBuilder.getId());
+        verifyCaseAssignedFromMagistrateSession(LONDON_COURT, tflPiaCasePayloadBuilder.getId());
         verifyCaseNotFoundInMagistrateSession(LONDON_COURT);
 
-        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT, tflPendingWithdrawalCaseHelper.getCaseId());
-        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT, tflPleadedNotGuiltyCaseHelper.getCaseId());
-        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT, dvlaPleadedNotGuiltyCaseHelper.getCaseId());
+        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT, tflPendingWithdrawalCasePayloadBuilder.getId());
+        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT, tflPleadedNotGuiltyCasePayloadBuilder.getId());
+        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT, dvlaPleadedNotGuiltyCasePayloadBuilder.getId());
         verifyCaseNotFoundInDelegatedPowersSession(LONDON_COURT);
     }
 
     @Test
     public void westMidlandsCourtCanHandleNonTflCases() {
-        verifyCaseAssignedFromMagistrateSession(WEST_MIDLANDS_COURT, dvlaPiaCaseHelper.getCaseId());
-        verifyCaseAssignedFromMagistrateSession(WEST_MIDLANDS_COURT, tvlPiaCaseHelper.getCaseId());
+        verifyCaseAssignedFromMagistrateSession(WEST_MIDLANDS_COURT, dvlaPiaCasePayloadBuilder.getId());
+        verifyCaseAssignedFromMagistrateSession(WEST_MIDLANDS_COURT, tvlPiaCasePayloadBuilder.getId());
         verifyCaseNotFoundInMagistrateSession(WEST_MIDLANDS_COURT);
 
-        verifyCaseAssignedFromDelegatedPowersSession(WEST_MIDLANDS_COURT, tvlPleadedNotGuiltyCaseHelper.getCaseId());
-        verifyCaseAssignedFromDelegatedPowersSession(WEST_MIDLANDS_COURT, dvlaPleadedNotGuiltyCaseHelper.getCaseId());
+        verifyCaseAssignedFromDelegatedPowersSession(WEST_MIDLANDS_COURT, tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getId());
+        verifyCaseAssignedFromDelegatedPowersSession(WEST_MIDLANDS_COURT, dvlaPleadedNotGuiltyCasePayloadBuilder.getId());
         verifyCaseNotFoundInDelegatedPowersSession(WEST_MIDLANDS_COURT);
     }
 
@@ -165,17 +184,17 @@ public class AssignmentIT extends BaseIntegrationTest {
 
         assertThat(assignedCaseByLegalAdviser.keySet(), containsInAnyOrder(legalAdvisers.toArray()));
         assertThat(assignedCaseByLegalAdviser.values(), containsInAnyOrder(
-                tflPiaCaseHelper.getCaseId(),
-                tflPleadedGuiltyCaseHelper.getCaseId(),
-                dvlaPiaCaseHelper.getCaseId())
+                tflPiaCasePayloadBuilder.getId().toString(),
+                tflPleadedGuiltyCasePayloadBuilder.getId().toString(),
+                dvlaPiaCasePayloadBuilder.getId().toString())
         );
     }
 
-    private void verifyCaseAssignedFromMagistrateSession(final String courtCode, final String caseId) {
+    private void verifyCaseAssignedFromMagistrateSession(final String courtCode, final UUID caseId) {
         verifyCaseAssigned(courtCode, Optional.of(MAGISTRATE), caseId);
     }
 
-    private void verifyCaseAssignedFromDelegatedPowersSession(final String courtCode, final String caseId) {
+    private void verifyCaseAssignedFromDelegatedPowersSession(final String courtCode, final UUID caseId) {
         verifyCaseAssigned(courtCode, Optional.empty(), caseId);
     }
 
@@ -187,7 +206,7 @@ public class AssignmentIT extends BaseIntegrationTest {
         verifyCaseNotFound(courtCode, Optional.empty());
     }
 
-    private void verifyCaseAssigned(final String courtCode, final Optional<String> magistrate, final String caseId) {
+    private void verifyCaseAssigned(final String courtCode, final Optional<String> magistrate, final UUID caseId) {
         final UUID sessionId = randomUUID();
         final UUID userId = randomUUID();
 
@@ -199,7 +218,7 @@ public class AssignmentIT extends BaseIntegrationTest {
                 jsonEnvelope(
                         metadata().withName("sjp.events.case-assigned"),
                         payload().isJson(allOf(
-                                withJsonPath("$.caseId", equalTo(caseId)),
+                                withJsonPath("$.caseId", equalTo(caseId.toString())),
                                 withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                                 withJsonPath("$.assigneeId", equalTo(userId.toString())),
                                 withJsonPath("$.caseAssignmentType", equalTo(magistrate.map(m -> MAGISTRATE_DECISION).orElse(DELEGATED_POWERS_DECISION).toString()))

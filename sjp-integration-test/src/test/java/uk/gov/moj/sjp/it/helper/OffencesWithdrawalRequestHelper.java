@@ -23,20 +23,20 @@ public class OffencesWithdrawalRequestHelper implements AutoCloseable {
     private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.request-withdrawal-all-offences+json";
     private static final String CASE_ID = "caseId";
 
-    private CaseSjpHelper caseSjpHelper;
+    private UUID caseId;
     private String request;
     private MessageConsumerClient publicConsumer = new MessageConsumerClient();
     private MessageConsumer privateEventsConsumer;
     private MessageConsumer publicEventsConsumer;
 
-    public OffencesWithdrawalRequestHelper(CaseSjpHelper caseSjpHelper, String privateEvent, String publicEvent) {
-        this.caseSjpHelper = caseSjpHelper;
+    public OffencesWithdrawalRequestHelper(UUID caseId, String privateEvent, String publicEvent) {
+        this.caseId = caseId;
         privateEventsConsumer = QueueUtil.privateEvents.createConsumer(privateEvent);
         publicEventsConsumer = QueueUtil.publicEvents.createConsumer(publicEvent);
     }
 
     public void requestWithdrawalForAllOffences(final UUID userId) {
-        final String writeUrl = String.format("/cases/%s/offences-withdrawal-request", caseSjpHelper.getCaseId());
+        final String writeUrl = String.format("/cases/%s/offences-withdrawal-request", caseId);
         final JSONObject jsonObject = new JSONObject("{}");
         request = jsonObject.toString();
 
@@ -63,14 +63,14 @@ public class OffencesWithdrawalRequestHelper implements AutoCloseable {
         final JsonPath jsRequest = new JsonPath(request);
         LOGGER.info("Request payload: {}", jsRequest.prettify());
         final JsonPath messageInQueue = retrieveMessage(messageConsumer);
-        assertThat(messageInQueue.get(CASE_ID), equalTo(caseSjpHelper.getCaseId()));
+        assertThat(messageInQueue.get(CASE_ID), equalTo(caseId.toString()));
     }
 
     private void verifyCaseUpdateRejectedInActiveMQ(final MessageConsumer messageConsumer, final String expectedReason) {
         final JsonPath jsRequest = new JsonPath(request);
         LOGGER.info("Request payload: {}", jsRequest.prettify());
         final JsonPath messageInQueue = retrieveMessage(messageConsumer);
-        assertThat(messageInQueue.get(CASE_ID), equalTo(caseSjpHelper.getCaseId()));
+        assertThat(messageInQueue.get(CASE_ID), equalTo(caseId.toString()));
         assertThat(messageInQueue.get("reason"), equalTo(expectedReason));
     }
 

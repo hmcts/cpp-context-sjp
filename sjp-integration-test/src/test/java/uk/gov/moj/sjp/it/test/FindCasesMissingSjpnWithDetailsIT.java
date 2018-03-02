@@ -6,8 +6,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static uk.gov.moj.sjp.it.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
 
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
-import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 
 import java.io.StringReader;
 import java.time.LocalDate;
@@ -19,26 +19,25 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class FindCasesMissingSjpnWithDetailsIT extends BaseIntegrationTest {
 
-    private List<CaseSjpHelper> sjpCases;
-    private List<CaseSjpHelper> sjpCasesWithSjpn;
-    private List<CaseSjpHelper> sjpCasesWithoutSjpn;
+    private List<CreateCase.CreateCasePayloadBuilder> sjpCases;
+    private List<CreateCase.CreateCasePayloadBuilder> sjpCasesWithSjpn;
+    private List<CreateCase.CreateCasePayloadBuilder> sjpCasesWithoutSjpn;
 
-    private List<CaseSjpHelper> sjpCasesYoungerThan21Days;
-    private List<CaseSjpHelper> sjpCasesOlderThan21Days;
+    private List<CreateCase.CreateCasePayloadBuilder> sjpCasesYoungerThan21Days;
+    private List<CreateCase.CreateCasePayloadBuilder> sjpCasesOlderThan21Days;
 
-    private List<CaseSjpHelper> sjpCasesYoungerThan21DaysWithSjpn;
-    private List<CaseSjpHelper> sjpCasesYoungerThan21DaysWithoutSjpn;
-    private List<CaseSjpHelper> combinedSjpCasesYoungerThan21Days;
+    private List<CreateCase.CreateCasePayloadBuilder> sjpCasesYoungerThan21DaysWithSjpn;
+    private List<CreateCase.CreateCasePayloadBuilder> sjpCasesYoungerThan21DaysWithoutSjpn;
+    private List<CreateCase.CreateCasePayloadBuilder> combinedSjpCasesYoungerThan21Days;
 
-    private List<CaseSjpHelper> sjpCasesOlderThan21DaysWithSjpn;
-    private List<CaseSjpHelper> sjpCasesOlderThan21DaysWithoutSjpn;
-    private List<CaseSjpHelper> combinedSjpCasesOlderThan21Days;
+    private List<CreateCase.CreateCasePayloadBuilder> sjpCasesOlderThan21DaysWithSjpn;
+    private List<CreateCase.CreateCasePayloadBuilder> sjpCasesOlderThan21DaysWithoutSjpn;
+    private List<CreateCase.CreateCasePayloadBuilder> combinedSjpCasesOlderThan21Days;
 
     private List<CaseDocumentHelper> sjpnDocuments;
 
@@ -46,8 +45,16 @@ public class FindCasesMissingSjpnWithDetailsIT extends BaseIntegrationTest {
     public void init() {
         stubEnableAllCapabilities();
         final LocalDate now = LocalDate.now();
-        sjpCasesYoungerThan21Days = Arrays.asList(new CaseSjpHelper(now.minusDays(21)), new CaseSjpHelper(now.minusDays(20)), new CaseSjpHelper(now.minusDays(19)));
-        sjpCasesOlderThan21Days = Arrays.asList(new CaseSjpHelper(now.minusDays(22)), new CaseSjpHelper(now.minusDays(23)), new CaseSjpHelper(now.minusDays(24)));
+        sjpCasesYoungerThan21Days = Arrays.asList(
+                CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(21)),
+                CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(20)),
+                CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(19))
+        );
+        sjpCasesOlderThan21Days = Arrays.asList(
+                CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(22)),
+                CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(23)),
+                CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(24))
+        );
 
         sjpCasesYoungerThan21DaysWithSjpn = sjpCasesYoungerThan21Days.subList(0, 1);
         sjpCasesYoungerThan21DaysWithoutSjpn = sjpCasesYoungerThan21Days.subList(1, sjpCasesYoungerThan21Days.size());
@@ -61,14 +68,9 @@ public class FindCasesMissingSjpnWithDetailsIT extends BaseIntegrationTest {
         sjpCasesWithoutSjpn = Stream.concat(sjpCasesYoungerThan21DaysWithoutSjpn.stream(), sjpCasesOlderThan21DaysWithoutSjpn.stream()).collect(toList());
 
         sjpnDocuments = sjpCasesWithSjpn.stream()
-                .map(caseHelper -> new CaseDocumentHelper(caseHelper.getCaseId())).collect(toList());
+                .map(casePayloadBuilder -> new CaseDocumentHelper(casePayloadBuilder.getId().toString())).collect(toList());
 
         sjpCases = Stream.concat(combinedSjpCasesYoungerThan21Days.stream(), combinedSjpCasesOlderThan21Days.stream()).collect(toList());
-    }
-
-    @After
-    public void tearDown() {
-        sjpCases.forEach(CaseSjpHelper::close);
     }
 
     @Test
@@ -89,7 +91,7 @@ public class FindCasesMissingSjpnWithDetailsIT extends BaseIntegrationTest {
     }
 
     private void createCasesAndDocumentsAndPeople() {
-        sjpCases.forEach(CaseSjpHelper::createAndVerifyCase);
+        sjpCases.forEach(CreateCase::createCaseForPayloadBuilder);
         sjpnDocuments.forEach(CaseDocumentHelper::addDocumentAndVerifyAdded);
     }
 

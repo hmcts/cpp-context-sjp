@@ -15,6 +15,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.MessageConsumer;
@@ -31,7 +32,7 @@ public class UpdateInterpreterHelper implements AutoCloseable {
         messageConsumer = QueueUtil.publicEvents.createConsumer("public.sjp.case-update-rejected");
     }
 
-    public void updateInterpreter(final String caseId, final String defendantId, final JsonObject payload) {
+    public void updateInterpreter(final UUID caseId, final String defendantId, final JsonObject payload) {
         final String resource = String.format("/cases/%s/defendants/%s", caseId, defendantId);
         final String contentType = "application/vnd.sjp.update-interpreter+json";
         HttpClientUtil.makePostCall(resource, contentType, payload.toString());
@@ -43,7 +44,7 @@ public class UpdateInterpreterHelper implements AutoCloseable {
         return HttpClientUtil.makeGetCall(resource, contentType);
     }
 
-    public String pollForInterpreter(final String caseId, final String defendantId, final String expectedInterpreterLanguage) {
+    public String pollForInterpreter(final UUID caseId, final String defendantId, final String expectedInterpreterLanguage) {
         final Matcher interpreterMatcher = allOf(
                 withJsonPath("language", equalTo(expectedInterpreterLanguage)),
                 withJsonPath("needed", equalTo(true))
@@ -51,7 +52,7 @@ public class UpdateInterpreterHelper implements AutoCloseable {
         return pollForInterpreter(caseId, defendantId, interpreterMatcher);
     }
 
-    public String pollForEmptyInterpreter(final String caseId, final String defendantId) {
+    public String pollForEmptyInterpreter(final UUID caseId, final String defendantId) {
         final Matcher interpreterMatcher = allOf(
                 withoutJsonPath("language"),
                 withJsonPath("needed", equalTo(false))
@@ -59,7 +60,7 @@ public class UpdateInterpreterHelper implements AutoCloseable {
         return pollForInterpreter(caseId, defendantId, interpreterMatcher);
     }
 
-    private String pollForInterpreter(final String caseId, final String defendantId, final Matcher interpreterMatcher) {
+    private String pollForInterpreter(final UUID caseId, final String defendantId, final Matcher interpreterMatcher) {
         return await().atMost(20, TimeUnit.SECONDS).until(() -> getCase(caseId.toString()).readEntity(String.class),
                 isJson(withJsonPath("$.defendant",
                         isJson(allOf(

@@ -17,8 +17,9 @@ import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDec
 
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.Income;
-import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
+import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -34,29 +35,28 @@ import org.junit.Test;
 public class UpdateFinancialMeanIT extends BaseIntegrationTest {
 
     private FinancialMeansHelper financialMeansHelper;
-    private CaseSjpHelper caseSjpHelper;
+    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
+
 
     @Before
     public void setUp() {
         financialMeansHelper = new FinancialMeansHelper();
-        caseSjpHelper = new CaseSjpHelper();
-        caseSjpHelper.createCase();
-        caseSjpHelper.verifyCaseCreatedUsingId();
+        this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
     }
 
     @After
     public void tearDown() throws Exception {
-        caseSjpHelper.close();
         financialMeansHelper.close();
     }
 
     @Test
     public void shouldUpdateAndFetchFinancialMeansWithoutOptionalFields() {
-        stubGetCaseDecisionsWithNoDecision(caseSjpHelper.getCaseId());
-        stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
+        stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
+        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
 
-        final String defendantId = caseSjpHelper.getSingleDefendantId();
-        final String caseId = caseSjpHelper.getCaseId();
+        final UUID caseId = createCasePayloadBuilder.getId();
+        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
 
         final JsonObject payload = createObjectBuilder()
                 .add("income", createObjectBuilder())
@@ -78,11 +78,11 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
 
     @Test
     public void shouldAddUpdateAndFetchFinancialMeans() {
-        stubGetCaseDecisionsWithNoDecision(caseSjpHelper.getCaseId());
-        stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
+        stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
+        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
 
-        final String defendantId = caseSjpHelper.getSingleDefendantId();
-        final String caseId = caseSjpHelper.getCaseId();
+        final UUID caseId = createCasePayloadBuilder.getId();
+        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
         final Income originalIncome = new Income(MONTHLY, BigDecimal.valueOf(1000.50));
         final Income updatedIncome = new Income(WEEKLY, BigDecimal.valueOf(200.0));
         final Benefits updatedBenefits = new Benefits(false, "", null);
@@ -140,10 +140,10 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
     @Test
     public void shouldRejectFinancialMeansUpdateIfCaseIsAlreadyCompleted() throws Exception {
 
-        stubGetCaseDecisionsWithDecision(caseSjpHelper.getCaseId());
+        stubGetCaseDecisionsWithDecision(createCasePayloadBuilder.getId());
 
-        final String defendantId = caseSjpHelper.getSingleDefendantId();
-        final String caseId = caseSjpHelper.getCaseId();
+        final UUID caseId = createCasePayloadBuilder.getId();
+        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
         final Income income = new Income(MONTHLY, BigDecimal.valueOf(1000.50));
         final Benefits benefits = new Benefits(true, "Benefits type", null);
 
@@ -157,7 +157,7 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
                 .build();
 
         final Matcher expectedCaseUpdateRejectedMatcher = isJson(allOf(
-                withJsonPath("$.caseId", is(caseId)),
+                withJsonPath("$.caseId", is(caseId.toString())),
                 withJsonPath("$.reason", is("CASE_COMPLETED"))
         ));
 

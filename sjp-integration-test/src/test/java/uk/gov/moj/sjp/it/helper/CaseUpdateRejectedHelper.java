@@ -7,6 +7,8 @@ import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
+import java.util.UUID;
+
 import javax.jms.MessageConsumer;
 
 import com.jayway.restassured.path.json.JsonPath;
@@ -15,13 +17,13 @@ public class CaseUpdateRejectedHelper implements AutoCloseable {
 
     private static final String CASE_ID = "caseId";
 
-    private CaseSjpHelper caseSjpHelper;
+    private UUID caseId;
     private MessageConsumerClient publicConsumer = new MessageConsumerClient();
     private MessageConsumer privateEventsConsumer;
     private MessageConsumer publicEventsConsumer;
 
-    public CaseUpdateRejectedHelper(CaseSjpHelper caseSjpHelper, String privateEvent, String publicEvent) {
-        this.caseSjpHelper = caseSjpHelper;
+    public CaseUpdateRejectedHelper(UUID caseId, String privateEvent, String publicEvent) {
+        this.caseId = caseId;
         privateEventsConsumer = QueueUtil.privateEvents.createConsumer(privateEvent);
         publicEventsConsumer = QueueUtil.publicEvents.createConsumer(publicEvent);
     }
@@ -36,7 +38,7 @@ public class CaseUpdateRejectedHelper implements AutoCloseable {
 
     private void verifyCaseUpdateRejectedInActiveMQ(final MessageConsumer messageConsumer, String reasonExpected) {
         final JsonPath messageInQueue = retrieveMessage(messageConsumer);
-        assertThat(messageInQueue.get(CASE_ID), equalTo(caseSjpHelper.getCaseId()));
+        assertThat(messageInQueue.get(CASE_ID), equalTo(caseId.toString()));
         assertThat(messageInQueue.get("reason"), equalTo(reasonExpected));
     }
 

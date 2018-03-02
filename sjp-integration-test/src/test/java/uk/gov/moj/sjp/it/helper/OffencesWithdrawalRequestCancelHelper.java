@@ -23,20 +23,20 @@ public class OffencesWithdrawalRequestCancelHelper implements AutoCloseable {
     private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.cancel-request-withdrawal-all-offences+json";
     private static final String CASE_ID = "caseId";
 
-    private CaseSjpHelper caseSjpHelper;
+    private UUID caseId;
     private String request;
     private MessageConsumerClient publicConsumer = new MessageConsumerClient();
     private MessageConsumer privateEventsConsumer;
     private MessageConsumer publicEventsConsumer;
 
-    public OffencesWithdrawalRequestCancelHelper(final CaseSjpHelper caseSjpHelper, final String privateEvent, final String publicEvent) {
-        this.caseSjpHelper = caseSjpHelper;
+    public OffencesWithdrawalRequestCancelHelper(final UUID caseId, final String privateEvent, final String publicEvent) {
+        this.caseId = caseId;
         privateEventsConsumer = QueueUtil.privateEvents.createConsumer(privateEvent);
         publicEventsConsumer = QueueUtil.publicEvents.createConsumer(publicEvent);
     }
 
     public void cancelRequestWithdrawalForAllOffences(final UUID userId) {
-        final String writeUrl = String.format("/cases/%s/offences-withdrawal-request", caseSjpHelper.getCaseId());
+        final String writeUrl = String.format("/cases/%s/offences-withdrawal-request", caseId);
         final JSONObject jsonObject = new JSONObject("{}");
         request = jsonObject.toString();
 
@@ -55,7 +55,7 @@ public class OffencesWithdrawalRequestCancelHelper implements AutoCloseable {
         final JsonPath jsRequest = new JsonPath(request);
         LOGGER.info("Request payload: {}", jsRequest.prettify());
         final JsonPath messageInQueue = retrieveMessage(messageConsumer);
-        assertThat(messageInQueue.get(CASE_ID), equalTo(caseSjpHelper.getCaseId()));
+        assertThat(messageInQueue.get(CASE_ID), equalTo(caseId.toString()));
     }
 
     @Override

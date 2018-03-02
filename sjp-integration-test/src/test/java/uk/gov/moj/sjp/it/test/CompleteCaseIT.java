@@ -1,9 +1,8 @@
 package uk.gov.moj.sjp.it.test;
 
-import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CompleteCaseHelper;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,22 +11,17 @@ import org.junit.Test;
  */
 public class CompleteCaseIT extends BaseIntegrationTest {
 
-    private CaseSjpHelper caseHelper;
+    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
     @Before
-    public void setUp() throws Exception {
-        caseHelper = new CaseSjpHelper();
-        caseHelper.createAndVerifyCase();
-    }
-
-    @After
-    public void tearDown() {
-        caseHelper.close();
+    public void setUp()  {
+        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
     }
 
     @Test
     public void completeCase() {
-        try (final CompleteCaseHelper completeCaseHelper = new CompleteCaseHelper(caseHelper)) {
+        try (final CompleteCaseHelper completeCaseHelper = new CompleteCaseHelper(createCasePayloadBuilder.getId())) {
             completeCaseHelper.completeCase();
             completeCaseHelper.verifyInActiveMQ();
             completeCaseHelper.assertCaseCompleted();

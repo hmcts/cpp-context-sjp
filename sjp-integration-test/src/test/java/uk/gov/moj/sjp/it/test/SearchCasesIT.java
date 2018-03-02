@@ -7,41 +7,36 @@ import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
-import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
 import uk.gov.moj.sjp.it.helper.DefendantDetailsHelper;
+import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.FileUtil;
+import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import javax.json.JsonObject;
 
 import com.jayway.restassured.path.json.JsonPath;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class SearchCasesIT extends BaseIntegrationTest {
 
-    private CaseSjpHelper caseSjpHelper;
+    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private CaseSearchResultHelper caseSearchResultHelper;
     private DefendantDetailsHelper defendantDetailsHelper;
 
     @Before
     public void createSjpCaseAndVerifyInQueue() {
         defendantDetailsHelper = new DefendantDetailsHelper();
-        caseSjpHelper = new CaseSjpHelper();
-        caseSjpHelper.createCase();
-        //This is required, otherwise get method for defendant id can't be invoked
-        caseSjpHelper.verifyCaseCreatedUsingId();
+        this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
 
-        caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
-    }
-
-    @After
-    public void tearDown() {
-        caseSjpHelper.close();
+        caseSearchResultHelper = new CaseSearchResultHelper(createCasePayloadBuilder);
     }
 
     private PersonalDetails generateExpectedPersonDetails(JsonObject payload) {
@@ -77,12 +72,15 @@ public class SearchCasesIT extends BaseIntegrationTest {
 
         JsonObject updatedDefendantPayload = FileUtil.givenPayload("/payload/sjp.update-defendant-details.json");
 
-        defendantDetailsHelper.updateDefendantDetails(caseSjpHelper.getCaseId(), caseSjpHelper.getSingleDefendantId(), updatedDefendantPayload);
+        final UUID caseId = createCasePayloadBuilder.getId();
+        defendantDetailsHelper.updateDefendantDetails(caseId, CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id"), updatedDefendantPayload);
         caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth("SMITH", LocalDates.from("1980-07-16"));
-        caseSearchResultHelper.verifyPersonNotFound(caseSjpHelper.getCaseUrn(), caseSearchResultHelper.getLastName());
-        caseSjpHelper.verifyPersonInfo(generateExpectedPersonDetails(updatedDefendantPayload), true);
+        caseSearchResultHelper.verifyPersonNotFound(createCasePayloadBuilder.getUrn(), caseSearchResultHelper.getLastName());
 
-        final JsonPath updatedCase = caseSjpHelper.getCaseResponseUsingId();
+        PersonInfoVerifier personInfoVerifier = new PersonInfoVerifier(caseId);
+        personInfoVerifier.verifyPersonInfo(generateExpectedPersonDetails(updatedDefendantPayload), true);
+
+        final JsonPath updatedCase = CasePoller.pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId());
         final String firstName = updatedCase.getString("defendant.personalDetails.firstName");
         final String lastName = updatedCase.getString("defendant.personalDetails.lastName");
 

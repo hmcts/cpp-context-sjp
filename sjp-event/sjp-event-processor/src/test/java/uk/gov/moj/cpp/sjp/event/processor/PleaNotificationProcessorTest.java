@@ -12,8 +12,6 @@ import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithR
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
-import static uk.gov.moj.cpp.sjp.event.processor.PleaNotificationProcessor.REPLY_TO_ADDRESS;
-import static uk.gov.moj.cpp.sjp.event.processor.PleaNotificationProcessor.TEMPLATE_ID;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -23,13 +21,14 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
-import uk.gov.moj.cpp.sjp.domain.Outgoing;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.UUID;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -57,6 +56,13 @@ public class PleaNotificationProcessorTest {
     @Captor
     private ArgumentCaptor<JsonEnvelope> argumentCaptor;
 
+    @Before
+    public void before() {
+        // use defaults
+        pleaNotificationProcessor.replyToAddress = "noreply@cjscp.org.uk";
+        pleaNotificationProcessor.templateId = "32d520ca-4d6e-4b5c-a9f3-e761d4ffd9a2";
+    }
+
     @Test
     public void shouldSendPleaNotificationEmail() {
 
@@ -81,9 +87,9 @@ public class PleaNotificationProcessorTest {
                 withMetadataEnvelopedFrom(event).withName("notificationnotify.send-email-notification"),
                 payload().isJson(allOf(
                         withJsonPath("$.notificationId", notNullValue()),
-                        withJsonPath("$.templateId", is(TEMPLATE_ID)),
+                        withJsonPath("$.templateId", is("32d520ca-4d6e-4b5c-a9f3-e761d4ffd9a2")),
                         withJsonPath("$.sendToAddress", is(email)),
-                        withJsonPath("$.replyToAddress", is(REPLY_TO_ADDRESS)),
+                        withJsonPath("$.replyToAddress", is("noreply@cjscp.org.uk")),
                         withJsonPath("$.personalisation.urn", is(urn))
                 ))
         )));

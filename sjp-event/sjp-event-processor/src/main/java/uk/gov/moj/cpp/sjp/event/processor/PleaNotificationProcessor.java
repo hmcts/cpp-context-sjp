@@ -4,6 +4,7 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
+import uk.gov.justice.services.common.configuration.Value;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -27,9 +28,13 @@ public class PleaNotificationProcessor {
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
 
-    //TODO: move to configuration
-    static final String TEMPLATE_ID = "32d520ca-4d6e-4b5c-a9f3-e761d4ffd9a2";
-    static final String REPLY_TO_ADDRESS = "noreply@cjscp.org.uk";
+    @Inject
+    @Value(key = "pleaNotificationTemplateId", defaultValue = "32d520ca-4d6e-4b5c-a9f3-e761d4ffd9a2")
+    String templateId;
+
+    @Inject
+    @Value(key = "pleaNotificationReplyToAddress", defaultValue = "noreply@cjscp.org.uk")
+    String replyToAddress;
 
     @Handles("sjp.events.online-plea-received")
     public void sendPleaNotificationEmail(final JsonEnvelope envelope) {
@@ -37,9 +42,9 @@ public class PleaNotificationProcessor {
 
         final JsonObject emailNotification = createObjectBuilder()
                 .add("notificationId", randomUUID().toString())
-                .add("templateId", TEMPLATE_ID)
+                .add("templateId", templateId)
                 .add("sendToAddress", onlinePleaReceived.getPersonalDetails().getContactDetails().getEmail())
-                .add("replyToAddress", REPLY_TO_ADDRESS)
+                .add("replyToAddress", replyToAddress)
                 .add("personalisation", createObjectBuilder()
                     .add("urn", onlinePleaReceived.getUrn())
                     .build())

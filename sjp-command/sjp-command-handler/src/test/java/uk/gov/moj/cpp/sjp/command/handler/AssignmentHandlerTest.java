@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloperWithEvents;
-import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedWith;
+import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedAfter;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
@@ -83,8 +83,8 @@ public class AssignmentHandlerTest {
         final UUID assignmentCandidate3Id = randomUUID();
 
         long assignmentCandidate1Version = 10;
-        long assignmentCandidate2Version = 10;
-        long assignmentCandidate3Version = 10;
+        long assignmentCandidate2Version = 9;
+        long assignmentCandidate3Version = 8;
 
         final JsonEnvelope assignCaseCommand = envelopeFrom(metadataWithRandomUUID(ASSIGN_CASE_COMMAND), createObjectBuilder()
                 .add("sessionId", sessionId.toString())
@@ -125,7 +125,7 @@ public class AssignmentHandlerTest {
         verify(case3EventStream, never()).append(any());
         verify(eventSource, never()).getStreamById(assignmentCandidate3Id);
 
-        assertThat(case2EventStream, eventStreamAppendedWith(
+        assertThat(case2EventStream, eventStreamAppendedAfter(assignmentCandidate2Version).with(
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(assignCaseCommand)

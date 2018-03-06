@@ -68,7 +68,7 @@ public class AssignmentHandler {
 
                 final Stream<Object> assignmentEvents = caseAggregate.assignCase(session.getId(), session.getUser(), caseAssignmentType);
 
-                caseEventsStream.append(assignmentEvents.map(enveloper.withMetadataFrom(command)));
+                caseEventsStream.appendAfter(assignmentEvents.map(enveloper.withMetadataFrom(command)), assignmentCandidate.getCaseStreamVersion());
 
                 return;
             } else {

@@ -355,7 +355,7 @@ public class PleadOnlineTest {
         assertThat(CaseUpdateRejected.RejectReason.PLEA_ALREADY_SUBMITTED, equalTo(caseUpdateRejected.getReason()));
 
         //then cancel plea
-        caseAggregate.cancelPlea(new CancelPlea(caseId, offenceId));
+        caseAggregate.cancelPlea(new CancelPlea(caseId, offenceId), now);
 
         //then plea again
         pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, sjpCase.getDefendant().getId().toString());

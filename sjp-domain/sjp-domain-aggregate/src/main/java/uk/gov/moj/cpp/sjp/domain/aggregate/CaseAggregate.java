@@ -79,6 +79,7 @@ import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdateDenied;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
+import uk.gov.moj.cpp.sjp.event.TrialRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
 import uk.gov.moj.cpp.sjp.event.decommissioned.CaseAssignmentCreated;
 
@@ -127,6 +128,12 @@ public class CaseAggregate implements Aggregate {
     private List<String> offenceIdsWithPleas = new ArrayList<>();
 
     private Map<UUID, String> defendantInterpreterLanguages = new HashMap<>();
+
+    private boolean trialRequested;
+    private boolean trialRequestedPreviously;
+    private String trialRequestedUnavailability;
+    private String trialRequestedUWitnessDetails;
+    private String trialRequestedWitnessDispute;
 
     private DocumentCountByDocumentType documentCountByDocumentType = new DocumentCountByDocumentType();
 
@@ -272,7 +279,7 @@ public class CaseAggregate implements Aggregate {
                 .anyMatch(offenceId::equals);
     }
 
-    public Stream<Object> changePlea(final ChangePlea changePleaCommand) {
+    private Stream<Object> changePlea(final ChangePlea changePleaCommand, final ZonedDateTime updatedOn) {
         final Optional<UUID> defendantId = getDefendantIdByOffenceId(changePleaCommand.getOffenceId());
         if (!defendantId.isPresent()) {
             final String offenceId = changePleaCommand.getOffenceId().toString();
@@ -287,6 +294,7 @@ public class CaseAggregate implements Aggregate {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         if (changePleaCommand instanceof UpdatePlea) {
             final UpdatePlea updatePlea = (UpdatePlea) changePleaCommand;
+            handleTrialRequestEventsForUpdatePlea(updatePlea, streamBuilder, updatedOn);
             final PleaUpdated pleaUpdated = new PleaUpdated(
                     updatePlea.getCaseId().toString(),
                     updatePlea.getOffenceId().toString(),
@@ -300,6 +308,9 @@ public class CaseAggregate implements Aggregate {
 
         } else if (changePleaCommand instanceof CancelPlea) {
             final CancelPlea cancelPlea = (CancelPlea) changePleaCommand;
+            if (trialRequested) {
+                streamBuilder.add(new TrialRequestCancelled(caseId, updatedOn));
+            }
             final PleaCancelled pleaCancelled = new PleaCancelled(
                     cancelPlea.getCaseId().toString(),
                     cancelPlea.getOffenceId().toString());
@@ -309,6 +320,23 @@ public class CaseAggregate implements Aggregate {
                     .ifPresent(streamBuilder::add);
         }
         return apply(streamBuilder.build());
+    }
+
+    private void handleTrialRequestEventsForUpdatePlea(final UpdatePlea updatePlea, final Stream.Builder<Object> streamBuilder, final ZonedDateTime updatedOn) {
+        if (isTrialRequestCancellationRequired(updatePlea)) {
+            streamBuilder.add(new TrialRequestCancelled(caseId, updatedOn));
+        }
+        else if (wasTrialRequestedThenCancelledAndIsTrialRequiredAgain(updatePlea)) {
+            streamBuilder.add(new TrialRequested(caseId, trialRequestedUnavailability, trialRequestedUWitnessDetails, trialRequestedWitnessDispute, updatedOn));
+        }
+    }
+
+    private boolean wasTrialRequestedThenCancelledAndIsTrialRequiredAgain(final UpdatePlea updatePlea) {
+        return !trialRequested && this.trialRequestedPreviously && updatePlea.getPlea().equals(PleaType.NOT_GUILTY.name());
+    }
+
+    private boolean isTrialRequestCancellationRequired(final UpdatePlea updatePlea) {
+        return trialRequested && !updatePlea.getPlea().equals(PleaType.NOT_GUILTY.name());
     }
 
     public Stream<Object> updateInterpreter(final UUID defendantId, final String language) {
@@ -356,12 +384,12 @@ public class CaseAggregate implements Aggregate {
         return Optional.ofNullable(event);
     }
 
-    public Stream<Object> updatePlea(final UpdatePlea updatePleaCommand) {
-        return changePlea(updatePleaCommand);
+    public Stream<Object> updatePlea(final UpdatePlea updatePleaCommand, final ZonedDateTime updatedOn) {
+        return changePlea(updatePleaCommand, updatedOn);
     }
 
-    public Stream<Object> cancelPlea(final CancelPlea cancelPleaCommand) {
-        return changePlea(cancelPleaCommand);
+    public Stream<Object> cancelPlea(final CancelPlea cancelPleaCommand, final ZonedDateTime cancelledOn) {
+        return changePlea(cancelPleaCommand, cancelledOn);
     }
 
     public Stream<Object> pleadOnline(final UUID caseId, final PleadOnline pleadOnline, final ZonedDateTime createdOn) {
@@ -742,7 +770,14 @@ public class CaseAggregate implements Aggregate {
                     //nothing to update
                 }),
                 when(TrialRequested.class).apply(e -> {
-                    //nothing to update
+                    this.trialRequested = true;
+                    this.trialRequestedPreviously = true;
+                    this.trialRequestedUnavailability = e.getUnavailability();
+                    this.trialRequestedUWitnessDetails = e.getWitnessDetails();
+                    this.trialRequestedWitnessDispute = e.getWitnessDispute();
+                }),
+                when(TrialRequestCancelled.class).apply(e -> {
+                    this.trialRequested = false;
                 }),
                 when(DefendantsNationalInsuranceNumberUpdated.class).apply(e -> {
                     //nothing to update

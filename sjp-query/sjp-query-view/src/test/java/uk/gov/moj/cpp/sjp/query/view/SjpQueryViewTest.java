@@ -50,6 +50,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
+import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantsView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
@@ -106,6 +107,9 @@ public class SjpQueryViewTest {
 
     @Mock
     private Function<Object, JsonEnvelope> function;
+
+    @Mock
+    private CaseSearchResultsView caseSearchResultsView;
 
     @InjectMocks
     private SjpQueryView sjpQueryView;
@@ -173,15 +177,15 @@ public class SjpQueryViewTest {
     public void shouldFindCaseSearchResults() {
         setupExpectations();
         final String query = "query";
-        final JsonObject jsonObject = createObjectBuilder().build();
+
+        when(caseService.searchCases(query)).thenReturn(caseSearchResultsView);
         when(payloadObject.getString(FIELD_QUERY)).thenReturn(query);
-        when(caseService.searchCases(query)).thenReturn(jsonObject);
 
         final JsonEnvelope result = sjpQueryView.findCaseSearchResults(envelope);
 
         assertEquals(result, outputEnvelope);
         verify(caseService).searchCases(query);
-        verify(function).apply(jsonObject);
+        verify(function).apply(caseSearchResultsView);
     }
 
     @Test

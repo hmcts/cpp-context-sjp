@@ -1,7 +1,6 @@
 {
   "results": [
     {
-      "id": "4b01672d-0e64-4678-94ea-9b5b7ab8d828",
       "caseId": "8d6ac6f2-c0c1-430e-81bc-8482d6554824",
       "urn": "TFL926204579",
       "enterpriseId": "2K2SLYFC743H",
@@ -13,11 +12,13 @@
       "reopenedDate": "2016-09-01",
       "pleaDate": "2016-07-02",
       "withdrawalRequestedDate": "2016-07-02",
-      "personId": "0ce95a2e-a6ca-4652-bdd1-76d903429d03",
-      "firstName": "Teresa",
-      "lastName": "May",
-      "dateOfBirth": "1956-10-01",
-      "postCode": "SW1A 2AA"
+      "defendant": {
+        "firstName": "Teresa",
+        "lastName": "May",
+        "dateOfBirth": "1867-11-07",
+        "outdated": true
+      }
     }
-  ]
+  ],
+  "foundCasesWithOutdatedDefendantsName": true
 }

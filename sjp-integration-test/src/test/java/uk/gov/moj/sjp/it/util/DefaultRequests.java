@@ -25,10 +25,6 @@ public class DefaultRequests {
                 .withHeader(HeaderConstants.USER_ID, userId);
     }
 
-    public static RequestParamsBuilder getCaseDocumentsByCaseId(final String caseId) {
-        return getCaseDocumentsByCaseId(caseId, USER_ID);
-    }
-
     public static RequestParamsBuilder getCaseDocumentsByCaseId(final String caseId, final String userId) {
         return requestParams(getReadUrl("/cases/" + caseId + "/documents"), GET_CASE_DOCUMENTS_MEDIA_TYPE)
                 .withHeader(HeaderConstants.USER_ID, userId);

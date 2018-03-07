@@ -41,6 +41,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.NotReadyCaseRepository;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
+import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantsView;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
@@ -96,6 +97,7 @@ public class CaseServiceTest {
     private static final String FIRST_NAME = "Adam";
     private static final String LAST_NAME = "Zuma";
     private static final String POSTCODE = "AB1 2CD";
+    private static final LocalDate DATE_OF_BIRTH = LocalDate.now();
 
     private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
 
@@ -511,10 +513,9 @@ public class CaseServiceTest {
 
         when(caseSearchResultRepository.findByCaseSummary_urn(query)).thenReturn(asList(createCaseSearchResult()));
 
-        final JsonObject cases = service.searchCases(query);
+        final CaseSearchResultsView cases = service.searchCases(query);
 
-        assertThat(cases.getJsonArray("results").getValuesAs(JsonObject.class)
-                .get(0).getString("urn"), equalTo(URN));
+        assertThat(cases.getResults().get(0).getUrn(), equalTo(URN));
     }
 
     @Test
@@ -524,17 +525,17 @@ public class CaseServiceTest {
         when(caseSearchResultRepository.findByCaseSummary_urn(query)).thenReturn(emptyList());
         when(caseSearchResultRepository.findByLastName(query)).thenReturn(asList(createCaseSearchResult()));
 
-        final JsonObject cases = service.searchCases(query);
+        final CaseSearchResultsView cases = service.searchCases(query);
 
-        final JsonObject result = cases.getJsonArray("results")
-                .getValuesAs(JsonObject.class).get(0);
-        assertThat(result.getString("caseId"), equalTo(CASE_ID.toString()));
-        assertThat(result.getString("urn"), equalTo(URN));
-        assertThat(result.getString("enterpriseId"), equalTo(ENTERPRISE_ID));
-        assertThat(result.getString("prosecutingAuthority"), equalTo(PROSECUTING_AUTHORITY));
-        assertThat(result.getString("postingDate"), equalTo(POSTING_DATE.toString()));
-        assertThat(result.getString("firstName"), equalTo(FIRST_NAME));
-        assertThat(result.getString("lastName"), equalTo(LAST_NAME));
+        final CaseSearchResultsView.CaseSearchResultView result = cases.getResults().get(0);
+        assertThat(result.getCaseId(), equalTo(CASE_ID));
+        assertThat(result.getUrn(), equalTo(URN));
+        assertThat(result.getEnterpriseId(), equalTo(ENTERPRISE_ID));
+        assertThat(result.getProsecutingAuthority(), equalTo(PROSECUTING_AUTHORITY));
+        assertThat(result.getPostingDate(), equalTo(POSTING_DATE));
+        assertThat(result.getDefendant().getFirstName(), equalTo(FIRST_NAME));
+        assertThat(result.getDefendant().getLastName(), equalTo(LAST_NAME));
+        assertThat(result.getDefendant().getDateOfBirth(), equalTo(DATE_OF_BIRTH));
     }
 
     private CaseDetail createCaseDetail() {
@@ -571,8 +572,9 @@ public class CaseServiceTest {
         caseSearchResult.setId(randomUUID());
         caseSearchResult.setCaseId(CASE_ID);
         caseSearchResult.setCaseSummary(caseSummary);
-        caseSearchResult.setFirstName(FIRST_NAME);
-        caseSearchResult.setLastName(LAST_NAME);
+        caseSearchResult.setCurrentFirstName(FIRST_NAME);
+        caseSearchResult.setCurrentLastName(LAST_NAME);
+        caseSearchResult.setDateOfBirth(DATE_OF_BIRTH);
         // not resulted
         return caseSearchResult;
     }

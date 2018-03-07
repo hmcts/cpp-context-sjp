@@ -135,8 +135,8 @@ public class CaseSearchResultHelper  {
                         withJsonPath("$.results[*]", hasItem(isJson(
                                 allOf(
                                         withJsonPath("urn", equalTo(urn)),
-                                        withJsonPath("lastName", equalTo(lastName)),
-                                        withJsonPath("dateOfBirth", equalTo(LocalDates.to(dateOfBirth)))
+                                        withJsonPath("defendant.lastName", equalTo(lastName)),
+                                        withJsonPath("defendant.dateOfBirth", equalTo(LocalDates.to(dateOfBirth)))
                                 )))))));
     }
 

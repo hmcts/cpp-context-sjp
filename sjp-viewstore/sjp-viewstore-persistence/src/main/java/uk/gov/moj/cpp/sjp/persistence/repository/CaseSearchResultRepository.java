@@ -13,10 +13,14 @@ import org.apache.deltaspike.data.api.Repository;
 @Repository
 public interface CaseSearchResultRepository extends EntityRepository<CaseSearchResult, UUID> {
 
-    @Query("from CaseSearchResult as r inner join fetch r.caseSummary where upper(r.lastName) = upper(:lastName) order by r.firstName")
+    @Query("from CaseSearchResult as r inner join fetch r.caseSummary as c where cast(r.id as string) IN " +
+            "(select cast(x.id as string) from CaseSearchResult as x where upper(x.lastName) = upper(:lastName) and x.caseId = r.caseId and x.dateAdded = " +
+            "(select min(z.dateAdded) from CaseSearchResult as z where z.caseId=x.caseId and upper(z.lastName) = upper(:lastName))" +
+            ") order by r.firstName ASC, c.postingDate DESC")
     List<CaseSearchResult> findByLastName(@QueryParam("lastName") String lastName);
 
-    @Query("from CaseSearchResult as r inner join fetch r.caseSummary where upper(r.caseSummary.urn) = upper(:urn)")
+    @Query("from CaseSearchResult as r inner join fetch r.caseSummary as c where upper(r.caseSummary.urn) = upper(:urn) and r.dateAdded = " +
+            "(select min(z.dateAdded) from CaseSearchResult as z where z.caseId=r.caseId) order by r.firstName ASC, c.postingDate DESC")
     List<CaseSearchResult> findByCaseSummary_urn(@QueryParam("urn") String urn);
 
     List<CaseSearchResult> findByCaseId(UUID caseId);

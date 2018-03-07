@@ -30,6 +30,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.NotReadyCaseRepository;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseMissingSjpnWithDetailsView;
+import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnWithDetailsView;
@@ -183,7 +184,7 @@ public class CaseService {
     }
 
     /**
-     * Search case by personId.
+     * Search case by defendantId.
      *
      * @param defendantId id of the defendant to find cases for.
      * @return SearchView containing matched case summaries
@@ -252,13 +253,12 @@ public class CaseService {
         return null;
     }
 
-    public JsonObject searchCases(final String query) {
+    public CaseSearchResultsView searchCases(final String query) {
         List<CaseSearchResult> searchResults = caseSearchResultRepository.findByCaseSummary_urn(query);
         if (searchResults.isEmpty()) {
             searchResults = caseSearchResultRepository.findByLastName(query);
         }
-        final JsonArray results = toJsonArray(searchResults, this::convertCaseSearchResult);
-        return createObjectBuilder().add("results", results).build();
+        return new CaseSearchResultsView(searchResults);
     }
 
     public JsonObject findAwaitingCases() {
@@ -357,47 +357,6 @@ public class CaseService {
         final LocalDate oldestUncompletedPostingDate = caseRepository.findOldestUncompletedPostingDate();
         final long age = oldestUncompletedPostingDate == null ? 0 : DAYS.between(oldestUncompletedPostingDate, LocalDate.now());
         return createObjectBuilder().add("oldestCaseAge", age).build();
-    }
-
-    private JsonObject convertCaseSearchResult(final CaseSearchResult searchResult) {
-        final JsonObjectBuilder objectBuilder = createObjectBuilder()
-                .add("id", searchResult.getId().toString())
-                .add("caseId", searchResult.getCaseId().toString())
-                .add("lastName", searchResult.getLastName())
-                .add("assigned", searchResult.isAssigned());
-        // it may be possible that the person details are added before the case is created
-        final CaseSummary caseSummary = searchResult.getCaseSummary();
-        if (caseSummary != null) {
-            objectBuilder.add("urn", caseSummary.getUrn())
-                    .add("prosecutingAuthority", caseSummary.getProsecutingAuthority())
-                    .add("postingDate", caseSummary.getPostingDate().toString())
-                    .add("completed", caseSummary.isCompleted());
-            // enterpriseId is added after the case is created
-            if (caseSummary.getEnterpriseId() != null) {
-                objectBuilder.add("enterpriseId", caseSummary.getEnterpriseId());
-            }
-
-            if (caseSummary.getReopenedDate() != null) {
-                objectBuilder.add("reopenedDate", caseSummary.getReopenedDate().toString());
-            }
-        }
-
-        if (searchResult.getPleaDate() != null) {
-            objectBuilder.add("pleaDate", searchResult.getPleaDate().toString());
-        }
-        if (searchResult.getWithdrawalRequestedDate() != null) {
-            objectBuilder.add("withdrawalRequestedDate", searchResult.getWithdrawalRequestedDate().toString());
-        }
-        if (searchResult.getFirstName() != null) {
-            objectBuilder.add("firstName", searchResult.getFirstName());
-        }
-        if (searchResult.getDateOfBirth() != null) {
-            objectBuilder.add("dateOfBirth", searchResult.getDateOfBirth().toString());
-        }
-        if (searchResult.getPostCode() != null) {
-            objectBuilder.add("postCode", searchResult.getPostCode());
-        }
-        return objectBuilder.build();
     }
 
     private void filterOtherAndFinancialMeansDocuments(Collection<CaseDocumentView> caseDocumentsView) {

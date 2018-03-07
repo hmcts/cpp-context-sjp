@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
@@ -22,13 +23,18 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseSearchResultListenerTest {
 
+    @Spy
+    @InjectMocks
+    private CaseSearchResultService caseSearchResultService = new CaseSearchResultService();
+
     @Mock
-    private CaseSearchResultRepository repository;
+    private CaseSearchResultRepository caseSearchResultRepository;
 
     @Mock
     private CaseRepository caseRepository;
@@ -48,7 +54,7 @@ public class CaseSearchResultListenerTest {
                 .withPayloadOf(assigneeId.toString(), "assigneeId")
                 .build();
         final List<CaseSearchResult> searchResults = Arrays.asList(new CaseSearchResult(), new CaseSearchResult());
-        when(repository.findByCaseId(caseId)).thenReturn(searchResults);
+        when(caseSearchResultRepository.findByCaseId(caseId)).thenReturn(searchResults);
 
         final CaseDetail caseDetail = new CaseDetail();
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
@@ -81,7 +87,7 @@ public class CaseSearchResultListenerTest {
         CaseSearchResult caseSearchResult2 = new CaseSearchResult();
         caseSearchResult2.setAssigned(true);
         final List<CaseSearchResult> searchResults = Arrays.asList(caseSearchResult1, caseSearchResult2);
-        when(repository.findByCaseId(caseId)).thenReturn(searchResults);
+        when(caseSearchResultRepository.findByCaseId(caseId)).thenReturn(searchResults);
 
         final CaseDetail caseDetail = new CaseDetail();
         caseDetail.setAssigneeId(assigneeId);

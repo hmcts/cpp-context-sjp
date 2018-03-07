@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
@@ -53,7 +54,7 @@ public class CaseReferredToCourtRepositoryTest extends BaseTransactionalTest {
     }
 
     private CaseReferredToCourt createCaseReferredToCourt(final LocalDate hearingDate) {
-        
+
         final CaseReferredToCourt caseReferredToCourt = new CaseReferredToCourt(
                 UUID.randomUUID(),
                 RandomStringUtils.randomAlphabetic(12),
@@ -73,9 +74,8 @@ public class CaseReferredToCourtRepositoryTest extends BaseTransactionalTest {
 
         caseRepository.save(caseDetail);
 
-        caseSearchResultRepository.save(new CaseSearchResult(UUID.randomUUID(), caseReferredToCourt.getCaseId(),
-                caseReferredToCourt.getFirstName(), caseReferredToCourt.getLastName(),
-                LocalDate.of(1970, 10, 8), "SW17 1AA"));
+        caseSearchResultRepository.save(new CaseSearchResult(caseReferredToCourt.getCaseId(),
+                caseReferredToCourt.getFirstName(), caseReferredToCourt.getLastName(), LocalDates.from("2001-02-03")));
 
         courtReferralRepository.save(new CourtReferral(caseReferredToCourt.getCaseId(), hearingDate));
 

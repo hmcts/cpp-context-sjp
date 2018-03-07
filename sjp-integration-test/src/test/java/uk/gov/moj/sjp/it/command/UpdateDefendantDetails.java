@@ -87,6 +87,11 @@ public class UpdateDefendantDetails {
             return new DefendantDetailsPayloadBuilder();
         }
 
+        public DefendantDetailsPayloadBuilder withLastName(final String lastName) {
+            this.lastName = lastName;
+            return this;
+        }
+
         public String getTitle() {
             return title;
         }

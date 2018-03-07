@@ -7,11 +7,10 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
+import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
-import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 
 import java.time.LocalDate;
@@ -31,7 +30,7 @@ public class OffenceUpdatedListener {
     private OffenceRepository offenceRepository;
 
     @Inject
-    private CaseSearchResultRepository searchResultRepository;
+    private CaseSearchResultService caseSearchResultService;
 
     @Handles("sjp.events.plea-updated")
     @Transactional
@@ -65,9 +64,8 @@ public class OffenceUpdatedListener {
     }
 
     @Transactional
-    void updatePleaReceivedDate(final UUID caseId, final LocalDate pleaReceived) {
-        searchResultRepository.findByCaseId(caseId)
-                .forEach(searchResult -> searchResult.setPleaDate(pleaReceived));
+    void updatePleaReceivedDate(final UUID caseId, final LocalDate pleaReceivedDate) {
+        caseSearchResultService.updatePleaReceivedDate(caseId, pleaReceivedDate);
     }
 
 }

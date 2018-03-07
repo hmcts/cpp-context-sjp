@@ -31,7 +31,6 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeMultipartFormPostCall;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
-import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.justice.services.test.utils.core.http.RestPoller;
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.moj.sjp.it.EventSelector;
@@ -202,7 +201,7 @@ public class CaseDocumentHelper implements AutoCloseable {
         JsonPath jsonRequest = new JsonPath(request);
 
         Filter caseDocumentFilter = Filter.filter(where("id").is(id.toString()));
-        final ResponseData caseDocumentsResponse = poll(getCaseDocumentsByCaseId(caseId, userId))
+        poll(getCaseDocumentsByCaseId(caseId, userId))
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
@@ -253,10 +252,6 @@ public class CaseDocumentHelper implements AutoCloseable {
 
     public String getMaterialId() {
         return materialId;
-    }
-
-    public UUID getId() {
-        return id;
     }
 
     @Override

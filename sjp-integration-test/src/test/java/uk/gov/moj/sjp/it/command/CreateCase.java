@@ -209,6 +209,11 @@ public class CreateCase {
             return builder;
         }
 
+        public DefendantBuilder withLastName(final String lastName) {
+            this.lastName = lastName;
+            return this;
+        }
+
         public String getTitle() {
             return title;
         }

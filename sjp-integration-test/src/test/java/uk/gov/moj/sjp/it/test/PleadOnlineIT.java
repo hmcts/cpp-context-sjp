@@ -136,7 +136,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final PersonalDetails expectedPersonalDetails = generateExpectedPersonDetails(pleaPayload);
         PersonInfoVerifier.personInfoVerifierForPersonalDetails(createCasePayloadBuilder.getId(), expectedPersonalDetails)
                 .verifyPersonInfo(true);
-        caseSearchResultHelper.verifyPersonNotFound(createCasePayloadBuilder.getUrn(), personInfoVerifier.getPersonalDetails().getLastName());
 
         //verify online-plea
         final Matcher expectedResult = getSavedOnlinePleaPayloadContentMatcher(pleaType, pleaPayload, createCasePayloadBuilder.getId().toString(), defendantId);

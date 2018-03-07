@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
 
-import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -10,18 +9,15 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantsNationalInsuranceNumberUpdated;
+import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
-
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -39,7 +35,7 @@ public class DefendantUpdatedListener {
     private CaseRepository caseRepository;
 
     @Inject
-    private CaseSearchResultRepository repository;
+    private CaseSearchResultService caseSearchResultService;
 
     @Handles("sjp.events.defendant-national-insurance-number-updated")
     @Transactional
@@ -70,16 +66,12 @@ public class DefendantUpdatedListener {
         updateDefendant(caseDetail.getDefendant(), defendantDetailsUpdated);
         caseRepository.save(caseDetail);
 
-        final List<CaseSearchResult> searchResults = repository.findByCaseId(defendantDetailsUpdated.getCaseId());
-
-        searchResults.forEach(caseSearchResult -> {
-            ofNullable(defendantDetailsUpdated.getFirstName()).ifPresent(caseSearchResult::setFirstName);
-            ofNullable(defendantDetailsUpdated.getLastName()).ifPresent(caseSearchResult::setLastName);
-            ofNullable(defendantDetailsUpdated.getDateOfBirth()).ifPresent(caseSearchResult::setDateOfBirth);
-            ofNullable(defendantDetailsUpdated.getAddress().getPostcode()).ifPresent(caseSearchResult::setPostCode);
-
-            repository.save(caseSearchResult);
-        });
+        caseSearchResultService.onDefendantDetailsUpdated(
+                defendantDetailsUpdated.getCaseId(),
+                defendantDetailsUpdated.getFirstName(),
+                defendantDetailsUpdated.getLastName(),
+                defendantDetailsUpdated.getDateOfBirth()
+        );
 
         //this listener updates two tables for the case where the event is fired via plead-online command
         if (defendantDetailsUpdated.isUpdateByOnlinePlea()) {
@@ -101,8 +93,7 @@ public class DefendantUpdatedListener {
             if (newData.getNationalInsuranceNumber() != null) {
                 entity.setNationalInsuranceNumber(newData.getNationalInsuranceNumber());
             }
-        }
-        else {
+        } else {
             entity.setGender(newData.getGender());
             entity.setTitle(newData.getTitle());
             entity.setNationalInsuranceNumber(newData.getNationalInsuranceNumber());

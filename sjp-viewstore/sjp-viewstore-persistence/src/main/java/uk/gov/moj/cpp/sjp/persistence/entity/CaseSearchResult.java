@@ -1,12 +1,18 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import static javax.persistence.ConstraintMode.NO_CONSTRAINT;
+
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -22,10 +28,13 @@ public class CaseSearchResult implements Serializable {
     @Column(name = "id")
     private UUID id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "case_id", nullable = false, updatable = false, insertable = false)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "case_id", updatable = false, insertable = false, foreignKey = @ForeignKey(name = "none", value = NO_CONSTRAINT))
+    @org.hibernate.annotations.ForeignKey(name = "none")
     private CaseSummary caseSummary;
+
     // because there is no foreign key we can create this entity before the CaseSummary if we want
+
     @Column(name = "case_id", updatable = false)
     private UUID caseId;
 
@@ -38,25 +47,31 @@ public class CaseSearchResult implements Serializable {
     private String firstName;
     @Column(name = "last_name")
     private String lastName;
+    @Column(name = "current_first_name")
+    private String currentFirstName;
+    @Column(name = "current_last_name")
+    private String currentLastName;
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
-    @Column(name = "post_code")
-    private String postCode;
-
     @Column(name = "assigned")
     private Boolean assigned = false;
-
+    @Column(name = "date_added")
+    private LocalDateTime dateAdded = LocalDateTime.now();
+    @Column(name = "deprecated")
+    private Boolean deprecated = false;
 
     public CaseSearchResult() {
+        this.id = UUID.randomUUID();
     }
 
-    public CaseSearchResult(UUID id, UUID caseId, String firstName, String lastName, LocalDate dateOfBirth, String postCode) {
-        this.id = id;
+    public CaseSearchResult(final UUID caseId, final String firstName, final String lastName, final LocalDate dateOfBirth) {
+        this();
         this.caseId = caseId;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.currentFirstName = firstName;
+        this.currentLastName = lastName;
         this.dateOfBirth = dateOfBirth;
-        this.postCode = postCode;
     }
 
     public CaseSummary getCaseSummary() {
@@ -115,27 +130,55 @@ public class CaseSearchResult implements Serializable {
         this.lastName = lastName;
     }
 
-    public LocalDate getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public void setDateOfBirth(LocalDate dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
-
-    public String getPostCode() {
-        return postCode;
-    }
-
-    public void setPostCode(String postCode) {
-        this.postCode = postCode;
-    }
-
     public Boolean isAssigned() {
         return assigned != null && assigned;
     }
 
     public void setAssigned(Boolean assigned) {
         this.assigned = assigned;
+    }
+
+    public String getCurrentFirstName() {
+        return currentFirstName;
+    }
+
+    public void setCurrentFirstName(String currentFirstName) {
+        this.currentFirstName = currentFirstName;
+    }
+
+    public String getCurrentLastName() {
+        return currentLastName;
+    }
+
+    public void setCurrentLastName(String currentLastName) {
+        this.currentLastName = currentLastName;
+    }
+
+    public Boolean getAssigned() {
+        return assigned;
+    }
+
+    public LocalDateTime getDateAdded() {
+        return dateAdded;
+    }
+
+    public void setDateAdded(LocalDateTime dateAdded) {
+        this.dateAdded = dateAdded;
+    }
+
+    public Boolean isDeprecated() {
+        return deprecated;
+    }
+
+    public void setDeprecated(Boolean deprecated) {
+        this.deprecated = deprecated;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
     }
 }

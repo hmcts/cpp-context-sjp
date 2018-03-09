@@ -394,7 +394,7 @@ public class PleadOnlineTest {
     }
 
     @Test
-    public void shouldNotStoreOnlinePleaWhenWithdrawalOffencesRequested() {
+    public void shouldStoreOnlinePleaWhenWithdrawalOffencesRequested() {
         //given
         final CaseReceived sjpCase = caseAggregate.receiveCase(createTestCase(), clock.now())
                 .map(c -> (CaseReceived) c)
@@ -407,10 +407,13 @@ public class PleadOnlineTest {
 
         //then
         final List<Object> events = asList(eventStream.toArray());
-        assertThat(events, hasSize(1));
-        assertThat("Has CaseUpdateRejected event", events, hasItem(isA(CaseUpdateRejected.class)));
-        assertThat(((CaseUpdateRejected) events.get(0)).getReason(),
-                is(CaseUpdateRejected.RejectReason.WITHDRAWAL_PENDING));
+        assertThat(events, hasSize(6));
+        assertThat("Has PleaUpdated event", events, hasItem(isA(PleaUpdated.class)));
+        assertThat("Has DefendantDetailsUpdated event", events, hasItem(isA(DefendantDetailsUpdated.class)));
+        assertThat("Has FinancialMeansUpdated event", events, hasItem(isA(FinancialMeansUpdated.class)));
+        assertThat("Has EmployerUpdated event", events, hasItem(isA(EmployerUpdated.class)));
+        assertThat("Has EmploymentStatusUpdated event", events, hasItem(isA(EmploymentStatusUpdated.class)));
+        assertThat("Has OnlinePleaReceived event", events, hasItem(isA(OnlinePleaReceived.class)));
     }
 
     @Test

@@ -58,7 +58,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private static final String TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__not-guilty.json";
     private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__guilty.json";
     private static final String TEMPLATE_PLEA_GUILTY_REQUEST_HEARING_PAYLOAD = "raml/json/sjp.command.plead-online__guilty_request_hearing.json";
-    
+
 
     @Before
     public void setUp() {
@@ -66,7 +66,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
         employerHelper = new EmployerHelper();
         financialMeansHelper = new FinancialMeansHelper();
-        personInfoVerifier = new PersonInfoVerifier(createCasePayloadBuilder.getId());
+        personInfoVerifier = PersonInfoVerifier.personInfoVerifierForCasePayload(createCasePayloadBuilder);
 
         stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
         stubNotifications();
@@ -78,9 +78,9 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         financialMeansHelper.close();
     }
 
-    private PersonalDetails generateExpectedPersonDetails(final JSONObject payload, final CaseSearchResultHelper caseSearchResultHelper) {
+    private PersonalDetails generateExpectedPersonDetails(final JSONObject payload) {
         final JSONObject person = payload.getJSONObject("personalDetails");
-        final String firstName =  person.getString("firstName");
+        final String firstName = person.getString("firstName");
         final String lastName = person.getString("lastName");
         final String nationalInsuranceNumber = person.getString("nationalInsuranceNumber");
         final String dateOfBirth = person.getString("dateOfBirth");
@@ -108,7 +108,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     private void pleadOnlineAndConfirmSuccess(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper,
-                                             final UpdatePleaHelper updatePleaHelper, final CaseSearchResultHelper caseSearchResultHelper) {
+                                              final UpdatePleaHelper updatePleaHelper, final CaseSearchResultHelper caseSearchResultHelper) {
         final String pleaMethod = "ONLINE";
         final String defendantId = CasePoller.pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId()).getString("defendant.id");
 
@@ -133,8 +133,9 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         financialMeansHelper.getEventFromPublicTopic(getFinancialMeansUpdatedPayloadContentMatcher(pleaPayload, defendantId));
 
         //verifies person-info has changed
-        final PersonalDetails expectedPersonalDetails = generateExpectedPersonDetails(pleaPayload, caseSearchResultHelper);
-        personInfoVerifier.verifyPersonInfo(expectedPersonalDetails, true);
+        final PersonalDetails expectedPersonalDetails = generateExpectedPersonDetails(pleaPayload);
+        PersonInfoVerifier.personInfoVerifierForPersonalDetails(createCasePayloadBuilder.getId(), expectedPersonalDetails)
+                .verifyPersonInfo(true);
         caseSearchResultHelper.verifyPersonNotFound(createCasePayloadBuilder.getUrn(), personInfoVerifier.getPersonalDetails().getLastName());
 
         //verify online-plea
@@ -151,7 +152,11 @@ public class PleadOnlineIT extends BaseIntegrationTest {
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(createCasePayloadBuilder.getId(),
                      SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
             final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
-            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(createCasePayloadBuilder);
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(createCasePayloadBuilder.getId(),
+                    createCasePayloadBuilder.getUrn(),
+                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
+
             //1) First plea should be successful
             pleadOnlineAndConfirmSuccess(PleaType.NOT_GUILTY, pleadOnlineHelper, updatePleaHelper, caseSearchResultHelper);
 
@@ -167,7 +172,10 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
         try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId())) {
             final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
-            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(createCasePayloadBuilder);
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(createCasePayloadBuilder.getId(),
+                    createCasePayloadBuilder.getUrn(),
+                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
             pleadOnlineAndConfirmSuccess(PleaType.GUILTY, pleadOnlineHelper, updatePleaHelper, caseSearchResultHelper);
         }
     }
@@ -177,7 +185,10 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
         try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId())) {
             final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
-            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(createCasePayloadBuilder);
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(createCasePayloadBuilder.getId(),
+                    createCasePayloadBuilder.getUrn(),
+                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
             pleadOnlineAndConfirmSuccess(PleaType.GUILTY_REQUEST_HEARING, pleadOnlineHelper, updatePleaHelper, caseSearchResultHelper);
         }
     }
@@ -186,7 +197,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     public void shouldRejectPleadOnlineWhenCaseAssigned() {
         stubGetAssignmentsByDomainObjectId(createCasePayloadBuilder.getId(), randomUUID());
         try (final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(createCasePayloadBuilder.getId(),
-                     SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
+                SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
             final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
             final JSONObject onlinePleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
             pleadOnlineHelper.pleadOnline(onlinePleaPayload.toString());
@@ -205,7 +216,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         stubGetCaseDecisionsWithDecision(createCasePayloadBuilder.getId());
 
         try (final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(createCasePayloadBuilder.getId(),
-                     SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
+                SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
             final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
             final JSONObject onlinePleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
             pleadOnlineHelper.pleadOnline(onlinePleaPayload.toString());
@@ -215,7 +226,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         }
 
         try (final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(createCasePayloadBuilder.getId(),
-                     SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
+                SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
             final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
             final JSONObject onlinePleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
             pleadOnlineHelper.pleadOnline(onlinePleaPayload.toString());
@@ -229,11 +240,9 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         String templateRequest = null;
         if (pleaType.equals(PleaType.NOT_GUILTY)) {
             templateRequest = getPayload(TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD);
-        }
-        else if (pleaType.equals(PleaType.GUILTY)) {
+        } else if (pleaType.equals(PleaType.GUILTY)) {
             templateRequest = getPayload(TEMPLATE_PLEA_GUILTY_PAYLOAD);
-        }
-        else if (pleaType.equals(PleaType.GUILTY_REQUEST_HEARING)) {
+        } else if (pleaType.equals(PleaType.GUILTY_REQUEST_HEARING)) {
             templateRequest = getPayload(TEMPLATE_PLEA_GUILTY_REQUEST_HEARING_PAYLOAD);
         }
         final JSONObject jsonObject = new JSONObject(templateRequest);
@@ -284,11 +293,9 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         List<Matcher> extraMatchers;
         if (PleaType.NOT_GUILTY.equals(pleaType)) {
             extraMatchers = getNotGuiltyMatchers(onlinePleaPayload);
-        }
-        else if (PleaType.GUILTY.equals(pleaType)) {
+        } else if (PleaType.GUILTY.equals(pleaType)) {
             extraMatchers = getGuiltyMatchers(onlinePleaPayload);
-        }
-        else {
+        } else {
             extraMatchers = getGuiltyRequestHearingMatchers(onlinePleaPayload);
         }
         fieldMatchers = Stream.of(fieldMatchers, extraMatchers)

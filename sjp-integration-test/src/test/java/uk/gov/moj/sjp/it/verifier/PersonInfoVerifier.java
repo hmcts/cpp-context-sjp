@@ -13,6 +13,8 @@ import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
+import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,22 +26,71 @@ public class PersonInfoVerifier {
 
     private final UUID caseId;
 
-    private final PersonalDetails personalDetails = new PersonalDetails("Mr", "David", "LLOYD", LocalDates.from("1980-07-15"),
-            "Male", "nationalInsuranceNumber",
-            new Address("14 Tottenham Court Road", "London", "England", "UK", "W1T 1JY"),
-            new ContactDetails(null, null, null)
-    );
+    private final PersonalDetails personalDetails;
 
-    public PersonInfoVerifier(final UUID caseId) {
+    private PersonInfoVerifier(final UUID caseId, final PersonalDetails personalDetails) {
         this.caseId = caseId;
+        this.personalDetails = personalDetails;
     }
 
+    public static PersonInfoVerifier personInfoVerifierForPersonalDetails(final UUID caseId, final PersonalDetails personalDetails) {
+        return new PersonInfoVerifier(caseId, personalDetails);
+    }
+
+    public static PersonInfoVerifier personInfoVerifierForCasePayload(CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder) {
+        final CreateCase.DefendantBuilder defendantBuilder = createCasePayloadBuilder.getDefendantBuilder();
+        final PersonalDetails personalDetails = new PersonalDetails(
+            defendantBuilder.getTitle(),
+                defendantBuilder.getFirstName(),
+                defendantBuilder.getLastName(),
+                defendantBuilder.getDateOfBirth(),
+                defendantBuilder.getGender(),
+                null,
+                new Address(
+                        defendantBuilder.getAddressBuilder().getAddress1(),
+                        defendantBuilder.getAddressBuilder().getAddress2(),
+                        defendantBuilder.getAddressBuilder().getAddress3(),
+                        defendantBuilder.getAddressBuilder().getAddress4(),
+                        defendantBuilder.getAddressBuilder().getPostcode()
+                ),
+                new ContactDetails(null, null, null)
+        );
+
+        return new PersonInfoVerifier(createCasePayloadBuilder.getId(), personalDetails);
+    }
+
+    public static PersonInfoVerifier personInfoVerifierForDefendantUpdatedPayload(UUID caseId, UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder) {
+        final PersonalDetails personalDetails = new PersonalDetails(
+                payloadBuilder.getTitle(),
+                payloadBuilder.getFirstName(),
+                payloadBuilder.getLastName(),
+                payloadBuilder.getDateOfBirth(),
+                payloadBuilder.getGender(),
+                payloadBuilder.getNationalInsuranceNumber(),
+                new Address(
+                  payloadBuilder.getAddressBuilder().getAddress1(),
+                  payloadBuilder.getAddressBuilder().getAddress2(),
+                  payloadBuilder.getAddressBuilder().getAddress3(),
+                  payloadBuilder.getAddressBuilder().getAddress4(),
+                  payloadBuilder.getAddressBuilder().getPostcode()
+                ),
+                new ContactDetails(
+                        payloadBuilder.getContactDetailsBuilder().getEmail(),
+                        payloadBuilder.getContactDetailsBuilder().getHomeNumber(),
+                        payloadBuilder.getContactDetailsBuilder().getMobile()
+                )
+        );
+
+        return new PersonInfoVerifier(caseId, personalDetails);
+    }
+
+
     public void verifyPersonInfo() {
-        verifyPersonInfo(this.personalDetails, false);
+        verifyPersonInfo(false);
     }
 
     @SuppressWarnings("unchecked")
-    public void verifyPersonInfo(final PersonalDetails personalDetails, final boolean includeContactsAndNiNumberFields) {
+    public void verifyPersonInfo(final boolean includeContactsAndNiNumberFields) {
         List<Matcher> fieldMatchers = getCommonFieldMatchers(personalDetails);
         if (includeContactsAndNiNumberFields) {
             fieldMatchers.addAll(getContactsAndNiNumberMatchers(personalDetails));

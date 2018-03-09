@@ -82,9 +82,9 @@ public class FixDefendantIT extends BaseIntegrationTest {
                         payload.getJsonObject("contactNumber").getString("home"),
                         payload.getJsonObject("contactNumber").getString("mobile"))
         );
-        
-        PersonInfoVerifier personInfoVerifier = new PersonInfoVerifier(createCasePayloadBuilder.getId());
-        personInfoVerifier.verifyPersonInfo(personalDetails, true);
+
+        PersonInfoVerifier personInfoVerifier = PersonInfoVerifier.personInfoVerifierForPersonalDetails(createCasePayloadBuilder.getId(), personalDetails);
+        personInfoVerifier.verifyPersonInfo(true);
 
         final JsonPath updatedCase = CasePoller.pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId());
 

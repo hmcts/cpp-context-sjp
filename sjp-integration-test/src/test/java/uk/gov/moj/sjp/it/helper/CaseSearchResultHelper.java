@@ -21,10 +21,10 @@ import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
-import uk.gov.moj.sjp.it.command.CreateCase;
 
 import java.time.LocalDate;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.json.JsonObject;
 
@@ -33,19 +33,21 @@ public class CaseSearchResultHelper  {
     public static final String CASE_SEARCH_RESULTS_MEDIA_TYPE = "application/vnd.sjp.query.case-search-results+json";
 
     private final String assignmentNatureType = "for-magistrate-decision";
-    private final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
+    private final UUID caseId;
+    private final String urn;
     private final String lastName;
     private final LocalDate dateOfBirth;
 
-    public CaseSearchResultHelper(CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder) {
-        this.createCasePayloadBuilder = createCasePayloadBuilder;
-        this.lastName = "LLOYD";
-        this.dateOfBirth = LocalDates.from("1980-07-15");
+    public CaseSearchResultHelper(final UUID caseId, final String urn, final String defendantLastName, final LocalDate dateOfBirth) {
+        this.caseId = caseId;
+        this.urn = urn;
+        this.lastName = defendantLastName;
+        this.dateOfBirth = dateOfBirth;
     }
 
     public void assignmentCreated() {
         final JsonObject payload = createObjectBuilder()
-                .add("domainObjectId", createCasePayloadBuilder.getId().toString())
+                .add("domainObjectId", caseId.toString())
                 .add("assignee", UUID.randomUUID().toString())
                 .add("assignmentNatureType", assignmentNatureType)
                 .build();
@@ -61,7 +63,7 @@ public class CaseSearchResultHelper  {
 
     public void assignmentDeleted() {
         final JsonObject payload = createObjectBuilder()
-                .add("domainObjectId", createCasePayloadBuilder.getId().toString())
+                .add("domainObjectId", caseId.toString())
                 .add("assignmentNatureType", assignmentNatureType)
                 .build();
 
@@ -76,34 +78,35 @@ public class CaseSearchResultHelper  {
 
     public void verifyPersonNotFound(final String urn, final String lastName) {
         poll(searchCases(lastName))
+                .timeout(5, TimeUnit.SECONDS)
                 .until(status().is(OK), payload().isJson(
                         withJsonPath("$.results[?(@.urn=='" + urn + "')]", hasSize(0))
                 ));
     }
 
     public void verifyPleaReceivedDate() {
-        poll(searchCases(createCasePayloadBuilder.getUrn()))
+        poll(searchCases(urn))
                 .until(status().is(OK), payload().isJson(
                         withJsonPath("$.results[0].pleaDate", notNullValue())
                 ));
     }
 
     public void verifyNoPleaReceivedDate() {
-        poll(searchCases(createCasePayloadBuilder.getUrn()))
+        poll(searchCases(urn))
                 .until(status().is(OK), payload().isJson(
                         withoutJsonPath("$.results[0].pleaDate")
                 ));
     }
 
     public void verifyWithdrawalRequestedDate() {
-        poll(searchCases(createCasePayloadBuilder.getUrn()))
+        poll(searchCases(urn))
                 .until(status().is(OK), payload().isJson(
                         withJsonPath("$.results[0].withdrawalRequestedDate", notNullValue())
                 ));
     }
 
     public void verifyNoWithdrawalRequestedDate() {
-        poll(searchCases(createCasePayloadBuilder.getUrn()))
+        poll(searchCases(urn))
                 .until(status().is(OK), payload().isJson(
                         withoutJsonPath("$.results[0].withdrawalRequestedDate")
                 ));
@@ -111,15 +114,15 @@ public class CaseSearchResultHelper  {
 
 
     public void verifyAssignment(final boolean assigned) {
-        poll(searchCases(createCasePayloadBuilder.getUrn()))
+        poll(searchCases(urn))
                 .until(status().is(OK), payload().isJson(allOf(
-                        withJsonPath("$.results[0].urn", is(createCasePayloadBuilder.getUrn())),
+                        withJsonPath("$.results[0].urn", is(urn)),
                         withJsonPath("$.results[0].assigned", is(assigned)))));
     }
 
 
     public void verifyPersonInfoByUrn() {
-        verifyPersonInfo(createCasePayloadBuilder.getUrn(), lastName, dateOfBirth);
+        verifyPersonInfo(urn, lastName, dateOfBirth);
     }
 
     public void verifyPersonInfoByLastNameAndDateOfBirth(String lastName, LocalDate dateOfBirth) {
@@ -131,7 +134,7 @@ public class CaseSearchResultHelper  {
                 .until(status().is(OK), payload().isJson(allOf(
                         withJsonPath("$.results[*]", hasItem(isJson(
                                 allOf(
-                                        withJsonPath("urn", equalTo(createCasePayloadBuilder.getUrn())),
+                                        withJsonPath("urn", equalTo(urn)),
                                         withJsonPath("lastName", equalTo(lastName)),
                                         withJsonPath("dateOfBirth", equalTo(LocalDates.to(dateOfBirth)))
                                 )))))));

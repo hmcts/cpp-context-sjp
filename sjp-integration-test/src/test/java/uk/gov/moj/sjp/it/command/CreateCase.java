@@ -8,6 +8,7 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,13 +28,13 @@ public class CreateCase {
     public CreateCase(CreateCasePayloadBuilder payloadBuilder) {
         this.payloadBuilder = payloadBuilder;
     }
-    
+
     public static void createCaseForPayloadBuilder(CreateCasePayloadBuilder payloadBuilder) {
         new CreateCase(payloadBuilder)
-            .createCase();        
+                .createCase();
     }
-    
-    public void createCase() {
+
+    private void createCase() {
         validatePayload(payloadBuilder);
         final JsonObject payload = toJsonObjectRepresentingPayload(payloadBuilder);
         makePostCall("/cases", WRITE_MEDIA_TYPE, payload.toString());
@@ -82,11 +83,11 @@ public class CreateCase {
                 .add("gender", payloadBuilder.defendantBuilder.gender)
                 .add("numPreviousConvictions", payloadBuilder.defendantBuilder.numPreviousConvictions)
                 .add("address", createObjectBuilder()
-                        .add("address1", payloadBuilder.defendantBuilder.addressBuilder.address1)
-                        .add("address2", payloadBuilder.defendantBuilder.addressBuilder.address2)
-                        .add("address3", payloadBuilder.defendantBuilder.addressBuilder.address3)
-                        .add("address4", payloadBuilder.defendantBuilder.addressBuilder.address4)
-                        .add("postcode", payloadBuilder.defendantBuilder.addressBuilder.postcode)
+                        .add("address1", payloadBuilder.defendantBuilder.addressBuilder.getAddress1())
+                        .add("address2", payloadBuilder.defendantBuilder.addressBuilder.getAddress2())
+                        .add("address3", payloadBuilder.defendantBuilder.addressBuilder.getAddress3())
+                        .add("address4", payloadBuilder.defendantBuilder.addressBuilder.getAddress4())
+                        .add("postcode", payloadBuilder.defendantBuilder.addressBuilder.getPostcode())
                 )
                 .add("offences", createArrayBuilder()
                         .add(createObjectBuilder()
@@ -104,12 +105,8 @@ public class CreateCase {
                         )
                 )
         );
-        
+
         return payload.build();
-    }
-    
-    public String getPayloadAsString() {
-        return toJsonObjectRepresentingPayload(payloadBuilder).toString();
     }
 
     public static class CreateCasePayloadBuilder {
@@ -135,16 +132,14 @@ public class CreateCase {
             this.id = UUID.randomUUID();
             this.urn = PROSECUTING_AUTHORITY_PREFIX + RandomGenerator.integer(100000000, 999999999).next();
             this.prosecutingAuthority = ProsecutingAuthority.TFL;
-            
+
             this.getOffenceBuilder().withId(UUID.randomUUID());
         }
 
         public static CreateCasePayloadBuilder withDefaults() {
-            final CreateCasePayloadBuilder builder = new CreateCasePayloadBuilder();
-
-            return builder;
+            return new CreateCasePayloadBuilder();
         }
-        
+
         public CreateCasePayloadBuilder withId(final UUID id) {
             this.id = id;
             return this;
@@ -240,50 +235,6 @@ public class CreateCase {
 
         public AddressBuilder getAddressBuilder() {
             return addressBuilder;
-        }
-    }
-
-    public static class AddressBuilder {
-        String address1;
-        String address2;
-        String address3;
-        String address4;
-        String postcode;
-
-        private AddressBuilder() {
-
-        }
-
-        public static AddressBuilder withDefaults() {
-            final AddressBuilder addressBuilder = new AddressBuilder();
-
-            addressBuilder.address1 = "14 Tottenham Court Road";
-            addressBuilder.address2 = "London";
-            addressBuilder.address3 = "England";
-            addressBuilder.address4 = "UK";
-            addressBuilder.postcode = "W1T 1JY";
-
-            return addressBuilder;
-        }
-
-        public String getAddress1() {
-            return address1;
-        }
-
-        public String getAddress2() {
-            return address2;
-        }
-
-        public String getAddress3() {
-            return address3;
-        }
-
-        public String getAddress4() {
-            return address4;
-        }
-
-        public String getPostcode() {
-            return postcode;
         }
     }
 

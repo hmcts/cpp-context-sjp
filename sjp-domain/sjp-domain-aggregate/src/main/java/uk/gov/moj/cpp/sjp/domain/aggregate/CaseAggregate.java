@@ -284,11 +284,6 @@ public class CaseAggregate implements Aggregate {
             return caseUpdateRejected(changePleaCommand.getCaseId().toString(), CASE_ASSIGNED);
         }
 
-        if (withdrawalAllOffencesRequested) {
-            return apply(Stream.of(new CaseUpdateRejected(changePleaCommand.getCaseId(),
-                    CaseUpdateRejected.RejectReason.WITHDRAWAL_PENDING)));
-        }
-
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         if (changePleaCommand instanceof UpdatePlea) {
             final UpdatePlea updatePlea = (UpdatePlea) changePleaCommand;
@@ -375,9 +370,6 @@ public class CaseAggregate implements Aggregate {
         if (isCaseAssigned()) {
             streamBuilder.add(generateCaseUpdateRejected(caseId.toString(), CASE_ASSIGNED));
             return apply(streamBuilder.build());
-        }
-        if (withdrawalAllOffencesRequested) {
-            return apply(Stream.of(new CaseUpdateRejected(caseId, CaseUpdateRejected.RejectReason.WITHDRAWAL_PENDING)));
         }
         if (!hasDefendant(defendantId)) {
             return apply(Stream.of(new DefendantNotFound(caseId.toString(), "Store Online Plea")));

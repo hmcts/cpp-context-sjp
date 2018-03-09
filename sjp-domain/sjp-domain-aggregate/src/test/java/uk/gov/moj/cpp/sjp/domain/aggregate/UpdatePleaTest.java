@@ -14,7 +14,6 @@ import uk.gov.moj.cpp.sjp.domain.command.CancelPlea;
 import uk.gov.moj.cpp.sjp.domain.command.UpdatePlea;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.testutils.PleaBuilder;
-import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
@@ -128,7 +127,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
     }
 
     @Test
-    public void shouldNotUpdatePleaWhenWithdrawalOffencesRequested() {
+    public void shouldUpdatePleaWhenWithdrawalOffencesRequested() {
         //given
         caseAggregate.requestWithdrawalAllOffences(caseId.toString());
 
@@ -138,9 +137,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
 
         //then
         List<Object> events = asList(eventStream.toArray());
-        assertThat("Has CaseUpdateRejected event", events, hasItem(isA(CaseUpdateRejected.class)));
-        assertThat(((CaseUpdateRejected) events.get(0)).getReason(),
-                        is(CaseUpdateRejected.RejectReason.WITHDRAWAL_PENDING));
+        assertThat("Has PleaUpdated event", events, hasItem(isA(PleaUpdated.class)));
     }
 
     @Test

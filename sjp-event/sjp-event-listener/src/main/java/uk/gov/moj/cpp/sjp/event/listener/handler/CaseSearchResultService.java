@@ -4,6 +4,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResultList;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -15,15 +16,14 @@ public class CaseSearchResultService {
     private CaseSearchResultRepository repository;
 
     @Transactional
-    public void onDefendantDetailsUpdated(final UUID caseId, final String newFirstName, final String newLastName, final LocalDate newDateOfBirth) {
+    public void onDefendantDetailsUpdated(final UUID caseId, final String newFirstName, final String newLastName, final LocalDate newDateOfBirth, final ZonedDateTime dateAdded) {
         final CaseSearchResultList exisingEntryList = new CaseSearchResultList(repository.findByCaseId(caseId));
 
         if (exisingEntryList.hasDateOfBirthChanged(newDateOfBirth)) {
             exisingEntryList.setDateOfBirth(newDateOfBirth);
         }
         if (exisingEntryList.hasNameChanged(newFirstName, newLastName)) {
-            exisingEntryList.setName(newFirstName, newLastName);
-            exisingEntryList.add(caseId, newFirstName, newLastName, newDateOfBirth);
+            exisingEntryList.setName(caseId, newFirstName, newLastName, newDateOfBirth, dateAdded);
         }
 
         exisingEntryList.forEach(repository::save);

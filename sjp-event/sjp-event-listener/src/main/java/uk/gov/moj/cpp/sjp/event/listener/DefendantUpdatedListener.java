@@ -70,7 +70,8 @@ public class DefendantUpdatedListener {
                 defendantDetailsUpdated.getCaseId(),
                 defendantDetailsUpdated.getFirstName(),
                 defendantDetailsUpdated.getLastName(),
-                defendantDetailsUpdated.getDateOfBirth()
+                defendantDetailsUpdated.getDateOfBirth(),
+                defendantDetailsUpdated.getUpdatedDate()
         );
 
         //this listener updates two tables for the case where the event is fired via plead-online command

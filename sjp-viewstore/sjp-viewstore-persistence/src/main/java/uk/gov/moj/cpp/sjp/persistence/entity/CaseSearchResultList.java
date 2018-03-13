@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,24 +15,22 @@ public class CaseSearchResultList {
         this.caseSearchResults = caseSearchResults;
     }
 
-    public Optional<CaseSearchResult> getLatest() {
+    private Optional<CaseSearchResult> getCurrent() {
         return caseSearchResults.stream().filter(r -> !r.isDeprecated()).findFirst();
     }
 
-    public void setName(String firstName, String lastName) {
+    public void setName(UUID caseId, String newFirstName, String newLastName, LocalDate newDateOfBirth, ZonedDateTime dateAdded) {
         caseSearchResults.forEach(entry -> {
             entry.setDeprecated(true);
-            entry.setCurrentFirstName(firstName);
-            entry.setCurrentLastName(lastName);
+            entry.setCurrentFirstName(newFirstName);
+            entry.setCurrentLastName(newLastName);
         });
+
+        caseSearchResults.add(new CaseSearchResult(caseId, newFirstName, newLastName, newDateOfBirth, dateAdded));
     }
 
     public void setDateOfBirth(LocalDate dateOfBirth) {
         caseSearchResults.forEach(entry -> entry.setDateOfBirth(dateOfBirth));
-    }
-
-    public void add(UUID caseId, String newFirstName, String newLastName, LocalDate newDateOfBirth) {
-        caseSearchResults.add(new CaseSearchResult(caseId, newFirstName, newLastName, newDateOfBirth));
     }
 
     public void forEach(Consumer<CaseSearchResult> consumer) {
@@ -39,14 +38,14 @@ public class CaseSearchResultList {
     }
 
     public boolean hasDateOfBirthChanged(LocalDate newDateOfBirth) {
-        return getLatest()
+        return getCurrent()
                 .map(old ->
                         !newDateOfBirth.equals(old.getDateOfBirth()))
                 .orElse(true);
     }
 
     public boolean hasNameChanged(final String newFirstName, final String newLastName) {
-        return getLatest()
+        return getCurrent()
                 .map(old ->
                         !newLastName.equalsIgnoreCase(old.getLastName()) ||
                                 !newFirstName.equalsIgnoreCase(old.getFirstName()))

@@ -68,7 +68,8 @@ public class CaseCreatedListener {
                 caseDetail.getId(),
                 caseDetail.getDefendant().getPersonalDetails().getFirstName(),
                 caseDetail.getDefendant().getPersonalDetails().getLastName(),
-                caseDetail.getDefendant().getPersonalDetails().getDateOfBirth()
+                caseDetail.getDefendant().getPersonalDetails().getDateOfBirth(),
+                caseDetail.getDateTimeCreated()
         );
     }
 }

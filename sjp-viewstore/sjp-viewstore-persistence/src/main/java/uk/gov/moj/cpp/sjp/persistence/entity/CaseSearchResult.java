@@ -4,8 +4,7 @@ import static javax.persistence.ConstraintMode.NO_CONSTRAINT;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -56,7 +55,7 @@ public class CaseSearchResult implements Serializable {
     @Column(name = "assigned")
     private Boolean assigned = false;
     @Column(name = "date_added")
-    private LocalDateTime dateAdded = LocalDateTime.now();
+    private ZonedDateTime dateAdded;
     @Column(name = "deprecated")
     private Boolean deprecated = false;
 
@@ -64,7 +63,7 @@ public class CaseSearchResult implements Serializable {
         this.id = UUID.randomUUID();
     }
 
-    public CaseSearchResult(final UUID caseId, final String firstName, final String lastName, final LocalDate dateOfBirth) {
+    public CaseSearchResult(final UUID caseId, final String firstName, final String lastName, final LocalDate dateOfBirth, final ZonedDateTime dateAdded) {
         this();
         this.caseId = caseId;
         this.firstName = firstName;
@@ -72,6 +71,7 @@ public class CaseSearchResult implements Serializable {
         this.currentFirstName = firstName;
         this.currentLastName = lastName;
         this.dateOfBirth = dateOfBirth;
+        this.dateAdded = dateAdded;
     }
 
     public CaseSummary getCaseSummary() {
@@ -158,11 +158,11 @@ public class CaseSearchResult implements Serializable {
         return assigned;
     }
 
-    public LocalDateTime getDateAdded() {
+    public ZonedDateTime getDateAdded() {
         return dateAdded;
     }
 
-    public void setDateAdded(LocalDateTime dateAdded) {
+    public void setDateAdded(ZonedDateTime dateAdded) {
         this.dateAdded = dateAdded;
     }
 

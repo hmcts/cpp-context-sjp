@@ -96,6 +96,7 @@ public class DefendantUpdatedListenerTest {
             .withFirstName("Mark")
             .withLastName("Smith")
             .withGender("Male")
+            .withUpdatedDate(ZonedDateTime.now())
             .withDateOfBirth(LocalDate.of(1960, 1, 1))
             .withAddress(new Address("address1", "address2", "address3", "address4", "postcode"));
 
@@ -275,7 +276,8 @@ public class DefendantUpdatedListenerTest {
                 caseDetail.getId(),
                 caseDetail.getDefendant().getPersonalDetails().getFirstName(),
                 caseDetail.getDefendant().getPersonalDetails().getLastName(),
-                caseDetail.getDefendant().getPersonalDetails().getDateOfBirth()
+                caseDetail.getDefendant().getPersonalDetails().getDateOfBirth(),
+                ZonedDateTime.now()
         );
     }
 
@@ -284,6 +286,7 @@ public class DefendantUpdatedListenerTest {
                 defendantDetailsUpdated.getCaseId(),
                 defendantDetailsUpdated.getFirstName(),
                 defendantDetailsUpdated.getLastName(),
-                defendantDetailsUpdated.getDateOfBirth());
+                defendantDetailsUpdated.getDateOfBirth(),
+                ZonedDateTime.now());
     }
 }

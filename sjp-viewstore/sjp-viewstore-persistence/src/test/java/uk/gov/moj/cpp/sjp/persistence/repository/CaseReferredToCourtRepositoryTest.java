@@ -14,6 +14,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseReferredToCourt;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -75,7 +76,7 @@ public class CaseReferredToCourtRepositoryTest extends BaseTransactionalTest {
         caseRepository.save(caseDetail);
 
         caseSearchResultRepository.save(new CaseSearchResult(caseReferredToCourt.getCaseId(),
-                caseReferredToCourt.getFirstName(), caseReferredToCourt.getLastName(), LocalDates.from("2001-02-03")));
+                caseReferredToCourt.getFirstName(), caseReferredToCourt.getLastName(), LocalDates.from("2001-02-03"), ZonedDateTime.now()));
 
         courtReferralRepository.save(new CourtReferral(caseReferredToCourt.getCaseId(), hearingDate));
 

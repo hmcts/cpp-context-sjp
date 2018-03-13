@@ -14,6 +14,8 @@ import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
+import java.time.ZonedDateTime;
+
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -33,6 +35,7 @@ public class DefendantDetailsMovedFromPeopleListener {
     @Transactional
     public void defendantDetailsUpdated(final JsonEnvelope envelope) {
 
+
         DefendantDetailsMovedFromPeople defendantDetailsMovedFromPeople = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantDetailsMovedFromPeople.class);
 
         CaseDetail caseDetail = caseRepository.findBy(defendantDetailsMovedFromPeople.getCaseId());
@@ -45,7 +48,14 @@ public class DefendantDetailsMovedFromPeopleListener {
                 caseDetail.getId(),
                 caseDetail.getDefendant().getPersonalDetails().getFirstName(),
                 caseDetail.getDefendant().getPersonalDetails().getLastName(),
-                caseDetail.getDefendant().getPersonalDetails().getDateOfBirth());
+                caseDetail.getDefendant().getPersonalDetails().getDateOfBirth(),
+                getEventCreationDateTime(envelope, caseDetail));
+    }
+
+    private ZonedDateTime getEventCreationDateTime(final JsonEnvelope envelope, final CaseDetail caseDetail) {
+        return envelope.metadata().createdAt().orElse(
+                caseDetail.getDateTimeCreated()
+        );
     }
 
     private PersonalDetails createPersonalDetails(DefendantDetailsMovedFromPeople event) {

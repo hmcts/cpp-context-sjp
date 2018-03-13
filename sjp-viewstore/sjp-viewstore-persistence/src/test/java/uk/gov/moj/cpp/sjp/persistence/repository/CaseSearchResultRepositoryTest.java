@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
@@ -12,10 +11,16 @@ import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
 
-import java.util.Arrays;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.inject.Inject;
 
@@ -25,6 +30,10 @@ import org.junit.runner.RunWith;
 
 @RunWith(CdiTestRunner.class)
 public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
+
+    private static final boolean IS_CURRENT = false;
+    private static final boolean IS_OLD = true;
+    private static final AtomicLong TIME = new AtomicLong(System.currentTimeMillis() - Duration.ofDays(1).toMillis());
 
     @Inject
     private CaseSearchResultRepository caseSearchResultRepository;
@@ -73,38 +82,52 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
         final List<CaseSearchResult> results = caseSearchResultRepository.findByLastName(LAST_NAME.toLowerCase());
         // then
         assertThat(results, hasSize(1));
+        ensure(results.get(0), LAST_NAME, IS_CURRENT);
 
         // given
-        simulateDefendantLastNameChanged(LAST_NAME_UPDATED, results.get(0));
+        simulateDefendantLastNameChanged(LAST_NAME_UPDATED, results.get(0).getCaseId());
+
         // when
         final List<CaseSearchResult> afterUpdateForOldLastName = caseSearchResultRepository.findByLastName(LAST_NAME.toLowerCase());
-        final List<CaseSearchResult> afterUpdateForNewLastName = caseSearchResultRepository.findByLastName(LAST_NAME_UPDATED.toLowerCase());
         // then
         assertThat(afterUpdateForOldLastName, hasSize(1));
-        assertThat(afterUpdateForOldLastName.get(0).getCurrentLastName(), equalTo(LAST_NAME_UPDATED));
+        ensure(afterUpdateForOldLastName.get(0), LAST_NAME_UPDATED, IS_OLD);
+
+        // when
+        final List<CaseSearchResult> afterUpdateForNewLastName = caseSearchResultRepository.findByLastName(LAST_NAME_UPDATED.toLowerCase());
+        // then
         assertThat(afterUpdateForNewLastName, hasSize(1));
-        assertThat(afterUpdateForNewLastName.get(0).getCurrentLastName(), equalTo(LAST_NAME_UPDATED));
+        ensure(afterUpdateForNewLastName.get(0), LAST_NAME_UPDATED, IS_CURRENT);
 
         // given
-        simulateDefendantLastNameChanged(LAST_NAME, caseSearchResultRepository.findByCaseId(caseSearchResult.getCaseId()));
+        simulateDefendantLastNameChanged(LAST_NAME, caseSearchResult.getCaseId());
+
         // when
         final List<CaseSearchResult> afterUpdateBackForOriginalLastName = caseSearchResultRepository.findByLastName(LAST_NAME.toLowerCase());
-        final List<CaseSearchResult> afterUpdateBackForUpdatedButRevertedLastName = caseSearchResultRepository.findByLastName(LAST_NAME_UPDATED.toLowerCase());
         // then
         assertThat(afterUpdateBackForOriginalLastName, hasSize(1));
-        assertThat(afterUpdateBackForOriginalLastName.get(0).getCurrentLastName(), equalTo(LAST_NAME));
+        ensure(afterUpdateBackForOriginalLastName.get(0), LAST_NAME, IS_CURRENT);
+
+        // when
+        final List<CaseSearchResult> afterUpdateBackForUpdatedButRevertedLastName = caseSearchResultRepository.findByLastName(LAST_NAME_UPDATED.toLowerCase());
+        // then
         assertThat(afterUpdateBackForUpdatedButRevertedLastName, hasSize(1));
-        assertThat(afterUpdateBackForUpdatedButRevertedLastName.get(0).getCurrentLastName(), equalTo(LAST_NAME));
+        ensure(afterUpdateBackForUpdatedButRevertedLastName.get(0), LAST_NAME, IS_OLD);
 
         // given last name was updated to LAST_NAME_UPDATED and a new case with LAST_NAME was created
-        simulateDefendantLastNameChanged(LAST_NAME_UPDATED, caseSearchResultRepository.findByCaseSummary_urn(URN));
+        simulateDefendantLastNameChanged(LAST_NAME_UPDATED, afterUpdateBackForUpdatedButRevertedLastName.get(0).getCaseId());
         createCaseSearchResult();
         // when
         final List<CaseSearchResult> resultsAfterInsert = caseSearchResultRepository.findByLastName(LAST_NAME.toLowerCase());
         // then the results should contain 1 entry with LAST_NAME and 1 entry with LAST_NAME_UPDATED
-        assertThat(resultsAfterInsert.stream()
-                .map(CaseSearchResult::getCurrentLastName).collect(Collectors.toList()),
-                contains(LAST_NAME_UPDATED, LAST_NAME));
+        assertThat(resultsAfterInsert, hasSize(2));
+        ensure(resultsAfterInsert.get(0), LAST_NAME_UPDATED, IS_OLD);
+        ensure(resultsAfterInsert.get(1), LAST_NAME, IS_CURRENT);
+    }
+
+    private void ensure(final CaseSearchResult caseSearchResult, final String lastName, final boolean deprecated) {
+        assertThat(caseSearchResult.getCurrentLastName(), equalTo(lastName));
+        assertThat(caseSearchResult.isDeprecated(), is(deprecated));
     }
 
     @Test
@@ -117,6 +140,24 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
 
         assertThat(results.get(0).getLastName(), equalTo(caseSearchResult.getLastName()));
         assertThat(results.get(0).getCaseSummary().getUrn(), equalTo(caseSearchResult.getCaseSummary().getUrn()));
+    }
+
+    @Test
+    public void shouldFindByUrnOnlyLatest() {
+        // given
+        final CaseSearchResult caseSearchResult = createCaseSearchResult();
+        simulateDefendantLastNameChanged(LAST_NAME_UPDATED, caseSearchResult.getCaseId());
+        simulateDefendantLastNameChanged(LAST_NAME, caseSearchResult.getCaseId());
+
+        // when
+        final List<CaseSearchResult> resultsByUrn = caseSearchResultRepository.findByCaseSummary_urn(URN);
+        final List<CaseSearchResult> resultsByCaseId = caseSearchResultRepository.findByCaseId(caseSearchResult.getCaseId());
+
+        // then
+        assertThat(resultsByUrn, hasSize(1));
+        assertThat(resultsByCaseId, hasSize(3));
+
+        ensure(resultsByUrn.get(0), LAST_NAME, IS_CURRENT);
     }
 
     @Test
@@ -136,7 +177,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldCreateWithoutCaseSummary() {
-        final CaseSearchResult caseSearchResult = new CaseSearchResult(UUID.randomUUID(), "firstName", "lastName", LocalDates.from("2001-02-03"));
+        final CaseSearchResult caseSearchResult = new CaseSearchResult(UUID.randomUUID(), "firstName", "lastName", LocalDates.from("2001-02-03"), null);
 
         caseSearchResultRepository.save(caseSearchResult);
 
@@ -151,11 +192,8 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
         return createCaseSearchResultWith(UUID.randomUUID(), URN, firstName, LAST_NAME);
     }
 
-    private void simulateDefendantLastNameChanged(String newLastName, CaseSearchResult... caseSearchResults) {
-        simulateDefendantLastNameChanged(newLastName, Arrays.asList(caseSearchResults));
-    }
-
-    private void simulateDefendantLastNameChanged(String newLastName, List<CaseSearchResult> caseSearchResults) {
+    private void simulateDefendantLastNameChanged(String newLastName, UUID caseId) {
+        List<CaseSearchResult> caseSearchResults = caseSearchResultRepository.findByCaseId(caseId);
         caseSearchResults.forEach(r -> {
             r.setCurrentLastName(newLastName);
             r.setDeprecated(true);
@@ -171,6 +209,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
 
     private CaseSearchResult createCaseSearchResultWith(
             UUID caseId, String urn, String firstName, String lastName) {
+
         CaseSummary caseSummary = new CaseSummary();
         caseSummary.setId(caseId);
         caseSummary.setUrn(urn);
@@ -184,6 +223,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
         caseSearchResult.setLastName(lastName);
         caseSearchResult.setCurrentFirstName(firstName);
         caseSearchResult.setCurrentLastName(lastName);
+        caseSearchResult.setDateAdded(ZonedDateTime.ofInstant(Instant.ofEpochMilli(TIME.getAndAdd(10)), ZoneId.systemDefault()));
         return caseSearchResultRepository.save(caseSearchResult);
     }
 }

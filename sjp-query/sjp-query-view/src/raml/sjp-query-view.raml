@@ -392,3 +392,21 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
           application/vnd.sjp.query.assignment-candidates+json:
             schema: !include json/schema/sjp.query.assignment-candidates.json
             example: !include json/sjp.query.assignment-candidates.json
+
+/cases/pending-dates-to-avoid:
+  get:
+    description: |
+      Get all cases that are pending submission (from the prosecutor) of any dates-to-avoid for the case's trial.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.pending-dates-to-avoid+json
+          name: sjp.query.pending-dates-to-avoid
+      ...
+    queryParameters:
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.pending-dates-to-avoid+json:
+                  schema: !include json/schema/sjp.query.pending-dates-to-avoid.json
+                  example: !include json/sjp.query.pending-dates-to-avoid.json

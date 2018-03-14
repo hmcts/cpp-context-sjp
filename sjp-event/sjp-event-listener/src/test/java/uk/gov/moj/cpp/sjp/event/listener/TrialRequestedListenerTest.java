@@ -12,7 +12,9 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
+import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.PendingDatesToAvoidRepository;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -35,17 +37,22 @@ public class TrialRequestedListenerTest {
     @Mock
     private OnlinePleaRepository.TrialOnlinePleaRepository onlinePleaRepository;
 
+    @Mock
+    private PendingDatesToAvoidRepository pendingDatesToAvoidRepository;
+
     @InjectMocks
     private TrialRequestedListener trialRequestedListener;
 
     @Captor
     private ArgumentCaptor<OnlinePlea> onlinePleaCaptor;
+    @Captor
+    private ArgumentCaptor<PendingDatesToAvoid> pendingDatesToAvoidCaptor;
 
     private Clock clock = new StoppedClock(ZonedDateTime.now());
     private ZonedDateTime now = clock.now();
 
     @Test
-    public void shouldSaveFinancialMeansUpdatedEvent() {
+    public void shouldSaveToAppropriateRepositoriesWhenTrialRequestedEvent() {
         final UUID caseId = UUID.randomUUID();
         final JsonEnvelope event = envelope()
                 .withPayloadOf(caseId.toString(), "caseId")
@@ -58,12 +65,15 @@ public class TrialRequestedListenerTest {
 
         verify(jsonObjectConverter).convert(event.payloadAsJsonObject(), TrialRequested.class);
         verify(onlinePleaRepository).saveOnlinePlea(onlinePleaCaptor.capture());
+        verify(pendingDatesToAvoidRepository).save(pendingDatesToAvoidCaptor.capture());
 
         assertThat(onlinePleaCaptor.getValue().getCaseId(), equalTo(trialRequested.getCaseId()));
         assertThat(onlinePleaCaptor.getValue().getPleaDetails().getUnavailability(), equalTo(trialRequested.getUnavailability()));
         assertThat(onlinePleaCaptor.getValue().getPleaDetails().getWitnessDetails(), equalTo(trialRequested.getWitnessDetails()));
         assertThat(onlinePleaCaptor.getValue().getPleaDetails().getWitnessDispute(), equalTo(trialRequested.getWitnessDispute()));
         assertThat(onlinePleaCaptor.getValue().getSubmittedOn(), equalTo(trialRequested.getUpdatedDate()));
+        assertThat(pendingDatesToAvoidCaptor.getValue().getCaseId(), equalTo(trialRequested.getCaseId()));
+        assertThat(pendingDatesToAvoidCaptor.getValue().getPleaDate(), equalTo(trialRequested.getUpdatedDate()));
     }
 
 }

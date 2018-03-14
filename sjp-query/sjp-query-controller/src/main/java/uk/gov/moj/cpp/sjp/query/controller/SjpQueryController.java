@@ -145,4 +145,9 @@ public class SjpQueryController {
     public JsonEnvelope getDefendantsOnlinePlea(final JsonEnvelope query) {
         return requester.request(query);
     }
+
+    @Handles("sjp.query.pending-dates-to-avoid")
+    public JsonEnvelope getPendingDatesToAvoid(final JsonEnvelope query) {
+        return requester.request(query);
+    }
 }

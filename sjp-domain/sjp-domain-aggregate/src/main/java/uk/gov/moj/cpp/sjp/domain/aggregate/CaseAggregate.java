@@ -298,28 +298,26 @@ public class CaseAggregate implements Aggregate {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         if (changePleaCommand instanceof UpdatePlea) {
             final UpdatePlea updatePlea = (UpdatePlea) changePleaCommand;
-            handleTrialRequestEventsForUpdatePlea(updatePlea, streamBuilder, updatedOn);
             final PleaUpdated pleaUpdated = new PleaUpdated(
                     updatePlea.getCaseId().toString(),
                     updatePlea.getOffenceId().toString(),
                     updatePlea.getPlea(),
                     PleaMethod.POSTAL);
-
             streamBuilder.add(pleaUpdated);
 
+            handleTrialRequestEventsForUpdatePlea(updatePlea, streamBuilder, updatedOn);
             updateInterpreter(updatePlea.getInterpreterLanguage(), defendantId.get(), false)
                     .ifPresent(streamBuilder::add);
 
         } else if (changePleaCommand instanceof CancelPlea) {
             final CancelPlea cancelPlea = (CancelPlea) changePleaCommand;
-            if (trialRequested) {
-                streamBuilder.add(new TrialRequestCancelled(caseId, updatedOn));
-            }
             final PleaCancelled pleaCancelled = new PleaCancelled(
                     cancelPlea.getCaseId().toString(),
                     cancelPlea.getOffenceId().toString());
-
             streamBuilder.add(pleaCancelled);
+            if (trialRequested) {
+                streamBuilder.add(new TrialRequestCancelled(caseId));
+            }
             updateInterpreter(null, defendantId.get(), false)
                     .ifPresent(streamBuilder::add);
         }
@@ -327,20 +325,31 @@ public class CaseAggregate implements Aggregate {
     }
 
     private void handleTrialRequestEventsForUpdatePlea(final UpdatePlea updatePlea, final Stream.Builder<Object> streamBuilder, final ZonedDateTime updatedOn) {
-        if (isTrialRequestCancellationRequired(updatePlea)) {
-            streamBuilder.add(new TrialRequestCancelled(caseId, updatedOn));
+        if (hasNeverRaisedTrialRequestedEventAndTrialRequired(updatePlea)) {
+            streamBuilder.add(new TrialRequested(caseId, updatedOn));
+        }
+        else if (isTrialRequestCancellationRequired(updatePlea)) {
+            streamBuilder.add(new TrialRequestCancelled(caseId));
         }
         else if (wasTrialRequestedThenCancelledAndIsTrialRequiredAgain(updatePlea)) {
             streamBuilder.add(new TrialRequested(caseId, trialRequestedUnavailability, trialRequestedUWitnessDetails, trialRequestedWitnessDispute, updatedOn));
         }
     }
 
+    private boolean hasNeverRaisedTrialRequestedEventAndTrialRequired(final UpdatePlea updatePlea) {
+        return !trialRequested && !trialRequestedPreviously && trialRequired(updatePlea);
+    }
+
     private boolean wasTrialRequestedThenCancelledAndIsTrialRequiredAgain(final UpdatePlea updatePlea) {
-        return !trialRequested && this.trialRequestedPreviously && updatePlea.getPlea().equals(PleaType.NOT_GUILTY.name());
+        return !trialRequested && this.trialRequestedPreviously && trialRequired(updatePlea);
     }
 
     private boolean isTrialRequestCancellationRequired(final UpdatePlea updatePlea) {
-        return trialRequested && !updatePlea.getPlea().equals(PleaType.NOT_GUILTY.name());
+        return trialRequested && !trialRequired(updatePlea);
+    }
+
+    private boolean trialRequired(final UpdatePlea updatePlea) {
+        return updatePlea.getPlea().equals(PleaType.NOT_GUILTY.name());
     }
 
     public Stream<Object> updateInterpreter(final UUID defendantId, final String language) {

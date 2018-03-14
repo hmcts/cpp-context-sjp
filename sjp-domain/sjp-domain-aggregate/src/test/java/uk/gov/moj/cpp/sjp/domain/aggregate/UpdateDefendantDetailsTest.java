@@ -81,7 +81,7 @@ public class UpdateDefendantDetailsTest {
         );
 
         Stream<Object> eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
-                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, person);
+                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, person, ZonedDateTime.now());
 
         List<Object> events = asList(eventStream.toArray());
 
@@ -98,7 +98,7 @@ public class UpdateDefendantDetailsTest {
                 dateOfBirthUpdated, gender, addressUpdated);
 
         eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
-                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, updatedPerson);
+                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, updatedPerson, ZonedDateTime.now());
 
         events = asList(eventStream.toArray());
 
@@ -154,7 +154,7 @@ public class UpdateDefendantDetailsTest {
         Person personInfoDetailsWithoutTitle = new Person(null, firstName, lastName,
                 dateOfBirth, gender, address);
         Stream<Object> eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
-                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, personInfoDetailsWithoutTitle);
+                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, personInfoDetailsWithoutTitle, ZonedDateTime.now());
 
         List<Object> events = asList(eventStream.toArray());
 

@@ -331,7 +331,7 @@ public class CaseAggregateDefendantTest {
         final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(updatedDefendantData.caseId,
                 updatedDefendantData.defendantId, updatedDefendantData.gender, updatedDefendantData.nationalInsuranceNumber,
                 updatedDefendantData.email, updatedDefendantData.homeNumber, updatedDefendantData.mobileNumber,
-                person);
+                person, ZonedDateTime.now());
 
         return eventStream.collect(Collectors.toList());
     }

@@ -667,7 +667,7 @@ public class CaseAggregate implements Aggregate {
     public Stream<Object> updateDefendantDetails(UUID caseId, UUID defendantId, String gender,
                                                  String nationalInsuranceNumber, String email,
                                                  String homeNumber, String mobileNumber,
-                                                 Person person) {
+                                                 Person person, ZonedDateTime updatedDate) {
 
         Stream.Builder<Object> events = Stream.builder();
 
@@ -710,6 +710,7 @@ public class CaseAggregate implements Aggregate {
                 .withContactDetails(new ContactDetails(homeNumber, mobileNumber, email))
                 .withAddress(person.getAddress())
                 .withUpdateByOnlinePlea(false)
+                .withUpdatedDate(updatedDate)
                 .build();
         events.add(defendantDetailsUpdated);
         return apply(events.build());

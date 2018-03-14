@@ -20,13 +20,22 @@ public class CaseSearchResultList {
     }
 
     public void setName(UUID caseId, String newFirstName, String newLastName, LocalDate newDateOfBirth, ZonedDateTime dateAdded) {
+        Optional<CaseSearchResult> latest = getCurrent();
+
         caseSearchResults.forEach(entry -> {
             entry.setDeprecated(true);
             entry.setCurrentFirstName(newFirstName);
             entry.setCurrentLastName(newLastName);
         });
 
-        caseSearchResults.add(new CaseSearchResult(caseId, newFirstName, newLastName, newDateOfBirth, dateAdded));
+        CaseSearchResult newEntry = new CaseSearchResult(caseId, newFirstName, newLastName, newDateOfBirth, dateAdded);
+
+        latest.ifPresent(r -> {
+            newEntry.setPleaDate(r.getPleaDate());
+            newEntry.setWithdrawalRequestedDate(r.getWithdrawalRequestedDate());
+        });
+
+        caseSearchResults.add(newEntry);
     }
 
     public void setDateOfBirth(LocalDate dateOfBirth) {

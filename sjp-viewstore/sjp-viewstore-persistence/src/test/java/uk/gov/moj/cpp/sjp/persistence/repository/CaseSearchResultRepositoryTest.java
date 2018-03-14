@@ -223,7 +223,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
         caseSearchResult.setLastName(lastName);
         caseSearchResult.setCurrentFirstName(firstName);
         caseSearchResult.setCurrentLastName(lastName);
-        caseSearchResult.setDateAdded(ZonedDateTime.ofInstant(Instant.ofEpochMilli(TIME.getAndAdd(10)), ZoneId.systemDefault()));
+        caseSearchResult.setDateAdded(ZonedDateTime.ofInstant(Instant.ofEpochMilli(TIME.getAndAdd(100)), ZoneId.systemDefault()));
         return caseSearchResultRepository.save(caseSearchResult);
     }
 }

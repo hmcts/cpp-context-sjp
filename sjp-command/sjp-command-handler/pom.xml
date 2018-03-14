@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-command</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>0.0.44-ATCM-SNAPSHOT</version>
+        <version>0.0.45-ATCM-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -63,6 +63,10 @@
             <version>${project.version}</version>
             <scope>test</scope>
             <classifier>raml</classifier>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.utils</groupId>
+            <artifactId>utilities-core</artifactId>
         </dependency>
 
     </dependencies>

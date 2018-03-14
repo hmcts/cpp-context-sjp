@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json",
+  "type": "object",
+  "properties": {
+    "home": {
+      "type": "string"
+    },
+    "mobile": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

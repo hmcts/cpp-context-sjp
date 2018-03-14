@@ -1,0 +1,48 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>sjp-parent</artifactId>
+        <groupId>uk.gov.moj.cpp.sjp</groupId>
+        <version>0.0.52-ATCM-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>sjp-json</artifactId>
+    <packaging>jar</packaging>
+
+    <name>sjp-json</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.support</groupId>
+            <artifactId>support-json</artifactId>
+            <version>${support.json.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>generator-plugin</artifactId>
+                <groupId>uk.gov.justice.maven.generator</groupId>
+                <executions>
+                    <execution>
+                        <id>schema-catalog-generation</id>
+                        <configuration>
+                            <sourceDirectory>src/main/resources/json/schema</sourceDirectory>
+                            <includes>
+                                <include>**/*.json</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

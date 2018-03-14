@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-query</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>0.0.51-ATCM-SNAPSHOT</version>
+        <version>0.0.52-ATCM-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -44,14 +44,23 @@
 
     <dependencies>
         <dependency>
+            <groupId>uk.gov.moj.cpp.sjp</groupId>
+            <artifactId>sjp-json</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>uk.gov.justice.framework-api</groupId>
+            <artifactId>framework-api-domain</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>uk.gov.moj.cpp.common</groupId>
             <artifactId>query-api</artifactId>
-            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.access-control</groupId>

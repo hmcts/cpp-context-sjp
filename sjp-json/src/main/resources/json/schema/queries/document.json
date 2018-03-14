@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/document.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "materialId": {
+      "type": "string"
+    },
+    "documentType": {
+      "type": "string"
+    },
+    "documentNumber": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false
+}

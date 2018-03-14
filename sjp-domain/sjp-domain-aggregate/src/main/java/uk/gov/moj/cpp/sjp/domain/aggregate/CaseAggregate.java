@@ -141,6 +141,10 @@ public class CaseAggregate implements Aggregate {
 
     private final Map<UUID, String> employmentStatusByDefendantId = new HashMap<>();
 
+    public Stream<Object> dummy() {
+        return apply(Stream.of());
+    }
+
     public Stream<Object> receiveCase(final Case aCase, final ZonedDateTime createdOn) {
         final Object event;
 

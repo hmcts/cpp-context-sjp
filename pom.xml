@@ -7,12 +7,12 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>4.5.4</version>
+        <version>5.0.5</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>0.0.51-ATCM-SNAPSHOT</version>
+    <version>0.0.52-ATCM-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -29,6 +29,9 @@
         <access-control-sjp-providers.version>3.2.9</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
+        <file.alfresco.version>2.3.0</file.alfresco.version>
+        <support.json.version>1.1.3</support.json.version>
+        <javax.el-api.version>3.0.0</javax.el-api.version>
     </properties>
 
     <modules>
@@ -39,6 +42,7 @@
         <module>sjp-query</module>
         <module>sjp-integration-test</module>
         <module>sjp-service</module>
+        <module>sjp-json</module>
     </modules>
 
     <build>

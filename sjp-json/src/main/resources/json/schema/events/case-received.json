@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/case-received.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "urn": {
+      "type": "string"
+    },
+    "prosecutingAuthority": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/prosecuting-authority.json"
+    },
+    "costs": {
+      "type": "number"
+    },
+    "postingDate": {
+      "type": "string"
+    },
+    "defendant": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/events/case-received.defendant.json"
+    },
+    "createdOn": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "urn",
+    "caseId",
+    "prosecutingAuthority",
+    "postingDate",
+    "defendant"
+  ]
+}

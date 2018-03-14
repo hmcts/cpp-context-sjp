@@ -1,0 +1,24 @@
+{
+  "aCase": {
+    "id": "",
+    "urn": "",
+    "ptiUrn": "",
+    "initiationCode": "",
+    "summonsCode": "",
+    "prosecutingAuthority": "TVL",
+    "libraOriginatingOrg": "",
+    "libraHearingLocation": "",
+    "dateOfHearing": "",
+    "timeOfHearing": "",
+    "costs": "",
+    "postingDate": "",
+    "defendant": {
+      "offences": [
+        {
+          "id": ""
+        }
+      ]
+    }
+  },
+  "createdOn": "2012-02-22T02:06:58.147Z"
+}

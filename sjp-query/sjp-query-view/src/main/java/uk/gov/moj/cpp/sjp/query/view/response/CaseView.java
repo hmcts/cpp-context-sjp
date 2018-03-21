@@ -25,6 +25,7 @@ public class CaseView {
     private String libraCaseNumber;
     private final String reopenedInLibraReason;
     private String enterpriseId;
+    private boolean onlinePleaReceived;
 
     public CaseView(CaseDetail caseDetail) {
 
@@ -49,6 +50,7 @@ public class CaseView {
         this.libraCaseNumber = caseDetail.getLibraCaseNumber();
         this.reopenedInLibraReason = caseDetail.getReopenedInLibraReason();
         this.enterpriseId = caseDetail.getEnterpriseId();
+        this.onlinePleaReceived = Boolean.valueOf(caseDetail.getOnlinePleaReceived());
     }
 
     public String getId() {
@@ -105,5 +107,9 @@ public class CaseView {
 
     public String getEnterpriseId() {
         return enterpriseId;
+    }
+
+    public boolean isOnlinePleaReceived() {
+        return onlinePleaReceived;
     }
 }

@@ -127,6 +127,9 @@ public class CaseDetail implements Serializable {
     @Column(name = "reopened_in_libra_reason")
     private String reopenedInLibraReason;
 
+    @Column(name = "online_plea_received")
+    private Boolean onlinePleaReceived = Boolean.FALSE;
+
     public CaseDetail() {
         defendant.setCaseDetail(this);
     }
@@ -296,6 +299,14 @@ public class CaseDetail implements Serializable {
         this.reopenedDate = null;
         this.reopenedInLibraReason = null;
         this.libraCaseNumber = null;
+    }
+
+    public Boolean getOnlinePleaReceived() {
+        return onlinePleaReceived;
+    }
+
+    public void setOnlinePleaReceived(final Boolean onlinePleaReceived) {
+        this.onlinePleaReceived = onlinePleaReceived;
     }
 
     public String getEnterpriseId() {

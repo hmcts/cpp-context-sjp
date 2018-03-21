@@ -132,15 +132,25 @@ public class CaseServiceTest {
     private CaseService service;
 
     @Test
-    public void shouldFindCaseViewWithDocuments() {
-        final CaseDetail caseDetail = createCaseDetailWithDocumentTypes("FINANCIAL_MEANS", "OTHER", "Travelcard");
+    public void shouldFindCaseViewWithDocumentsWherePostalPlea() {
+        assertExpectionsForFindCaseViewWithDocuments(false);
+    }
+
+    @Test
+    public void shouldFindCaseViewWithDocumentsWhereOnlinePlea() {
+        assertExpectionsForFindCaseViewWithDocuments(true);
+    }
+
+    private void assertExpectionsForFindCaseViewWithDocuments(boolean onlinePleaReceived) {
+        final CaseDetail caseDetail = createCaseDetailWithDocumentTypes(onlinePleaReceived,"FINANCIAL_MEANS", "OTHER", "Travelcard");
 
         given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
         CaseView caseView = service.findCase(CASE_ID.toString());
         assertThat(caseView, notNullValue());
         assertThat(caseView.getId(), is(CASE_ID.toString()));
         assertThat(caseView.getUrn(), is(URN));
-        assertThat(caseView.getCaseDocuments().size(), is(3));
+        assertThat(caseView.getCaseDocuments(), hasSize(3));
+        assertThat(caseView.isOnlinePleaReceived(), is(onlinePleaReceived));
     }
 
     @Test
@@ -175,7 +185,7 @@ public class CaseServiceTest {
 
     @Test
     public void shouldFindCaseByUrn() {
-        CaseDetail caseDetail = createCaseDetail();
+        CaseDetail caseDetail = createCaseDetail(true);
 
         given(caseRepository.findByUrn(URN)).willReturn(caseDetail);
         CaseView caseView = service.findCaseByUrn(URN);
@@ -184,11 +194,12 @@ public class CaseServiceTest {
         assertThat(caseView.getId(), is(CASE_ID.toString()));
         assertThat(caseView.getUrn(), is(URN));
         assertThat(caseView.getDateTimeCreated(), is(clock.now()));
+        assertThat(caseView.isOnlinePleaReceived(), is(true));
     }
 
     @Test
     public void shouldFindCaseByUrnAndContainsReopenedDateAndLibraCaseNumber() {
-        final CaseDetail caseDetail = createCaseDetail();
+        final CaseDetail caseDetail = createCaseDetail(true);
         final LocalDate reopenedDate = LocalDate.now();
         final String reason = "REASON";
         caseDetail.setReopenedDate(reopenedDate);
@@ -206,6 +217,7 @@ public class CaseServiceTest {
         assertThat(caseView.getReopenedInLibraReason(), is(reason));
         assertThat(caseView.getReopenedDate(), is(reopenedDate));
         assertThat(caseView.getDateTimeCreated(), is(clock.now()));
+        assertThat(caseView.isOnlinePleaReceived(), is(true));
     }
 
     @Test
@@ -574,15 +586,24 @@ public class CaseServiceTest {
     }
 
     private CaseDetail createCaseDetail() {
-        return new CaseDetail(CASE_ID, URN, PROSECUTING_AUTHORITY_CPS,
+        return createCaseDetail(false);
+    }
+
+    private CaseDetail createCaseDetail(boolean onlinePleaReceived) {
+        CaseDetail caseDetail = new CaseDetail(CASE_ID, URN, PROSECUTING_AUTHORITY_CPS,
                 null, COMPLETED, null, clock.now(), new DefendantDetail(), null, null);
+        caseDetail.setOnlinePleaReceived(onlinePleaReceived);
+        return caseDetail;
     }
 
     private CaseDetail createCaseDetailWithDocumentTypes(String... documentTypes) {
-        final CaseDetail caseDetail = createCaseDetail();
+        return createCaseDetailWithDocumentTypes(false, documentTypes);
+    }
+
+    private CaseDetail createCaseDetailWithDocumentTypes(boolean onlinePlea, String... documentTypes) {
+        final CaseDetail caseDetail = createCaseDetail(onlinePlea);
         createCaseDocuments(documentTypes).forEach(caseDetail::addCaseDocuments);
         return caseDetail;
-
     }
 
     private List<CaseDocument> createCaseDocuments(String... documentTypes) {

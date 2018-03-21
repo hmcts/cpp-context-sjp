@@ -1,7 +1,5 @@
 package uk.gov.moj.cpp.sjp.domain.onlineplea;
 
-import static java.util.Arrays.asList;
-
 import uk.gov.moj.cpp.sjp.domain.PleaType;
 
 import java.io.Serializable;
@@ -29,11 +27,6 @@ public class Offence implements Serializable {
         this.comeToCourt = comeToCourt;
         this.mitigation = mitigation;
         this.notGuiltyBecause = notGuiltyBecause;
-    }
-
-    @JsonCreator(mode = JsonCreator.Mode.DISABLED)
-    public Offence(final String id, final PleaType pleaType, final String mitigation, final String notGuiltyBecause) {
-        this(id, pleaType, asList(PleaType.GUILTY_REQUEST_HEARING, PleaType.NOT_GUILTY).contains(pleaType), mitigation, notGuiltyBecause);
     }
 
     public String getId() {

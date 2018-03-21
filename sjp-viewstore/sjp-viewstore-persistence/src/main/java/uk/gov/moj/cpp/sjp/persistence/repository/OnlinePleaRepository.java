@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.util.Arrays.asList;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.CASE_ID;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.COME_TO_COURT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.DEFENDANT_ID;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_ADDRESS_1;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_ADDRESS_2;
@@ -19,6 +20,8 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_STATUS;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_STATUS_DETAILS;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.INTERPRETER_LANGUAGE;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.MITIGATION;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.NOT_GUILTY_BECAUSE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_ACCOMODATION_AMOUNT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_CHILD_MAINTENANCE_AMOUNT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_COUNCIL_TAX_AMOUNT;
@@ -38,6 +41,7 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_POSTCODE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_TELEPHONE_HOME;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_TELEPHONE_MOBILE;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PLEA;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.UNAVAILABILITY;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.WITNESS_DETAILS;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.WITNESS_DISPUTE;
@@ -135,7 +139,12 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         PERSON_ADDRESS_2(o -> o.getPersonalDetails().getAddress().getAddress2(), "personalDetails", "address", "address2"),
         PERSON_ADDRESS_3(o -> o.getPersonalDetails().getAddress().getAddress3(), "personalDetails", "address", "address3"),
         PERSON_ADDRESS_4(o -> o.getPersonalDetails().getAddress().getAddress4(), "personalDetails", "address", "address4"),
-        PERSON_POSTCODE(o -> o.getPersonalDetails().getAddress().getPostcode(), "personalDetails", "address", "postcode");
+        PERSON_POSTCODE(o -> o.getPersonalDetails().getAddress().getPostcode(), "personalDetails", "address", "postcode"),
+
+        PLEA(o -> o.getPleaDetails().getPlea(), "pleaDetails", "plea"),
+        COME_TO_COURT(o -> o.getPleaDetails().getComeToCourt(), "pleaDetails", "comeToCourt"),
+        MITIGATION(o -> o.getPleaDetails().getMitigation(), "pleaDetails", "mitigation"),
+        NOT_GUILTY_BECAUSE(o -> o.getPleaDetails().getNotGuiltyBecause(), "pleaDetails", "notGuiltyBecause");
 
         private String[] fieldPath;
         private Function<OnlinePlea, Object> fieldGetter;
@@ -243,6 +252,19 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
                     PERSON_ADDRESS_3,
                     PERSON_ADDRESS_4,
                     PERSON_POSTCODE
+            );
+        }
+    }
+
+    @Repository
+    public static abstract class PleaDetailsRepository extends OnlinePleaRepository {
+        @Override
+        final List<FIELDS> getFieldsToUpdate(){
+            return asList(
+                    PLEA,
+                    COME_TO_COURT,
+                    MITIGATION,
+                    NOT_GUILTY_BECAUSE
             );
         }
     }

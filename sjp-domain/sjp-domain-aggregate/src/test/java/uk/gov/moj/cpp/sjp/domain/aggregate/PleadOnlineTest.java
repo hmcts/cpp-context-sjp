@@ -67,6 +67,7 @@ public class PleadOnlineTest {
         assertThat(caseId.toString(), equalTo(pleaUpdated.getCaseId()));
         assertThat(PleaMethod.ONLINE, equalTo(pleaUpdated.getPleaMethod()));
         assertThat(pleaType.toString(), equalTo(pleaUpdated.getPlea()));
+        assertThat(createDate, equalTo(pleaUpdated.getUpdatedDate()));
         assertThat(pleadOnline.getOffences().get(0).getId(), equalTo(pleaUpdated.getOffenceId()));
         assertThat(pleadOnline.getOffences().get(0).getMitigation(), equalTo(pleaUpdated.getMitigation()));
         assertThat(pleadOnline.getOffences().get(0).getNotGuiltyBecause(), equalTo(pleaUpdated.getNotGuiltyBecause()));

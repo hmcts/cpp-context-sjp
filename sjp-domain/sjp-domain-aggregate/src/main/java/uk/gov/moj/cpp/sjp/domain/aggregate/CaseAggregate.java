@@ -402,7 +402,7 @@ public class CaseAggregate implements Aggregate {
         if (!hasDefendant(defendantId)) {
             return apply(Stream.of(new DefendantNotFound(caseId.toString(), "Store Online Plea")));
         }
-        final PleadOnlineOutcomes pleadOnlineOutcomes = addPleaEventsToStreamForStoreOnlinePlea(caseId, pleadOnline, streamBuilder);
+        final PleadOnlineOutcomes pleadOnlineOutcomes = addPleaEventsToStreamForStoreOnlinePlea(caseId, pleadOnline, streamBuilder, createdOn);
         if (pleadOnlineOutcomes.isPleaForOffencePreviouslySubmitted()) {
             Object caseUpdateRejectedEvent = generateCaseUpdateRejected(caseId.toString(), PLEA_ALREADY_SUBMITTED);
             return apply(Stream.of(caseUpdateRejectedEvent));
@@ -424,7 +424,8 @@ public class CaseAggregate implements Aggregate {
 
     private PleadOnlineOutcomes addPleaEventsToStreamForStoreOnlinePlea(final UUID caseId,
                                                                         final PleadOnline pleadOnline,
-                                                                        final Stream.Builder<Object> streamBuilder) {
+                                                                        final Stream.Builder<Object> streamBuilder,
+                                                                        final ZonedDateTime createdOn) {
         final PleadOnlineOutcomes pleadOnlineOutcomes = new PleadOnlineOutcomes();
         pleadOnline.getOffences().forEach(offence -> {
             if (canPleaOnOffence(offence, pleadOnlineOutcomes)) {
@@ -438,7 +439,8 @@ public class CaseAggregate implements Aggregate {
                         pleaType.name(),
                         offence.getMitigation(),
                         offence.getNotGuiltyBecause(),
-                        PleaMethod.ONLINE);
+                        PleaMethod.ONLINE,
+                        createdOn);
                 streamBuilder.add(pleaUpdated);
                 if (pleaType.equals(PleaType.NOT_GUILTY)) {
                     pleadOnlineOutcomes.setTrialRequested(true);

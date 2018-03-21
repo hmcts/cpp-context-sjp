@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.sjp.event;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+
+import java.time.ZonedDateTime;
 
 @Event("sjp.events.plea-updated")
 public class PleaUpdated {
@@ -13,6 +13,7 @@ public class PleaUpdated {
     private String mitigation;
     private String notGuiltyBecause;
     private PleaMethod pleaMethod;
+    private ZonedDateTime updatedDate;
 
     public PleaUpdated() {
         //default constructor
@@ -33,13 +34,15 @@ public class PleaUpdated {
                        String plea,
                        String mitigation,
                        String notGuiltyBecause,
-                       PleaMethod pleaMethod) {
+                       PleaMethod pleaMethod,
+                       ZonedDateTime updatedDate) {
         this.caseId = caseId;
         this.offenceId = offenceId;
         this.plea = plea;
         this.mitigation = mitigation;
         this.notGuiltyBecause = notGuiltyBecause;
         this.pleaMethod = pleaMethod;
+        this.updatedDate = updatedDate;
     }
 
     public String getCaseId() {
@@ -64,5 +67,9 @@ public class PleaUpdated {
 
     public PleaMethod getPleaMethod() {
         return pleaMethod;
+    }
+
+    public ZonedDateTime getUpdatedDate() {
+        return updatedDate;
     }
 }

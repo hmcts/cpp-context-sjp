@@ -36,6 +36,7 @@ import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -116,6 +117,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         personInfoVerifier.verifyPersonInfo();
 
         //runs plea-online
+        pleadOnlineHelper.verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag( createCasePayloadBuilder.getId().toString(), false);
         final JSONObject pleaPayload = getOnlinePleaPayload(pleaType);
         pleadOnlineHelper.pleadOnline(pleaPayload.toString());
 
@@ -140,6 +142,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         //verify online-plea
         final Matcher expectedResult = getSavedOnlinePleaPayloadContentMatcher(pleaType, pleaPayload, createCasePayloadBuilder.getId().toString(), defendantId);
         pleadOnlineHelper.getOnlinePlea(createCasePayloadBuilder.getId().toString(), expectedResult);
+        pleadOnlineHelper.verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag( createCasePayloadBuilder.getId().toString(),true);
 
         verifyNotification("criminal@gmail.com", createCasePayloadBuilder.getUrn());
     }
@@ -369,7 +372,10 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private List<Matcher> getNotGuiltyMatchers(final JSONObject onlinePleaPayload) {
         final JSONObject offence = onlinePleaPayload.getJSONArray("offences").getJSONObject(0);
         return Arrays.asList(
-                //trial fields
+                //plea-details
+                withJsonPath("$.pleaDetails.plea", equalTo(PleaType.NOT_GUILTY.name())),
+                withJsonPath("$.pleaDetails.comeToCourt", equalTo(true)),
+                withJsonPath("$.pleaDetails.notGuiltyBecause", equalTo(offence.getString("notGuiltyBecause"))),
                 withJsonPath("$.pleaDetails.witnessDispute", equalTo(onlinePleaPayload.getString("witnessDispute"))),
                 withJsonPath("$.pleaDetails.witnessDetails", equalTo(onlinePleaPayload.getString("witnessDetails"))),
                 withJsonPath("$.pleaDetails.interpreterLanguage", equalTo(onlinePleaPayload.getString("interpreterLanguage"))),
@@ -378,30 +384,21 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
                 //employment status
                 withJsonPath("$.employment.employmentStatus", equalTo("OTHER")),
-                withJsonPath("$.employment.employmentStatusDetails", equalTo("my employment status")),
-
-                //offences
-                withJsonPath("$.offences[0].id", equalTo(offence.getString("id"))),
-                withJsonPath("$.offences[0].plea", equalTo(PleaType.NOT_GUILTY.name())),
-                withJsonPath("$.offences[0].comeToCourt", equalTo(true)),
-                withJsonPath("$.offences[0].notGuiltyBecause", equalTo(offence.getString("notGuiltyBecause")))
+                withJsonPath("$.employment.employmentStatusDetails", equalTo("my employment status"))
         );
     }
 
     private List<Matcher> getGuiltyMatchers(final JSONObject onlinePleaPayload) {
         final JSONObject offence = onlinePleaPayload.getJSONArray("offences").getJSONObject(0);
         return Arrays.asList(
-                withoutJsonPath("$.pleaDetails"),
+                //plea-details
+                withJsonPath("$.pleaDetails.plea", equalTo(PleaType.GUILTY.name())),
+                withJsonPath("$.pleaDetails.comeToCourt", equalTo(false)),
+                withJsonPath("$.pleaDetails.mitigation", equalTo(offence.getString("mitigation"))),
 
                 //employment status
                 withJsonPath("$.employment.employmentStatus", equalTo("EMPLOYED")),
-                withoutJsonPath("$.employment.employmentStatusDetails"),
-
-                //offences
-                withJsonPath("$.offences[0].id", equalTo(offence.getString("id"))),
-                withJsonPath("$.offences[0].plea", equalTo(PleaType.GUILTY.name())),
-                withJsonPath("$.offences[0].comeToCourt", equalTo(false)),
-                withJsonPath("$.offences[0].mitigation", equalTo(offence.getString("mitigation")))
+                withoutJsonPath("$.employment.employmentStatusDetails")
         );
     }
 
@@ -410,16 +407,13 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         return Arrays.asList(
                 withJsonPath("$.pleaDetails.interpreterLanguage", equalTo(onlinePleaPayload.getString("interpreterLanguage"))),
                 withJsonPath("$.pleaDetails.interpreterRequired", equalTo(true)),
+                withJsonPath("$.pleaDetails.plea", equalTo(PleaType.GUILTY_REQUEST_HEARING.name())),
+                withJsonPath("$.pleaDetails.comeToCourt", equalTo(true)),
+                withJsonPath("$.pleaDetails.mitigation", equalTo(offence.getString("mitigation"))),
 
                 //employment status
                 withJsonPath("$.employment.employmentStatus", equalTo("UNEMPLOYED")),
-                withoutJsonPath("$.employment.employmentStatusDetails"),
-
-                //offences
-                withJsonPath("$.offences[0].id", equalTo(offence.getString("id"))),
-                withJsonPath("$.offences[0].plea", equalTo(PleaType.GUILTY_REQUEST_HEARING.name())),
-                withJsonPath("$.offences[0].comeToCourt", equalTo(true)),
-                withJsonPath("$.offences[0].mitigation", equalTo(offence.getString("mitigation")))
+                withoutJsonPath("$.employment.employmentStatusDetails")
         );
     }
 }

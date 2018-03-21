@@ -7,11 +7,15 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -32,6 +36,9 @@ public class OffenceUpdatedListener {
     @Inject
     private CaseSearchResultService caseSearchResultService;
 
+    @Inject
+    private OnlinePleaRepository.PleaDetailsRepository onlinePleaRepository;
+
     @Handles("sjp.events.plea-updated")
     @Transactional
     public void updatePlea(final JsonEnvelope envelope) {
@@ -47,6 +54,11 @@ public class OffenceUpdatedListener {
         updatePleaReceivedDate(UUID.fromString(event.getCaseId()),
                 envelope.metadata().createdAt().map(ZonedDateTime::toLocalDate)
                         .orElse(now()));
+
+        if (PleaMethod.ONLINE.equals(event.getPleaMethod())) {
+            final OnlinePlea onlinePlea = new OnlinePlea(event);
+            onlinePleaRepository.saveOnlinePlea(onlinePlea);
+        }
     }
 
     @Handles("sjp.events.plea-cancelled")

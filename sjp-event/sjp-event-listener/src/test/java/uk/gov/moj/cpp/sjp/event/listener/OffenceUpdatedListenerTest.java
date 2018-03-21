@@ -2,6 +2,9 @@ package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -15,9 +18,12 @@ import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,6 +32,8 @@ import javax.json.JsonObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -54,9 +62,6 @@ public class OffenceUpdatedListenerTest {
     private JsonEnvelope envelope;
 
     @Mock
-    private PleaUpdated pleaUpdatedEvent;
-
-    @Mock
     private PleaCancelled pleaCancelled;
 
     @Mock
@@ -75,25 +80,66 @@ public class OffenceUpdatedListenerTest {
     @InjectMocks
     private CaseSearchResultService caseSearchResultService = new CaseSearchResultService();
 
+    @Mock
+    private OnlinePleaRepository.PleaDetailsRepository onlinePleaRepository;
+
+    @Captor
+    private ArgumentCaptor<OnlinePlea> onlinePleaCaptor;
+
     @Test
-    public void shouldUpdatePlea() {
+    public void shouldUpdateGuiltyPleaOnline() {
+        final PleaUpdated pleaUpdated = new PleaUpdated(caseId.toString(), offenceId.toString(), Plea.Type.GUILTY.toString(),
+                "It was an accident", null, PleaMethod.ONLINE, ZonedDateTime.now());
+        assertExpectationsForPleaUpdate(true, pleaUpdated, false);
+    }
+
+    @Test
+    public void shouldUpdateGuiltyRequestHearingPleaOnline() {
+        final PleaUpdated pleaUpdated = new PleaUpdated(caseId.toString(), offenceId.toString(), Plea.Type.GUILTY_REQUEST_HEARING.toString(),
+                "It was an accident", null, PleaMethod.ONLINE, ZonedDateTime.now());
+        assertExpectationsForPleaUpdate(true, pleaUpdated, true);
+    }
+
+    @Test
+    public void shouldUpdateNotGuiltyPleaOnline() {
+        final PleaUpdated pleaUpdated = new PleaUpdated(caseId.toString(), offenceId.toString(), Plea.Type.NOT_GUILTY.toString(),
+                null, "I was not there, they are lying", PleaMethod.ONLINE, ZonedDateTime.now());
+        assertExpectationsForPleaUpdate(true, pleaUpdated, true);
+    }
+
+    @Test
+    public void shouldUpdateByPost() {
+        final PleaUpdated pleaUpdated = new PleaUpdated(caseId.toString(), offenceId.toString(), Plea.Type.GUILTY.toString(),
+                "It was an accident", null, PleaMethod.POSTAL, ZonedDateTime.now());
+        assertExpectationsForPleaUpdate(false, pleaUpdated, null);
+    }
+
+    private void assertExpectationsForPleaUpdate(boolean onlinePlea, PleaUpdated pleaUpdated, Boolean comeToCourt) {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(envelope.metadata().createdAt()).thenReturn(Optional.empty());
-        when(jsonObjectToObjectConverter.convert(payload, PleaUpdated.class)).thenReturn(pleaUpdatedEvent);
-        when(pleaUpdatedEvent.getPlea()).thenReturn(Plea.Type.GUILTY.toString());
-        when(pleaUpdatedEvent.getOffenceId()).thenReturn(offenceId.toString());
-        when(pleaUpdatedEvent.getPleaMethod()).thenReturn(PleaMethod.ONLINE);
+        when(jsonObjectToObjectConverter.convert(payload, PleaUpdated.class)).thenReturn(pleaUpdated);
         when(offenceRepository.findBy(offenceId)).thenReturn(offence);
-        when(pleaUpdatedEvent.getCaseId()).thenReturn(caseId.toString());
         when(offence.getDefendantDetail()).thenReturn(defendant);
         when(searchResultRepository.findByCaseId(caseId)).thenReturn(asList(searchResult));
 
         listener.updatePlea(envelope);
 
-        verify(offence).setPlea(pleaUpdatedEvent.getPlea());
-        verify(offence).setPleaMethod(pleaUpdatedEvent.getPleaMethod());
+        verify(offence).setPlea(pleaUpdated.getPlea());
+        verify(offence).setPleaMethod(pleaUpdated.getPleaMethod());
         //TODO: should use a fixed clock for 100% test reliability
         verify(searchResult).setPleaDate(now());
+
+        if (onlinePlea) {
+            verify(onlinePleaRepository).saveOnlinePlea(onlinePleaCaptor.capture());
+            assertThat(onlinePleaCaptor.getValue().getCaseId(), is(caseId));
+            assertThat(onlinePleaCaptor.getValue().getPleaDetails().getPlea(), is(pleaUpdated.getPlea()));
+            assertThat(onlinePleaCaptor.getValue().getPleaDetails().getComeToCourt(), is(comeToCourt));
+            assertThat(onlinePleaCaptor.getValue().getPleaDetails().getMitigation(), is(pleaUpdated.getMitigation()));
+            assertThat(onlinePleaCaptor.getValue().getPleaDetails().getNotGuiltyBecause(), is(pleaUpdated.getNotGuiltyBecause()));
+        }
+        else {
+            verify(onlinePleaRepository, never()).saveOnlinePlea(onlinePleaCaptor.capture());
+        }
     }
 
     @Test

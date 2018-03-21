@@ -43,6 +43,9 @@ import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
 import uk.gov.moj.cpp.sjp.domain.PleaType;
+import uk.gov.moj.cpp.sjp.domain.plea.Plea;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -59,6 +62,7 @@ import uk.gov.moj.cpp.sjp.query.view.service.EmployerService;
 import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
@@ -413,7 +417,7 @@ public class SjpQueryViewTest {
                 .build();
         final UUID defendantId = UUID.fromString("4a950d66-b95f-459b-b77d-5ed308c3be02");
         final UUID offenceId = UUID.fromString("8a962d66-b95f-69b-b77d-9ed308c3be02");
-        final OnlinePlea onlinePlea = stubOnlinePlea(defendantId, offenceId);
+        final OnlinePlea onlinePlea = stubOnlinePlea(caseId, defendantId, offenceId);
 
         when(onlinePleaRepository.findBy(caseId)).thenReturn(onlinePlea);
 
@@ -423,18 +427,20 @@ public class SjpQueryViewTest {
 
         assertThat(response, jsonEnvelope(metadata().withName("sjp.query.defendants-online-plea"), payload().isJson(allOf(
                 withJsonPath("$.defendantId", equalTo(defendantId.toString())),
-                withJsonPath("$.offences[0].id", equalTo(offenceId.toString())),
-                withJsonPath("$.offences[0].plea", equalTo(PleaType.NOT_GUILTY.name())),
-                withJsonPath("$.offences[0].comeToCourt", equalTo(true))
+                withJsonPath("$.pleaDetails.plea", equalTo(PleaType.NOT_GUILTY.name())),
+                withJsonPath("$.pleaDetails.comeToCourt", equalTo(true))
         ))));
     }
 
-    private OnlinePlea stubOnlinePlea(final UUID defendantId, final UUID offenceId) {
+    private OnlinePlea stubOnlinePlea(final UUID caseId, final UUID defendantId, final UUID offenceId) {
         final OffenceDetail offence = new OffenceDetail();
         offence.setId(offenceId);
         offence.setPlea(PleaType.NOT_GUILTY.name());
         final DefendantDetail defendant = new DefendantDetail(defendantId, null, new HashSet<>(Arrays.asList(offence)), null);
-        final OnlinePlea onlinePlea = new OnlinePlea();
+        final OnlinePlea onlinePlea = new OnlinePlea(
+                new PleaUpdated(caseId.toString(), offenceId.toString(), Plea.Type.NOT_GUILTY.toString(),
+                null, "I was not there, they are lying", PleaMethod.ONLINE, ZonedDateTime.now())
+        );
         onlinePlea.setDefendantDetail(defendant);
 
         return onlinePlea;

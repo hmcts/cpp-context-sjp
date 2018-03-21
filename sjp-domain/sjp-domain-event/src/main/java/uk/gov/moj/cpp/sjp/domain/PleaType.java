@@ -1,5 +1,5 @@
 package uk.gov.moj.cpp.sjp.domain;
 
 public enum PleaType {
-    GUILTY, NOT_GUILTY, GUILTY_REQUEST_HEARING
+    GUILTY, NOT_GUILTY, GUILTY_REQUEST_HEARING;
 }

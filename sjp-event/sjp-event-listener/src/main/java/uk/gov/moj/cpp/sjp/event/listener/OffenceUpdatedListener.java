@@ -57,6 +57,10 @@ public class OffenceUpdatedListener {
 
         if (PleaMethod.ONLINE.equals(event.getPleaMethod())) {
             final OnlinePlea onlinePlea = new OnlinePlea(event);
+            if (onlinePlea.getSubmittedOn() == null) {
+                onlinePlea.setSubmittedOn(envelope.metadata().createdAt()
+                        .orElse(ZonedDateTime.now()));
+            }
             onlinePleaRepository.saveOnlinePlea(onlinePlea);
         }
     }

@@ -12,7 +12,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>0.0.50-ATCM-SNAPSHOT</version>
+    <version>0.0.51-ATCM-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -22,7 +22,7 @@
         <assignment.version>2.0.95</assignment.version>
         <material.version>2.0.99-structurerefactor-SNAPSHOT</material.version>
         <notification.notify.version>0.0.3-SNAPSHOT</notification.notify.version>
-        <referencedata.version>2.0.141</referencedata.version>
+        <referencedata.version>2.0.142</referencedata.version>
         <resulting.version>2.0.180-ATCM-SNAPSHOT</resulting.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>2.0.88-ATCM-SNAPSHOT</usersgroups.version>

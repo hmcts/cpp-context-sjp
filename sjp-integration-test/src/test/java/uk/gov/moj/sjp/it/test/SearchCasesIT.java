@@ -1,99 +1,114 @@
 package uk.gov.moj.sjp.it.test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.AllOf.allOf;
+import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
 
-import uk.gov.moj.cpp.sjp.persistence.entity.Address;
-import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
-import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
+import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
-import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
-import uk.gov.moj.sjp.it.helper.DefendantDetailsHelper;
-import uk.gov.moj.sjp.it.util.FileUtil;
+import uk.gov.moj.sjp.it.pollingquery.CasePoller;
+import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 
-import java.io.IOException;
-import java.time.LocalDate;
+import java.util.UUID;
 
-import javax.json.JsonObject;
-
-import com.jayway.restassured.path.json.JsonPath;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 public class SearchCasesIT extends BaseIntegrationTest {
 
-    private CaseSjpHelper caseSjpHelper;
-    private CaseSearchResultHelper caseSearchResultHelper;
-    private DefendantDetailsHelper defendantDetailsHelper;
+    @Test
+    public void verifyInitialSearchDetailsAndUpdateToDefendantDetails() {
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = withDefaults();
+        createCaseForPayloadBuilder(createCasePayloadBuilder);
+        final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(createCasePayloadBuilder.getId(),
+                createCasePayloadBuilder.getUrn(),
+                createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
 
-    @Before
-    public void createSjpCaseAndVerifyInQueue() {
-        defendantDetailsHelper = new DefendantDetailsHelper();
-        caseSjpHelper = new CaseSjpHelper();
-        caseSjpHelper.createCase();
-        //This is required, otherwise get method for defendant id can't be invoked
-        caseSjpHelper.verifyCaseCreatedUsingId();
+        caseSearchResultHelper.verifyPersonInfoByUrn();
+        caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth(caseSearchResultHelper.getLastName(), caseSearchResultHelper.getDateOfBirth());
 
-        caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
-    }
+        UpdateDefendantDetails.DefendantDetailsPayloadBuilder updatedDefendantPayload = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults();
 
-    @After
-    public void tearDown() {
-        caseSjpHelper.close();
-        caseSearchResultHelper.close();
-        defendantDetailsHelper.close();
-    }
+        final UUID caseId = createCasePayloadBuilder.getId();
+        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseId, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id")), updatedDefendantPayload);
+        caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth(updatedDefendantPayload.getLastName(), updatedDefendantPayload.getDateOfBirth());
 
-    private PersonalDetails generateExpectedPersonDetails(JsonObject payload) {
-        final String title =  payload.getString("title");
-        final String firstName =  payload.getString("firstName");
-        final String lastName = payload.getString("lastName");
-        final String gender = payload.getString("gender");
-        final String nationalInsuranceNumber = payload.getString("nationalInsuranceNumber");
-        final String dateOfBirth = payload.getString("dateOfBirth");
-        final String email = payload.getString("email");
-
-        final JsonObject contactNumberPayload = payload.getJsonObject("contactNumber");
-        final String homeNumber = contactNumberPayload.getString("home");
-        final String mobileNumber = contactNumberPayload.getString("mobile");
-
-        final JsonObject address = payload.getJsonObject("address");
-        final String address1 = address.getString("address1");
-        final String address2 = address.getString("address2");
-        final String address3 = address.getString("address3");
-        final String address4 = address.getString("address4");
-        final String postcode = address.getString("postcode");
-
-        return new PersonalDetails(title, firstName, lastName, LocalDate.parse(dateOfBirth), gender, nationalInsuranceNumber,
-                new Address(address1, address2, address3, address4, postcode),
-                new ContactDetails(email, homeNumber, mobileNumber)
-        );
+        PersonInfoVerifier personInfoVerifier = PersonInfoVerifier.personInfoVerifierForDefendantUpdatedPayload(caseId, updatedDefendantPayload);
+        personInfoVerifier.verifyPersonInfo(true);
     }
 
     @Test
-    public void verifyInitialSearchDetailsAndUpdateToDefendantDetails() throws IOException {
-        caseSearchResultHelper.verifyPersonInfo(caseSearchResultHelper.getPersonalDetails(), false);
+    public void findsDefendantByHistoricalLastName() {
 
-        JsonObject updatedDefendantPayload = FileUtil.givenPayload("/payload/sjp.update-defendant-details.json");
+        // Given a case is created, which defendant record's name will be updated
+        final CreateCase.CreateCasePayloadBuilder historicalsCaseToBeUpdated = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        historicalsCaseToBeUpdated
+                .getDefendantBuilder()
+                .withLastName("deHistorical");
+        createCaseForPayloadBuilder(historicalsCaseToBeUpdated);
 
-        defendantDetailsHelper.updateDefendantDetails(caseSjpHelper.getCaseId(), caseSjpHelper.getSingleDefendantId(), updatedDefendantPayload);
+        // and second case is created with the same defendants last name
+        final CreateCase.CreateCasePayloadBuilder historicalsCaseWithoutUpdates = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        historicalsCaseWithoutUpdates
+                .getDefendantBuilder()
+                .withLastName("deHistorical");
+        createCaseForPayloadBuilder(historicalsCaseWithoutUpdates);
 
-        final PersonalDetails expectedPersonalDetails = generateExpectedPersonDetails(updatedDefendantPayload);
-        caseSearchResultHelper.verifyPersonInfo(expectedPersonalDetails, true);
-        caseSearchResultHelper.verifyPersonNotFound(caseSjpHelper.getCaseUrn(), caseSearchResultHelper.getPersonalDetails().getLastName());
+        // when last name is updated for the first case
+        UpdateDefendantDetails.DefendantDetailsPayloadBuilder updatedDefendantPayload = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults()
+                .withLastName("von Neumann");
 
-        final JsonPath updatedCase = caseSjpHelper.getCaseResponseUsingId();
-        final String firstName = updatedCase.getString("defendant.personalDetails.firstName");
-        final String lastName = updatedCase.getString("defendant.personalDetails.lastName");
+        final UUID caseId = historicalsCaseToBeUpdated.getId();
+        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseId, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id")), updatedDefendantPayload);
 
-        assertThat(firstName, is("David"));
-        assertThat(lastName, is("SMITH"));
+        // then the first case (and second) will be found and system will mark the name as outdated
+        poll(searchCases("deHistorical", USER_ID))
+                .until(
+                        status().is(OK),
+                        payload().isJson(
+                                allOf(
+                                        withJsonPath("foundCasesWithOutdatedDefendantsName", is(true)),
+                                        withJsonPath(
+                                                "$.results[*]", hasItem(isJson(allOf(
+                                                        withJsonPath("urn", is(historicalsCaseToBeUpdated.getUrn())),
+                                                        withJsonPath("defendant.lastName", is("von Neumann")),
+                                                        withJsonPath("defendant.outdated", is(true))
+
+                                                )))
+                                        ),
+                                        withJsonPath(
+                                                "$.results[*]", hasItem(isJson(allOf(
+                                                        withJsonPath("urn", is(historicalsCaseWithoutUpdates.getUrn())),
+                                                        withJsonPath("defendant.lastName", is("deHistorical")),
+                                                        withJsonPath("defendant.outdated", is(false))
+
+                                                )))
+                                        )
+                                )
+                        )
+                );
     }
 
     @Test
     public void verifyAssignmentCreationAndDeletionIsReflected() {
         //given case is created
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = withDefaults();
+        createCaseForPayloadBuilder(createCasePayloadBuilder);
+
+        final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(createCasePayloadBuilder.getId(),
+                createCasePayloadBuilder.getUrn(),
+                createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
         // then
         caseSearchResultHelper.verifyAssignment(false);
 

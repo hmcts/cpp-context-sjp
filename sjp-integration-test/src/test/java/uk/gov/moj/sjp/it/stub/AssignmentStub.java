@@ -26,11 +26,11 @@ public class AssignmentStub {
     private static final String ASSIGNMENTS_QUERY_URL = "/assignment-query-api/query/api/rest/assignment/assignments";
     private static final String ASSIGNMENTS_QUERY_MEDIA_TYPE = "application/vnd.assignment.query.assignments+json";
 
-    public static void stubGetEmptyAssignmentsByDomainObjectId(final String caseId) {
+    public static void stubGetEmptyAssignmentsByDomainObjectId(final UUID caseId) {
         stubGetAssignmentsByDomainObjectId(caseId);
     }
 
-    public static void stubGetAssignmentsByDomainObjectId(final String caseId, final Optional<String> assignmentNature, final UUID... assignees) {
+    public static void stubGetAssignmentsByDomainObjectId(final UUID caseId, final Optional<String> assignmentNature, final UUID... assignees) {
         InternalEndpointMockUtils.stubPingFor("assignment-query-api");
 
         final JsonArrayBuilder assignments = Json.createArrayBuilder();
@@ -38,7 +38,7 @@ public class AssignmentStub {
             final JsonObjectBuilder assignment = Json.createObjectBuilder()
                     .add("id", UUID.randomUUID().toString())
                     .add("version", 2)
-                    .add("domainObjectId", caseId)
+                    .add("domainObjectId", caseId.toString())
                     .add("assignee", assignee.toString());
             assignmentNature.ifPresent(nature -> assignment.add("assignmentNatureType", nature));
             assignments.add(assignment);
@@ -47,7 +47,7 @@ public class AssignmentStub {
         final JsonObject payload = Json.createObjectBuilder().add("assignments", assignments).build();
 
         stubFor(get(urlPathEqualTo(ASSIGNMENTS_QUERY_URL))
-                .withQueryParam("domainObjectId", equalTo(caseId))
+                .withQueryParam("domainObjectId", equalTo(caseId.toString()))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", UUID.randomUUID().toString())
                         .withHeader("Content-Type", APPLICATION_JSON)
@@ -56,7 +56,7 @@ public class AssignmentStub {
         waitForStubToBeReady(format("%s?%s=%s", ASSIGNMENTS_QUERY_URL, "domainObjectId", caseId), ASSIGNMENTS_QUERY_MEDIA_TYPE);
     }
 
-    public static void stubGetAssignmentsByDomainObjectId(final String caseId, final UUID... assignees) {
+    public static void stubGetAssignmentsByDomainObjectId(final UUID caseId, final UUID... assignees) {
         stubGetAssignmentsByDomainObjectId(caseId, Optional.empty(), assignees);
     }
 

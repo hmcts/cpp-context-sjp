@@ -7,8 +7,9 @@
     },
     "prosecutingAuthority": {
       "enum": [
-        "CPS",
-        "TFL"
+        "TFL",
+        "TVL",
+        "DVLA"
       ]
     }
   },

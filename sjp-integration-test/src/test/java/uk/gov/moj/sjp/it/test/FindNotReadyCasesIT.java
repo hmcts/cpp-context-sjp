@@ -5,11 +5,10 @@ import static java.lang.Integer.valueOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static uk.gov.moj.sjp.it.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
 
-import uk.gov.moj.sjp.it.helper.AbstractTestHelper;
-import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
+import uk.gov.moj.sjp.it.command.CreateCase;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -17,16 +16,15 @@ import java.util.Optional;
 import javax.ws.rs.core.Response;
 
 import com.jayway.restassured.path.json.JsonPath;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 @Ignore("TODO: ATCM-2683 created to fix the test as it's not testing anything")
-public class FindNotReadyCasesIT extends AbstractTestHelper {
+public class FindNotReadyCasesIT extends BaseIntegrationTest {
 
-    private List<CaseSjpHelper> youngCases;
-    private List<CaseSjpHelper> midCases;
+    private List<CreateCase.CreateCasePayloadBuilder> youngCases;
+    private List<CreateCase.CreateCasePayloadBuilder> midCases;
 
     @Before
     public void init() {
@@ -38,11 +36,11 @@ public class FindNotReadyCasesIT extends AbstractTestHelper {
     }
 
     @Test
-    public void findNotReadyCasesGroupedByAgeRanges() throws IOException {
+    public void findNotReadyCasesGroupedByAgeRanges() {
         final JsonPath notReadyCases = getNotReadyCases();
 
-        youngCases.forEach(CaseSjpHelper::createAndVerifyCase);
-        midCases.forEach(CaseSjpHelper::createAndVerifyCase);
+        youngCases.forEach(CreateCase::createCaseForPayloadBuilder);
+        midCases.forEach(CreateCase::createCaseForPayloadBuilder);
 
         final JsonPath updatedNotReadyCases = getNotReadyCases();
 
@@ -52,19 +50,13 @@ public class FindNotReadyCasesIT extends AbstractTestHelper {
                 equalTo(getCasesCount(notReadyCases, 21, 27) + midCases.size()));
     }
 
-    @After
-    public void cleanup() {
-        youngCases.forEach(CaseSjpHelper::close);
-        midCases.forEach(CaseSjpHelper::close);
-    }
-
     private Integer getCasesCount(final JsonPath notReadyCases, final Integer ageFrom, final Integer ageTo) {
         return Optional.ofNullable(notReadyCases.getMap("caseCountsByAgeRanges.find { it.ageFrom == " + ageFrom + " && it.ageTo == " + ageTo + " }"))
                 .map(range -> valueOf(range.get("casesCount").toString())).orElse(0);
     }
 
     private JsonPath getNotReadyCases() {
-        final Response response = makeGetCall(getReadUrl("/cases/not-ready-grouped-by-age"), "application/vnd.sjp.query.not-ready-cases-grouped-by-age+json");
+        final Response response = makeGetCall("/cases/not-ready-grouped-by-age", "application/vnd.sjp.query.not-ready-cases-grouped-by-age+json");
         return JsonPath.with(response.readEntity(String.class));
     }
 }

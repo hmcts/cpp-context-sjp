@@ -10,7 +10,7 @@ public final class RuleConstants {
 
     private static final String GROUP_SYSTEM_USERS = "System Users";
     private static final String GROUP_ONLINE_PLEA_SYSTEM_USERS = "Online Plea System Users";
-    private static final String GROUP_TFL_USERS = "TFL Users";
+    private static final String GROUP_SJP_PROSECUTORS = "SJP Prosecutors";
     private static final String GROUP_LEGAL_ADVISERS = "Legal Advisers";
     private static final String GROUP_COURT_ADMINISTRATORS = "Court Administrators";
 
@@ -20,7 +20,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getCreateSjpCaseActionGroups() {
-        return singletonList(GROUP_TFL_USERS);
+        return Arrays.asList(GROUP_SJP_PROSECUTORS, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getPleadOnlineActionGroups() {
@@ -28,7 +28,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getAddCaseDocumentActionGroups() {
-        return Arrays.asList(GROUP_SYSTEM_USERS, GROUP_TFL_USERS, GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return Arrays.asList(GROUP_SYSTEM_USERS, GROUP_SJP_PROSECUTORS, GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
     public static List<String> getUpdateDefendantNationalInsuranceNumberGroups() {
@@ -64,11 +64,11 @@ public final class RuleConstants {
     }
 
     public static List<String> getRequestWithdrawalOfAllOffencesGroups() {
-        return singletonList(GROUP_TFL_USERS);
+        return singletonList(GROUP_SJP_PROSECUTORS);
     }
 
     public static List<String> getCancelRequestWithdrawalOfAllOffencesGroups() {
-        return singletonList(GROUP_TFL_USERS);
+        return singletonList(GROUP_SJP_PROSECUTORS);
     }
 
     public static List<String> getActionCourtReferralGroups() {
@@ -85,6 +85,10 @@ public final class RuleConstants {
 
     public static List<String> getUpdateInterpreterGroups() {
         return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+    }
+
+    public static List<String> getStartSessionGroups() {
+        return Arrays.asList(GROUP_LEGAL_ADVISERS);
     }
 }
 

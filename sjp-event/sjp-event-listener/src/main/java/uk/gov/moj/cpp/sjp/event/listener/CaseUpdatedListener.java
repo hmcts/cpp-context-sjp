@@ -113,7 +113,6 @@ public class CaseUpdatedListener {
         caseDetail.setReopenedDate(LocalDates.from(payload.getString("reopenedDate")));
         caseDetail.setLibraCaseNumber(payload.getString("libraCaseNumber"));
         caseDetail.setReopenedInLibraReason(payload.getString("reason"));
-
     }
 
     private void updateWithdrawalRequestedDate(final UUID caseId, final LocalDate withdrawalRequestedDate) {

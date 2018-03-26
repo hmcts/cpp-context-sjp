@@ -16,9 +16,10 @@ import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDom
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithDecision;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 
-import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EmployerHelper;
 import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
+import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 
 import java.util.UUID;
 
@@ -34,7 +35,7 @@ import org.junit.Test;
 public class EmployerIT extends BaseIntegrationTest {
 
     private EmployerHelper employerHelper;
-    private CaseSjpHelper caseSjpHelper;
+    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private FinancialMeansHelper financialMeansHelper;
 
     private static final String FIELD_NAME = "name";
@@ -51,25 +52,23 @@ public class EmployerIT extends BaseIntegrationTest {
     public void setUp() {
         employerHelper = new EmployerHelper();
         financialMeansHelper = new FinancialMeansHelper();
-        caseSjpHelper = new CaseSjpHelper();
-        caseSjpHelper.createCase();
-        caseSjpHelper.verifyCaseCreatedUsingId();
+        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
     }
 
     @After
     public void tearDown() throws Exception {
-        caseSjpHelper.close();
         employerHelper.close();
         financialMeansHelper.close();
     }
 
     @Test
     public void shouldCreateUpdateAndDeleteEmployer() {
-            stubGetCaseDecisionsWithNoDecision(caseSjpHelper.getCaseId());
-            stubGetEmptyAssignmentsByDomainObjectId(caseSjpHelper.getCaseId());
+            stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
+            stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
 
-            final String defendantId = caseSjpHelper.getSingleDefendantId();
-            final String caseId = caseSjpHelper.getCaseId();
+            final UUID caseId = createCasePayloadBuilder.getId();
+            final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
 
             final JsonObject employer1 = getEmployerPayload();
 
@@ -87,7 +86,7 @@ public class EmployerIT extends BaseIntegrationTest {
             final Matcher expectedFinancialMeans = isJson(withJsonPath("$.employmentStatus", is("EMPLOYED")));
             financialMeansHelper.getFinancialMeans(defendantId, expectedFinancialMeans);
 
-            employerHelper.deleteEmployer(caseId, defendantId);
+            employerHelper.deleteEmployer(caseId.toString(), defendantId);
 
             employerHelper.getEmployer(defendantId, isJson(withJsonPath("$.size()", is(0))));
 
@@ -104,10 +103,10 @@ public class EmployerIT extends BaseIntegrationTest {
     @Test
     public void shouldRejectEmployerUpdateIfCaseIsAlreadyCompleted() throws Exception {
 
-        stubGetCaseDecisionsWithDecision(caseSjpHelper.getCaseId());
+        stubGetCaseDecisionsWithDecision(createCasePayloadBuilder.getId());
 
-        final String defendantId = caseSjpHelper.getSingleDefendantId();
-        final String caseId = caseSjpHelper.getCaseId();
+        final UUID caseId = createCasePayloadBuilder.getId();
+        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
 
         final JsonObject employer = getEmployerPayload();
 
@@ -164,9 +163,9 @@ public class EmployerIT extends BaseIntegrationTest {
                 .withPayloadOf(payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId.toString()))));
     }
 
-    private Matcher getCaseUpdateRejectedPublicEventMatcher(final String caseId, final String reason) {
+    private Matcher getCaseUpdateRejectedPublicEventMatcher(final UUID caseId, final String reason) {
         final Matcher payloadMatcher = allOf(
-                withJsonPath("$.caseId", is(caseId)),
+                withJsonPath("$.caseId", is(caseId.toString())),
                 withJsonPath("$.reason", is(reason)));
 
         return jsonEnvelope()

@@ -133,7 +133,7 @@
             },
             "frequency": {
               "type": "string",
-              "enum": ["WEEKLY", "FORTNIGHTLY", "MONTHLY"]
+              "enum": ["WEEKLY", "FORTNIGHTLY", "MONTHLY", "YEARLY"]
             }
           },
           "required": [

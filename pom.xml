@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>4.2.2</version>
+        <version>4.5.4</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
@@ -18,11 +20,13 @@
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
         <assignment.version>2.0.95</assignment.version>
-        <material.version>2.0.99</material.version>
-        <notification.notify.version>0.0.15</notification.notify.version>
-        <referencedata.version>2.0.141</referencedata.version>
-        <resulting.version>2.0.162</resulting.version>
+        <material.version>2.0.99-structurerefactor-SNAPSHOT</material.version>
+        <notification.notify.version>0.0.16</notification.notify.version>
+        <referencedata.version>2.0.142</referencedata.version>
+        <resulting.version>2.0.165</resulting.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
+        <usersgroups.version>2.0.91</usersgroups.version>
+        <access-control-sjp-providers.version>3.2.9</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
     </properties>

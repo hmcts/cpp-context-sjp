@@ -1,28 +1,36 @@
 package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
-import uk.gov.moj.cpp.sjp.domain.CaseAssignment;
+import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 
 import java.io.Serializable;
+import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 @Event("sjp.events.case-assignment-deleted")
 public class CaseAssignmentDeleted implements Serializable {
 
-    private static final long serialVersionUID = -473852992216788449L;
+    private static final long serialVersionUID = 2L;
 
-    @JsonUnwrapped
-    private final CaseAssignment caseAssignment;
+    final UUID caseId;
+    final CaseAssignmentType caseAssignmentType;
 
-    public CaseAssignmentDeleted(final CaseAssignment caseAssignment) {
-        this.caseAssignment = caseAssignment;
+    @JsonCreator
+    public CaseAssignmentDeleted(@JsonProperty("caseId") final UUID caseId, @JsonProperty("caseAssignmentType") final CaseAssignmentType caseAssignmentType) {
+        this.caseId = caseId;
+        this.caseAssignmentType = caseAssignmentType;
     }
 
-    public CaseAssignment getCaseAssignment() {
-        return caseAssignment;
+    public UUID getCaseId() {
+        return caseId;
+    }
+
+    public CaseAssignmentType getCaseAssignmentType() {
+        return caseAssignmentType;
     }
 
     @Override

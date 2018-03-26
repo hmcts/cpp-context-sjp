@@ -5,7 +5,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
 import java.util.Optional;
@@ -14,7 +14,6 @@ import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matchers;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,18 +27,13 @@ public class SjpCaseCreationFailedBecauseCaseAlreadyExistedIT extends BaseIntegr
             QueueUtil.publicEvents.createConsumer(
                     "public.sjp.case-creation-failed-because-case-already-existed");
 
-    private CaseSjpHelper caseSjpHelper;
+    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
     @Before
     public void createACaseAfterAnother() {
-        caseSjpHelper = new CaseSjpHelper();
-        caseSjpHelper.createCase();
-        caseSjpHelper.createCase();
-    }
-
-    @After
-    public void tearDown() {
-        caseSjpHelper.close();
+        this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
+        CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
     }
 
     @Test
@@ -47,13 +41,13 @@ public class SjpCaseCreationFailedBecauseCaseAlreadyExistedIT extends BaseIntegr
         Optional<JsonObject> message1 = QueueUtil.retrieveMessageAsJsonObject(sjpCaseCreated);
         assertTrue(message1.isPresent());
         assertThat(message1.get(), isJson(withJsonPath("$.id", Matchers.hasToString(
-                Matchers.containsString(caseSjpHelper.getCaseId())))
+                Matchers.containsString(createCasePayloadBuilder.getId().toString())))
         ));
 
         Optional<JsonObject> message2 = QueueUtil.retrieveMessageAsJsonObject(caseCreationFailedBecauseCaseAlreadyExisted);
         assertTrue(message2.isPresent());
         assertThat(message2.get(), isJson(withJsonPath("$.caseId", Matchers.hasToString(
-                Matchers.containsString(caseSjpHelper.getCaseId())))
+                Matchers.containsString(createCasePayloadBuilder.getId().toString())))
         ));
     }
 }

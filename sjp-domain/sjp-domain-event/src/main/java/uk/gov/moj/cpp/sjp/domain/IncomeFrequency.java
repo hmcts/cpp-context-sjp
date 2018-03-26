@@ -1,5 +1,5 @@
 package uk.gov.moj.cpp.sjp.domain;
 
 public enum IncomeFrequency {
-    WEEKLY, FORTNIGHTLY, MONTHLY
+    WEEKLY, FORTNIGHTLY, MONTHLY, YEARLY
 }

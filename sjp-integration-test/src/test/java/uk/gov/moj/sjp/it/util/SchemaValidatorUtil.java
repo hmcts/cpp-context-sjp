@@ -49,7 +49,7 @@ public class SchemaValidatorUtil {
                 schema.validate(new JSONObject(jsonString));
             }
         } catch (Exception e) {
-            LOGGER.error("Error validating payload against schema", e);
+            LOGGER.error("Error validating payload against schema " + resource.toString(), e);
             fail("Error validating payload against schema");
         }
     }

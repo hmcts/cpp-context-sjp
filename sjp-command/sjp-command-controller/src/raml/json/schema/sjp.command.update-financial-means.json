@@ -15,7 +15,8 @@
           "enum": [
             "WEEKLY",
             "MONTHLY",
-            "FORTNIGHTLY"
+            "FORTNIGHTLY",
+            "YEARLY"
           ]
         },
         "amount": {

@@ -7,15 +7,14 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsMovedFromPeople;
+import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 
-import java.util.UUID;
+import java.time.ZonedDateTime;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -30,11 +29,12 @@ public class DefendantDetailsMovedFromPeopleListener {
     private CaseRepository caseRepository;
 
     @Inject
-    private CaseSearchResultRepository caseSearchResultRepository;
+    private CaseSearchResultService caseSearchResultService;
 
     @Handles("sjp.events.defendant-details-moved-from-people")
     @Transactional
     public void defendantDetailsUpdated(final JsonEnvelope envelope) {
+
 
         DefendantDetailsMovedFromPeople defendantDetailsMovedFromPeople = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantDetailsMovedFromPeople.class);
 
@@ -44,16 +44,18 @@ public class DefendantDetailsMovedFromPeopleListener {
         caseDetail.getDefendant().setPersonalDetails(personalDetails);
         caseRepository.save(caseDetail);
 
-        final CaseSearchResult caseSearchResult = new CaseSearchResult(
-                UUID.randomUUID(),
+        caseSearchResultService.onDefendantDetailsUpdated(
                 caseDetail.getId(),
                 caseDetail.getDefendant().getPersonalDetails().getFirstName(),
                 caseDetail.getDefendant().getPersonalDetails().getLastName(),
                 caseDetail.getDefendant().getPersonalDetails().getDateOfBirth(),
-                caseDetail.getDefendant().getPersonalDetails().getAddress().getPostcode()
-        );
+                getEventCreationDateTime(envelope, caseDetail));
+    }
 
-        caseSearchResultRepository.save(caseSearchResult);
+    private ZonedDateTime getEventCreationDateTime(final JsonEnvelope envelope, final CaseDetail caseDetail) {
+        return envelope.metadata().createdAt().orElse(
+                caseDetail.getDateTimeCreated()
+        );
     }
 
     private PersonalDetails createPersonalDetails(DefendantDetailsMovedFromPeople event) {

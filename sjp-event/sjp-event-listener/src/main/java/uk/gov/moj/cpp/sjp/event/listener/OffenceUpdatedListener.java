@@ -10,9 +10,12 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
+import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -31,7 +34,10 @@ public class OffenceUpdatedListener {
     private OffenceRepository offenceRepository;
 
     @Inject
-    private CaseSearchResultRepository searchResultRepository;
+    private CaseSearchResultService caseSearchResultService;
+
+    @Inject
+    private OnlinePleaRepository.PleaDetailsRepository onlinePleaRepository;
 
     @Handles("sjp.events.plea-updated")
     @Transactional
@@ -48,6 +54,15 @@ public class OffenceUpdatedListener {
         updatePleaReceivedDate(UUID.fromString(event.getCaseId()),
                 envelope.metadata().createdAt().map(ZonedDateTime::toLocalDate)
                         .orElse(now()));
+
+        if (PleaMethod.ONLINE.equals(event.getPleaMethod())) {
+            final OnlinePlea onlinePlea = new OnlinePlea(event);
+            if (onlinePlea.getSubmittedOn() == null) {
+                onlinePlea.setSubmittedOn(envelope.metadata().createdAt()
+                        .orElse(ZonedDateTime.now()));
+            }
+            onlinePleaRepository.saveOnlinePlea(onlinePlea);
+        }
     }
 
     @Handles("sjp.events.plea-cancelled")
@@ -65,9 +80,8 @@ public class OffenceUpdatedListener {
     }
 
     @Transactional
-    void updatePleaReceivedDate(final UUID caseId, final LocalDate pleaReceived) {
-        searchResultRepository.findByCaseId(caseId)
-                .forEach(searchResult -> searchResult.setPleaDate(pleaReceived));
+    void updatePleaReceivedDate(final UUID caseId, final LocalDate pleaReceivedDate) {
+        caseSearchResultService.updatePleaReceivedDate(caseId, pleaReceivedDate);
     }
 
 }

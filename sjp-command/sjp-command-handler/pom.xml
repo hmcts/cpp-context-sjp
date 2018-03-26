@@ -64,6 +64,10 @@
             <scope>test</scope>
             <classifier>raml</classifier>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.utils</groupId>
+            <artifactId>utilities-core</artifactId>
+        </dependency>
 
     </dependencies>
 </project>

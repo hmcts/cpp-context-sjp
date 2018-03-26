@@ -1,19 +1,19 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import static java.util.Arrays.asList;
+
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
 import uk.gov.moj.cpp.sjp.domain.PleaType;
-import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
+import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.persistence.AttributeOverride;
@@ -74,10 +74,16 @@ public class OnlinePlea {
         this.submittedOn = employerUpdated.getUpdatedDate();
     }
 
-    public OnlinePlea(TrialRequested trialRequested) {
+    public OnlinePlea(final TrialRequested trialRequested) {
         this.caseId = trialRequested.getCaseId();
         this.pleaDetails = new PleaDetails(trialRequested);
         this.submittedOn = trialRequested.getUpdatedDate();
+    }
+
+    public OnlinePlea(final PleaUpdated pleaUpdated) {
+        this.caseId = UUID.fromString(pleaUpdated.getCaseId());
+        this.pleaDetails = new PleaDetails(pleaUpdated);
+        this.submittedOn = pleaUpdated.getUpdatedDate();
     }
 
     public OnlinePlea(final UUID caseId, final String interpreterLanguage, final ZonedDateTime updatedDate) {
@@ -157,20 +163,16 @@ public class OnlinePlea {
         this.outgoings = outgoings;
     }
 
-    @Transient
-    public List<Offence> getOffences() {
-        return this.defendantDetail.getOffences()
-                .stream()
-                .map(offence ->
-                    new Offence(offence.getId().toString(),
-                            PleaType.valueOf(offence.getPlea()),
-                            offence.getMitigation(),
-                            offence.getNotGuiltyBecause()))
-                .collect(Collectors.toList());
-    }
-
     @Embeddable
     public static class PleaDetails {
+        @Column(name = "plea")
+        private String plea;
+        @Column(name = "come_to_court")
+        private Boolean comeToCourt;
+        @Column(name = "mitigation")
+        private String mitigation;
+        @Column(name = "not_guilty_because")
+        private String notGuiltyBecause;
         @Column(name = "interpreter_language")
         private String interpreterLanguage;
         @Column(name = "witness_dispute")
@@ -190,6 +192,29 @@ public class OnlinePlea {
             this.witnessDispute = trialRequested.getWitnessDispute();
             this.witnessDetails = trialRequested.getWitnessDetails();
             this.unavailability = trialRequested.getUnavailability();
+        }
+
+        public PleaDetails(final PleaUpdated pleaUpdated) {
+            this.plea =  pleaUpdated.getPlea();
+            this.mitigation = pleaUpdated.getMitigation();
+            this.notGuiltyBecause = pleaUpdated.getNotGuiltyBecause();
+            this.comeToCourt = asList(PleaType.GUILTY_REQUEST_HEARING, PleaType.NOT_GUILTY).contains(PleaType.valueOf(plea));
+        }
+
+        public String getPlea() {
+            return plea;
+        }
+
+        public Boolean getComeToCourt() {
+            return comeToCourt;
+        }
+
+        public String getMitigation() {
+            return mitigation;
+        }
+
+        public String getNotGuiltyBecause() {
+            return notGuiltyBecause;
         }
 
         public String getInterpreterLanguage() {

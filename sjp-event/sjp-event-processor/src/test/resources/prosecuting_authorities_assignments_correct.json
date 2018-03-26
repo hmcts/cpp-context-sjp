@@ -1,0 +1,12 @@
+{
+  "assignmentRules":[
+    {
+      "prosecutingAuthority": "TFL",
+      "exclusiveCourtCodes": ["1", "2"]
+    },
+    {
+      "prosecutingAuthority": "TVL",
+      "exclusiveCourtCodes": ["3"]
+    }
+  ]
+}

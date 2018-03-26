@@ -13,11 +13,19 @@ import org.apache.deltaspike.data.api.Repository;
 @Repository
 public interface CaseSearchResultRepository extends EntityRepository<CaseSearchResult, UUID> {
 
-    @Query("from CaseSearchResult as r inner join fetch r.caseSummary where upper(r.lastName) = upper(:lastName) order by r.firstName")
-    List<CaseSearchResult> findByLastName(@QueryParam("lastName") String lastName);
+    @Query("from CaseSearchResult as r inner join fetch r.caseSummary as c where cast(r.id as string) IN " +
+            "(select cast(x.id as string) from CaseSearchResult as x where upper(x.lastName) = upper(:lastName) and x.caseId = r.caseId and x.dateAdded = " +
+            "(select max(z.dateAdded) from CaseSearchResult as z where z.caseId=x.caseId and upper(z.lastName) = upper(:lastName))" +
+            ") " +
+            "and r.caseSummary.prosecutingAuthority like :prosecutingAuthority " +
+            "order by r.firstName ASC, c.postingDate DESC")
+    List<CaseSearchResult> findByLastName(@QueryParam("prosecutingAuthority") String prosecutingAuthority, @QueryParam("lastName") String lastName);
 
-    @Query("from CaseSearchResult as r inner join fetch r.caseSummary where upper(r.caseSummary.urn) = upper(:urn)")
-    List<CaseSearchResult> findByCaseSummary_urn(@QueryParam("urn") String urn);
+    @Query("from CaseSearchResult as r inner join fetch r.caseSummary as c where upper(r.caseSummary.urn) = upper(:urn) and r.dateAdded = " +
+            "(select max(z.dateAdded) from CaseSearchResult as z where z.caseId=r.caseId) " +
+            "and r.caseSummary.prosecutingAuthority like :prosecutingAuthority " +
+            "order by r.firstName ASC, c.postingDate DESC")
+    List<CaseSearchResult> findByUrn(@QueryParam("prosecutingAuthority") String prosecutingAuthority, @QueryParam("urn") String urn);
 
     List<CaseSearchResult> findByCaseId(UUID caseId);
 }

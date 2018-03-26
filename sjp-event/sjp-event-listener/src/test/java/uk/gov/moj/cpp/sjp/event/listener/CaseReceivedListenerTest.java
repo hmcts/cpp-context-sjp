@@ -17,6 +17,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseReceivedToCase;
+import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
@@ -58,6 +59,10 @@ public class CaseReceivedListenerTest {
 
     @Spy
     private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
+    @Spy
+    @InjectMocks
+    private CaseSearchResultService caseSearchResultService = new CaseSearchResultService();
 
     @Spy
     @InjectMocks
@@ -115,8 +120,9 @@ public class CaseReceivedListenerTest {
         assertThat(result.getCaseId(), is(caseId));
         assertThat(result.getFirstName(), is(defendantFirstName));
         assertThat(result.getLastName(), is(defendantLastName));
+        assertThat(result.getCurrentFirstName(), is(defendantFirstName));
+        assertThat(result.getCurrentLastName(), is(defendantLastName));
         assertThat(result.getDateOfBirth(), is(defendantDateOfBirth));
-        assertThat(result.getPostCode(), is(postcode));
     }
 
     private void verifyCaseSaved() {
@@ -130,7 +136,7 @@ public class CaseReceivedListenerTest {
                 prosecutingAuthority,
                 null,
                 false,
-                false,
+                null,
                 ZonedDateTimes.fromString(caseCreatedOn),
                 new DefendantDetail(
                         defendantId,

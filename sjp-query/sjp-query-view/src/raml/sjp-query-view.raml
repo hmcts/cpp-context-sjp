@@ -362,3 +362,33 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
                 application/vnd.sjp.query.defendants-online-plea+json:
                   schema: !include json/schema/sjp.query.defendants-online-plea.json
                   example: !include json/sjp.query.defendants-online-plea.json
+
+/cases/assignment/candidates/{sessionType}:
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.assignment-candidates+json
+          name: sjp.query.assignment-candidates
+      ...
+
+    queryParameters:
+      excludedProsecutingAuthorities:
+        description: comma separated list of prosecuting authorities whose cases should be excluded
+        type: string
+        required: false
+      limit:
+        description: maximum number of assignment candidates
+        type: number
+        required: true
+      assigneeId:
+        description: user to whom cases should be assigned, query will return cases assigned to assignee with highest rank
+        type: string
+        required: true
+
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.assignment-candidates+json:
+            schema: !include json/schema/sjp.query.assignment-candidates.json
+            example: !include json/sjp.query.assignment-candidates.json

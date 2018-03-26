@@ -11,10 +11,11 @@ import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
-import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
-import uk.gov.moj.sjp.it.helper.CaseSjpHelper;
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.FixDefendantDetailsHelper;
+import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.FileUtil;
+import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -25,7 +26,6 @@ import javax.json.JsonObject;
 
 import com.jayway.restassured.path.json.JsonPath;
 import org.apache.tika.io.IOUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,19 +33,13 @@ public class FixDefendantIT extends BaseIntegrationTest {
 
     private FixDefendantDetailsHelper fixDefendantDetailsHelper = new FixDefendantDetailsHelper();
 
-    private CaseSjpHelper caseSjpHelper = new CaseSjpHelper() {
-        @Override
-        protected void doAdditionalReadCallResponseVerification(JsonPath jsonRequest, JsonPath jsonResponse) {
-        }
-    };
-
-    private CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseSjpHelper);
+    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
 
     @Before
     public void createSjpCaseAndVerifyInQueue() throws IOException {
         final String sjpCaseCreatedJson = IOUtils.toString(getClass().getResourceAsStream("/FixDefendantIT/sjp.events.sjp-case-created.json"))
-                .replace("{caseId}", caseSjpHelper.getCaseId())
-                .replace("{caseUrn}", caseSjpHelper.getCaseUrn())
+                .replace("{caseId}", createCasePayloadBuilder.getId().toString())
+                .replace("{caseUrn}", createCasePayloadBuilder.getUrn())
                 .replace("{personId}", UUID.randomUUID().toString())
                 .replace("{defendantId}", UUID.randomUUID().toString())
                 .replace("{offenceId}", UUID.randomUUID().toString());
@@ -61,8 +55,6 @@ public class FixDefendantIT extends BaseIntegrationTest {
             producerClient.startProducer("sjp.event");
             producerClient.sendMessage("sjp.events.sjp-case-created", eventEnvelope);
         }
-
-        caseSjpHelper.verifyCaseCreatedUsingId();
     }
 
     @Test
@@ -70,7 +62,7 @@ public class FixDefendantIT extends BaseIntegrationTest {
 
         JsonObject payload = FileUtil.givenPayload("/payload/sjp.fix-defendant-details.json");
 
-        fixDefendantDetailsHelper.fixDefendantDetails(caseSjpHelper.getCaseId(), payload);
+        fixDefendantDetailsHelper.fixDefendantDetails(createCasePayloadBuilder.getId(), payload);
 
         PersonalDetails personalDetails = new PersonalDetails(
                 payload.getString("title"),
@@ -90,21 +82,15 @@ public class FixDefendantIT extends BaseIntegrationTest {
                         payload.getJsonObject("contactNumber").getString("home"),
                         payload.getJsonObject("contactNumber").getString("mobile"))
         );
-        caseSearchResultHelper.verifyPersonInfo(personalDetails, true);
 
-        final JsonPath updatedCase = caseSjpHelper.getCaseResponseUsingId();
+        PersonInfoVerifier personInfoVerifier = PersonInfoVerifier.personInfoVerifierForPersonalDetails(createCasePayloadBuilder.getId(), personalDetails);
+        personInfoVerifier.verifyPersonInfo(true);
+
+        final JsonPath updatedCase = CasePoller.pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId());
 
         final String firstName = updatedCase.getString("defendant.personalDetails.firstName");
         final String lastName = updatedCase.getString("defendant.personalDetails.lastName");
         assertThat(firstName, is(payload.getString("firstName")));
         assertThat(lastName, is(payload.getString("lastName")));
     }
-
-    @After
-    public void tearDown() {
-        caseSjpHelper.close();
-        caseSearchResultHelper.close();
-        fixDefendantDetailsHelper.close();
-    }
-
 }

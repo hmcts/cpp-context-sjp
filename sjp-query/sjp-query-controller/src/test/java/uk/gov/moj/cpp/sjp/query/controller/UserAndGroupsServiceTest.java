@@ -71,8 +71,8 @@ public class UserAndGroupsServiceTest {
     }
 
     @Test
-    public void isSjpProsecutorWhenUserIsTflUserGroupOnly() {
-        String[] userGroupNames = { "TFL Users" };
+    public void isSjpProsecutorWhenUserIsSjpUserGroupOnly() {
+        String[] userGroupNames = { "SJP Prosecutors" };
         final JsonEnvelope originalEnvelope = setupMocksAndStubData(userGroupNames);
 
         final boolean isSjpProsecutor = service.isSjpProsecutorUserGroupOnly(originalEnvelope);
@@ -100,7 +100,7 @@ public class UserAndGroupsServiceTest {
 
     @Test
     public void isSjpProsecutorWhenUserHasAllUserGroups() {
-        String[] userGroupNames = { "TFL Users", "Court Administrators", "Legal Advisers" };
+        String[] userGroupNames = { "TFL Prosecutors", "Court Administrators", "Legal Advisers" };
         final JsonEnvelope originalEnvelope = setupMocksAndStubData(userGroupNames);
 
         final boolean isSjpProsecutor = service.isSjpProsecutorUserGroupOnly(originalEnvelope);
@@ -109,7 +109,7 @@ public class UserAndGroupsServiceTest {
 
     @Test
     public void isSjpProsecutorWhenUserHasTflAndCourtAdminUserGroups() {
-        String[] userGroupNames = { "TFL Users", "Court Administrators" };
+        String[] userGroupNames = { "TFL Prosecutors", "Court Administrators" };
         final JsonEnvelope originalEnvelope = setupMocksAndStubData(userGroupNames);
 
         final boolean isSjpProsecutor = service.isSjpProsecutorUserGroupOnly(originalEnvelope);
@@ -118,7 +118,7 @@ public class UserAndGroupsServiceTest {
 
     @Test
     public void isSjpProsecutorWhenUserHasTflAndLegalAdvisorUserGroups() {
-        String[] userGroupNames = { "TFL Users", "Legal Advisers" };
+        String[] userGroupNames = { "TFL Prosecutors", "Legal Advisers" };
         final JsonEnvelope originalEnvelope = setupMocksAndStubData(userGroupNames);
 
         final boolean isSjpProsecutor = service.isSjpProsecutorUserGroupOnly(originalEnvelope);

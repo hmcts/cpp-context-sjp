@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -14,6 +15,7 @@ import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -32,15 +34,21 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
     @Inject
     private AggregateService aggregateService;
 
+    @Inject
+    private Clock clock;
+
     @Handles("sjp.command.update-defendant-details")
     public void updateDefendantDetails(final JsonEnvelope command) throws EventStreamException {
+
+        final ZonedDateTime createdAt = command.metadata().createdAt().orElse(clock.now());
+
         final JsonObject payload = command.payloadAsJsonObject();
 
         final UUID caseId = UUID.fromString(payload.getString("caseId"));
         final UUID defendantId = UUID.fromString(payload.getString("defendantId"));
 
-        final String title =  getStringOrNull(payload, "title");
-        final String firstName =  getStringOrNull(payload, "firstName");
+        final String title = getStringOrNull(payload, "title");
+        final String firstName = getStringOrNull(payload, "firstName");
         final String lastName = getStringOrNull(payload, "lastName");
         final String gender = getStringOrNull(payload, "gender");
         final String nationalInsuranceNumber = getStringOrNull(payload, "nationalInsuranceNumber");
@@ -50,17 +58,16 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
         final JsonObject contactNumberPayload = payload.getJsonObject("contactNumber");
         final String homeNumber = getStringOrNull(contactNumberPayload, "home");
         final String mobileNumber = getStringOrNull(contactNumberPayload, "mobile");
-        final Address address =  createAddressFrom(payload);
+        final Address address = createAddressFrom(payload);
         final LocalDate birthDate = LocalDate.parse(dateOfBirth);
 
         final EventStream eventStream = eventSource.getStreamById(caseId);
 
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
 
-        final Person personInfoDetails = new Person(title, firstName, lastName,
-                birthDate, gender, address);
+        final Person personInfoDetails = new Person(title, firstName, lastName, birthDate, gender, address);
         final Stream<Object> events = caseAggregate.updateDefendantDetails(caseId, defendantId, gender,
-                nationalInsuranceNumber, email, homeNumber, mobileNumber, personInfoDetails);
+                nationalInsuranceNumber, email, homeNumber, mobileNumber, personInfoDetails, createdAt);
 
         eventStream.append(events.map(enveloper.withMetadataFrom(command)));
     }

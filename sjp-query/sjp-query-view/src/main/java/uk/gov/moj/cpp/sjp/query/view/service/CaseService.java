@@ -11,14 +11,14 @@ import static java.util.stream.Collectors.summingLong;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.messaging.JsonObjects.toJsonArray;
 
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseReferredToCourt;
@@ -27,9 +27,11 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseReferredToCourtRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.NotReadyCaseRepository;
+import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseMissingSjpnWithDetailsView;
+import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnWithDetailsView;
@@ -52,7 +54,6 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -87,6 +88,12 @@ public class CaseService {
 
     @Inject
     private CaseReferredToCourtRepository caseReferredToCourtRepository;
+
+    @Inject
+    private ProsecutingAuthorityProvider prosecutingAuthorityProvider;
+
+    @Inject
+    private ProsecutingAuthorityAccessFilterConverter prosecutingAuthorityAccessFilterConverter;
 
     /**
      * Find case by id.
@@ -183,7 +190,7 @@ public class CaseService {
     }
 
     /**
-     * Search case by personId.
+     * Search case by defendantId.
      *
      * @param defendantId id of the defendant to find cases for.
      * @return SearchView containing matched case summaries
@@ -252,13 +259,15 @@ public class CaseService {
         return null;
     }
 
-    public JsonObject searchCases(final String query) {
-        List<CaseSearchResult> searchResults = caseSearchResultRepository.findByCaseSummary_urn(query);
+    public CaseSearchResultsView searchCases(final JsonEnvelope envelope, final String query) {
+
+        final String prosecutingAuthorityFilterValue = prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope));
+
+        List<CaseSearchResult> searchResults = caseSearchResultRepository.findByUrn(prosecutingAuthorityFilterValue, query);
         if (searchResults.isEmpty()) {
-            searchResults = caseSearchResultRepository.findByLastName(query);
+            searchResults = caseSearchResultRepository.findByLastName(prosecutingAuthorityFilterValue, query);
         }
-        final JsonArray results = toJsonArray(searchResults, this::convertCaseSearchResult);
-        return createObjectBuilder().add("results", results).build();
+        return new CaseSearchResultsView(searchResults);
     }
 
     public JsonObject findAwaitingCases() {
@@ -357,47 +366,6 @@ public class CaseService {
         final LocalDate oldestUncompletedPostingDate = caseRepository.findOldestUncompletedPostingDate();
         final long age = oldestUncompletedPostingDate == null ? 0 : DAYS.between(oldestUncompletedPostingDate, LocalDate.now());
         return createObjectBuilder().add("oldestCaseAge", age).build();
-    }
-
-    private JsonObject convertCaseSearchResult(final CaseSearchResult searchResult) {
-        final JsonObjectBuilder objectBuilder = createObjectBuilder()
-                .add("id", searchResult.getId().toString())
-                .add("caseId", searchResult.getCaseId().toString())
-                .add("lastName", searchResult.getLastName())
-                .add("assigned", searchResult.isAssigned());
-        // it may be possible that the person details are added before the case is created
-        final CaseSummary caseSummary = searchResult.getCaseSummary();
-        if (caseSummary != null) {
-            objectBuilder.add("urn", caseSummary.getUrn())
-                    .add("prosecutingAuthority", caseSummary.getProsecutingAuthority())
-                    .add("postingDate", caseSummary.getPostingDate().toString())
-                    .add("completed", caseSummary.isCompleted());
-            // enterpriseId is added after the case is created
-            if (caseSummary.getEnterpriseId() != null) {
-                objectBuilder.add("enterpriseId", caseSummary.getEnterpriseId());
-            }
-
-            if (caseSummary.getReopenedDate() != null) {
-                objectBuilder.add("reopenedDate", caseSummary.getReopenedDate().toString());
-            }
-        }
-
-        if (searchResult.getPleaDate() != null) {
-            objectBuilder.add("pleaDate", searchResult.getPleaDate().toString());
-        }
-        if (searchResult.getWithdrawalRequestedDate() != null) {
-            objectBuilder.add("withdrawalRequestedDate", searchResult.getWithdrawalRequestedDate().toString());
-        }
-        if (searchResult.getFirstName() != null) {
-            objectBuilder.add("firstName", searchResult.getFirstName());
-        }
-        if (searchResult.getDateOfBirth() != null) {
-            objectBuilder.add("dateOfBirth", searchResult.getDateOfBirth().toString());
-        }
-        if (searchResult.getPostCode() != null) {
-            objectBuilder.add("postCode", searchResult.getPostCode());
-        }
-        return objectBuilder.build();
     }
 
     private void filterOtherAndFinancialMeansDocuments(Collection<CaseDocumentView> caseDocumentsView) {

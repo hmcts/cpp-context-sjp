@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.ASSIGNMENT_ASSIGNEE;
 import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.ASSIGNMENT_DOMAIN_OBJECT_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.ASSIGNMENT_NATURE_TYPE;
 import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.CASE_ASSIGNMENT_TYPE;
@@ -15,10 +16,12 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,14 +52,12 @@ public class AssignmentProcessor {
         final String caseAssignmentTypeString = payload.getString(ASSIGNMENT_NATURE_TYPE, "NULL");
         final Optional<CaseAssignmentType> caseAssignmentType = CaseAssignmentType.from(caseAssignmentTypeString);
 
-        if (!caseAssignmentType.isPresent()) {
+        if (caseAssignmentType.isPresent()) {
+            final Optional<UUID> assignee = Optional.ofNullable(payload.getString(ASSIGNMENT_ASSIGNEE, null)).map(UUID::fromString);
+            sender.send(createEvent(SJP_COMMAND_HANDLER_ASSIGNMENT_CREATED, envelope, id, caseAssignmentType.get(), assignee));
+        } else {
             LOGGER.debug("Ignoring non-ATCM assignment creation type: {}", caseAssignmentTypeString);
-            return;
         }
-
-        sender.send(
-                createEvent(SJP_COMMAND_HANDLER_ASSIGNMENT_CREATED, envelope, id, caseAssignmentType.get())
-        );
     }
 
     @Handles(ASSIGNMENT_CONTEXT_ASSIGNMENT_DELETED)
@@ -69,21 +70,23 @@ public class AssignmentProcessor {
         final Optional<CaseAssignmentType> caseAssignmentType = CaseAssignmentType.from(caseAssignmentTypeString);
 
         if (caseAssignmentType.isPresent()) {
-            sender.send(
-                    createEvent(SJP_COMMAND_HANDLER_ASSIGNMENT_DELETED, envelope, id, caseAssignmentType.get())
-            );
-        }
-        else {
+            sender.send(createEvent(SJP_COMMAND_HANDLER_ASSIGNMENT_DELETED, envelope, id, caseAssignmentType.get(), Optional.empty()));
+        } else {
             LOGGER.debug("Ignoring non-ATCM assignment deletion type: {}", caseAssignmentTypeString);
         }
     }
 
-    private JsonEnvelope createEvent(final String command, final JsonEnvelope envelope, final String id, final CaseAssignmentType caseAssignmentType) {
-        final JsonObject publicEventPayload = Json.createObjectBuilder()
+    private JsonEnvelope createEvent(final String command,
+                                     final JsonEnvelope envelope,
+                                     final String id,
+                                     final CaseAssignmentType caseAssignmentType,
+                                     final Optional<UUID> assignee) {
+        final JsonObjectBuilder publicEventPayloadBuilder = Json.createObjectBuilder()
                 .add(CASE_ID, id)
-                .add(CASE_ASSIGNMENT_TYPE, caseAssignmentType.toString())
-                .build();
+                .add(CASE_ASSIGNMENT_TYPE, caseAssignmentType.toString());
 
-        return enveloper.withMetadataFrom(envelope, command).apply(publicEventPayload);
+        assignee.ifPresent(a -> publicEventPayloadBuilder.add("assigneeId", a.toString()));
+
+        return enveloper.withMetadataFrom(envelope, command).apply(publicEventPayloadBuilder.build());
     }
 }

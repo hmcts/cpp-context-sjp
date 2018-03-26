@@ -15,7 +15,7 @@ import static uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus.EMPLOYED;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Case;
-import uk.gov.moj.cpp.sjp.domain.CaseAssignment;
+import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Offence;
 import uk.gov.moj.cpp.sjp.domain.PleaType;
@@ -37,13 +37,13 @@ import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.google.common.collect.Lists;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
@@ -54,6 +54,7 @@ public class PleadOnlineTest {
     private final ZonedDateTime now = clock.now();
 
     private static final UUID caseId = UUID.randomUUID();
+    private static final UUID assigneeId = UUID.randomUUID();
     private static final String urn = "TFL123456";
     private static final String INITIATION_CODE = "J";
 
@@ -66,6 +67,7 @@ public class PleadOnlineTest {
         assertThat(caseId.toString(), equalTo(pleaUpdated.getCaseId()));
         assertThat(PleaMethod.ONLINE, equalTo(pleaUpdated.getPleaMethod()));
         assertThat(pleaType.toString(), equalTo(pleaUpdated.getPlea()));
+        assertThat(createDate, equalTo(pleaUpdated.getUpdatedDate()));
         assertThat(pleadOnline.getOffences().get(0).getId(), equalTo(pleaUpdated.getOffenceId()));
         assertThat(pleadOnline.getOffences().get(0).getMitigation(), equalTo(pleaUpdated.getMitigation()));
         assertThat(pleadOnline.getOffences().get(0).getNotGuiltyBecause(), equalTo(pleaUpdated.getNotGuiltyBecause()));
@@ -75,9 +77,9 @@ public class PleadOnlineTest {
     }
 
     private void assertCommonExpectations(final PleadOnline pleadOnline, final String defendantId, final FinancialMeansUpdated financialMeansUpdated,
-                                         final EmployerUpdated employerUpdated, final EmploymentStatusUpdated employmentStatusUpdated,
-                                         final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant, final TrialRequested trialRequested,
-                                         final DefendantDetailsUpdated defendantDetailsUpdated, final ZonedDateTime createDate) {
+                                          final EmployerUpdated employerUpdated, final EmploymentStatusUpdated employmentStatusUpdated,
+                                          final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant, final TrialRequested trialRequested,
+                                          final DefendantDetailsUpdated defendantDetailsUpdated, final ZonedDateTime createDate) {
         assertThat(UUID.fromString(defendantId), equalTo(financialMeansUpdated.getDefendantId()));
         assertThat(pleadOnline.getFinancialMeans().getIncome(), equalTo(financialMeansUpdated.getIncome()));
         assertThat(pleadOnline.getFinancialMeans().getBenefits(), equalTo(financialMeansUpdated.getBenefits()));
@@ -268,10 +270,10 @@ public class PleadOnlineTest {
     public void shouldPleaOnlineSuccessfullyForMultipleOffences() {
         //given
         final Object[][] pleaInformationArray = {
-                { offenceId, PleaType.NOT_GUILTY, true, PleaType.NOT_GUILTY },
-                { UUID.randomUUID(), PleaType.GUILTY, false, PleaType.GUILTY },
-                { UUID.randomUUID(), PleaType.GUILTY, true, PleaType.GUILTY_REQUEST_HEARING },
-                { UUID.randomUUID(), PleaType.NOT_GUILTY, true, PleaType.NOT_GUILTY },
+                {offenceId, PleaType.NOT_GUILTY, true, PleaType.NOT_GUILTY},
+                {UUID.randomUUID(), PleaType.GUILTY, false, PleaType.GUILTY},
+                {UUID.randomUUID(), PleaType.GUILTY, true, PleaType.GUILTY_REQUEST_HEARING},
+                {UUID.randomUUID(), PleaType.NOT_GUILTY, true, PleaType.NOT_GUILTY},
         };
         final Case caseWithMultipleOffences = createTestCaseWithExtraOffences(
                 Arrays.stream(pleaInformationArray)
@@ -316,7 +318,7 @@ public class PleadOnlineTest {
 
         assertCommonExpectations(pleadOnline, sjpCase.getDefendant().getId().toString(), (FinancialMeansUpdated) events.get(6),
                 (EmployerUpdated) events.get(7), (EmploymentStatusUpdated) events.get(8), (InterpreterUpdatedForDefendant) events.get(9),
-                (TrialRequested) events.get(4),  (DefendantDetailsUpdated) events.get(5), now);
+                (TrialRequested) events.get(4), (DefendantDetailsUpdated) events.get(5), now);
     }
 
     @Test
@@ -354,7 +356,7 @@ public class PleadOnlineTest {
         assertThat(CaseUpdateRejected.RejectReason.PLEA_ALREADY_SUBMITTED, equalTo(caseUpdateRejected.getReason()));
 
         //then cancel plea
-        caseAggregate.cancelPlea(new CancelPlea(caseId, offenceId));
+        caseAggregate.cancelPlea(new CancelPlea(caseId, offenceId), now);
 
         //then plea again
         pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, sjpCase.getDefendant().getId().toString());
@@ -378,7 +380,7 @@ public class PleadOnlineTest {
         final CaseReceived sjpCase = caseAggregate.receiveCase(createTestCase(), clock.now())
                 .map(c -> (CaseReceived) c)
                 .collect(toList()).get(0);
-        caseAggregate.caseAssignmentCreated(new CaseAssignment(caseId.toString(), "for-magistrate-decision"));
+        caseAggregate.caseAssignmentCreated(caseId, assigneeId, CaseAssignmentType.MAGISTRATE_DECISION);
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, sjpCase.getDefendant().getId().toString());
@@ -393,7 +395,7 @@ public class PleadOnlineTest {
     }
 
     @Test
-    public void shouldNotStoreOnlinePleaWhenWithdrawalOffencesRequested() {
+    public void shouldStoreOnlinePleaWhenWithdrawalOffencesRequested() {
         //given
         final CaseReceived sjpCase = caseAggregate.receiveCase(createTestCase(), clock.now())
                 .map(c -> (CaseReceived) c)
@@ -406,10 +408,13 @@ public class PleadOnlineTest {
 
         //then
         final List<Object> events = asList(eventStream.toArray());
-        assertThat(events, hasSize(1));
-        assertThat("Has CaseUpdateRejected event", events, hasItem(isA(CaseUpdateRejected.class)));
-        assertThat(((CaseUpdateRejected) events.get(0)).getReason(),
-                        is(CaseUpdateRejected.RejectReason.WITHDRAWAL_PENDING));
+        assertThat(events, hasSize(6));
+        assertThat("Has PleaUpdated event", events, hasItem(isA(PleaUpdated.class)));
+        assertThat("Has DefendantDetailsUpdated event", events, hasItem(isA(DefendantDetailsUpdated.class)));
+        assertThat("Has FinancialMeansUpdated event", events, hasItem(isA(FinancialMeansUpdated.class)));
+        assertThat("Has EmployerUpdated event", events, hasItem(isA(EmployerUpdated.class)));
+        assertThat("Has EmploymentStatusUpdated event", events, hasItem(isA(EmploymentStatusUpdated.class)));
+        assertThat("Has OnlinePleaReceived event", events, hasItem(isA(OnlinePleaReceived.class)));
     }
 
     @Test
@@ -443,7 +448,7 @@ public class PleadOnlineTest {
         assertThat(events, hasSize(1));
 
         final Object object = events.get(0);
-        assertThat(object.getClass() , is(CoreMatchers.equalTo(OffenceNotFound.class)));
+        assertThat(object.getClass(), is(CoreMatchers.equalTo(OffenceNotFound.class)));
     }
 
     @Test
@@ -457,7 +462,7 @@ public class PleadOnlineTest {
         assertThat(events, hasSize(1));
 
         final Object object = events.get(0);
-        assertThat(object.getClass() , is(CoreMatchers.equalTo(DefendantNotFound.class)));
+        assertThat(object.getClass(), is(CoreMatchers.equalTo(DefendantNotFound.class)));
     }
 
     private Case createTestCase() {
@@ -471,8 +476,7 @@ public class PleadOnlineTest {
                 urn,
                 null, null, INITIATION_CODE, null, null, null, null,
                 null, null, null,
-                new Defendant(UUID.randomUUID(), null, null, null, null, null, null, 1, new ArrayList<Offence>() {{ add(offence); }})
-        );
+                new Defendant(UUID.randomUUID(), null, null, null, null, null, null, 1, Lists.newArrayList(offence)));
     }
 
     private Case createTestCaseWithExtraOffences(List<UUID> offenceIds) {

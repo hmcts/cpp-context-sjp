@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "assignmentRules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "prosecutingAuthority": {
+            "type": "string"
+          },
+          "exclusiveCourtCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "prosecutingAuthority",
+          "exclusiveCourtCodes"
+        ]
+      }
+    }
+  },
+  "required": [
+    "assignmentRules"
+  ]
+}

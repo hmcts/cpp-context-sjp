@@ -2,42 +2,48 @@ package uk.gov.moj.sjp.it.helper;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
-import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UPDATED;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UPDATED;
-import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
+import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
+import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 
 import com.jayway.restassured.path.json.JsonPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Helper class for Case reopened in libra IT.
  */
-public abstract class CaseReopenedInLibraHelper extends AbstractTestHelper {
+public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CaseReopenedInLibraHelper.class);
+
+    protected final MessageConsumer privateEventsConsumer;
+    protected final MessageConsumer publicEventsConsumer;
 
     public static class MarkCaseReopenedInLibraHelper extends CaseReopenedInLibraHelper {
-        public MarkCaseReopenedInLibraHelper(final CaseSjpHelper caseSjpHelper) {
-            super(caseSjpHelper, EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA, PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA);
+        public MarkCaseReopenedInLibraHelper(final UUID caseId) {
+            super(caseId, EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA, PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA);
         }
 
         public void verifyEventInActiveMQ() {
@@ -58,8 +64,8 @@ public abstract class CaseReopenedInLibraHelper extends AbstractTestHelper {
     }
 
     public static class UpdateCaseReopenedInLibraHelper extends CaseReopenedInLibraHelper {
-        public UpdateCaseReopenedInLibraHelper(final CaseSjpHelper caseSjpHelper) {
-            super(caseSjpHelper, EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UPDATED, PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UPDATED);
+        public UpdateCaseReopenedInLibraHelper(final UUID caseId) {
+            super(caseId, EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UPDATED, PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UPDATED);
         }
 
         public void verifyEventInActiveMQ() {
@@ -80,8 +86,8 @@ public abstract class CaseReopenedInLibraHelper extends AbstractTestHelper {
     }
 
     public static class UndoCaseReopenedInLibraHelper extends CaseReopenedInLibraHelper {
-        public UndoCaseReopenedInLibraHelper(final CaseSjpHelper caseSjpHelper) {
-            super(caseSjpHelper, EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE, PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE);
+        public UndoCaseReopenedInLibraHelper(final UUID caseId) {
+            super(caseId, EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE, PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE);
         }
 
         public void verifyEventInActiveMQ() {
@@ -109,24 +115,24 @@ public abstract class CaseReopenedInLibraHelper extends AbstractTestHelper {
 
     private static final String TEMPLATE_CASE_REOPENED_IN_LIBRA_PAYLOAD = "raml/json/sjp.case-reopened-in-libra.json";
 
-    protected final CaseSjpHelper caseSjpHelper;
+    protected final UUID caseId;
 
     protected final CaseReopenDetails markCaseReopenDetails;
 
     protected final CaseReopenDetails updateCaseReopenDetails;
 
-    protected CaseReopenedInLibraHelper(final CaseSjpHelper caseSjpHelper, final String privateSelector, final String publicSelector) {
-        this.caseSjpHelper = caseSjpHelper;
+    protected CaseReopenedInLibraHelper(final UUID caseId, final String privateSelector, final String publicSelector) {
+        this.caseId = caseId;
 
         this.markCaseReopenDetails = new CaseReopenDetails(
-                caseSjpHelper.getCaseId(),
+                caseId.toString(),
                 LocalDate.parse("2017-01-01"),
                 "LIBRA12345",
                 "Mandatory reason"
         );
 
         this.updateCaseReopenDetails = new CaseReopenDetails(
-                caseSjpHelper.getCaseId(),
+                caseId.toString(),
                 LocalDate.parse("2010-01-01"),
                 "LIBRA98765",
                 "Optional reason"
@@ -140,7 +146,7 @@ public abstract class CaseReopenedInLibraHelper extends AbstractTestHelper {
         final JsonPath jsonResponse = retrieveMessage(messageConsumer);
         assertThat(jsonResponse, notNullValue());
 
-        assertThat(jsonResponse.get("caseId"), equalTo(caseSjpHelper.getCaseId()));
+        assertThat(jsonResponse.get("caseId"), equalTo(caseId.toString()));
     }
 
     protected void verifyCaseReopenedInLibraInActiveMQ(final MessageConsumer messageConsumer, final CaseReopenDetails caseReopenDetails) {
@@ -153,50 +159,48 @@ public abstract class CaseReopenedInLibraHelper extends AbstractTestHelper {
         assertThat(jsonResponse.get("reason"), equalTo(caseReopenDetails.getReason()));
     }
 
-    protected void assertCaseNotReopenedInLibra() {
-        poll(getCaseById(caseSjpHelper.getCaseId()))
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.id", is(caseSjpHelper.getCaseId())),
-                                withoutJsonPath("$.reopenedDate"),
-                                withoutJsonPath("$.libraCaseNumber"),
-                                withoutJsonPath("$.reopenedInLibraReason")))
-                );
+    void assertCaseNotReopenedInLibra() {
+        CasePoller.pollUntilCaseByIdIsOk(caseId,
+                allOf(
+                        withJsonPath("$.id", is(caseId.toString())),
+                        withoutJsonPath("$.reopenedDate"),
+                        withoutJsonPath("$.libraCaseNumber"),
+                        withoutJsonPath("$.reopenedInLibraReason")
+                )
+        );
     }
 
-    protected void assertCaseReopenedInLibra(final CaseReopenDetails caseReopenDetails) {
-        poll(getCaseById(caseSjpHelper.getCaseId()))
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.id", is(caseReopenDetails.getCaseId())),
-                                withJsonPath("$.reopenedDate", is(caseReopenDetails.getReopenedDate().toString())),
-                                withJsonPath("$.libraCaseNumber", is(caseReopenDetails.getLibraCaseNumber())),
-                                withJsonPath("$.reopenedInLibraReason", is(caseReopenDetails.getReason()))))
-                );
+    void assertCaseReopenedInLibra(final CaseReopenDetails caseReopenDetails) {
+        CasePoller.pollUntilCaseByIdIsOk(caseId,
+                allOf(
+                        withJsonPath("$.id", is(caseReopenDetails.getCaseId())),
+                        withJsonPath("$.reopenedDate", is(caseReopenDetails.getReopenedDate().toString())),
+                        withJsonPath("$.libraCaseNumber", is(caseReopenDetails.getLibraCaseNumber())),
+                        withJsonPath("$.reopenedInLibraReason", is(caseReopenDetails.getReason()))
+                )
+        );
     }
 
-    protected void markCaseReopenedInLibra() {
-        final String writeUrl = "/cases/CASEID/mark-reopened-in-libra".replace("CASEID", caseSjpHelper.getCaseId());
+    void markCaseReopenedInLibra() {
+        final String writeUrl = "/cases/CASEID/mark-reopened-in-libra".replace("CASEID", caseId.toString());
         final String request = getPayload(TEMPLATE_CASE_REOPENED_IN_LIBRA_PAYLOAD);
-        makePostCall(getWriteUrl(writeUrl), MARK_WRITE_MEDIA_TYPE, request);
+        makePostCall(writeUrl, MARK_WRITE_MEDIA_TYPE, request);
     }
 
-    protected void updateCaseReopenedInLibra() {
-        final String writeUrl = "/cases/CASEID/update-reopened-in-libra".replace("CASEID", caseSjpHelper.getCaseId());
+    void updateCaseReopenedInLibra() {
+        final String writeUrl = "/cases/CASEID/update-reopened-in-libra".replace("CASEID", caseId.toString());
         String request = getPayload(TEMPLATE_CASE_REOPENED_IN_LIBRA_PAYLOAD)
                 .replace(markCaseReopenDetails.getLibraCaseNumber(), updateCaseReopenDetails.getLibraCaseNumber())
                 .replace(markCaseReopenDetails.getReopenedDate().toString(), updateCaseReopenDetails.getReopenedDate().toString())
                 .replace(markCaseReopenDetails.getReason(), updateCaseReopenDetails.getReason());
 
-        makePostCall(getWriteUrl(writeUrl), UPDATE_WRITE_MEDIA_TYPE, request);
+        makePostCall(writeUrl, UPDATE_WRITE_MEDIA_TYPE, request);
     }
 
-    protected void undoCaseReopenedInLibra() {
-        final String writeUrl = "/cases/CASEID/undo-reopened-in-libra".replace("CASEID", caseSjpHelper.getCaseId());
+    void undoCaseReopenedInLibra() {
+        final String writeUrl = "/cases/CASEID/undo-reopened-in-libra".replace("CASEID", caseId.toString());
 
-        makePostCall(getWriteUrl(writeUrl), UNDO_WRITE_MEDIA_TYPE, "{}");
+        makePostCall(writeUrl, UNDO_WRITE_MEDIA_TYPE, "{}");
     }
 
     public abstract void verifyEventInActiveMQ();
@@ -206,4 +210,18 @@ public abstract class CaseReopenedInLibraHelper extends AbstractTestHelper {
     public abstract void assertCaseReopenedDetailsSet();
 
     public abstract void call();
+
+    @Override
+    public void close() {
+        try {
+            privateEventsConsumer.close();
+        } catch (JMSException e) {
+            LOGGER.warn("Exception while closing consumer", e);
+        }
+        try {
+            publicEventsConsumer.close();
+        } catch (JMSException e) {
+            LOGGER.warn("Exception while closing consumer", e);
+        }
+    }
 }

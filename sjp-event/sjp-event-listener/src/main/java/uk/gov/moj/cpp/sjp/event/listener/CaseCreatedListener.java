@@ -10,13 +10,10 @@ import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseReceivedToCase;
 import uk.gov.moj.cpp.sjp.event.listener.converter.SjpCaseCreatedToCase;
+import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
-
-import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -38,7 +35,7 @@ public class CaseCreatedListener {
     private CaseRepository caseRepository;
 
     @Inject
-    private CaseSearchResultRepository searchRepository;
+    private CaseSearchResultService caseSearchResultService;
 
     /**
      * @deprecated required just for legacy events, replaced by
@@ -67,16 +64,12 @@ public class CaseCreatedListener {
 
         caseRepository.save(caseDetail);
 
-        final CaseSearchResult caseSearchResult = new CaseSearchResult(
-                UUID.randomUUID(),
+        caseSearchResultService.onDefendantDetailsUpdated(
                 caseDetail.getId(),
                 caseDetail.getDefendant().getPersonalDetails().getFirstName(),
                 caseDetail.getDefendant().getPersonalDetails().getLastName(),
                 caseDetail.getDefendant().getPersonalDetails().getDateOfBirth(),
-                caseDetail.getDefendant().getPersonalDetails().getAddress().getPostcode()
+                caseDetail.getDateTimeCreated()
         );
-
-        searchRepository.save(caseSearchResult);
-
     }
 }

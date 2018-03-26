@@ -2,73 +2,88 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "id": {
-      "type": "string"
-    },
-    "caseId": {
-      "type": "string"
-    },
-    "personId": {
-      "type": "string"
-    },
-    "lastName": {
-      "type": "string"
-    },
-    "urn": {
-      "type": "string"
-    },
-    "initiationCode": {
-      "type": "string"
-    },
-    "prosecutingAuthority": {
-      "id": "/prosecutingAuthority",
-      "type": "string",
-      "enum": [
-        "CPS",
-        "TFL"
-      ]
-    },
-    "postingDate": {
-      "type": "string"
-    },
-    "assigned": {
+    "foundCasesWithOutdatedDefendantsName": {
       "type": "boolean"
     },
-    "completed": {
-      "type": "boolean"
-    },
-    "enterpriseId": {
-      "type": "string",
-      "minLength": 12,
-      "maxLength": 12
-    },
-    "reopendDate": {
-      "type": "string"
-    },
-    "pleaDate": {
-      "type": "string"
-    },
-    "withdrawalRequestedDate": {
-      "type": "string"
-    },
-    "firstName": {
-      "type": "string"
-    },
-    "dateOfBirth": {
-      "type": "string"
-    },
-    "postCode": {
-      "type": "string"
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "type": "string"
+          },
+          "urn": {
+            "type": "string"
+          },
+          "initiationCode": {
+            "type": "string"
+          },
+          "prosecutingAuthority": {
+            "id": "/prosecutingAuthority",
+            "type": "string"
+          },
+          "postingDate": {
+            "type": "string"
+          },
+          "assigned": {
+            "type": "boolean"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "enterpriseId": {
+            "type": "string",
+            "minLength": 12,
+            "maxLength": 12
+          },
+          "reopendDate": {
+            "type": "string"
+          },
+          "pleaDate": {
+            "type": "string"
+          },
+          "withdrawalRequestedDate": {
+            "type": "string"
+          },
+          "defendant": {
+            "type": "object",
+            "properties": {
+              "firstName": {
+                "type": "string"
+              },
+              "lastName": {
+                "type": "string"
+              },
+              "dateOfBirth": {
+                "type": "string"
+              },
+              "outdated": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "firstName",
+              "lastName",
+              "dateOfBirth"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "caseId",
+          "urn",
+          "enterpriseId",
+          "initiationCode",
+          "prosecutingAuthority",
+          "defendant"
+        ]
+      }
     }
   },
   "additionalProperties": false,
   "required": [
-    "id",
-    "caseId",
-    "urn",
-    "enterpriseId",
-    "initiationCode",
-    "prosecutingAuthority",
-    "lastName"
+    "results"
   ]
 }

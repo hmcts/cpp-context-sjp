@@ -18,10 +18,10 @@
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
         <assignment.version>2.0.95</assignment.version>
-        <material.version>2.0.99-structurerefactor-SNAPSHOT</material.version>
+        <material.version>2.0.101</material.version>
         <notification.notify.version>0.0.16</notification.notify.version>
         <referencedata.version>2.0.142</referencedata.version>
-        <resulting.version>2.0.165</resulting.version>
+        <resulting.version>2.0.166</resulting.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>2.0.91</usersgroups.version>
         <access-control-sjp-providers.version>3.2.9</access-control-sjp-providers.version>

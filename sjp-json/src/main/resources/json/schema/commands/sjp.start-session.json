@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/commands/sjp.start-session.json",
+  "type": "object",
+  "properties": {
+    "sessionId": {
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+    },
+    "courtHouseName": {
+      "type": "string"
+    },
+    "localJusticeAreaNationalCourtCode": {
+      "type": "string"
+    },
+    "magistrate": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "sessionId",
+    "courtHouseName",
+    "localJusticeAreaNationalCourtCode"
+  ],
+  "additionalProperties": false
+}

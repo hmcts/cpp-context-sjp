@@ -19,4 +19,9 @@ public class SessionController {
     public void startSession(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
+
+    @Handles("sjp.command.end-session")
+    public void endSession(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
 }

@@ -20,10 +20,10 @@ public class UsersGroupsStub {
     public static final String LEGAL_ADVISERS_GROUP = "Legal Advisers";
     public static final String COURT_ADMINISTRATORS_GROUP = "Court Administrators";
 
-    private static final String USER_GROUPS_ALL_USERS_QUERY_URL = "/usersgroups-query-api/query/api/rest/usersgroups/users/.*/groups";
-    private static final String USER_GROUPS_USERS_QUERY_URL = "/usersgroups-query-api/query/api/rest/usersgroups/users/%s/groups";
+    private static final String USER_GROUPS_ALL_USERS_QUERY_URL = "/usersgroups-service/query/api/rest/usersgroups/users/.*/groups";
+    private static final String USER_GROUPS_USERS_QUERY_URL = "/usersgroups-service/query/api/rest/usersgroups/users/%s/groups";
     private static final String USER_GROUPS_USERS_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.groups+json";
-    private static final String USER_GROUPS_USER_DETAILS_QUERY_URL = "/usersgroups-query-api/query/api/rest/usersgroups/users/%s";
+    private static final String USER_GROUPS_USER_DETAILS_QUERY_URL = "/usersgroups-service/query/api/rest/usersgroups/users/%s";
     private static final String USER_GROUPS_USER_DETAILS_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.user-details+json";
 
     public static void stubAllGroupsForUser(String userId) {
@@ -37,7 +37,7 @@ public class UsersGroupsStub {
 
     public static void stubForUserDetails(final String userId, final String prosecutingAuthorityAccess) {
         stubPaylodForUserId(getPayload("stub-data/usersgroups.user-details-with-prosecuting-authority-access.json")
-                .replace("PROSECUTINGAUTHORITYACCESS", prosecutingAuthorityAccess), userId,
+                        .replace("PROSECUTINGAUTHORITYACCESS", prosecutingAuthorityAccess), userId,
                 USER_GROUPS_USER_DETAILS_QUERY_URL, USER_GROUPS_USERS_QUERY_MEDIA_TYPE);
     }
 

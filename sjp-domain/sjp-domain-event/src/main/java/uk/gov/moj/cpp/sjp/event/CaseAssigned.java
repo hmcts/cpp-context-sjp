@@ -18,27 +18,20 @@ public class CaseAssigned implements Serializable {
 
     private final UUID caseId;
     private final UUID assigneeId;
-    private final UUID sessionId;
     private final CaseAssignmentType caseAssignmentType;
 
     @JsonCreator
     public CaseAssigned(
             @JsonProperty("caseId") final UUID caseId,
-            @JsonProperty("sessionId") final UUID sessionId,
             @JsonProperty("assigneeId") final UUID assigneeId,
             @JsonProperty("caseAssignmentType") final CaseAssignmentType caseAssignmentType) {
         this.caseId = caseId;
         this.assigneeId = assigneeId;
-        this.sessionId = sessionId;
         this.caseAssignmentType = caseAssignmentType;
     }
 
     public UUID getCaseId() {
         return caseId;
-    }
-
-    public UUID getSessionId() {
-        return sessionId;
     }
 
     public UUID getAssigneeId() {

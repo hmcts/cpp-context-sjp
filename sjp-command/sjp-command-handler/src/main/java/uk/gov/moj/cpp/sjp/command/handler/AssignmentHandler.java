@@ -66,7 +66,7 @@ public class AssignmentHandler {
 
                 final CaseAssignmentType caseAssignmentType = session.getSessionType().equals(SessionType.MAGISTRATE) ? MAGISTRATE_DECISION : DELEGATED_POWERS_DECISION;
 
-                final Stream<Object> assignmentEvents = caseAggregate.assignCase(session.getId(), session.getUser(), caseAssignmentType);
+                final Stream<Object> assignmentEvents = caseAggregate.assignCase(session.getUser(), caseAssignmentType);
 
                 caseEventsStream.appendAfter(assignmentEvents.map(enveloper.withMetadataFrom(command)), assignmentCandidate.getCaseStreamVersion());
 

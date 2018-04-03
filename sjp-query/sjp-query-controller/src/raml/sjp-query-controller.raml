@@ -371,3 +371,20 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
                   schema: !include json/schema/sjp.query.pending-dates-to-avoid.json
                   example: !include json/sjp.query.pending-dates-to-avoid.json
 
+
+/sessions/{sessionId}:
+  get:
+    description: |
+      Get session.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.session+json
+          name: sjp.query.session
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.session+json:
+                  schema: !include json/schema/sjp.query.session.json
+                  example: !include json/sjp.query.session.json

@@ -1,0 +1,84 @@
+package uk.gov.moj.cpp.sjp.command.api.service;
+
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
+
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.sjp.domain.SessionCourt;
+
+import java.util.Optional;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
+
+@RunWith(MockitoJUnitRunner.class)
+public class ReferenceDataServiceTest {
+
+    @Mock
+    private Requester requester;
+
+    @Spy
+    private Enveloper enveloper = EnveloperFactory.createEnveloper();
+
+    @InjectMocks
+    private ReferenceDataService referenceDataService;
+
+    final String courtHouseOUCode = "B01OK";
+    final String courtHouseName = "Wimbledon Magistrates' Court";
+    final int localJusticeAreaNationalCourtCode = 2577;
+    final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
+
+    @Test
+    public void shouldGetSessionCourt() {
+        final JsonEnvelope expectedOrganisationUnitsQuery = argThat(
+                jsonEnvelope(withMetadataEnvelopedFrom(envelope).withName("referencedata.query.organisationunits"),
+                        payloadIsJson(withJsonPath("$.oucodeL3Code", equalTo(courtHouseOUCode)))));
+
+        final JsonEnvelope organisationUnitsResponse = envelopeFrom(
+                metadataWithRandomUUIDAndName(),
+                createObjectBuilder().add("organisationunits", createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("oucodeL3Name", courtHouseName)
+                                .add("courtCode", localJusticeAreaNationalCourtCode)))
+                        .build());
+
+        when(requester.requestAsAdmin(expectedOrganisationUnitsQuery)).thenReturn(organisationUnitsResponse);
+
+        final Optional<SessionCourt> sessionCourt = referenceDataService.getCourtByCourtHouseOUCode(courtHouseOUCode, envelope);
+
+        assertThat(sessionCourt.isPresent(), equalTo(true));
+        assertThat(sessionCourt.get().getCourtHouseName(), equalTo(courtHouseName));
+        assertThat(sessionCourt.get().getLocalJusticeAreaNationalCourtCode(), equalTo(String.valueOf(localJusticeAreaNationalCourtCode)));
+    }
+
+    @Test
+    public void shouldReturnEmptySessionCourtWhenNotFound() {
+        final JsonEnvelope organisationUnitsResponse = envelopeFrom(metadataWithRandomUUIDAndName(),
+                createObjectBuilder().add("organisationunits", createArrayBuilder()).build());
+
+        when(requester.requestAsAdmin(any())).thenReturn(organisationUnitsResponse);
+
+        final Optional<SessionCourt> sessionCourt = referenceDataService.getCourtByCourtHouseOUCode(courtHouseOUCode, envelope);
+
+        assertThat(sessionCourt.isPresent(), equalTo(false));
+    }
+
+}

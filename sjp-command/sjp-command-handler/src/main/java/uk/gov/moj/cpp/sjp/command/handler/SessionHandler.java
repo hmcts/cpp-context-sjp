@@ -12,6 +12,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -34,18 +35,35 @@ public class SessionHandler {
     private Enveloper enveloper;
 
     @Handles("sjp.command.start-session")
-    public void startSession(final JsonEnvelope command) throws EventStreamException {
-        final JsonObject payload = command.payloadAsJsonObject();
+    public void startSession(final JsonEnvelope startSessionCommand) throws EventStreamException {
+        final JsonObject startSession = startSessionCommand.payloadAsJsonObject();
 
-        final UUID legalAdviserId = UUID.fromString(command.metadata().userId().get());
-        final UUID sessionId = UUID.fromString(payload.getString("sessionId"));
-        final String magistrate = payload.getString("magistrate", null);
-        final String courtCode = payload.getString("courtCode");
+        final UUID userId = UUID.fromString(startSessionCommand.metadata().userId().get());
+        final UUID sessionId = UUID.fromString(startSession.getString("sessionId"));
+        final String courtHouseName = startSession.getString("courtHouseName");
+        final String localJusticeAreaNationalCourtCode = startSession.getString("localJusticeAreaNationalCourtCode");
+        final Optional<String> magistrate = Optional.ofNullable(startSession.getString("magistrate", null));
 
         final EventStream eventStream = eventSource.getStreamById(sessionId);
         final Session session = aggregateService.get(eventStream, Session.class);
-        final Stream<Object> startSessionEvents = session.startSession(sessionId, legalAdviserId, courtCode, magistrate, clock.now());
-        eventStream.append(startSessionEvents.map(enveloper.withMetadataFrom(command)));
+
+        final Stream<Object> events = magistrate
+                .map(m -> session.startMagistrateSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, clock.now(), m))
+                .orElseGet(() -> session.startDelegatedPowersSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, clock.now()));
+
+        eventStream.append(events.map(enveloper.withMetadataFrom(startSessionCommand)));
+    }
+
+    @Handles("sjp.command.end-session")
+    public void endSession(final JsonEnvelope endSessionCommand) throws EventStreamException {
+
+        final UUID sessionId = UUID.fromString(endSessionCommand.payloadAsJsonObject().getString("sessionId"));
+
+        final EventStream eventStream = eventSource.getStreamById(sessionId);
+        final Session session = aggregateService.get(eventStream, Session.class);
+
+        final Stream<Object> events = session.endSession(sessionId, clock.now());
+        eventStream.append(events.map(enveloper.withMetadataFrom(endSessionCommand)));
     }
 
 }

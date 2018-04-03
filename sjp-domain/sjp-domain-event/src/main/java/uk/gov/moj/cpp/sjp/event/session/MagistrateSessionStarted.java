@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event.session;
 import uk.gov.justice.domain.annotation.Event;
 
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -16,17 +17,37 @@ public class MagistrateSessionStarted extends SessionStarted {
     @JsonCreator
     public MagistrateSessionStarted(
             @JsonProperty("sessionId") UUID sessionId,
-            @JsonProperty("legalAdviserId") UUID legalAdviserId,
-            @JsonProperty("courtCode") String courtCode,
-            @JsonProperty("magistrate") String magistrate,
-            @JsonProperty("startedAt") ZonedDateTime startedAt
-
+            @JsonProperty("userId") UUID userId,
+            @JsonProperty("courtHouseName") String courtHouseName,
+            @JsonProperty("localJusticeAreaNationalCourtCode") String localJusticeAreaNationalCourtCode,
+            @JsonProperty("startedAt") ZonedDateTime startedAt,
+            @JsonProperty("magistrate") String magistrate
     ) {
-        super(sessionId, legalAdviserId, courtCode, startedAt);
+        super(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
         this.magistrate = magistrate;
     }
 
     public String getMagistrate() {
         return magistrate;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        final MagistrateSessionStarted that = (MagistrateSessionStarted) o;
+        return Objects.equals(magistrate, that.magistrate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), magistrate);
     }
 }

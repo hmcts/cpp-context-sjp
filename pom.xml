@@ -12,7 +12,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>0.0.54-ATCM-SNAPSHOT</version>
+    <version>0.0.55-ATCM-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -24,6 +24,7 @@
         <notification.notify.version>0.0.3-SNAPSHOT</notification.notify.version>
         <referencedata.version>2.0.142</referencedata.version>
         <resulting.version>2.0.180-ATCM-SNAPSHOT</resulting.version>
+        <scheduling.version>2.0.80</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>2.0.88-ATCM-SNAPSHOT</usersgroups.version>
         <access-control-sjp-providers.version>3.2.9</access-control-sjp-providers.version>

@@ -1,6 +1,7 @@
 package uk.gov.moj.sjp.it.stub;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -12,8 +13,13 @@ import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+
 import javax.json.Json;
 import javax.json.JsonObject;
+
+import org.apache.commons.io.IOUtils;
 
 public class ReferenceDataStub {
 
@@ -23,7 +29,7 @@ public class ReferenceDataStub {
                 .getResourceAsStream(resourceName))
                 .readObject();
 
-        final String urlPath = "/referencedata-query-api/query/api/rest/referencedata/offences";
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/offences";
         stubFor(get(urlPathEqualTo(urlPath))
                 .withQueryParam("cjsoffencecode", matching(".*"))
                 .willReturn(aResponse().withStatus(SC_OK)
@@ -33,4 +39,38 @@ public class ReferenceDataStub {
 
         waitForStubToBeReady(urlPath + "?cjsoffencecode", "application/vnd.referencedata.query.offences+json");
     }
+
+
+    public static void stubCourtByCourtHouseOUCodeQuery(final String courtHouseOUCode, final String localJusticeAreaNationalCourtCode, final String courtHouseName) {
+        stubCourt(courtHouseOUCode, getOrganisationUnit(localJusticeAreaNationalCourtCode, courtHouseName));
+    }
+
+    public static void stubCourtByCourtHouseOUCodeQuery(final String courtHouseOUCode, final String localJusticeAreaNationalCourtCode) {
+       stubCourtByCourtHouseOUCodeQuery(courtHouseOUCode, localJusticeAreaNationalCourtCode, "court house name");
+    }
+
+    private static void stubCourt(final String courtHouseOUCode, final String responseBody) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-query-api");
+
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/organisationunits";
+        stubFor(get(urlPathEqualTo(urlPath))
+                .withQueryParam("oucodeL3Code", equalTo(courtHouseOUCode))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(responseBody)));
+
+        waitForStubToBeReady(urlPath + "?oucodeL3Code=" + courtHouseOUCode, "application/vnd.referencedata.query.organisationunits+json");
+    }
+
+    private static String getOrganisationUnit(final String localJusticeAreaNationalCourtCode, final String courtHouseName) {
+        try {
+            return IOUtils.toString(ReferenceDataStub.class.getResourceAsStream("/stub-data/referencedata.query.organisationunits.json"))
+                    .replace("$(courtHouseName)", courtHouseName)
+                    .replace("$(localJusticeAreaNationalCourtCode)", localJusticeAreaNationalCourtCode);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
 }

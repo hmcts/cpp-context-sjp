@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-event</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>0.0.54-ATCM-SNAPSHOT</version>
+        <version>0.0.55-ATCM-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -142,6 +142,12 @@
                                 <artifactId>*</artifactId>
                             </exclusion>
                         </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.scheduling</groupId>
+                        <artifactId>scheduling-command-api</artifactId>
+                        <version>${scheduling.version}</version>
+                        <classifier>raml</classifier>
                     </dependency>
                 </dependencies>
                 <configuration>

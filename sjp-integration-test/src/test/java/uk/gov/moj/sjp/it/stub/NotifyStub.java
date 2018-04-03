@@ -15,7 +15,7 @@ import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
 public class NotifyStub {
 
-    public static final String COMMAND_URL = "/notificationnotify-command-api/command/api/rest/notificationnotify/notifications/";
+    public static final String COMMAND_URL = "/notificationnotify-service/command/api/rest/notificationnotify/notifications/";
     public static final String COMMAND_MEDIA_TYPE = "application/vnd.notificationnotify.email+json";
 
     public static void stubNotifications() {

@@ -69,7 +69,7 @@ public class CaseAssignmentHandlerTest {
                 .withPayloadOf(caseAssignmentType.toString(), "caseAssignmentType")
                 .build();
 
-        final CaseAssigned caseAssignmentCreated = new CaseAssigned(caseId, null, assigneeId, caseAssignmentType);
+        final CaseAssigned caseAssignmentCreated = new CaseAssigned(caseId, assigneeId, caseAssignmentType);
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(caseAggregate.caseAssignmentCreated(caseId, assigneeId, caseAssignmentType)).thenReturn(Stream.of(caseAssignmentCreated));

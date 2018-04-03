@@ -23,7 +23,7 @@ import javax.json.JsonObjectBuilder;
 
 public class AssignmentStub {
 
-    private static final String ASSIGNMENTS_QUERY_URL = "/assignment-query-api/query/api/rest/assignment/assignments";
+    private static final String ASSIGNMENTS_QUERY_URL = "/assignment-service/query/api/rest/assignment/assignments";
     private static final String ASSIGNMENTS_QUERY_MEDIA_TYPE = "application/vnd.assignment.query.assignments+json";
 
     public static void stubGetEmptyAssignmentsByDomainObjectId(final UUID caseId) {

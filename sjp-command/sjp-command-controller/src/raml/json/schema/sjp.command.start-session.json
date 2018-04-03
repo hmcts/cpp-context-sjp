@@ -1,25 +1,5 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "properties": {
-    "sessionId": {
-      "$ref": "#/definitions/uuid"
-    },
-    "magistrate": {
-      "type": "string"
-    },
-    "courtCode": {
-      "type": "string"
-    }
-  },
-  "required": [
-    "sessionId",
-    "courtCode"
-  ],
-  "definitions": {
-    "uuid": {
-      "type": "string",
-      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-    }
-  }
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.start-session.json",
+  "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/commands/sjp.start-session.json"
 }

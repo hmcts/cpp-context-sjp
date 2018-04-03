@@ -101,7 +101,7 @@ public class AssignmentHandlerTest {
                 )
                 .build());
 
-        final CaseAssigned caseAssigned = new CaseAssigned(assignmentCandidate2Id, sessionId, assigneeId, MAGISTRATE_DECISION);
+        final CaseAssigned caseAssigned = new CaseAssigned(assignmentCandidate2Id, assigneeId, MAGISTRATE_DECISION);
 
         when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
         when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);
@@ -117,7 +117,7 @@ public class AssignmentHandlerTest {
         when(eventSource.getStreamById(assignmentCandidate2Id)).thenReturn(case2EventStream);
         when(case1EventStream.getCurrentVersion()).thenReturn(assignmentCandidate1Version + 1);
         when(case2EventStream.getCurrentVersion()).thenReturn(assignmentCandidate2Version);
-        when(caseAggregate2.assignCase(sessionId, assigneeId, MAGISTRATE_DECISION)).thenReturn(Stream.of(caseAssigned));
+        when(caseAggregate2.assignCase(assigneeId, MAGISTRATE_DECISION)).thenReturn(Stream.of(caseAssigned));
 
         assignmentHandler.assignCase(assignCaseCommand);
 
@@ -132,7 +132,6 @@ public class AssignmentHandlerTest {
                                         .withName(CASE_ASSIGNED_EVENT),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(assignmentCandidate2Id.toString())),
-                                        withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                                         withJsonPath("$.assigneeId", equalTo(assigneeId.toString())),
                                         withJsonPath("$.caseAssignmentType", equalTo(MAGISTRATE_DECISION.toString()))
                                 )))

@@ -178,3 +178,11 @@ rule "sjp - Query - API - Get cases that are pending submission of dates-to-avoi
     $outcome.setSuccess(true);
 end
 
+rule "sjp - Query - API - Get session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.session");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQuerySessionGroups()))
+  then
+    $outcome.setSuccess(true);
+end

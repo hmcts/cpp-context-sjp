@@ -154,3 +154,11 @@ rule "sjp.query.pending-dates-to-avoid"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp.query.session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.session");
+  then
+    $outcome.setSuccess(true);
+end

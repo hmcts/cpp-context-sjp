@@ -2,15 +2,15 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "magistrate": {
+    "courtHouseOUCode": {
       "type": "string"
     },
-    "courtCode": {
+    "magistrate": {
       "type": "string"
     }
   },
   "required": [
-    "courtCode"
+    "courtHouseOUCode"
   ],
   "additionalProperties": false
 }

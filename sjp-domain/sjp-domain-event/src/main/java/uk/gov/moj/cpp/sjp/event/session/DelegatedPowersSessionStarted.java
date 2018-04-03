@@ -14,12 +14,13 @@ public class DelegatedPowersSessionStarted extends SessionStarted {
     @JsonCreator
     public DelegatedPowersSessionStarted(
             @JsonProperty("sessionId") UUID sessionId,
-            @JsonProperty("legalAdviserId") UUID legalAdviserId,
-            @JsonProperty("courtCode") String courtCode,
+            @JsonProperty("userId") UUID userId,
+            @JsonProperty("courtHouseName") String courtHouseName,
+            @JsonProperty("localJusticeAreaNationalCourtCode") String localJusticeAreaNationalCourtCode,
             @JsonProperty("startedAt") ZonedDateTime startedAt
 
     ) {
-        super(sessionId, legalAdviserId, courtCode, startedAt);
+        super(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
     }
 
 }

@@ -7,11 +7,20 @@ import uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants;
 
 global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
 
-rule "Command - Rule for starting session"
+rule "Command - Rule for start session"
   when
     $outcome: Outcome();
     $action: Action(name == "sjp.start-session");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getStartSessionGroups()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for end session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.end-session");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getEndSessionGroups()));
   then
     $outcome.setSuccess(true);
 end

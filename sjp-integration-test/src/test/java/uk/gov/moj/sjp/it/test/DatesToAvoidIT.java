@@ -3,29 +3,31 @@ package uk.gov.moj.sjp.it.test;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
-import static uk.gov.moj.sjp.it.pollingquery.PendingDatesToAvoidPoller.*;
+import static uk.gov.moj.sjp.it.pollingquery.PendingDatesToAvoidPoller.pollUntilPendingDatesToAvoidIsOk;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
-import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
 import uk.gov.moj.sjp.it.helper.CompleteCaseHelper;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
+import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -33,14 +35,14 @@ import javax.json.JsonObjectBuilder;
 
 import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class DatesToAvoidIT extends BaseIntegrationTest {
 
     static final String PLEA_NOT_GUILTY = "NOT_GUILTY";
-    private static final String LONDON_COURT = "2572";
+    private static final String LONDON_COURT_HOUSE_OU_CODE = "B01GU";
+    private static final String LONDON_COURT_HOUSE_LJA_NATIONAL_COURT_CODE = "2577";
 
     private UUID tflUserId;
     private UUID tvlUserId;
@@ -48,7 +50,6 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     private CreateCase.CreateCasePayloadBuilder tvlCaseBuilder;
     private int tflInitialPendingDatesToAvoidCount = 0;
     private int tvlInitialPendingDatesToAvoidCount = 0;
-    private SessionHelper sessionHelper;
 
     @Before
     public void setUp() {
@@ -65,7 +66,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         tflInitialPendingDatesToAvoidCount = pollForPendingDatesToAvoidCount(tflUserId);
         tvlInitialPendingDatesToAvoidCount = pollForPendingDatesToAvoidCount(tvlUserId);
 
-        sessionHelper = new SessionHelper();
+        ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_COURT_HOUSE_LJA_NATIONAL_COURT_CODE);
     }
 
     private CreateCase.CreateCasePayloadBuilder createCase(ProsecutingAuthority prosecutingAuthority, int dayOfMonth) {
@@ -78,11 +79,6 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
 
         return createCasePayloadBuilder;
-    }
-
-    @After
-    public void close() throws Exception {
-        sessionHelper.close();
     }
 
     @Test
@@ -105,8 +101,12 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
             updatePleaToNotGuilty(updatePleaHelper);
             assertThatDatesToAvoidIsPendingSubmissionForCase(tflUserId, tflCaseBuilder.getId());
 
+            UUID sessionId = randomUUID();
+            UUID userId = randomUUID();
+
             //checks that dates-to-avoid NOT pending submission when case in session
-            sessionHelper.startSession(randomUUID(), randomUUID(), LONDON_COURT, Optional.empty());
+            SessionHelper.startSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, DELEGATED_POWERS);
+            AssignmentHelper.requestCaseAssignment(sessionId, userId, LONDON_COURT_HOUSE_LJA_NATIONAL_COURT_CODE, DELEGATED_POWERS);
             assertThatNumberOfCasesPendingDatesToAvoidIsAccurate(tflUserId, tflInitialPendingDatesToAvoidCount);
         }
     }

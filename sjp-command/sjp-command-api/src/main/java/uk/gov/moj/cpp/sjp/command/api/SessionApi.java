@@ -7,11 +7,21 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjects;
+import uk.gov.moj.cpp.sjp.command.api.service.ReferenceDataService;
+import uk.gov.moj.cpp.sjp.domain.SessionCourt;
 
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.ws.rs.BadRequestException;
 
 @ServiceComponent(COMMAND_API)
 public class SessionApi {
+
+    @Inject
+    private ReferenceDataService referenceDataService;
 
     @Inject
     private Enveloper enveloper;
@@ -20,7 +30,27 @@ public class SessionApi {
     private Sender sender;
 
     @Handles("sjp.start-session")
-    public void startSession(final JsonEnvelope envelope) {
-        sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.start-session").apply(envelope.payloadAsJsonObject()));
+    public void startSession(final JsonEnvelope startSessionCommand) {
+
+        final JsonObject commandPayload = startSessionCommand.payloadAsJsonObject();
+        final String courtHouseOUCode = commandPayload.getString("courtHouseOUCode");
+
+        final SessionCourt sessionCourt = referenceDataService.getCourtByCourtHouseOUCode(courtHouseOUCode, startSessionCommand)
+                .orElseThrow(() -> new BadRequestException(String.format("Court house with ou code %s not found", courtHouseOUCode)));
+
+        final JsonObjectBuilder startSessionBuilder = Json.createObjectBuilder()
+                .add("sessionId", commandPayload.getString("sessionId"))
+                .add("courtHouseName", sessionCourt.getCourtHouseName())
+                .add("localJusticeAreaNationalCourtCode", sessionCourt.getLocalJusticeAreaNationalCourtCode());
+
+        JsonObjects.getString(commandPayload, "magistrate")
+                .ifPresent(magistrate -> startSessionBuilder.add("magistrate", magistrate));
+
+        sender.send(enveloper.withMetadataFrom(startSessionCommand, "sjp.command.start-session").apply(startSessionBuilder.build()));
+    }
+
+    @Handles("sjp.end-session")
+    public void endSession(final JsonEnvelope endSessionCommand) {
+        sender.send(enveloper.withMetadataFrom(endSessionCommand, "sjp.command.end-session").apply(endSessionCommand.payloadAsJsonObject()));
     }
 }

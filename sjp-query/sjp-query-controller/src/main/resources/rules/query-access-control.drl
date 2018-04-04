@@ -146,3 +146,11 @@ rule "sjp.query.defendants-online-plea"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp.query.pending-dates-to-avoid"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.pending-dates-to-avoid");
+  then
+    $outcome.setSuccess(true);
+end

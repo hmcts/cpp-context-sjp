@@ -26,6 +26,7 @@ import uk.gov.moj.cpp.sjp.event.TrialRequested;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -58,29 +59,49 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         assertThat("Has PleaUpdated event", events, hasItem(isA(PleaUpdated.class)));
     }
 
-    private void shouldUpdatePlea(final String plea, final String interpreterLanguage, final Class expectedInterpreterEvent) {
+    private void shouldUpdatePlea(final String plea, final String interpreterLanguage, final Class expectedInterpreterEvent,
+                                  final boolean trialRequestedEventExpected, final boolean trialRequestCancelledEventExpected) {
         //when
         final UpdatePlea updatePlea = new UpdatePlea(caseId, offenceId, plea, true, interpreterLanguage);
         final Stream<Object> eventStream = caseAggregate.updatePlea(updatePlea, now);
 
         //then
         final List<Object> events = asList(eventStream.toArray());
-        assertThat(events.size(), is(expectedInterpreterEvent == null ? 1 : 2));
-        final PleaUpdated pleaUpdated = (PleaUpdated)events.get(0);
+        if (trialRequestedEventExpected || trialRequestCancelledEventExpected) {
+            assertThat(events.size(), is(expectedInterpreterEvent == null ? 2 : 3));
+        }
+        else {
+            assertThat(events.size(), is(expectedInterpreterEvent == null ? 1 : 2));
+        }
+        PleaUpdated pleaUpdated = (PleaUpdated)events.get(0);
         assertThat(pleaUpdated.getCaseId(), equalTo(caseId.toString()));
         assertThat(pleaUpdated.getOffenceId(), equalTo(offenceId.toString()));
         assertThat(pleaUpdated.getPlea(), equalTo(plea));
         if (expectedInterpreterEvent == InterpreterUpdatedForDefendant.class) {
-            final InterpreterUpdatedForDefendant interpreterUpdated = (InterpreterUpdatedForDefendant)events.get(1);
+            final InterpreterUpdatedForDefendant interpreterUpdated = findInterpreterUpdatedForDefendantEvent(events).get();
             assertThat(interpreterUpdated.getCaseId(), is(caseId));
             assertThat(interpreterUpdated.getDefendantId(), isA(UUID.class));
             assertThat(interpreterUpdated.getInterpreter().getLanguage(), equalTo(interpreterLanguage));
         }
         else if (expectedInterpreterEvent == InterpreterCancelledForDefendant.class) {
-            final InterpreterCancelledForDefendant interpreterCancelled = (InterpreterCancelledForDefendant)events.get(1);
+            final InterpreterCancelledForDefendant interpreterCancelled = findInterpreterCancelledForDefendantEvent(events).get();
             assertThat(interpreterCancelled.getCaseId(), is(caseId));
             assertThat(interpreterCancelled.getDefendantId(), isA(UUID.class));
         }
+    }
+
+    private Optional<InterpreterUpdatedForDefendant> findInterpreterUpdatedForDefendantEvent(final List<Object> events) {
+        return events.stream()
+                .filter(event -> event instanceof InterpreterUpdatedForDefendant)
+                .map(event -> (InterpreterUpdatedForDefendant) event)
+                .findFirst();
+    }
+
+    private Optional<InterpreterCancelledForDefendant> findInterpreterCancelledForDefendantEvent(final List<Object> events) {
+        return events.stream()
+                .filter(event -> event instanceof InterpreterCancelledForDefendant)
+                .map(event -> (InterpreterCancelledForDefendant) event)
+                .findFirst();
     }
 
     private void shouldCancelPlea(final boolean cancelInterpreter) {
@@ -107,28 +128,28 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         final String interpreterLanguage2 = "Welsh";
 
         // add plea
-        shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), null, null);
+        shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), null, null, false, false);
 
         // add interpreter
-        shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), interpreterLanguage1, InterpreterUpdatedForDefendant.class);
+        shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), interpreterLanguage1, InterpreterUpdatedForDefendant.class, false, false);
 
         // update just plea
-        shouldUpdatePlea(Plea.Type.NOT_GUILTY.name(), interpreterLanguage1, null);
+        shouldUpdatePlea(Plea.Type.NOT_GUILTY.name(), interpreterLanguage1, null, true, false);
 
         // update just interpreter
-        shouldUpdatePlea(Plea.Type.NOT_GUILTY.name(), interpreterLanguage2, InterpreterUpdatedForDefendant.class);
+        shouldUpdatePlea(Plea.Type.NOT_GUILTY.name(), interpreterLanguage2, InterpreterUpdatedForDefendant.class, false, false);
 
         // cancel the interpreter
-        shouldUpdatePlea(Plea.Type.NOT_GUILTY.name(), null, InterpreterCancelledForDefendant.class);
+        shouldUpdatePlea(Plea.Type.NOT_GUILTY.name(), null, InterpreterCancelledForDefendant.class, false, false);
 
         // update plea and interpreter
-        shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), interpreterLanguage1, InterpreterUpdatedForDefendant.class);
+        shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), interpreterLanguage1, InterpreterUpdatedForDefendant.class, false, true);
 
         // cancel plea (and interpreter)
         shouldCancelPlea(true);
 
         // add plea
-        shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), null, null);
+        shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), null, null, false, false);
 
         // cancel plea
         shouldCancelPlea(false);
@@ -228,7 +249,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         final Stream<Object> eventStream = pleadByPost(PleaType.GUILTY);
 
         //then
-        assertHasPleaUpdatedEventOnly(eventStream);
+        assertHasBothPleaUpdatedAndTrialCancelledEvents(eventStream);
     }
 
     @Test
@@ -252,7 +273,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         Stream<Object> eventStream = pleadByPost(PleaType.NOT_GUILTY);
 
         //then
-        assertHasPleaUpdatedEventOnly(eventStream);
+        assertHasBothPleaUpdatedAndTrialRequestedEvents(eventStream);
     }
 
     @Test
@@ -264,7 +285,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         Stream<Object> eventStream = pleadByPost(PleaType.NOT_GUILTY);
 
         //then
-        assertHasPleaUpdatedEventOnly(eventStream);
+        assertHasBothPleaUpdatedAndTrialRequestedEvents(eventStream);
     }
 
     @Test
@@ -324,7 +345,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         Stream<Object> eventStream = pleadByPost(PleaType.GUILTY_REQUEST_HEARING);
 
         //then
-        assertHasPleaUpdatedEventOnly(eventStream);
+        assertHasBothPleaUpdatedAndTrialCancelledEvents(eventStream);
     }
 
     @Test
@@ -376,7 +397,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         Stream<Object> eventStream = caseAggregate.cancelPlea(cancelPlea, now);
 
         //then
-        assertHasPleaCancelledEventOnly(eventStream);
+        assertHasBothPleaCancelledAndTrialCancelledEvents(eventStream);
     }
 
     @Test
@@ -385,7 +406,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         pleadNotGuiltyOnline(PleaType.NOT_GUILTY);
 
         //when toggle plea
-        toggleTrialEventsByUpdatingAndCancellingPleasRepeatedly(true);
+        toggleTrialEventsByUpdatingAndCancellingPleasRepeatedly();
     }
 
     @Test
@@ -394,7 +415,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         pleadByPost(PleaType.NOT_GUILTY);
 
         //when toggle plea
-        toggleTrialEventsByUpdatingAndCancellingPleasRepeatedly(false);
+        toggleTrialEventsByUpdatingAndCancellingPleasRepeatedly();
     }
 
     private PleadOnline pleadNotGuiltyOnline(PleaType pleaType) {
@@ -446,7 +467,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         assertThat("Has PleaUpdated event", events, hasItem(isA(PleaUpdated.class)));
         assertThat("Has TrialRequestCancelled event", events, hasItem(isA(TrialRequestCancelled.class)));
 
-        TrialRequestCancelled trialRequestCancelled = (TrialRequestCancelled) events.get(0);
+        TrialRequestCancelled trialRequestCancelled = (TrialRequestCancelled) events.get(1);
         assertThat(trialRequestCancelled.getCaseId(), equalTo(caseId));
     }
 
@@ -456,7 +477,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         assertThat("Has PleaCancelled event", events, hasItem(isA(PleaCancelled.class)));
         assertThat("Has TrialRequestCancelled event", events, hasItem(isA(TrialRequestCancelled.class)));
 
-        TrialRequestCancelled trialRequestCancelled = (TrialRequestCancelled) events.get(0);
+        TrialRequestCancelled trialRequestCancelled = (TrialRequestCancelled) events.get(1);
         assertThat(trialRequestCancelled.getCaseId(), equalTo(caseId));
     }
 
@@ -466,66 +487,36 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         assertThat("Has PleaUpdated event", events, hasItem(isA(PleaUpdated.class)));
         assertThat("Has TrialRequested event", events, hasItem(isA(TrialRequested.class)));
 
-        TrialRequested trialRequested = (TrialRequested) events.get(0);
+        TrialRequested trialRequested = (TrialRequested) events.get(1);
         assertThat(trialRequested.getUnavailability(), equalTo(trialRequested.getUnavailability()));
         assertThat(trialRequested.getWitnessDetails(), equalTo(trialRequested.getWitnessDetails()));
         assertThat(trialRequested.getWitnessDispute(), equalTo(trialRequested.getWitnessDispute()));
     }
 
-    private void toggleTrialEventsByUpdatingAndCancellingPleasRepeatedly(boolean originalPleaSubmittedOnline) {
+    private void toggleTrialEventsByUpdatingAndCancellingPleasRepeatedly() {
         //then update to GUILTY
         Stream<Object> eventStream = pleadByPost(PleaType.GUILTY);
-        if (originalPleaSubmittedOnline) {
-            assertHasBothPleaUpdatedAndTrialCancelledEvents(eventStream);
-        }
-        else {
-            assertHasPleaUpdatedEventOnly(eventStream);
-        }
+        assertHasBothPleaUpdatedAndTrialCancelledEvents(eventStream);
 
         //then update to NOT_GUILTY
         eventStream = pleadByPost(PleaType.NOT_GUILTY);
-        if (originalPleaSubmittedOnline) {
-            assertHasBothPleaUpdatedAndTrialRequestedEvents(eventStream);
-        }
-        else {
-            assertHasPleaUpdatedEventOnly(eventStream);
-        }
+        assertHasBothPleaUpdatedAndTrialRequestedEvents(eventStream);
 
         //then update to GUILTY
         eventStream = pleadByPost(PleaType.GUILTY_REQUEST_HEARING);
-        if (originalPleaSubmittedOnline) {
-            assertHasBothPleaUpdatedAndTrialCancelledEvents(eventStream);
-        }
-        else {
-            assertHasPleaUpdatedEventOnly(eventStream);
-        }
+        assertHasBothPleaUpdatedAndTrialCancelledEvents(eventStream);
 
         //then update to NOT_GUILTY
         eventStream = pleadByPost(PleaType.NOT_GUILTY);
-        if (originalPleaSubmittedOnline) {
-            assertHasBothPleaUpdatedAndTrialRequestedEvents(eventStream);
-        }
-        else {
-            assertHasPleaUpdatedEventOnly(eventStream);
-        }
+        assertHasBothPleaUpdatedAndTrialRequestedEvents(eventStream);
 
         //then cancels plea
         final CancelPlea cancelPlea = new CancelPlea(caseId, offenceId);
         eventStream = caseAggregate.cancelPlea(cancelPlea, now);
-        if (originalPleaSubmittedOnline) {
-            assertHasBothPleaCancelledAndTrialCancelledEvents(eventStream);
-        }
-        else {
-            assertHasPleaCancelledEventOnly(eventStream);
-        }
+        assertHasBothPleaCancelledAndTrialCancelledEvents(eventStream);
 
         //then update to NOT_GUILTY
         eventStream = pleadByPost(PleaType.NOT_GUILTY);
-        if (originalPleaSubmittedOnline) {
-            assertHasBothPleaUpdatedAndTrialRequestedEvents(eventStream);
-        }
-        else {
-            assertHasPleaUpdatedEventOnly(eventStream);
-        }
+        assertHasBothPleaUpdatedAndTrialRequestedEvents(eventStream);
     }
 }

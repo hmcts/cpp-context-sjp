@@ -169,3 +169,12 @@ rule "sjp - Query - API - Get defendant's online plea"
     $outcome.setSuccess(true);
 end
 
+rule "sjp - Query - API - Get cases that are pending submission of dates-to-avoid for the case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.pending-dates-to-avoid");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryPendingDatesToAvoidActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+

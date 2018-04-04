@@ -130,6 +130,9 @@ public class CaseDetail implements Serializable {
     @Column(name = "online_plea_received")
     private Boolean onlinePleaReceived = Boolean.FALSE;
 
+    @Column(name = "dates_to_avoid")
+    private String datesToAvoid;
+
     public CaseDetail() {
         defendant.setCaseDetail(this);
     }
@@ -323,6 +326,14 @@ public class CaseDetail implements Serializable {
 
     public void setCaseSearchResults(Set<CaseSearchResult> caseSearchResults) {
         this.caseSearchResults = caseSearchResults;
+    }
+
+    public String getDatesToAvoid() {
+        return datesToAvoid;
+    }
+
+    public void setDatesToAvoid(final String datesToAvoid) {
+        this.datesToAvoid = datesToAvoid;
     }
 
     @Override

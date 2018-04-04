@@ -14,7 +14,10 @@ import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.PendingDatesToAvoidRepository;
+import uk.gov.moj.cpp.sjp.query.view.response.DatesToAvoidsView;
 import uk.gov.moj.cpp.sjp.query.view.service.AssignmentService;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.EmployerService;
@@ -66,6 +69,9 @@ public class SjpQueryView {
 
     @Inject
     private OnlinePleaRepository.FinancialMeansOnlinePleaRepository onlinePleaRepository;
+
+    @Inject
+    private PendingDatesToAvoidRepository pendingDatesToAvoidRepository;
 
     @Inject
     private Enveloper enveloper;
@@ -243,6 +249,13 @@ public class SjpQueryView {
                 .build();
 
         return enveloper.withMetadataFrom(envelope, "sjp.query.assignment-candidates").apply(casesReadyForDecision);
+    }
+
+    @Handles("sjp.query.pending-dates-to-avoid")
+    public JsonEnvelope findPendingDatesToAvoid(final JsonEnvelope envelope) {
+        final List<PendingDatesToAvoid> pendingDatesToAvoidList = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid();
+        return enveloper.withMetadataFrom(envelope, "sjp.pending-dates-to-avoid")
+                .apply(new DatesToAvoidsView(pendingDatesToAvoidList));
     }
 
 }

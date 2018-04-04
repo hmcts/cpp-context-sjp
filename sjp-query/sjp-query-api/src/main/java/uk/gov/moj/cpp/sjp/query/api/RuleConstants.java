@@ -89,4 +89,8 @@ public final class RuleConstants {
     public static List<String> getQueryDefendantsOnlinePleaGroups() {
         return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
+
+    public static List<String> getQueryPendingDatesToAvoidActionGroups() {
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+    }
 }

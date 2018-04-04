@@ -29,6 +29,10 @@ public class TrialRequested {
         this.updatedDate = updatedDate;
     }
 
+    public TrialRequested(final UUID caseId, final ZonedDateTime updatedDate) {
+        this(caseId, null, null, null, updatedDate);
+    }
+
     public UUID getCaseId() {
         return caseId;
     }

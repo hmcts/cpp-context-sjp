@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.query.view;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
@@ -51,7 +52,9 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
+import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.PendingDatesToAvoidRepository;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
@@ -63,11 +66,15 @@ import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
@@ -102,6 +109,9 @@ public class SjpQueryViewTest {
 
     @Mock
     private OnlinePleaRepository.FinancialMeansOnlinePleaRepository onlinePleaRepository;
+
+    @Mock
+    private PendingDatesToAvoidRepository pendingDatesToAvoidRepository;
 
     @Mock
     private EmployerService employerService;
@@ -406,6 +416,42 @@ public class SjpQueryViewTest {
         assertThat(response, jsonEnvelope(metadata().withName("sjp.query.oldest-case-age"),
                 payload().isJson(withJsonPath("$.oldestCaseAge", equalTo(oldestCaseAge))
                 )).thatMatchesSchema());
+    }
+
+    @Test
+    public void shouldFindPendingDatesToAvoid() {
+        final UUID caseId = randomUUID();
+        JsonEnvelope response = mockAndVerifyPendingDatesToAvoid(caseId, UUID.randomUUID());
+        assertThat(response, jsonEnvelope(metadata().withName("sjp.pending-dates-to-avoid"), payload().isJson(allOf(
+                withJsonPath("$.pendingDatesToAvoid[0].caseId", equalTo(caseId.toString())),
+                withJsonPath("$.pendingDatesToAvoidCount", equalTo(2))
+        ))));
+    }
+
+    @Test
+    public void shouldNotFindPendingDatesToAvoid() {
+        final UUID caseId = randomUUID();
+        JsonEnvelope response = mockAndVerifyPendingDatesToAvoid();
+        assertThat(response, jsonEnvelope(metadata().withName("sjp.pending-dates-to-avoid"), payload().isJson(
+                withJsonPath("$.pendingDatesToAvoidCount", equalTo(0))
+        )));
+    }
+
+    private JsonEnvelope mockAndVerifyPendingDatesToAvoid(UUID... caseIds) {
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataWithRandomUUID("sjp.query.pending-dates-to-avoid"))
+                .build();
+        List<PendingDatesToAvoid> pendingDatesToAvoidList = Stream.of(caseIds).collect(Collectors.toList()).stream()
+                .map(id -> new PendingDatesToAvoid(id))
+                .collect(Collectors.toList());
+
+        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid()).thenReturn(pendingDatesToAvoidList);
+
+        final JsonEnvelope response = sjpQueryView.findPendingDatesToAvoid(queryEnvelope);
+
+        verify(pendingDatesToAvoidRepository).findCasesPendingDatesToAvoid();
+
+        return response;
     }
 
     @Test

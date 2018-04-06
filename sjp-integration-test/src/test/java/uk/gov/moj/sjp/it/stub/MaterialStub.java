@@ -17,11 +17,11 @@ import java.util.UUID;
 
 public class MaterialStub {
 
-    public static final String QUERY_URL = "/material-command-api/command/api/rest/material/material";
+    public static final String QUERY_URL = "/material-service/command/api/rest/material/material";
     public static final String QUERY_MEDIA_TYPE = "application/vnd.material.command.upload-file+json";
 
     public static void stubAddCaseMaterial() {
-        InternalEndpointMockUtils.stubPingFor("material-command-api");
+        InternalEndpointMockUtils.stubPingFor("material-service");
 
         stubFor(post(urlPathEqualTo(QUERY_URL))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)

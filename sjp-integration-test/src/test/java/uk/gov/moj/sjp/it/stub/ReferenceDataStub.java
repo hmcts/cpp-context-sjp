@@ -18,12 +18,12 @@ import javax.json.JsonObject;
 public class ReferenceDataStub {
 
     public static void stubQueryOffences(String resourceName) {
-        InternalEndpointMockUtils.stubPingFor("referencedata-query-api");
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
         final JsonObject offences = Json.createReader(ReferenceDataStub.class
                 .getResourceAsStream(resourceName))
                 .readObject();
 
-        final String urlPath = "/referencedata-query-api/query/api/rest/referencedata/offences";
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/offences";
         stubFor(get(urlPathEqualTo(urlPath))
                 .withQueryParam("cjsoffencecode", matching(".*"))
                 .willReturn(aResponse().withStatus(SC_OK)

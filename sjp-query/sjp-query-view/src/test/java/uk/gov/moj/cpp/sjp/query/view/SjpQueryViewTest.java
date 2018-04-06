@@ -54,13 +54,14 @@ import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.PendingDatesToAvoidRepository;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
+import uk.gov.moj.cpp.sjp.query.view.response.DatesToAvoidsView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantsView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
+import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
 import uk.gov.moj.cpp.sjp.query.view.service.EmployerService;
 import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
 
@@ -111,7 +112,7 @@ public class SjpQueryViewTest {
     private OnlinePleaRepository.FinancialMeansOnlinePleaRepository onlinePleaRepository;
 
     @Mock
-    private PendingDatesToAvoidRepository pendingDatesToAvoidRepository;
+    private DatesToAvoidService datesToAvoidService;
 
     @Mock
     private EmployerService employerService;
@@ -445,11 +446,11 @@ public class SjpQueryViewTest {
                 .map(id -> new PendingDatesToAvoid(id))
                 .collect(Collectors.toList());
 
-        when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid()).thenReturn(pendingDatesToAvoidList);
+        when(datesToAvoidService.findCasesPendingDatesToAvoid(queryEnvelope)).thenReturn(new DatesToAvoidsView(pendingDatesToAvoidList));
 
         final JsonEnvelope response = sjpQueryView.findPendingDatesToAvoid(queryEnvelope);
 
-        verify(pendingDatesToAvoidRepository).findCasesPendingDatesToAvoid();
+        verify(datesToAvoidService).findCasesPendingDatesToAvoid(queryEnvelope);
 
         return response;
     }

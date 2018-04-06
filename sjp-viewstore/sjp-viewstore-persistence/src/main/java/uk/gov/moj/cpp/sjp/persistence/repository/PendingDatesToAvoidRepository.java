@@ -18,8 +18,9 @@ public interface PendingDatesToAvoidRepository extends EntityRepository<PendingD
 
     @Query(value = "SELECT pda FROM PendingDatesToAvoid as pda INNER JOIN pda.caseDetail as cd " +
             "WHERE cd.datesToAvoid IS NULL AND cd.assigneeId IS NULL AND cd.completed = false " +
+            "AND cd.prosecutingAuthority like :prosecutingAuthority " +
             "ORDER BY pda.pleaDate ASC")
-    List<PendingDatesToAvoid> findCasesPendingDatesToAvoid();
+    List<PendingDatesToAvoid> findCasesPendingDatesToAvoid(@QueryParam("prosecutingAuthority") String prosecutingAuthority);
 
     @Query(value = "DELETE FROM PendingDatesToAvoid WHERE caseId=:caseId")
     void removeByCaseId(@QueryParam("caseId") UUID caseId);

@@ -21,14 +21,14 @@ import org.hamcrest.Matcher;
 public class PendingDatesToAvoidPoller {
     private static final int POLLING_TIMEOUT = 20;
 
-    private static RequestParamsBuilder getDatesToAvoid() {
+    private static RequestParamsBuilder getDatesToAvoid(final String userId) {
         final String contentType = "application/vnd.sjp.query.pending-dates-to-avoid+json";
         return requestParams(getReadUrl("/cases/pending-dates-to-avoid"), contentType)
-                .withHeader(HeaderConstants.USER_ID, USER_ID);
+                .withHeader(HeaderConstants.USER_ID, userId);
     }
 
-    public static JsonPath pollUntilPendingDatesToAvoidIsOk(final Matcher<? super ReadContext> jsonPayloadMatcher) {
-        return new JsonPath(poll(getDatesToAvoid())
+    public static JsonPath pollUntilPendingDatesToAvoidIsOk(final String userId, final Matcher<? super ReadContext> jsonPayloadMatcher) {
+        return new JsonPath(poll(getDatesToAvoid(userId))
                 .timeout(POLLING_TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),

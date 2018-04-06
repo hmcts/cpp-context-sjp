@@ -12,7 +12,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>0.0.53-ATCM-SNAPSHOT</version>
+    <version>0.0.54-ATCM-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>

@@ -24,6 +24,7 @@ public class UsersGroupsStub {
     private static final String USER_GROUPS_USERS_QUERY_URL = "/usersgroups-query-api/query/api/rest/usersgroups/users/%s/groups";
     private static final String USER_GROUPS_USERS_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.groups+json";
     private static final String USER_GROUPS_USER_DETAILS_QUERY_URL = "/usersgroups-query-api/query/api/rest/usersgroups/users/%s";
+    private static final String USER_GROUPS_USER_DETAILS_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.user-details+json";
 
     public static void stubAllGroupsForUser(String userId) {
         stubPaylodForAllUsers(getPayload("stub-data/usersgroups.get-groups-by-user-with-all-groups.json"), USER_GROUPS_ALL_USERS_QUERY_URL);
@@ -31,21 +32,21 @@ public class UsersGroupsStub {
 
     public static void stubGroupForUser(String userId, String groupName) {
         stubPaylodForUserId(getPayload("stub-data/usersgroups.get-groups-by-user-with-single-group.json")
-                .replace("GROUPNAME", groupName), userId, USER_GROUPS_USERS_QUERY_URL);
+                .replace("GROUPNAME", groupName), userId, USER_GROUPS_USERS_QUERY_URL, USER_GROUPS_USERS_QUERY_MEDIA_TYPE);
     }
 
     public static void stubForUserDetails(final String userId, final String prosecutingAuthorityAccess) {
         stubPaylodForUserId(getPayload("stub-data/usersgroups.user-details-with-prosecuting-authority-access.json")
                 .replace("PROSECUTINGAUTHORITYACCESS", prosecutingAuthorityAccess), userId,
-                USER_GROUPS_USER_DETAILS_QUERY_URL);
+                USER_GROUPS_USER_DETAILS_QUERY_URL, USER_GROUPS_USERS_QUERY_MEDIA_TYPE);
     }
 
     public static void stubForUserDetails(final String userId) {
         stubPaylodForUserId(getPayload("stub-data/usersgroups.user-details-without-prosecuting-authority-access.json"), userId
-                , USER_GROUPS_USER_DETAILS_QUERY_URL);
+                , USER_GROUPS_USER_DETAILS_QUERY_URL, USER_GROUPS_USER_DETAILS_QUERY_MEDIA_TYPE);
     }
 
-    private static void stubPaylodForUserId(String responsePayload, String userId, String queryUrl) {
+    private static void stubPaylodForUserId(String responsePayload, String userId, String queryUrl, String mediaType) {
         String url = format(queryUrl, userId);
 
         stubFor(get(urlEqualTo(url))
@@ -54,7 +55,7 @@ public class UsersGroupsStub {
                         .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(responsePayload)));
 
-        waitForStubToBeReady(url, USER_GROUPS_USERS_QUERY_MEDIA_TYPE);
+        waitForStubToBeReady(url, mediaType);
     }
 
     private static void stubPaylodForAllUsers(String responsePayload, String url) {

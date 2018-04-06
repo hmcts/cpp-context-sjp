@@ -53,7 +53,7 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
     @Test
     public void addOtherDocumentAndVerifyNotVisibleForTflUser() {
         String tflUserId = UUID.randomUUID().toString();
-        UsersGroupsStub.stubGroupForUser(tflUserId, UsersGroupsStub.SJP_PROSECUTORS);
+        UsersGroupsStub.stubGroupForUser(tflUserId, UsersGroupsStub.SJP_PROSECUTORS_GROUP);
 
         String courtAdminUserId = UUID.randomUUID().toString();
         UsersGroupsStub.stubGroupForUser(courtAdminUserId, UsersGroupsStub.COURT_ADMINISTRATORS_GROUP);

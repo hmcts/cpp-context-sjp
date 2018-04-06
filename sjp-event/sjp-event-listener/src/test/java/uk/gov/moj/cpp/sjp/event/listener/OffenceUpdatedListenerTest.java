@@ -5,7 +5,6 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithDefaults;
@@ -47,7 +46,6 @@ public class OffenceUpdatedListenerTest {
 
     private UUID offenceId = UUID.randomUUID();
     private UUID caseId = UUID.randomUUID();
-    private UUID personId = UUID.randomUUID();
 
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;

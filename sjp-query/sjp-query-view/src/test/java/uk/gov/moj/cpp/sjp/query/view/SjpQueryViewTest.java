@@ -2,9 +2,9 @@ package uk.gov.moj.cpp.sjp.query.view;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -17,6 +17,7 @@ import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
@@ -64,17 +65,16 @@ import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
 import uk.gov.moj.cpp.sjp.query.view.service.EmployerService;
 import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
+import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.json.JsonObject;
@@ -104,6 +104,9 @@ public class SjpQueryViewTest {
 
     @Mock
     private CaseService caseService;
+
+    @Mock
+    private UserAndGroupsService userAndGroupsService;
 
     @Mock
     private FinancialMeansService financialMeansService;
@@ -442,9 +445,9 @@ public class SjpQueryViewTest {
         final JsonEnvelope queryEnvelope = envelope()
                 .with(metadataWithRandomUUID("sjp.query.pending-dates-to-avoid"))
                 .build();
-        List<PendingDatesToAvoid> pendingDatesToAvoidList = Stream.of(caseIds).collect(Collectors.toList()).stream()
-                .map(id -> new PendingDatesToAvoid(id))
-                .collect(Collectors.toList());
+        List<PendingDatesToAvoid> pendingDatesToAvoidList = Stream.of(caseIds).collect(toList()).stream()
+                .map(PendingDatesToAvoid::new)
+                .collect(toList());
 
         when(datesToAvoidService.findCasesPendingDatesToAvoid(queryEnvelope)).thenReturn(new DatesToAvoidsView(pendingDatesToAvoidList));
 
@@ -466,17 +469,40 @@ public class SjpQueryViewTest {
         final UUID offenceId = UUID.fromString("8a962d66-b95f-69b-b77d-9ed308c3be02");
         final OnlinePlea onlinePlea = stubOnlinePlea(caseId, defendantId, offenceId);
 
+        when(userAndGroupsService.canSeeOnlinePleaFinances(queryEnvelope)).thenReturn(true);
         when(onlinePleaRepository.findBy(caseId)).thenReturn(onlinePlea);
 
         final JsonEnvelope response = sjpQueryView.findDefendantsOnlinePlea(queryEnvelope);
 
         verify(onlinePleaRepository).findBy(caseId);
+        verify(onlinePleaRepository, never()).findOnlinePleaWithoutFinances(any());
 
         assertThat(response, jsonEnvelope(metadata().withName("sjp.query.defendants-online-plea"), payload().isJson(allOf(
                 withJsonPath("$.defendantId", equalTo(defendantId.toString())),
                 withJsonPath("$.pleaDetails.plea", equalTo(PleaType.NOT_GUILTY.name())),
                 withJsonPath("$.pleaDetails.comeToCourt", equalTo(true))
         ))));
+    }
+
+    @Test
+    public void shouldFindDefendantsOnlinePleaWithoutFinancesForProsecutor() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = UUID.fromString("4a950d66-b95f-459b-b77d-5ed308c3be02");
+        final UUID offenceId = UUID.fromString("8a962d66-b95f-69b-b77d-9ed308c3be02");
+
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataWithRandomUUID("sjp.query.defendants-online-plea"))
+                .withPayloadOf(caseId, "caseId")
+                .build();
+        final OnlinePlea onlinePlea = stubOnlinePlea(caseId, defendantId, offenceId);
+
+        when(userAndGroupsService.canSeeOnlinePleaFinances(queryEnvelope)).thenReturn(false);
+        when(onlinePleaRepository.findOnlinePleaWithoutFinances(caseId)).thenReturn(onlinePlea);
+
+        sjpQueryView.findDefendantsOnlinePlea(queryEnvelope);
+
+        verify(onlinePleaRepository, never()).findBy(any());
+        verify(onlinePleaRepository).findOnlinePleaWithoutFinances(caseId);
     }
 
     private OnlinePlea stubOnlinePlea(final UUID caseId, final UUID defendantId, final UUID offenceId) {

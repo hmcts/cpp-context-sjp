@@ -13,7 +13,6 @@ import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
-import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 

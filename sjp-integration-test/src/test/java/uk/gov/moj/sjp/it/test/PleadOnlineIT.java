@@ -3,10 +3,16 @@ package uk.gov.moj.sjp.it.test;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
 import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.collection.IsEmptyCollection.empty;
+import static org.junit.Assume.assumeThat;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
@@ -18,6 +24,11 @@ import static uk.gov.moj.sjp.it.stub.NotifyStub.stubNotifications;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.verifyNotification;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithDecision;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.COURT_ADMINISTRATORS_GROUP;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.LEGAL_ADVISERS_GROUP;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.TFL_PROSECUTORS_GROUP;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.TVL_PROSECUTORS_GROUP;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.moj.cpp.sjp.domain.PleaType;
@@ -33,14 +44,15 @@ import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
+import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 
 import java.time.LocalDate;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Set;
+import java.util.UUID;
 
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
@@ -58,6 +70,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private static final String TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__not-guilty.json";
     private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__guilty.json";
     private static final String TEMPLATE_PLEA_GUILTY_REQUEST_HEARING_PAYLOAD = "raml/json/sjp.command.plead-online__guilty_request_hearing.json";
+
+    private static final Set<String> DEFAULT_STUBBED_USER_ID = singleton(USER_ID);
 
     @Before
     public void setUp() {
@@ -108,6 +122,15 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     private void pleadOnlineAndConfirmSuccess(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper,
                                               final UpdatePleaHelper updatePleaHelper, final CaseSearchResultHelper caseSearchResultHelper) {
+        pleadOnlineAndConfirmSuccess(pleaType, pleadOnlineHelper, updatePleaHelper, caseSearchResultHelper,
+                DEFAULT_STUBBED_USER_ID, true);
+    }
+
+    private void pleadOnlineAndConfirmSuccess(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper,
+                                              final UpdatePleaHelper updatePleaHelper, final CaseSearchResultHelper caseSearchResultHelper,
+                                              final Collection<String> userIds, final boolean expectToHaveFinances) {
+        assumeThat(userIds, not(empty()));
+
         final String pleaMethod = "ONLINE";
         final String defendantId = CasePoller.pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId()).getString("defendant.id");
 
@@ -138,8 +161,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                 .verifyPersonInfo(true);
 
         //verify online-plea
-        final Matcher expectedResult = getSavedOnlinePleaPayloadContentMatcher(pleaType, pleaPayload, createCasePayloadBuilder.getId().toString(), defendantId);
-        pleadOnlineHelper.getOnlinePlea(createCasePayloadBuilder.getId().toString(), expectedResult);
+        final Matcher expectedResult = getSavedOnlinePleaPayloadContentMatcher(pleaType, pleaPayload, createCasePayloadBuilder.getId().toString(), defendantId, expectToHaveFinances);
+        userIds.forEach(userId -> pleadOnlineHelper.getOnlinePlea(createCasePayloadBuilder.getId().toString(), expectedResult, userId));
         pleadOnlineHelper.verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag( createCasePayloadBuilder.getId().toString(),true);
 
         verifyNotification("criminal@gmail.com", createCasePayloadBuilder.getUrn());
@@ -169,16 +192,31 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     @Test
     public void shouldPleadGuiltyOnline() {
-        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
-        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId())) {
-            final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
-            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(createCasePayloadBuilder.getId(),
-                    createCasePayloadBuilder.getUrn(),
-                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
-                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
-            pleadOnlineAndConfirmSuccess(PleaType.GUILTY, pleadOnlineHelper, updatePleaHelper, caseSearchResultHelper);
-        }
+        pleadGuiltyOnlineWithUserAndExpectedFinances(DEFAULT_STUBBED_USER_ID, true);
     }
+
+    @Test
+    public void shouldShowFinancesForProsecutors() {
+        verifyGroupsCanSeeDefendantFinances(true, asList(LEGAL_ADVISERS_GROUP, COURT_ADMINISTRATORS_GROUP));
+    }
+
+    @Test
+    public void shouldHideFinancesForProsecutors() {
+        verifyGroupsCanSeeDefendantFinances(false, asList(SJP_PROSECUTORS_GROUP, TFL_PROSECUTORS_GROUP, TVL_PROSECUTORS_GROUP));
+    }
+
+    private void verifyGroupsCanSeeDefendantFinances(boolean expectToHaveFinances, List<String> financeProsecutors) {
+        List<String> mockedUserId = financeProsecutors.stream()
+                .map(userGroup -> {
+                    String userId = UUID.randomUUID().toString();
+                    UsersGroupsStub.stubGroupForUser(userId, userGroup);
+
+                    return userId;
+                }).collect(toList());
+
+        pleadGuiltyOnlineWithUserAndExpectedFinances(mockedUserId, expectToHaveFinances);
+    }
+
 
     @Test
     public void shouldPleadGuiltyRequestHearingOnline() {
@@ -236,6 +274,18 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         }
     }
 
+    private void pleadGuiltyOnlineWithUserAndExpectedFinances(Collection<String> userIds, boolean expectToHaveFinances) {
+        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId())) {
+            final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(createCasePayloadBuilder.getId(),
+                    createCasePayloadBuilder.getUrn(),
+                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
+            pleadOnlineAndConfirmSuccess(PleaType.GUILTY, pleadOnlineHelper, updatePleaHelper, caseSearchResultHelper, userIds, expectToHaveFinances);
+        }
+    }
+
     private JSONObject getOnlinePleaPayload(PleaType pleaType) {
         String templateRequest = null;
         if (pleaType.equals(PleaType.NOT_GUILTY)) {
@@ -288,25 +338,24 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         ));
     }
 
-    private Matcher getSavedOnlinePleaPayloadContentMatcher(final PleaType pleaType, final JSONObject onlinePleaPayload, final String caseId, final String defendantId) {
-        List<Matcher> fieldMatchers = getCommonFieldMatchers(onlinePleaPayload, caseId, defendantId);
+    private Matcher getSavedOnlinePleaPayloadContentMatcher(final PleaType pleaType, final JSONObject onlinePleaPayload, final String caseId, final String defendantId, final boolean expectToHaveFinances) {
+        List<Matcher> fieldMatchers = getCommonFieldMatchers(onlinePleaPayload, caseId, defendantId, expectToHaveFinances);
         List<Matcher> extraMatchers;
         if (PleaType.NOT_GUILTY.equals(pleaType)) {
             extraMatchers = getNotGuiltyMatchers(onlinePleaPayload);
         } else if (PleaType.GUILTY.equals(pleaType)) {
-            extraMatchers = getGuiltyMatchers(onlinePleaPayload);
+            extraMatchers = getGuiltyMatchers(onlinePleaPayload, expectToHaveFinances);
         } else {
             extraMatchers = getGuiltyRequestHearingMatchers(onlinePleaPayload);
         }
-        fieldMatchers = Stream.of(fieldMatchers, extraMatchers)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+        fieldMatchers.addAll(extraMatchers);
+
         return isJson(allOf(
                 fieldMatchers.toArray(new Matcher[fieldMatchers.size()])
         ));
     }
 
-    private List<Matcher> getCommonFieldMatchers(final JSONObject onlinePleaPayload, final String caseId, final String defendantId) {
+    private List<Matcher> getCommonFieldMatchers(final JSONObject onlinePleaPayload, final String caseId, final String defendantId, final boolean expectToHaveFinances) {
         final JSONObject person = onlinePleaPayload.getJSONObject("personalDetails");
         final JSONObject personAddress = person.getJSONObject("address");
         final JSONObject personContactDetails = person.getJSONObject("contactDetails");
@@ -320,38 +369,11 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final JSONObject childMaintenanceOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(4);
         final JSONObject otherOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(5);
 
-        return Arrays.asList(
+        List<Matcher> matchers = new ArrayList<>(asList(
                 withJsonPath("$.caseId", equalTo(caseId)),
                 withJsonPath("$.defendantId", equalTo(defendantId)),
 
-                //financial-means
-                withJsonPath("$.employment.incomePaymentFrequency", equalTo(financialMeans.getJSONObject("income").getString("frequency"))),
-                withJsonPath("$.employment.incomePaymentAmount", equalTo(financialMeans.getJSONObject("income").getDouble("amount"))),
-                withJsonPath("$.employment.benefitsClaimed", equalTo(financialMeans.getJSONObject("benefits").getBoolean("claimed"))),
-                withJsonPath("$.employment.benefitsType", equalTo(financialMeans.getJSONObject("benefits").getString("type"))),
-                withJsonPath("$.employment.benefitsDeductPenaltyPreference", equalTo(financialMeans.getJSONObject("benefits").getBoolean("deductPenaltyPreference"))),
-
-                //employer
-                withJsonPath("$.employer.name", equalTo(employer.getString("name"))),
-                withJsonPath("$.employer.employeeReference", equalTo(employer.getString("employeeReference"))),
-                withJsonPath("$.employer.phone", equalTo(employer.getString("phone"))),
-                withJsonPath("$.employer.address.address1", equalTo(employerAddress.getString("address1"))),
-                withJsonPath("$.employer.address.address2", equalTo(employerAddress.getString("address2"))),
-                withJsonPath("$.employer.address.address3", equalTo(employerAddress.getString("address3"))),
-                withJsonPath("$.employer.address.address4", equalTo(employerAddress.getString("address4"))),
-                withJsonPath("$.employer.address.postcode", equalTo(employerAddress.getString("postcode"))),
-
-                //outgoings
-                withJsonPath("$.outgoings.accommodationAmount", equalTo(accommodationOutgoing.getDouble("amount"))),
-                withJsonPath("$.outgoings.councilTaxAmount", equalTo(councilTaxOutgoing.getDouble("amount"))),
-                withJsonPath("$.outgoings.householdBillsAmount", equalTo(householdBillsOutgoing.getDouble("amount"))),
-                withJsonPath("$.outgoings.travelExpensesAmount", equalTo(travelExpensesOutgoing.getDouble("amount"))),
-                withJsonPath("$.outgoings.childMaintenanceAmount", equalTo(childMaintenanceOutgoing.getDouble("amount"))),
-                withJsonPath("$.outgoings.otherDescription", equalTo(otherOutgoing.getString("description"))),
-                withJsonPath("$.outgoings.otherAmount", equalTo(otherOutgoing.getDouble("amount"))),
-                withJsonPath("$.outgoings.monthlyAmount", equalTo(1772.3)),
-
-                //person
+                //personal details
                 withJsonPath("$.personalDetails.firstName", equalTo(person.getString("firstName"))),
                 withJsonPath("$.personalDetails.lastName", equalTo(person.getString("lastName"))),
                 withJsonPath("$.personalDetails.homeTelephone", equalTo(personContactDetails.getString("home"))),
@@ -364,12 +386,51 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                 withJsonPath("$.personalDetails.address.address3", equalTo(personAddress.getString("address3"))),
                 withJsonPath("$.personalDetails.address.address4", equalTo(personAddress.getString("address4"))),
                 withJsonPath("$.personalDetails.address.postcode", equalTo(personAddress.getString("postcode")))
-        );
+        ));
+
+        if(expectToHaveFinances) {
+            matchers.addAll(asList(
+                    //financial-means
+                    withJsonPath("$.employment.incomePaymentFrequency", equalTo(financialMeans.getJSONObject("income").getString("frequency"))),
+                    withJsonPath("$.employment.incomePaymentAmount", equalTo(financialMeans.getJSONObject("income").getDouble("amount"))),
+                    withJsonPath("$.employment.benefitsClaimed", equalTo(financialMeans.getJSONObject("benefits").getBoolean("claimed"))),
+                    withJsonPath("$.employment.benefitsType", equalTo(financialMeans.getJSONObject("benefits").getString("type"))),
+                    withJsonPath("$.employment.benefitsDeductPenaltyPreference", equalTo(financialMeans.getJSONObject("benefits").getBoolean("deductPenaltyPreference"))),
+
+                    //employer
+                    withJsonPath("$.employer.name", equalTo(employer.getString("name"))),
+                    withJsonPath("$.employer.employeeReference", equalTo(employer.getString("employeeReference"))),
+                    withJsonPath("$.employer.phone", equalTo(employer.getString("phone"))),
+                    withJsonPath("$.employer.address.address1", equalTo(employerAddress.getString("address1"))),
+                    withJsonPath("$.employer.address.address2", equalTo(employerAddress.getString("address2"))),
+                    withJsonPath("$.employer.address.address3", equalTo(employerAddress.getString("address3"))),
+                    withJsonPath("$.employer.address.address4", equalTo(employerAddress.getString("address4"))),
+                    withJsonPath("$.employer.address.postcode", equalTo(employerAddress.getString("postcode"))),
+
+                    //outgoings
+                    withJsonPath("$.outgoings.accommodationAmount", equalTo(accommodationOutgoing.getDouble("amount"))),
+                    withJsonPath("$.outgoings.councilTaxAmount", equalTo(councilTaxOutgoing.getDouble("amount"))),
+                    withJsonPath("$.outgoings.householdBillsAmount", equalTo(householdBillsOutgoing.getDouble("amount"))),
+                    withJsonPath("$.outgoings.travelExpensesAmount", equalTo(travelExpensesOutgoing.getDouble("amount"))),
+                    withJsonPath("$.outgoings.childMaintenanceAmount", equalTo(childMaintenanceOutgoing.getDouble("amount"))),
+                    withJsonPath("$.outgoings.otherDescription", equalTo(otherOutgoing.getString("description"))),
+                    withJsonPath("$.outgoings.otherAmount", equalTo(otherOutgoing.getDouble("amount"))),
+                    withJsonPath("$.outgoings.monthlyAmount", equalTo(1772.3))
+            ));
+        } else {
+            matchers.addAll(asList(
+                withoutJsonPath("$.employment"),
+                withoutJsonPath("$.employer"),
+                withoutJsonPath("$.outgoings")
+            ));
+        }
+
+        return matchers;
     }
 
     private List<Matcher> getNotGuiltyMatchers(final JSONObject onlinePleaPayload) {
         final JSONObject offence = onlinePleaPayload.getJSONArray("offences").getJSONObject(0);
-        return Arrays.asList(
+        return asList(
                 //plea-details
                 withJsonPath("$.pleaDetails.plea", equalTo(PleaType.NOT_GUILTY.name())),
                 withJsonPath("$.pleaDetails.comeToCourt", equalTo(true)),
@@ -386,23 +447,27 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         );
     }
 
-    private List<Matcher> getGuiltyMatchers(final JSONObject onlinePleaPayload) {
+    private List<Matcher> getGuiltyMatchers(final JSONObject onlinePleaPayload, final boolean expectToHaveFinances) {
         final JSONObject offence = onlinePleaPayload.getJSONArray("offences").getJSONObject(0);
-        return Arrays.asList(
+        List<Matcher> mitigation = new ArrayList<>(asList(
                 //plea-details
                 withJsonPath("$.pleaDetails.plea", equalTo(PleaType.GUILTY.name())),
                 withJsonPath("$.pleaDetails.comeToCourt", equalTo(false)),
                 withJsonPath("$.pleaDetails.mitigation", equalTo(offence.getString("mitigation"))),
+                withoutJsonPath("$.employment.employmentStatusDetails")));
 
-                //employment status
-                withJsonPath("$.employment.employmentStatus", equalTo("EMPLOYED")),
-                withoutJsonPath("$.employment.employmentStatusDetails")
-        );
+        if(expectToHaveFinances) {
+            //employment status
+            mitigation.add(withJsonPath("$.employment.employmentStatus", equalTo("EMPLOYED")));
+
+        }
+
+        return mitigation;
     }
 
     private List<Matcher> getGuiltyRequestHearingMatchers(final JSONObject onlinePleaPayload) {
         final JSONObject offence = onlinePleaPayload.getJSONArray("offences").getJSONObject(0);
-        return Arrays.asList(
+        return asList(
                 withJsonPath("$.pleaDetails.interpreterLanguage", equalTo(onlinePleaPayload.getString("interpreterLanguage"))),
                 withJsonPath("$.pleaDetails.interpreterRequired", equalTo(true)),
                 withJsonPath("$.pleaDetails.plea", equalTo(PleaType.GUILTY_REQUEST_HEARING.name())),
@@ -414,4 +479,5 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                 withoutJsonPath("$.employment.employmentStatusDetails")
         );
     }
+
 }

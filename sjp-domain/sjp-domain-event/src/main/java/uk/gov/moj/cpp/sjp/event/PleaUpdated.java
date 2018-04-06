@@ -36,12 +36,9 @@ public class PleaUpdated {
                        String notGuiltyBecause,
                        PleaMethod pleaMethod,
                        ZonedDateTime updatedDate) {
-        this.caseId = caseId;
-        this.offenceId = offenceId;
-        this.plea = plea;
+        this(caseId, offenceId, plea, pleaMethod);
         this.mitigation = mitigation;
         this.notGuiltyBecause = notGuiltyBecause;
-        this.pleaMethod = pleaMethod;
         this.updatedDate = updatedDate;
     }
 

@@ -280,4 +280,3 @@ public class AssignmentIT extends BaseIntegrationTest {
     }
 
 }
-

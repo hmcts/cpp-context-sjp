@@ -60,43 +60,49 @@ public class OnlinePlea {
 
     public OnlinePlea(final UUID caseId, final FinancialMeansUpdated financialMeansUpdated, final String employmentStatus,
                       final String employmentStatusDetails, final Outgoings outgoings) {
-        this.caseId = caseId;
-        this.defendantDetail = new DefendantDetail(financialMeansUpdated.getDefendantId());
+        this(caseId, financialMeansUpdated.getDefendantId(), financialMeansUpdated.getUpdatedDate());
         this.employment = new Employment(financialMeansUpdated, employmentStatus, employmentStatusDetails);
         this.outgoings = outgoings;
-        this.submittedOn = financialMeansUpdated.getUpdatedDate();
     }
 
     public OnlinePlea(final UUID caseId, final EmployerUpdated employerUpdated) {
-        this.caseId = caseId;
-        this.defendantDetail = new DefendantDetail(employerUpdated.getDefendantId());
+        this(caseId, employerUpdated.getDefendantId(), employerUpdated.getUpdatedDate());
         this.employer = new Employer(employerUpdated);
-        this.submittedOn = employerUpdated.getUpdatedDate();
     }
 
     public OnlinePlea(final TrialRequested trialRequested) {
-        this.caseId = trialRequested.getCaseId();
-        this.pleaDetails = new PleaDetails(trialRequested);
-        this.submittedOn = trialRequested.getUpdatedDate();
+        this(trialRequested.getCaseId(), new PleaDetails(trialRequested), trialRequested.getUpdatedDate());
     }
 
     public OnlinePlea(final PleaUpdated pleaUpdated) {
-        this.caseId = UUID.fromString(pleaUpdated.getCaseId());
-        this.pleaDetails = new PleaDetails(pleaUpdated);
-        this.submittedOn = pleaUpdated.getUpdatedDate();
+        this(UUID.fromString(pleaUpdated.getCaseId()), new PleaDetails(pleaUpdated), pleaUpdated.getUpdatedDate());
     }
 
     public OnlinePlea(final UUID caseId, final String interpreterLanguage, final ZonedDateTime updatedDate) {
-        this.caseId = caseId;
-        this.pleaDetails = new PleaDetails(interpreterLanguage);
-        this.submittedOn = updatedDate;
+        this(caseId, new PleaDetails(interpreterLanguage), updatedDate);
     }
 
     public OnlinePlea(final DefendantDetailsUpdated defendantDetailsUpdated) {
-        this.caseId = defendantDetailsUpdated.getCaseId();
-        this.defendantDetail = new DefendantDetail(defendantDetailsUpdated.getDefendantId());
+        this(defendantDetailsUpdated.getCaseId(), defendantDetailsUpdated.getDefendantId(), defendantDetailsUpdated.getUpdatedDate());
         this.personalDetails = new OnlinePleaPersonalDetails(defendantDetailsUpdated);
-        this.submittedOn = defendantDetailsUpdated.getUpdatedDate();
+    }
+
+    public OnlinePlea(UUID caseId, PleaDetails pleaDetails, DefendantDetail defendantDetail, OnlinePleaPersonalDetails personalDetails, ZonedDateTime submittedOn) {
+        this(caseId, pleaDetails, submittedOn);
+        this.defendantDetail = defendantDetail;
+        this.personalDetails = personalDetails;
+    }
+
+    private OnlinePlea(UUID caseId, UUID defendantId, ZonedDateTime submittedOn) {
+        this.caseId = caseId;
+        this.defendantDetail = new DefendantDetail(defendantId);
+        this.submittedOn = submittedOn;
+    }
+
+    private OnlinePlea(UUID caseId, PleaDetails pleaDetails, ZonedDateTime submittedOn) {
+        this.caseId = caseId;
+        this.pleaDetails = pleaDetails;
+        this.submittedOn = submittedOn;
     }
 
     public UUID getCaseId() {

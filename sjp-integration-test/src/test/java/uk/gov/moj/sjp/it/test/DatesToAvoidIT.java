@@ -55,12 +55,12 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     public void setUp() {
         tflUserId = UUID.randomUUID();
         this.tflCaseBuilder = createCase(ProsecutingAuthority.TFL, 1);
-        stubGroupForUser(tflUserId.toString(), UsersGroupsStub.SJP_PROSECUTORS);
+        stubGroupForUser(tflUserId.toString(), UsersGroupsStub.SJP_PROSECUTORS_GROUP);
         stubForUserDetails(tflUserId.toString(), ProsecutingAuthority.TFL.toString());
 
         tvlUserId = UUID.randomUUID();
         this.tvlCaseBuilder = createCase(ProsecutingAuthority.TVL, 2);
-        stubGroupForUser(tvlUserId.toString(), UsersGroupsStub.SJP_PROSECUTORS);
+        stubGroupForUser(tvlUserId.toString(), UsersGroupsStub.SJP_PROSECUTORS_GROUP);
         stubForUserDetails(tvlUserId.toString(), ProsecutingAuthority.TVL.toString());
 
         tflInitialPendingDatesToAvoidCount = pollForPendingDatesToAvoidCount(tflUserId);

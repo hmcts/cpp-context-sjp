@@ -19,7 +19,7 @@ public class NotifyStub {
     public static final String COMMAND_MEDIA_TYPE = "application/vnd.notificationnotify.email+json";
 
     public static void stubNotifications() {
-        InternalEndpointMockUtils.stubPingFor("notificationnotify-command-api");
+        InternalEndpointMockUtils.stubPingFor("notificationnotify-service");
 
         stubFor(post(urlPathMatching(COMMAND_URL + ".*"))
                 .withHeader("Content-Type", equalTo(COMMAND_MEDIA_TYPE))

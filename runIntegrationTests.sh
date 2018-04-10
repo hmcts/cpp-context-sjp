@@ -30,7 +30,7 @@ function deleteAndDeployWars {
   sleep 10
 
   rm -rf $WILDFLY_DEPLOYMENT_DIR/*.undeployed
-  find . \( -iname "*.war" ! -iname "${CONTEXT_NAME}-service-*.war" \) -exec cp {} $WILDFLY_DEPLOYMENT_DIR \;
+  find . \( -iname "${CONTEXT_NAME}-service-*.war" \) -exec cp {} $WILDFLY_DEPLOYMENT_DIR \;
   echo "Copied wars to $WILDFLY_DEPLOYMENT_DIR"
 }
 
@@ -129,19 +129,19 @@ function integrationTests {
 }
 
 function buildDeployAndTest {
-#  buildWars
+  buildWars
   deployAndTest
 }
 
 function deployAndTest {
-#  deleteAndDeployWars
- # startVagrant
+  deleteAndDeployWars
+  startVagrant
   runEventLogLiquibase
   runEventLogAggregateSnapshotLiquibase
   runEventBufferLiquibase
   runLiquibase
-  #healthCheck
-  #integrationTests
+  healthCheck
+  integrationTests
 }
 
 buildDeployAndTest

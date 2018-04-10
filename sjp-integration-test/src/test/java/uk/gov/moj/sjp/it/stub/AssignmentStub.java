@@ -31,7 +31,7 @@ public class AssignmentStub {
     }
 
     public static void stubGetAssignmentsByDomainObjectId(final UUID caseId, final Optional<String> assignmentNature, final UUID... assignees) {
-        InternalEndpointMockUtils.stubPingFor("assignment-query-api");
+        InternalEndpointMockUtils.stubPingFor("assignment-service");
 
         final JsonArrayBuilder assignments = Json.createArrayBuilder();
         for (final UUID assignee : assignees) {

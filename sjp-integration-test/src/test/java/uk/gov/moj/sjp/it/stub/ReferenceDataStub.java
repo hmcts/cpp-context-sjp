@@ -24,7 +24,7 @@ import org.apache.commons.io.IOUtils;
 public class ReferenceDataStub {
 
     public static void stubQueryOffences(String resourceName) {
-        InternalEndpointMockUtils.stubPingFor("referencedata-query-api");
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
         final JsonObject offences = Json.createReader(ReferenceDataStub.class
                 .getResourceAsStream(resourceName))
                 .readObject();

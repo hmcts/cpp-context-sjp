@@ -22,7 +22,7 @@ public class ResultingStub {
     private static final String RESULTING_QUERY_MEDIA_TYPE = "application/vnd.resulting.query.case-decisions+json";
 
     public static void stubGetCaseDecisionsWithNoDecision(final UUID caseId) {
-        InternalEndpointMockUtils.stubPingFor("resulting-query-api");
+        InternalEndpointMockUtils.stubPingFor("resulting-service");
 
         final String responsePayload = Json.createObjectBuilder()
                 .add("caseDecisions", Json.createArrayBuilder())
@@ -41,7 +41,7 @@ public class ResultingStub {
     }
 
     public static void stubGetCaseDecisionsWithDecision(final UUID caseId) {
-        InternalEndpointMockUtils.stubPingFor("resulting-query-api");
+        InternalEndpointMockUtils.stubPingFor("resulting-service");
 
         String url = String.format(RESULTING_QUERY_URL, caseId);
 

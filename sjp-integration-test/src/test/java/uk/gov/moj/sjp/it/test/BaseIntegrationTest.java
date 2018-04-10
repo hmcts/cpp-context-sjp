@@ -25,7 +25,7 @@ public abstract class BaseIntegrationTest {
     public void setup() {
         WireMock.resetAllRequests();
         stubEnableAllCapabilities();
-        InternalEndpointMockUtils.stubPingFor("usersgroups-query-api");
+        InternalEndpointMockUtils.stubPingFor("usersgroups-service");
         stubAllGroupsForUser(USER_ID);
         stubAllGroupsForUser(SJP_SYSTEM_USER);
         stubForUserDetails(USER_ID, "ALL");

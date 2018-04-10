@@ -127,8 +127,13 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         try (final UpdatePleaHelper tflUpdatePleaHelper = new UpdatePleaHelper(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId());
              final UpdatePleaHelper tvlUpdatePleaHelper = new UpdatePleaHelper(tvlCaseBuilder.getId(), tvlCaseBuilder.getOffenceId());
         ) {
-            //updates plea to NOT_GUILTY for both the TFL and the TVL case (making them both pending dates-to-avoid submission)
+            //updates plea to NOT_GUILTY for TFL case (making it pending dates-to-avoid submission)
             updatePleaToNotGuilty(tflUpdatePleaHelper);
+
+            //check tvl count not gone up (as a result of tfl plea update above)
+            assertEquals(tvlInitialPendingDatesToAvoidCount, pollForPendingDatesToAvoidCount(tvlUserId));
+
+            //updates plea to NOT_GUILTY for TVL case (making it pending dates-to-avoid submission)
             updatePleaToNotGuilty(tvlUpdatePleaHelper);
 
             //checks that correct dates-to-avoid record is retrieved (i.e. the one related to the case passed in)

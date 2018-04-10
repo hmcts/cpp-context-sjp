@@ -147,7 +147,6 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> receiveCase(final Case aCase, final ZonedDateTime createdOn) {
         final Object event;
-
         if (this.caseId != null && this.urn != null) {
             event = new CaseCreationFailedBecauseCaseAlreadyExisted(this.caseId, this.urn);
         } else {

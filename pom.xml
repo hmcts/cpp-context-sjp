@@ -7,12 +7,12 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>5.0.5</version>
+        <version>6.0.3</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>0.0.57-ATCM-SNAPSHOT</version>
+    <version>0.0.58-ATCM-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>

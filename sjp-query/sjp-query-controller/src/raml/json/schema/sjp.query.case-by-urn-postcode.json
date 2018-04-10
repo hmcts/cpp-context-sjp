@@ -16,14 +16,14 @@
         "address4": {
           "type": "string"
         },
-        "postCode": {
+        "postcode": {
           "type": "string"
         }
       },
       "additionalProperties": false,
       "required": [
         "address1",
-        "postCode"
+        "postcode"
       ]
     },
     "offence": {
@@ -81,6 +81,12 @@
         "lastName": {
           "type": "string"
         },
+        "gender": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
         "dateOfBirth": {
           "type": "string"
         },
@@ -96,7 +102,6 @@
       },
       "additionalProperties": false,
       "required": [
-        "id",
         "firstName",
         "lastName",
         "dateOfBirth",
@@ -109,8 +114,22 @@
         "id": {
           "type": "string"
         },
+        "caseId": {
+          "type": "string"
+        },
+        "numPreviousConvictions": {
+          "type": "integer"
+        },
         "personalDetails": {
           "$ref": "#/definitions/personalDetails"
+        },
+        "interpreter": {
+          "type": "object",
+          "properties": {
+            "language": {
+              "type": "string"
+            }
+          }
         },
         "offences": {
           "type": "array",

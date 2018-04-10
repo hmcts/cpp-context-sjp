@@ -7,7 +7,7 @@
     }
   },
   "required": [ "caseId" ],
-  "additionalProperties": false,
+  "additionalProperties": true,
   "definitions": {
     "uuid": {
       "type": "string",

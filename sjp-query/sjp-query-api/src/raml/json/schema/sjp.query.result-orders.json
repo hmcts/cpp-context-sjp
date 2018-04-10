@@ -17,10 +17,7 @@
               "type": "string"
             }
           },
-          "additionalProperties": false,
-          "required": [
-            "personId"
-          ]
+          "additionalProperties": true
         },
         "order": {
           "type": "object",
@@ -63,4 +60,3 @@
     "resultOrders"
   ]
 }
-

@@ -21,10 +21,6 @@
           "minimum": 0
         }
       },
-      "required": [
-        "frequency",
-        "amount"
-      ],
       "additionalProperties": false
     },
     "benefits": {
@@ -43,11 +39,6 @@
       "type": "string"
     }
   },
-  "required": [
-    "defendantId",
-    "income",
-    "benefits"
-  ],
   "additionalProperties": false,
   "definitions": {
     "uuid": {

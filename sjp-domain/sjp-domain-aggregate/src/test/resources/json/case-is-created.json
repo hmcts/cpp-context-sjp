@@ -2,10 +2,12 @@
   "_metadata": {
     "name": "sjp.events.case-received"
   },
+  "id": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
   "urn": "TFL34652354",
   "prosecutingAuthority": "TVL",
   "defendant": {
-    "id": "*",
+    "id": "",
     "numPreviousConvictions": 0,
     "offences": [
       {

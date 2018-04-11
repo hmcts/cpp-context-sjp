@@ -20,7 +20,9 @@ import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
+import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_SJP_CASE_UPDATE_REJECTED;
 import static uk.gov.moj.sjp.it.EventSelector.SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
+import static uk.gov.moj.sjp.it.EventSelector.SJP_EVENTS_CASE_UPDATE_REJECTED;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
@@ -30,6 +32,7 @@ import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
+import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestCancelHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
@@ -62,6 +65,7 @@ public class AssignmentIT extends BaseIntegrationTest {
             tvlPiaCasePayloadBuilder, tvlPleadedGuiltyRequestHearingCasePayloadBuilder, dvlaPiaCasePayloadBuilder, dvlaPleadedNotGuiltyCasePayloadBuilder;
 
     private AssignmentHelper assignmentHelper;
+    private UUID userId;
 
     @BeforeClass
     public static void init() {
@@ -138,12 +142,16 @@ public class AssignmentIT extends BaseIntegrationTest {
 
         final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(tflPendingWithdrawalCasePayloadBuilder.getId(), SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
 
-        offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(UUID.randomUUID());
+        userId = UUID.randomUUID();
+        offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(userId);
         offencesWithdrawalRequestHelper.verifyAllOffencesWithdrawalRequestedInPublicActiveMQ();
     }
 
     @After
-    public void close() throws Exception {
+    public void cancelOffenceWithdrawalsAndCloseHelpers() throws Exception {
+        final OffencesWithdrawalRequestCancelHelper offencesWithdrawalRequestCancelHelper = new OffencesWithdrawalRequestCancelHelper(tflPendingWithdrawalCasePayloadBuilder.getId(), SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED);
+        offencesWithdrawalRequestCancelHelper.cancelRequestWithdrawalForAllOffences(userId);
+        offencesWithdrawalRequestCancelHelper.close();
         assignmentHelper.close();
     }
 
@@ -272,3 +280,4 @@ public class AssignmentIT extends BaseIntegrationTest {
     }
 
 }
+

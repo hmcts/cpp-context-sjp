@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.deltaspike.data.api.EntityRepository;
+import org.apache.deltaspike.data.api.Modifying;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.Repository;
@@ -22,6 +23,7 @@ public interface PendingDatesToAvoidRepository extends EntityRepository<PendingD
             "ORDER BY pda.pleaDate ASC")
     List<PendingDatesToAvoid> findCasesPendingDatesToAvoid(@QueryParam("prosecutingAuthority") String prosecutingAuthority);
 
+    @Modifying
     @Query(value = "DELETE FROM PendingDatesToAvoid WHERE caseId=:caseId")
     void removeByCaseId(@QueryParam("caseId") UUID caseId);
 }

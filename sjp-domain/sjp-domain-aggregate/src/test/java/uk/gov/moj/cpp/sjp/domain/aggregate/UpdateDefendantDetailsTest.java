@@ -7,6 +7,8 @@ import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
@@ -53,6 +55,7 @@ public class UpdateDefendantDetailsTest {
     private static final Address addressUpdated = new Address(ADDRESS_1_UPDATED, ADDRESS_2, ADDRESS_3, ADDRESS_4, POSTCODE);
     private static final LocalDate dateOfBirth = LocalDate.of(1980, 7, 15);
     private static final LocalDate dateOfBirthUpdated = LocalDate.of(1980, 6, 15);
+    private static final Clock clock = new UtcClock();
 
     private CaseAggregate caseAggregate;
 
@@ -77,11 +80,11 @@ public class UpdateDefendantDetailsTest {
                         0,
                         Lists.newArrayList()
                 )).build(),
-                ZonedDateTime.now()
+                clock.now()
         );
 
         Stream<Object> eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
-                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, person, ZonedDateTime.now());
+                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, person, clock.now());
 
         List<Object> events = asList(eventStream.toArray());
 
@@ -98,7 +101,7 @@ public class UpdateDefendantDetailsTest {
                 dateOfBirthUpdated, gender, addressUpdated);
 
         eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
-                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, updatedPerson, ZonedDateTime.now());
+                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, updatedPerson, clock.now());
 
         events = asList(eventStream.toArray());
 
@@ -149,12 +152,12 @@ public class UpdateDefendantDetailsTest {
                                 Lists.newArrayList()
                         )
                 ),
-                ZonedDateTime.now()
+                clock.now()
         );
         Person personInfoDetailsWithoutTitle = new Person(null, firstName, lastName,
                 dateOfBirth, gender, address);
         Stream<Object> eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
-                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, personInfoDetailsWithoutTitle, ZonedDateTime.now());
+                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, personInfoDetailsWithoutTitle, clock.now());
 
         List<Object> events = asList(eventStream.toArray());
 

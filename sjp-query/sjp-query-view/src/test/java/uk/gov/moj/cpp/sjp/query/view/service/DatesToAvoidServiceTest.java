@@ -10,10 +10,11 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 import uk.gov.moj.cpp.sjp.persistence.repository.PendingDatesToAvoidRepository;
 import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
-import uk.gov.moj.cpp.sjp.query.view.response.DatesToAvoidsView;
+import uk.gov.moj.cpp.sjp.query.view.response.CasesPendingDatesToAvoidView;
 
 import java.util.Arrays;
 import java.util.List;
@@ -47,16 +48,16 @@ public class DatesToAvoidServiceTest {
                 .build();
         final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of(ProsecutingAuthority.TFL.toString());
         final String prosecutingAuthorityFilterValue = ProsecutingAuthority.TFL.toString();
-        final List<PendingDatesToAvoid> pendingDatesToAvoidList = Arrays.asList(new PendingDatesToAvoid(UUID.randomUUID()));
+        final List<PendingDatesToAvoid> pendingDatesToAvoidList = Arrays.asList(new PendingDatesToAvoid(new CaseDetail(UUID.randomUUID())));
 
         when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);
         when(prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess)).thenReturn(prosecutingAuthorityFilterValue);
         when(pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(prosecutingAuthorityFilterValue)).thenReturn(pendingDatesToAvoidList);
 
-        final DatesToAvoidsView datesToAvoidsView = datesToAvoidService.findCasesPendingDatesToAvoid(envelope);
+        final CasesPendingDatesToAvoidView datesToAvoidsView = datesToAvoidService.findCasesPendingDatesToAvoid(envelope);
 
-        assertThat(datesToAvoidsView.getPendingDatesToAvoid().size(), is(1));
-        assertThat(datesToAvoidsView.getPendingDatesToAvoid().get(0).getCaseId(), is(pendingDatesToAvoidList.get(0).getCaseId()));
-        assertThat(datesToAvoidsView.getPendingDatesToAvoidCount(), is(1));
+        assertThat(datesToAvoidsView.getCases().size(), is(1));
+        assertThat(datesToAvoidsView.getCases().get(0).getCaseId(), is(pendingDatesToAvoidList.get(0).getCaseId()));
+        assertThat(datesToAvoidsView.getCount(), is(1));
     }
 }

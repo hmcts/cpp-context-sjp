@@ -39,8 +39,6 @@ import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnWithDetailsView;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
-import uk.gov.moj.cpp.sjp.query.view.response.SearchCasesHit;
-import uk.gov.moj.cpp.sjp.query.view.response.SearchCasesView;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -189,18 +187,6 @@ public class CaseService {
             LOGGER.warn("Multiple cases found for URN (ignoring prefix) and postcode. URN='{}', postcode='{}'", urn, postcode, e);
             return null;
         }
-    }
-
-    /**
-     * Search case by defendantId.
-     *
-     * @param defendantId id of the defendant to find cases for.
-     * @return SearchView containing matched case summaries
-     */
-    public SearchCasesView searchCasesByDefendantId(final String defendantId) {
-        final List<SearchCasesHit> cases = caseRepository.findByDefendantId(fromString(defendantId))
-                .stream().map(SearchCasesHit::new).collect(toList());
-        return new SearchCasesView(defendantId, cases);
     }
 
     public SearchCaseByMaterialIdView searchCaseByMaterialId(final String q) {

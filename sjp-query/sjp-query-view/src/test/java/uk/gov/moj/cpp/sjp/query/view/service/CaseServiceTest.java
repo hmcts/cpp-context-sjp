@@ -40,6 +40,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseReferredToCourtRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.NotReadyCaseRepository;
@@ -48,6 +49,7 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
+import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnWithDetailsView;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCasesHit;
@@ -61,6 +63,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -71,6 +74,7 @@ import javax.json.JsonObject;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 
+import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -125,6 +129,9 @@ public class CaseServiceTest {
 
     @Mock
     private JsonEnvelope envelope;
+
+    @Mock
+    private CaseReferredToCourtRepository caseReferredToCourtRepository;
 
     @InjectMocks
     private CaseService service;
@@ -363,7 +370,7 @@ public class CaseServiceTest {
     public void shouldFindCaseDocuments() {
         List<CaseDocument> caseDocumentList = new ArrayList<>();
         UUID documentId = randomUUID();
-        CaseDocument caseDocument = new CaseDocument(documentId, randomUUID(), "SJPN", ZonedDateTime.now(), CASE_ID, 2);
+        CaseDocument caseDocument = new CaseDocument(documentId, randomUUID(), "SJPN", clock.now(), CASE_ID, 2);
         caseDocumentList.add(caseDocument);
         when(caseRepository.findCaseDocuments(CASE_ID)).thenReturn(caseDocumentList);
 
@@ -432,7 +439,7 @@ public class CaseServiceTest {
 
         CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
-                ZonedDateTime.now(), caseDetail.getId(), null);
+                clock.now(), caseDetail.getId(), null);
 
         final ZonedDateTime FROM_DATE_TIME = FROM_DATE.atStartOfDay(ZoneOffset.UTC);
         final ZonedDateTime TO_DATE_TIME = TO_DATE.atStartOfDay(ZoneOffset.UTC);
@@ -462,7 +469,7 @@ public class CaseServiceTest {
         CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", null, null, null, null, null, defendantDetail, null, null);
         CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
-                ZonedDateTime.now(), caseDetail.getId(), null);
+                clock.now(), caseDetail.getId(), null);
 
         final ZonedDateTime FROM_DATE_TIME = FROM_DATE.atStartOfDay(ZoneOffset.UTC);
         final ZonedDateTime TO_DATE_TIME = TO_DATE.atStartOfDay(ZoneOffset.UTC);
@@ -558,6 +565,31 @@ public class CaseServiceTest {
         assertThat(result.getDefendant().getFirstName(), equalTo(FIRST_NAME));
         assertThat(result.getDefendant().getLastName(), equalTo(LAST_NAME));
         assertThat(result.getDefendant().getDateOfBirth(), equalTo(DATE_OF_BIRTH));
+    }
+
+    @Test
+    public void findCasesReferredToCourtTest() {
+        // given
+        when(caseReferredToCourtRepository.findUnactionedCases()).thenReturn(Lists.newArrayList());
+
+        // when
+        JsonObject result = service.findCasesReferredToCourt();
+
+        // then
+        assertThat(result.getJsonArray("cases"), hasSize(0));
+    }
+
+    @Test
+    public void findCasesMissingSjpnWithDetailsTest() {
+        // given
+        when(caseRepository.findCasesMissingSjpnWithDetails()).thenReturn(Lists.newArrayList());
+
+        // when
+        CasesMissingSjpnWithDetailsView result = service.findCasesMissingSjpnWithDetails(Optional.empty());
+
+        // then
+        assertThat(result.getCaseMissingSjpnWithDetailsView(), hasSize(0));
+
     }
 
     private CaseDetail createCaseDetail() {

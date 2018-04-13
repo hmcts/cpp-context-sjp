@@ -2,13 +2,12 @@ package uk.gov.moj.sjp.it.command;
 
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
 import uk.gov.justice.services.common.converter.LocalDates;
-import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
+import uk.gov.moj.sjp.it.util.UrnProvider;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -110,29 +109,22 @@ public class CreateCase {
     }
 
     public static class CreateCasePayloadBuilder {
-        public static final String PROSECUTING_AUTHORITY_PREFIX = TFL.name();
-
-        UUID id;
-        String urn;
-        ProsecutingAuthority prosecutingAuthority;
-        BigDecimal costs;
-        LocalDate postingDate;
-
-        DefendantBuilder defendantBuilder;
-
-        List<OffenceBuilder> offenceBuilders;
+        private UUID id;
+        private String urn;
+        private ProsecutingAuthority prosecutingAuthority;
+        private BigDecimal costs;
+        private LocalDate postingDate;
+        private DefendantBuilder defendantBuilder;
+        private List<OffenceBuilder> offenceBuilders;
 
         private CreateCasePayloadBuilder() {
             this.prosecutingAuthority = ProsecutingAuthority.TFL;
             this.costs = BigDecimal.valueOf(1.23);
             this.postingDate = LocalDate.of(2015, 12, 2);
-
             this.defendantBuilder = DefendantBuilder.withDefaults();
             this.offenceBuilders = Lists.newArrayList(OffenceBuilder.withDefaults());
             this.id = UUID.randomUUID();
-            this.urn = PROSECUTING_AUTHORITY_PREFIX + RandomGenerator.integer(100000000, 999999999).next();
-            this.prosecutingAuthority = ProsecutingAuthority.TFL;
-
+            this.urn = UrnProvider.generate(prosecutingAuthority);
             this.getOffenceBuilder().withId(UUID.randomUUID());
         }
 
@@ -145,13 +137,9 @@ public class CreateCase {
             return this;
         }
 
-        public CreateCasePayloadBuilder withUrn(final String urn) {
-            this.urn = urn;
-            return this;
-        }
-
         public CreateCasePayloadBuilder withProsecutingAuthority(final ProsecutingAuthority prosecutingAuthority) {
             this.prosecutingAuthority = prosecutingAuthority;
+            this.urn = UrnProvider.generate(prosecutingAuthority);
             return this;
         }
 
@@ -250,15 +238,15 @@ public class CreateCase {
     }
 
     public static class OffenceBuilder {
-        UUID id;
-        String libraOffenceCode;
-        LocalDate chargeDate;
-        int libraOffenceDateCode;
-        LocalDate offenceDate;
-        String offenceWording;
-        String prosecutionFacts;
-        String witnessStatement;
-        BigDecimal compensation;
+        private UUID id;
+        private String libraOffenceCode;
+        private LocalDate chargeDate;
+        private int libraOffenceDateCode;
+        private LocalDate offenceDate;
+        private String offenceWording;
+        private String prosecutionFacts;
+        private String witnessStatement;
+        private BigDecimal compensation;
 
         private OffenceBuilder() {
 

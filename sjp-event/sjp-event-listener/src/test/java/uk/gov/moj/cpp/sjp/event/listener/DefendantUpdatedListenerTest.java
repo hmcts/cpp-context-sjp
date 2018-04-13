@@ -14,12 +14,17 @@ import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
+import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantsNationalInsuranceNumberUpdated;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
@@ -30,25 +35,23 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
-import java.io.StringReader;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -62,8 +65,16 @@ public class DefendantUpdatedListenerTest {
     @InjectMocks
     private CaseSearchResultService caseSearchResultService = new CaseSearchResultService();
 
-    @Mock
+    @Spy
+    @InjectMocks
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    @Spy
+    @InjectMocks
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    @Spy
+    private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
     @Mock
     private CaseRepository caseRepository;
@@ -72,17 +83,14 @@ public class DefendantUpdatedListenerTest {
     private CaseSearchResultRepository caseSearchResultRepository;
 
     @Mock
-    private JsonEnvelope jsonEnvelope;
-
-    @Mock
     private OnlinePleaRepository.PersonDetailsOnlinePleaRepository onlinePleaRepository;
 
     @Captor
     private ArgumentCaptor<OnlinePlea> onlinePleaCaptor;
 
-    private CaseDetail caseDetail = new CaseDetail();
+    private CaseDetail caseDetail = new CaseDetail(UUID.randomUUID());
 
-    private final Clock clock = new StoppedClock(ZonedDateTime.now());
+    private final Clock clock = new UtcClock();
     private final ZonedDateTime now = clock.now();
 
     private final String previousTitle = "previously set Title";
@@ -90,13 +98,13 @@ public class DefendantUpdatedListenerTest {
     private final String previousNiNumber = "previously set NI-number";
 
     private DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder defendantDetailsUpdatedBuilder = defendantDetailsUpdated()
-            .withCaseId(UUID.randomUUID())
+            .withCaseId(caseDetail.getId())
             .withContactDetails(new ContactDetails("123", "456", "test@test.com"))
             .withTitle("Mr")
             .withFirstName("Mark")
             .withLastName("Smith")
             .withGender("Male")
-            .withUpdatedDate(ZonedDateTime.now())
+            .withUpdatedDate(clock.now())
             .withDateOfBirth(LocalDate.of(1960, 1, 1))
             .withAddress(new Address("address1", "address2", "address3", "address4", "postcode"));
 
@@ -106,8 +114,14 @@ public class DefendantUpdatedListenerTest {
     @Captor
     private ArgumentCaptor<CaseSearchResult> actualSearchResultsCaptor;
 
-    private void setupMocks(DefendantDetailsUpdated defendantDetailsUpdated) throws JsonProcessingException {
-        when(caseRepository.findBy(defendantDetailsUpdated.getCaseId())).thenReturn(caseDetail);
+    @Before
+    public void setup() {
+        MockitoAnnotations.initMocks(this);
+    }
+
+    private void setupMocks(UUID caseId) throws JsonProcessingException {
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
+
         caseDetail.getDefendant().setPersonalDetails(
                 new PersonalDetails(
                         previousTitle, "Joe", "Blogs", LocalDate.of(1965, 8, 6),
@@ -118,9 +132,9 @@ public class DefendantUpdatedListenerTest {
                         new uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails("test@test.com", "0207 886432", "07563 489883")
                 )
         );
-        when(caseSearchResultRepository.findByCaseId(defendantDetailsUpdated.getCaseId())).thenReturn(Lists.newArrayList(buildCaseSearchResult(caseDetail)));
 
-        mockConverter(defendantDetailsUpdated);
+        when(caseRepository.findCaseDefendant(caseId)).thenReturn(caseDetail.getDefendant());
+        when(caseSearchResultRepository.findByCaseId(caseId)).thenReturn(Lists.newArrayList(buildCaseSearchResult(caseDetail)));
     }
 
     private DefendantDetailsUpdated commonSetup(final boolean updateByOnlinePlea, final boolean nationalInsuranceNumberSuppliedInRequest) throws JsonProcessingException {
@@ -133,7 +147,7 @@ public class DefendantUpdatedListenerTest {
             defendantDetailsUpdatedBuilder = defendantDetailsUpdatedBuilder.withNationalInsuranceNumber("NH42 1568G");
         }
         final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdatedBuilder.build();
-        setupMocks(defendantDetailsUpdated);
+        setupMocks(defendantDetailsUpdated.getCaseId());
 
         return defendantDetailsUpdated;
     }
@@ -193,18 +207,31 @@ public class DefendantUpdatedListenerTest {
             assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getAddress().getAddress3(), equalTo(defendantDetailsUpdated.getAddress().getAddress3()));
             assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getAddress().getAddress4(), equalTo(defendantDetailsUpdated.getAddress().getAddress4()));
             assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getAddress().getPostcode(), equalTo(defendantDetailsUpdated.getAddress().getPostcode()));
-            assertThat(onlinePleaCaptor.getValue().getSubmittedOn(), equalTo(defendantDetailsUpdated.getUpdatedDate()));
+            assertThat(onlinePleaCaptor.getValue().getSubmittedOn().toEpochSecond(), equalTo(defendantDetailsUpdated.getUpdatedDate().toEpochSecond()));
         }
     }
 
     @Test
+    public void shouldUpdateDefendantNationalInsuranceNumberUpdated() throws JsonProcessingException {
+        DefendantsNationalInsuranceNumberUpdated event = new DefendantsNationalInsuranceNumberUpdated(
+                caseDetail.getId(),
+                caseDetail.getDefendant().getId(),
+                caseDetail.getDefendant().getPersonalDetails().getNationalInsuranceNumber()
+        );
+        setupMocks(event.getCaseId());
+
+        defendantUpdatedListener.defendantNationalInsuranceNumberUpdated(command(event));
+    }
+
+    @Test
     public void shouldListenerUpdateDefendantNotUpdatedFromOnlinePlea() throws JsonProcessingException {
-        // WHEN
+        // GIVEN
         final boolean updateByOnlinePlea = false;
         final boolean nationalInsuranceNumberSuppliedInRequest = true;
         final DefendantDetailsUpdated defendantDetailsUpdated = commonSetup(updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
 
-        defendantUpdatedListener.defendantDetailsUpdated(jsonEnvelope);
+        // WHEN
+        defendantUpdatedListener.defendantDetailsUpdated(command(defendantDetailsUpdated));
 
         // THEN
         commonAssertions(defendantDetailsUpdated, updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
@@ -212,12 +239,13 @@ public class DefendantUpdatedListenerTest {
 
     @Test
     public void shouldListenerUpdateDefendantUpdatedFromOnlinePlea() throws JsonProcessingException {
-        // WHEN
+        // GIVEN
         final boolean updateByOnlinePlea = true;
         final boolean nationalInsuranceNumberSuppliedInRequest = true;
         final DefendantDetailsUpdated defendantDetailsUpdated = commonSetup(true, true);
 
-        defendantUpdatedListener.defendantDetailsUpdated(jsonEnvelope);
+        // WHEN
+        defendantUpdatedListener.defendantDetailsUpdated(command(defendantDetailsUpdated));
 
         // THEN
         commonAssertions(defendantDetailsUpdated, updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
@@ -225,23 +253,30 @@ public class DefendantUpdatedListenerTest {
 
     @Test
     public void shouldListenerUpdateDefendantUpdatedFromOnlinePleaWithoutNationalInsuranceNumber() throws JsonProcessingException {
-        // WHEN
+        // GIVEN
         final boolean updateByOnlinePlea = true;
         final boolean nationalInsuranceNumberSuppliedInRequest = false;
         final DefendantDetailsUpdated defendantDetailsUpdated = commonSetup(true, false);
 
-        defendantUpdatedListener.defendantDetailsUpdated(jsonEnvelope);
+        // WHEN
+        defendantUpdatedListener.defendantDetailsUpdated(command(defendantDetailsUpdated));
 
         // THEN
         commonAssertions(defendantDetailsUpdated, updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
     }
 
-    private void mockConverter(DefendantDetailsUpdated defendantDetailsUpdated) throws JsonProcessingException {
-        final String serializedDefendantDetailsUpdated = new ObjectMapper().writeValueAsString(defendantDetailsUpdated);
-        final JsonObject jsonObject = Json.createReader(new StringReader(serializedDefendantDetailsUpdated)).readObject();
+    private JsonEnvelope command(DefendantsNationalInsuranceNumberUpdated defendantsNationalInsuranceNumberUpdated) throws JsonProcessingException {
+        return JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-national-insurance-number-updated"),
+                objectToJsonObjectConverter.convert(defendantsNationalInsuranceNumberUpdated)
+        );
+    }
 
-        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
-        when(jsonObjectToObjectConverter.convert(jsonObject, DefendantDetailsUpdated.class)).thenReturn(defendantDetailsUpdated);
+    private JsonEnvelope command(DefendantDetailsUpdated defendantDetailsUpdated) throws JsonProcessingException {
+        return JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-details-updated"),
+                objectToJsonObjectConverter.convert(defendantDetailsUpdated)
+        );
     }
 
     private PersonalDetails buildPersonalDetails(final DefendantDetailsUpdated defendantDetailsUpdated, final boolean updateByOnlinePlea, final boolean onlinePleaNiNumberSupplied) {
@@ -277,7 +312,7 @@ public class DefendantUpdatedListenerTest {
                 caseDetail.getDefendant().getPersonalDetails().getFirstName(),
                 caseDetail.getDefendant().getPersonalDetails().getLastName(),
                 caseDetail.getDefendant().getPersonalDetails().getDateOfBirth(),
-                ZonedDateTime.now()
+                clock.now()
         );
     }
 
@@ -287,6 +322,6 @@ public class DefendantUpdatedListenerTest {
                 defendantDetailsUpdated.getFirstName(),
                 defendantDetailsUpdated.getLastName(),
                 defendantDetailsUpdated.getDateOfBirth(),
-                ZonedDateTime.now());
+                clock.now());
     }
 }

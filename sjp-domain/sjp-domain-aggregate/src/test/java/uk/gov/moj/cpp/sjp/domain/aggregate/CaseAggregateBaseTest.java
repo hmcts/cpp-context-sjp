@@ -1,21 +1,20 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 
-import java.time.ZonedDateTime;
-
 import org.junit.Before;
 
-abstract class CaseAggregateBaseTest {
+public abstract class CaseAggregateBaseTest {
 
-    Clock clock = new StoppedClock(ZonedDateTime.now());
-    CaseAggregate caseAggregate;
+    protected final Clock clock = new StoppedClock(new UtcClock().now());
+    protected CaseAggregate caseAggregate;
     Case aCase;
-    CaseReceived caseReceivedEvent;
+    protected CaseReceived caseReceivedEvent;
 
     @Before
     public void setUp() {

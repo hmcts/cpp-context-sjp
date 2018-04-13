@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 import uk.gov.justice.services.common.converter.LocalDates;
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
@@ -41,6 +42,9 @@ public class CaseReferredToCourtRepositoryTest extends BaseTransactionalTest {
     @Inject
     private CaseRepository caseRepository;
 
+    @Inject
+    private Clock clock;
+
     @Test
     public void shouldFindUnactionedCases() throws Exception {
 
@@ -76,7 +80,7 @@ public class CaseReferredToCourtRepositoryTest extends BaseTransactionalTest {
         caseRepository.save(caseDetail);
 
         caseSearchResultRepository.save(new CaseSearchResult(caseReferredToCourt.getCaseId(),
-                caseReferredToCourt.getFirstName(), caseReferredToCourt.getLastName(), LocalDates.from("2001-02-03"), ZonedDateTime.now()));
+                caseReferredToCourt.getFirstName(), caseReferredToCourt.getLastName(), LocalDates.from("2001-02-03"), clock.now()));
 
         courtReferralRepository.save(new CourtReferral(caseReferredToCourt.getCaseId(), hearingDate));
 

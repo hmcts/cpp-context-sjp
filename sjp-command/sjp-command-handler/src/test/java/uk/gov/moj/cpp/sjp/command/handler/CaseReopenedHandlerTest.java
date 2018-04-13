@@ -23,6 +23,8 @@ import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.REOPEN_UPDATE_DATE;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.REOPEN_UPDATE_LIBRA_NUMBER;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.REOPEN_UPDATE_REASON;
 
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -79,6 +81,8 @@ public class CaseReopenedHandlerTest {
     @Mock
     private AggregateService aggregateService;
     @Spy
+    private Clock clock = new UtcClock();
+    @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
             CaseReopened.class, CaseReopenedUpdated.class, CaseReopenedUndone.class);
     @Captor
@@ -89,7 +93,7 @@ public class CaseReopenedHandlerTest {
         when(eventSource.getStreamById(eq(CASE_ID))).thenReturn(eventStream);
         when(aggregateService.get(any(EventStream.class), eq(CaseAggregate.class))).thenReturn(caseAggregate);
 
-        caseAggregate.receiveCase(aCase, ZonedDateTime.now());
+        caseAggregate.receiveCase(aCase, clock.now());
     }
 
 

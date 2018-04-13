@@ -5,12 +5,11 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "pending_dates_to_avoid")
@@ -22,20 +21,26 @@ public class PendingDatesToAvoid {
     @Column(name = "plea_date")
     private ZonedDateTime pleaDate;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "case_id", nullable = false)
-    @JsonIgnore
     private CaseDetail caseDetail;
 
-    public PendingDatesToAvoid() {}
+    public PendingDatesToAvoid() {
+    }
 
     public PendingDatesToAvoid(final UUID caseId) {
+        this();
         this.caseId = caseId;
     }
 
     public PendingDatesToAvoid(final UUID caseId, final ZonedDateTime pleaDate) {
-        this.caseId = caseId;
+        this(caseId);
         this.pleaDate = pleaDate;
+    }
+
+    public PendingDatesToAvoid(final CaseDetail caseDetail) {
+        this(caseDetail.getId());
+        this.caseDetail = caseDetail;
     }
 
     public UUID getCaseId() {

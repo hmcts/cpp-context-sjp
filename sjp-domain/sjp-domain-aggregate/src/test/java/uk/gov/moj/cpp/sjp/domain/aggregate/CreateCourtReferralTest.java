@@ -6,13 +6,14 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseNotFound;
 import uk.gov.moj.cpp.sjp.event.CourtReferralCreated;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,8 @@ public class CreateCourtReferralTest {
 
     private CaseAggregate caseAggregate;
 
+    private final Clock clock = new UtcClock();
+
     @Before
     public void setup() {
         this.caseAggregate = new CaseAggregate();
@@ -32,7 +35,7 @@ public class CreateCourtReferralTest {
     public void shouldCreateCourtReferral() {
 
         final Case caseDetail = CaseBuilder.aDefaultSjpCase().build();
-        caseAggregate.receiveCase(caseDetail, ZonedDateTime.now());
+        caseAggregate.receiveCase(caseDetail, clock.now());
 
         final LocalDate hearingDate = LocalDate.now().plusWeeks(1);
 

@@ -5,6 +5,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.Employer;
@@ -14,7 +16,6 @@ import uk.gov.moj.cpp.sjp.event.DefendantNotEmployed;
 import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -25,6 +26,8 @@ import org.junit.Test;
 public class DeleteEmployerTest {
 
     private CaseAggregate caseAggregate;
+
+    private Clock clock = new UtcClock();
 
     @Before
     public void init() {
@@ -65,7 +68,7 @@ public class DeleteEmployerTest {
 
     private CaseReceived receiveCase() {
         final Case sjpCase = CaseBuilder.aDefaultSjpCase().build();
-        final Stream<Object> receiveCase = caseAggregate.receiveCase(sjpCase, ZonedDateTime.now());
+        final Stream<Object> receiveCase = caseAggregate.receiveCase(sjpCase, clock.now());
         return receiveCase.filter(CaseReceived.class::isInstance).map(CaseReceived.class::cast).findFirst().get();
     }
 

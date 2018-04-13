@@ -51,10 +51,9 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
 
     @Test
     public void testCreateCase_whenValidSjpCase_shouldTriggerExpectedCaseCreatedAndStartedEvents() {
-        List<Object> events = caseAggregate.receiveCase(aCase, clock.now())
-                .collect(Collectors.toList());
+        final List<Object> events = caseAggregate.receiveCase(aCase, clock.now()).collect(Collectors.toList());
 
-        CaseReceived expectedCaseReceived = buildCaseReceived(aCase);
+        final CaseReceived expectedCaseReceived = buildCaseReceived(aCase);
         assertThat(reflectionEquals(events.get(0), expectedCaseReceived, singleton("defendant")), is(true));
         assertThat(reflectionEquals(
                 ((CaseReceived) events.get(0)).getDefendant(),

@@ -25,6 +25,7 @@ import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_ID;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_ID_STR;
 
 import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -80,7 +81,7 @@ public class AddCaseDocumentHandlerTest {
     private AddCaseDocumentHandler addCaseDocumentHandler;
 
     @Spy
-    private Clock clock = new StoppedClock(ZonedDateTime.now());
+    private Clock clock = new UtcClock();
 
     @Captor
     private ArgumentCaptor<Stream<JsonEnvelope>> captor;

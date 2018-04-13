@@ -13,6 +13,7 @@ import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus.EMPLOYED;
 
 import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
@@ -50,7 +51,7 @@ import org.junit.Test;
 public class PleadOnlineTest {
 
     private final CaseAggregate caseAggregate = new CaseAggregate();
-    private final Clock clock = new StoppedClock(ZonedDateTime.now());
+    private final Clock clock = new UtcClock();
     private final ZonedDateTime now = clock.now();
 
     private static final UUID caseId = UUID.randomUUID();

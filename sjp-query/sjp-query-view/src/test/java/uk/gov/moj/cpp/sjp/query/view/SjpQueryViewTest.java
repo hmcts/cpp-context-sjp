@@ -31,6 +31,8 @@ import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.FIELD_CASE_ID;
 import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.FIELD_QUERY;
 import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.FIELD_URN;
 
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -61,7 +63,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCasesRepository;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
-import uk.gov.moj.cpp.sjp.query.view.response.DatesToAvoidsView;
+import uk.gov.moj.cpp.sjp.query.view.response.CasesPendingDatesToAvoidView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
@@ -96,6 +98,9 @@ public class SjpQueryViewTest {
 
     private static final String CASE_ID = "caseId";
     private static final String URN = "urn";
+
+    @Spy
+    private Clock clock = new UtcClock();
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
@@ -443,19 +448,18 @@ public class SjpQueryViewTest {
     @Test
     public void shouldFindPendingDatesToAvoid() {
         final UUID caseId = randomUUID();
-        JsonEnvelope response = mockAndVerifyPendingDatesToAvoid(caseId, UUID.randomUUID());
+        final JsonEnvelope response = mockAndVerifyPendingDatesToAvoid(caseId, UUID.randomUUID());
         assertThat(response, jsonEnvelope(metadata().withName("sjp.pending-dates-to-avoid"), payload().isJson(allOf(
-                withJsonPath("$.pendingDatesToAvoid[0].caseId", equalTo(caseId.toString())),
-                withJsonPath("$.pendingDatesToAvoidCount", equalTo(2))
+                withJsonPath("$.cases[0].caseId", equalTo(caseId.toString())),
+                withJsonPath("$.count", equalTo(2))
         ))));
     }
 
     @Test
     public void shouldNotFindPendingDatesToAvoid() {
-        final UUID caseId = randomUUID();
-        JsonEnvelope response = mockAndVerifyPendingDatesToAvoid();
+        final JsonEnvelope response = mockAndVerifyPendingDatesToAvoid();
         assertThat(response, jsonEnvelope(metadata().withName("sjp.pending-dates-to-avoid"), payload().isJson(
-                withJsonPath("$.pendingDatesToAvoidCount", equalTo(0))
+                withJsonPath("$.count", equalTo(0))
         )));
     }
 
@@ -463,11 +467,12 @@ public class SjpQueryViewTest {
         final JsonEnvelope queryEnvelope = envelope()
                 .with(metadataWithRandomUUID("sjp.query.pending-dates-to-avoid"))
                 .build();
-        List<PendingDatesToAvoid> pendingDatesToAvoidList = Stream.of(caseIds).collect(toList()).stream()
+        final List<PendingDatesToAvoid> pendingDatesToAvoidList = Stream.of(caseIds)
+                .map(CaseDetail::new)
                 .map(PendingDatesToAvoid::new)
                 .collect(toList());
 
-        when(datesToAvoidService.findCasesPendingDatesToAvoid(queryEnvelope)).thenReturn(new DatesToAvoidsView(pendingDatesToAvoidList));
+        when(datesToAvoidService.findCasesPendingDatesToAvoid(queryEnvelope)).thenReturn(new CasesPendingDatesToAvoidView(pendingDatesToAvoidList));
 
         final JsonEnvelope response = sjpQueryView.findPendingDatesToAvoid(queryEnvelope);
 
@@ -530,7 +535,7 @@ public class SjpQueryViewTest {
         final DefendantDetail defendant = new DefendantDetail(defendantId, null, new HashSet<>(Arrays.asList(offence)), null);
         final OnlinePlea onlinePlea = new OnlinePlea(
                 new PleaUpdated(caseId.toString(), offenceId.toString(), Plea.Type.NOT_GUILTY.toString(),
-                null, "I was not there, they are lying", PleaMethod.ONLINE, ZonedDateTime.now())
+                        null, "I was not there, they are lying", PleaMethod.ONLINE, clock.now())
         );
         onlinePlea.setDefendantDetail(defendant);
 

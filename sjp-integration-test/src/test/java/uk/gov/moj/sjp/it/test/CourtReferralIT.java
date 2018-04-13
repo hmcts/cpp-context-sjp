@@ -19,7 +19,7 @@ import org.junit.Test;
 public class CourtReferralIT extends BaseIntegrationTest {
 
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
-    private UpdatePleaHelper updatePleaHelper;
+    private UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper();
 
     private UUID caseId;
 
@@ -36,8 +36,8 @@ public class CourtReferralIT extends BaseIntegrationTest {
         stubGetEmptyAssignmentsByDomainObjectId(caseId);
 
         // case needs to be created before adding an interpreter language
-        updatePleaHelper = new UpdatePleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId());
-        updatePleaHelper.updatePlea(getPleaPayload(PLEA_NOT_GUILTY, true, interpreterLanguage));
+        updatePleaHelper.updatePlea(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(),
+                getPleaPayload(PLEA_NOT_GUILTY, true, interpreterLanguage));
     }
 
     @After

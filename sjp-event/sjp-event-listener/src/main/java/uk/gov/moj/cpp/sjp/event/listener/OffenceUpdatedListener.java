@@ -4,6 +4,7 @@ import static java.time.LocalDate.now;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -38,6 +39,9 @@ public class OffenceUpdatedListener {
     @Inject
     private OnlinePleaRepository.PleaDetailsRepository onlinePleaRepository;
 
+    @Inject
+    private Clock clock;
+
     @Handles("sjp.events.plea-updated")
     @Transactional
     public void updatePlea(final JsonEnvelope envelope) {
@@ -58,7 +62,7 @@ public class OffenceUpdatedListener {
             final OnlinePlea onlinePlea = new OnlinePlea(event);
             if (onlinePlea.getSubmittedOn() == null) {
                 onlinePlea.setSubmittedOn(envelope.metadata().createdAt()
-                        .orElse(ZonedDateTime.now()));
+                        .orElse(clock.now()));
             }
             onlinePleaRepository.saveOnlinePlea(onlinePlea);
         }

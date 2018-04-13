@@ -34,12 +34,12 @@ public class ProsecutingAuthoritiesAssignmentsRules {
                 .entrySet()
                 .stream()
                 .flatMap(e -> e.getValue().stream().map(v -> Pair.of(v, e.getKey())))
-                .collect(groupingBy(p -> p.getKey(), mapping(p -> p.getValue(), collectingAndThen(toSet(), Collections::unmodifiableSet))));
+                .collect(groupingBy(Pair::getKey, mapping(Pair::getValue, collectingAndThen(toSet(), Collections::unmodifiableSet))));
 
         excludedProsecutingAuthoritiesByCourts = prosecutingAuthoritiesByCourts
                 .entrySet()
                 .stream()
-                .collect(toMap(e -> e.getKey(), e -> unmodifiableSet(new HashSet(CollectionUtils.subtract(allProsecutingAuthorities, e.getValue())))));
+                .collect(toMap(Map.Entry::getKey, e -> unmodifiableSet(new HashSet(CollectionUtils.subtract(allProsecutingAuthorities, e.getValue())))));
     }
 
     public Set<String> getCourtExcludedProsecutingAuthorities(final String court) {

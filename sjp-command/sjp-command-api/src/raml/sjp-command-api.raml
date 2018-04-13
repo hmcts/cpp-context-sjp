@@ -106,32 +106,6 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
-/cases/{caseId}/fixdefendant:
-  uriParameters:
-    caseId:
-      description: The ID of the case to modify
-      type: string
-      required: true
-  post:
-    description: |
-      Fix defendant's personal details or interpreter
-      ...
-      (mapping):
-          requestType: application/vnd.sjp.fix-defendant-details+json
-          name: sjp.fix-defendant-details
-      ...
-    body:
-      application/vnd.sjp.fix-defendant-details+json:
-        example:
-          !include json/sjp.fix-defendant-details.json
-        schema:
-          !include json/schema/sjp.fix-defendant-details.json
-    responses:
-      500:
-        description: Internal Server Error
-      202:
-        description: Accepted
-
 /cases/{caseId}/defendant/{defendantId}/nationalInsuranceNumber:
   uriParameters:
     caseId:

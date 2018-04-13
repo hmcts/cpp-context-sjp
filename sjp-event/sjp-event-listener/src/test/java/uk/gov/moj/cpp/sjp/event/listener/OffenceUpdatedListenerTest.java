@@ -10,8 +10,11 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithDefaults;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
@@ -25,7 +28,6 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
-import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -81,6 +83,9 @@ public class OffenceUpdatedListenerTest {
     @InjectMocks
     private CaseSearchResultService caseSearchResultService = new CaseSearchResultService();
 
+    @Spy
+    private Clock clock = new StoppedClock(new UtcClock().now());
+
     @Mock
     private OnlinePleaRepository.PleaDetailsRepository onlinePleaRepository;
 
@@ -90,21 +95,21 @@ public class OffenceUpdatedListenerTest {
     @Test
     public void shouldUpdateGuiltyPleaOnline() {
         final PleaUpdated pleaUpdated = new PleaUpdated(caseId.toString(), offenceId.toString(), Plea.Type.GUILTY.toString(),
-                "It was an accident", null, PleaMethod.ONLINE, ZonedDateTime.now());
+                "It was an accident", null, PleaMethod.ONLINE, clock.now());
         assertExpectationsForPleaUpdate(true, true, pleaUpdated, false);
     }
 
     @Test
     public void shouldUpdateGuiltyRequestHearingPleaOnline() {
         final PleaUpdated pleaUpdated = new PleaUpdated(caseId.toString(), offenceId.toString(), Plea.Type.GUILTY_REQUEST_HEARING.toString(),
-                "It was an accident", null, PleaMethod.ONLINE, ZonedDateTime.now());
+                "It was an accident", null, PleaMethod.ONLINE, clock.now());
         assertExpectationsForPleaUpdate(true, true, pleaUpdated, true);
     }
 
     @Test
     public void shouldUpdateNotGuiltyPleaOnlineWithUpdateDate() {
         final PleaUpdated pleaUpdated = new PleaUpdated(caseId.toString(), offenceId.toString(), Plea.Type.NOT_GUILTY.toString(),
-                null, "I was not there, they are lying", PleaMethod.ONLINE, ZonedDateTime.now());
+                null, "I was not there, they are lying", PleaMethod.ONLINE, clock.now());
         assertExpectationsForPleaUpdate(true, true, pleaUpdated, true);
     }
 
@@ -118,7 +123,7 @@ public class OffenceUpdatedListenerTest {
     @Test
     public void shouldUpdateByPost() {
         final PleaUpdated pleaUpdated = new PleaUpdated(caseId.toString(), offenceId.toString(), Plea.Type.GUILTY.toString(),
-                null, null, PleaMethod.POSTAL, ZonedDateTime.now());
+                null, null, PleaMethod.POSTAL, clock.now());
         assertExpectationsForPleaUpdate(false, false, pleaUpdated, null);
     }
 
@@ -143,8 +148,7 @@ public class OffenceUpdatedListenerTest {
             verify(onlinePleaRepository).saveOnlinePlea(onlinePleaCaptor.capture());
             if (pleaUpdatedEventHasUpdatedDate) {
                 assertThat(onlinePleaCaptor.getValue().getSubmittedOn(), is(pleaUpdated.getUpdatedDate()));
-            }
-            else {
+            } else {
                 assertThat(onlinePleaCaptor.getValue().getSubmittedOn(), is(metadataBuilder.createdAt().get()));
             }
             assertThat(onlinePleaCaptor.getValue().getCaseId(), is(caseId));
@@ -152,8 +156,7 @@ public class OffenceUpdatedListenerTest {
             assertThat(onlinePleaCaptor.getValue().getPleaDetails().getComeToCourt(), is(comeToCourt));
             assertThat(onlinePleaCaptor.getValue().getPleaDetails().getMitigation(), is(pleaUpdated.getMitigation()));
             assertThat(onlinePleaCaptor.getValue().getPleaDetails().getNotGuiltyBecause(), is(pleaUpdated.getNotGuiltyBecause()));
-        }
-        else {
+        } else {
             verify(onlinePleaRepository, never()).saveOnlinePlea(onlinePleaCaptor.capture());
         }
     }

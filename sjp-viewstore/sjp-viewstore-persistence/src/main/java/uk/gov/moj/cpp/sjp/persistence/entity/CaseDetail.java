@@ -137,6 +137,11 @@ public class CaseDetail implements Serializable {
         defendant.setCaseDetail(this);
     }
 
+    public CaseDetail(final UUID id) {
+        this();
+        this.id = id;
+    }
+
     public CaseDetail(final UUID id,
                       final String urn,
                       final String prosecutingAuthority,
@@ -144,8 +149,7 @@ public class CaseDetail implements Serializable {
                       final Boolean completed,
                       final UUID assigneeId,
                       final ZonedDateTime createdOn, final DefendantDetail defendantDetail, final BigDecimal costs, final LocalDate postingDate) {
-        this();
-        this.id = id;
+        this(id);
         this.urn = urn;
         this.prosecutingAuthority = prosecutingAuthority;
         this.initiationCode = initiationCode;

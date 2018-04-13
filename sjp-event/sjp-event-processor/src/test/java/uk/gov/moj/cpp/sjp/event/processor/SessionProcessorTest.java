@@ -117,4 +117,14 @@ public class SessionProcessorTest {
 
         verify(schedulingService).endSession(sessionId, delegatedPowersSessionEndedEvent);
     }
+
+    @Test
+    public void delegatedPowersSessionEndedTest() {
+        final JsonEnvelope sessionEndedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.delegated-powers-session-ended"),
+                createObjectBuilder().add("sessionId", sessionId.toString()).build());
+
+        sessionProcessor.delegatedPowersSessionEnded(sessionEndedEvent);
+
+        verify(schedulingService).endSession(sessionId, sessionEndedEvent);
+    }
 }

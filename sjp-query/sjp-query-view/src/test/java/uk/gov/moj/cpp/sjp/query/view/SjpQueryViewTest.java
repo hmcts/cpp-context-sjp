@@ -20,11 +20,11 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
 import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.FIELD_CASE_ID;
@@ -42,6 +42,7 @@ import uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher;
 import uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
+import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Income;
@@ -56,10 +57,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
-import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
-import uk.gov.moj.cpp.sjp.persistence.entity.view.ReadyCasesReasonCount;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCasesRepository;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
@@ -72,8 +70,6 @@ import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
 import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -178,7 +174,7 @@ public class SjpQueryViewTest {
                 .build();
 
         final JsonObjectBuilder reason = createObjectBuilder()
-                .add("reason", "PIA")
+                .add("reason", CaseReadinessReason.PIA.name())
                 .add("count", 2);
 
         final JsonObject readyCasesReasonCounts = createObjectBuilder().add("reasons", createArrayBuilder().add(reason)).build();
@@ -189,7 +185,7 @@ public class SjpQueryViewTest {
 
         assertThat(result, jsonEnvelope(metadata().withName("sjp.query.ready-cases-reasons-counts"),
                 payload().isJson(allOf(
-                        withJsonPath("$.reasons[0].reason", is("PIA")),
+                        withJsonPath("$.reasons[0].reason", is(CaseReadinessReason.PIA.name())),
                         withJsonPath("$.reasons[0].count", is(2))
                 ))
         ));

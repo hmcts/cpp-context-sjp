@@ -6,8 +6,10 @@ import java.util.Objects;
 import java.util.UUID;
 
 //generic event used to indicate to the front-end the update to a case couldn't be applied due to business rules
-@Event("sjp.events.case-update-rejected")
+@Event(CaseUpdateRejected.EVENT_NAME)
 public class CaseUpdateRejected {
+
+    public static final String EVENT_NAME = "sjp.events.case-update-rejected";
 
     //should match CaseUpdateHelper class
     public enum RejectReason {

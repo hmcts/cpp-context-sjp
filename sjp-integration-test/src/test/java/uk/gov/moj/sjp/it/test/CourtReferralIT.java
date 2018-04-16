@@ -1,8 +1,8 @@
 package uk.gov.moj.sjp.it.test;
 
+import static uk.gov.moj.cpp.sjp.domain.PleaType.NOT_GUILTY;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
-import static uk.gov.moj.sjp.it.test.UpdatePleaIT.PLEA_NOT_GUILTY;
 import static uk.gov.moj.sjp.it.test.UpdatePleaInterpreterIT.getPleaPayload;
 
 import uk.gov.moj.sjp.it.command.CreateCase;
@@ -37,7 +37,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
         // case needs to be created before adding an interpreter language
         updatePleaHelper.updatePlea(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(),
-                getPleaPayload(PLEA_NOT_GUILTY, true, interpreterLanguage));
+                getPleaPayload(NOT_GUILTY, true, interpreterLanguage));
     }
 
     @After

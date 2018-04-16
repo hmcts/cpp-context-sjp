@@ -14,14 +14,12 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
-import uk.gov.moj.cpp.sjp.event.processor.listener.CaseUpdatedListener;
 
 import java.time.LocalDate;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 import javax.json.Json;
-import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import org.junit.Test;
@@ -43,7 +41,7 @@ public class CaseReopenedProcessorTest {
     private static final String CASE_ID = UUID.randomUUID().toString();
 
     @InjectMocks
-    private CaseUpdatedListener caseUpdatedListener;
+    private CaseReopenedProcessor caseReopenInLibraProcessor;
     @Mock
     private Sender sender;
     @Captor
@@ -51,21 +49,20 @@ public class CaseReopenedProcessorTest {
     @Spy
     private Enveloper envelopers = createEnveloper();
 
-
     @Test
     public void shouldHandleCaseReopenedInLibraEventMessage() throws Exception {
-        verifyCaseReopenedEventMessage(EVENT_PUBLIC_CASE_REOPENED_IN_LIBRA, caseUpdatedListener::handleCaseReopenedInLibra);
+        verifyCaseReopenedEventMessage(EVENT_PUBLIC_CASE_REOPENED_IN_LIBRA, caseReopenInLibraProcessor::handleCaseReopenedInLibra);
     }
 
     @Test
     public void shouldHandleCaseReopenedInLibraUpdatedEventMessage() throws Exception {
-        verifyCaseReopenedEventMessage(EVENT_PUBLIC_CASE_REOPENED_IN_LIBRA_UPDATED, caseUpdatedListener::handleCaseReopenedInLibraUpdated);
+        verifyCaseReopenedEventMessage(EVENT_PUBLIC_CASE_REOPENED_IN_LIBRA_UPDATED, caseReopenInLibraProcessor::handleCaseReopenedInLibraUpdated);
     }
 
     @Test
     public void shouldHandleCaseReopenedInLibraUndoneEventMessage() throws Exception {
         verifyCaseReopenedUndoneEventMessage(EVENT_PUBLIC_CASE_REOPENED_IN_LIBRA_UNDONE,
-                caseUpdatedListener::handleCaseReopenedInLibraUndone);
+                caseReopenInLibraProcessor::handleCaseReopenedInLibraUndone);
     }
 
     private void verifyCaseReopenedEventMessage(String eventName, Consumer<JsonEnvelope> consumer) {

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.ReadyCasesReasonCount;
 
 import java.util.UUID;
@@ -8,6 +9,8 @@ import javax.persistence.Column;
 import javax.persistence.ColumnResult;
 import javax.persistence.ConstructorResult;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.NamedNativeQuery;
 import javax.persistence.SqlResultSetMapping;
@@ -24,13 +27,14 @@ public class ReadyCase {
     private UUID caseId;
 
     @Column(name = "reason")
-    private String reason;
+    @Enumerated(EnumType.STRING)
+    private CaseReadinessReason reason;
 
     public ReadyCase() {
         //required for hibernate
     }
 
-    public ReadyCase(UUID caseId, String reason) {
+    public ReadyCase(final UUID caseId, final CaseReadinessReason reason) {
         this.caseId = caseId;
         this.reason = reason;
     }
@@ -39,8 +43,8 @@ public class ReadyCase {
         return caseId;
     }
 
-    public String getReason() {
+    public CaseReadinessReason getReason() {
         return reason;
     }
-    
+
 }

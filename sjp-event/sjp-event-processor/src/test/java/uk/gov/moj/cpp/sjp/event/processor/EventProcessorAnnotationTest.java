@@ -4,7 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.event.processor.listener.CaseUpdatedListener;
+import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
+import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -27,11 +28,11 @@ public class EventProcessorAnnotationTest {
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {CaseUpdatedListener.class, EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA, METHOD_CASE_REOPENED_IN_LIBRA},
-                {CaseUpdatedListener.class, EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA_UPDATED, METHOD_CASE_REOPENED_IN_LIBRA_UPDATED},
-                {CaseUpdatedListener.class, EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA_UNDONE, METHOD_CASE_REOPENED_IN_LIBRA_UNDONE},
-                {AllOffencesWithdrawalRequestedProcessor.class, "sjp.events.all-offences-withdrawal-requested", "publishAllOffencesWithdrawalEvent"},
-                {CaseUpdateRejectedProcessor.class, "sjp.events.case-update-rejected", "caseUpdateRejected"}
+                {CaseReopenedProcessor.class, EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA, METHOD_CASE_REOPENED_IN_LIBRA},
+                {CaseReopenedProcessor.class, EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA_UPDATED, METHOD_CASE_REOPENED_IN_LIBRA_UPDATED},
+                {CaseReopenedProcessor.class, EVENT_PRIVATE_CASE_REOPENED_IN_LIBRA_UNDONE, METHOD_CASE_REOPENED_IN_LIBRA_UNDONE},
+                {AllOffencesWithdrawalRequestedProcessor.class, AllOffencesWithdrawalRequested.EVENT_NAME, "handleAllOffencesWithdrawalEvent"},
+                {CaseUpdateRejectedProcessor.class, CaseUpdateRejected.EVENT_NAME, "caseUpdateRejected"}
         });
     }
 

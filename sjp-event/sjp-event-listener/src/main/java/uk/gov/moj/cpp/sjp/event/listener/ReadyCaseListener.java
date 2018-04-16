@@ -5,6 +5,9 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
+import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
+import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCasesRepository;
 
@@ -21,21 +24,21 @@ public class ReadyCaseListener {
     private ReadyCasesRepository readyCasesRepository;
 
     @Transactional
-    @Handles("sjp.events.case-marked-ready-for-decision")
+    @Handles(CaseMarkedReadyForDecision.EVENT_NAME)
     public void handleCaseMarkedReadyForDecisison(final JsonEnvelope caseMarkedReadyForDecisionEvent) {
         final JsonObject caseMarkedReadyForDecision = caseMarkedReadyForDecisionEvent.payloadAsJsonObject();
         final ReadyCase readyCase = new ReadyCase(
                 UUID.fromString(caseMarkedReadyForDecision.getString("caseId")),
-                caseMarkedReadyForDecision.getString("reason")
+                CaseReadinessReason.valueOf(caseMarkedReadyForDecision.getString("reason"))
         );
         readyCasesRepository.save(readyCase);
     }
 
     @Transactional
-    @Handles("sjp.events.case-unmarked-ready-for-decision")
-    public void handleCaseUnmarkedReadyForDecisison(final JsonEnvelope caseUnmarkedReadyForDecisionEvent) {
-        final JsonObject caseUnmarkedReadyForDecison = caseUnmarkedReadyForDecisionEvent.payloadAsJsonObject();
-        final ReadyCase readyCase = readyCasesRepository.findBy(UUID.fromString(caseUnmarkedReadyForDecison.getString("caseId")));
+    @Handles(CaseUnmarkedReadyForDecision.EVENT_NAME)
+    public void handleCaseUnmarkedReadyForDecision(final JsonEnvelope caseUnmarkedReadyForDecisionEvent) {
+        final JsonObject caseUnmarkedReadyForDecision = caseUnmarkedReadyForDecisionEvent.payloadAsJsonObject();
+        final ReadyCase readyCase = readyCasesRepository.findBy(UUID.fromString(caseUnmarkedReadyForDecision.getString("caseId")));
         readyCasesRepository.remove(readyCase);
     }
 

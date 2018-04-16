@@ -5,8 +5,11 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 
 import java.time.ZonedDateTime;
 
-@Event("sjp.events.plea-updated")
+@Event(PleaUpdated.EVENT_NAME)
 public class PleaUpdated {
+
+    public static final String EVENT_NAME = "sjp.events.plea-updated";
+
     private String caseId;
     private String offenceId;
     private String plea;

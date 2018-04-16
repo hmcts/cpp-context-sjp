@@ -19,8 +19,5 @@
       "type": "string"
     }
   },
-  "additionalProperties": false,
-  "required": [
-    "address1"
-  ]
+  "additionalProperties": false
 }

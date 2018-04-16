@@ -16,16 +16,6 @@
           "urn": {
             "type": "string"
           },
-          "initiationCode": {
-            "type": "string"
-          },
-          "prosecutingAuthority": {
-            "id": "/prosecutingAuthority",
-            "type": "string"
-          },
-          "postingDate": {
-            "type": "string"
-          },
           "assigned": {
             "type": "boolean"
           },
@@ -36,6 +26,13 @@
             "type": "string",
             "minLength": 12,
             "maxLength": 12
+          },
+          "prosecutingAuthority": {
+            "id": "/prosecutingAuthority",
+            "type": "string"
+          },
+          "postingDate": {
+            "type": "string"
           },
           "reopendDate": {
             "type": "string"
@@ -75,7 +72,6 @@
           "caseId",
           "urn",
           "enterpriseId",
-          "initiationCode",
           "prosecutingAuthority",
           "defendant"
         ]

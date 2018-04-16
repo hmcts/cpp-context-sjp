@@ -34,7 +34,7 @@
       }
     },
     "count": {
-      "type": "number"
+      "type": "integer"
     }
   },
   "additionalProperties": false,

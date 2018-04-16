@@ -59,7 +59,6 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.DatesToAvoidsView;
-import uk.gov.moj.cpp.sjp.query.view.response.DefendantsView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
@@ -233,19 +232,6 @@ public class SjpQueryViewTest {
         assertEquals(result, outputEnvelope);
         verify(caseService).findCaseDocuments(CASE_ID);
         verify(function).apply(caseDocumentsView);
-    }
-
-    @Test
-    public void shouldFindCaseDefendants() {
-        setupCaseExpectations();
-        final DefendantsView defendantsView = new DefendantsView(emptyList());
-        when(caseService.findCaseDefendants(CASE_ID)).thenReturn(defendantsView);
-
-        final JsonEnvelope result = sjpQueryView.findCaseDefendants(envelope);
-
-        assertEquals(result, outputEnvelope);
-        verify(caseService).findCaseDefendants(CASE_ID);
-        verify(function).apply(defendantsView);
     }
 
     @Test

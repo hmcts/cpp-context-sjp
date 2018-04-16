@@ -36,7 +36,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.InterpreterDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
@@ -49,7 +48,6 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
-import uk.gov.moj.cpp.sjp.query.view.response.DefendantsView;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCasesHit;
@@ -407,29 +405,6 @@ public class CaseServiceTest {
     }
 
     @Test
-    public void shouldFindCaseDefendants() {
-
-
-        Set<OffenceDetail> offences = new HashSet<>();
-
-        DefendantDetail defendant = new DefendantDetail(ID, new PersonalDetails(), offences, 1);
-        defendant.setCaseDetail(createCaseDetail());
-        defendant.setInterpreter(new InterpreterDetail(INTERPRETER));
-
-        when(caseRepository.findCaseDefendant(CASE_ID)).thenReturn(defendant);
-
-        DefendantsView defendantsView = service.findCaseDefendants(CASE_ID.toString());
-
-        assertThat(defendantsView, notNullValue());
-
-        assertThat(defendantsView.getDefendants().get(0).getInterpreter().getLanguage(), is(INTERPRETER));
-        assertThat(defendantsView.getDefendants().get(0).getCaseId(), is(CASE_ID));
-        assertThat(defendantsView.getDefendants().get(0).getId(), is(ID));
-        assertThat(defendantsView.getDefendants().get(0).getOffences().size(), is(0));
-
-    }
-
-    @Test
     public void shouldFindAwatingCases() {
 
         final CaseDetail caseDetail =
@@ -622,7 +597,6 @@ public class CaseServiceTest {
         caseSummary.setId(CASE_ID);
         caseSummary.setUrn(URN);
         caseSummary.setEnterpriseId(ENTERPRISE_ID);
-        caseSummary.setInitiationCode(INITIATION_CODE);
         caseSummary.setProsecutingAuthority(PROSECUTING_AUTHORITY);
         caseSummary.setPostingDate(POSTING_DATE);
         caseSearchResult.setId(randomUUID());

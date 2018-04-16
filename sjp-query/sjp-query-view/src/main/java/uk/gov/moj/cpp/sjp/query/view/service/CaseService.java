@@ -35,8 +35,6 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnWithDetailsView;
-import uk.gov.moj.cpp.sjp.query.view.response.DefendantView;
-import uk.gov.moj.cpp.sjp.query.view.response.DefendantsView;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCasesHit;
@@ -51,7 +49,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonArrayBuilder;
@@ -237,19 +234,6 @@ public class CaseService {
         final CaseDocumentsView caseDocumentsView = new CaseDocumentsView(caseDocuments);
         filterOtherAndFinancialMeansDocuments(caseDocumentsView.getCaseDocuments());
         return caseDocumentsView;
-    }
-
-    /**
-     * Find case defendants
-     *
-     * @param caseId id of the case
-     * @return case defendants for the case
-     */
-    public DefendantsView findCaseDefendants(final String caseId) {
-        List<DefendantView> caseDefendant = Stream.of(
-                caseRepository.findCaseDefendant(fromString(caseId)))
-                .map(DefendantView::new).collect(toList());
-        return new DefendantsView(caseDefendant);
     }
 
     private CaseView getCaseView(CaseDetail caseDetail) {

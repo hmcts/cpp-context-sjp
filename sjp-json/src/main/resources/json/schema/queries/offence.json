@@ -33,7 +33,7 @@
     "startDate": {
       "type": "string"
     },
-    "endDate": {
+    "chargeDate": {
       "type": "string"
     },
     "pendingWithdrawal": {

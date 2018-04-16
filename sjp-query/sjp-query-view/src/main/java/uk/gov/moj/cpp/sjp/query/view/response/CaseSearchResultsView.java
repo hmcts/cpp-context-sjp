@@ -40,7 +40,6 @@ public class CaseSearchResultsView {
         private final boolean assigned;
         private final boolean completed;
         private final String enterpriseId;
-        private final String initiationCode;
         private final String prosecutingAuthority;
         private final LocalDate postingDate;
         private final LocalDate reopenedDate;
@@ -54,7 +53,6 @@ public class CaseSearchResultsView {
             this.assigned = caseSearchResult.getAssigned();
             this.completed = caseSearchResult.getCaseSummary().isCompleted();
             this.enterpriseId = caseSearchResult.getCaseSummary().getEnterpriseId();
-            this.initiationCode = caseSearchResult.getCaseSummary().getInitiationCode();
             this.prosecutingAuthority = caseSearchResult.getCaseSummary().getProsecutingAuthority();
             this.postingDate = caseSearchResult.getCaseSummary().getPostingDate();
             this.reopenedDate = caseSearchResult.getCaseSummary().getReopenedDate();
@@ -81,10 +79,6 @@ public class CaseSearchResultsView {
 
         public String getEnterpriseId() {
             return enterpriseId;
-        }
-
-        public String getInitiationCode() {
-            return initiationCode;
         }
 
         public String getProsecutingAuthority() {

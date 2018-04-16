@@ -8,6 +8,9 @@
     },
     "mobile": {
       "type": "string"
+    },
+    "email": {
+      "type": "string"
     }
   },
   "additionalProperties": false

@@ -20,7 +20,7 @@
           "type": "string"
         }
       },
-      "additionalProperties": false,
+      "additionalProperties": true,
       "required": [
         "address1",
         "postcode"
@@ -48,7 +48,7 @@
           "type": "string"
         }
       },
-      "additionalProperties": false,
+      "additionalProperties": true,
       "required": [
         "id",
         "title",
@@ -70,7 +70,7 @@
           "type": "string"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "personalDetails": {
       "type": "object",
@@ -100,7 +100,7 @@
           "$ref": "#/definitions/address"
         }
       },
-      "additionalProperties": false,
+      "additionalProperties": true,
       "required": [
         "firstName",
         "lastName",
@@ -139,7 +139,7 @@
           "minItems": 1
         }
       },
-      "additionalProperties": false,
+      "additionalProperties": true,
       "required": [
         "id",
         "personalDetails",
@@ -165,7 +165,7 @@
       "$ref": "#/definitions/defendant"
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "id",
     "urn",

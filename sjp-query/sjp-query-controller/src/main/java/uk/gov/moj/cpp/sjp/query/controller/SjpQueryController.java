@@ -73,11 +73,6 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
-    @Handles("sjp.query.cases-search")
-    public JsonEnvelope searchCasesByPersonId(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
     @Handles("sjp.query.case-search-results")
     public JsonEnvelope findCaseSearchResults(final JsonEnvelope query) {
         return requester.request(query);
@@ -104,11 +99,6 @@ public class SjpQueryController {
         } else {
             return requester.request(query);
         }
-    }
-
-    @Handles("sjp.query.case-defendants")
-    public JsonEnvelope findCaseDefendants(final JsonEnvelope query) {
-        return requester.request(query);
     }
 
     @Handles("sjp.query.cases-search-by-material-id")

@@ -50,7 +50,6 @@ public class SjpQueryView {
     private static final String NAME_RESPONSE_CASES_SEARCH = "sjp.query.cases-search-response";
     private static final String NAME_RESPONSE_CASES_SEARCH_BY_MATERIAL_ID = "sjp.query.cases-search-by-material-id-response";
     private static final String NAME_RESPONSE_CASE_DOCUMENTS = "sjp.query.case-documents-response";
-    private static final String NAME_RESPONSE_CASE_DEFENDANTS = "sjp.query.case-defendants-response";
     private static final String NAME_RESPONSE_AWAITING_CASES = "sjp.query.awaiting-cases-response";
     private static final String NAME_RESPONSE_CASES_REFERRED_TO_COURT = "sjp.query.cases-referred-to-court-response";
 
@@ -104,12 +103,6 @@ public class SjpQueryView {
                         extract(envelope, FIELD_POSTCODE)));
     }
 
-    @Handles("sjp.query.cases-search")
-    public JsonEnvelope searchCasesByPersonId(final JsonEnvelope envelope) {
-        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASES_SEARCH).apply(
-                caseService.searchCasesByDefendantId(extract(envelope, FIELD_QUERY)));
-    }
-
     @Handles("sjp.query.case-search-results")
     public JsonEnvelope findCaseSearchResults(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASES_SEARCH).apply(
@@ -147,12 +140,6 @@ public class SjpQueryView {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE_DOCUMENTS).apply(
                 caseService.findCaseDocumentsFilterOtherAndFinancialMeans(extract(envelope, FIELD_CASE_ID)));
 
-    }
-
-    @Handles("sjp.query.case-defendants")
-    public JsonEnvelope findCaseDefendants(final JsonEnvelope envelope) {
-        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE_DEFENDANTS)
-                .apply(caseService.findCaseDefendants(extract(envelope, FIELD_CASE_ID)));
     }
 
     @Handles("sjp.query.financial-means")

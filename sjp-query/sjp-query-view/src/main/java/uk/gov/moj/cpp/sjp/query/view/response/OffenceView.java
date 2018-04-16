@@ -24,7 +24,6 @@ public class OffenceView {
     private final Boolean pendingWithdrawal;
     private BigDecimal compensation;
     private String prosecutionFacts;
-    private Integer count;
 
     public OffenceView(final OffenceDetail offence) {
 
@@ -98,9 +97,5 @@ public class OffenceView {
 
     public String getProsecutionFacts() {
         return prosecutionFacts;
-    }
-
-    public Integer getCount() {
-        return count;
     }
 }

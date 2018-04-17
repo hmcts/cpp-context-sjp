@@ -27,8 +27,6 @@ import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDec
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.COURT_ADMINISTRATORS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.LEGAL_ADVISERS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
-import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.TFL_PROSECUTORS_GROUP;
-import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.TVL_PROSECUTORS_GROUP;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.moj.cpp.sjp.domain.PleaType;
@@ -202,10 +200,10 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     @Test
     public void shouldHideFinancesForProsecutors() {
-        verifyGroupsCanSeeDefendantFinances(false, asList(SJP_PROSECUTORS_GROUP, TFL_PROSECUTORS_GROUP, TVL_PROSECUTORS_GROUP));
+        verifyGroupsCanSeeDefendantFinances(false, singleton(SJP_PROSECUTORS_GROUP));
     }
 
-    private void verifyGroupsCanSeeDefendantFinances(boolean expectToHaveFinances, List<String> financeProsecutors) {
+    private void verifyGroupsCanSeeDefendantFinances(boolean expectToHaveFinances, Collection<String> financeProsecutors) {
         List<String> mockedUserId = financeProsecutors.stream()
                 .map(userGroup -> {
                     String userId = UUID.randomUUID().toString();

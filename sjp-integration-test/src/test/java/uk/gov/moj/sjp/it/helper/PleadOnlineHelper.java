@@ -5,6 +5,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.fail;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
@@ -53,7 +54,14 @@ public class PleadOnlineHelper {
     }
 
     public String getOnlinePlea(final String caseId, final Matcher jsonMatcher, final String userId) {
-        return await().atMost(20, TimeUnit.SECONDS).until(() -> getOnlinePlea(caseId, userId).readEntity(String.class), jsonMatcher);
+        return await().atMost(20, TimeUnit.SECONDS).until(() -> {
+            Response onlinePlea = getOnlinePlea(caseId, userId);
+            if(onlinePlea.getStatus() != OK.getStatusCode()) {
+                fail("Polling interrupted, please fix the error before continue. Status code: " + onlinePlea.getStatus());
+            }
+
+            return onlinePlea.readEntity(String.class);
+        }, jsonMatcher);
     }
 
     public void verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(String caseId, boolean onlinePleaReceived) {

@@ -57,23 +57,6 @@
                     <attachClasses>true</attachClasses>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>external.atlassian.jgitflow</groupId>
-                <artifactId>jgitflow-maven-plugin</artifactId>
-                <configuration>
-                    <flowInitContext>
-                        <masterBranchName>dev/sjp-release</masterBranchName>
-                        <developBranchName>master</developBranchName>
-                        <featureBranchPrefix>dev/sjp-feature-</featureBranchPrefix>
-                        <releaseBranchPrefix>dev/sjp-release-</releaseBranchPrefix>
-                        <hotfixBranchPrefix>dev/sjp-hotfix-</hotfixBranchPrefix>
-                        <versionTagPrefix>sjp-tag-</versionTagPrefix>
-                    </flowInitContext>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <enableSshAgent>true</enableSshAgent>
-                    <pushReleases>true</pushReleases>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 

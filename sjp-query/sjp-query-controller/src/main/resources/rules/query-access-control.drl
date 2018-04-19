@@ -146,3 +146,11 @@ rule "sjp.query.session"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp.query.ready-cases-reasons-counts"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.ready-cases-reasons-counts");
+  then
+    $outcome.setSuccess(true);
+end

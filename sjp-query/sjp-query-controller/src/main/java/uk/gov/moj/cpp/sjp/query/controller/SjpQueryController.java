@@ -140,4 +140,10 @@ public class SjpQueryController {
     public JsonEnvelope getPendingDatesToAvoid(final JsonEnvelope query) {
         return requester.request(query);
     }
+
+    @Handles("sjp.query.ready-cases-reasons-counts")
+    public JsonEnvelope getReadyCasesReasonsCounts(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
 }

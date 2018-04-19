@@ -54,7 +54,10 @@ import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
+import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
+import uk.gov.moj.cpp.sjp.persistence.entity.view.ReadyCasesReasonCount;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCasesRepository;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
@@ -68,6 +71,7 @@ import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -77,6 +81,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -128,6 +133,7 @@ public class SjpQueryViewTest {
     @Mock
     private CaseSearchResultsView caseSearchResultsView;
 
+
     @InjectMocks
     private SjpQueryView sjpQueryView;
 
@@ -156,6 +162,32 @@ public class SjpQueryViewTest {
         assertEquals(result, outputEnvelope);
         verify(caseService).findCaseByUrn(URN);
         verify(function).apply(caseView);
+    }
+
+
+    @Test
+    public void shouldGetReadyCasesReasonsCounts() {
+
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataWithRandomUUID("sjp.query.ready-cases-reasons-counts"))
+                .build();
+
+        final JsonObjectBuilder reason = createObjectBuilder()
+                .add("reason", "PIA")
+                .add("count", 2);
+
+        final JsonObject readyCasesReasonCounts = createObjectBuilder().add("reasons", createArrayBuilder().add(reason)).build();
+
+        when(caseService.getReadyCasesReasonsCounts()).thenReturn(readyCasesReasonCounts);
+
+        final JsonEnvelope result = sjpQueryView.getReadyCasesReasonsCounts(queryEnvelope);
+
+        assertThat(result, jsonEnvelope(metadata().withName("sjp.query.ready-cases-reasons-counts"),
+                payload().isJson(allOf(
+                        withJsonPath("$.reasons[0].reason", is("PIA")),
+                        withJsonPath("$.reasons[0].count", is(2))
+                ))
+        ));
     }
 
     @Test

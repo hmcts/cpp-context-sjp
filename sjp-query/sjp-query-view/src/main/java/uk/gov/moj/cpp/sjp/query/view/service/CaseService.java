@@ -22,11 +22,13 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseReferredToCourt;
+import uk.gov.moj.cpp.sjp.persistence.entity.view.ReadyCasesReasonCount;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseReferredToCourtRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.NotReadyCaseRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCasesRepository;
 import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
@@ -91,6 +93,9 @@ public class CaseService {
 
     @Inject
     private ProsecutingAuthorityAccessFilterConverter prosecutingAuthorityAccessFilterConverter;
+
+    @Inject
+    private ReadyCasesRepository readyCasesRepository;
 
     /**
      * Find case by id.
@@ -267,6 +272,18 @@ public class CaseService {
                     .add("offenceCode", defendant.getOffences().iterator().next().getCode()));
         });
         return createObjectBuilder().add("awaitingCases", arrayBuilder).build();
+    }
+
+    public JsonObject getReadyCasesReasonsCounts() {
+        final List<ReadyCasesReasonCount> readyCasesReasonsCounts = readyCasesRepository.getReadyCasesReasonCount();
+        final JsonArrayBuilder arrayBuilder = createArrayBuilder();
+        readyCasesReasonsCounts.forEach(reason -> {
+            final JsonObjectBuilder objectBuilder = createObjectBuilder()
+                    .add("reason", reason.getReason())
+                    .add("count", reason.getCount());
+            arrayBuilder.add(objectBuilder);
+        });
+        return createObjectBuilder().add("reasons", arrayBuilder).build();
     }
 
     public JsonObject findCasesReferredToCourt() {

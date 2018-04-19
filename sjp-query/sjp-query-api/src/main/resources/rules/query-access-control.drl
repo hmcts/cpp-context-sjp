@@ -168,3 +168,12 @@ rule "sjp - Query - API - Get session"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp - Query - API - Get ready cases reasons counts"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.ready-cases-reasons-counts");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getReadyCasesReasonsCountsGroups()))
+  then
+    $outcome.setSuccess(true);
+end

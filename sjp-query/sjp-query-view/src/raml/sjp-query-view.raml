@@ -383,6 +383,21 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
                   schema: !include json/schema/sjp.query.pending-dates-to-avoid.json
                   example: !include json/sjp.query.pending-dates-to-avoid.json
 
+/cases/ready-cases-reasons-counts:
+  get:
+    description: |
+      Get count of ready cases grouped by reason
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.ready-cases-reasons-counts+json
+          name: sjp.query.ready-cases-reasons-counts
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.ready-cases-reasons-counts+json:
+            schema: !include json/schema/sjp.query.ready-cases-reasons-counts.json
+            example: !include json/sjp.query.ready-cases-reasons-counts.json
 
 /sessions/{sessionId}:
   get:
@@ -400,3 +415,4 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
                 application/vnd.sjp.query.session+json:
                   schema: !include json/schema/sjp.query.session.json
                   example: !include json/sjp.query.session.json
+

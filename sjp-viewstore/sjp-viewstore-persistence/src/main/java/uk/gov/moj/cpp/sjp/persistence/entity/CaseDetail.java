@@ -81,10 +81,10 @@ public class CaseDetail implements Serializable {
     @Column(name = "pti_urn")
     private String ptiUrn;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "caseId")
     private Set<CaseDocument> caseDocuments = new LinkedHashSet<>();
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "caseId")
     private Set<CaseSearchResult> caseSearchResults = new LinkedHashSet<>();
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "caseDetail")

@@ -27,12 +27,12 @@ public class SearchCasesAccessControlIT extends BaseIntegrationTest {
         final ProsecutingAuthority PROSECUTING_AUTHORITY_1 = ProsecutingAuthority.TFL;
         final ProsecutingAuthority PROSECUTING_AUTHORITY_2 = ProsecutingAuthority.DVLA;
 
-        prosecutor1CasePayloadBuilder = createCaseForProsecutingAuthority(PROSECUTING_AUTHORITY_1);
-        prosecutor2CasePayloadBuilder = createCaseForProsecutingAuthority(PROSECUTING_AUTHORITY_2);
-
         stubForUserDetails(ALL_PROSECUTING_AUTHORITY_ACCESS_USER, "ALL");
         stubForUserDetails(PROSECUTING_AUTHORITY_1_ACCESS_USER, PROSECUTING_AUTHORITY_1.name());
         stubForUserDetails(NO_PROSECUTING_AUTHORITY_ACCESS_USER);
+
+        prosecutor1CasePayloadBuilder = createCaseForProsecutingAuthority(PROSECUTING_AUTHORITY_1);
+        prosecutor2CasePayloadBuilder = createCaseForProsecutingAuthority(PROSECUTING_AUTHORITY_2);
     }
 
     private static CreateCase.CreateCasePayloadBuilder createCaseForProsecutingAuthority(final ProsecutingAuthority prosecutingAuthority) {

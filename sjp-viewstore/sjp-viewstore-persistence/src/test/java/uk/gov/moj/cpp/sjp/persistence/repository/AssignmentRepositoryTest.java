@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
+import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -17,7 +18,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.StreamStatus;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -238,11 +238,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
     }
 
     private static Set<String> excludedProsecutingAuthorities(final String... excludedProsecutingAuthorities) {
-        final Set<String> prosecutingAuthoritiesSet = new HashSet<>();
-        for (final String prosecutor : excludedProsecutingAuthorities) {
-            prosecutingAuthoritiesSet.add(prosecutor);
-        }
-        return prosecutingAuthoritiesSet;
+        return new HashSet<>(asList(excludedProsecutingAuthorities));
     }
 
     private class CaseSaver {
@@ -299,7 +295,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
                     .setPlea(plea)
                     .build();
 
-            final DefendantDetail defendant = new DefendantDetail(defendantId, new PersonalDetails(), new HashSet<>(Arrays.asList(offence)), 2);
+            final DefendantDetail defendant = new DefendantDetail(defendantId, new PersonalDetails(), new HashSet<>(asList(offence)), 2);
 
             final CaseDetail caseDetail = CaseDetailBuilder.aCase()
                     .withCaseId(caseId)

@@ -21,7 +21,7 @@ public class CourtReferral {
     @Column(name="actioned")
     private ZonedDateTime actioned;
 
-    private CourtReferral() {
+    protected CourtReferral() {
     }
 
     public CourtReferral(final UUID caseId, final LocalDate hearingDate) {

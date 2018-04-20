@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isIn;
 
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn;
@@ -33,6 +34,9 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
 
     @Inject
     private CaseRepository caseRepository;
+
+    @Inject
+    private Clock clock;
 
     private List<CaseDetail> sjpCasesWithSjpn;
     private List<CaseDetail> uncompletedSjpCasesWithSjpn;
@@ -144,7 +148,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
 
     private void createCaseDocuments(final List<CaseDetail> cases, final String documentType) {
         for (final CaseDetail caseDetail : cases) {
-            final CaseDocument sjpNotice = new CaseDocument(UUID.randomUUID(), UUID.randomUUID(), documentType, ZonedDateTime.now(), caseDetail.getId(), 1);
+            final CaseDocument sjpNotice = new CaseDocument(UUID.randomUUID(), UUID.randomUUID(), documentType, clock.now(), caseDetail.getId(), 1);
             caseDetail.addCaseDocuments(sjpNotice);
             caseRepository.save(caseDetail);
         }

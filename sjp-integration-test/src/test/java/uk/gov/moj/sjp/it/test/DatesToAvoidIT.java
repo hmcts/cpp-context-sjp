@@ -5,7 +5,9 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
@@ -15,6 +17,9 @@ import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDec
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
@@ -40,9 +45,10 @@ import org.junit.Test;
 
 public class DatesToAvoidIT extends BaseIntegrationTest {
 
-    static final String PLEA_NOT_GUILTY = "NOT_GUILTY";
+    private static final String PLEA_NOT_GUILTY = "NOT_GUILTY";
     private static final String LONDON_COURT_HOUSE_OU_CODE = "B01GU";
     private static final String LONDON_COURT_HOUSE_LJA_NATIONAL_COURT_CODE = "2577";
+    private static final Clock clock = new UtcClock();
 
     private UUID tflUserId;
     private UUID tvlUserId;
@@ -54,17 +60,16 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     @Before
     public void setUp() {
         tflUserId = UUID.randomUUID();
-        this.tflCaseBuilder = createCase(ProsecutingAuthority.TFL, 1);
         stubGroupForUser(tflUserId.toString(), UsersGroupsStub.SJP_PROSECUTORS_GROUP);
         stubForUserDetails(tflUserId.toString(), ProsecutingAuthority.TFL.toString());
+        this.tflCaseBuilder = createCase(ProsecutingAuthority.TFL, 1);
+        this.tflInitialPendingDatesToAvoidCount = pollForPendingDatesToAvoidCount(tflUserId);
 
         tvlUserId = UUID.randomUUID();
         this.tvlCaseBuilder = createCase(ProsecutingAuthority.TVL, 2);
         stubGroupForUser(tvlUserId.toString(), UsersGroupsStub.SJP_PROSECUTORS_GROUP);
         stubForUserDetails(tvlUserId.toString(), ProsecutingAuthority.TVL.toString());
-
-        tflInitialPendingDatesToAvoidCount = pollForPendingDatesToAvoidCount(tflUserId);
-        tvlInitialPendingDatesToAvoidCount = pollForPendingDatesToAvoidCount(tvlUserId);
+        this.tvlInitialPendingDatesToAvoidCount = pollForPendingDatesToAvoidCount(tvlUserId);
 
         ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_COURT_HOUSE_LJA_NATIONAL_COURT_CODE);
     }
@@ -84,13 +89,13 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     @Test
     public void shouldCaseBePendingDatesToAvoidForAllUpdateAndInSessionScenarios() {
         stubGetEmptyAssignmentsByDomainObjectId(tflCaseBuilder.getId());
-        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId());
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper();
              final CancelPleaHelper cancelPleaHelper = new CancelPleaHelper(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(),
                      EVENT_SELECTOR_PLEA_CANCELLED, PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED);
         ) {
             //checks that dates-to-avoid is pending submission when NOT_GUILTY plea submitted
-            updatePleaToNotGuilty(updatePleaHelper);
-            assertThatDatesToAvoidIsPendingSubmissionForCase(tflUserId, tflCaseBuilder.getId());
+            updatePleaToNotGuilty(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), updatePleaHelper);
+            assertThatDatesToAvoidIsPendingSubmissionForCase(tflUserId, tflCaseBuilder);
 
             //checks that dates-to-avoid NOT pending submission when plea is cancelled
             cancelPleaHelper.cancelPlea();
@@ -98,8 +103,8 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
             assertThatNumberOfCasesPendingDatesToAvoidIsAccurate(tflUserId, tflInitialPendingDatesToAvoidCount);
 
             //checks that dates-to-avoid is pending submission again when plea updated to NOT_GUILTY
-            updatePleaToNotGuilty(updatePleaHelper);
-            assertThatDatesToAvoidIsPendingSubmissionForCase(tflUserId, tflCaseBuilder.getId());
+            updatePleaToNotGuilty(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), updatePleaHelper);
+            assertThatDatesToAvoidIsPendingSubmissionForCase(tflUserId, tflCaseBuilder);
 
             UUID sessionId = randomUUID();
             UUID userId = randomUUID();
@@ -124,20 +129,20 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     private void shouldCaseBePendingDatesToAvoidForResultedCaseScenario(UUID userId, CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder, int expectedPendingDatesToAvoidCount) {
         stubGetEmptyAssignmentsByDomainObjectId(tflCaseBuilder.getId());
         stubGetEmptyAssignmentsByDomainObjectId(tvlCaseBuilder.getId());
-        try (final UpdatePleaHelper tflUpdatePleaHelper = new UpdatePleaHelper(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId());
-             final UpdatePleaHelper tvlUpdatePleaHelper = new UpdatePleaHelper(tvlCaseBuilder.getId(), tvlCaseBuilder.getOffenceId());
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper();
         ) {
+            //
             //updates plea to NOT_GUILTY for TFL case (making it pending dates-to-avoid submission)
-            updatePleaToNotGuilty(tflUpdatePleaHelper);
+            updatePleaToNotGuilty(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), updatePleaHelper);
 
             //check tvl count not gone up (as a result of tfl plea update above)
-            assertEquals(tvlInitialPendingDatesToAvoidCount, pollForPendingDatesToAvoidCount(tvlUserId));
+            assertEquals("Ensure that access control is ON", tvlInitialPendingDatesToAvoidCount, pollForPendingDatesToAvoidCount(tvlUserId));
 
             //updates plea to NOT_GUILTY for TVL case (making it pending dates-to-avoid submission)
-            updatePleaToNotGuilty(tvlUpdatePleaHelper);
+            updatePleaToNotGuilty(tvlCaseBuilder.getId(), tvlCaseBuilder.getOffenceId(), updatePleaHelper);
 
             //checks that correct dates-to-avoid record is retrieved (i.e. the one related to the case passed in)
-            assertThatDatesToAvoidIsPendingSubmissionForCase(userId, createCasePayloadBuilder.getId());
+            assertThatDatesToAvoidIsPendingSubmissionForCase(userId, createCasePayloadBuilder);
 
             //checks that dates-to-avoid NOT pending submission when case completed
             completeCase(createCasePayloadBuilder);
@@ -151,11 +156,11 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         completeCaseHelper.close();
     }
 
-    private void updatePleaToNotGuilty(final UpdatePleaHelper updatePleaHelper) {
+    private void updatePleaToNotGuilty(final UUID caseId, final UUID offenceId, final UpdatePleaHelper updatePleaHelper) {
         String plea = PLEA_NOT_GUILTY;
         final String pleaMethod = "POSTAL";
-        updatePleaHelper.updatePlea(getPleaPayload(plea));
-        updatePleaHelper.verifyPleaUpdated(plea, pleaMethod);
+        updatePleaHelper.updatePlea(caseId, offenceId, getPleaPayload(plea));
+        updatePleaHelper.verifyPleaUpdated(caseId, plea, pleaMethod);
     }
 
     private JsonObject getPleaPayload(final String plea) {
@@ -164,33 +169,55 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         return builder.build();
     }
 
-    private int assertThatDatesToAvoidIsPendingSubmissionForCase(final UUID userId, final UUID caseId) {
+    private void assertThatDatesToAvoidIsPendingSubmissionForCase(final UUID userId, final CreateCase.CreateCasePayloadBuilder aCase) {
         final Matcher pendingDatesToAvoidMatcher = allOf(
-                withJsonPath("$.pendingDatesToAvoid[0].caseId")
+                withJsonPath("$.cases[0].caseId"),
+                withJsonPath("$.cases[0].pleaEntry"),
+                withJsonPath("$.cases[0].firstName"),
+                withJsonPath("$.cases[0].lastName"),
+                withJsonPath("$.cases[0].address.address1"),
+                withJsonPath("$.cases[0].address.address2"),
+                withJsonPath("$.cases[0].address.address3"),
+                withJsonPath("$.cases[0].address.address4"),
+                withJsonPath("$.cases[0].address.postcode"),
+                withJsonPath("$.cases[0].referenceNumber"),
+                withJsonPath("$.cases[0].dateOfBirth")
         );
         final JsonPath path = pollUntilPendingDatesToAvoidIsOk(userId.toString(), pendingDatesToAvoidMatcher);
-        final List<Map> pendingDatesToAvoid = path.getList("pendingDatesToAvoid");
-        final Integer datesToAvoidCount = path.get("pendingDatesToAvoidCount");
+        final List<Map> pendingDatesToAvoid = path.getList("cases");
+        final Integer datesToAvoidCount = path.get("count");
         final Map map = pendingDatesToAvoid.get(pendingDatesToAvoid.size() - 1);
 
-        assertEquals(caseId.toString(), map.get("caseId"));
-        assertEquals(new Integer(pendingDatesToAvoid.size()), datesToAvoidCount);
-
-        return pendingDatesToAvoid.size();
+        assertEquals(aCase.getId().toString(), map.get("caseId"));
+        assertWithinSeconds(ZonedDateTimes.fromString(map.get("pleaEntry").toString()).toEpochSecond(), 30);
+        assertEquals(aCase.getDefendantBuilder().getFirstName(), map.get("firstName"));
+        assertEquals(aCase.getDefendantBuilder().getLastName(), map.get("lastName"));
+        assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getAddress1(), ((Map) map.get("address")).get("address1"));
+        assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getAddress2(), ((Map) map.get("address")).get("address2"));
+        assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getAddress3(), ((Map) map.get("address")).get("address3"));
+        assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getAddress4(), ((Map) map.get("address")).get("address4"));
+        assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getPostcode(), ((Map) map.get("address")).get("postcode"));
+        assertEquals(aCase.getUrn(), map.get("referenceNumber"));
+        assertEquals(aCase.getDefendantBuilder().getDateOfBirth().toString(), map.get("dateOfBirth"));
+        assertThat(pendingDatesToAvoid, hasSize(datesToAvoidCount));
     }
 
     private int pollForPendingDatesToAvoidCount(final UUID userId) {
         final Matcher pendingDatesToAvoidMatcher = allOf(
-                withJsonPath("$.pendingDatesToAvoidCount")
+                withJsonPath("$.count")
         );
         final JsonPath path = pollUntilPendingDatesToAvoidIsOk(userId.toString(), pendingDatesToAvoidMatcher);
-        return path.get("pendingDatesToAvoidCount");
+        return path.get("count");
     }
 
     private void assertThatNumberOfCasesPendingDatesToAvoidIsAccurate(final UUID userId, final int pendingDatesToAvoidCount) {
         final Matcher pendingDatesToAvoidMatcher = allOf(
-                withJsonPath("$.pendingDatesToAvoidCount", equalTo(pendingDatesToAvoidCount))
+                withJsonPath("$.count", equalTo(pendingDatesToAvoidCount))
         );
         pollUntilPendingDatesToAvoidIsOk(userId.toString(), pendingDatesToAvoidMatcher);
+    }
+
+    private void assertWithinSeconds(final long value, final long tolerance) {
+        assertEquals(clock.now().toEpochSecond(), value, tolerance);
     }
 }

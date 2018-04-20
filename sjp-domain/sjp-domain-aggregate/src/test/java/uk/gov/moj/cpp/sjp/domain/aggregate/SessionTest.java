@@ -6,6 +6,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionEnded;
@@ -26,14 +28,16 @@ public class SessionTest {
     private String courtHouseName, localJusticeAreaNationalCourtCode;
     private ZonedDateTime startedAt, endedAt;
     private Session session;
+    private Clock clock;
 
     @Before
     public void init() {
+        clock = new UtcClock();
         sessionId = randomUUID();
         userId = randomUUID();
         localJusticeAreaNationalCourtCode = "2924";
         courtHouseName = "Coventry Magistrates' Court";
-        startedAt = ZonedDateTime.now();
+        startedAt = clock.now();
         endedAt = startedAt.plusMinutes(1);
         session = new Session();
     }

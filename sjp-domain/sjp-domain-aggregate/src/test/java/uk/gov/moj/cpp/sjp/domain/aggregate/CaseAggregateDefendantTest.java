@@ -7,6 +7,8 @@ import static org.hamcrest.core.StringContains.containsString;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateDefendantTest.DefendantData.defaultDefendantData;
 
 import uk.gov.justice.services.common.converter.LocalDates;
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Person;
@@ -45,7 +47,7 @@ public class CaseAggregateDefendantTest {
     private static final String title = "Mr";
     private static final Address address = new Address("address1", "address2",
             "address3", "address4", "CR02FW");
-
+    private static final Clock clock = new UtcClock();
 
     @Test
     public void updatesToValidTitle() {
@@ -65,7 +67,7 @@ public class CaseAggregateDefendantTest {
 
         assertThat(events.size(), greaterThan(0));
 
-        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(events.size()-1);
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(events.size() - 1);
         assertThat(defendantDetailsUpdated.getTitle(), is(validTitle));
     }
 
@@ -319,7 +321,7 @@ public class CaseAggregateDefendantTest {
                         0,
                         Lists.newArrayList()
                 )).build(),
-                ZonedDateTime.now()
+                clock.now()
         );
     }
 
@@ -331,7 +333,7 @@ public class CaseAggregateDefendantTest {
         final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(updatedDefendantData.caseId,
                 updatedDefendantData.defendantId, updatedDefendantData.gender, updatedDefendantData.nationalInsuranceNumber,
                 updatedDefendantData.email, updatedDefendantData.homeNumber, updatedDefendantData.mobileNumber,
-                person, ZonedDateTime.now());
+                person, clock.now());
 
         return eventStream.collect(Collectors.toList());
     }

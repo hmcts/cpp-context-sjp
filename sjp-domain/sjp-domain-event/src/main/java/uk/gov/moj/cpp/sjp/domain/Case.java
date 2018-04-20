@@ -37,8 +37,8 @@ public class Case {
                 @JsonProperty("costs") BigDecimal costs,
                 @JsonProperty("postingDate") LocalDate postingDate,
                 @JsonProperty("defendant") Defendant defendant) {
-        this.urn = urn;
         this.id = id;
+        this.urn = urn;
         this.ptiUrn = ptiUrn;
         this.initiationCode = initiationCode;
         this.summonsCode = summonsCode;

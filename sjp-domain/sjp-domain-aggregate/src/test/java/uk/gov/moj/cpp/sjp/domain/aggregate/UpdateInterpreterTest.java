@@ -9,6 +9,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
@@ -16,7 +18,6 @@ import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,13 +28,16 @@ public class UpdateInterpreterTest {
 
     private static final String LANGUAGE = "French";
 
+    private Clock clock;
     private CaseAggregate caseAggregate;
     private UUID caseId;
     private UUID defendantId;
 
     @Before
     public void initialiseCase() {
+        clock = new UtcClock();
         caseAggregate = new CaseAggregate();
+
 
         CaseReceived caseReceived = receiveCase();
         caseId = caseReceived.getCaseId();
@@ -97,7 +101,7 @@ public class UpdateInterpreterTest {
     private CaseReceived receiveCase() {
         Case sjpCase = CaseBuilder.aDefaultSjpCase().build();
 
-        return caseAggregate.receiveCase(sjpCase, ZonedDateTime.now())
+        return caseAggregate.receiveCase(sjpCase, clock.now())
                 .filter(CaseReceived.class::isInstance)
                 .map(CaseReceived.class::cast)
                 .findFirst()

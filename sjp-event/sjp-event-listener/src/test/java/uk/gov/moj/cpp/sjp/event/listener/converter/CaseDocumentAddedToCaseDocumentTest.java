@@ -4,10 +4,11 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -21,13 +22,14 @@ public class CaseDocumentAddedToCaseDocumentTest {
     private CaseDocumentAddedToCaseDocument converter;
     private CaseDocumentAdded event;
 
+    private Clock clock = new UtcClock();
     private String caseId = UUID.randomUUID().toString();
     private String caseDocId = UUID.randomUUID().toString();
     private String caseDocMaterialId = UUID.randomUUID().toString();
 
     @Before
     public void setup() {
-        CaseDocument caseDocument = new CaseDocument(caseDocId, caseDocMaterialId, "SJPN", ZonedDateTime.now());
+        CaseDocument caseDocument = new CaseDocument(caseDocId, caseDocMaterialId, "SJPN", clock.now());
 
         converter = new CaseDocumentAddedToCaseDocument();
         event = new CaseDocumentAdded(caseId, caseDocument, 1);

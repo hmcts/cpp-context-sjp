@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertTrue;
 
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -17,7 +18,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaPersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,6 +39,9 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
 
     @Inject
     private CaseRepository caseRepository;
+
+    @Inject
+    private Clock clock;
 
     private CaseDetail caseDetail;
 
@@ -84,7 +87,7 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
         return caseDetail;
     }
 
-    private static OnlinePlea buildOnlinePlea(CaseDetail caseDetail) {
+    private OnlinePlea buildOnlinePlea(CaseDetail caseDetail) {
         OnlinePleaPersonalDetails personalDetails = new OnlinePleaPersonalDetails();
         personalDetails.setFirstName("first_name");
         personalDetails.setLastName("last_name");
@@ -100,7 +103,7 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
         pleaDetails.setWitnessDetails("witnessDetails");
         pleaDetails.setWitnessDispute("witnessDispute");
 
-        OnlinePlea onlinePlea = new OnlinePlea(caseDetail.getId(), pleaDetails, caseDetail.getDefendant(), personalDetails, ZonedDateTime.now());
+        OnlinePlea onlinePlea = new OnlinePlea(caseDetail.getId(), pleaDetails, caseDetail.getDefendant(), personalDetails, clock.now());
 
         OnlinePlea.Employer employer = new OnlinePlea.Employer();
         employer.setName("employer_name");

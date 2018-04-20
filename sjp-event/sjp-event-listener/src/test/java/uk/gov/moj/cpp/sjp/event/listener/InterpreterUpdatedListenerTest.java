@@ -12,6 +12,7 @@ import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithR
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
@@ -69,7 +70,7 @@ public class InterpreterUpdatedListenerTest {
     @Captor
     private ArgumentCaptor<OnlinePlea> onlinePleaCaptor;
 
-    private Clock clock = new StoppedClock(ZonedDateTime.now());
+    private Clock clock = new UtcClock();
 
     @Before
     public void setUp() {

@@ -8,6 +8,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuil
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
@@ -48,7 +49,7 @@ public class TrialRequestedListenerTest {
     @Captor
     private ArgumentCaptor<PendingDatesToAvoid> pendingDatesToAvoidCaptor;
 
-    private Clock clock = new StoppedClock(ZonedDateTime.now());
+    private Clock clock = new UtcClock();
     private ZonedDateTime now = clock.now();
 
     @Test

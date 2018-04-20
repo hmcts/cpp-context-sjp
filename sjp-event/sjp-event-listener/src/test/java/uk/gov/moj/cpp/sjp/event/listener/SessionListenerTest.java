@@ -13,8 +13,11 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatch
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
 
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.persistence.entity.Session;
 import uk.gov.moj.cpp.sjp.persistence.repository.SessionRepository;
@@ -22,12 +25,14 @@ import uk.gov.moj.cpp.sjp.persistence.repository.SessionRepository;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 
@@ -43,6 +48,9 @@ public class SessionListenerTest {
     @InjectMocks
     private SessionListener sessionListener;
 
+    @Spy
+    private Clock clock = new StoppedClock(new UtcClock().now());
+
     @Captor
     private ArgumentCaptor<Session> sessionCaptor;
 
@@ -50,9 +58,15 @@ public class SessionListenerTest {
     private final UUID userId = randomUUID();
     private final String courtHouseName = "Hendon Magistrates' Court";
     private final String localJusticeAreaNationalCourtCode = "2571";
-    private final ZonedDateTime startedAt = ZonedDateTime.now();
-    private final ZonedDateTime endedAt = startedAt.plusMinutes(1);
     private final String magistrate = "John Smith";
+    private ZonedDateTime startedAt;
+    private ZonedDateTime endedAt;
+
+    @Before
+    public void setup() {
+        startedAt = clock.now();
+        endedAt = startedAt.plusMinutes(1);
+    }
 
     @Test
     public void shouldHandleDelegatedPowersSessionStarted() {

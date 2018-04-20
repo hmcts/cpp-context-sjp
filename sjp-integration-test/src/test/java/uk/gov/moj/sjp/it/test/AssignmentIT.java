@@ -67,6 +67,8 @@ public class AssignmentIT extends BaseIntegrationTest {
     private AssignmentHelper assignmentHelper;
     private UUID userId;
 
+    private UpdatePleaHelper updatePleaHelper;
+
     @BeforeClass
     public static void init() {
         ljaByCourtHouseOUCode = new HashMap<>();
@@ -83,6 +85,7 @@ public class AssignmentIT extends BaseIntegrationTest {
         ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery(OTHER_COURT_HOUSE_OU_CODE, OTHER_LJA_NATIONAL_COURT_CODE);
 
         assignmentHelper = new AssignmentHelper();
+        updatePleaHelper = new UpdatePleaHelper();
 
         tflPiaCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
                 .withPostingDate(now().minusDays(30));
@@ -135,10 +138,10 @@ public class AssignmentIT extends BaseIntegrationTest {
 
         caseHelpers.forEach(CreateCase::createCaseForPayloadBuilder);
 
-        new UpdatePleaHelper(tflPleadedGuiltyCasePayloadBuilder.getId(), tflPleadedGuiltyCasePayloadBuilder.getOffenceId()).updatePlea(pleaPayload(GUILTY));
-        new UpdatePleaHelper(tflPleadedNotGuiltyCasePayloadBuilder.getId(), tflPleadedNotGuiltyCasePayloadBuilder.getOffenceId()).updatePlea(pleaPayload(NOT_GUILTY));
-        new UpdatePleaHelper(tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getId(), tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getOffenceId()).updatePlea(pleaPayload(GUILTY_REQUEST_HEARING));
-        new UpdatePleaHelper(dvlaPleadedNotGuiltyCasePayloadBuilder.getId(), dvlaPleadedNotGuiltyCasePayloadBuilder.getOffenceId()).updatePlea(pleaPayload(NOT_GUILTY));
+        updatePleaHelper.updatePlea(tflPleadedGuiltyCasePayloadBuilder.getId(), tflPleadedGuiltyCasePayloadBuilder.getOffenceId(), pleaPayload(GUILTY));
+        updatePleaHelper.updatePlea(tflPleadedNotGuiltyCasePayloadBuilder.getId(), tflPleadedNotGuiltyCasePayloadBuilder.getOffenceId(), pleaPayload(NOT_GUILTY));
+        updatePleaHelper.updatePlea(tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getId(), tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getOffenceId(), pleaPayload(GUILTY_REQUEST_HEARING));
+        updatePleaHelper.updatePlea(dvlaPleadedNotGuiltyCasePayloadBuilder.getId(), dvlaPleadedNotGuiltyCasePayloadBuilder.getOffenceId(), pleaPayload(NOT_GUILTY));
 
         final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(tflPendingWithdrawalCasePayloadBuilder.getId(), SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
 

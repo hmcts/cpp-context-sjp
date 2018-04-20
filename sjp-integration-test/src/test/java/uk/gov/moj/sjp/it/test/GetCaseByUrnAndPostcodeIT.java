@@ -50,7 +50,7 @@ public class GetCaseByUrnAndPostcodeIT {
     @Test
     public void shouldFindCaseByUrnWithoutPrefixAndPostcode() {
         final JsonObject expected = Json.createReader(getClass().getResourceAsStream("/GetCaseByUrnAndPostcodeIT/expected.json")).readObject();
-        String urnWithoutPrefix = urn.replace(CreateCase.CreateCasePayloadBuilder.PROSECUTING_AUTHORITY_PREFIX, "");
+        final String urnWithoutPrefix = urn.replaceAll("(\\p{Alpha})", "");
         citizenHelper.verifyCaseByPersonUrnWithoutPrefixAndPostcode(expected, urnWithoutPrefix, urn, POSTCODE);
     }
 }

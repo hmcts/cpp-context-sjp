@@ -71,6 +71,5 @@
             <groupId>uk.gov.justice.utils</groupId>
             <artifactId>utilities-core</artifactId>
         </dependency>
-
     </dependencies>
 </project>

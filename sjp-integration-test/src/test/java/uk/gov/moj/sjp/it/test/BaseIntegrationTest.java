@@ -8,7 +8,7 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
-import org.junit.Before;
+import org.junit.BeforeClass;
 
 public abstract class BaseIntegrationTest {
 
@@ -21,8 +21,8 @@ public abstract class BaseIntegrationTest {
         configureFor(HOST, 8080);
     }
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         WireMock.resetAllRequests();
         stubEnableAllCapabilities();
         InternalEndpointMockUtils.stubPingFor("usersgroups-service");

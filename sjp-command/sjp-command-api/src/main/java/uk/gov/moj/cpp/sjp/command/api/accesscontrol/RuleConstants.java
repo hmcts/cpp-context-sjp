@@ -94,5 +94,9 @@ public final class RuleConstants {
     public static List<String> getEndSessionGroups() {
         return Arrays.asList(GROUP_LEGAL_ADVISERS);
     }
+
+    public static List<String> getAssignCaseGroups() {
+        return Arrays.asList(GROUP_LEGAL_ADVISERS);
+    }
 }
 

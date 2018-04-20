@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/case-assignment-rejected.json",
+  "type": "object",
+  "properties": {
+    "sessionId": {
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+    },
+    "reason":{
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/case-assignment-rejection-reason.json"
+    }
+  },
+  "required": [
+    "sessionId", "reason"
+  ]
+}

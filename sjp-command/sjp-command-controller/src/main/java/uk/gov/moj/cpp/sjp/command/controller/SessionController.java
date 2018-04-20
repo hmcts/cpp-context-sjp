@@ -24,4 +24,9 @@ public class SessionController {
     public void endSession(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
+
+    @Handles("sjp.command.assign-case")
+    public void assignCase(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
 }

@@ -445,6 +445,9 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       (mapping):
           requestType: application/vnd.sjp.end-session+json
           name: sjp.end-session
+      (mapping):
+          requestType: application/vnd.sjp.assign-case+json
+          name: sjp.assign-case
       ...
     body:
       application/vnd.sjp.start-session+json:
@@ -453,6 +456,7 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
         schema:
           !include json/schema/sjp.start-session.json
       application/vnd.sjp.end-session+json: !!null
+      application/vnd.sjp.assign-case+json: !!null
     responses:
       202:
         description: Accepted

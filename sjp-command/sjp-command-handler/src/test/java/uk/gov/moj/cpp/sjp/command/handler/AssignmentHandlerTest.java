@@ -12,17 +12,19 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloperWithEvents;
 import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedAfter;
+import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedWith;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -33,7 +35,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
-import uk.gov.moj.cpp.sjp.event.CaseAssigned;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRequested;
 
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -49,7 +52,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class AssignmentHandlerTest {
 
     private static final String ASSIGN_CASE_COMMAND = "sjp.command.assign-case";
-    private static final String CASE_ASSIGNED_EVENT = "sjp.events.case-assigned";
+    private static final String ASSIGN_CASE__FROM_CANDIDATES_LIST_COMMAND = "sjp.command.assign-case-from-candidates-list";
 
     @Mock
     private EventSource eventSource;
@@ -67,7 +70,7 @@ public class AssignmentHandlerTest {
     private CaseAggregate caseAggregate1, caseAggregate2, caseAggregate3;
 
     @Spy
-    private Enveloper enveloper = createEnveloperWithEvents(CaseAssigned.class);
+    private Enveloper enveloper = createEnveloperWithEvents(CaseAssigned.class, CaseAssignmentRequested.class);
 
     @InjectMocks
     private AssignmentHandler assignmentHandler;
@@ -86,7 +89,7 @@ public class AssignmentHandlerTest {
         long assignmentCandidate2Version = 9;
         long assignmentCandidate3Version = 8;
 
-        final JsonEnvelope assignCaseCommand = envelopeFrom(metadataWithRandomUUID(ASSIGN_CASE_COMMAND), createObjectBuilder()
+        final JsonEnvelope assignCaseFromCandidatesListCommand = envelopeFrom(metadataWithRandomUUID(ASSIGN_CASE__FROM_CANDIDATES_LIST_COMMAND), createObjectBuilder()
                 .add("sessionId", sessionId.toString())
                 .add("assignmentCandidates", createArrayBuilder().add(
                         createObjectBuilder()
@@ -119,7 +122,7 @@ public class AssignmentHandlerTest {
         when(case2EventStream.getCurrentVersion()).thenReturn(assignmentCandidate2Version);
         when(caseAggregate2.assignCase(assigneeId, MAGISTRATE_DECISION)).thenReturn(Stream.of(caseAssigned));
 
-        assignmentHandler.assignCase(assignCaseCommand);
+        assignmentHandler.assignCaseFromCandidatesList(assignCaseFromCandidatesListCommand);
 
         verify(case1EventStream, never()).append(any());
         verify(case3EventStream, never()).append(any());
@@ -128,8 +131,8 @@ public class AssignmentHandlerTest {
         assertThat(case2EventStream, eventStreamAppendedAfter(assignmentCandidate2Version).with(
                 streamContaining(
                         jsonEnvelope(
-                                withMetadataEnvelopedFrom(assignCaseCommand)
-                                        .withName(CASE_ASSIGNED_EVENT),
+                                withMetadataEnvelopedFrom(assignCaseFromCandidatesListCommand)
+                                        .withName(CaseAssigned.EVENT_NAME),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(assignmentCandidate2Id.toString())),
                                         withJsonPath("$.assigneeId", equalTo(assigneeId.toString())),
@@ -139,8 +142,41 @@ public class AssignmentHandlerTest {
     }
 
     @Test
+    public void shouldRequestCaseAssignment() throws EventStreamException {
+        final UUID sessionId = randomUUID();
+        final UUID userId = randomUUID();
+
+        final JsonEnvelope assignCaseCommand = envelopeFrom(
+                metadataWithRandomUUID(ASSIGN_CASE_COMMAND).withUserId(userId.toString()),
+                createObjectBuilder().add("sessionId", sessionId.toString()).build()
+        );
+
+        final CaseAssignmentRequested caseAssignmentRequested = new CaseAssignmentRequested(new uk.gov.moj.cpp.sjp.domain.Session(sessionId, userId, DELEGATED_POWERS, "lja"));
+
+        when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
+        when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);
+        when(session.requestCaseAssignment(sessionId, userId)).thenReturn(Stream.of(caseAssignmentRequested));
+
+        assignmentHandler.assignCase(assignCaseCommand);
+
+        assertThat(sessionEventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(assignCaseCommand),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.session.id", equalTo(caseAssignmentRequested.getSession().getId().toString())),
+                                        withJsonPath("$.session.userId", equalTo(caseAssignmentRequested.getSession().getUserId().toString())),
+                                        withJsonPath("$.session.type", equalTo(caseAssignmentRequested.getSession().getType().toString())),
+                                        withJsonPath("$.session.localJusticeAreaNationalCourtCode", equalTo(caseAssignmentRequested.getSession().getLocalJusticeAreaNationalCourtCode())))
+                                )))));
+    }
+
+    @Test
     public void shouldHandleAssignCaseCommand() {
         assertThat(AssignmentHandler.class, isHandlerClass(COMMAND_HANDLER)
-                .with(method("assignCase").thatHandles(ASSIGN_CASE_COMMAND)));
+                .with(allOf(
+                        method("assignCase").thatHandles(ASSIGN_CASE_COMMAND),
+                        method("assignCaseFromCandidatesList").thatHandles(ASSIGN_CASE__FROM_CANDIDATES_LIST_COMMAND)
+                )));
     }
 }

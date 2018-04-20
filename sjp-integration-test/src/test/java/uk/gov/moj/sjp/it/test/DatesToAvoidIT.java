@@ -113,7 +113,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
             //checks that dates-to-avoid NOT pending submission when case in session
             SessionHelper.startSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, DELEGATED_POWERS);
-            AssignmentHelper.requestCaseAssignment(sessionId, userId, LONDON_COURT_HOUSE_LJA_NATIONAL_COURT_CODE, DELEGATED_POWERS);
+            AssignmentHelper.requestCaseAssignment(sessionId, userId);
             assertThatNumberOfCasesPendingDatesToAvoidIsAccurate(tflUserId, tflInitialPendingDatesToAvoidCount);
         }
     }

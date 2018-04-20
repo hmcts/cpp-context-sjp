@@ -78,3 +78,9 @@ baseUri: message://event/processor/message/sjp
                       schema: !include json/schema/public.sjp.session-started.json
                       example: !include json/public.sjp.session-started.json
                   application/vnd.public.sjp.case-not-assigned+json: !!null
+                  application/vnd.public.sjp.case-assigned+json:
+                      schema: !include json/schema/public.sjp.case-assigned.json
+                      example: !include json/public.sjp.case-assigned.json
+                  application/vnd.public.sjp.case-assignment-rejected+json:
+                      schema: !include json/schema/public.sjp.case-assignment-rejected.json
+                      example: !include json/public.sjp.case-assignment-rejected.json

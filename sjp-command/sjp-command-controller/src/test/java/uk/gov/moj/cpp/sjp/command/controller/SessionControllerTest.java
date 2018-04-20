@@ -18,7 +18,8 @@ public class SessionControllerTest {
         assertThat(SessionController.class, isHandlerClass(COMMAND_CONTROLLER)
                 .with(allOf(
                         method("startSession").thatHandles("sjp.command.start-session").withSenderPassThrough(),
-                        method("endSession").thatHandles("sjp.command.end-session").withSenderPassThrough()
+                        method("endSession").thatHandles("sjp.command.end-session").withSenderPassThrough(),
+                        method("assignCase").thatHandles("sjp.command.assign-case").withSenderPassThrough()
                 )));
     }
 }

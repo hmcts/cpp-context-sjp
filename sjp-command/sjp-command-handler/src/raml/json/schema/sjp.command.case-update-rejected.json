@@ -12,7 +12,7 @@
       "$ref": "#/definitions/uuid"
     },
     "reason": {
-      "enum": ["WITHDRAWAL_PENDING", "CASE_ASSIGNED", "CASE_COMPLETED"]
+      "enum": ["WITHDRAWAL_PENDING", "CASE_ASSIGNED", "CASE_COMPLETED", "PLEA_ALREADY_SUBMITTED"]
     }
   },
   "required": [

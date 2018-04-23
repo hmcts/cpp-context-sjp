@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
@@ -189,7 +190,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         final Map map = pendingDatesToAvoid.get(pendingDatesToAvoid.size() - 1);
 
         assertEquals(aCase.getId().toString(), map.get("caseId"));
-        assertWithinSeconds(ZonedDateTimes.fromString(map.get("pleaEntry").toString()).toEpochSecond(), 30);
+        assertWithinSeconds(ZonedDateTimes.fromString(map.get("pleaEntry").toString()).toEpochSecond(), 120);
         assertEquals(aCase.getDefendantBuilder().getFirstName(), map.get("firstName"));
         assertEquals(aCase.getDefendantBuilder().getLastName(), map.get("lastName"));
         assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getAddress1(), ((Map) map.get("address")).get("address1"));
@@ -218,6 +219,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     }
 
     private void assertWithinSeconds(final long value, final long tolerance) {
-        assertEquals(clock.now().toEpochSecond(), value, tolerance);
+        assertTrue(
+                Math.abs(clock.now().toEpochSecond() - value) < tolerance);
     }
 }

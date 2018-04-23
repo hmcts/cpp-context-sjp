@@ -17,8 +17,6 @@ import java.util.UUID;
 public class UsersGroupsStub {
 
     public static final String SJP_PROSECUTORS_GROUP = "SJP Prosecutors";
-    public static final String TFL_PROSECUTORS_GROUP = "TFL Prosecutors";
-    public static final String TVL_PROSECUTORS_GROUP = "TVL Prosecutors";
     public static final String LEGAL_ADVISERS_GROUP = "Legal Advisers";
     public static final String COURT_ADMINISTRATORS_GROUP = "Court Administrators";
 

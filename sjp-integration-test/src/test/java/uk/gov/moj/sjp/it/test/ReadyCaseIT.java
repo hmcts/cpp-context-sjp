@@ -2,6 +2,7 @@ package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -32,10 +33,10 @@ import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.PleaType;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
-import uk.gov.moj.sjp.it.helper.CompleteCaseHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestCancelHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
+import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -62,7 +63,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
 
         caseId = randomUUID();
         offenceId = randomUUID();
-        postingDate = LocalDate.now().minusDays(NOTICE_PERIOD_IN_DAYS).minusDays(1);
+        postingDate = LocalDate.now(UTC).minusDays(NOTICE_PERIOD_IN_DAYS).minusDays(1);
 
         stubGetCaseDecisionsWithNoDecision(caseId);
         stubGetEmptyAssignmentsByDomainObjectId(caseId);
@@ -71,7 +72,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
     @Test
     public void shouldChangeCaseReadinessWhenCaseAfterNoticeEndDate() {
 
-        postingDate = LocalDate.now().minusDays(NOTICE_PERIOD_IN_DAYS).minusDays(1);
+        postingDate = LocalDate.now(UTC).minusDays(NOTICE_PERIOD_IN_DAYS).minusDays(1);
 
         createCaseForPayloadBuilder(CreateCase.CreateCasePayloadBuilder
                 .withDefaults()
@@ -108,7 +109,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
     @Test
     public void shouldChangeCaseReadinessWhenCaseBeforeNoticeEndDate() {
 
-        postingDate = LocalDate.now().minusDays(NOTICE_PERIOD_IN_DAYS).plusDays(1);
+        postingDate = LocalDate.now(UTC).minusDays(NOTICE_PERIOD_IN_DAYS).plusDays(1);
 
         createCaseForPayloadBuilder(CreateCase.CreateCasePayloadBuilder
                 .withDefaults()
@@ -147,20 +148,19 @@ public class ReadyCaseIT extends BaseIntegrationTest {
     @Test
     public void shouldUnmarkCaseReadyWhenCaseCompleted() {
 
-        postingDate = LocalDate.now().minusDays(NOTICE_PERIOD_IN_DAYS).minusDays(1);
+        postingDate = LocalDate.now(UTC).minusDays(NOTICE_PERIOD_IN_DAYS).minusDays(1);
 
         createCaseForPayloadBuilder(CreateCase.CreateCasePayloadBuilder
                 .withDefaults()
                 .withId(caseId)
                 .withPostingDate(postingDate));
 
-        try (final CompleteCaseHelper completeCaseHelper = new CompleteCaseHelper(caseId)) {
-            readyCasesPoller.pollUntilReadyWithReason(CaseReadinessReason.PIA);
+        CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
+        readyCasesPoller.pollUntilReadyWithReason(CaseReadinessReason.PIA);
 
-            completeCaseHelper.completeCase();
+        completeCaseProducer.completeCase();
 
-            readyCasesPoller.pollUntilNotReady();
-        }
+        readyCasesPoller.pollUntilNotReady();
 
     }
 

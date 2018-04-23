@@ -7,13 +7,14 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "pending_dates_to_avoid")
 public class PendingDatesToAvoid {
+
     @Id
     @Column(name = "case_id")
     private UUID caseId;
@@ -21,8 +22,8 @@ public class PendingDatesToAvoid {
     @Column(name = "plea_date")
     private ZonedDateTime pleaDate;
 
+    @PrimaryKeyJoinColumn
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_id", nullable = false)
     private CaseDetail caseDetail;
 
     public PendingDatesToAvoid() {

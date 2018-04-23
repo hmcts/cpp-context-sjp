@@ -30,6 +30,7 @@ public class CaseDetailBuilder {
     private UUID assigneeId;
     private BigDecimal costs;
     private LocalDate postingDate;
+    private String datesToAvoid;
     private ZonedDateTime createdOn = ZonedDateTime.now(UTC);
 
     private CaseDetailBuilder() {
@@ -80,6 +81,11 @@ public class CaseDetailBuilder {
         return this;
     }
 
+    public CaseDetailBuilder withDatesToAvoid(String datesToAvoid) {
+        this.datesToAvoid = datesToAvoid;
+        return this;
+    }
+
     public CaseDetailBuilder addDefendantDetail(DefendantDetail defendantDetail) {
         if (defendantDetail != null) {
             this.defendant = defendantDetail;
@@ -110,6 +116,7 @@ public class CaseDetailBuilder {
                 completed,
                 assigneeId,
                 createdOn, defendant, costs, postingDate);
+        caseDetail.setDatesToAvoid(datesToAvoid);
 
         caseDocuments.forEach(caseDetail::addCaseDocuments);
 

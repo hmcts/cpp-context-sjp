@@ -7,6 +7,11 @@
     <persistence-unit name="sjp-persistence-unit">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <jta-data-source>java:/DS.sjp</jta-data-source>
+        <!--
+            TimestampConverter is required as H2 does not support the serialization of ZonedDateTime,
+            it is required just into the test package. -> e.g. check PendingDatesToAvoidRepositoryTest
+        -->
+        <class>uk.gov.moj.cpp.sjp.persistence.entity.converter.TimestampConverter</class>
         <properties>
            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL9Dialect"/>
         </properties>

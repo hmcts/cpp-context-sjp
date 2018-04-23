@@ -1,7 +1,9 @@
 package uk.gov.moj.sjp.it.test;
 
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.helper.CompleteCaseHelper;
+import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
+
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -11,20 +13,22 @@ import org.junit.Test;
  */
 public class CompleteCaseIT extends BaseIntegrationTest {
 
-    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
+    private UUID caseId;
 
     @Before
     public void setUp()  {
-        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
         CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
+
+        caseId = createCasePayloadBuilder.getId();
     }
 
     @Test
     public void completeCase() {
-        try (final CompleteCaseHelper completeCaseHelper = new CompleteCaseHelper(createCasePayloadBuilder.getId())) {
-            completeCaseHelper.completeCase();
-            completeCaseHelper.verifyInActiveMQ();
-            completeCaseHelper.assertCaseCompleted();
-        }
+        CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
+        completeCaseProducer.completeCase();
+        completeCaseProducer.verifyInActiveMQ();
+        completeCaseProducer.assertCaseCompleted();
     }
+
 }

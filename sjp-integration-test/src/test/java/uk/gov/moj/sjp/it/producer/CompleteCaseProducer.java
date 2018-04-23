@@ -1,4 +1,4 @@
-package uk.gov.moj.sjp.it.helper;
+package uk.gov.moj.sjp.it.producer;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZonedDateTime.now;
@@ -9,7 +9,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_CASE_COMPLETED;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
-import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.QueueUtil;
@@ -22,20 +21,15 @@ import javax.json.JsonObject;
 
 import com.jayway.restassured.path.json.JsonPath;
 
-/**
- * Helper class for Complete Case IT.
- */
-public class CompleteCaseHelper implements AutoCloseable {
+public class CompleteCaseProducer {
 
     private static final String CASE_ID_PROPERTY = "caseId";
 
     private UUID caseId;
-    private MessageConsumerClient publicConsumer = new MessageConsumerClient();
-    private MessageConsumer privateEventsConsumer;
+    private MessageConsumer privateEventsConsumer = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_CASE_COMPLETED);
 
-    public CompleteCaseHelper(UUID caseId) {
+    public CompleteCaseProducer(UUID caseId) {
         this.caseId = caseId;
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_CASE_COMPLETED);
     }
 
     public void verifyInActiveMQ() {
@@ -60,8 +54,4 @@ public class CompleteCaseHelper implements AutoCloseable {
         CasePoller.pollUntilCaseByIdIsOk(caseId, withJsonPath("$.completed", is(true)));
     }
 
-    @Override
-    public void close() {
-        publicConsumer.close();
-    }
 }

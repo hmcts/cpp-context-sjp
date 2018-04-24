@@ -62,12 +62,12 @@
                 <artifactId>jgitflow-maven-plugin</artifactId>
                 <configuration>
                     <flowInitContext>
-                        <masterBranchName>dev/sjp-release</masterBranchName>
+                        <masterBranchName>dev/release</masterBranchName>
                         <developBranchName>master</developBranchName>
-                        <featureBranchPrefix>dev/sjp-feature-</featureBranchPrefix>
-                        <releaseBranchPrefix>dev/sjp-release-</releaseBranchPrefix>
-                        <hotfixBranchPrefix>dev/sjp-hotfix-</hotfixBranchPrefix>
-                        <versionTagPrefix>sjp-tag-</versionTagPrefix>
+                        <featureBranchPrefix>dev/feature-</featureBranchPrefix>
+                        <releaseBranchPrefix>dev/release-</releaseBranchPrefix>
+                        <hotfixBranchPrefix>dev/hotfix-</hotfixBranchPrefix>
+                        <versionTagPrefix>v</versionTagPrefix>
                     </flowInitContext>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <enableSshAgent>true</enableSshAgent>

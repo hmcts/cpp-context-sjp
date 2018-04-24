@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
@@ -34,7 +35,7 @@ public class ResultingStub {
         stubFor(get(urlPathMatching(url))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", UUID.randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(responsePayload)));
 
         waitForStubToBeReady(url, RESULTING_QUERY_MEDIA_TYPE);
@@ -48,7 +49,7 @@ public class ResultingStub {
         stubFor(get(urlPathMatching(url))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", UUID.randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(getPayload("stub-data/resulting.query.case-decisions.json"))));
 
         waitForStubToBeReady(url, RESULTING_QUERY_MEDIA_TYPE);

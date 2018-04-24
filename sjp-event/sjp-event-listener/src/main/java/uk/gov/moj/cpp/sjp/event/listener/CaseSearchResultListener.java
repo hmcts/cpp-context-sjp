@@ -7,6 +7,8 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
+import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
@@ -28,7 +30,7 @@ public class CaseSearchResultListener {
     @Inject
     private CaseSearchResultService caseSearchResultService;
 
-    @Handles("sjp.events.case-assigned")
+    @Handles(CaseAssigned.EVENT_NAME)
     @Transactional
     public void caseAssigned(final JsonEnvelope envelope) {
         final JsonObject assignment = envelope.payloadAsJsonObject();
@@ -39,9 +41,9 @@ public class CaseSearchResultListener {
         updateCaseDetailsAssignment(caseId, assigneeId);
     }
 
-    @Handles("sjp.events.case-assignment-deleted")
+    @Handles(CaseUnassigned.EVENT_NAME)
     @Transactional
-    public void caseAssignmentDeleted(final JsonEnvelope envelope) {
+    public void caseUnassigned(final JsonEnvelope envelope) {
         final UUID caseId = UUID.fromString(envelope.payloadAsJsonObject().getString("caseId"));
 
         caseSearchResultService.caseUnassigned(caseId);

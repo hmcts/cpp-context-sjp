@@ -94,14 +94,6 @@ version: v1
         schema: !include json/schema/sjp.command.update-defendant-national-insurance-number.json
         example: !include json/sjp.command.update-defendant-national-insurance-number.json
 
-      application/vnd.sjp.command.case-assignment-created+json:
-          schema: !include json/schema/sjp.command.case-assignment-created.json
-          example: !include json/sjp.command.case-assignment-created.json
-
-      application/vnd.sjp.command.case-assignment-deleted+json:
-          schema: !include json/schema/sjp.command.case-assignment-deleted.json
-          example: !include json/sjp.command.case-assignment-deleted.json
-
       application/vnd.sjp.command.start-session+json:
         schema: !include json/schema/sjp.command.start-session.json
         example: !include json/sjp.command.start-session.json
@@ -113,6 +105,10 @@ version: v1
       application/vnd.sjp.command.assign-case+json:
         schema: !include json/schema/sjp.command.assign-case.json
         example: !include json/sjp.command.assign-case.json
+
+      application/vnd.sjp.command.unassign-case+json:
+        schema: !include json/schema/sjp.command.unassign-case.json
+        example: !include json/sjp.command.unassign-case.json
 
       application/vnd.sjp.command.assign-case-from-candidates-list+json:
         schema: !include json/schema/sjp.command.assign-case-from-candidates-list.json

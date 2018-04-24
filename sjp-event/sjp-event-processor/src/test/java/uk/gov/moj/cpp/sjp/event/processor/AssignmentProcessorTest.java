@@ -1,34 +1,46 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
-import static uk.gov.moj.cpp.sjp.event.processor.AssignmentProcessor.ASSIGNMENT_CONTEXT_ASSIGNMENT_CREATED;
-import static uk.gov.moj.cpp.sjp.event.processor.AssignmentProcessor.ASSIGNMENT_CONTEXT_ASSIGNMENT_DELETED;
-import static uk.gov.moj.cpp.sjp.event.processor.AssignmentProcessor.SJP_COMMAND_HANDLER_ASSIGNMENT_CREATED;
-import static uk.gov.moj.cpp.sjp.event.processor.AssignmentProcessor.SJP_COMMAND_HANDLER_ASSIGNMENT_DELETED;
-import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.ASSIGNMENT_DOMAIN_OBJECT_ID;
-import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.ASSIGNMENT_NATURE_TYPE;
-import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ASSIGNMENT_TYPE;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.ASSIGNEE_ID;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.REASON;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.SESSION_ID;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
+import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
+import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.event.CaseCompleted;
+import uk.gov.moj.cpp.sjp.event.processor.service.AssignmentService;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRequested;
+import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
-
-import javax.json.Json;
-import javax.json.JsonObject;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,114 +54,164 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class AssignmentProcessorTest {
 
-    private static final String CASE_ID = UUID.randomUUID().toString();
-    private static final CaseAssignmentType TYPE = CaseAssignmentType.MAGISTRATE_DECISION;
+    @Mock
+    private Sender sender;
+
+    @Mock
+    private AssignmentService assignmentService;
+
+    @Captor
+    private ArgumentCaptor<JsonEnvelope> jsonEnvelopeCaptor;
+
+    @Spy
+    private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
     @InjectMocks
     private AssignmentProcessor assignmentProcessor;
-    @Mock
-    private Sender sender;
-    @Mock
-    private JsonObject jsonObject;
-    @Mock
-    private JsonEnvelope messageToPublish;
-    @Captor
-    private ArgumentCaptor<JsonEnvelope> captor;
-    @Spy
-    private Enveloper envelopers = createEnveloper();
+
+    private final UUID sessionId = randomUUID();
+    private final UUID caseId = randomUUID();
+    private final UUID assigneeId = randomUUID();
+    private final String localJusticeAreaNationalCourtCode = randomNumeric(4);
 
     @Test
-    public void shouldHandleCaseAssignmentCreated() throws Exception {
-        shouldHandleCaseAssignment(
-                ASSIGNMENT_CONTEXT_ASSIGNMENT_CREATED,
-                SJP_COMMAND_HANDLER_ASSIGNMENT_CREATED,
-                assignmentProcessor::handleAssignmentCreated);
+    public void shouldReturnListOfAssignmentCandidatesForMagistrateSession() {
+        final JsonEnvelope caseAssignmentRequestedEvent = envelopeFrom(metadataWithRandomUUID(CaseAssignmentRequested.EVENT_NAME), createObjectBuilder()
+                .add("session", createObjectBuilder()
+                        .add("id", sessionId.toString())
+                        .add("type", SessionType.MAGISTRATE.name())
+                        .add("userId", assigneeId.toString())
+                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                ).build());
+
+
+        final AssignmentCandidate assignmentCandidate1 = new AssignmentCandidate(randomUUID(), 1);
+        final AssignmentCandidate assignmentCandidate2 = new AssignmentCandidate(randomUUID(), 2);
+
+        final List<AssignmentCandidate> assignmentCandidates = Arrays.asList(assignmentCandidate1, assignmentCandidate2);
+
+        when(assignmentService.getAssignmentCandidates(caseAssignmentRequestedEvent, assigneeId, localJusticeAreaNationalCourtCode, MAGISTRATE)).thenReturn(assignmentCandidates);
+
+        assignmentProcessor.handleCaseAssignmentRequestedEvent(caseAssignmentRequestedEvent);
+
+        verify(sender).send(jsonEnvelopeCaptor.capture());
+        assertThat(jsonEnvelopeCaptor.getValue(), jsonEnvelope(withMetadataEnvelopedFrom(caseAssignmentRequestedEvent)
+                .withName("sjp.command.assign-case-from-candidates-list"), payload().isJson(allOf(
+                withJsonPath("$.sessionId", equalTo(sessionId.toString())),
+                withJsonPath("$.assignmentCandidates[0].caseId", equalTo(assignmentCandidate1.getCaseId().toString())),
+                withJsonPath("$.assignmentCandidates[0].caseStreamVersion", equalTo(assignmentCandidate1.getCaseStreamVersion())),
+                withJsonPath("$.assignmentCandidates[1].caseId", equalTo(assignmentCandidate2.getCaseId().toString())),
+                withJsonPath("$.assignmentCandidates[1].caseStreamVersion", equalTo(assignmentCandidate2.getCaseStreamVersion()))
+        ))));
     }
 
     @Test
-    public void shouldHandleCaseAssignmentDeleted() throws Exception {
-        shouldHandleCaseAssignment(
-                ASSIGNMENT_CONTEXT_ASSIGNMENT_DELETED,
-                SJP_COMMAND_HANDLER_ASSIGNMENT_DELETED,
-                assignmentProcessor::handleAssignmentDeleted);
+    public void shouldReturnListOfAssignmentCandidatesForDelegatedPowersSession() {
+        final JsonEnvelope caseAssignmentRequestedEvent = envelopeFrom(metadataWithRandomUUID(CaseAssignmentRequested.EVENT_NAME), createObjectBuilder()
+                .add("session", createObjectBuilder()
+                        .add("id", sessionId.toString())
+                        .add("type", SessionType.DELEGATED_POWERS.name())
+                        .add("userId", assigneeId.toString())
+                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                ).build());
+
+        final AssignmentCandidate assignmentCandidate1 = new AssignmentCandidate(randomUUID(), 1);
+        final AssignmentCandidate assignmentCandidate2 = new AssignmentCandidate(randomUUID(), 2);
+
+        final List<AssignmentCandidate> assignmentCandidates = Arrays.asList(assignmentCandidate1, assignmentCandidate2);
+
+        when(assignmentService.getAssignmentCandidates(caseAssignmentRequestedEvent, assigneeId, localJusticeAreaNationalCourtCode, DELEGATED_POWERS)).thenReturn(assignmentCandidates);
+
+        assignmentProcessor.handleCaseAssignmentRequestedEvent(caseAssignmentRequestedEvent);
+
+        verify(sender).send(jsonEnvelopeCaptor.capture());
+        assertThat(jsonEnvelopeCaptor.getValue(), jsonEnvelope(withMetadataEnvelopedFrom(caseAssignmentRequestedEvent)
+                .withName("sjp.command.assign-case-from-candidates-list"), payload().isJson(allOf(
+                withJsonPath("$.sessionId", equalTo(sessionId.toString())),
+                withJsonPath("$.assignmentCandidates[0].caseId", equalTo(assignmentCandidate1.getCaseId().toString())),
+                withJsonPath("$.assignmentCandidates[0].caseStreamVersion", equalTo(assignmentCandidate1.getCaseStreamVersion())),
+                withJsonPath("$.assignmentCandidates[1].caseId", equalTo(assignmentCandidate2.getCaseId().toString())),
+                withJsonPath("$.assignmentCandidates[1].caseStreamVersion", equalTo(assignmentCandidate2.getCaseStreamVersion()))
+        ))));
     }
 
     @Test
-    public void shouldHandleCaseAssignmentForEmptyType() throws Exception {
-        shouldHandleCaseAssignmentForEmptyNatureType(
-                ASSIGNMENT_CONTEXT_ASSIGNMENT_DELETED,
-                SJP_COMMAND_HANDLER_ASSIGNMENT_DELETED,
-                assignmentProcessor::handleAssignmentDeleted);
+    public void shouldEmitCaseNotAssignedPublicEvent() {
+        final JsonEnvelope caseAssignmentRequestedEvent = envelopeFrom(metadataWithRandomUUID(CaseAssignmentRequested.EVENT_NAME), createObjectBuilder()
+                .add("session", createObjectBuilder()
+                        .add("id", sessionId.toString())
+                        .add("type", SessionType.DELEGATED_POWERS.name())
+                        .add("userId", assigneeId.toString())
+                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                ).build());
+
+        when(assignmentService.getAssignmentCandidates(caseAssignmentRequestedEvent, assigneeId, localJusticeAreaNationalCourtCode, DELEGATED_POWERS)).thenReturn(Collections.emptyList());
+
+        assignmentProcessor.handleCaseAssignmentRequestedEvent(caseAssignmentRequestedEvent);
+
+        verify(sender).send(jsonEnvelopeCaptor.capture());
+        assertThat(jsonEnvelopeCaptor.getValue(), jsonEnvelope().withMetadataOf(withMetadataEnvelopedFrom(caseAssignmentRequestedEvent)
+                .withName("public.sjp.case-not-assigned")));
     }
 
-    private void shouldHandleCaseAssignment(final String assignmentEventName, final String sjpHandlerName, final Consumer<JsonEnvelope> consumer) {
-        // given
-        final JsonEnvelope event = EnvelopeFactory.createEnvelope(
-                assignmentEventName,
-                Json.createObjectBuilder()
-                        .add(ASSIGNMENT_DOMAIN_OBJECT_ID, CASE_ID)
-                        .add(ASSIGNMENT_NATURE_TYPE, TYPE.toString()).build());
+    @Test
+    public void shouldEmitCaseAssignedPublicEventAndReplicateEventInAssignmentContext() {
 
-        // when
-        consumer.accept(event);
+        final JsonEnvelope caseAssignedEvent = envelopeFrom(metadataWithRandomUUID(CaseAssigned.EVENT_NAME), createObjectBuilder()
+                .add(CASE_ID, caseId.toString())
+                .add(ASSIGNEE_ID, assigneeId.toString())
+                .add("caseAssignmentType", CaseAssignmentType.MAGISTRATE_DECISION.toString())
+                .build());
 
-        // then
-        verify(sender).send(captor.capture());
-        assertThat(captor.getValue(), jsonEnvelope(
-                metadata().withName(sjpHandlerName),
+        assignmentProcessor.handleCaseAssignedEvent(caseAssignedEvent);
+
+        verify(sender).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(caseAssignedEvent).withName("public.sjp.case-assigned"),
+                payloadIsJson(withJsonPath(CASE_ID, equalTo(caseId.toString())))
+        )));
+
+        //TODO remove (ATCM-3097)
+        verify(sender).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(caseAssignedEvent).withName("assignment.command.add-assignment-to"),
                 payloadIsJson(allOf(
-                        withJsonPath("$." + EventProcessorConstants.CASE_ID, equalTo(CASE_ID)),
-                        withJsonPath("$." + CASE_ASSIGNMENT_TYPE, equalTo(TYPE.toString()))))
-        ));
-    }
-
-    private void shouldHandleCaseAssignmentForEmptyNatureType(final String assignmentEventName, final String sjpHandlerName, final Consumer<JsonEnvelope> consumer) {
-        // given
-        final JsonEnvelope event = EnvelopeFactory.createEnvelope(
-                assignmentEventName,
-                Json.createObjectBuilder()
-                        .add(ASSIGNMENT_DOMAIN_OBJECT_ID, CASE_ID)
-                        .build());
-
-        // when
-        consumer.accept(event);
-
-        // then
-        verify(sender).send(captor.capture());
-        assertThat(captor.getValue(), jsonEnvelope(
-                metadata().withName(sjpHandlerName),
-                payloadIsJson(allOf(
-                        withJsonPath("$." + EventProcessorConstants.CASE_ID, equalTo(CASE_ID)),
-                        withJsonPath("$." + CASE_ASSIGNMENT_TYPE, equalTo("unknown"))))
-        ));
+                        withJsonPath("id"),
+                        withJsonPath("version", equalTo(0)),
+                        withJsonPath("domainObjectId", equalTo(caseId.toString())),
+                        withJsonPath("assignmentNatureType", equalTo(CaseAssignmentType.MAGISTRATE_DECISION.toString())),
+                        withJsonPath("assignee", equalTo(assigneeId.toString()))
+                ))
+        )));
     }
 
     @Test
-    public void shouldIgnoreCaseAssignmentCreatedWithOtherType() throws Exception {
-        shouldIgnoreCaseAssignment(
-                ASSIGNMENT_CONTEXT_ASSIGNMENT_CREATED,
-                assignmentProcessor::handleAssignmentCreated);
+    //TODO remove (ATCM-3097)
+    public void shouldReplicateCaseUnassignedEventInAssignmentContext() {
+        final JsonEnvelope caseAssignedEvent = envelopeFrom(metadataWithRandomUUID(CaseUnassigned.EVENT_NAME), createObjectBuilder()
+                .add(CASE_ID, caseId.toString())
+                .build());
+
+        assignmentProcessor.handleCaseUnassignedEvent(caseAssignedEvent);
+
+        verify(sender).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(caseAssignedEvent).withName("assignment.command.remove-assignment"),
+                payloadIsJson(withJsonPath("domainObjectId", equalTo(caseId.toString())))
+        )));
     }
 
     @Test
-    public void shouldIgnoreCaseAssignmentDeletedWithOtherType() throws Exception {
-        shouldIgnoreCaseAssignment(
-                ASSIGNMENT_CONTEXT_ASSIGNMENT_DELETED,
-                assignmentProcessor::handleAssignmentDeleted);
-    }
+    public void shouldEmitCaseAssignmentRejectedPublicEvent() {
+        final CaseAssignmentRejected.RejectReason rejectionReason = CaseAssignmentRejected.RejectReason.SESSION_ENDED;
 
-    private void shouldIgnoreCaseAssignment(final String assignmentEventName, final Consumer<JsonEnvelope> consumer) {
-        // given
-        final JsonEnvelope event = EnvelopeFactory.createEnvelope(
-                assignmentEventName,
-                Json.createObjectBuilder()
-                        .add(ASSIGNMENT_DOMAIN_OBJECT_ID, CASE_ID)
-                        .add(ASSIGNMENT_NATURE_TYPE, "some random type").build());
+        final JsonEnvelope caseAssignmentRejectedEvent = envelopeFrom(metadataWithRandomUUID(CaseAssignmentRejected.EVENT_NAME), createObjectBuilder()
+                .add(SESSION_ID, sessionId.toString())
+                .add(REASON, rejectionReason.toString())
+                .build());
 
-        // when
-        consumer.accept(event);
+        assignmentProcessor.handleCaseAssignmentRejectedEvent(caseAssignmentRejectedEvent);
 
-        // then
-        verifyZeroInteractions(sender);
+        verify(sender).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(caseAssignmentRejectedEvent).withName("public.sjp.case-assignment-rejected"),
+                payloadIsJson(withJsonPath(REASON, equalTo(rejectionReason.toString())))
+        )));
     }
 }

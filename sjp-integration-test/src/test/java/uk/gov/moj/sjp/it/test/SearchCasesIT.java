@@ -17,6 +17,7 @@ import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
+import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 
 import java.util.UUID;
@@ -24,6 +25,8 @@ import java.util.UUID;
 import org.junit.Test;
 
 public class SearchCasesIT extends BaseIntegrationTest {
+
+    private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
 
     @Test
     public void verifyInitialSearchDetailsAndUpdateToDefendantDetails() {
@@ -37,13 +40,13 @@ public class SearchCasesIT extends BaseIntegrationTest {
         caseSearchResultHelper.verifyPersonInfoByUrn();
         caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth(caseSearchResultHelper.getLastName(), caseSearchResultHelper.getDateOfBirth());
 
-        UpdateDefendantDetails.DefendantDetailsPayloadBuilder updatedDefendantPayload = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults();
+        final UpdateDefendantDetails.DefendantDetailsPayloadBuilder updatedDefendantPayload = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults();
 
         final UUID caseId = createCasePayloadBuilder.getId();
         UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseId, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id")), updatedDefendantPayload);
         caseSearchResultHelper.verifyPersonInfoByLastNameAndDateOfBirth(updatedDefendantPayload.getLastName(), updatedDefendantPayload.getDateOfBirth());
 
-        PersonInfoVerifier personInfoVerifier = PersonInfoVerifier.personInfoVerifierForDefendantUpdatedPayload(caseId, updatedDefendantPayload);
+        final PersonInfoVerifier personInfoVerifier = PersonInfoVerifier.personInfoVerifierForDefendantUpdatedPayload(caseId, updatedDefendantPayload);
         personInfoVerifier.verifyPersonInfo(true);
     }
 
@@ -100,7 +103,9 @@ public class SearchCasesIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void verifyAssignmentCreationAndDeletionIsReflected() {
+    public void verifyCaseAssignmentIsReflected() throws Exception {
+        databaseCleaner.cleanAll();
+
         //given case is created
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = withDefaults();
         createCaseForPayloadBuilder(createCasePayloadBuilder);
@@ -113,13 +118,15 @@ public class SearchCasesIT extends BaseIntegrationTest {
         caseSearchResultHelper.verifyAssignment(false);
 
         // when
-        caseSearchResultHelper.assignmentCreated();
+        caseSearchResultHelper.startSessionAndAssignCase();
         // then
         caseSearchResultHelper.verifyAssignment(true);
 
         // when
-        caseSearchResultHelper.assignmentDeleted();
+        //TODO change to end session when it is ready (ATCM-2957)
+        caseSearchResultHelper.completeCase();
         // then
         caseSearchResultHelper.verifyAssignment(false);
     }
+
 }

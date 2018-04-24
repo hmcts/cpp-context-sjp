@@ -93,15 +93,15 @@ public class Session implements Aggregate {
         return apply(streamBuilder.build());
     }
 
-    public Stream<Object> requestCaseAssignment(final UUID sessionId, final UUID userId) {
+    public Stream<Object> requestCaseAssignment(final UUID userId) {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
         if (sessionState == SessionState.NOT_EXISTING) {
-            streamBuilder.add(new CaseAssignmentRejected(sessionId, CaseAssignmentRejected.RejectReason.SESSION_DOES_NOT_EXIST));
+            streamBuilder.add(new CaseAssignmentRejected(CaseAssignmentRejected.RejectReason.SESSION_DOES_NOT_EXIST));
         } else if (sessionState == SessionState.ENDED) {
-            streamBuilder.add(new CaseAssignmentRejected(sessionId, CaseAssignmentRejected.RejectReason.SESSION_ENDED));
+            streamBuilder.add(new CaseAssignmentRejected(CaseAssignmentRejected.RejectReason.SESSION_ENDED));
         } else if (!userId.equals(this.userId)) {
-            streamBuilder.add(new CaseAssignmentRejected(sessionId, CaseAssignmentRejected.RejectReason.SESSION_NOT_OWNED_BY_USER));
+            streamBuilder.add(new CaseAssignmentRejected(CaseAssignmentRejected.RejectReason.SESSION_NOT_OWNED_BY_USER));
         } else {
             streamBuilder.add(new CaseAssignmentRequested(new uk.gov.moj.cpp.sjp.domain.Session(id, userId, sessionType, localJusticeAreaNationalCourtCode)));
         }

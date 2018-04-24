@@ -7,12 +7,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
-import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.SESSION_DOES_NOT_EXIST;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.SESSION_ENDED;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.SESSION_NOT_OWNED_BY_USER;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.endSession;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startDelegatedPowersSessionAndGetSessionStartedEvent;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
@@ -45,7 +44,7 @@ public class AssignmentRejectionIT extends BaseIntegrationTest {
 
     @Test
     public void shouldRejectCaseAssignmentWhenSessionEnded() {
-        startSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
+        startSession(sessionId, userId);
         endSession(sessionId, userId);
 
         requestAssignmentAndVerifyRejectionReason(sessionId, userId, SESSION_ENDED);
@@ -55,7 +54,7 @@ public class AssignmentRejectionIT extends BaseIntegrationTest {
     public void shouldRejectCaseAssignmentWhenSessionIsNotOwnedByUser() {
         final UUID assignmentRequesterId = randomUUID();
 
-        startSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
+        startSession(sessionId, userId);
 
         requestAssignmentAndVerifyRejectionReason(sessionId, assignmentRequesterId, SESSION_NOT_OWNED_BY_USER);
     }
@@ -73,4 +72,7 @@ public class AssignmentRejectionIT extends BaseIntegrationTest {
         }
     }
 
+    private static void startSession(final UUID sessionId, final UUID userId) {
+        startDelegatedPowersSessionAndGetSessionStartedEvent(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE);
+    }
 }

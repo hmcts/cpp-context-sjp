@@ -1,6 +1,7 @@
 package uk.gov.moj.sjp.it.helper;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -9,6 +10,8 @@ import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_PLEA_UPDATED
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
+import uk.gov.moj.cpp.sjp.domain.PleaType;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
@@ -17,6 +20,7 @@ import java.util.UUID;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.core.Response;
 
 import com.jayway.restassured.path.json.JsonPath;
@@ -62,23 +66,23 @@ public class UpdatePleaHelper implements AutoCloseable {
         requestHttpCallWithPayloadAndStatus(caseId, offenceId, payload.toString(), Response.Status.ACCEPTED);
     }
 
-    public void verifyInPublicTopic(final UUID caseId, final UUID offenceId, final String plea, final String denialReason) {
-        assertEventData(caseId, offenceId, plea, denialReason);
+    public void verifyInPublicTopic(final UUID caseId, final UUID offenceId, final PleaType pleaType, final String denialReason) {
+        assertEventData(caseId, offenceId, pleaType, denialReason);
     }
 
-    private void assertEventData(final UUID caseId, final UUID offenceId, final String plea, final String denialReason) {
+    private void assertEventData(final UUID caseId, final UUID offenceId, final PleaType pleaType, final String denialReason) {
         final JsonPath message = retrieveMessage(publicEventsConsumer);
         assertThat(message.get("caseId"), equalTo(caseId.toString()));
         assertThat(message.get("offenceId"), equalTo(offenceId.toString()));
-        assertThat(message.get("plea"), equalTo(plea));
+        assertThat(message.get("plea"), equalTo(pleaType.name()));
         assertThat(message.get("denialReason"), equalTo(denialReason));
     }
 
-    public void verifyPleaUpdated(final UUID caseId, final String plea, final String pleaMethod) {
+    public void verifyPleaUpdated(final UUID caseId, final PleaType pleaType, final PleaMethod pleaMethod) {
         CasePoller.pollUntilCaseByIdIsOk(caseId,
                 allOf(
-                        withJsonPath("defendant.offences[0].plea", is(plea)),
-                        withJsonPath("defendant.offences[0].pleaMethod", is(pleaMethod))
+                        withJsonPath("defendant.offences[0].plea", is(pleaType.name())),
+                        withJsonPath("defendant.offences[0].pleaMethod", is(pleaMethod.name()))
                 )
         );
     }
@@ -103,5 +107,13 @@ public class UpdatePleaHelper implements AutoCloseable {
     protected void finalize() throws Throwable {
         close();
         super.finalize();
+    }
+
+    public static JsonObject getPleaPayload(final PleaType pleaType) {
+        final JsonObjectBuilder builder = createObjectBuilder().add("plea", pleaType.name());
+        if (PleaType.NOT_GUILTY.equals(pleaType) || PleaType.GUILTY_REQUEST_HEARING.equals(pleaType)) {
+            builder.add("interpreterRequired", false);
+        }
+        return builder.build();
     }
 }

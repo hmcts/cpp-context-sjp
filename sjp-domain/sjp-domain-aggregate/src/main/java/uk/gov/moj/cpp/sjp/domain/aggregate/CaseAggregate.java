@@ -15,6 +15,7 @@ import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
+import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
@@ -47,6 +48,7 @@ import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAlreadyAdded;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAlreadyExists;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentUploaded;
+import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseNotFound;
 import uk.gov.moj.cpp.sjp.event.CaseNotReopened;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
@@ -54,6 +56,7 @@ import uk.gov.moj.cpp.sjp.event.CaseReopened;
 import uk.gov.moj.cpp.sjp.event.CaseReopenedUndone;
 import uk.gov.moj.cpp.sjp.event.CaseReopenedUpdated;
 import uk.gov.moj.cpp.sjp.event.CaseStarted;
+import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.CourtReferralActioned;
 import uk.gov.moj.cpp.sjp.event.CourtReferralCreated;
@@ -104,7 +107,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 4L;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseAggregate.class);
 
@@ -121,6 +124,7 @@ public class CaseAggregate implements Aggregate {
     private String defendantLastName;
     private LocalDate defendantDateOfBirth;
     private Address defendantAddress;
+    private CaseReadinessReason readinessReason;
 
     private Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
 
@@ -726,6 +730,26 @@ public class CaseAggregate implements Aggregate {
         return apply(events.build());
     }
 
+    public Stream<Object> markCaseReadyForDecision(final CaseReadinessReason readinessReason, final ZonedDateTime markedAt) {
+        final Stream.Builder<Object> events = Stream.builder();
+
+        if (this.readinessReason != readinessReason) {
+            events.add(new CaseMarkedReadyForDecision(caseId, readinessReason, markedAt));
+        }
+
+        return events.build();
+    }
+
+    public Stream<Object> unmarkCaseReadyForDecision() {
+        final Stream.Builder<Object> events = Stream.builder();
+
+        if (readinessReason != null) {
+            events.add(new CaseUnmarkedReadyForDecision(caseId));
+        }
+
+        return events.build();
+    }
+
     private boolean assertCaseIdNotNullAndMatch(String caseId) {
         if (caseId == null) {
             LOGGER.warn("Case ID is null");
@@ -900,6 +924,8 @@ public class CaseAggregate implements Aggregate {
                 when(DefendantAddressUpdated.class).apply(e -> {
                     // no change in aggregate state
                 }),
+                when(CaseMarkedReadyForDecision.class).apply(e -> this.readinessReason = e.getReason()),
+                when(CaseUnmarkedReadyForDecision.class).apply(e -> this.readinessReason = null),
                 when(SjpCaseCreated.class).apply(e -> apply(Stream.of(convertSjpCaseCreatedToCaseReceived(e)))),
                 otherwiseDoNothing()
         );

@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test" id="m1479934344474" name="">
+  <signal id="pleaUpdated" name="pleaUpdated"></signal>
+  <signal id="pleaCancelled" name="pleaCancelled"></signal>
+  <signal id="withdrawalRequested" name="withdrawalRequested"></signal>
+  <signal id="withdrawalRequestCancelled" name="withdrawalRequestCancelled"></signal>
+  <signal id="caseCompleted" name="caseCompleted"></signal>
+  <process id="caseState" name="caseState" isExecutable="true">
+    <startEvent id="start" name="Start"></startEvent>
+    <intermediateCatchEvent id="noticeTimer" name="notice timer">
+      <timerEventDefinition>
+        <timeDate>${noticeEndedDate}</timeDate>
+      </timerEventDefinition>
+    </intermediateCatchEvent>
+    <serviceTask id="readyCaseDelegate" name="ready case delegate" activiti:async="true" activiti:delegateExpression="${readyCaseDelegate}"></serviceTask>
+    <intermediateCatchEvent id="notReadyCaseWithdrawalCancelled" name="not ready case withdrawal cancelled">
+      <signalEventDefinition signalRef="withdrawalRequestCancelled"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <intermediateCatchEvent id="notReadyCaseWithdrawalRequested" name="not ready case withdrawal requested">
+      <signalEventDefinition signalRef="withdrawalRequested"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <eventBasedGateway id="readyState" name="ready state"></eventBasedGateway>
+    <sequenceFlow id="pleaUpdatedId" sourceRef="notReadyCaseWithdrawalRequested" targetRef="withdrawalRequestedDelegate"></sequenceFlow>
+    <sequenceFlow id="flow20" sourceRef="notReadyCaseWithdrawalCancelled" targetRef="withdrawalRequestCancelledDelegate"></sequenceFlow>
+    <eventBasedGateway id="notReadyState" name="not ready state"></eventBasedGateway>
+    <sequenceFlow id="flow21" sourceRef="notReadyState" targetRef="notReadyCaseWithdrawalCancelled"></sequenceFlow>
+    <sequenceFlow id="flow22" sourceRef="notReadyState" targetRef="noticeTimer"></sequenceFlow>
+    <sequenceFlow id="flow23" sourceRef="start" targetRef="caseStartedDelegate"></sequenceFlow>
+    <sequenceFlow id="flow28" sourceRef="notReadyState" targetRef="notReadyCaseWithdrawalRequested"></sequenceFlow>
+    <intermediateCatchEvent id="readyCaseCompleted" name="ready case completed">
+      <signalEventDefinition signalRef="caseCompleted"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <endEvent id="end" name="End"></endEvent>
+    <exclusiveGateway id="isCaseReady" name="is case ready"></exclusiveGateway>
+    <sequenceFlow id="flow31" name="is case ready?" sourceRef="readyCaseDelegate" targetRef="isCaseReady"></sequenceFlow>
+    <sequenceFlow id="caseReady" name="case ready" sourceRef="isCaseReady" targetRef="readyState">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${isReady}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow33" name="case not ready" sourceRef="isCaseReady" targetRef="notReadyState">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!isReady}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow38" sourceRef="readyState" targetRef="readyCaseCompleted"></sequenceFlow>
+    <sequenceFlow id="flow39" sourceRef="readyCaseCompleted" targetRef="caseCompletedDelegate"></sequenceFlow>
+    <serviceTask id="pleaUpdatedDelegate" name="plea updated" activiti:delegateExpression="${pleaUpdatedDelegate}"></serviceTask>
+    <serviceTask id="pleaCancelledDelegate" name="plea cancelled" activiti:delegateExpression="${pleaCancelledDelegate}"></serviceTask>
+    <serviceTask id="withdrawalRequestCancelledDelegate" name="withdrawal request cancelled" activiti:delegateExpression="${withdrawalRequestCancelledDelegate}"></serviceTask>
+    <serviceTask id="withdrawalRequestedDelegate" name="withdrawal requested" activiti:delegateExpression="${withdrawalRequestedDelegate}"></serviceTask>
+    <sequenceFlow id="flow40" sourceRef="notReadyState" targetRef="notReadyCasePleaCancelled"></sequenceFlow>
+    <sequenceFlow id="flow41" sourceRef="notReadyState" targetRef="notReadyCasePleaUpdated"></sequenceFlow>
+    <sequenceFlow id="flow42" sourceRef="readyState" targetRef="readyCaseWithdrawalCancelled"></sequenceFlow>
+    <sequenceFlow id="flow43" sourceRef="readyState" targetRef="readyCaseWithdrawalRequested"></sequenceFlow>
+    <sequenceFlow id="flow44" sourceRef="readyState" targetRef="readyCasePleaCancelled"></sequenceFlow>
+    <sequenceFlow id="flow45" sourceRef="readyState" targetRef="readyCasePleaUpdated"></sequenceFlow>
+    <sequenceFlow id="flow46" sourceRef="notReadyCasePleaCancelled" targetRef="pleaCancelledDelegate"></sequenceFlow>
+    <sequenceFlow id="flow47" sourceRef="notReadyCasePleaUpdated" targetRef="pleaUpdatedDelegate"></sequenceFlow>
+    <sequenceFlow id="flow48" sourceRef="pleaUpdatedDelegate" targetRef="readyCaseDelegate"></sequenceFlow>
+    <sequenceFlow id="flow49" sourceRef="pleaCancelledDelegate" targetRef="readyCaseDelegate"></sequenceFlow>
+    <sequenceFlow id="flow50" sourceRef="withdrawalRequestedDelegate" targetRef="readyCaseDelegate"></sequenceFlow>
+    <sequenceFlow id="flow51" sourceRef="withdrawalRequestCancelledDelegate" targetRef="readyCaseDelegate"></sequenceFlow>
+    <serviceTask id="caseStartedDelegate" name="case started" activiti:delegateExpression="${caseStartedDelegate}"></serviceTask>
+    <sequenceFlow id="flow53" sourceRef="caseStartedDelegate" targetRef="notReadyState"></sequenceFlow>
+    <sequenceFlow id="flow54" sourceRef="noticeTimer" targetRef="provedInAbsenceDelegate"></sequenceFlow>
+    <serviceTask id="provedInAbsenceDelegate" name="proved in absence" activiti:delegateExpression="${provedInAbsenceDelegate}"></serviceTask>
+    <sequenceFlow id="flow55" sourceRef="provedInAbsenceDelegate" targetRef="readyCaseDelegate"></sequenceFlow>
+    <serviceTask id="caseCompletedDelegate" name="case completed" activiti:delegateExpression="${caseCompletedDelegate}"></serviceTask>
+    <sequenceFlow id="flow56" sourceRef="caseCompletedDelegate" targetRef="end"></sequenceFlow>
+    <intermediateCatchEvent id="notReadyCasePleaUpdated" name="not ready case plea updated">
+      <signalEventDefinition signalRef="pleaUpdated"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <intermediateCatchEvent id="notReadyCasePleaCancelled" name="not ready case plea cancelled">
+      <signalEventDefinition signalRef="pleaCancelled"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <intermediateCatchEvent id="readyCasePleaUpdated" name="ready case plea updated">
+      <signalEventDefinition signalRef="pleaUpdated"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <sequenceFlow id="flow57" sourceRef="readyCasePleaUpdated" targetRef="pleaUpdatedDelegate"></sequenceFlow>
+    <intermediateCatchEvent id="readyCasePleaCancelled" name="ready case plea cancelled">
+      <signalEventDefinition signalRef="pleaCancelled"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <sequenceFlow id="flow58" sourceRef="readyCasePleaCancelled" targetRef="pleaCancelledDelegate"></sequenceFlow>
+    <intermediateCatchEvent id="readyCaseWithdrawalRequested" name="ready case withdrawal requested">
+      <signalEventDefinition signalRef="withdrawalRequested"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <sequenceFlow id="flow59" sourceRef="readyCaseWithdrawalRequested" targetRef="withdrawalRequestedDelegate"></sequenceFlow>
+    <intermediateCatchEvent id="readyCaseWithdrawalCancelled" name="ready case withdrawal cancelled">
+      <signalEventDefinition signalRef="withdrawalRequestCancelled"></signalEventDefinition>
+    </intermediateCatchEvent>
+    <sequenceFlow id="flow60" sourceRef="readyCaseWithdrawalCancelled" targetRef="withdrawalRequestCancelledDelegate"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_caseState">
+    <bpmndi:BPMNPlane bpmnElement="caseState" id="BPMNPlane_caseState">
+      <bpmndi:BPMNShape bpmnElement="start" id="BPMNShape_start">
+        <omgdc:Bounds height="35.0" width="35.0" x="90.0" y="47.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="noticeTimer" id="BPMNShape_noticeTimer">
+        <omgdc:Bounds height="35.0" width="35.0" x="1395.0" y="243.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="readyCaseDelegate" id="BPMNShape_readyCaseDelegate">
+        <omgdc:Bounds height="60.0" width="231.0" x="840.0" y="560.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="notReadyCaseWithdrawalCancelled" id="BPMNShape_notReadyCaseWithdrawalCancelled">
+        <omgdc:Bounds height="35.0" width="35.0" x="1152.0" y="234.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="notReadyCaseWithdrawalRequested" id="BPMNShape_notReadyCaseWithdrawalRequested">
+        <omgdc:Bounds height="35.0" width="35.0" x="930.0" y="233.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="readyState" id="BPMNShape_readyState">
+        <omgdc:Bounds height="40.0" width="40.0" x="320.0" y="459.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="notReadyState" id="BPMNShape_notReadyState">
+        <omgdc:Bounds height="40.0" width="40.0" x="320.0" y="44.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="readyCaseCompleted" id="BPMNShape_readyCaseCompleted">
+        <omgdc:Bounds height="35.0" width="35.0" x="449.0" y="719.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="end" id="BPMNShape_end">
+        <omgdc:Bounds height="35.0" width="35.0" x="770.0" y="719.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="isCaseReady" id="BPMNShape_isCaseReady">
+        <omgdc:Bounds height="40.0" width="40.0" x="320.0" y="245.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="pleaUpdatedDelegate" id="BPMNShape_pleaUpdatedDelegate">
+        <omgdc:Bounds height="55.0" width="105.0" x="530.0" y="242.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="pleaCancelledDelegate" id="BPMNShape_pleaCancelledDelegate">
+        <omgdc:Bounds height="55.0" width="105.0" x="760.0" y="242.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="withdrawalRequestCancelledDelegate" id="BPMNShape_withdrawalRequestCancelledDelegate">
+        <omgdc:Bounds height="56.0" width="105.0" x="1210.0" y="248.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="withdrawalRequestedDelegate" id="BPMNShape_withdrawalRequestedDelegate">
+        <omgdc:Bounds height="55.0" width="105.0" x="1000.0" y="245.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="caseStartedDelegate" id="BPMNShape_caseStartedDelegate">
+        <omgdc:Bounds height="55.0" width="105.0" x="160.0" y="37.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="provedInAbsenceDelegate" id="BPMNShape_provedInAbsenceDelegate">
+        <omgdc:Bounds height="70.0" width="105.0" x="1360.0" y="391.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="caseCompletedDelegate" id="BPMNShape_caseCompletedDelegate">
+        <omgdc:Bounds height="62.0" width="105.0" x="556.0" y="706.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="notReadyCasePleaUpdated" id="BPMNShape_notReadyCasePleaUpdated">
+        <omgdc:Bounds height="35.0" width="35.0" x="476.0" y="229.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="notReadyCasePleaCancelled" id="BPMNShape_notReadyCasePleaCancelled">
+        <omgdc:Bounds height="35.0" width="35.0" x="708.0" y="229.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="readyCasePleaUpdated" id="BPMNShape_readyCasePleaUpdated">
+        <omgdc:Bounds height="35.0" width="35.0" x="476.0" y="272.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="readyCasePleaCancelled" id="BPMNShape_readyCasePleaCancelled">
+        <omgdc:Bounds height="35.0" width="35.0" x="708.0" y="268.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="readyCaseWithdrawalRequested" id="BPMNShape_readyCaseWithdrawalRequested">
+        <omgdc:Bounds height="35.0" width="35.0" x="930.0" y="272.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="readyCaseWithdrawalCancelled" id="BPMNShape_readyCaseWithdrawalCancelled">
+        <omgdc:Bounds height="35.0" width="35.0" x="1152.0" y="278.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="pleaUpdatedId" id="BPMNEdge_pleaUpdatedId">
+        <omgdi:waypoint x="965.0" y="250.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1000.0" y="272.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow20" id="BPMNEdge_flow20">
+        <omgdi:waypoint x="1187.0" y="251.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1210.0" y="276.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow21" id="BPMNEdge_flow21">
+        <omgdi:waypoint x="340.0" y="84.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1169.0" y="234.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow22" id="BPMNEdge_flow22">
+        <omgdi:waypoint x="360.0" y="64.0"></omgdi:waypoint>
+        <omgdi:waypoint x="368.0" y="64.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1412.0" y="64.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1412.0" y="243.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow23" id="BPMNEdge_flow23">
+        <omgdi:waypoint x="125.0" y="64.0"></omgdi:waypoint>
+        <omgdi:waypoint x="160.0" y="64.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow28" id="BPMNEdge_flow28">
+        <omgdi:waypoint x="340.0" y="84.0"></omgdi:waypoint>
+        <omgdi:waypoint x="947.0" y="233.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow31" id="BPMNEdge_flow31">
+        <omgdi:waypoint x="955.0" y="620.0"></omgdi:waypoint>
+        <omgdi:waypoint x="955.0" y="782.0"></omgdi:waypoint>
+        <omgdi:waypoint x="812.0" y="782.0"></omgdi:waypoint>
+        <omgdi:waypoint x="280.0" y="781.0"></omgdi:waypoint>
+        <omgdi:waypoint x="281.0" y="530.0"></omgdi:waypoint>
+        <omgdi:waypoint x="282.0" y="264.0"></omgdi:waypoint>
+        <omgdi:waypoint x="320.0" y="265.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="13.0" width="72.0" x="361.0" y="258.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="caseReady" id="BPMNEdge_caseReady">
+        <omgdi:waypoint x="340.0" y="285.0"></omgdi:waypoint>
+        <omgdi:waypoint x="340.0" y="459.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="13.0" width="55.0" x="350.0" y="492.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow33" id="BPMNEdge_flow33">
+        <omgdi:waypoint x="340.0" y="245.0"></omgdi:waypoint>
+        <omgdi:waypoint x="340.0" y="84.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="13.0" width="73.0" x="350.0" y="45.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow38" id="BPMNEdge_flow38">
+        <omgdi:waypoint x="340.0" y="499.0"></omgdi:waypoint>
+        <omgdi:waypoint x="337.0" y="735.0"></omgdi:waypoint>
+        <omgdi:waypoint x="449.0" y="736.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow39" id="BPMNEdge_flow39">
+        <omgdi:waypoint x="484.0" y="736.0"></omgdi:waypoint>
+        <omgdi:waypoint x="556.0" y="737.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow40" id="BPMNEdge_flow40">
+        <omgdi:waypoint x="340.0" y="84.0"></omgdi:waypoint>
+        <omgdi:waypoint x="725.0" y="229.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow41" id="BPMNEdge_flow41">
+        <omgdi:waypoint x="340.0" y="84.0"></omgdi:waypoint>
+        <omgdi:waypoint x="493.0" y="229.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow42" id="BPMNEdge_flow42">
+        <omgdi:waypoint x="340.0" y="459.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1169.0" y="313.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow43" id="BPMNEdge_flow43">
+        <omgdi:waypoint x="340.0" y="459.0"></omgdi:waypoint>
+        <omgdi:waypoint x="947.0" y="307.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow44" id="BPMNEdge_flow44">
+        <omgdi:waypoint x="340.0" y="459.0"></omgdi:waypoint>
+        <omgdi:waypoint x="725.0" y="303.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow45" id="BPMNEdge_flow45">
+        <omgdi:waypoint x="340.0" y="459.0"></omgdi:waypoint>
+        <omgdi:waypoint x="493.0" y="307.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow46" id="BPMNEdge_flow46">
+        <omgdi:waypoint x="743.0" y="246.0"></omgdi:waypoint>
+        <omgdi:waypoint x="760.0" y="269.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow47" id="BPMNEdge_flow47">
+        <omgdi:waypoint x="511.0" y="246.0"></omgdi:waypoint>
+        <omgdi:waypoint x="530.0" y="269.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow48" id="BPMNEdge_flow48">
+        <omgdi:waypoint x="582.0" y="297.0"></omgdi:waypoint>
+        <omgdi:waypoint x="582.0" y="589.0"></omgdi:waypoint>
+        <omgdi:waypoint x="840.0" y="590.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow49" id="BPMNEdge_flow49">
+        <omgdi:waypoint x="812.0" y="297.0"></omgdi:waypoint>
+        <omgdi:waypoint x="955.0" y="560.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow50" id="BPMNEdge_flow50">
+        <omgdi:waypoint x="1052.0" y="300.0"></omgdi:waypoint>
+        <omgdi:waypoint x="955.0" y="560.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow51" id="BPMNEdge_flow51">
+        <omgdi:waypoint x="1262.0" y="304.0"></omgdi:waypoint>
+        <omgdi:waypoint x="955.0" y="560.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow53" id="BPMNEdge_flow53">
+        <omgdi:waypoint x="265.0" y="64.0"></omgdi:waypoint>
+        <omgdi:waypoint x="320.0" y="64.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow54" id="BPMNEdge_flow54">
+        <omgdi:waypoint x="1412.0" y="278.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1412.0" y="350.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1412.0" y="391.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow55" id="BPMNEdge_flow55">
+        <omgdi:waypoint x="1412.0" y="461.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1412.0" y="588.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1071.0" y="590.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow56" id="BPMNEdge_flow56">
+        <omgdi:waypoint x="661.0" y="737.0"></omgdi:waypoint>
+        <omgdi:waypoint x="770.0" y="736.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow57" id="BPMNEdge_flow57">
+        <omgdi:waypoint x="511.0" y="289.0"></omgdi:waypoint>
+        <omgdi:waypoint x="530.0" y="269.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow58" id="BPMNEdge_flow58">
+        <omgdi:waypoint x="743.0" y="285.0"></omgdi:waypoint>
+        <omgdi:waypoint x="760.0" y="269.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow59" id="BPMNEdge_flow59">
+        <omgdi:waypoint x="965.0" y="289.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1000.0" y="272.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow60" id="BPMNEdge_flow60">
+        <omgdi:waypoint x="1187.0" y="295.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1210.0" y="276.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

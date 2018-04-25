@@ -14,16 +14,15 @@ import static uk.gov.moj.cpp.sjp.event.processor.AssignmentProcessor.ASSIGNMENT_
 import static uk.gov.moj.cpp.sjp.event.processor.AssignmentProcessor.ASSIGNMENT_CONTEXT_ASSIGNMENT_DELETED;
 import static uk.gov.moj.cpp.sjp.event.processor.AssignmentProcessor.SJP_COMMAND_HANDLER_ASSIGNMENT_CREATED;
 import static uk.gov.moj.cpp.sjp.event.processor.AssignmentProcessor.SJP_COMMAND_HANDLER_ASSIGNMENT_DELETED;
-import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.ASSIGNMENT_DOMAIN_OBJECT_ID;
-import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.ASSIGNMENT_NATURE_TYPE;
-import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.CASE_ASSIGNMENT_TYPE;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.ASSIGNMENT_DOMAIN_OBJECT_ID;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.ASSIGNMENT_NATURE_TYPE;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ASSIGNMENT_TYPE;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
-import uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants;
 
 import java.util.UUID;
 import java.util.function.Consumer;

@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.CASE_ID;
-import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.DOCUMENT_REFERENCE;
-import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.DOCUMENT_TYPE;
-import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.MATERIAL_ID;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.DOCUMENT_REFERENCE;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.DOCUMENT_TYPE;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.MATERIAL_ID;
 
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;

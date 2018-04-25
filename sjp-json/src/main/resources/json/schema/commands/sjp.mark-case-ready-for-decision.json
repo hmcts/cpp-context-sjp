@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/commands/sjp.mark-case-ready-for-decision.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+    },
+    "reason": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/case-readiness-for-decision-reason.json"
+    },
+    "markedAt":{
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId", "reason", "markedAt"
+  ],
+  "additionalProperties": false
+}

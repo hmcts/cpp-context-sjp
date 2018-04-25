@@ -21,7 +21,9 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
+import uk.gov.moj.cpp.sjp.domain.PleaType;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
@@ -46,7 +48,6 @@ import org.junit.Test;
 
 public class DatesToAvoidIT extends BaseIntegrationTest {
 
-    private static final String PLEA_NOT_GUILTY = "NOT_GUILTY";
     private static final String LONDON_COURT_HOUSE_OU_CODE = "B01GU";
     private static final String LONDON_COURT_HOUSE_LJA_NATIONAL_COURT_CODE = "2577";
     private static final Clock clock = new UtcClock();
@@ -158,14 +159,14 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     }
 
     private void updatePleaToNotGuilty(final UUID caseId, final UUID offenceId, final UpdatePleaHelper updatePleaHelper) {
-        String plea = PLEA_NOT_GUILTY;
-        final String pleaMethod = "POSTAL";
-        updatePleaHelper.updatePlea(caseId, offenceId, getPleaPayload(plea));
-        updatePleaHelper.verifyPleaUpdated(caseId, plea, pleaMethod);
+        final PleaType pleaType = PleaType.NOT_GUILTY;
+        final PleaMethod pleaMethod = PleaMethod.POSTAL;
+        updatePleaHelper.updatePlea(caseId, offenceId, getPleaPayload(pleaType));
+        updatePleaHelper.verifyPleaUpdated(caseId, pleaType, pleaMethod);
     }
 
-    private JsonObject getPleaPayload(final String plea) {
-        final JsonObjectBuilder builder = createObjectBuilder().add("plea", plea);
+    private JsonObject getPleaPayload(final PleaType pleaType) {
+        final JsonObjectBuilder builder = createObjectBuilder().add("plea", pleaType.name());
         builder.add("interpreterRequired", false);
         return builder.build();
     }

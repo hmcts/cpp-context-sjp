@@ -30,6 +30,7 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.moj.cpp.sjp.domain.PleaType;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
@@ -129,7 +130,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                                               final Collection<String> userIds, final boolean expectToHaveFinances) {
         assumeThat(userIds, not(empty()));
 
-        final String pleaMethod = "ONLINE";
+        final PleaMethod pleaMethod = PleaMethod.ONLINE;
         final String defendantId = CasePoller.pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId()).getString("defendant.id");
 
         //checks person-info before plead-online
@@ -141,8 +142,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         pleadOnlineHelper.pleadOnline(pleaPayload.toString());
 
         //verify plea
-        updatePleaHelper.verifyInPublicTopic(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), pleaType.name(), null);
-        updatePleaHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaType.name(), pleaMethod);
+        updatePleaHelper.verifyInPublicTopic(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), pleaType, null);
+        updatePleaHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaType, pleaMethod);
         caseSearchResultHelper.verifyPleaReceivedDate();
 
         //verify employer

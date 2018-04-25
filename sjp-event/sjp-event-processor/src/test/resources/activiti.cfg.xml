@@ -1,0 +1,35 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+  <bean id="processEngineConfiguration" class="org.activiti.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration">
+    <property name="jobExecutorActivate" value="true"/>
+  </bean>
+  <bean id="caseAssignmentTimeoutEndedHandler" class="org.mockito.Mockito" factory-method="mock">
+    <constructor-arg value="org.activiti.engine.delegate.JavaDelegate"/>
+  </bean>
+  <bean id="caseStartedDelegate" class="org.mockito.Mockito" factory-method="mock">
+    <constructor-arg value="org.activiti.engine.delegate.JavaDelegate"/>
+  </bean>
+  <bean id="provedInAbsenceDelegate" class="org.mockito.Mockito" factory-method="mock">
+    <constructor-arg value="org.activiti.engine.delegate.JavaDelegate"/>
+  </bean>
+  <bean id="readyCaseDelegate" class="org.mockito.Mockito" factory-method="mock">
+    <constructor-arg value="org.activiti.engine.delegate.JavaDelegate"/>
+  </bean>
+  <bean id="pleaUpdatedDelegate" class="org.mockito.Mockito" factory-method="mock">
+    <constructor-arg value="org.activiti.engine.delegate.JavaDelegate"/>
+  </bean>
+  <bean id="pleaCancelledDelegate" class="org.mockito.Mockito" factory-method="mock">
+    <constructor-arg value="org.activiti.engine.delegate.JavaDelegate"/>
+  </bean>
+  <bean id="withdrawalRequestedDelegate" class="org.mockito.Mockito" factory-method="mock">
+    <constructor-arg value="org.activiti.engine.delegate.JavaDelegate"/>
+  </bean>
+  <bean id="withdrawalRequestCancelledDelegate" class="org.mockito.Mockito" factory-method="mock">
+    <constructor-arg value="org.activiti.engine.delegate.JavaDelegate"/>
+  </bean>
+  <bean id="caseCompletedDelegate" class="org.mockito.Mockito" factory-method="mock">
+    <constructor-arg value="org.activiti.engine.delegate.JavaDelegate"/>
+  </bean>
+</beans>

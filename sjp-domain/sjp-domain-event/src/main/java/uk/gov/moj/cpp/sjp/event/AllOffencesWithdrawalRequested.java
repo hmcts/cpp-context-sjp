@@ -6,8 +6,10 @@ import uk.gov.justice.domain.annotation.Event;
 
 import java.util.UUID;
 
-@Event("sjp.events.all-offences-withdrawal-requested")
+@Event(AllOffencesWithdrawalRequested.EVENT_NAME)
 public class AllOffencesWithdrawalRequested {
+
+    public static final String EVENT_NAME = "sjp.events.all-offences-withdrawal-requested";
 
     private UUID caseId;
 

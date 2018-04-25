@@ -2,6 +2,8 @@ package uk.gov.moj.sjp.it.helper;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
+import static uk.gov.moj.sjp.it.EventSelector.SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
@@ -28,6 +30,10 @@ public class OffencesWithdrawalRequestHelper implements AutoCloseable {
     private MessageConsumerClient publicConsumer = new MessageConsumerClient();
     private MessageConsumer privateEventsConsumer;
     private MessageConsumer publicEventsConsumer;
+
+    public OffencesWithdrawalRequestHelper(final UUID caseId) {
+        this(caseId, SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
+    }
 
     public OffencesWithdrawalRequestHelper(UUID caseId, String privateEvent, String publicEvent) {
         this.caseId = caseId;

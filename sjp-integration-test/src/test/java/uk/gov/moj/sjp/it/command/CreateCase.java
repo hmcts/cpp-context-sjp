@@ -137,6 +137,16 @@ public class CreateCase {
             return this;
         }
 
+        public CreateCasePayloadBuilder withUrn(final String urn) {
+            this.urn = urn;
+            return this;
+        }
+
+        public CreateCasePayloadBuilder withOffenceId(final UUID offenceId) {
+            this.offenceBuilders.get(0).withId(offenceId);
+            return this;
+        }
+
         public CreateCasePayloadBuilder withProsecutingAuthority(final ProsecutingAuthority prosecutingAuthority) {
             this.prosecutingAuthority = prosecutingAuthority;
             this.urn = UrnProvider.generate(prosecutingAuthority);

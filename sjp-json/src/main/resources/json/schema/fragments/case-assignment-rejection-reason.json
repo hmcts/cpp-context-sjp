@@ -1,0 +1,9 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/case-assignment-rejection-reason.json",
+  "enum": [
+    "SESSION_DOES_NOT_EXIST",
+    "SESSION_ENDED",
+    "SESSION_NOT_OWNED_BY_USER"
+  ]
+}

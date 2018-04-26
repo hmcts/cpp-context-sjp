@@ -22,7 +22,7 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
-import uk.gov.moj.cpp.sjp.event.CaseAssigned;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.CaseAssignmentDeleted;
 
 import java.util.UUID;

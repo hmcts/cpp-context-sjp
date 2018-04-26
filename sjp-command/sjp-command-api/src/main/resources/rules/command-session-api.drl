@@ -24,3 +24,12 @@ rule "Command - Rule for end session"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Command - Rule for assigning case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.assign-case");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAssignCaseGroups()));
+  then
+    $outcome.setSuccess(true);
+end

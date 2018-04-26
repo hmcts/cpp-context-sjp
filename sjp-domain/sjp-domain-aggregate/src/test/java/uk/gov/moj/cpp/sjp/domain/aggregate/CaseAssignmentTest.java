@@ -6,7 +6,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
-import uk.gov.moj.cpp.sjp.event.CaseAssigned;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.CaseAssignmentDeleted;
 
 import java.util.List;

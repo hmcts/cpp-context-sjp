@@ -92,6 +92,12 @@ baseUri: message://event/processor/message/sjp
       application/vnd.sjp.events.case-assignment-requested+json:
         schema: !include json/schema/sjp.events.case-assignment-requested.json
         example: !include json/sjp.events.case-assignment-requested.json
+      application/vnd.sjp.events.case-assignment-rejected+json:
+        schema: !include json/schema/sjp.events.case-assignment-rejected.json
+        example: !include json/sjp.events.case-assignment-rejected.json
+      application/vnd.sjp.events.case-assigned+json:
+        schema: !include json/schema/sjp.events.case-assigned.json
+        example: !include json/sjp.events.case-assigned.json
 
 /public.event:
   post:

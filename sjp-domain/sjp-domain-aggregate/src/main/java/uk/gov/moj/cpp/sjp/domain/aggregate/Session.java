@@ -1,12 +1,15 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
+import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRequested;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionEnded;
@@ -23,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 public class Session implements Aggregate {
 
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 3L;
     private static final Logger LOGGER = LoggerFactory.getLogger(Session.class);
 
     private UUID id;
@@ -32,7 +35,7 @@ public class Session implements Aggregate {
     private String localJusticeAreaNationalCourtCode;
     private SessionType sessionType;
     private String magistrate;
-    private State state = State.NOT_EXISTING;
+    private SessionState sessionState = SessionState.NOT_EXISTING;
 
     public Stream<Object> startDelegatedPowersSession(
             final UUID sessionId,
@@ -43,7 +46,7 @@ public class Session implements Aggregate {
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
-        if (state == State.NOT_EXISTING) {
+        if (sessionState == SessionState.NOT_EXISTING) {
             streamBuilder.add(new DelegatedPowersSessionStarted(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt));
         } else {
             LOGGER.warn("Delegated powers session can not be started - session {} already exists", sessionId);
@@ -62,7 +65,7 @@ public class Session implements Aggregate {
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
-        if (state == State.NOT_EXISTING) {
+        if (sessionState == SessionState.NOT_EXISTING) {
             streamBuilder.add(new MagistrateSessionStarted(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate));
         } else {
             LOGGER.warn("Magistrate session can not be started - session {} already exists", sessionId);
@@ -75,7 +78,7 @@ public class Session implements Aggregate {
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
-        if (state == State.STARTED) {
+        if (sessionState == SessionState.STARTED) {
             switch (sessionType) {
                 case MAGISTRATE:
                     streamBuilder.add(new MagistrateSessionEnded(sessionId, endedAt));
@@ -87,6 +90,22 @@ public class Session implements Aggregate {
         } else {
             LOGGER.warn("Session can not be ended - session {} is not started", sessionId);
         }
+        return apply(streamBuilder.build());
+    }
+
+    public Stream<Object> requestCaseAssignment(final UUID sessionId, final UUID userId) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        if (sessionState == SessionState.NOT_EXISTING) {
+            streamBuilder.add(new CaseAssignmentRejected(sessionId, CaseAssignmentRejected.RejectReason.SESSION_DOES_NOT_EXIST));
+        } else if (sessionState == SessionState.ENDED) {
+            streamBuilder.add(new CaseAssignmentRejected(sessionId, CaseAssignmentRejected.RejectReason.SESSION_ENDED));
+        } else if (!userId.equals(this.userId)) {
+            streamBuilder.add(new CaseAssignmentRejected(sessionId, CaseAssignmentRejected.RejectReason.SESSION_NOT_OWNED_BY_USER));
+        } else {
+            streamBuilder.add(new CaseAssignmentRequested(new uk.gov.moj.cpp.sjp.domain.Session(id, userId, sessionType, localJusticeAreaNationalCourtCode)));
+        }
+
         return apply(streamBuilder.build());
     }
 
@@ -103,8 +122,9 @@ public class Session implements Aggregate {
                     magistrate = null;
                     sessionType = DELEGATED_POWERS;
                 }),
-                when(MagistrateSessionEnded.class).apply(sessionEnded -> state = State.ENDED),
-                when(DelegatedPowersSessionEnded.class).apply(sessionEnded -> state = State.ENDED)
+                when(MagistrateSessionEnded.class).apply(sessionEnded -> sessionState = SessionState.ENDED),
+                when(DelegatedPowersSessionEnded.class).apply(sessionEnded -> sessionState = SessionState.ENDED),
+                otherwiseDoNothing()
         );
     }
 
@@ -113,7 +133,7 @@ public class Session implements Aggregate {
         courtHouseName = sessionStarted.getCourtHouseName();
         localJusticeAreaNationalCourtCode = sessionStarted.getLocalJusticeAreaNationalCourtCode();
         userId = sessionStarted.getUserId();
-        state = State.STARTED;
+        sessionState = SessionState.STARTED;
     }
 
     public UUID getId() {
@@ -140,7 +160,7 @@ public class Session implements Aggregate {
         return sessionType;
     }
 
-    private enum State {
+    private enum SessionState {
         NOT_EXISTING, STARTED, ENDED
     }
 

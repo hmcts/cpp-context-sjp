@@ -113,11 +113,24 @@ public class SessionApiTest {
     }
 
     @Test
+    public void shouldRenameAssignCaseCommand() {
+        final JsonEnvelope assignCaseCommand = envelope().with(metadataWithRandomUUID("sjp.assign-case"))
+                .withPayloadOf(sessionId.toString(), "sessionId")
+                .build();
+
+        sessionApi.assignCase(assignCaseCommand);
+
+        verify(sender).send(argThat(jsonEnvelope(withMetadataEnvelopedFrom(assignCaseCommand).withName("sjp.command.assign-case"),
+                payloadIsJson(withJsonPath("$.sessionId", equalTo(sessionId.toString()))))));
+    }
+
+    @Test
     public void shouldHandleSessionCommands() {
         assertThat(SessionApi.class, isHandlerClass(COMMAND_API)
                 .with(allOf(
                         method("startSession").thatHandles("sjp.start-session"),
-                        method("endSession").thatHandles("sjp.end-session")
+                        method("endSession").thatHandles("sjp.end-session"),
+                        method("assignCase").thatHandles("sjp.assign-case")
                 )));
     }
 

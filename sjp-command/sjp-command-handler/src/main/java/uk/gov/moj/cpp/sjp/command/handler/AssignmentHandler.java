@@ -46,6 +46,18 @@ public class AssignmentHandler {
     @Handles("sjp.command.assign-case")
     public void assignCase(final JsonEnvelope command) throws EventStreamException {
         final UUID sessionId = UUID.fromString(command.payloadAsJsonObject().getString("sessionId"));
+        final UUID userId = UUID.fromString(command.metadata().userId().get());
+
+        final EventStream sessionEventStream = eventSource.getStreamById(sessionId);
+        final Session session = aggregateService.get(sessionEventStream, Session.class);
+        final Stream<Object> events = session.requestCaseAssignment(sessionId, userId);
+
+        sessionEventStream.append(events.map(enveloper.withMetadataFrom(command)));
+    }
+
+    @Handles("sjp.command.assign-case-from-candidates-list")
+    public void assignCaseFromCandidatesList(final JsonEnvelope command) throws EventStreamException {
+        final UUID sessionId = UUID.fromString(command.payloadAsJsonObject().getString("sessionId"));
 
         final EventStream sessionEventStream = eventSource.getStreamById(sessionId);
         final Session session = aggregateService.get(sessionEventStream, Session.class);

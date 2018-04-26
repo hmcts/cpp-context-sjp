@@ -1,12 +1,14 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 
+import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.ASSIGNMENT_ASSIGNEE;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.ASSIGNMENT_DOMAIN_OBJECT_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.ASSIGNMENT_NATURE_TYPE;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ASSIGNMENT_TYPE;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.REASON;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -17,6 +19,9 @@ import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.event.processor.service.AssignmentService;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRequested;
 
 import java.util.List;
 import java.util.Optional;
@@ -84,8 +89,8 @@ public class AssignmentProcessor {
         }
     }
 
-    @Handles("sjp.events.case-assignment-requested")
-    public void handleCaseAssignmentRequest(final JsonEnvelope caseAssignmentRequest) {
+    @Handles(CaseAssignmentRequested.EVENT_NAME)
+    public void handleCaseAssignmentRequestedEvent(final JsonEnvelope caseAssignmentRequest) {
         final JsonObject session = caseAssignmentRequest.payloadAsJsonObject().getJsonObject("session");
 
         final UUID sessionId = UUID.fromString(session.getString("id"));
@@ -102,22 +107,46 @@ public class AssignmentProcessor {
         }
     }
 
+    @Handles(CaseAssignmentRejected.EVENT_NAME)
+    public void handleCaseAssignmentRejectedEvent(final JsonEnvelope caseAssignmentRejectedEvent) {
+
+        final JsonObject publicEventPayload = createObjectBuilder()
+                .add(REASON, caseAssignmentRejectedEvent.payloadAsJsonObject().getString(REASON))
+                .build();
+
+        sender.send(enveloper.withMetadataFrom(caseAssignmentRejectedEvent, "public.sjp.case-assignment-rejected")
+                .apply(publicEventPayload));
+
+    }
+
+    @Handles(CaseAssigned.EVENT_NAME)
+    public void handleCaseAssignedEvent(final JsonEnvelope caseAssignedEvent) {
+
+        final JsonObject publicEventPayload = createObjectBuilder()
+                .add(CASE_ID, caseAssignedEvent.payloadAsJsonObject().getString(CASE_ID))
+                .build();
+
+        sender.send(enveloper.withMetadataFrom(caseAssignedEvent, "public.sjp.case-assigned")
+                .apply(publicEventPayload));
+    }
+
     private void notifyCaseNotFound(final JsonEnvelope envelope) {
-        sender.send(enveloper.withMetadataFrom(envelope, "public.sjp.case-not-assigned").apply(Json.createObjectBuilder().build()));
+        sender.send(enveloper.withMetadataFrom(envelope, "public.sjp.case-not-assigned")
+                .apply(createObjectBuilder().build()));
     }
 
     private void assignCase(final JsonEnvelope envelope, final UUID sessionId, final List<AssignmentCandidate> assignmentCandidates) {
         final JsonArrayBuilder assignmentCandidatesBuilder = Json.createArrayBuilder();
-        assignmentCandidates.forEach(assignmentCandidate -> assignmentCandidatesBuilder.add(Json.createObjectBuilder()
+        assignmentCandidates.forEach(assignmentCandidate -> assignmentCandidatesBuilder.add(createObjectBuilder()
                 .add("caseId", assignmentCandidate.getCaseId().toString())
                 .add("caseStreamVersion", assignmentCandidate.getCaseStreamVersion())));
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = createObjectBuilder()
                 .add("sessionId", sessionId.toString())
                 .add("assignmentCandidates", assignmentCandidatesBuilder)
                 .build();
 
-        sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.assign-case").apply(payload));
+        sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.assign-case-from-candidates-list").apply(payload));
     }
 
     private JsonEnvelope createEvent(final String command,
@@ -125,7 +154,7 @@ public class AssignmentProcessor {
                                      final String id,
                                      final CaseAssignmentType caseAssignmentType,
                                      final Optional<UUID> assignee) {
-        final JsonObjectBuilder publicEventPayloadBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder publicEventPayloadBuilder = createObjectBuilder()
                 .add(CASE_ID, id)
                 .add(CASE_ASSIGNMENT_TYPE, caseAssignmentType.toString());
 

@@ -19,9 +19,11 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCasesRepository;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -46,14 +48,21 @@ public class CaseUpdatedListener {
     @Inject
     private CaseSearchResultRepository searchResultRepository;
 
-    @Handles("sjp.events.case-completed")
+    @Inject
+    private ReadyCasesRepository readyCasesRepository;
+
+    @Handles(CaseCompleted.EVENT_NAME)
     @Transactional
     public void caseCompleted(final JsonEnvelope envelope) {
-        CaseCompleted caseCompletedEvent = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), CaseCompleted.class);
+        final CaseCompleted caseCompletedEvent = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), CaseCompleted.class);
         caseRepository.completeCase(caseCompletedEvent.getCaseId());
+
+        //Conditional removal needed in case of event replay of old cases which have CaseCompleted but not CaseMarkedReadyEvent
+        Optional.ofNullable(readyCasesRepository.findBy(caseCompletedEvent.getCaseId()))
+                .ifPresent(readyCasesRepository::remove);
     }
 
-    @Handles("sjp.events.all-offences-withdrawal-requested")
+    @Handles(AllOffencesWithdrawalRequested.EVENT_NAME)
     @Transactional
     public void allOffencesWithdrawalRequested(final JsonEnvelope envelope) {
         final AllOffencesWithdrawalRequested event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), AllOffencesWithdrawalRequested.class);
@@ -62,7 +71,7 @@ public class CaseUpdatedListener {
         updateWithdrawalRequestedDate(event.getCaseId(), envelope.metadata().createdAt().map(ZonedDateTime::toLocalDate).orElse(now()));
     }
 
-    @Handles("sjp.events.all-offences-withdrawal-request-cancelled")
+    @Handles(AllOffencesWithdrawalRequestCancelled.EVENT_NAME)
     @Transactional
     public void allOffencesWithdrawalRequestCancelled(final JsonEnvelope envelope) {
         final AllOffencesWithdrawalRequestCancelled event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), AllOffencesWithdrawalRequestCancelled.class);

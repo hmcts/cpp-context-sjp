@@ -2,22 +2,25 @@ package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataFrom;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseDocumentAddedToCaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCasesRepository;
 
 import java.util.UUID;
 
@@ -43,6 +46,9 @@ public class CaseUpdatedListenerTest {
     private CaseRepository caseRepository;
 
     @Mock
+    private ReadyCasesRepository readyCasesRepository;
+
+    @Mock
     private JsonEnvelope envelope;
 
     @Mock
@@ -58,30 +64,42 @@ public class CaseUpdatedListenerTest {
     private CaseDetail caseDetail;
 
     @Mock
-    private DefendantDetail defendantDetail;
-
-    @Mock
     private CaseDocument caseDocument;
 
     @Mock
     private CaseDocumentRepository caseDocumentRepository;
 
-
     @InjectMocks
     private CaseUpdatedListener listener;
 
     @Test
-    public void shouldUpdateCompletedStatusOnCase() {
-        JsonObject caseCompletedJson = createObjectBuilder().build();
-        when(jsonObjectToObjectConverter.convert(caseCompletedJson, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId));
-        Metadata metadata = metadataFrom(createObjectBuilder().add("id", randomUUID().toString()).add("name", "in").build());
-        JsonEnvelope envelopeIn = envelopeFrom(metadata, caseCompletedJson);
+    public void shouldUpdateCompletedStatusAndRemoveCaseReadinessIfExists() {
+        final JsonObject caseCompletedEventPayload = createObjectBuilder().build();
+        final JsonEnvelope envelopeIn = envelopeFrom(metadataWithRandomUUID(CaseCompleted.EVENT_NAME), caseCompletedEventPayload);
+        final ReadyCase readyCase = new ReadyCase(caseId, PIA);
+
+        when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId));
+        when(readyCasesRepository.findBy(caseId)).thenReturn(readyCase);
 
         listener.caseCompleted(envelopeIn);
 
         verify(caseRepository).completeCase(caseId);
+        verify(readyCasesRepository).remove(readyCase);
     }
 
+    @Test
+    public void shouldUpdateCompletedStatusAndNotRemoveCaseReadinessIfDoesNotExist() {
+        final JsonObject caseCompletedEventPayload = createObjectBuilder().build();
+        final JsonEnvelope envelopeIn = envelopeFrom(metadataWithRandomUUID(CaseCompleted.EVENT_NAME), caseCompletedEventPayload);
+
+        when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId));
+        when(readyCasesRepository.findBy(caseId)).thenReturn(null);
+
+        listener.caseCompleted(envelopeIn);
+
+        verify(caseRepository).completeCase(caseId);
+        verify(readyCasesRepository, never()).remove(any());
+    }
 
     @Test
     public void shouldAddDocument() {

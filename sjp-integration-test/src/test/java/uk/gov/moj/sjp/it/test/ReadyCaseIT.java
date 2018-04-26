@@ -32,6 +32,7 @@ import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.PleaType;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
+import uk.gov.moj.sjp.it.helper.CompleteCaseHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestCancelHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
@@ -137,6 +138,26 @@ public class ReadyCaseIT extends BaseIntegrationTest {
             readyCasesPoller.pollUntilReadyWithReason(CaseReadinessReason.WITHDRAWAL_REQUESTED);
 
             offencesWithdrawalRequestCancelHelper.cancelRequestWithdrawalForAllOffences(UUID.fromString(USER_ID));
+
+            readyCasesPoller.pollUntilNotReady();
+        }
+
+    }
+
+    @Test
+    public void shouldUnmarkCaseReadyWhenCaseCompleted() {
+
+        postingDate = LocalDate.now().minusDays(NOTICE_PERIOD_IN_DAYS).minusDays(1);
+
+        createCaseForPayloadBuilder(CreateCase.CreateCasePayloadBuilder
+                .withDefaults()
+                .withId(caseId)
+                .withPostingDate(postingDate));
+
+        try (final CompleteCaseHelper completeCaseHelper = new CompleteCaseHelper(caseId)) {
+            readyCasesPoller.pollUntilReadyWithReason(CaseReadinessReason.PIA);
+
+            completeCaseHelper.completeCase();
 
             readyCasesPoller.pollUntilNotReady();
         }

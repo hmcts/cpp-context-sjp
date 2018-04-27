@@ -1,35 +1,4 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "properties": {
-    "caseCountsByAgeRanges": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "ageFrom": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "ageTo": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "casesCount": {
-            "type": "integer",
-            "minimum": 0
-          }
-        },
-        "additionalProperties": false,
-        "required": [
-          "ageFrom",
-          "casesCount"
-        ]
-      }
-    }
-  },
-  "additionalProperties": false,
-  "required": [
-    "caseCountsByAgeRanges"
-  ]
+  "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/queries/not-ready-cases-grouped-by_age.json"
 }

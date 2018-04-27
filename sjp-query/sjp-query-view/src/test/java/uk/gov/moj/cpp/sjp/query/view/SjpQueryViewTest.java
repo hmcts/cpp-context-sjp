@@ -418,7 +418,7 @@ public class SjpQueryViewTest {
         assertThat(responseEnvelope, jsonEnvelope(metadata().withName("sjp.query.not-ready-cases-grouped-by-age"), payload().isJson(allOf(
                 withJsonPath("$.caseCountsByAgeRanges", hasSize(1)),
                 withJsonPath("$.caseCountsByAgeRanges[?(@.ageFrom == 0 && @.ageTo == 20)].casesCount", contains(5))
-        ))).thatMatchesSchema());
+        ))));
     }
 
     @Test

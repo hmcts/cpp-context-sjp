@@ -91,6 +91,10 @@ public final class RuleConstants {
         return Arrays.asList(GROUP_LEGAL_ADVISERS);
     }
 
+    public static List<String> getAddDatesToAvoidActionGroups() {
+        return Arrays.asList(GROUP_SJP_PROSECUTORS);
+    }
+
     public static List<String> getEndSessionGroups() {
         return Arrays.asList(GROUP_LEGAL_ADVISERS);
     }

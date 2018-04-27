@@ -460,3 +460,29 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
     responses:
       202:
         description: Accepted
+
+
+/cases/{caseId}/dates-to-avoid:
+  uriParameters:
+    caseId:
+      description: The ID of the case to modify
+      type: string
+  post:
+    description: |
+      Add dates-to-avoid
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.add-dates-to-avoid+json
+          name: sjp.add-dates-to-avoid
+      ...
+    body:
+          application/vnd.sjp.add-dates-to-avoid+json:
+            example:
+              !include json/sjp.add-dates-to-avoid.json
+            schema:
+              !include json/schema/sjp.add-dates-to-avoid.json
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted

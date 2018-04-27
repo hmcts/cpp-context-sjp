@@ -26,6 +26,7 @@ public class CaseView {
     private final String reopenedInLibraReason;
     private String enterpriseId;
     private boolean onlinePleaReceived;
+    private String datesToAvoid;
 
     public CaseView(CaseDetail caseDetail) {
 
@@ -51,6 +52,7 @@ public class CaseView {
         this.reopenedInLibraReason = caseDetail.getReopenedInLibraReason();
         this.enterpriseId = caseDetail.getEnterpriseId();
         this.onlinePleaReceived = Boolean.valueOf(caseDetail.getOnlinePleaReceived());
+        this.datesToAvoid = caseDetail.getDatesToAvoid();
     }
 
     public String getId() {
@@ -111,5 +113,9 @@ public class CaseView {
 
     public boolean isOnlinePleaReceived() {
         return onlinePleaReceived;
+    }
+
+    public String getDatesToAvoid() {
+        return datesToAvoid;
     }
 }

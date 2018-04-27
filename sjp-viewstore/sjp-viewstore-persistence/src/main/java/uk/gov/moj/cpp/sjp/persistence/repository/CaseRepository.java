@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import org.apache.deltaspike.data.api.AbstractEntityRepository;
 import org.apache.deltaspike.data.api.MaxResults;
+import org.apache.deltaspike.data.api.Modifying;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.QueryResult;
@@ -116,5 +117,9 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     @Query(value = "SELECT min(cd.postingDate) FROM CaseDetail cd " +
             "WHERE cd.completed IS NOT true")
     public abstract LocalDate findOldestUncompletedPostingDate();
+
+    @Modifying
+    @Query(value = "UPDATE CaseDetail cd set cd.datesToAvoid=:datesToAvoid WHERE cd.id=:id")
+    public abstract void updateDatesToAvoid(@QueryParam("id") UUID id, @QueryParam("datesToAvoid") String datesToAvoid);
 
 }

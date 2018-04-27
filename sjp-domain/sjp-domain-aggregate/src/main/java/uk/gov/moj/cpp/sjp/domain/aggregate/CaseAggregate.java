@@ -60,6 +60,7 @@ import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.CourtReferralActioned;
 import uk.gov.moj.cpp.sjp.event.CourtReferralCreated;
+import uk.gov.moj.cpp.sjp.event.DatesToAvoidReceived;
 import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsMovedFromPeople;
@@ -360,7 +361,10 @@ public class CaseAggregate implements Aggregate {
             streamBuilder.add(new DefendantNotFound(defendantId.toString(), "Update interpreter"));
         }
         return apply(streamBuilder.build());
+    }
 
+    public Stream<Object> addDatesToAvoid(final String datesToAvoid) {
+        return apply(Stream.of(new DatesToAvoidReceived(this.caseId, datesToAvoid)));
     }
 
     public Stream<Object> updateDefendantNationalInsuranceNumber(final UUID defendantId, final String newNationalInsuranceNumber) {

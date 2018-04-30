@@ -55,8 +55,6 @@ public class SessionHandlerTest {
 
     private static final String START_SESSION_COMMAND = "sjp.command.start-session";
     private static final String END_SESSION_COMMAND = "sjp.command.end-session";
-    private static final String MAGISTRATE_SESSION_STARTED_EVENT = "sjp.events.magistrate-session-started";
-    private static final String DELEGATED_POWERS_SESSION_STARTED_EVENT = "sjp.events.delegated-powers-session-started";
 
     @Mock
     private EventSource eventSource;
@@ -133,7 +131,7 @@ public class SessionHandlerTest {
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(startSessionCommand)
-                                        .withName(MAGISTRATE_SESSION_STARTED_EVENT),
+                                        .withName(MagistrateSessionStarted.EVENT_NAME),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                                         withJsonPath("$.userId", equalTo(userId.toString())),
@@ -166,7 +164,7 @@ public class SessionHandlerTest {
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(startSessionCommand)
-                                        .withName(DELEGATED_POWERS_SESSION_STARTED_EVENT),
+                                        .withName(DelegatedPowersSessionStarted.EVENT_NAME),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                                         withJsonPath("$.userId", equalTo(userId.toString())),

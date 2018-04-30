@@ -5,8 +5,10 @@ import uk.gov.justice.domain.annotation.Event;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-@Event("sjp.events.delegated-powers-session-ended")
+@Event(DelegatedPowersSessionEnded.EVENT_NAME)
 public class DelegatedPowersSessionEnded extends SessionEnded {
+
+    public static final String EVENT_NAME = "sjp.events.delegated-powers-session-ended";
 
     public DelegatedPowersSessionEnded(final UUID sessionId, final ZonedDateTime endedAt) {
         super(sessionId, endedAt);

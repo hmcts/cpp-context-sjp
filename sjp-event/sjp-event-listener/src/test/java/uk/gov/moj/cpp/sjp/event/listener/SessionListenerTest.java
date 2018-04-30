@@ -8,10 +8,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
@@ -19,6 +19,10 @@ import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
+import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
+import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionEnded;
+import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
 import uk.gov.moj.cpp.sjp.persistence.entity.Session;
 import uk.gov.moj.cpp.sjp.persistence.repository.SessionRepository;
 
@@ -71,7 +75,7 @@ public class SessionListenerTest {
     @Test
     public void shouldHandleDelegatedPowersSessionStarted() {
 
-        final JsonEnvelope delegatedPowersSessionStarted = envelopeFrom(metadataWithRandomUUID("sjp.events.delegated-powers-session-started"),
+        final JsonEnvelope delegatedPowersSessionStarted = envelopeFrom(metadataWithRandomUUID(DelegatedPowersSessionStarted.EVENT_NAME),
                 createObjectBuilder()
                         .add("sessionId", sessionId.toString())
                         .add("userId", userId.toString())
@@ -99,7 +103,7 @@ public class SessionListenerTest {
     @Test
     public void shouldHandleMagistrateSessionStarted() {
 
-        final JsonEnvelope magistrateSessionStarted = envelopeFrom(metadataWithRandomUUID("sjp.events.magistrate-session-started"),
+        final JsonEnvelope magistrateSessionStarted = envelopeFrom(metadataWithRandomUUID(MagistrateSessionStarted.EVENT_NAME),
                 createObjectBuilder()
                         .add("sessionId", sessionId.toString())
                         .add("userId", userId.toString())
@@ -128,7 +132,7 @@ public class SessionListenerTest {
     @Test
     public void shouldHandleDelegatedPowersSessionEndedEvent() {
 
-        final JsonEnvelope delegatedPowersSessionEnded = envelopeFrom(metadataWithRandomUUID("sjp.events.delegated-powers-session-ended"),
+        final JsonEnvelope delegatedPowersSessionEnded = envelopeFrom(metadataWithRandomUUID(DelegatedPowersSessionEnded.EVENT_NAME),
                 createObjectBuilder()
                         .add("sessionId", sessionId.toString())
                         .add("endedAt", endedAt.format(ISO_DATE_TIME))
@@ -144,7 +148,7 @@ public class SessionListenerTest {
     @Test
     public void shouldHandleMagistrateSessionEndedEvent() {
 
-        final JsonEnvelope magistrateSessionEnded = envelopeFrom(metadataWithRandomUUID("sjp.events.magistrate-session-ended"),
+        final JsonEnvelope magistrateSessionEnded = envelopeFrom(metadataWithRandomUUID(MagistrateSessionEnded.EVENT_NAME),
                 createObjectBuilder()
                         .add("sessionId", sessionId.toString())
                         .add("endedAt", endedAt.format(ISO_DATE_TIME))
@@ -161,12 +165,11 @@ public class SessionListenerTest {
     public void shouldHandlesQuery() {
         assertThat(SessionListener.class, isHandlerClass(Component.EVENT_LISTENER)
                 .with(allOf(
-                        method("handleDelegatedPowersSessionStarted").thatHandles("sjp.events.delegated-powers-session-started"),
-                        method("handleMagistrateSessionStarted").thatHandles("sjp.events.magistrate-session-started"),
-                        method("handleDelegatedPowersSessionEnded").thatHandles("sjp.events.delegated-powers-session-ended"),
-                        method("handleMagistrateSessionEnded").thatHandles("sjp.events.magistrate-session-ended")
+                        method("handleDelegatedPowersSessionStarted").thatHandles(DelegatedPowersSessionStarted.EVENT_NAME),
+                        method("handleMagistrateSessionStarted").thatHandles(MagistrateSessionStarted.EVENT_NAME),
+                        method("handleDelegatedPowersSessionEnded").thatHandles(DelegatedPowersSessionEnded.EVENT_NAME),
+                        method("handleMagistrateSessionEnded").thatHandles(MagistrateSessionEnded.EVENT_NAME)
                 )));
     }
-
 
 }

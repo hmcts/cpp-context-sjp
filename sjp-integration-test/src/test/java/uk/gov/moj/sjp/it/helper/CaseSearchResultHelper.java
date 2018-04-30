@@ -134,8 +134,7 @@ public class CaseSearchResultHelper {
     }
 
     public void completeCase() {
-        CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
-        completeCaseProducer.completeCase();
+        new CompleteCaseProducer(caseId).completeCase();
     }
 
     private void verifyPersonInfo(final String query, final String lastName, final LocalDate dateOfBirth) {

@@ -11,6 +11,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -51,6 +52,10 @@ import org.junit.Test;
 
 public class ReadyCaseIT extends BaseIntegrationTest {
 
+    private static final String QUERY_READY_CASES_RESOURCE = "/cases/ready-cases";
+    private static final String QUERY_READY_CASES = "application/vnd.sjp.query.ready-cases+json";
+    private static final String QUERY_READY_CASES_REASONS_COUNTS_RESOURCE = "/cases/ready-cases-reasons-counts";
+    private static final String QUERY_READY_CASES_REASONS_COUNTS = "application/vnd.sjp.query.ready-cases-reasons-counts+json";
     private ReadyCasesPoller readyCasesPoller;
     private UUID caseId, offenceId;
     private LocalDate postingDate;
@@ -58,11 +63,11 @@ public class ReadyCaseIT extends BaseIntegrationTest {
 
     @Before
     public void init() {
-        readyCasesPoller = ReadyCasesPoller.init();
 
         caseId = randomUUID();
         offenceId = randomUUID();
         postingDate = NOW_MINUS_NOTICE_DAYS.minusDays(1);
+        readyCasesPoller = new ReadyCasesPoller(caseId);
 
         stubGetCaseDecisionsWithNoDecision(caseId);
         stubGetEmptyAssignmentsByDomainObjectId(caseId);
@@ -166,13 +171,11 @@ public class ReadyCaseIT extends BaseIntegrationTest {
     private static class ReadyCasesPoller {
 
         private final Map<CaseReadinessReason, Integer> initialReadyCaseCountByReadinessReason;
+        private final UUID caseId;
 
-        public static ReadyCasesPoller init() {
-            return new ReadyCasesPoller();
-        }
-
-        private ReadyCasesPoller() {
+        private ReadyCasesPoller(final UUID caseId) {
             this.initialReadyCaseCountByReadinessReason = unmodifiableMap(getNumberOfReadyCases());
+            this.caseId = caseId;
         }
 
         private void pollUntilReadyWithReason(final CaseReadinessReason readinessReason) {
@@ -185,10 +188,27 @@ public class ReadyCaseIT extends BaseIntegrationTest {
             expectedReadyCaseCountByReadinessReason.compute(readinessReason, (reason, count) -> (count == null) ? 1 : count + 1);
 
             pollUntilInState(expectedReadyCaseCountByReadinessReason);
+            pollUntilCaseReady(caseId, readinessReason);
         }
 
         private void pollUntilNotReady() {
             pollUntilInState(initialReadyCaseCountByReadinessReason);
+            pollUntilCaseNotReady(caseId);
+        }
+
+        private JsonPath pollUntilCaseReady(final UUID caseId, final CaseReadinessReason caseReadinessReason) {
+            final Matcher matcher = withJsonPath("readyCases.*", hasItem(isJson(allOf(
+                    withJsonPath("caseId", equalTo(caseId.toString())),
+                    withJsonPath("reason", equalTo(caseReadinessReason.name()))
+            ))));
+
+            return pollUntil(QUERY_READY_CASES_RESOURCE, QUERY_READY_CASES, matcher);
+        }
+
+        private JsonPath pollUntilCaseNotReady(final UUID caseId) {
+            final Matcher matcher = withJsonPath("readyCases.*", not(hasItem(isJson(withJsonPath("caseId", equalTo(caseId.toString()))))));
+
+            return pollUntil(QUERY_READY_CASES_RESOURCE, QUERY_READY_CASES, matcher);
         }
 
         private JsonPath pollUntilInState(final Map<CaseReadinessReason, Integer> original) {
@@ -199,16 +219,27 @@ public class ReadyCaseIT extends BaseIntegrationTest {
 
             final Matcher jsonPayloadMatcher = withJsonPath("reasons.*", allOf(reasonsMatchers.toArray(new Matcher[original.size()])));
 
-            return pollReadyCasesReasonsCounts(jsonPayloadMatcher);
+            return pollUntil(QUERY_READY_CASES_REASONS_COUNTS_RESOURCE, QUERY_READY_CASES_REASONS_COUNTS, jsonPayloadMatcher);
         }
 
-        private static JsonPath pollReadyCasesReasonsCounts(final Matcher<? super ReadContext> jsonPayloadMatcher) {
-            final RequestParamsBuilder requestParams = requestParams(getReadUrl("/cases/ready-cases-reasons-counts"), "application/vnd.sjp.query.ready-cases-reasons-counts+json")
+        private Map<CaseReadinessReason, Integer> getNumberOfReadyCases() {
+            return pollUntil(QUERY_READY_CASES_REASONS_COUNTS_RESOURCE, QUERY_READY_CASES_REASONS_COUNTS, any(ReadContext.class))
+                    .getList("reasons")
+                    .stream()
+                    .map(Map.class::cast)
+                    .collect(toMap(
+                            e -> CaseReadinessReason.valueOf(e.get("reason").toString()),
+                            e -> Integer.valueOf(e.get("count").toString()))
+                    );
+        }
+
+        private JsonPath pollUntil(final String resource, final String mediaType, final Matcher matcher) {
+            final RequestParamsBuilder requestParams = requestParams(getReadUrl(resource), mediaType)
                     .withHeader(HeaderConstants.USER_ID, USER_ID);
 
             final ResponseData responseData = poll(requestParams)
                     .until(anyOf(
-                            allOf(status().is(OK), payload().isJson(jsonPayloadMatcher)),
+                            allOf(status().is(OK), payload().isJson(matcher)),
                             status().is(INTERNAL_SERVER_ERROR),
                             status().is(FORBIDDEN)
                     ));
@@ -218,17 +249,6 @@ public class ReadyCaseIT extends BaseIntegrationTest {
             }
 
             return new JsonPath(responseData.getPayload());
-        }
-
-        private Map<CaseReadinessReason, Integer> getNumberOfReadyCases() {
-            return pollReadyCasesReasonsCounts(any(ReadContext.class))
-                    .getList("reasons")
-                    .stream()
-                    .map(Map.class::cast)
-                    .collect(toMap(
-                            e -> CaseReadinessReason.valueOf(e.get("reason").toString()),
-                            e -> Integer.valueOf(e.get("count").toString()))
-                    );
         }
 
     }

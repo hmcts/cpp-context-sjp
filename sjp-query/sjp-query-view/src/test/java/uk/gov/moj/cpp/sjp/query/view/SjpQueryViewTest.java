@@ -43,7 +43,6 @@ import uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher;
 import uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
-import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Income;
@@ -77,7 +76,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -161,32 +159,6 @@ public class SjpQueryViewTest {
         assertEquals(result, outputEnvelope);
         verify(caseService).findCaseByUrn(URN);
         verify(function).apply(caseView);
-    }
-
-
-    @Test
-    public void shouldGetReadyCasesReasonsCounts() {
-
-        final JsonEnvelope queryEnvelope = envelope()
-                .with(metadataWithRandomUUID("sjp.query.ready-cases-reasons-counts"))
-                .build();
-
-        final JsonObjectBuilder reason = createObjectBuilder()
-                .add("reason", CaseReadinessReason.PIA.name())
-                .add("count", 2);
-
-        final JsonObject readyCasesReasonCounts = createObjectBuilder().add("reasons", createArrayBuilder().add(reason)).build();
-
-        when(caseService.getReadyCasesReasonsCounts()).thenReturn(readyCasesReasonCounts);
-
-        final JsonEnvelope result = sjpQueryView.getReadyCasesReasonsCounts(queryEnvelope);
-
-        assertThat(result, jsonEnvelope(metadata().withName("sjp.query.ready-cases-reasons-counts"),
-                payload().isJson(allOf(
-                        withJsonPath("$.reasons[0].reason", is(CaseReadinessReason.PIA.name())),
-                        withJsonPath("$.reasons[0].count", is(2))
-                ))
-        ));
     }
 
     @Test

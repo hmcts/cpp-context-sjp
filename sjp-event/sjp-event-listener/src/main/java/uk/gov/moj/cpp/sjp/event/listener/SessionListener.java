@@ -5,6 +5,10 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
+import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
+import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionEnded;
+import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
 import uk.gov.moj.cpp.sjp.persistence.entity.Session;
 import uk.gov.moj.cpp.sjp.persistence.repository.SessionRepository;
 
@@ -22,7 +26,7 @@ public class SessionListener {
     private SessionRepository sessionRepository;
 
     @Transactional
-    @Handles("sjp.events.delegated-powers-session-started")
+    @Handles(DelegatedPowersSessionStarted.EVENT_NAME)
     public void handleDelegatedPowersSessionStarted(final JsonEnvelope delegatedPowersSessionStartedEvent) {
         final JsonObject delegatedPowersSessionStarted = delegatedPowersSessionStartedEvent.payloadAsJsonObject();
 
@@ -38,7 +42,7 @@ public class SessionListener {
     }
 
     @Transactional
-    @Handles("sjp.events.magistrate-session-started")
+    @Handles(MagistrateSessionStarted.EVENT_NAME)
     public void handleMagistrateSessionStarted(final JsonEnvelope magistrateSessionStartedEvent) {
         final JsonObject magistrateSessionStarted = magistrateSessionStartedEvent.payloadAsJsonObject();
 
@@ -54,13 +58,13 @@ public class SessionListener {
     }
 
     @Transactional
-    @Handles("sjp.events.delegated-powers-session-ended")
+    @Handles(DelegatedPowersSessionEnded.EVENT_NAME)
     public void handleDelegatedPowersSessionEnded(final JsonEnvelope delegatedPowersSessionEnded) {
         endSession(delegatedPowersSessionEnded);
     }
 
     @Transactional
-    @Handles("sjp.events.magistrate-session-ended")
+    @Handles(MagistrateSessionEnded.EVENT_NAME)
     public void handleMagistrateSessionEnded(final JsonEnvelope magistrateSessionEnded) {
         endSession(magistrateSessionEnded);
     }

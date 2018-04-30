@@ -9,6 +9,10 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.event.processor.service.SchedulingService;
+import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
+import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
+import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionEnded;
+import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
 
 import java.util.UUID;
 
@@ -28,7 +32,7 @@ public class SessionProcessor {
     @Inject
     private SchedulingService schedulingService;
 
-    @Handles("sjp.events.magistrate-session-started")
+    @Handles(MagistrateSessionStarted.EVENT_NAME)
     public void magistrateSessionStarted(final JsonEnvelope magistrateSessionStartedEvent) {
 
         final JsonObject magistrateSessionStarted = magistrateSessionStartedEvent.payloadAsJsonObject();
@@ -42,7 +46,7 @@ public class SessionProcessor {
         emitPublicSessionStartedEvent(sessionId, courtHouseName, localJusticeAreaNationalCourtCode, SessionType.MAGISTRATE, magistrateSessionStartedEvent);
     }
 
-    @Handles("sjp.events.delegated-powers-session-started")
+    @Handles(DelegatedPowersSessionStarted.EVENT_NAME)
     public void delegatedPowersSessionStarted(final JsonEnvelope delegatedPowersSessionStartedEvent) {
         final JsonObject magistrateSessionStarted = delegatedPowersSessionStartedEvent.payloadAsJsonObject();
 
@@ -54,13 +58,13 @@ public class SessionProcessor {
         emitPublicSessionStartedEvent(sessionId, courtHouseName, localJusticeAreaNationalCourtCode, SessionType.DELEGATED_POWERS, delegatedPowersSessionStartedEvent);
     }
 
-    @Handles("sjp.events.delegated-powers-session-ended")
+    @Handles(DelegatedPowersSessionEnded.EVENT_NAME)
     public void delegatedPowersSessionEnded(final JsonEnvelope delegatedPowersSessionEnded) {
         final UUID sessionId = UUID.fromString(delegatedPowersSessionEnded.payloadAsJsonObject().getString("sessionId"));
         schedulingService.endSession(sessionId, delegatedPowersSessionEnded);
     }
 
-    @Handles("sjp.events.magistrate-session-ended")
+    @Handles(MagistrateSessionEnded.EVENT_NAME)
     public void magistrateSessionEnded(final JsonEnvelope magistrateSessionEnded) {
         final UUID sessionId = UUID.fromString(magistrateSessionEnded.payloadAsJsonObject().getString("sessionId"));
         schedulingService.endSession(sessionId, magistrateSessionEnded);

@@ -253,10 +253,4 @@ public class SjpQueryView {
         return envelope.payloadAsJsonObject().getString(fieldName);
     }
 
-    @Handles("sjp.query.ready-cases-reasons-counts")
-    public JsonEnvelope getReadyCasesReasonsCounts(final JsonEnvelope envelope) {
-        return enveloper.withMetadataFrom(envelope, "sjp.query.ready-cases-reasons-counts")
-                .apply(caseService.getReadyCasesReasonsCounts());
-    }
-
 }

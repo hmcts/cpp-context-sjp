@@ -11,7 +11,9 @@ import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCasesRepository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -22,13 +24,16 @@ import javax.transaction.Transactional;
 public class CaseSearchResultListener {
 
     @Inject
-    private CaseRepository caseRepository;
-
-    @Inject
     private JsonObjectToObjectConverter converter;
 
     @Inject
+    private CaseRepository caseRepository;
+
+    @Inject
     private CaseSearchResultService caseSearchResultService;
+
+    @Inject
+    private ReadyCasesRepository readyCasesRepository;
 
     @Handles(CaseAssigned.EVENT_NAME)
     @Transactional
@@ -53,5 +58,6 @@ public class CaseSearchResultListener {
     private void updateCaseDetailsAssignment(final UUID caseId, final UUID assigneeId) {
         final CaseDetail caseDetail = caseRepository.findBy(caseId);
         caseDetail.setAssigneeId(assigneeId);
+        Optional.ofNullable(readyCasesRepository.findBy(caseId)).ifPresent(readyCase -> readyCase.setAssigneeId(assigneeId));
     }
 }

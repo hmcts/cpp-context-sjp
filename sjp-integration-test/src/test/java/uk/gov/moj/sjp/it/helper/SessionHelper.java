@@ -9,6 +9,8 @@ import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.sjp.it.EventSelector.PRIVATE_ACTIVE_MQ_TOPIC;
+import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_ACTIVE_MQ_TOPIC;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
@@ -41,7 +43,7 @@ public class SessionHelper {
                 .add("courtHouseOUCode", courtHouseOUCode)
                 .build();
 
-        return getSessionStartedEvent(() -> startSession(sessionId, userId, payload));
+        return executeAndGetEvent("public.sjp.session-started", PUBLIC_ACTIVE_MQ_TOPIC, () -> startSession(sessionId, userId, payload));
     }
 
     public static void startMagistrateSession(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate) {
@@ -58,7 +60,7 @@ public class SessionHelper {
                 .add("magistrate", magistrate)
                 .build();
 
-        return getSessionStartedEvent(() -> startSession(sessionId, userId, payload));
+        return executeAndGetEvent("public.sjp.session-started", PUBLIC_ACTIVE_MQ_TOPIC, () -> startSession(sessionId, userId, payload));
     }
 
     public static void startSession(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final SessionType sessionType) {
@@ -86,15 +88,19 @@ public class SessionHelper {
         HttpClientUtil.makePostCall(userId, url, contentType, createObjectBuilder().build().toString(), ACCEPTED);
     }
 
+    public static JsonEnvelope endSessionAndGetEvent(final UUID sessionId, final UUID userId, final String eventName) {
+        return executeAndGetEvent(eventName, PRIVATE_ACTIVE_MQ_TOPIC, () -> endSession(sessionId, userId));
+    }
+
     private static void startSession(final UUID sessionId, final UUID userId, final JsonObject payload) {
         final String contentType = "application/vnd.sjp.start-session+json";
         final String url = String.format("/sessions/%s", sessionId);
         HttpClientUtil.makePostCall(userId, url, contentType, payload.toString(), ACCEPTED);
     }
 
-    private static JsonEnvelope getSessionStartedEvent(final Runnable action) {
+    private static JsonEnvelope executeAndGetEvent(final String eventName, final String topic, final Runnable action) {
         try (final MessageConsumerClient messageConsumer = new MessageConsumerClient()) {
-            messageConsumer.startConsumer("public.sjp.session-started", "public.event");
+            messageConsumer.startConsumer(eventName, topic);
 
             action.run();
 

@@ -10,11 +10,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.SESSION_DOES_NOT_EXIST;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.SESSION_ENDED;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.SESSION_NOT_OWNED_BY_USER;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.endSession;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.endSessionAndGetEvent;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startDelegatedPowersSessionAndGetSessionStartedEvent;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
+import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
 
@@ -74,5 +75,9 @@ public class AssignmentRejectionIT extends BaseIntegrationTest {
 
     private static void startSession(final UUID sessionId, final UUID userId) {
         startDelegatedPowersSessionAndGetSessionStartedEvent(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE);
+    }
+
+    private static void endSession(final UUID sessionId, final UUID userId) {
+        endSessionAndGetEvent(sessionId, userId, DelegatedPowersSessionEnded.EVENT_NAME);
     }
 }

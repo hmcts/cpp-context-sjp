@@ -177,3 +177,12 @@ rule "sjp - Query - API - Get ready cases reasons counts"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp - Query - API - Get ready cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.ready-cases");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getReadyCasesGroups()))
+  then
+    $outcome.setSuccess(true);
+end

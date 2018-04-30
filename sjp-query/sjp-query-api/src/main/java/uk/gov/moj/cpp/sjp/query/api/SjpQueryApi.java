@@ -105,4 +105,9 @@ public class SjpQueryApi {
     public JsonEnvelope getReadyCasesReasonsCounts(final JsonEnvelope query) {
         return requester.request(query);
     }
+
+    @Handles("sjp.query.ready-cases")
+    public JsonEnvelope getReadyCases(final JsonEnvelope query) {
+        return requester.request(query);
+    }
 }

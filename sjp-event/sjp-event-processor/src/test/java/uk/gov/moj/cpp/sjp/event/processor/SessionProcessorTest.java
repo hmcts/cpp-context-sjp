@@ -6,11 +6,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.verify;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
@@ -19,6 +19,10 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.event.processor.service.SchedulingService;
+import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
+import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
+import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionEnded;
+import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
 
 import java.util.UUID;
 
@@ -52,7 +56,7 @@ public class SessionProcessorTest {
     @Test
     public void shouldStartMagistrateSessionInSchedulingAndEmitPublicSessionStartedEvent() {
 
-        final JsonEnvelope magistrateSessionStartedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.magistrate-session-started"),
+        final JsonEnvelope magistrateSessionStartedEvent = envelopeFrom(metadataWithRandomUUID(MagistrateSessionStarted.EVENT_NAME),
                 createObjectBuilder()
                         .add("sessionId", sessionId.toString())
                         .add("magistrate", magistrate)
@@ -77,7 +81,7 @@ public class SessionProcessorTest {
     @Test
     public void shouldStartDelegatedPowersSessionInSchedulingAndEmitPublicSessionStartedEvent() {
 
-        final JsonEnvelope delegatedPowersSessionStartedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.delegated-powers-session-started"),
+        final JsonEnvelope delegatedPowersSessionStartedEvent = envelopeFrom(metadataWithRandomUUID(DelegatedPowersSessionStarted.EVENT_NAME),
                 createObjectBuilder()
                         .add("sessionId", sessionId.toString())
                         .add("courtHouseName", courtHouseName)
@@ -100,7 +104,7 @@ public class SessionProcessorTest {
 
     @Test
     public void shouldEndMagistrateSessionInScheduling() {
-        final JsonEnvelope magistrateSessionEndedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.magistrate-session-ended"),
+        final JsonEnvelope magistrateSessionEndedEvent = envelopeFrom(metadataWithRandomUUID(MagistrateSessionEnded.EVENT_NAME),
                 createObjectBuilder().add("sessionId", sessionId.toString()).build());
 
         sessionProcessor.magistrateSessionEnded(magistrateSessionEndedEvent);
@@ -110,7 +114,7 @@ public class SessionProcessorTest {
 
     @Test
     public void shouldEndDelegatedPowersSessionInScheduling() {
-        final JsonEnvelope delegatedPowersSessionEndedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.delegated-powers-session-ended"),
+        final JsonEnvelope delegatedPowersSessionEndedEvent = envelopeFrom(metadataWithRandomUUID(DelegatedPowersSessionEnded.EVENT_NAME),
                 createObjectBuilder().add("sessionId", sessionId.toString()).build());
 
         sessionProcessor.magistrateSessionEnded(delegatedPowersSessionEndedEvent);
@@ -120,7 +124,7 @@ public class SessionProcessorTest {
 
     @Test
     public void delegatedPowersSessionEndedTest() {
-        final JsonEnvelope sessionEndedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.delegated-powers-session-ended"),
+        final JsonEnvelope sessionEndedEvent = envelopeFrom(metadataWithRandomUUID(DelegatedPowersSessionEnded.EVENT_NAME),
                 createObjectBuilder().add("sessionId", sessionId.toString()).build());
 
         sessionProcessor.delegatedPowersSessionEnded(sessionEndedEvent);

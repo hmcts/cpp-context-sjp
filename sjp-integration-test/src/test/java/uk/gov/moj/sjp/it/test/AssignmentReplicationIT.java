@@ -72,8 +72,7 @@ public class AssignmentReplicationIT extends BaseIntegrationTest {
     }
 
     private static void saveDecision(final UUID caseId) {
-        final CompleteCaseProducer completeCaseHelper = new CompleteCaseProducer(caseId);
-        completeCaseHelper.completeCase();
+        new CompleteCaseProducer(caseId).completeCase();
     }
 
 }

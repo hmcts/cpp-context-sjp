@@ -146,4 +146,9 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.ready-cases")
+    public JsonEnvelope getReadyCases(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
 }

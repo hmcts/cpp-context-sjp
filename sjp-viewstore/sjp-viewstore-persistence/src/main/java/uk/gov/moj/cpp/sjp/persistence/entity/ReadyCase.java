@@ -3,6 +3,8 @@ package uk.gov.moj.cpp.sjp.persistence.entity;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.ReadyCasesReasonCount;
 
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -30,6 +32,9 @@ public class ReadyCase {
     @Enumerated(EnumType.STRING)
     private CaseReadinessReason reason;
 
+    @Column(name = "assignee_id")
+    private UUID assigneeId;
+
     public ReadyCase() {
         //required for hibernate
     }
@@ -37,6 +42,12 @@ public class ReadyCase {
     public ReadyCase(final UUID caseId, final CaseReadinessReason reason) {
         this.caseId = caseId;
         this.reason = reason;
+    }
+
+    public ReadyCase(final UUID caseId, final CaseReadinessReason reason, final UUID assigneeId) {
+        this.caseId = caseId;
+        this.reason = reason;
+        this.assigneeId = assigneeId;
     }
 
     public UUID getCaseId() {
@@ -47,4 +58,30 @@ public class ReadyCase {
         return reason;
     }
 
+    public Optional<UUID> getAssigneeId() {
+        return Optional.ofNullable(assigneeId);
+    }
+
+    public void setAssigneeId(final UUID assigneeId) {
+        this.assigneeId = assigneeId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final ReadyCase readyCase = (ReadyCase) o;
+        return Objects.equals(caseId, readyCase.caseId) &&
+                reason == readyCase.reason &&
+                Objects.equals(assigneeId, readyCase.assigneeId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(caseId, reason, assigneeId);
+    }
 }

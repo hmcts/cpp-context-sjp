@@ -90,8 +90,12 @@ public final class RuleConstants {
         return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
-    public static  List<String> getReadyCasesReasonsCountsGroups() {
+    public static List<String> getReadyCasesReasonsCountsGroups() {
         return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
+    }
+
+    public static List<String> getReadyCasesGroups() {
+        return asList(GROUP_SYSTEM_USERS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
     }
 
 }

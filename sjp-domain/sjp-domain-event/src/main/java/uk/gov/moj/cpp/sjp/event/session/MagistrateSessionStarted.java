@@ -9,8 +9,10 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Event("sjp.events.magistrate-session-started")
+@Event(MagistrateSessionStarted.EVENT_NAME)
 public class MagistrateSessionStarted extends SessionStarted {
+
+    public static final String EVENT_NAME = "sjp.events.magistrate-session-started";
 
     private final String magistrate;
 

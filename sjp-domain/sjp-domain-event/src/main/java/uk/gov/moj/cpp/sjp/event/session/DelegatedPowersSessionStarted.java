@@ -8,8 +8,10 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Event("sjp.events.delegated-powers-session-started")
+@Event(DelegatedPowersSessionStarted.EVENT_NAME)
 public class DelegatedPowersSessionStarted extends SessionStarted {
+
+    public static final String EVENT_NAME = "sjp.events.delegated-powers-session-started";
 
     @JsonCreator
     public DelegatedPowersSessionStarted(

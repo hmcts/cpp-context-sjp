@@ -8,6 +8,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 
@@ -30,7 +31,7 @@ public class SchedulingStub {
         stubFor(post(urlPathEqualTo(START_SJP_SESSION_URL))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)
                         .withHeader("CPPID", randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)));
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)));
     }
 
     public static void stubEndSjpSessionCommand() {
@@ -39,7 +40,7 @@ public class SchedulingStub {
         stubFor(post(urlPathEqualTo(END_SJP_SESSION_URL))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)
                         .withHeader("CPPID", randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)));
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)));
     }
 
     public static void verifyDelegatedPowersSessionStarted(final UUID sessionId, final String courtHouseName, final String localJusticeAreaNationalCourtCode) {

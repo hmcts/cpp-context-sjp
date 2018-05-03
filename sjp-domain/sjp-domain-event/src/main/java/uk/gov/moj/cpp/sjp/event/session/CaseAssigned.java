@@ -17,6 +17,7 @@ public class CaseAssigned {
 
     private final UUID caseId;
     private final UUID assigneeId;
+    //TODO remove (ATCM-3097)
     private final CaseAssignmentType caseAssignmentType;
 
     @JsonCreator

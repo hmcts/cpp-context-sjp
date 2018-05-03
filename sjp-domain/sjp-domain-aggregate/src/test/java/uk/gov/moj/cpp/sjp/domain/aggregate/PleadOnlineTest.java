@@ -14,7 +14,6 @@ import static uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus.EMPLOYED;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
-import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
@@ -55,7 +54,7 @@ public class PleadOnlineTest {
     private final ZonedDateTime now = clock.now();
 
     private static final UUID caseId = UUID.randomUUID();
-    private static final UUID assigneeId = UUID.randomUUID();
+    private static final UUID userId = UUID.randomUUID();
     private static final String urn = "TFL123456";
     private static final String INITIATION_CODE = "J";
 
@@ -381,7 +380,7 @@ public class PleadOnlineTest {
         final CaseReceived sjpCase = caseAggregate.receiveCase(createTestCase(), clock.now())
                 .map(c -> (CaseReceived) c)
                 .collect(toList()).get(0);
-        caseAggregate.caseAssignmentCreated(caseId, assigneeId, CaseAssignmentType.MAGISTRATE_DECISION);
+        caseAggregate.assignCase(userId, CaseAssignmentType.MAGISTRATE_DECISION);
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, sjpCase.getDefendant().getId().toString());

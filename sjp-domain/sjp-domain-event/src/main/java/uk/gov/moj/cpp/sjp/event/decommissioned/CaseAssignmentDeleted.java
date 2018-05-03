@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.sjp.event;
+package uk.gov.moj.cpp.sjp.event.decommissioned;
 
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;

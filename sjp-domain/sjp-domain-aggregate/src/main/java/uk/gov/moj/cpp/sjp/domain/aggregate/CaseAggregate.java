@@ -8,6 +8,8 @@ import static uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus.EMPLOYED;
 import static uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason.CASE_ASSIGNED;
 import static uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason.PLEA_ALREADY_SUBMITTED;
 import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
+import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_ASSIGNED_TO_OTHER_USER;
+import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_COMPLETED;
 
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.moj.cpp.sjp.CourtReferralNotFound;
@@ -30,7 +32,6 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
 import uk.gov.moj.cpp.sjp.domain.aggregate.domain.PleadOnlineOutcomes;
 import uk.gov.moj.cpp.sjp.domain.command.CancelPlea;
 import uk.gov.moj.cpp.sjp.domain.command.ChangePlea;
-import uk.gov.moj.cpp.sjp.domain.command.CompleteCase;
 import uk.gov.moj.cpp.sjp.domain.command.UpdatePlea;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
@@ -40,8 +41,6 @@ import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.CaseAlreadyCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseAlreadyReopened;
-import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
-import uk.gov.moj.cpp.sjp.event.CaseAssignmentDeleted;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseCreationFailedBecauseCaseAlreadyExisted;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
@@ -85,7 +84,11 @@ import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
 import uk.gov.moj.cpp.sjp.event.TrialRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
-import uk.gov.moj.cpp.sjp.event.decommissioned.CaseAssignmentCreated;
+import uk.gov.moj.cpp.sjp.event.session.CaseAlreadyAssigned;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
+import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
+import uk.gov.moj.cpp.sjp.event.session.CaseUnassignmentRejected;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -108,7 +111,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 4L;
+    private static final long serialVersionUID = 5L;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseAggregate.class);
 
@@ -119,7 +122,7 @@ public class CaseAggregate implements Aggregate {
     private boolean caseCompleted = false;
     private boolean withdrawalAllOffencesRequested = false;
     private boolean hasCourtReferral;
-    private boolean assigned = false;
+    private UUID assigneeId;
     private String defendantTitle;
     private String defendantFirstName;
     private String defendantLastName;
@@ -145,10 +148,6 @@ public class CaseAggregate implements Aggregate {
     private ProsecutingAuthority prosecutingAuthority;
 
     private final Map<UUID, String> employmentStatusByDefendantId = new HashMap<>();
-
-    public Stream<Object> dummy() {
-        return apply(Stream.of());
-    }
 
     public Stream<Object> receiveCase(final Case aCase, final ZonedDateTime createdOn) {
         final Object event;
@@ -265,13 +264,13 @@ public class CaseAggregate implements Aggregate {
         return apply(events.build());
     }
 
-    public Stream<Object> completeCase(final CompleteCase completeCase) {
+    public Stream<Object> completeCase() {
         if (caseCompleted) {
-            LOGGER.warn("CaseAggregate has already been completed {}", completeCase.getCaseId());
-            return apply(Stream.of(new CaseAlreadyCompleted(completeCase.getCaseId().toString(), "Complete Case")));
+            LOGGER.warn("CaseAggregate has already been completed {}", caseId);
+            return apply(Stream.of(new CaseAlreadyCompleted(caseId.toString(), "Complete Case")));
         }
 
-        return apply(Stream.of(new CaseCompleted(completeCase.getCaseId())));
+        return apply(Stream.of(new CaseUnassigned(caseId), new CaseCompleted(caseId)));
     }
 
     private Optional<UUID> getDefendantIdByOffenceId(final UUID offenceId) {
@@ -611,15 +610,31 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> assignCase(final UUID assigneeId, final CaseAssignmentType assignmentType) {
-        return apply(Stream.builder().add(new CaseAssigned(caseId, assigneeId, assignmentType)).build());
+        final Stream.Builder streamBuilder = Stream.builder();
+
+        if (caseCompleted) {
+            streamBuilder.add(new CaseAssignmentRejected(CASE_COMPLETED));
+        } else if (this.assigneeId != null) {
+            if (!this.assigneeId.equals(assigneeId)) {
+                streamBuilder.add(new CaseAssignmentRejected(CASE_ASSIGNED_TO_OTHER_USER));
+            } else {
+                streamBuilder.add(new CaseAlreadyAssigned(caseId, assigneeId));
+            }
+        } else {
+            streamBuilder.add(new CaseAssigned(caseId, assigneeId, assignmentType));
+        }
+
+        return apply(streamBuilder.build());
     }
 
-    public Stream<Object> caseAssignmentCreated(final UUID caseId, final UUID assigneeId, final CaseAssignmentType caseAssignmentType) {
-        return apply(Stream.builder().add(new CaseAssigned(caseId, assigneeId, caseAssignmentType)).build());
-    }
-
-    public Stream<Object> caseAssignmentDeleted(final UUID caseId, final CaseAssignmentType caseAssignmentType) {
-        return apply(Stream.builder().add(new CaseAssignmentDeleted(caseId, caseAssignmentType)).build());
+    public Stream<Object> unassignCase() {
+        final Stream.Builder streamBuilder = Stream.builder();
+        if (assigneeId != null) {
+            streamBuilder.add(new CaseUnassigned(caseId));
+        } else {
+            streamBuilder.add(new CaseUnassignmentRejected(CaseUnassignmentRejected.RejectReason.CASE_NOT_ASSIGNED));
+        }
+        return apply(streamBuilder.build());
     }
 
     private void validateDefendant(String title, LocalDate dateOfBirth, Address address) {
@@ -905,9 +920,8 @@ public class CaseAggregate implements Aggregate {
                 when(CourtReferralNotFound.class).apply(e -> {
                     //nothing to update
                 }),
-                when(CaseAssigned.class).apply(caseAssignment -> assigned = true),
-                when(CaseAssignmentCreated.class).apply(caseAssignment -> assigned = true),
-                when(CaseAssignmentDeleted.class).apply(ignored -> assigned = false),
+                when(CaseAssigned.class).apply(e -> assigneeId = e.getAssigneeId()),
+                when(CaseUnassigned.class).apply(e -> assigneeId = null),
 
                 when(DefendantDetailsUpdated.class).apply(e -> {
                     defendantTitle = e.getTitle();
@@ -990,7 +1004,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     public boolean isCaseAssigned() {
-        return assigned;
+        return assigneeId != null;
     }
 
     public String getDefendantLastName() {

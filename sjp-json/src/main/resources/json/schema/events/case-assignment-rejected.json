@@ -3,14 +3,11 @@
   "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/case-assignment-rejected.json",
   "type": "object",
   "properties": {
-    "sessionId": {
-      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
-    },
-    "reason":{
+    "reason": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/case-assignment-rejection-reason.json"
     }
   },
   "required": [
-    "sessionId", "reason"
+    "reason"
   ]
 }

@@ -50,9 +50,20 @@ public class AssignmentHandler {
 
         final EventStream sessionEventStream = eventSource.getStreamById(sessionId);
         final Session session = aggregateService.get(sessionEventStream, Session.class);
-        final Stream<Object> events = session.requestCaseAssignment(sessionId, userId);
+        final Stream<Object> events = session.requestCaseAssignment(userId);
 
         sessionEventStream.append(events.map(enveloper.withMetadataFrom(command)));
+    }
+
+    @Handles("sjp.command.unassign-case")
+    public void unassignCase(final JsonEnvelope command) throws EventStreamException {
+        final UUID caseId = UUID.fromString(command.payloadAsJsonObject().getString("caseId"));
+
+        final EventStream caseEventStream = eventSource.getStreamById(caseId);
+        final CaseAggregate aCase = aggregateService.get(caseEventStream, CaseAggregate.class);
+        final Stream<Object> events = aCase.unassignCase();
+
+        caseEventStream.append(events.map(enveloper.withMetadataFrom(command)));
     }
 
     @Handles("sjp.command.assign-case-from-candidates-list")

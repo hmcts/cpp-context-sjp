@@ -12,14 +12,14 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>0.0.66-ATCM-SNAPSHOT</version>
+    <version>0.0.67-ATCM-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
         <sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
-        <assignment.version>2.0.95</assignment.version>
+        <assignment.version>2.0.97</assignment.version>
         <material.version>2.0.101</material.version>
         <notification.notify.version>0.0.16</notification.notify.version>
         <referencedata.version>2.0.142</referencedata.version>

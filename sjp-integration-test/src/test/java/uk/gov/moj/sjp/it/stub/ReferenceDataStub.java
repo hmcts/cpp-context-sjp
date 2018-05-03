@@ -7,6 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
@@ -34,7 +35,7 @@ public class ReferenceDataStub {
                 .withQueryParam("cjsoffencecode", matching(".*"))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(offences.toString())));
 
         waitForStubToBeReady(urlPath + "?cjsoffencecode", "application/vnd.referencedata.query.offences+json");
@@ -46,7 +47,7 @@ public class ReferenceDataStub {
     }
 
     public static void stubCourtByCourtHouseOUCodeQuery(final String courtHouseOUCode, final String localJusticeAreaNationalCourtCode) {
-       stubCourtByCourtHouseOUCodeQuery(courtHouseOUCode, localJusticeAreaNationalCourtCode, "court house name");
+        stubCourtByCourtHouseOUCodeQuery(courtHouseOUCode, localJusticeAreaNationalCourtCode, "court house name");
     }
 
     private static void stubCourt(final String courtHouseOUCode, final String responseBody) {
@@ -57,7 +58,7 @@ public class ReferenceDataStub {
                 .withQueryParam("oucodeL3Code", equalTo(courtHouseOUCode))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(responseBody)));
 
         waitForStubToBeReady(urlPath + "?oucodeL3Code=" + courtHouseOUCode, "application/vnd.referencedata.query.organisationunits+json");

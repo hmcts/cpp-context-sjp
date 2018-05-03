@@ -100,7 +100,7 @@ public class CaseSearchResultListenerTest {
         assertThat(caseDetail.getAssigneeId(), is(assigneeId));
 
         //when
-        caseSearchResultListener.caseAssignmentDeleted(event);
+        caseSearchResultListener.caseUnassigned(event);
 
         //then
         searchResults.forEach(searchResult -> {

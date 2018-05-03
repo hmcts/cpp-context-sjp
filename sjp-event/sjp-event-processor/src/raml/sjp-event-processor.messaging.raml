@@ -44,6 +44,9 @@ baseUri: message://event/processor/message/sjp
       application/vnd.sjp.events.plea-cancelled+json:
           schema: !include json/schema/sjp.events.plea-cancelled.json
           example: !include json/sjp.events.plea-cancelled.json
+      application/vnd.sjp.events.case-completed+json:
+        schema: !include json/schema/sjp.events.case-completed.json
+        example: !include json/sjp.events.case-completed.json
       application/vnd.sjp.events.enterprise-id-associated+json:
           schema: !include json/schema/sjp.events.enterprise-id-associated.json
           example: !include json/sjp.events.enterprise-id-associated.json
@@ -98,6 +101,12 @@ baseUri: message://event/processor/message/sjp
       application/vnd.sjp.events.case-assigned+json:
         schema: !include json/schema/sjp.events.case-assigned.json
         example: !include json/sjp.events.case-assigned.json
+      application/vnd.sjp.events.case-already-assigned+json:
+        schema: !include json/schema/sjp.events.case-already-assigned.json
+        example: !include json/sjp.events.case-already-assigned.json
+      application/vnd.sjp.events.case-unassigned+json:
+        schema: !include json/schema/sjp.events.case-unassigned.json
+        example: !include json/sjp.events.case-unassigned.json
 
 /public.event:
   post:
@@ -111,9 +120,3 @@ baseUri: message://event/processor/message/sjp
       application/vnd.material.material-added+json:
           schema: !include json/schema/material.material-added.json
           example: !include json/material.material-added.json
-      application/vnd.assignment.assignment-created+json:
-        schema: !include json/schema/assignment.assignment-created.json
-        example: !include json/assignment.assignment-created.json
-      application/vnd.assignment.assignment-deleted+json:
-        schema: !include json/schema/assignment.assignment-deleted.json
-        example: !include json/assignment.assignment-deleted.json

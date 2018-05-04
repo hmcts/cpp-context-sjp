@@ -21,6 +21,7 @@ import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
 
 import uk.gov.justice.services.common.converter.LocalDates;
+import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -135,9 +136,8 @@ public class CaseSearchResultHelper {
     }
 
     public void completeCase() {
-        try (final CompleteCaseHelper completeCaseHelper = new CompleteCaseHelper(caseId)) {
-            completeCaseHelper.completeCase();
-        }
+        CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
+        completeCaseProducer.completeCase();
     }
 
     private void verifyPersonInfo(final String query, final String lastName, final LocalDate dateOfBirth) {

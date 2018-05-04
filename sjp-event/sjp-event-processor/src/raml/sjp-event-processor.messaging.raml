@@ -108,6 +108,10 @@ baseUri: message://event/processor/message/sjp
         schema: !include json/schema/sjp.events.case-unassigned.json
         example: !include json/sjp.events.case-unassigned.json
 
+      application/vnd.sjp.events.dates-to-avoid-received+json:
+        schema: !include json/schema/sjp.events.dates-to-avoid-received.json
+        example: !include json/sjp.events.dates-to-avoid-received.json
+
 /public.event:
   post:
     body:

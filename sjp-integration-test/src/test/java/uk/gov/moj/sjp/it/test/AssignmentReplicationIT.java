@@ -15,7 +15,7 @@ import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDec
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.helper.CompleteCaseHelper;
+import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
@@ -72,9 +72,8 @@ public class AssignmentReplicationIT extends BaseIntegrationTest {
     }
 
     private static void saveDecision(final UUID caseId) {
-        try (final CompleteCaseHelper completeCaseHelper = new CompleteCaseHelper(caseId)) {
-            completeCaseHelper.completeCase();
-        }
+        final CompleteCaseProducer completeCaseHelper = new CompleteCaseProducer(caseId);
+        completeCaseHelper.completeCase();
     }
 
 }

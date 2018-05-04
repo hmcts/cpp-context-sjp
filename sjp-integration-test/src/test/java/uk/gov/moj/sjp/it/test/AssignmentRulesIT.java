@@ -30,6 +30,7 @@ import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
+import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
@@ -64,6 +65,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
     private static final String LONDON_COURT_HOUSE_OU_CODE = "B01OK", WEST_MIDLANDS_COURT_HOUSE_OU_CODE = "B20EB", OTHER_COURT_HOUSE_OU_CODE = "B20YY";
     private static Map<String, String> ljaByCourtHouseOUCode;
     private final LocalDate NOW = now();
+    private static final String DATE_TO_AVOID = "a-date-to-avoid";
 
     private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
     private CreateCase.CreateCasePayloadBuilder tflPiaCasePayloadBuilder, tflPleadedGuiltyCasePayloadBuilder, tflPleadedNotGuiltyCasePayloadBuilder, tflPendingWithdrawalCasePayloadBuilder,
@@ -153,6 +155,10 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         userId = UUID.randomUUID();
         offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(userId);
         offencesWithdrawalRequestHelper.verifyAllOffencesWithdrawalRequestedInPublicActiveMQ();
+
+        addDatesToAvoid(tflPleadedNotGuiltyCasePayloadBuilder.getId(), DATE_TO_AVOID);
+        addDatesToAvoid(dvlaPleadedNotGuiltyCasePayloadBuilder.getId(), DATE_TO_AVOID);
+
     }
 
     @After
@@ -173,14 +179,12 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         verifyCaseAssignedFromMagistrateSession(LONDON_COURT_HOUSE_OU_CODE, tflPiaCasePayloadBuilder.getId());
         verifyCaseNotFoundInMagistrateSession(LONDON_COURT_HOUSE_OU_CODE);
 
-        //FIXME ATCM-2617: the not guilty cases are not assigned anymore - requires providing of dates to avoid
-//        verifyCaseAssignedFromDelegatedPowersSession(OTHER_COURT_HOUSE_OU_CODE, dvlaPleadedNotGuiltyCasePayloadBuilder.getId());
+        verifyCaseAssignedFromDelegatedPowersSession(OTHER_COURT_HOUSE_OU_CODE, dvlaPleadedNotGuiltyCasePayloadBuilder.getId());
         verifyCaseNotFoundInDelegatedPowersSession(OTHER_COURT_HOUSE_OU_CODE);
         verifyCaseAssignedFromDelegatedPowersSession(WEST_MIDLANDS_COURT_HOUSE_OU_CODE, tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getId());
         verifyCaseNotFoundInDelegatedPowersSession(WEST_MIDLANDS_COURT_HOUSE_OU_CODE);
         verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT_HOUSE_OU_CODE, tflPendingWithdrawalCasePayloadBuilder.getId());
-        //FIXME ATCM-2617: the not guilty cases are not assigned anymore - requires providing of dates to avoid
-//        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT_HOUSE_OU_CODE, tflPleadedNotGuiltyCasePayloadBuilder.getId());
+        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT_HOUSE_OU_CODE, tflPleadedNotGuiltyCasePayloadBuilder.getId());
         verifyCaseNotFoundInDelegatedPowersSession(LONDON_COURT_HOUSE_OU_CODE);
     }
 
@@ -192,9 +196,8 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         verifyCaseNotFoundInMagistrateSession(LONDON_COURT_HOUSE_OU_CODE);
 
         verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT_HOUSE_OU_CODE, tflPendingWithdrawalCasePayloadBuilder.getId());
-        //FIXME ATCM-2617: the not guilty cases are not assigned anymore - requires providing of dates to avoid
-//        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT_HOUSE_OU_CODE, tflPleadedNotGuiltyCasePayloadBuilder.getId());
-//        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT_HOUSE_OU_CODE, dvlaPleadedNotGuiltyCasePayloadBuilder.getId());
+        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT_HOUSE_OU_CODE, tflPleadedNotGuiltyCasePayloadBuilder.getId());
+        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT_HOUSE_OU_CODE, dvlaPleadedNotGuiltyCasePayloadBuilder.getId());
         verifyCaseNotFoundInDelegatedPowersSession(LONDON_COURT_HOUSE_OU_CODE);
     }
 
@@ -205,8 +208,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         verifyCaseNotFoundInMagistrateSession(WEST_MIDLANDS_COURT_HOUSE_OU_CODE);
 
         verifyCaseAssignedFromDelegatedPowersSession(WEST_MIDLANDS_COURT_HOUSE_OU_CODE, tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getId());
-        //FIXME ATCM-2617: the not guilty cases are not assigned anymore - requires providing of dates to avoid
-//        verifyCaseAssignedFromDelegatedPowersSession(WEST_MIDLANDS_COURT_HOUSE_OU_CODE, dvlaPleadedNotGuiltyCasePayloadBuilder.getId());
+        verifyCaseAssignedFromDelegatedPowersSession(WEST_MIDLANDS_COURT_HOUSE_OU_CODE, dvlaPleadedNotGuiltyCasePayloadBuilder.getId());
         verifyCaseNotFoundInDelegatedPowersSession(WEST_MIDLANDS_COURT_HOUSE_OU_CODE);
     }
 

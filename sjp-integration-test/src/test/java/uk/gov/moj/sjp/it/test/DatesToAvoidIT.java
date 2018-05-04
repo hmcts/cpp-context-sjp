@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.pollingquery.PendingDatesToAvoidPoller.pollUntilPendingDatesToAvoidIsOk;
@@ -16,6 +17,7 @@ import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDom
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
+import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.util.Clock;
@@ -23,9 +25,10 @@ import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.PleaType;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
-import uk.gov.moj.sjp.it.command.AddDatesToAvoid;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
+import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
@@ -50,6 +53,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     private static final String LONDON_COURT_HOUSE_OU_CODE = "B01GU";
     private static final String LONDON_COURT_HOUSE_LJA_NATIONAL_COURT_CODE = "2577";
     private static final Clock clock = new UtcClock();
+    private static final String DATE_TO_AVOID = "a-date-to-avoid";
 
     private UUID tflUserId;
     private UUID tvlUserId;
@@ -113,18 +117,16 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
             updatePleaToNotGuilty(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), updatePleaHelper);
             assertThatDatesToAvoidIsPendingSubmissionForCase(tflUserId, tflCaseBuilder);
 
-            /*UUID sessionId = randomUUID();
+            UUID sessionId = randomUUID();
             UUID userId = randomUUID();
 
             //checks that dates-to-avoid NOT pending submission when case in session
+            addDatesToAvoid(tflCaseBuilder.getId(), DATE_TO_AVOID);
+            assertThatNumberOfCasesPendingDatesToAvoidIsAccurate(tflUserId, tflInitialPendingDatesToAvoidCount);
 
-            //FIXME ATCM-2617: this actually doesn't but this case in the session anymore as it is no longer assignable, will need endpiont to provide dates to avoid to assign this properly
-//            SessionHelper.startSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, DELEGATED_POWERS);
-//            AssignmentHelper.requestCaseAssignment(sessionId, userId);
-//            assertThatNumberOfCasesPendingDatesToAvoidIsAccurate(tflUserId, tflInitialPendingDatesToAvoidCount);
-
-            updatePleaToNotGuilty(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), updatePleaHelper);
-            assertThatDatesToAvoidIsPendingSubmissionForCase(tflUserId, tflCaseBuilder);*/
+            SessionHelper.startSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, DELEGATED_POWERS);
+            AssignmentHelper.requestCaseAssignment(sessionId, userId);
+            assertThatNumberOfCasesPendingDatesToAvoidIsAccurate(tflUserId, tflInitialPendingDatesToAvoidCount);
         }
     }
 
@@ -146,10 +148,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
             updatePleaToNotGuilty(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), updatePleaHelper);
 
             final String datesToAvoid = "I cannot come on Wednesdays";
-            AddDatesToAvoid.addDatesToAvoid(
-                    tflCaseBuilder.getId(),
-                    datesToAvoid
-            );
+            addDatesToAvoid(tflCaseBuilder.getId(), datesToAvoid);
             final Matcher caseDetailsDatesToAvoidFieldMatcher = withJsonPath("$.datesToAvoid", equalTo(datesToAvoid));
             CasePoller.pollUntilCaseByIdIsOk(tflCaseBuilder.getId(), caseDetailsDatesToAvoidFieldMatcher);
         }

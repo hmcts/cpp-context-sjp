@@ -5,7 +5,6 @@ import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.domain.util.DefaultTestData;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 public class CaseDocumentBuilder {
@@ -13,21 +12,11 @@ public class CaseDocumentBuilder {
     private static final Clock clock = new UtcClock();
 
     private UUID id = DefaultTestData.CASE_DOCUMENT_ID;
-    private String materialId = DefaultTestData.CASE_DOCUMENT_MATERIAL_ID;
-    private String documentType;
-
-    public static CaseDocument defaultCaseDocument(UUID documentId, String documentType) {
-        return new CaseDocument(
-                documentId.toString(),
-                DefaultTestData.CASE_DOCUMENT_MATERIAL_ID,
-                documentType,
-                clock.now()
-        );
-    }
+    private UUID materialId = DefaultTestData.CASE_DOCUMENT_MATERIAL_ID;
 
     public static CaseDocument defaultCaseDocument() {
         return new CaseDocument(
-                DefaultTestData.CASE_DOCUMENT_ID_STR,
+                DefaultTestData.CASE_DOCUMENT_ID,
                 DefaultTestData.CASE_DOCUMENT_MATERIAL_ID,
                 DefaultTestData.CASE_DOCUMENT_TYPE_SJPN,
                 clock.now()
@@ -42,6 +31,6 @@ public class CaseDocumentBuilder {
     }
 
     public CaseDocument build() {
-        return new CaseDocument(id.toString(), materialId, documentType, clock.now());
+        return new CaseDocument(id, materialId, null, clock.now());
     }
 }

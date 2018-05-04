@@ -38,10 +38,10 @@ public class ResultOrdersIT extends BaseIntegrationTest {
     @Before
     public void givenResultOrders() {
         case0 = createCase();
-        resultOrder0 = createResultOrder(case0.getId().toString());
+        resultOrder0 = createResultOrder(case0.getId());
 
         case1 = createCase();
-        resultOrder1 = createResultOrder(case1.getId().toString());
+        resultOrder1 = createResultOrder(case1.getId());
     }
 
     @After
@@ -95,7 +95,7 @@ public class ResultOrdersIT extends BaseIntegrationTest {
         return casePayloadBuilder;
     }
 
-    private CaseDocumentHelper createResultOrder(String caseId) {
+    private static CaseDocumentHelper createResultOrder(UUID caseId) {
         CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId);
         caseDocumentHelper.addCaseDocument(
                 Json.createObjectBuilder().add("id", UUID.randomUUID().toString())

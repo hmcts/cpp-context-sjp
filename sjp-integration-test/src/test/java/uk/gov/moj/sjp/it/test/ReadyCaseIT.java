@@ -2,7 +2,6 @@ package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -30,7 +29,7 @@ import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
-import uk.gov.moj.cpp.sjp.domain.PleaType;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestCancelHelper;
@@ -52,10 +51,10 @@ import org.junit.Test;
 
 public class ReadyCaseIT extends BaseIntegrationTest {
 
-    private static final int NOTICE_PERIOD_IN_DAYS = 28;
     private ReadyCasesPoller readyCasesPoller;
     private UUID caseId, offenceId;
     private LocalDate postingDate;
+    private final LocalDate NOW_MINUS_NOTICE_DAYS = LocalDate.now().minusDays(28);
 
     @Before
     public void init() {
@@ -63,7 +62,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
 
         caseId = randomUUID();
         offenceId = randomUUID();
-        postingDate = LocalDate.now(UTC).minusDays(NOTICE_PERIOD_IN_DAYS).minusDays(1);
+        postingDate = NOW_MINUS_NOTICE_DAYS.minusDays(1);
 
         stubGetCaseDecisionsWithNoDecision(caseId);
         stubGetEmptyAssignmentsByDomainObjectId(caseId);
@@ -72,7 +71,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
     @Test
     public void shouldChangeCaseReadinessWhenCaseAfterNoticeEndDate() {
 
-        postingDate = LocalDate.now(UTC).minusDays(NOTICE_PERIOD_IN_DAYS).minusDays(1);
+        postingDate = NOW_MINUS_NOTICE_DAYS.minusDays(1);
 
         createCaseForPayloadBuilder(CreateCase.CreateCasePayloadBuilder
                 .withDefaults()
@@ -91,11 +90,11 @@ public class ReadyCaseIT extends BaseIntegrationTest {
 
             readyCasesPoller.pollUntilReadyWithReason(CaseReadinessReason.PLEADED_GUILTY);
 
-            offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(UUID.fromString(USER_ID));
+            offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(USER_ID);
 
             readyCasesPoller.pollUntilReadyWithReason(CaseReadinessReason.WITHDRAWAL_REQUESTED);
 
-            offencesWithdrawalRequestCancelHelper.cancelRequestWithdrawalForAllOffences(UUID.fromString(USER_ID));
+            offencesWithdrawalRequestCancelHelper.cancelRequestWithdrawalForAllOffences(USER_ID);
 
             readyCasesPoller.pollUntilReadyWithReason(CaseReadinessReason.PLEADED_GUILTY);
 
@@ -109,7 +108,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
     @Test
     public void shouldChangeCaseReadinessWhenCaseBeforeNoticeEndDate() {
 
-        postingDate = LocalDate.now(UTC).minusDays(NOTICE_PERIOD_IN_DAYS).plusDays(1);
+        postingDate = NOW_MINUS_NOTICE_DAYS.plusDays(1);
 
         createCaseForPayloadBuilder(CreateCase.CreateCasePayloadBuilder
                 .withDefaults()
@@ -134,11 +133,11 @@ public class ReadyCaseIT extends BaseIntegrationTest {
 
             readyCasesPoller.pollUntilNotReady();
 
-            offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(UUID.fromString(USER_ID));
+            offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(USER_ID);
 
             readyCasesPoller.pollUntilReadyWithReason(CaseReadinessReason.WITHDRAWAL_REQUESTED);
 
-            offencesWithdrawalRequestCancelHelper.cancelRequestWithdrawalForAllOffences(UUID.fromString(USER_ID));
+            offencesWithdrawalRequestCancelHelper.cancelRequestWithdrawalForAllOffences(USER_ID);
 
             readyCasesPoller.pollUntilNotReady();
         }
@@ -148,7 +147,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
     @Test
     public void shouldUnmarkCaseReadyWhenCaseCompleted() {
 
-        postingDate = LocalDate.now(UTC).minusDays(NOTICE_PERIOD_IN_DAYS).minusDays(1);
+        postingDate = NOW_MINUS_NOTICE_DAYS.minusDays(1);
 
         createCaseForPayloadBuilder(CreateCase.CreateCasePayloadBuilder
                 .withDefaults()

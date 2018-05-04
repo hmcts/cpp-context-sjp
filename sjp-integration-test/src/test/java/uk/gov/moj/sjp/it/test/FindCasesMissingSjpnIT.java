@@ -63,7 +63,9 @@ public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
         sjpCasesWithoutSjpn = sjpCases.subList(2, sjpCases.size());
 
         sjpnDocuments = sjpCasesWithSjpn.stream()
-                .map(caseHelper -> new CaseDocumentHelper(caseHelper.getId().toString())).collect(toList());
+                .map(CreateCase.CreateCasePayloadBuilder::getId)
+                .map(CaseDocumentHelper::new)
+                .collect(toList());
     }
 
     @After

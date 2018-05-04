@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isIn;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
@@ -15,7 +16,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -130,7 +130,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
         for (CaseDetail caseDetail : cases) {
             caseDetail.setId(UUID.randomUUID());
             caseDetail.setInitiationCode(initiationCode);
-            caseDetail.setProsecutingAuthority("TFL");
+            caseDetail.setProsecutingAuthority(TFL);
             caseDetail.setPostingDate(now().minusDays(i--));
             caseRepository.save(caseDetail);
         }

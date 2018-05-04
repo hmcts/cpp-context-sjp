@@ -4,6 +4,7 @@ import static junit.framework.TestCase.assertEquals;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -64,7 +65,7 @@ public class CaseDocumentRepositoryTest extends BaseTransactionalTest {
     private void addCaseDocument(ZonedDateTime addedAt) {
 
         DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null, 1);
-        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234567", null, null, null, null, null, defendantDetail, null, LocalDate.now());
+        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234567", ProsecutingAuthority.TFL, null, null, null, null, defendantDetail, null, LocalDate.now());
         caseDetail.setDefendant(defendantDetail);
         CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,

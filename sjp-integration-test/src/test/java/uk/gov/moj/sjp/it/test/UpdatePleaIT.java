@@ -1,8 +1,8 @@
 package uk.gov.moj.sjp.it.test;
 
 import static java.util.UUID.randomUUID;
-import static uk.gov.moj.cpp.sjp.domain.PleaType.GUILTY;
-import static uk.gov.moj.cpp.sjp.domain.PleaType.NOT_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_SJP_CASE_UPDATE_REJECTED;
@@ -13,7 +13,7 @@ import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDom
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithDecision;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 
-import uk.gov.moj.cpp.sjp.domain.PleaType;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.sjp.it.command.CreateCase;
@@ -28,14 +28,12 @@ import org.junit.Test;
 public class UpdatePleaIT extends BaseIntegrationTest {
 
     private UpdatePleaHelper updatePleaHelper;
-    private UpdatePleaHelper updateRejectedPleaHelper;
 
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
     @Before
     public void setUp() {
         this.updatePleaHelper = new UpdatePleaHelper();
-        this.updateRejectedPleaHelper = new UpdatePleaHelper(PUBLIC_SJP_CASE_UPDATE_REJECTED);
         this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
         CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
         stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());

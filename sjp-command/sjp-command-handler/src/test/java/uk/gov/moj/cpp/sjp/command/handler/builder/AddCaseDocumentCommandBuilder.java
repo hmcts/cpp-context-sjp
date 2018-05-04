@@ -19,7 +19,7 @@ public class AddCaseDocumentCommandBuilder {
 
     private UUID caseId = CASE_ID;
     private UUID id = CASE_DOCUMENT_ID;
-    private String materialId = CASE_DOCUMENT_MATERIAL_ID;
+    private UUID materialId = CASE_DOCUMENT_MATERIAL_ID;
     private String documentType;
 
     private AddCaseDocumentCommandBuilder() {
@@ -52,7 +52,7 @@ public class AddCaseDocumentCommandBuilder {
         JsonObjectBuilder victim = createObjectBuilder()
                 .add("caseId", caseId.toString())
                 .add("id", id.toString())
-                .add("materialId", materialId);
+                .add("materialId", materialId.toString());
 
         if (this.documentType != null) {
             victim.add("documentType", documentType);

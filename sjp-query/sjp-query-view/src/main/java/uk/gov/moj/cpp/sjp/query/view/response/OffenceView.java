@@ -1,7 +1,10 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 
 import java.math.BigDecimal;
@@ -13,8 +16,8 @@ public class OffenceView {
 
     private final UUID id;
     private final String offenceCode;
-    private final String plea;
-    private final String pleaMethod;
+    private final PleaType plea;
+    private final PleaMethod pleaMethod;
     private final Integer offenceSequenceNumber;
     private final String wording;
     private final String cjsCode;
@@ -32,12 +35,11 @@ public class OffenceView {
         this.offenceCode = offence.getCode();
         this.cjsCode = offenceCode;
 
-        this.offenceSequenceNumber = offence.getSequenceNumber() != null ? offence.getSequenceNumber() : 0;
+        this.offenceSequenceNumber = firstNonNull(offence.getSequenceNumber(), 0);
         this.sequenceNumber = offenceSequenceNumber;
 
         this.plea = offence.getPlea();
-        PleaMethod pleaMethod = offence.getPleaMethod();
-        this.pleaMethod = pleaMethod != null ? pleaMethod.name() : null;
+        this.pleaMethod = offence.getPleaMethod();
         this.wording = offence.getWording();
         this.startDate = offence.getStartDate();
         this.chargeDate = offence.getChargeDate();
@@ -54,11 +56,11 @@ public class OffenceView {
         return offenceCode;
     }
 
-    public String getPlea() {
+    public PleaType getPlea() {
         return plea;
     }
 
-    public String getPleaMethod() {
+    public PleaMethod getPleaMethod() {
         return pleaMethod;
     }
 

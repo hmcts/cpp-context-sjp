@@ -8,6 +8,7 @@ import static com.jayway.jsonassert.JsonAssert.with;
 import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.JsonPath.compile;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.lang.String.format;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -74,9 +75,9 @@ public class CaseDocumentHelper implements AutoCloseable {
     private static final String FILE_NAME_PLEA = "SMITH_Fred_TFL2041315_PLEA.pdf";
     private static final String FILE_PATH_PLEA = "src/test/resources/plea";
 
-    private String caseId;
+    private UUID caseId;
     private String request;
-    private UUID id;
+    private String id;
     private String materialId;
 
     private MessageConsumerClient publicCaseDocumentAlreadyExistsConsumer = new MessageConsumerClient();
@@ -84,8 +85,8 @@ public class CaseDocumentHelper implements AutoCloseable {
     private MessageConsumerClient publicConsumer = new MessageConsumerClient();
     private MessageConsumer privateEventsConsumer;
 
-    public CaseDocumentHelper(String caseId) {
-        this.id = UUID.randomUUID();
+    public CaseDocumentHelper(UUID caseId) {
+        this.id = UUID.randomUUID().toString();
         this.materialId = UUID.randomUUID().toString();
         this.caseId = caseId;
         privateEventsConsumer = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_CASE_DOCUMENT_ADDED);
@@ -95,17 +96,13 @@ public class CaseDocumentHelper implements AutoCloseable {
         publicCaseDocumentUploaded.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED, EventSelector.PUBLIC_ACTIVE_MQ_TOPIC);
     }
 
-    private void addCaseDocument(String payload, String documentType) {
-        addCaseDocument(UUID.fromString(USER_ID), payload, documentType);
-    }
-
     private void addCaseDocument(UUID userId, String payload, String documentType) {
-        String writeUrl = "/cases/CASEID/case-documents".replace("CASEID", caseId);
+        String writeUrl = format("/cases/%s/case-documents", caseId);
         final String payloadWithReplacedDocumentType;
         if (documentType != null) {
-            payloadWithReplacedDocumentType = String.format(payload, id, documentType);
+            payloadWithReplacedDocumentType = format(payload, id, documentType);
         } else {
-            payloadWithReplacedDocumentType = String.format(payload, id, "SJPN");
+            payloadWithReplacedDocumentType = format(payload, id, "SJPN");
         }
         JSONObject jsonObject = new JSONObject(payloadWithReplacedDocumentType);
         jsonObject.put(MATERIAL_ID_PROPERTY, materialId);
@@ -116,7 +113,7 @@ public class CaseDocumentHelper implements AutoCloseable {
     }
 
     public void addCaseDocument(String payload) {
-        addCaseDocument(payload, null);
+        addCaseDocument(USER_ID, payload, null);
     }
 
     public void addCaseDocument() {
@@ -124,7 +121,7 @@ public class CaseDocumentHelper implements AutoCloseable {
     }
 
     public void addCaseDocumentWithDocumentType(UUID userId, String documentType) {
-        id = UUID.randomUUID();
+        id = UUID.randomUUID().toString();
         addCaseDocument(userId, getPayload(TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD), documentType);
     }
 
@@ -134,13 +131,11 @@ public class CaseDocumentHelper implements AutoCloseable {
 
     public void uploadDocument(String documentType) {
         //It doesn't matter the files are plea, jut to make it simplier
-        uploadCaseDocument(UUID.fromString(USER_ID), documentType, FILE_PATH_PLEA + '/' + FILE_NAME_PLEA);
+        uploadCaseDocument(USER_ID, documentType, FILE_PATH_PLEA + '/' + FILE_NAME_PLEA);
     }
 
     public void uploadCaseDocument(UUID userId, String documentType, String fileName) {
-        String writeUrl = "/cases/CASEID/upload-case-document/DOCUMENTTYPE"
-                .replace("CASEID", caseId)
-                .replace("DOCUMENTTYPE", documentType);
+        String writeUrl = format("/cases/%s/upload-case-document/%s", caseId, documentType);
         request = fileName;
         LOGGER.info("Uploading case document with payload from file: {}", request);
         makeMultipartFormPostCall(userId, writeUrl, "caseDocument", request);
@@ -153,8 +148,8 @@ public class CaseDocumentHelper implements AutoCloseable {
         JsonPath jsonRequest = new JsonPath(request);
 
         Map caseDocument = jsonResponse.getJsonObject("caseDocument");
-        assertThat(caseDocument.get(ID_PROPERTY), is(id.toString()));
-        assertThat(jsonResponse.get(CASE_ID_PROPERTY), is(caseId));
+        assertThat(caseDocument.get(ID_PROPERTY), is(id));
+        assertThat(jsonResponse.get(CASE_ID_PROPERTY), is(caseId.toString()));
         assertJsonPayload(jsonRequest, caseDocument);
     }
 
@@ -164,7 +159,7 @@ public class CaseDocumentHelper implements AutoCloseable {
         assertThat(caseDocumentAddedEvent, notNullValue());
 
         with(caseDocumentAddedEvent)
-                .assertThat("$.caseId", is(caseId))
+                .assertThat("$.caseId", is(caseId.toString()))
                 .assertThat("$.id", notNullValue())
                 .assertThat("$.materialId", is(materialId));
     }
@@ -197,10 +192,10 @@ public class CaseDocumentHelper implements AutoCloseable {
         assertDocumentAdded(USER_ID);
     }
 
-    public void assertDocumentAdded(String userId) {
+    public void assertDocumentAdded(UUID userId) {
         JsonPath jsonRequest = new JsonPath(request);
 
-        Filter caseDocumentFilter = Filter.filter(where("id").is(id.toString()));
+        Filter caseDocumentFilter = Filter.filter(where("id").is(id));
         poll(getCaseDocumentsByCaseId(caseId, userId))
                 .until(
                         status().is(OK),
@@ -213,7 +208,7 @@ public class CaseDocumentHelper implements AutoCloseable {
     }
 
     public void assertDocumentNumber(UUID userId, int index, String documentType, int documentNumber) {
-        poll(getCaseDocumentsByCaseId(caseId, userId.toString()))
+        poll(getCaseDocumentsByCaseId(caseId, userId))
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
@@ -224,16 +219,16 @@ public class CaseDocumentHelper implements AutoCloseable {
                 );
     }
 
-    public void verifyDocumentNotVisibleForProsecutorWhenQueryingForCaseDocuments(final String tflUserId) {
-        Filter caseDocumentFilter = Filter.filter(where("id").is(id.toString()));
+    public void verifyDocumentNotVisibleForProsecutorWhenQueryingForCaseDocuments(final UUID tflUserId) {
+        Filter caseDocumentFilter = Filter.filter(where("id").is(id));
         RestPoller.poll(getCaseDocumentsByCaseId(caseId, tflUserId)).until(payload()
                 .isJson(
                         withJsonPath(compile("$.caseDocuments[?]", caseDocumentFilter), hasSize(0))
                 ));
     }
 
-    public void verifyDocumentNotVisibleForProsecutorWhenQueryingForACase(final String tflUserId) {
-        Filter caseDocumentFilter = Filter.filter(where("id").is(id.toString()));
+    public void verifyDocumentNotVisibleForProsecutorWhenQueryingForACase(final UUID tflUserId) {
+        Filter caseDocumentFilter = Filter.filter(where("id").is(id));
         RestPoller.poll(getCaseById(caseId, tflUserId)).until(payload()
                 .isJson(
                         withJsonPath(compile("$.caseDocuments[?]", caseDocumentFilter), hasSize(0))

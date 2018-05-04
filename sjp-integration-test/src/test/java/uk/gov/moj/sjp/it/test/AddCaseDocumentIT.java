@@ -22,17 +22,17 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
 
     @Before
     public void setUp() {
-        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults(); 
+        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
         createCaseForPayloadBuilder(createCasePayloadBuilder);
     }
 
     @Test
     public void addMultipleCaseDocumentOfSpecificTypeAndVerifySequence() {
         final UUID legalAdviserId = UUID.randomUUID();
-        UsersGroupsStub.stubGroupForUser(legalAdviserId.toString(), UsersGroupsStub.LEGAL_ADVISERS_GROUP);
+        UsersGroupsStub.stubGroupForUser(legalAdviserId, UsersGroupsStub.LEGAL_ADVISERS_GROUP);
         stubAddCaseMaterial();
 
-        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId().toString())) {
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId())) {
             caseDocumentHelper.addCaseDocumentWithDocumentType(legalAdviserId, "OTHER-TravelCard");
             caseDocumentHelper.addCaseDocumentWithDocumentType(legalAdviserId, "OTHER-TravelCard");
             caseDocumentHelper.assertDocumentNumber(legalAdviserId, 0, "OTHER-TravelCard", 1);
@@ -42,7 +42,7 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
 
     @Test
     public void addCaseDocumentWithDocumentFileAndVerifyDocumentAdded() {
-        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId().toString())) {
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId())) {
             caseDocumentHelper.addCaseDocument();
             caseDocumentHelper.verifyInActiveMQ();
             caseDocumentHelper.verifyInPublicTopic();
@@ -52,15 +52,15 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
 
     @Test
     public void addOtherDocumentAndVerifyNotVisibleForTflUser() {
-        String tflUserId = UUID.randomUUID().toString();
+        UUID tflUserId = UUID.randomUUID();
         UsersGroupsStub.stubGroupForUser(tflUserId, UsersGroupsStub.SJP_PROSECUTORS_GROUP);
 
-        String courtAdminUserId = UUID.randomUUID().toString();
+        UUID courtAdminUserId = UUID.randomUUID();
         UsersGroupsStub.stubGroupForUser(courtAdminUserId, UsersGroupsStub.COURT_ADMINISTRATORS_GROUP);
 
 
-        try (CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId().toString())) {
-            caseDocumentHelper.addCaseDocumentWithDocumentType(UUID.fromString(courtAdminUserId), "OTHER");
+        try (CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId())) {
+            caseDocumentHelper.addCaseDocumentWithDocumentType(courtAdminUserId, "OTHER");
             caseDocumentHelper.verifyInActiveMQ();
             caseDocumentHelper.assertDocumentAdded(courtAdminUserId);
             caseDocumentHelper.verifyDocumentNotVisibleForProsecutorWhenQueryingForCaseDocuments(tflUserId);
@@ -72,7 +72,7 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
     public void shouldUploadPleaCaseDocument() {
         stubAddCaseMaterial();
 
-        try (CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId().toString())) {
+        try (CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId())) {
             caseDocumentHelper.uploadPleaCaseDocument();
             final String documentReference = caseDocumentHelper.verifyCaseDocumentUploadedEventRaised();
             caseDocumentHelper.assertCaseMaterialAdded(documentReference);
@@ -81,12 +81,12 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
 
     @Test
     public void addsDocumentNumberToDuplicateDocumentTypes() {
-        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId().toString())) {
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId())) {
             caseDocumentHelper.addCaseDocument();
             caseDocumentHelper.verifyInActiveMQ();
             caseDocumentHelper.verifyInPublicTopic();
             caseDocumentHelper.assertDocumentAdded();
-            caseDocumentHelper.assertDocumentNumber(UUID.fromString(USER_ID), 0, "SJPN", 1);
+            caseDocumentHelper.assertDocumentNumber(USER_ID, 0, "SJPN", 1);
         }
     }
 }

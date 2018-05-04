@@ -13,6 +13,8 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+
 import java.util.UUID;
 
 public class UsersGroupsStub {
@@ -27,27 +29,31 @@ public class UsersGroupsStub {
     private static final String USER_GROUPS_USER_DETAILS_QUERY_URL = "/usersgroups-service/query/api/rest/usersgroups/users/%s";
     private static final String USER_GROUPS_USER_DETAILS_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.user-details+json";
 
-    public static void stubAllGroupsForUser(String userId) {
+    public static void stubAllGroupsForUser(final UUID userId) {
         stubPaylodForAllUsers(getPayload("stub-data/usersgroups.get-groups-by-user-with-all-groups.json"), USER_GROUPS_ALL_USERS_QUERY_URL);
     }
 
-    public static void stubGroupForUser(String userId, String groupName) {
+    public static void stubGroupForUser(final UUID userId, final String groupName) {
         stubPaylodForUserId(getPayload("stub-data/usersgroups.get-groups-by-user-with-single-group.json")
                 .replace("GROUPNAME", groupName), userId, USER_GROUPS_USERS_QUERY_URL, USER_GROUPS_USERS_QUERY_MEDIA_TYPE);
     }
 
-    public static void stubForUserDetails(final String userId, final String prosecutingAuthorityAccess) {
+    public static void stubForUserDetails(final UUID userId, final ProsecutingAuthority prosecutingAuthorityAccess) {
+        stubForUserDetails(userId, prosecutingAuthorityAccess.name());
+    }
+
+    public static void stubForUserDetails(final UUID userId, final String prosecutingAuthorityAccess) {
         stubPaylodForUserId(getPayload("stub-data/usersgroups.user-details-with-prosecuting-authority-access.json")
                         .replace("PROSECUTINGAUTHORITYACCESS", prosecutingAuthorityAccess), userId,
                 USER_GROUPS_USER_DETAILS_QUERY_URL, USER_GROUPS_USERS_QUERY_MEDIA_TYPE);
     }
 
-    public static void stubForUserDetails(final String userId) {
+    public static void stubForUserDetails(final UUID userId) {
         stubPaylodForUserId(getPayload("stub-data/usersgroups.user-details-without-prosecuting-authority-access.json"), userId
                 , USER_GROUPS_USER_DETAILS_QUERY_URL, USER_GROUPS_USER_DETAILS_QUERY_MEDIA_TYPE);
     }
 
-    private static void stubPaylodForUserId(String responsePayload, String userId, String queryUrl, String mediaType) {
+    private static void stubPaylodForUserId(final String responsePayload, final UUID userId, final String queryUrl, final String mediaType) {
         String url = format(queryUrl, userId);
 
         stubFor(get(urlEqualTo(url))
@@ -59,8 +65,7 @@ public class UsersGroupsStub {
         waitForStubToBeReady(url, mediaType);
     }
 
-    private static void stubPaylodForAllUsers(String responsePayload, String url) {
-
+    private static void stubPaylodForAllUsers(final String responsePayload, final String url) {
         stubFor(get(urlPathMatching(url))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", UUID.randomUUID().toString())

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
+import static java.time.ZoneOffset.UTC;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -39,7 +40,7 @@ public class CreateCourtReferralTest {
 
         final LocalDate hearingDate = LocalDate.now().plusWeeks(1);
 
-        final List<Object> events = caseAggregate.createCourtReferral(caseDetail.getId().toString(), hearingDate).collect(Collectors.toList());
+        final List<Object> events = caseAggregate.createCourtReferral(caseDetail.getId(), hearingDate).collect(Collectors.toList());
 
         assertThat(events.size(), is(1));
 
@@ -51,8 +52,8 @@ public class CreateCourtReferralTest {
     @Test
     public void shouldNotCreateCourtReferral() {
 
-        final List<Object> events = caseAggregate.createCourtReferral(randomUUID().toString(),
-                LocalDate.now().plusWeeks(1)).collect(Collectors.toList());
+        final List<Object> events = caseAggregate.createCourtReferral(randomUUID(),
+                LocalDate.now(UTC).plusWeeks(1)).collect(Collectors.toList());
 
         assertThat(events.size(), is(1));
 

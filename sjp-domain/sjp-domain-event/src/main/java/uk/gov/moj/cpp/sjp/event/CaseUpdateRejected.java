@@ -20,10 +20,12 @@ public class CaseUpdateRejected {
         PLEA_ALREADY_SUBMITTED
     }
 
-    private UUID caseId;
-    private RejectReason reason;
+    private final UUID caseId;
+    private final RejectReason reason;
 
-    private CaseUpdateRejected() {}
+    private CaseUpdateRejected() {
+        this(null, null);
+    }
 
     public CaseUpdateRejected(final UUID caseId, final RejectReason rejectReason) {
         this.caseId = caseId;
@@ -47,12 +49,12 @@ public class CaseUpdateRejected {
             return false;
         }
         final CaseUpdateRejected that = (CaseUpdateRejected) o;
-        return Objects.equals(getCaseId(), that.getCaseId()) &&
-                Objects.equals(getReason(), that.getReason());
+        return Objects.equals(this.caseId, that.caseId) &&
+                Objects.equals(this.reason, that.reason);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getCaseId(), getReason());
+        return Objects.hash(caseId, reason);
     }
 }

@@ -17,7 +17,7 @@ public class WithdrawAllOffencesTest extends CaseAggregateBaseTest {
 
     @Test
     public void shouldWithdrawAllOffences() {
-        final List<Object> events = caseAggregate.requestWithdrawalAllOffences(UUID.randomUUID().toString()).collect(Collectors.toList());
+        final List<Object> events = caseAggregate.requestWithdrawalAllOffences(UUID.randomUUID()).collect(Collectors.toList());
 
         assertThat(events.size(), is(1));
 
@@ -28,7 +28,7 @@ public class WithdrawAllOffencesTest extends CaseAggregateBaseTest {
     @Test
     public void shouldReturnCaseNotFoundWhenTheCaseIsNotCreated() {
 
-        final Stream<Object> stream = new CaseAggregate().requestWithdrawalAllOffences(UUID.randomUUID().toString());
+        final Stream<Object> stream = new CaseAggregate().requestWithdrawalAllOffences(UUID.randomUUID());
 
         assertThat(stream.count(), is(1L));
     }

@@ -20,7 +20,6 @@ import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -82,8 +81,8 @@ public class CaseAggregateDefendantTest {
         assertThat(events.size(), is(1));
 
         final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId.toString()));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId.toString()));
+        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
+        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
         assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("title parameter can not be null as previous value is : Mr"));
     }
 
@@ -98,8 +97,8 @@ public class CaseAggregateDefendantTest {
         assertThat(events.size(), is(1));
 
         final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId.toString()));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId.toString()));
+        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
+        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
         assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("title parameter can not be null as previous value is : Mr"));
     }
 
@@ -161,8 +160,8 @@ public class CaseAggregateDefendantTest {
         assertThat(events.size(), is(1));
 
         final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId.toString()));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId.toString()));
+        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
+        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
         assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("dob parameter can not be null"));
     }
 
@@ -197,8 +196,8 @@ public class CaseAggregateDefendantTest {
         assertThat(events.size(), is(1));
 
         final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId.toString()));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId.toString()));
+        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
+        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
         assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("street (address1) can not be blank as previous value is: address1"));
     }
 
@@ -214,8 +213,8 @@ public class CaseAggregateDefendantTest {
         assertThat(events.size(), is(1));
 
         final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId.toString()));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId.toString()));
+        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
+        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
         assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("town (address4) can not be blank as previous value is: address4"));
     }
 
@@ -231,8 +230,8 @@ public class CaseAggregateDefendantTest {
         assertThat(events.size(), is(1));
 
         final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId.toString()));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId.toString()));
+        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
+        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
         assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("postcode can not be blank as previous value is: CR02FW"));
     }
 

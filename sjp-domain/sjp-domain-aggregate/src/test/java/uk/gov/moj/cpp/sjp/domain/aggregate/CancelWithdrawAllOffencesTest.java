@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -8,7 +9,6 @@ import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matchers;
@@ -18,7 +18,7 @@ public class CancelWithdrawAllOffencesTest extends CaseAggregateBaseTest {
 
     @Test
     public void shouldCancelWithdrawAllOffences() {
-        final List<Object> events = caseAggregate.cancelRequestWithdrawalAllOffences(UUID.randomUUID().toString()).collect(Collectors.toList());
+        final List<Object> events = caseAggregate.cancelRequestWithdrawalAllOffences(UUID.randomUUID()).collect(toList());
 
         assertThat(events.size(), is(1));
 
@@ -30,7 +30,7 @@ public class CancelWithdrawAllOffencesTest extends CaseAggregateBaseTest {
     @Test
     public void shouldReturnCaseNotFoundWhenTheCaseIsNotCreated() {
 
-        final Stream<Object> stream = new CaseAggregate().cancelRequestWithdrawalAllOffences(UUID.randomUUID().toString());
+        final Stream<Object> stream = new CaseAggregate().cancelRequestWithdrawalAllOffences(UUID.randomUUID());
 
         assertThat(stream.count(), is(1L));
     }

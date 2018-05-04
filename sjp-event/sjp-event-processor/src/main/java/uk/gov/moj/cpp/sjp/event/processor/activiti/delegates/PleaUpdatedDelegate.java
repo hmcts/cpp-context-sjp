@@ -9,7 +9,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.OFFEN
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_TYPE_VARIABLE;
 
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.sjp.domain.PleaType;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 
 import java.util.UUID;
 

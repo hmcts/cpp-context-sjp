@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang.builder.EqualsBuilder.reflectionEquals;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -21,7 +22,6 @@ import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.junit.After;
@@ -38,6 +38,7 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
         assertThat(caseAggregate.getUrn(), nullValue());
         assertThat(caseAggregate.getProsecutingAuthority(), nullValue());
         assertThat(caseAggregate.getOffenceIdsByDefendantId(), equalTo(emptyMap()));
+        assertThat(caseAggregate.hasCaseBeenReceived(), equalTo(false));
     }
 
     @After
@@ -60,6 +61,7 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
                 expectedCaseReceived.getDefendant(),
                 singleton("id")), is(true));
 
+        assertThat(caseAggregate.hasCaseBeenReceived(), equalTo(true));
         assertThat(caseAggregate.getCaseId(), notNullValue());
         assertThat(caseAggregate.getUrn(), notNullValue());
         assertThat(caseAggregate.getProsecutingAuthority(), notNullValue());
@@ -79,7 +81,7 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
                             caseReceived.getDefendant().getId(),
                             caseReceived.getDefendant().getOffences().stream()
                                     .map(Offence::getId)
-                                    .collect(Collectors.toSet()))));
+                                    .collect(toSet()))));
         });
     }
 
@@ -109,7 +111,7 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
                         sjpCaseCreated.getDefendantId(),
                         sjpCaseCreated.getOffences().stream()
                                 .map(Offence::getId)
-                                .collect(Collectors.toSet()))));
+                                .collect(toSet()))));
     }
 
     /**

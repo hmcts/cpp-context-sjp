@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 public class UpdateFinancialMeansTest extends CaseAggregateBaseTest {
@@ -27,7 +29,7 @@ public class UpdateFinancialMeansTest extends CaseAggregateBaseTest {
         final UUID defendantId = caseReceivedEvent.getDefendant().getId();
 
         final Income income = new Income(IncomeFrequency.MONTHLY, BigDecimal.valueOf(1000.50));
-        final Benefits benefits = new Benefits(false, "");
+        final Benefits benefits = new Benefits(false, EMPTY);
         final FinancialMeans financialMeans = new FinancialMeans(defendantId, income, benefits, "EMPLOYED");
 
         final Stream<Object> eventStream = caseAggregate.updateFinancialMeans(financialMeans);
@@ -48,7 +50,7 @@ public class UpdateFinancialMeansTest extends CaseAggregateBaseTest {
     public void shouldCreateDefendantNotFoundEventIfDefendantDoesNotExist() {
         final UUID defendantId = UUID.randomUUID();
         final Income income = new Income(IncomeFrequency.MONTHLY, BigDecimal.valueOf(1000.50));
-        final Benefits benefits = new Benefits(false, "");
+        final Benefits benefits = new Benefits(false, EMPTY);
         final FinancialMeans financialMeans = new FinancialMeans(defendantId, income, benefits, "EMPLOYED");
 
         final Stream<Object> eventStream = caseAggregate.updateFinancialMeans(financialMeans);
@@ -58,7 +60,7 @@ public class UpdateFinancialMeansTest extends CaseAggregateBaseTest {
 
         final DefendantNotFound defendantNotFound = (DefendantNotFound) events.get(0);
 
-        assertThat(defendantNotFound.getDefendantId(), equalTo(defendantId.toString()));
+        assertThat(defendantNotFound.getDefendantId(), equalTo(defendantId));
         assertThat(defendantNotFound.getDescription(), equalTo("Update financial means"));
     }
 }

@@ -1,23 +1,25 @@
 package uk.gov.moj.cpp.sjp.command.accesscontrol;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
-import org.kie.api.runtime.ExecutionResults;
-import org.mockito.Mock;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.eq;
+import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getAddCaseDocumentActionGroups;
+
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
-import java.util.Arrays;
 import java.util.Map;
 
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getAddCaseDocumentActionGroups;
+import com.google.common.collect.ImmutableMap;
+import org.junit.Test;
+import org.kie.api.runtime.ExecutionResults;
+import org.mockito.Mock;
 
 public class AddCaseDocumentTest extends BaseDroolsAccessControlTest {
 
     private static final String SJP_COMMAND_ADD_CASE_DOCUMENT = "sjp.add-case-document";
+
     @Mock
     private UserAndGroupProvider userAndGroupProvider;
 
@@ -33,7 +35,7 @@ public class AddCaseDocumentTest extends BaseDroolsAccessControlTest {
     @Test
     public void shouldNotAllowUnauthorisedUserToAddCaseDocument() {
         final Action action = createActionFor(SJP_COMMAND_ADD_CASE_DOCUMENT);
-        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, Arrays.asList("Random group")))
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, eq(anyListOf(String.class))))
                 .willReturn(false);
         final ExecutionResults results = executeRulesWith(action);
         assertFailureOutcome(results);

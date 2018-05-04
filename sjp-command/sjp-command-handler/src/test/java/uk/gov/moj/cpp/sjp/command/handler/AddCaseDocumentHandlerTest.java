@@ -19,7 +19,7 @@ import static uk.gov.moj.cpp.sjp.command.handler.builder.AddCaseDocumentCommandB
 import static uk.gov.moj.cpp.sjp.command.handler.builder.AddCaseDocumentCommandBuilder.anMinimumAddCaseDocumentCommand;
 import static uk.gov.moj.cpp.sjp.domain.testutils.CaseDocumentBuilder.aCaseDocument;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_DOCUMENT_ID_STR;
-import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_DOCUMENT_MATERIAL_ID;
+import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_DOCUMENT_MATERIAL_ID_STR;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_DOCUMENT_TYPE_SJPN;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_ID;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_ID_STR;
@@ -31,7 +31,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
@@ -40,7 +39,6 @@ import uk.gov.moj.cpp.sjp.event.CaseDocumentAlreadyAdded;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAlreadyExists;
 import uk.gov.moj.cpp.sjp.event.CaseStarted;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -117,7 +115,7 @@ public class AddCaseDocumentHandlerTest {
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", is(CASE_ID_STR)),
                                         withJsonPath("$.caseDocument.id", is(CASE_DOCUMENT_ID_STR)),
-                                        withJsonPath("$.caseDocument.materialId", is(CASE_DOCUMENT_MATERIAL_ID)),
+                                        withJsonPath("$.caseDocument.materialId", is(CASE_DOCUMENT_MATERIAL_ID_STR)),
                                         withJsonPath("$.caseDocument.documentType", is(CASE_DOCUMENT_TYPE_SJPN))
                                 ))))));
     }
@@ -137,9 +135,7 @@ public class AddCaseDocumentHandlerTest {
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(addCaseDocumentCommand)
                                         .withName("sjp.events.case-document-addition-failed"),
-                                payloadIsJson(allOf(
-                                        withJsonPath("$.documentId", is(CASE_DOCUMENT_ID_STR))
-                                ))))));
+                                payloadIsJson(withJsonPath("$.documentId", is(CASE_DOCUMENT_ID_STR)))))));
     }
 
     @Test
@@ -156,7 +152,7 @@ public class AddCaseDocumentHandlerTest {
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", is(CASE_ID_STR)),
                                         withJsonPath("$.caseDocument.id", is(CASE_DOCUMENT_ID_STR)),
-                                        withJsonPath("$.caseDocument.materialId", is(CASE_DOCUMENT_MATERIAL_ID)),
+                                        withJsonPath("$.caseDocument.materialId", is(CASE_DOCUMENT_MATERIAL_ID_STR)),
                                         withoutJsonPath("$.caseDocument.documentType")
                                 ))))));
     }
@@ -176,7 +172,7 @@ public class AddCaseDocumentHandlerTest {
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", is(CASE_ID_STR)),
                                         withJsonPath("$.caseDocument.id", is(CASE_DOCUMENT_ID_STR)),
-                                        withJsonPath("$.caseDocument.materialId", is(CASE_DOCUMENT_MATERIAL_ID)),
+                                        withJsonPath("$.caseDocument.materialId", is(CASE_DOCUMENT_MATERIAL_ID_STR)),
                                         withoutJsonPath("$.caseDocument.documentType")
                                 ))))));
     }

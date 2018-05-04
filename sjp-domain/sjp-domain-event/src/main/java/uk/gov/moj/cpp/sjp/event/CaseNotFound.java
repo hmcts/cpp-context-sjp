@@ -3,18 +3,20 @@ package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
 
+import java.util.UUID;
+
 @Event("sjp.events.case-not-found")
 public class CaseNotFound {
 
-    private final String caseId;
+    private final UUID caseId;
     private final String description;
 
-    public CaseNotFound(String caseId, String description) {
+    public CaseNotFound(UUID caseId, String description) {
         this.caseId = caseId;
         this.description = description;
     }
 
-    public String getCaseId() {
+    public UUID getCaseId() {
         return caseId;
     }
 

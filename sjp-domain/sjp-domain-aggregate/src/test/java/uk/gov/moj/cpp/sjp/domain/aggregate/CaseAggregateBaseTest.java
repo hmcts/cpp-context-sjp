@@ -7,6 +7,8 @@ import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 
+import java.util.stream.Stream;
+
 import org.junit.Before;
 
 public abstract class CaseAggregateBaseTest {
@@ -20,10 +22,7 @@ public abstract class CaseAggregateBaseTest {
     public void setUp() {
         caseAggregate = new CaseAggregate();
         aCase = CaseBuilder.aDefaultSjpCase().build();
-        caseReceivedEvent = caseAggregate.receiveCase(aCase, clock.now())
-                .findFirst()
-                .map(CaseReceived.class::cast)
-                .orElseThrow(() -> new AssertionError("Expected just a single instance of " + CaseReceived.class.getSimpleName()));
+        caseReceivedEvent = collectSingleEvent(caseAggregate.receiveCase(aCase, clock.now()), CaseReceived.class);
     }
 
     CaseReceived buildCaseReceived(Case aCase) {
@@ -36,4 +35,11 @@ public abstract class CaseAggregateBaseTest {
                 aCase.getDefendant(),
                 clock.now());
     }
+
+    <T> T collectSingleEvent(Stream<Object> events, Class<T> eventType) {
+        return events.findFirst()
+                .map(eventType::cast)
+                .orElseThrow(() -> new AssertionError("Expected just a single instance of " + eventType.getSimpleName()));
+    }
+
 }

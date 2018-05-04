@@ -23,9 +23,9 @@ public class CaseDocumentAddedToCaseDocumentTest {
     private CaseDocumentAdded event;
 
     private Clock clock = new UtcClock();
-    private String caseId = UUID.randomUUID().toString();
-    private String caseDocId = UUID.randomUUID().toString();
-    private String caseDocMaterialId = UUID.randomUUID().toString();
+    private UUID caseId = UUID.randomUUID();
+    private UUID caseDocId = UUID.randomUUID();
+    private UUID caseDocMaterialId = UUID.randomUUID();
 
     @Before
     public void setup() {

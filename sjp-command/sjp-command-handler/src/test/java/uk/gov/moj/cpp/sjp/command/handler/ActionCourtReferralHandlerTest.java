@@ -19,11 +19,11 @@ public class ActionCourtReferralHandlerTest extends CaseCommandHandlerTest {
     @Test
     public void shouldActionCourtReferral() throws EventStreamException {
 
-        when(caseAggregate.actionCourtReferral(CASE_ID.toString())).thenReturn(events);
+        when(caseAggregate.actionCourtReferral(CASE_ID)).thenReturn(events);
 
         actionCourtReferralHandler.actionCourtReferral(jsonEnvelope);
 
-        verify(caseAggregate).actionCourtReferral(CASE_ID.toString());
+        verify(caseAggregate).actionCourtReferral(CASE_ID);
     }
 
 }

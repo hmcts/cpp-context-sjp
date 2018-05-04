@@ -80,7 +80,7 @@ public class CaseUpdatedListener {
         updateWithdrawalRequestedDate(event.getCaseId(), null);
     }
 
-    @Handles("sjp.events.case-document-added")
+    @Handles(CaseDocumentAdded.EVENT_NAME)
     @Transactional
     public void addCaseDocument(final JsonEnvelope envelope) {
         CaseDocumentAdded caseDocumentAdded = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), CaseDocumentAdded.class);

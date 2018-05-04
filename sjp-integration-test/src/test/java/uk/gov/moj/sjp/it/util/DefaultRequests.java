@@ -13,24 +13,26 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 
+import java.util.UUID;
+
 public class DefaultRequests {
     private static final String GET_CASE_BY_ID_MEDIA_TYPE = "application/vnd.sjp.query.case+json";
 
-    public static RequestParamsBuilder getCaseById(final String caseId) {
+    public static RequestParamsBuilder getCaseById(final UUID caseId) {
         return getCaseById(caseId, USER_ID);
     }
 
-    public static RequestParamsBuilder getCaseById(final String caseId, String userId) {
+    public static RequestParamsBuilder getCaseById(final UUID caseId, final UUID userId) {
         return requestParams(getReadUrl("/cases/") + caseId, GET_CASE_BY_ID_MEDIA_TYPE)
                 .withHeader(HeaderConstants.USER_ID, userId);
     }
 
-    public static RequestParamsBuilder getCaseDocumentsByCaseId(final String caseId, final String userId) {
+    public static RequestParamsBuilder getCaseDocumentsByCaseId(final UUID caseId, final UUID userId) {
         return requestParams(getReadUrl("/cases/" + caseId + "/documents"), GET_CASE_DOCUMENTS_MEDIA_TYPE)
                 .withHeader(HeaderConstants.USER_ID, userId);
     }
 
-    public static RequestParamsBuilder searchCases(final String query, final String userId) {
+    public static RequestParamsBuilder searchCases(final String query, final UUID userId) {
         return requestParams(getReadUrl("/search?q=" + query), CASE_SEARCH_RESULTS_MEDIA_TYPE)
                 .withHeader(HeaderConstants.USER_ID, userId);
     }

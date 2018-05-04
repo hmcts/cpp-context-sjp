@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.sjp.query.view.service;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
@@ -20,11 +19,16 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.CPS;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.DVLA;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
 import static uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder.aCase;
 import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
@@ -52,22 +56,14 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnWithDetailsView;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
-import uk.gov.moj.cpp.sjp.query.view.response.SearchCasesHit;
-import uk.gov.moj.cpp.sjp.query.view.response.SearchCasesView;
 
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.json.JsonObject;
@@ -85,29 +81,19 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class CaseServiceTest {
 
+    private Clock clock = new StoppedClock(new UtcClock().now());
+
     private static final UUID CASE_ID = randomUUID();
     private static final String URN = "TFL1234";
     private static final String PROSECUTING_AUTHORITY = "prosecutingAuthority";
     private static final Boolean COMPLETED = Boolean.TRUE;
-    private static final String INITIATION_CODE = "J";
     private static final String ENTERPRISE_ID = "2K2SLYFC743H";
 
-    private static final UUID ID = randomUUID();
-    private static final UUID CASE_ID_TO_FIND = randomUUID();
-
-    private static final String INTERPRETER = "french";
-    private static final String PROSECUTING_AUTHORITY_CPS = "CPS";
-    private static final String PROSECUTING_AUTHORITY_TFL = "TFL";
-    private static final String PROSECUTING_AUTHORITY_TVL = "TVL";
-    private static final String PROSECUTING_AUTHORITY_DVLA = "DVLA";
-
-    private static final LocalDate POSTING_DATE = LocalDate.now();
+    private static final LocalDate POSTING_DATE = LocalDate.now(UTC);
     private static final String FIRST_NAME = "Adam";
     private static final String LAST_NAME = "Zuma";
     private static final String POSTCODE = "AB1 2CD";
-    private static final LocalDate DATE_OF_BIRTH = LocalDate.now();
-
-    private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
+    private final LocalDate DATE_OF_BIRTH = LocalDate.now(UTC).minusYears(30);
 
     @Mock
     private CaseRepository caseRepository;
@@ -150,7 +136,7 @@ public class CaseServiceTest {
         final CaseDetail caseDetail = createCaseDetailWithDocumentTypes(onlinePleaReceived,"FINANCIAL_MEANS", "OTHER", "Travelcard");
 
         given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
-        CaseView caseView = service.findCase(CASE_ID.toString());
+        CaseView caseView = service.findCase(CASE_ID);
         assertThat(caseView, notNullValue());
         assertThat(caseView.getId(), is(CASE_ID.toString()));
         assertThat(caseView.getUrn(), is(URN));
@@ -199,6 +185,7 @@ public class CaseServiceTest {
         assertThat(caseView.getId(), is(CASE_ID.toString()));
         assertThat(caseView.getUrn(), is(URN));
         assertThat(caseView.getDateTimeCreated(), is(clock.now()));
+        assertThat(caseView.getCosts(), nullValue());
         assertThat(caseView.isOnlinePleaReceived(), is(true));
     }
 
@@ -222,6 +209,7 @@ public class CaseServiceTest {
         assertThat(caseView.getReopenedInLibraReason(), is(reason));
         assertThat(caseView.getReopenedDate(), is(reopenedDate));
         assertThat(caseView.getDateTimeCreated(), is(clock.now()));
+        assertThat(caseView.getCosts(), nullValue());
         assertThat(caseView.isOnlinePleaReceived(), is(true));
     }
 
@@ -253,53 +241,19 @@ public class CaseServiceTest {
         assertThat(service.findCaseByUrnPostcode(URN, POSTCODE), nullValue());
     }
 
-    private void shouldSearchCases(final BiFunction<UUID, List<CaseDetail>, Object> setUpFunction,
-                                   final Function<String, SearchCasesView> functionToTest) {
-        final List<CaseDetail> caseDetailList = new ArrayList<>();
-        caseDetailList.add(createCaseDetail());
-
-        final UUID caseId2 = UUID.randomUUID();
-        final CaseDetail caseDetailWithPlea = createCaseDetail();
-        caseDetailWithPlea.setId(caseId2);
-        caseDetailWithPlea.setCompleted(Boolean.FALSE);
-        final DefendantDetail defendantDetail = new DefendantDetail();
-        final Set<OffenceDetail> offences = new HashSet<>();
-        offences.add(OffenceDetail.builder().setPlea("GUILTY").setId(UUID.randomUUID()).build());
-        defendantDetail.setOffences(offences);
-        caseDetailWithPlea.setDefendant(defendantDetail);
-        caseDetailList.add(caseDetailWithPlea);
-
-        setUpFunction.apply(CASE_ID_TO_FIND, caseDetailList);
-
-        SearchCasesView searchCasesView = functionToTest.apply(CASE_ID_TO_FIND.toString());
-
-        assertThat(searchCasesView, notNullValue());
-
-        List<SearchCasesHit> hits = searchCasesView.getHits();
-        hits.sort(Comparator.comparing(SearchCasesHit::getPlea));
-
-        assertThat(hits.get(0).getId(), is(CASE_ID.toString()));
-        assertThat(hits.get(0).getCompleted(), is(COMPLETED));
-        assertThat(hits.get(0).getPlea(), is(""));
-
-        assertThat(hits.get(1).getId(), is(caseDetailWithPlea.getId().toString()));
-        assertThat(hits.get(1).getCompleted(), is(Boolean.FALSE));
-        assertThat(hits.get(1).getPlea(), is("GUILTY"));
-    }
-
     @Test
     public void shouldSearchCaseByMaterialId_whenTVL() {
         final UUID materialId = UUID.randomUUID();
         CaseDetail caseDetail = new CaseDetail();
         caseDetail.setId(CASE_ID);
-        caseDetail.setProsecutingAuthority(PROSECUTING_AUTHORITY_TVL);
+        caseDetail.setProsecutingAuthority(TVL);
 
         when(caseRepository.findByMaterialId(materialId)).thenReturn(caseDetail);
 
         SearchCaseByMaterialIdView searchCaseByMaterialIdView =
-                service.searchCaseByMaterialId(materialId.toString());
+                service.searchCaseByMaterialId(materialId);
 
-        assertThat(searchCaseByMaterialIdView.getCaseId(), is(CASE_ID.toString()));
+        assertThat(searchCaseByMaterialIdView.getCaseId(), is(CASE_ID));
         assertThat(searchCaseByMaterialIdView.getProsecutingAuthority(),
                 is(ProsecutingAuthority.TVL));
     }
@@ -309,14 +263,14 @@ public class CaseServiceTest {
         final UUID materialId = UUID.randomUUID();
         CaseDetail caseDetail = new CaseDetail();
         caseDetail.setId(CASE_ID);
-        caseDetail.setProsecutingAuthority(PROSECUTING_AUTHORITY_DVLA);
+        caseDetail.setProsecutingAuthority(DVLA);
 
         when(caseRepository.findByMaterialId(materialId)).thenReturn(caseDetail);
 
         SearchCaseByMaterialIdView searchCaseByMaterialIdView =
-                service.searchCaseByMaterialId(materialId.toString());
+                service.searchCaseByMaterialId(materialId);
 
-        assertThat(searchCaseByMaterialIdView.getCaseId(), is(CASE_ID.toString()));
+        assertThat(searchCaseByMaterialIdView.getCaseId(), is(CASE_ID));
         assertThat(searchCaseByMaterialIdView.getProsecutingAuthority(),
                 is(ProsecutingAuthority.DVLA));
     }
@@ -326,14 +280,14 @@ public class CaseServiceTest {
         final UUID materialId = UUID.randomUUID();
         CaseDetail caseDetail = new CaseDetail();
         caseDetail.setId(CASE_ID);
-        caseDetail.setProsecutingAuthority(PROSECUTING_AUTHORITY_TFL);
+        caseDetail.setProsecutingAuthority(TFL);
 
         when(caseRepository.findByMaterialId(materialId)).thenReturn(caseDetail);
 
         SearchCaseByMaterialIdView searchCaseByMaterialIdView =
-                service.searchCaseByMaterialId(materialId.toString());
+                service.searchCaseByMaterialId(materialId);
 
-        assertThat(searchCaseByMaterialIdView.getCaseId(), is(CASE_ID.toString()));
+        assertThat(searchCaseByMaterialIdView.getCaseId(), is(CASE_ID));
         assertThat(searchCaseByMaterialIdView.getProsecutingAuthority(),
                 is(ProsecutingAuthority.TFL));
     }
@@ -345,7 +299,7 @@ public class CaseServiceTest {
         when(caseRepository.findByMaterialId(materialId)).thenReturn(null);
 
         SearchCaseByMaterialIdView searchCaseByMaterialIdView =
-                service.searchCaseByMaterialId(materialId.toString());
+                service.searchCaseByMaterialId(materialId);
 
         assertThat(searchCaseByMaterialIdView.getCaseId(), nullValue());
         assertThat(searchCaseByMaterialIdView.getProsecutingAuthority(), nullValue());
@@ -359,7 +313,7 @@ public class CaseServiceTest {
         when(caseRepository.findByMaterialId(materialId)).thenThrow(new NoResultException());
 
         SearchCaseByMaterialIdView searchCaseByMaterialIdView =
-                service.searchCaseByMaterialId(materialId.toString());
+                service.searchCaseByMaterialId(materialId);
 
         assertThat(searchCaseByMaterialIdView.getCaseId(), is(nullValue()));
         assertThat(searchCaseByMaterialIdView.getProsecutingAuthority(), is(nullValue()));
@@ -374,7 +328,7 @@ public class CaseServiceTest {
         caseDocumentList.add(caseDocument);
         when(caseRepository.findCaseDocuments(CASE_ID)).thenReturn(caseDocumentList);
 
-        CaseDocumentsView caseDocumentsView = service.findCaseDocuments(CASE_ID.toString());
+        CaseDocumentsView caseDocumentsView = service.findCaseDocuments(CASE_ID);
         assertThat(caseDocumentsView, notNullValue());
         CaseDocumentView firstCaseDocument = caseDocumentsView.getCaseDocuments().get(0);
         assertThat(firstCaseDocument.getId().toString(), is(documentId.toString()));
@@ -387,7 +341,7 @@ public class CaseServiceTest {
 
         given(caseRepository.findCaseDocuments(CASE_ID)).willReturn(caseDocuments);
 
-        final CaseDocumentsView caseDocumentsView = service.findCaseDocumentsFilterOtherAndFinancialMeans(CASE_ID.toString());
+        final CaseDocumentsView caseDocumentsView = service.findCaseDocumentsFilterOtherAndFinancialMeans(CASE_ID);
         assertThat(caseDocumentsView.getCaseDocuments().size(), is(0));
     }
 
@@ -397,7 +351,7 @@ public class CaseServiceTest {
 
         given(caseRepository.findCaseDocuments(CASE_ID)).willReturn(caseDocuments);
 
-        final CaseDocumentsView caseDocumentsView = service.findCaseDocumentsFilterOtherAndFinancialMeans(CASE_ID.toString());
+        final CaseDocumentsView caseDocumentsView = service.findCaseDocumentsFilterOtherAndFinancialMeans(CASE_ID);
         assertThat(caseDocumentsView.getCaseDocuments().size(), is(3));
     }
 
@@ -407,7 +361,7 @@ public class CaseServiceTest {
 
         given(caseRepository.findCaseDocuments(CASE_ID)).willReturn(caseDocuments);
 
-        final CaseDocumentsView caseDocumentsView = service.findCaseDocumentsFilterOtherAndFinancialMeans(CASE_ID.toString());
+        final CaseDocumentsView caseDocumentsView = service.findCaseDocumentsFilterOtherAndFinancialMeans(CASE_ID);
         assertThat(caseDocumentsView.getCaseDocuments().size(), is(1));
     }
 
@@ -416,7 +370,7 @@ public class CaseServiceTest {
 
         final CaseDetail caseDetail =
                 aCase().addDefendantDetail(aDefendantDetail().build()).build();
-        when(caseRepository.findAwaitingSjpCases(600)).thenReturn(asList(caseDetail));
+        when(caseRepository.findAwaitingSjpCases(600)).thenReturn(singletonList(caseDetail));
 
         final JsonObject awaitingCases = service.findAwaitingCases();
 
@@ -441,8 +395,8 @@ public class CaseServiceTest {
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
                 clock.now(), caseDetail.getId(), null);
 
-        final ZonedDateTime FROM_DATE_TIME = FROM_DATE.atStartOfDay(ZoneOffset.UTC);
-        final ZonedDateTime TO_DATE_TIME = TO_DATE.atStartOfDay(ZoneOffset.UTC);
+        final ZonedDateTime FROM_DATE_TIME = FROM_DATE.atStartOfDay(UTC);
+        final ZonedDateTime TO_DATE_TIME = TO_DATE.atStartOfDay(UTC);
         when(caseDocumentRepository.findCaseDocumentsOrderedByAddedByDescending(FROM_DATE_TIME,
                 TO_DATE_TIME, CaseDocument.RESULT_ORDER_DOCUMENT_TYPE)).thenReturn(singletonList(caseDocument));
         when(caseRepository.findBy(caseDetail.getId())).thenReturn(caseDetail);
@@ -471,11 +425,11 @@ public class CaseServiceTest {
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
                 clock.now(), caseDetail.getId(), null);
 
-        final ZonedDateTime FROM_DATE_TIME = FROM_DATE.atStartOfDay(ZoneOffset.UTC);
-        final ZonedDateTime TO_DATE_TIME = TO_DATE.atStartOfDay(ZoneOffset.UTC);
+        final ZonedDateTime FROM_DATE_TIME = FROM_DATE.atStartOfDay(UTC);
+        final ZonedDateTime TO_DATE_TIME = TO_DATE.atStartOfDay(UTC);
         when(caseDocumentRepository.findCaseDocumentsOrderedByAddedByDescending(FROM_DATE_TIME,
                 TO_DATE_TIME, CaseDocument.RESULT_ORDER_DOCUMENT_TYPE)).thenReturn(
-                Arrays.asList(caseDocument));
+                singletonList(caseDocument));
         when(caseRepository.findBy(caseDetail.getId())).thenReturn(null);
         //when
         final ResultOrdersView resultOrdersView = service.findResultOrders(FROM_DATE, TO_DATE);
@@ -527,7 +481,7 @@ public class CaseServiceTest {
         when(prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess))
                 .thenReturn(prosecutingAuthorityAccessFilterValue);
         when(caseSearchResultRepository.findByUrn(prosecutingAuthorityAccessFilterValue, query))
-                .thenReturn(asList(createCaseSearchResult()));
+                .thenReturn(singletonList(createCaseSearchResult()));
 
         final CaseSearchResultsView cases = service.searchCases(envelope, query);
 
@@ -550,7 +504,7 @@ public class CaseServiceTest {
         when(caseSearchResultRepository.findByUrn(prosecutingAuthorityAccessFilterValue, query))
                 .thenReturn(emptyList());
         when(caseSearchResultRepository.findByLastName(prosecutingAuthorityAccessFilterValue, query))
-                .thenReturn(asList(createCaseSearchResult()));
+                .thenReturn(singletonList(createCaseSearchResult()));
 
         final CaseSearchResultsView cases = service.searchCases(envelope, query);
 
@@ -597,7 +551,7 @@ public class CaseServiceTest {
     }
 
     private CaseDetail createCaseDetail(boolean onlinePleaReceived) {
-        CaseDetail caseDetail = new CaseDetail(CASE_ID, URN, PROSECUTING_AUTHORITY_CPS,
+        CaseDetail caseDetail = new CaseDetail(CASE_ID, URN, CPS,
                 null, COMPLETED, null, clock.now(), new DefendantDetail(), null, null);
         caseDetail.setOnlinePleaReceived(onlinePleaReceived);
         return caseDetail;

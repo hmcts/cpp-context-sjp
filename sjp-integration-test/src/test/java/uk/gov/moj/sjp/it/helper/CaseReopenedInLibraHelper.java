@@ -2,6 +2,7 @@ package uk.gov.moj.sjp.it.helper;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
+import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -38,8 +39,8 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseReopenedInLibraHelper.class);
 
-    protected final MessageConsumer privateEventsConsumer;
-    protected final MessageConsumer publicEventsConsumer;
+    final MessageConsumer privateEventsConsumer;
+    final MessageConsumer publicEventsConsumer;
 
     public static class MarkCaseReopenedInLibraHelper extends CaseReopenedInLibraHelper {
         public MarkCaseReopenedInLibraHelper(final UUID caseId) {
@@ -117,23 +118,23 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
 
     protected final UUID caseId;
 
-    protected final CaseReopenDetails markCaseReopenDetails;
+    final CaseReopenDetails markCaseReopenDetails;
 
-    protected final CaseReopenDetails updateCaseReopenDetails;
+    final CaseReopenDetails updateCaseReopenDetails;
 
-    protected CaseReopenedInLibraHelper(final UUID caseId, final String privateSelector, final String publicSelector) {
+    CaseReopenedInLibraHelper(final UUID caseId, final String privateSelector, final String publicSelector) {
         this.caseId = caseId;
 
         this.markCaseReopenDetails = new CaseReopenDetails(
-                caseId.toString(),
-                LocalDate.parse("2017-01-01"),
+                caseId,
+                LocalDate.of(2017, 1, 1),
                 "LIBRA12345",
                 "Mandatory reason"
         );
 
         this.updateCaseReopenDetails = new CaseReopenDetails(
-                caseId.toString(),
-                LocalDate.parse("2010-01-01"),
+                caseId,
+                LocalDate.of(2010, 1, 1),
                 "LIBRA98765",
                 "Optional reason"
         );
@@ -142,18 +143,18 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
         publicEventsConsumer = QueueUtil.publicEvents.createConsumer(publicSelector);
     }
 
-    protected void verifyCaseReopenUndoneInLibraInActiveMQ(final MessageConsumer messageConsumer) {
+    void verifyCaseReopenUndoneInLibraInActiveMQ(final MessageConsumer messageConsumer) {
         final JsonPath jsonResponse = retrieveMessage(messageConsumer);
         assertThat(jsonResponse, notNullValue());
 
         assertThat(jsonResponse.get("caseId"), equalTo(caseId.toString()));
     }
 
-    protected void verifyCaseReopenedInLibraInActiveMQ(final MessageConsumer messageConsumer, final CaseReopenDetails caseReopenDetails) {
+    void verifyCaseReopenedInLibraInActiveMQ(final MessageConsumer messageConsumer, final CaseReopenDetails caseReopenDetails) {
         final JsonPath jsonResponse = retrieveMessage(messageConsumer);
         assertThat(jsonResponse, notNullValue());
 
-        assertThat(jsonResponse.get("caseId"), equalTo(caseReopenDetails.getCaseId()));
+        assertThat(jsonResponse.get("caseId"), equalTo(caseReopenDetails.getCaseId().toString()));
         assertThat(jsonResponse.get("reopenedDate"), equalTo(caseReopenDetails.getReopenedDate().toString()));
         assertThat(jsonResponse.get("libraCaseNumber"), equalTo(caseReopenDetails.getLibraCaseNumber()));
         assertThat(jsonResponse.get("reason"), equalTo(caseReopenDetails.getReason()));
@@ -173,7 +174,7 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
     void assertCaseReopenedInLibra(final CaseReopenDetails caseReopenDetails) {
         CasePoller.pollUntilCaseByIdIsOk(caseId,
                 allOf(
-                        withJsonPath("$.id", is(caseReopenDetails.getCaseId())),
+                        withJsonPath("$.id", is(caseReopenDetails.getCaseId().toString())),
                         withJsonPath("$.reopenedDate", is(caseReopenDetails.getReopenedDate().toString())),
                         withJsonPath("$.libraCaseNumber", is(caseReopenDetails.getLibraCaseNumber())),
                         withJsonPath("$.reopenedInLibraReason", is(caseReopenDetails.getReason()))
@@ -182,13 +183,13 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
     }
 
     void markCaseReopenedInLibra() {
-        final String writeUrl = "/cases/CASEID/mark-reopened-in-libra".replace("CASEID", caseId.toString());
+        final String writeUrl = format("/cases/%s/mark-reopened-in-libra", caseId.toString());
         final String request = getPayload(TEMPLATE_CASE_REOPENED_IN_LIBRA_PAYLOAD);
         makePostCall(writeUrl, MARK_WRITE_MEDIA_TYPE, request);
     }
 
     void updateCaseReopenedInLibra() {
-        final String writeUrl = "/cases/CASEID/update-reopened-in-libra".replace("CASEID", caseId.toString());
+        final String writeUrl = format("/cases/%s/update-reopened-in-libra", caseId.toString());
         String request = getPayload(TEMPLATE_CASE_REOPENED_IN_LIBRA_PAYLOAD)
                 .replace(markCaseReopenDetails.getLibraCaseNumber(), updateCaseReopenDetails.getLibraCaseNumber())
                 .replace(markCaseReopenDetails.getReopenedDate().toString(), updateCaseReopenDetails.getReopenedDate().toString())
@@ -198,7 +199,7 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
     }
 
     void undoCaseReopenedInLibra() {
-        final String writeUrl = "/cases/CASEID/undo-reopened-in-libra".replace("CASEID", caseId.toString());
+        final String writeUrl = format("/cases/%s/undo-reopened-in-libra", caseId.toString());
 
         makePostCall(writeUrl, UNDO_WRITE_MEDIA_TYPE, "{}");
     }

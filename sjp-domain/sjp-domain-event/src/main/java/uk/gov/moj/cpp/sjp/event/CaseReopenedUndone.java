@@ -4,6 +4,7 @@ import uk.gov.justice.domain.annotation.Event;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -16,16 +17,16 @@ public class CaseReopenedUndone implements Serializable {
 
     private static final long serialVersionUID = 4206671253527856605L;
 
-    private final String caseId;
+    private final UUID caseId;
 
     private final LocalDate oldReopenedDate;
 
-    public CaseReopenedUndone(final String caseId, final LocalDate oldReopenedDate) {
+    public CaseReopenedUndone(final UUID caseId, final LocalDate oldReopenedDate) {
         this.caseId = caseId;
         this.oldReopenedDate = oldReopenedDate;
     }
 
-    public String getCaseId() {
+    public UUID getCaseId() {
         return caseId;
     }
 

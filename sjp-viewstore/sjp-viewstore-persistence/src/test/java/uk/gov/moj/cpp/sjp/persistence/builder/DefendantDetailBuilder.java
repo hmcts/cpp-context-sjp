@@ -3,8 +3,7 @@ package uk.gov.moj.cpp.sjp.persistence.builder;
 
 import static com.google.common.collect.Sets.newHashSet;
 
-import uk.gov.justice.services.common.converter.LocalDates;
-import uk.gov.moj.cpp.sjp.domain.plea.Plea;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -19,21 +18,19 @@ public class DefendantDetailBuilder {
 
     private static final String DEFAULT_POSTCODE = "CR0 1AB";
 
-    private final UUID DEFENDANT_ID = UUID.randomUUID();
-
     private DefendantDetail defendantDetail;
 
     private OffenceDetail.OffenceDetailBuilder offenceBuilder;
 
     private DefendantDetailBuilder() {
         defendantDetail = new DefendantDetail();
-        defendantDetail.setId(DEFENDANT_ID);
+        defendantDetail.setId(UUID.randomUUID());
         defendantDetail.setPersonalDetails(
                 new PersonalDetails(
                         "Mrs",
                         "Theresa",
                         "May",
-                        LocalDates.from("1960-10-08"),
+                        LocalDate.of(1960, 10, 8),
                         "Female",
                         null,
                         new Address("10 Downing St", "Westminster", "London", "England", DEFAULT_POSTCODE),
@@ -57,8 +54,8 @@ public class DefendantDetailBuilder {
         return this;
     }
 
-    public DefendantDetailBuilder withPlea(final Plea.Type plea) {
-        offenceBuilder.setPlea(plea.name());
+    public DefendantDetailBuilder withPlea(final PleaType plea) {
+        offenceBuilder.setPlea(plea);
         return this;
     }
 

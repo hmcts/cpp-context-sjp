@@ -6,15 +6,19 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
+import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.pollingquery.PendingDatesToAvoidPoller.pollUntilPendingDatesToAvoidIsOk;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
@@ -22,9 +26,10 @@ import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
-import uk.gov.moj.cpp.sjp.domain.PleaType;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.sjp.it.command.AddDatesToAvoid;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
@@ -33,7 +38,6 @@ import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
-import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -66,15 +70,15 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     @Before
     public void setUp() {
         tflUserId = randomUUID();
-        stubGroupForUser(tflUserId.toString(), UsersGroupsStub.SJP_PROSECUTORS_GROUP);
-        stubForUserDetails(tflUserId.toString(), ProsecutingAuthority.TFL.toString());
-        this.tflCaseBuilder = createCase(ProsecutingAuthority.TFL, 1);
+        stubGroupForUser(tflUserId, SJP_PROSECUTORS_GROUP);
+        stubForUserDetails(tflUserId, TFL);
+        this.tflCaseBuilder = createCase(TFL, 1);
         this.tflInitialPendingDatesToAvoidCount = pollForPendingDatesToAvoidCount(tflUserId);
 
         tvlUserId = randomUUID();
-        this.tvlCaseBuilder = createCase(ProsecutingAuthority.TVL, 2);
-        stubGroupForUser(tvlUserId.toString(), UsersGroupsStub.SJP_PROSECUTORS_GROUP);
-        stubForUserDetails(tvlUserId.toString(), ProsecutingAuthority.TVL.toString());
+        this.tvlCaseBuilder = createCase(TVL, 2);
+        stubGroupForUser(tvlUserId, SJP_PROSECUTORS_GROUP);
+        stubForUserDetails(tvlUserId, TVL);
         this.tvlInitialPendingDatesToAvoidCount = pollForPendingDatesToAvoidCount(tvlUserId);
 
         ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_COURT_HOUSE_LJA_NATIONAL_COURT_CODE);
@@ -214,7 +218,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         final Map map = pendingDatesToAvoid.get(pendingDatesToAvoid.size() - 1);
 
         assertEquals(aCase.getId().toString(), map.get("caseId"));
-        assertWithinSeconds(ZonedDateTimes.fromString(map.get("pleaEntry").toString()).toEpochSecond(), 120);
+        assertWithinSeconds(ZonedDateTimes.fromString(map.get("pleaEntry").toString()).toEpochSecond(), 150);
         assertEquals(aCase.getDefendantBuilder().getFirstName(), map.get("firstName"));
         assertEquals(aCase.getDefendantBuilder().getLastName(), map.get("lastName"));
         assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getAddress1(), ((Map) map.get("address")).get("address1"));
@@ -237,7 +241,6 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     }
 
     private void assertWithinSeconds(final long value, final long tolerance) {
-        assertTrue(
-                Math.abs(clock.now().toEpochSecond() - value) < tolerance);
+        assertThat(Math.abs(clock.now().toEpochSecond() - value), lessThan(tolerance));
     }
 }

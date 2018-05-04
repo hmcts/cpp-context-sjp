@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.sjp.domain.command;
 
 
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -8,20 +10,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class UpdatePlea extends ChangePlea {
 
-    private final String plea;
+    private final PleaType plea;
     private final Boolean interpreterRequired;
     private final String interpreterLanguage;
 
     public UpdatePlea(UUID caseId,
                       UUID offenceId,
-                      String plea) {
+                      PleaType plea) {
         this(caseId, offenceId, plea, null, null);
     }
 
     @JsonCreator
     public UpdatePlea(@JsonProperty("caseId") UUID caseId,
                       @JsonProperty("offenceId") UUID offenceId,
-                      @JsonProperty("plea") String plea,
+                      @JsonProperty("plea") PleaType plea,
                       @JsonProperty("interpreterRequired") Boolean interpreterRequired,
                       @JsonProperty("interpreterLanguage") String interpreterLanguage) {
         super(caseId, offenceId);
@@ -30,7 +32,7 @@ public class UpdatePlea extends ChangePlea {
         this.interpreterLanguage = interpreterLanguage;
     }
 
-    public String getPlea() {
+    public PleaType getPlea() {
         return plea;
     }
 

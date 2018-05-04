@@ -66,13 +66,13 @@ public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalTest {
                 new DatesToAvoidTestData(TVL, null, false, false,
                         ZonedDateTime.now().minusDays(8))
         );
-        testData.forEach(data -> setupAndSaveDatesToAvoidData(data));
+        testData.forEach(this::setupAndSaveDatesToAvoidData);
     }
 
     private void setupAndSaveDatesToAvoidData(DatesToAvoidTestData testData) {
         CaseDetail caseDetail = new CaseDetail();
         caseDetail.setId(testData.getCaseId());
-        caseDetail.setProsecutingAuthority(testData.getProsecutingAuthority().name());
+        caseDetail.setProsecutingAuthority(testData.getProsecutingAuthority());
         caseDetail.setDatesToAvoid(testData.getPreviouslySubmittedDatesToAvoid());
         if (testData.isInSession()) {
             caseDetail.setAssigneeId(UUID.randomUUID());
@@ -85,7 +85,7 @@ public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalTest {
     @Test
     public void shouldFindCasesPendingDatesToAvoidForTfl() {
         // WHEN
-        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(TFL.name());
+        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(TFL);
 
         // THEN
         assertThat(results, hasSize(3));
@@ -97,7 +97,7 @@ public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalTest {
     @Test
     public void shouldFindCasesPendingDatesToAvoidForTvl() {
         // WHEN
-        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(TVL.name());
+        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(TVL);
 
         // THEN
         assertThat(results, hasSize(3));
@@ -108,12 +108,12 @@ public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldRemovePendingDatesToAvoid() {
-        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(TFL.name());
+        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(TFL);
         assertThat(results, hasSize(3));
 
         pendingDatesToAvoidRepository.removeByCaseId(testData.get(0).getCaseId());
 
-        results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(TFL.name());
+        results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(TFL);
         assertThat(results, hasSize(2));
         assertThat(results.get(0).getCaseId(), equalTo(testData.get(4).getCaseId()));
         assertThat(results.get(1).getCaseId(), equalTo(testData.get(5).getCaseId()));

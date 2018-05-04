@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.query.view;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
@@ -47,9 +48,8 @@ import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
-import uk.gov.moj.cpp.sjp.domain.PleaType;
-import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -70,8 +70,6 @@ import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
 import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -92,8 +90,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class SjpQueryViewTest {
 
-    private static final String CASE_ID = "caseId";
     private static final String URN = "urn";
+    private static final UUID CASE_ID = UUID.randomUUID();
 
     @Spy
     private Clock clock = new UtcClock();
@@ -205,7 +203,7 @@ public class SjpQueryViewTest {
 
         final CaseDetail caseDetail = CaseDetailBuilder.aCase().addDefendantDetail(
                 aDefendantDetail().withPostcode(postcode).withId(UUID.randomUUID()).build())
-                .withCompleted(false).withProsecutingAuthority(TFL.name())
+                .withCompleted(false).withProsecutingAuthority(TFL)
                 .withCaseId(UUID.randomUUID()).withUrn(urn).build();
 
         final CaseView caseView = new CaseView(caseDetail);
@@ -241,10 +239,10 @@ public class SjpQueryViewTest {
     @Test
     public void shouldSearchCaseByMaterialId() {
         setupExpectations();
-        final String query = "dc1c7baf-5230-4580-877d-b4ee25bc7188";
-        final String caseId = UUID.randomUUID().toString();
+        final UUID query = UUID.fromString("dc1c7baf-5230-4580-877d-b4ee25bc7188");
+        final UUID caseId = UUID.randomUUID();
         final SearchCaseByMaterialIdView searchCaseByMaterialIdView = new SearchCaseByMaterialIdView(caseId, null);
-        when(payloadObject.getString(FIELD_QUERY)).thenReturn(query);
+        when(payloadObject.getString(FIELD_QUERY)).thenReturn(query.toString());
         when(caseService.searchCaseByMaterialId(query)).thenReturn(searchCaseByMaterialIdView);
 
         final JsonEnvelope result = sjpQueryView.searchCaseByMaterialId(envelope);
@@ -527,11 +525,13 @@ public class SjpQueryViewTest {
     private OnlinePlea stubOnlinePlea(final UUID caseId, final UUID defendantId, final UUID offenceId) {
         final OffenceDetail offence = new OffenceDetail();
         offence.setId(offenceId);
-        offence.setPlea(PleaType.NOT_GUILTY.name());
-        final DefendantDetail defendant = new DefendantDetail(defendantId, null, new HashSet<>(Arrays.asList(offence)), null);
+        offence.setPlea(PleaType.NOT_GUILTY);
+        offence.setPleaMethod(PleaMethod.ONLINE);
+
+        final DefendantDetail defendant = new DefendantDetail(defendantId, null, singleton(offence), null);
         final OnlinePlea onlinePlea = new OnlinePlea(
-                new PleaUpdated(caseId.toString(), offenceId.toString(), Plea.Type.NOT_GUILTY.toString(),
-                        null, "I was not there, they are lying", PleaMethod.ONLINE, clock.now())
+                new PleaUpdated(caseId, offence.getId(), offence.getPlea(),
+                        null, "I was not there, they are lying", offence.getPleaMethod(), clock.now())
         );
         onlinePlea.setDefendantDetail(defendant);
 
@@ -539,7 +539,7 @@ public class SjpQueryViewTest {
     }
 
     private void setupCaseExpectations() {
-        when(payloadObject.getString(FIELD_CASE_ID)).thenReturn(CASE_ID);
+        when(payloadObject.getString(FIELD_CASE_ID)).thenReturn(CASE_ID.toString());
         setupExpectations();
     }
 

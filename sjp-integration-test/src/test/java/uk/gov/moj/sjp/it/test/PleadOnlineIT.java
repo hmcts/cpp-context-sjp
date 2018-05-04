@@ -29,7 +29,7 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.LEGAL_ADVISERS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
-import uk.gov.moj.cpp.sjp.domain.PleaType;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
@@ -70,7 +70,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__guilty.json";
     private static final String TEMPLATE_PLEA_GUILTY_REQUEST_HEARING_PAYLOAD = "raml/json/sjp.command.plead-online__guilty_request_hearing.json";
 
-    private static final Set<String> DEFAULT_STUBBED_USER_ID = singleton(USER_ID);
+    private static final Set<UUID> DEFAULT_STUBBED_USER_ID = singleton(USER_ID);
 
     @Before
     public void setUp() {
@@ -127,7 +127,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     private void pleadOnlineAndConfirmSuccess(final PleaType pleaType, final PleadOnlineHelper pleadOnlineHelper,
                                               final UpdatePleaHelper updatePleaHelper, final CaseSearchResultHelper caseSearchResultHelper,
-                                              final Collection<String> userIds, final boolean expectToHaveFinances) {
+                                              final Collection<UUID> userIds, final boolean expectToHaveFinances) {
         assumeThat(userIds, not(empty()));
 
         final PleaMethod pleaMethod = PleaMethod.ONLINE;
@@ -137,7 +137,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         personInfoVerifier.verifyPersonInfo();
 
         //runs plea-online
-        pleadOnlineHelper.verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId().toString(), false);
+        pleadOnlineHelper.verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
         final JSONObject pleaPayload = getOnlinePleaPayload(pleaType);
         pleadOnlineHelper.pleadOnline(pleaPayload.toString());
 
@@ -162,7 +162,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         //verify online-plea
         final Matcher expectedResult = getSavedOnlinePleaPayloadContentMatcher(pleaType, pleaPayload, createCasePayloadBuilder.getId().toString(), defendantId, expectToHaveFinances);
         userIds.forEach(userId -> pleadOnlineHelper.getOnlinePlea(createCasePayloadBuilder.getId().toString(), expectedResult, userId));
-        pleadOnlineHelper.verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId().toString(), true);
+        pleadOnlineHelper.verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
 
         verifyNotification("criminal@gmail.com", createCasePayloadBuilder.getUrn());
     }
@@ -205,9 +205,9 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     private void verifyGroupsCanSeeDefendantFinances(boolean expectToHaveFinances, Collection<String> financeProsecutors) {
-        List<String> mockedUserId = financeProsecutors.stream()
+        List<UUID> mockedUserId = financeProsecutors.stream()
                 .map(userGroup -> {
-                    String userId = UUID.randomUUID().toString();
+                    UUID userId = UUID.randomUUID();
                     UsersGroupsStub.stubGroupForUser(userId, userGroup);
 
                     return userId;
@@ -215,7 +215,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
         pleadGuiltyOnlineWithUserAndExpectedFinances(mockedUserId, expectToHaveFinances);
     }
-
 
     @Test
     public void shouldPleadGuiltyRequestHearingOnline() {
@@ -273,7 +272,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         }
     }
 
-    private void pleadGuiltyOnlineWithUserAndExpectedFinances(Collection<String> userIds, boolean expectToHaveFinances) {
+    private void pleadGuiltyOnlineWithUserAndExpectedFinances(Collection<UUID> userIds, boolean expectToHaveFinances) {
         stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
         try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper()) {
             final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());

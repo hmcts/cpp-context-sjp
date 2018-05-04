@@ -266,9 +266,9 @@ public class CreateCase {
             final OffenceBuilder builder = new OffenceBuilder();
 
             builder.libraOffenceCode = "PS00001";
-            builder.chargeDate = LocalDates.from("2016-01-01");
+            builder.chargeDate = LocalDate.of(2016, 1, 1);
             builder.libraOffenceDateCode = 1;
-            builder.offenceDate = LocalDates.from("2016-01-01");
+            builder.offenceDate = LocalDate.of(2016, 1, 1);
             builder.offenceWording = "Committed some offence";
             builder.prosecutionFacts = "No ticket at the gates, forgery";
             builder.witnessStatement = "Jumped over the barriers";

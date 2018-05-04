@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -19,7 +19,6 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
@@ -37,7 +36,6 @@ import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -155,7 +153,7 @@ public class DefendantUpdatedListenerTest {
     // FIXME commonAssertions to be refactored
     private void commonAssertions(DefendantDetailsUpdated defendantDetailsUpdated, boolean updateByOnlinePlea, boolean nationalInsuranceNumberSupplied) {
         final PersonalDetails expectedPersonalDetails = buildPersonalDetails(defendantDetailsUpdated, updateByOnlinePlea, nationalInsuranceNumberSupplied);
-        final List<CaseSearchResult> expectedSearchResults = new LinkedList<>(asList(buildCaseSearchResult(defendantDetailsUpdated)));
+        final List<CaseSearchResult> expectedSearchResults = singletonList(buildCaseSearchResult(defendantDetailsUpdated));
 
         final int expectedSaveInvocations = expectedSearchResults.size() + 1; // Save invocations + 1. Update each old case serch entry and create a new one (+1)
         verify(caseRepository).save(actualPersonalDetailsCaptor.capture());

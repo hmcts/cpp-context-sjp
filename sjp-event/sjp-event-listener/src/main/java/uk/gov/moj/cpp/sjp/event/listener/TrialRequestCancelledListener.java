@@ -10,7 +10,6 @@ import uk.gov.moj.cpp.sjp.persistence.repository.PendingDatesToAvoidRepository;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.JsonObject;
 
 @ServiceComponent(EVENT_LISTENER)
 public class TrialRequestCancelledListener {
@@ -20,9 +19,9 @@ public class TrialRequestCancelledListener {
 
     @Handles("sjp.events.trial-request-cancelled")
     public void cancelTrial(final JsonEnvelope event) {
-        final JsonObject payload = event.payloadAsJsonObject();
-        final UUID caseId = UUID.fromString(payload.getString("caseId"));
+        final UUID caseId = UUID.fromString(event.payloadAsJsonObject().getString("caseId"));
 
         pendingDatesToAvoidRepository.removeByCaseId(caseId);
     }
+
 }

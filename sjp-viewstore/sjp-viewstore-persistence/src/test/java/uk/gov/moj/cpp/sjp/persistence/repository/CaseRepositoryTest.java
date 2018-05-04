@@ -17,6 +17,7 @@ import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -49,7 +50,8 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     private static final Map<UUID, CaseDetail> CASE_HOLDER = new HashMap<>();
 
-    private static final String PROSECUTING_AUTHORITY_PREFIX = TFL.name();
+    private static final ProsecutingAuthority PROSECUTING_AUTHORITY = TFL;
+    private static final String PROSECUTING_AUTHORITY_PREFIX = PROSECUTING_AUTHORITY.name();
 
     private static final UUID VALID_CASE_ID_1 = randomUUID();
     private static final UUID VALID_CASE_ID_2 = randomUUID();
@@ -398,7 +400,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         final CaseDetail caseDetail = CaseDetailBuilder.aCase()
                 .withCaseId(caseId)
                 .withUrn(urn)
-                .withProsecutingAuthority(PROSECUTING_AUTHORITY_PREFIX)
+                .withProsecutingAuthority(PROSECUTING_AUTHORITY)
                 .withCosts(COSTS)
                 .withPostingDate(POSTING_DATE)
                 .addDefendantDetail(defendantDetail)

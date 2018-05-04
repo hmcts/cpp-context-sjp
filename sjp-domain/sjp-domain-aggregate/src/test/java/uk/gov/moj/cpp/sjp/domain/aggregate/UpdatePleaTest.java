@@ -9,11 +9,11 @@ import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import uk.gov.moj.cpp.sjp.domain.PleaType;
+
 import uk.gov.moj.cpp.sjp.domain.command.CancelPlea;
 import uk.gov.moj.cpp.sjp.domain.command.UpdatePlea;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
-import uk.gov.moj.cpp.sjp.domain.plea.Plea;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.testutils.PleaBuilder;
 import uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
@@ -59,7 +59,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         assertThat("Has PleaUpdated event", events, hasItem(isA(PleaUpdated.class)));
     }
 
-    private void shouldUpdatePlea(final String plea, final String interpreterLanguage, final Class expectedInterpreterEvent,
+    private void shouldUpdatePlea(final PleaType plea, final String interpreterLanguage, final Class expectedInterpreterEvent,
                                   final boolean trialRequestedEventExpected, final boolean trialRequestCancelledEventExpected) {
         //when
         final UpdatePlea updatePlea = new UpdatePlea(caseId, offenceId, plea, true, interpreterLanguage);
@@ -74,8 +74,8 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
             assertThat(events.size(), is(expectedInterpreterEvent == null ? 1 : 2));
         }
         PleaUpdated pleaUpdated = (PleaUpdated)events.get(0);
-        assertThat(pleaUpdated.getCaseId(), equalTo(caseId.toString()));
-        assertThat(pleaUpdated.getOffenceId(), equalTo(offenceId.toString()));
+        assertThat(pleaUpdated.getCaseId(), equalTo(caseId));
+        assertThat(pleaUpdated.getOffenceId(), equalTo(offenceId));
         assertThat(pleaUpdated.getPlea(), equalTo(plea));
         if (expectedInterpreterEvent == InterpreterUpdatedForDefendant.class) {
             final InterpreterUpdatedForDefendant interpreterUpdated = findInterpreterUpdatedForDefendantEvent(events).get();
@@ -90,17 +90,17 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         }
     }
 
-    private Optional<InterpreterUpdatedForDefendant> findInterpreterUpdatedForDefendantEvent(final List<Object> events) {
+    private static Optional<InterpreterUpdatedForDefendant> findInterpreterUpdatedForDefendantEvent(final List<Object> events) {
         return events.stream()
-                .filter(event -> event instanceof InterpreterUpdatedForDefendant)
-                .map(event -> (InterpreterUpdatedForDefendant) event)
+                .filter(InterpreterUpdatedForDefendant.class::isInstance)
+                .map(InterpreterUpdatedForDefendant.class::cast)
                 .findFirst();
     }
 
-    private Optional<InterpreterCancelledForDefendant> findInterpreterCancelledForDefendantEvent(final List<Object> events) {
+    private static Optional<InterpreterCancelledForDefendant> findInterpreterCancelledForDefendantEvent(final List<Object> events) {
         return events.stream()
-                .filter(event -> event instanceof InterpreterCancelledForDefendant)
-                .map(event -> (InterpreterCancelledForDefendant) event)
+                .filter(InterpreterCancelledForDefendant.class::isInstance)
+                .map(InterpreterCancelledForDefendant.class::cast)
                 .findFirst();
     }
 
@@ -113,8 +113,8 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         final List<Object> events = asList(eventStream.toArray());
         assertThat(events.size(), is(cancelInterpreter ? 2 : 1));
         final PleaCancelled pleaCancelled = (PleaCancelled) events.get(0);
-        assertThat(pleaCancelled.getCaseId(), equalTo(caseId.toString()));
-        assertThat(pleaCancelled.getOffenceId(), equalTo(offenceId.toString()));
+        assertThat(pleaCancelled.getCaseId(), equalTo(caseId));
+        assertThat(pleaCancelled.getOffenceId(), equalTo(offenceId));
         if (cancelInterpreter) {
             final InterpreterCancelledForDefendant interpreterCancelled = (InterpreterCancelledForDefendant)events.get(1);
             assertThat(interpreterCancelled.getCaseId(), is(caseId));
@@ -128,28 +128,28 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         final String interpreterLanguage2 = "Welsh";
 
         // add plea
-        shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), null, null, false, false);
+        shouldUpdatePlea(PleaType.GUILTY_REQUEST_HEARING, null, null, false, false);
 
         // add interpreter
-        shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), interpreterLanguage1, InterpreterUpdatedForDefendant.class, false, false);
+        shouldUpdatePlea(PleaType.GUILTY_REQUEST_HEARING, interpreterLanguage1, InterpreterUpdatedForDefendant.class, false, false);
 
         // update just plea
-        shouldUpdatePlea(Plea.Type.NOT_GUILTY.name(), interpreterLanguage1, null, true, false);
+        shouldUpdatePlea(PleaType.NOT_GUILTY, interpreterLanguage1, null, true, false);
 
         // update just interpreter
-        shouldUpdatePlea(Plea.Type.NOT_GUILTY.name(), interpreterLanguage2, InterpreterUpdatedForDefendant.class, false, false);
+        shouldUpdatePlea(PleaType.NOT_GUILTY, interpreterLanguage2, InterpreterUpdatedForDefendant.class, false, false);
 
         // cancel the interpreter
-        shouldUpdatePlea(Plea.Type.NOT_GUILTY.name(), null, InterpreterCancelledForDefendant.class, false, false);
+        shouldUpdatePlea(PleaType.NOT_GUILTY, null, InterpreterCancelledForDefendant.class, false, false);
 
         // update plea and interpreter
-        shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), interpreterLanguage1, InterpreterUpdatedForDefendant.class, false, true);
+        shouldUpdatePlea(PleaType.GUILTY_REQUEST_HEARING, interpreterLanguage1, InterpreterUpdatedForDefendant.class, false, true);
 
         // cancel plea (and interpreter)
         shouldCancelPlea(true);
 
         // add plea
-        shouldUpdatePlea(Plea.Type.GUILTY_REQUEST_HEARING.name(), null, null, false, false);
+        shouldUpdatePlea(PleaType.GUILTY_REQUEST_HEARING, null, null, false, false);
 
         // cancel plea
         shouldCancelPlea(false);
@@ -158,7 +158,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
     @Test
     public void shouldUpdatePleaWhenWithdrawalOffencesRequested() {
         //given
-        caseAggregate.requestWithdrawalAllOffences(caseId.toString());
+        caseAggregate.requestWithdrawalAllOffences(caseId);
 
         //when
         final UpdatePlea updatePlea = PleaBuilder.defaultUpdatePlea(offenceId);
@@ -172,8 +172,8 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
     @Test
     public void shouldUpdatePleaWhenWithdrawalOffencesRequestCancelled() {
         //given
-        caseAggregate.requestWithdrawalAllOffences(caseId.toString());
-        caseAggregate.cancelRequestWithdrawalAllOffences(caseId.toString());
+        caseAggregate.requestWithdrawalAllOffences(caseId);
+        caseAggregate.cancelRequestWithdrawalAllOffences(caseId);
 
         //when
         final UpdatePlea updatePlea = PleaBuilder.defaultUpdatePlea(offenceId);
@@ -418,21 +418,21 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         toggleTrialEventsByUpdatingAndCancellingPleasRepeatedly();
     }
 
-    private PleadOnline pleadNotGuiltyOnline(PleaType pleaType) {
+    private void pleadNotGuiltyOnline(PleaType pleaType) {
         PleadOnline pleadOnline = null;
         if (pleaType.equals(PleaType.NOT_GUILTY)) {
             pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithNotGuiltyPlea(offenceId,
-                    defendantId.toString(), null, true);
+                    defendantId, null, true);
         }
         else if (pleaType.equals(PleaType.GUILTY_REQUEST_HEARING)) {
             pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyRequestHearingPlea(offenceId,
-                    defendantId.toString(), null);
+                    defendantId, null);
         }
         else if (pleaType.equals(PleaType.GUILTY)) {
-            pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId.toString());
+            pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId);
         }
+
         caseAggregate.pleadOnline(caseId, pleadOnline, now);
-        return pleadOnline;
     }
 
     private Stream<Object> pleadByPost(PleaType pleaType) {

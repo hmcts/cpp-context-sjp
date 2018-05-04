@@ -18,14 +18,14 @@ import static org.hamcrest.Matchers.nullValue;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
-import static uk.gov.moj.cpp.sjp.domain.plea.Plea.Type.GUILTY;
-import static uk.gov.moj.cpp.sjp.domain.plea.Plea.Type.GUILTY_REQUEST_HEARING;
-import static uk.gov.moj.cpp.sjp.domain.plea.Plea.Type.NOT_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.domain.plea.Plea;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -140,10 +140,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
         final CaseDetail withdrawalRequested = CaseSaver.prosecutingAuthority(DVLA).postedDaysAgo(1).pendingWithdrawal(true).save(em);
 
         final List<AssignmentCandidate> magistrateSessionCandidates = assignmentRepository.getAssignmentCandidatesForMagistrateSession(assigneeId, NO_EXCLUDED_PROSECUTING_AUTHORITIES, NO_LIMIT);
-        assertThat(getIds(magistrateSessionCandidates), contains(getIds(
-                guiltyPleaded,
-                pia
-        )));
+        assertThat(getIds(magistrateSessionCandidates), contains(getIds(guiltyPleaded, pia)));
 
         final List<AssignmentCandidate> delegatedPowerSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, NO_EXCLUDED_PROSECUTING_AUTHORITIES, NO_LIMIT);
         assertThat(getIds(delegatedPowerSessionCandidates), contains(getIds(
@@ -243,6 +240,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
         CaseSaver.prosecutingAuthority(TFL).plea(NOT_GUILTY).version(3).save(em);
 
         final List<AssignmentCandidate> magistrateSessionCandidates = assignmentRepository.getAssignmentCandidatesForMagistrateSession(assigneeId, NO_EXCLUDED_PROSECUTING_AUTHORITIES, NO_LIMIT);
+        assertThat(magistrateSessionCandidates, hasSize(1));
         assertThat(magistrateSessionCandidates.get(0).getCaseStreamVersion(), equalTo(2));
 
         final List<AssignmentCandidate> delegatedPowersSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, NO_EXCLUDED_PROSECUTING_AUTHORITIES, NO_LIMIT);
@@ -312,12 +310,12 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
     }
 
     private static class CaseSaver {
-        private String prosecutingAuthority;
+        private ProsecutingAuthority prosecutingAuthority;
         private LocalDate postingDate;
         private boolean completed;
         private boolean pendingWithdrawal;
         private UUID assigneeId;
-        private String plea;
+        private PleaType plea;
         private int version = 1;
         private String datesToAvoid;
         private ZonedDateTime datesToAvoidPleaDate;
@@ -327,7 +325,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
         }
 
         private CaseSaver(final ProsecutingAuthority prosecutingAuthority) {
-            this.prosecutingAuthority = prosecutingAuthority.name();
+            this.prosecutingAuthority = prosecutingAuthority;
         }
 
         private CaseSaver postedDaysAgo(int daysAgo) {
@@ -350,8 +348,8 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
             return this;
         }
 
-        CaseSaver plea(Plea.Type plea) {
-            this.plea = plea.name();
+        CaseSaver plea(PleaType plea) {
+            this.plea = plea;
             return this;
         }
 

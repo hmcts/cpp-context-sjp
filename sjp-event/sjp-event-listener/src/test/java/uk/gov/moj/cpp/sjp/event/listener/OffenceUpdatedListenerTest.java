@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.time.LocalDate.now;
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.never;
@@ -15,8 +15,8 @@ import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
-import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
@@ -94,35 +94,35 @@ public class OffenceUpdatedListenerTest {
 
     @Test
     public void shouldUpdateGuiltyPleaOnline() {
-        final PleaUpdated pleaUpdated = new PleaUpdated(caseId.toString(), offenceId.toString(), Plea.Type.GUILTY.toString(),
+        final PleaUpdated pleaUpdated = new PleaUpdated(caseId, offenceId, PleaType.GUILTY,
                 "It was an accident", null, PleaMethod.ONLINE, clock.now());
         assertExpectationsForPleaUpdate(true, true, pleaUpdated, false);
     }
 
     @Test
     public void shouldUpdateGuiltyRequestHearingPleaOnline() {
-        final PleaUpdated pleaUpdated = new PleaUpdated(caseId.toString(), offenceId.toString(), Plea.Type.GUILTY_REQUEST_HEARING.toString(),
+        final PleaUpdated pleaUpdated = new PleaUpdated(caseId, offenceId, PleaType.GUILTY_REQUEST_HEARING,
                 "It was an accident", null, PleaMethod.ONLINE, clock.now());
         assertExpectationsForPleaUpdate(true, true, pleaUpdated, true);
     }
 
     @Test
     public void shouldUpdateNotGuiltyPleaOnlineWithUpdateDate() {
-        final PleaUpdated pleaUpdated = new PleaUpdated(caseId.toString(), offenceId.toString(), Plea.Type.NOT_GUILTY.toString(),
+        final PleaUpdated pleaUpdated = new PleaUpdated(caseId, offenceId, PleaType.NOT_GUILTY,
                 null, "I was not there, they are lying", PleaMethod.ONLINE, clock.now());
         assertExpectationsForPleaUpdate(true, true, pleaUpdated, true);
     }
 
     @Test
     public void shouldUpdateNotGuiltyPleaOnlineWithoutUpdateDate() {
-        final PleaUpdated pleaUpdated = new PleaUpdated(caseId.toString(), offenceId.toString(), Plea.Type.NOT_GUILTY.toString(),
+        final PleaUpdated pleaUpdated = new PleaUpdated(caseId, offenceId, PleaType.NOT_GUILTY,
                 null, "I was not there, they are lying", PleaMethod.ONLINE, null);
         assertExpectationsForPleaUpdate(true, false, pleaUpdated, true);
     }
 
     @Test
     public void shouldUpdateByPost() {
-        final PleaUpdated pleaUpdated = new PleaUpdated(caseId.toString(), offenceId.toString(), Plea.Type.GUILTY.toString(),
+        final PleaUpdated pleaUpdated = new PleaUpdated(caseId, offenceId, PleaType.GUILTY,
                 null, null, PleaMethod.POSTAL, clock.now());
         assertExpectationsForPleaUpdate(false, false, pleaUpdated, null);
     }
@@ -134,7 +134,7 @@ public class OffenceUpdatedListenerTest {
         when(jsonObjectToObjectConverter.convert(payload, PleaUpdated.class)).thenReturn(pleaUpdated);
         when(offenceRepository.findBy(offenceId)).thenReturn(offence);
         when(offence.getDefendantDetail()).thenReturn(defendant);
-        when(searchResultRepository.findByCaseId(caseId)).thenReturn(asList(searchResult));
+        when(searchResultRepository.findByCaseId(caseId)).thenReturn(singletonList(searchResult));
         when(envelope.metadata()).thenReturn(metadataBuilder);
 
         listener.updatePlea(envelope);
@@ -165,11 +165,11 @@ public class OffenceUpdatedListenerTest {
     public void shouldCancelPlea() {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, PleaCancelled.class)).thenReturn(pleaCancelled);
-        when(pleaCancelled.getOffenceId()).thenReturn(offenceId.toString());
+        when(pleaCancelled.getOffenceId()).thenReturn(offenceId);
         when(offenceRepository.findBy(offenceId)).thenReturn(offence);
-        when(pleaCancelled.getCaseId()).thenReturn(caseId.toString());
+        when(pleaCancelled.getCaseId()).thenReturn(caseId);
         when(offence.getDefendantDetail()).thenReturn(defendant);
-        when(searchResultRepository.findByCaseId(caseId)).thenReturn(asList(searchResult));
+        when(searchResultRepository.findByCaseId(caseId)).thenReturn(singletonList(searchResult));
 
         listener.cancelPlea(envelope);
 

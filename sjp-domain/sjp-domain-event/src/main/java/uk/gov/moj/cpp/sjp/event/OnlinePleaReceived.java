@@ -5,9 +5,9 @@ import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Outgoing;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
-import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -15,8 +15,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Event("sjp.events.online-plea-received")
 public class OnlinePleaReceived {
     private String urn;
-    private String caseId;
-    private String defendantId;
+    private UUID caseId;
+    private UUID defendantId;
     private String unavailability;
     private String interpreterLanguage;
     private String witnessDetails;
@@ -28,8 +28,8 @@ public class OnlinePleaReceived {
 
     @JsonCreator
     public OnlinePleaReceived(@JsonProperty(value = "urn") final String urn,
-                              @JsonProperty(value = "caseId") final String caseId,
-                              @JsonProperty(value = "defendantId") final String defendantId,
+                              @JsonProperty(value = "caseId") final UUID caseId,
+                              @JsonProperty(value = "defendantId") final UUID defendantId,
                               @JsonProperty(value = "unavailability") final String unavailability,
                               @JsonProperty(value = "interpreterLanguage") final String interpreterLanguage,
                               @JsonProperty(value = "witnessDetails") final String witnessDetails,
@@ -55,11 +55,11 @@ public class OnlinePleaReceived {
         return urn;
     }
 
-    public String getCaseId() {
+    public UUID getCaseId() {
         return caseId;
     }
 
-    public String getDefendantId() {
+    public UUID getDefendantId() {
         return defendantId;
     }
 

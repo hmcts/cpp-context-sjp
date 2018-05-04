@@ -5,6 +5,7 @@ import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Outgoing;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -12,19 +13,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PleadOnline {
-    private String defendantId;
-    private List<Offence> offences;
-    private String unavailability;
-    private String interpreterLanguage;
-    private String witnessDetails;
-    private String witnessDispute;
-    private PersonalDetails personalDetails;
-    private FinancialMeans financialMeans;
-    private Employer employer;
-    private List<Outgoing> outgoings;
+
+    private final UUID defendantId;
+    private final List<Offence> offences;
+    private final String unavailability;
+    private final String interpreterLanguage;
+    private final String witnessDetails;
+    private final String witnessDispute;
+    private final PersonalDetails personalDetails;
+    private final FinancialMeans financialMeans;
+    private final Employer employer;
+    private final List<Outgoing> outgoings;
 
     @JsonCreator
-    public PleadOnline(@JsonProperty(value = "defendantId") final String defendantId,
+    public PleadOnline(@JsonProperty(value = "defendantId") final UUID defendantId,
                        @JsonProperty(value = "offences") final List<Offence> offences,
                        @JsonProperty(value = "unavailability") final String unavailability,
                        @JsonProperty(value = "interpreterLanguage") final String interpreterLanguage,
@@ -46,7 +48,7 @@ public class PleadOnline {
         this.outgoings = outgoings;
     }
 
-    public String getDefendantId() {
+    public UUID getDefendantId() {
         return defendantId;
     }
 

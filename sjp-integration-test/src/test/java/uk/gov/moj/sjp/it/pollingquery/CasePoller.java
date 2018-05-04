@@ -22,6 +22,7 @@ import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 
 public class CasePoller {
+
     private static final int POLLING_TIMEOUT = 40;
 
     public static JsonPath pollUntilCaseByIdIsOk(final UUID caseId) {
@@ -29,7 +30,7 @@ public class CasePoller {
     }
 
     public static JsonPath pollUntilCaseByIdIsOk(final UUID caseId, final Matcher<? super ReadContext> jsonPayloadMatcher) {
-        ResponseData responseData = poll(getCaseById(caseId.toString()))
+        ResponseData responseData = poll(getCaseById(caseId))
                 .timeout(POLLING_TIMEOUT, SECONDS)
                 .until(
                         anyOf(
@@ -46,6 +47,5 @@ public class CasePoller {
 
         return new JsonPath(responseData.getPayload());
     }
-
 
 }

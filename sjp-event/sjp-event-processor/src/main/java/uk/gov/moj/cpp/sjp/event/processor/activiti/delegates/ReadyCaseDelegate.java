@@ -8,9 +8,9 @@ import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY_REQUEST_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.WITHDRAWAL_REQUESTED;
-import static uk.gov.moj.cpp.sjp.domain.PleaType.GUILTY;
-import static uk.gov.moj.cpp.sjp.domain.PleaType.GUILTY_REQUEST_HEARING;
-import static uk.gov.moj.cpp.sjp.domain.PleaType.NOT_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.MARKED_AT;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.REASON;
@@ -24,7 +24,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.activiti.ReadyCaseCalculator.is
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
-import uk.gov.moj.cpp.sjp.domain.PleaType;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 
 import java.time.ZonedDateTime;
 import java.util.EnumMap;

@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.persistence.builder;
 
 import static java.time.ZoneOffset.UTC;
 
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -16,12 +17,9 @@ import java.util.UUID;
 
 public class CaseDetailBuilder {
 
-    public final UUID CASE_ID = UUID.randomUUID();
-    private final String URN = CASE_ID.toString().toUpperCase();
-
-    private UUID id = CASE_ID;
-    private String urn = URN;
-    private String prosecutingAuthority = "CPS";
+    private UUID id = UUID.randomUUID();
+    private String urn = id.toString().toUpperCase();
+    private ProsecutingAuthority prosecutingAuthority;
     private Set<CaseDocument> caseDocuments = new LinkedHashSet<>();
     private DefendantDetail defendant;
     //TODO no longer used
@@ -35,6 +33,7 @@ public class CaseDetailBuilder {
 
     private CaseDetailBuilder() {
         this.defendant = new DefendantDetail();
+        this.prosecutingAuthority = ProsecutingAuthority.CPS;
     }
 
     public static CaseDetailBuilder aCase() {
@@ -51,7 +50,7 @@ public class CaseDetailBuilder {
         return this;
     }
 
-    public CaseDetailBuilder withProsecutingAuthority(String prosecutingAuthority) {
+    public CaseDetailBuilder withProsecutingAuthority(ProsecutingAuthority prosecutingAuthority) {
         this.prosecutingAuthority = prosecutingAuthority;
         return this;
     }

@@ -1,6 +1,6 @@
 package uk.gov.moj.sjp.it.test;
 
-import static uk.gov.moj.cpp.sjp.domain.PleaType.NOT_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 import static uk.gov.moj.sjp.it.test.UpdatePleaInterpreterIT.getPleaPayload;

@@ -80,7 +80,7 @@ public class SjpQueryView {
     @Handles("sjp.query.case")
     public JsonEnvelope findCase(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(
-                caseService.findCase(extract(envelope, FIELD_CASE_ID)));
+                caseService.findCase(UUID.fromString(extract(envelope, FIELD_CASE_ID))));
     }
 
     @Handles("sjp.query.case-filter-other-and-financial-means-documents")
@@ -132,13 +132,13 @@ public class SjpQueryView {
     @Handles("sjp.query.case-documents")
     public JsonEnvelope findCaseDocuments(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE_DOCUMENTS).apply(
-                caseService.findCaseDocuments(extract(envelope, FIELD_CASE_ID)));
+                caseService.findCaseDocuments(UUID.fromString(extract(envelope, FIELD_CASE_ID))));
     }
 
     @Handles("sjp.query.case-documents-filter-other-and-financial-means")
     public JsonEnvelope findCaseDocumentsFilterOtherAndFinancialMeans(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE_DOCUMENTS).apply(
-                caseService.findCaseDocumentsFilterOtherAndFinancialMeans(extract(envelope, FIELD_CASE_ID)));
+                caseService.findCaseDocumentsFilterOtherAndFinancialMeans(UUID.fromString(extract(envelope, FIELD_CASE_ID))));
 
     }
 
@@ -161,7 +161,7 @@ public class SjpQueryView {
     @Handles("sjp.query.cases-search-by-material-id")
     public JsonEnvelope searchCaseByMaterialId(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASES_SEARCH_BY_MATERIAL_ID).apply(
-                caseService.searchCaseByMaterialId(extract(envelope, FIELD_QUERY)));
+                caseService.searchCaseByMaterialId(UUID.fromString(extract(envelope, FIELD_QUERY))));
 
     }
 

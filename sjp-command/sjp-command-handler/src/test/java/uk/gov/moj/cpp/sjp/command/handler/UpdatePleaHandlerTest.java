@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.command.handler;
 import static java.time.ZoneOffset.UTC;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.moj.cpp.sjp.domain.plea.Plea.Type.GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
@@ -31,7 +31,7 @@ public class UpdatePleaHandlerTest extends CaseCommandHandlerTest {
 
     @Test
     public void shouldUpdatePlea() throws EventStreamException {
-        final UpdatePlea updatePlea = new UpdatePlea(UUID.randomUUID(), UUID.randomUUID(), GUILTY.name());
+        final UpdatePlea updatePlea = new UpdatePlea(UUID.randomUUID(), UUID.randomUUID(), GUILTY);
 
         when(converter.convert(jsonObject, UpdatePlea.class)).thenReturn(updatePlea);
         when(caseAggregate.updatePlea(updatePlea, clock.now())).thenReturn(events);

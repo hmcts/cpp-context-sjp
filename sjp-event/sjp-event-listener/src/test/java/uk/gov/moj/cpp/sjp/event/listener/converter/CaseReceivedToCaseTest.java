@@ -56,7 +56,7 @@ public class CaseReceivedToCaseTest {
 
     private CaseDetail buildExpectedCaseDetail(CaseReceived event) {
         return new CaseDetail(event.getCaseId(), event.getUrn(),
-                event.getProsecutingAuthority().toString(),
+                event.getProsecutingAuthority(),
                 null,
                 false,
                 null,

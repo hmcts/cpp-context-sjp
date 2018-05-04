@@ -37,9 +37,9 @@ public class CaseSearchResultHelper {
     private final String urn;
     private final String lastName;
     private final LocalDate dateOfBirth;
-    private final String searchUserId;
+    private final UUID searchUserId;
 
-    public CaseSearchResultHelper(final String searchUserId) {
+    public CaseSearchResultHelper(final UUID searchUserId) {
         this(null, null, null, null, searchUserId);
     }
 
@@ -47,7 +47,7 @@ public class CaseSearchResultHelper {
         this(caseId, urn, defendantLastName, dateOfBirth, USER_ID);
     }
 
-    private CaseSearchResultHelper(final UUID caseId, final String urn, final String defendantLastName, final LocalDate dateOfBirth, final String searchUserId) {
+    private CaseSearchResultHelper(final UUID caseId, final String urn, final String defendantLastName, final LocalDate dateOfBirth, final UUID searchUserId) {
         this.caseId = caseId;
         this.urn = urn;
         this.lastName = defendantLastName;
@@ -107,14 +107,12 @@ public class CaseSearchResultHelper {
 
     public void verifyUrnFound(final String urn) {
         poll(searchCases(urn, searchUserId))
-                .until(status().is(OK), payload().isJson(allOf(
-                        withJsonPath("$.results", hasSize(1)))));
+                .until(status().is(OK), payload().isJson(withJsonPath("$.results", hasSize(1))));
     }
 
     public void verifyUrnNotFound(final String urn) {
         poll(searchCases(urn, searchUserId))
-                .until(status().is(OK), payload().isJson(allOf(
-                        withJsonPath("$.results", hasSize(0)))));
+                .until(status().is(OK), payload().isJson(withJsonPath("$.results", hasSize(0))));
     }
 
     public void verifyPersonInfoByUrn() {

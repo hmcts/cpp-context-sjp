@@ -31,7 +31,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.matcher.DelegateExecutionBusine
 import static uk.gov.moj.cpp.sjp.event.processor.matcher.DelegateExecutionVariableMatcher.withProcessVariable;
 
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.sjp.domain.PleaType;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper;
 
 import java.time.LocalDate;

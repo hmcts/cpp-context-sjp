@@ -34,11 +34,11 @@ public class HttpClientUtil {
     private static final String READ_BASE_URL = BASE_URI + "/sjp-query-api/query/api/rest/sjp";
 
     public static void makePostCall(String url, String mediaType, String payload) {
-        makePostCall(UUID.fromString(USER_ID), url, mediaType, payload, Response.Status.ACCEPTED);
+        makePostCall(USER_ID, url, mediaType, payload, Response.Status.ACCEPTED);
     }
 
     public static void makePostCall(String url, String mediaType, String payload, Response.Status expectedStatus) {
-        makePostCall(UUID.fromString(USER_ID), url, mediaType, payload, expectedStatus);
+        makePostCall(USER_ID, url, mediaType, payload, expectedStatus);
     }
 
     public static void makePostCall(UUID userId, String url, String mediaType, String payload, Response.Status expectedStatus) {
@@ -46,7 +46,7 @@ public class HttpClientUtil {
         map.add(HeaderConstants.USER_ID, userId.toString());
         final String writeUrl = getWriteUrl(url);
         Response response = restClient.postCommand(writeUrl, mediaType, payload, map);
-        LOGGER.info("Post call made: \n\tURL = {} \n\tMedia type = {} \n\tPayload = {}\n\tUser = {}\n", 
+        LOGGER.info("Post call made: \n\tURL = {} \n\tMedia type = {} \n\tPayload = {}\n\tUser = {}\n",
                 writeUrl, mediaType, payload, userId);
         assertThat(response.getStatus(), is(expectedStatus.getStatusCode()));
     }
@@ -72,13 +72,16 @@ public class HttpClientUtil {
         return makeGetCall(url, mediaType, USER_ID);
     }
 
-    public static Response makeGetCall(String url, String mediaType, String userId) {
+    public static Response makeGetCall(String url, String mediaType, UUID userId) {
         MultivaluedMap<String, Object> map = new MultivaluedHashMap<>();
         map.add(HeaderConstants.USER_ID, userId);
         //FIXME: bug in framework requiring the media type to be added explicitly when using this API call on RestClient
         map.add(HttpHeaders.ACCEPT, mediaType);
         final String readUrl = getReadUrl(url);
-        LOGGER.info("Get call made: \n\tEndpoint = {} \n\tMedia type = {}\n\tUser = {}\n\n", 
+        LOGGER.info("Get call made:" + System.lineSeparator()
+                        + "Endpoint = {}" + System.lineSeparator()
+                        + "Media type = {}" + System.lineSeparator()
+                        + "User = {}" + System.lineSeparator(),
                 readUrl, mediaType, userId);
         return restClient.query(readUrl, mediaType, map);
     }

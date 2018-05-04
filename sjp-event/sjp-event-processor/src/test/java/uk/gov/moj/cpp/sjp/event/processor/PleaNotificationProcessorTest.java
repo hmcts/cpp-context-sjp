@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Collections.emptyList;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -25,7 +26,6 @@ import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -95,14 +95,14 @@ public class PleaNotificationProcessorTest {
         )));
     }
 
-    private OnlinePleaReceived generateOnlinePleaReceived(final String email, final String urn) {
+    private static OnlinePleaReceived generateOnlinePleaReceived(final String email, final String urn) {
         final PersonalDetails personalDetails = new PersonalDetails(
                 "Bobby", "Davro", new Address("82 Old Rd, Leicester, LH42 1765"),
                 new ContactDetails("07429 567901", "07429 567901", email),
                 LocalDate.of(1981, 1, 1),
                 "JH41 1269B");
-        return new OnlinePleaReceived(urn, UUID.randomUUID().toString(), UUID.randomUUID().toString(),
+        return new OnlinePleaReceived(urn, UUID.randomUUID(), UUID.randomUUID(),
                 "6th March 2018", "French", "Joe Cornish", "He was not there",
-                personalDetails, null, null, new ArrayList<>());
+                personalDetails, null, null, emptyList());
     }
 }

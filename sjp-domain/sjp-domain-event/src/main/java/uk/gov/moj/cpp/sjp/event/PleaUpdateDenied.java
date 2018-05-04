@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event;
 import uk.gov.justice.domain.annotation.Event;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,8 +11,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 // Old event. Replaced by case-update-rejected
 @Event("sjp.events.plea-update-denied")
 public class PleaUpdateDenied implements Serializable {
-    private String caseId;
-    private String offenceId;
+    private UUID caseId;
+    private UUID offenceId;
     private String plea;
     private Boolean interpreterRequired;
     private String interpreterLanguage;
@@ -25,7 +26,7 @@ public class PleaUpdateDenied implements Serializable {
         CASE_COMPLETED
     }
 
-    public PleaUpdateDenied(String caseId, String offenceId, String plea, DenialReason denialReason) {
+    public PleaUpdateDenied(UUID caseId, UUID offenceId, String plea, DenialReason denialReason) {
         this.caseId = caseId;
         this.offenceId = offenceId;
         this.plea = plea;
@@ -33,8 +34,8 @@ public class PleaUpdateDenied implements Serializable {
     }
 
     @JsonCreator
-    public PleaUpdateDenied(@JsonProperty("caseId") String caseId,
-                            @JsonProperty("offenceId") String offenceId,
+    public PleaUpdateDenied(@JsonProperty("caseId") UUID caseId,
+                            @JsonProperty("offenceId") UUID offenceId,
                             @JsonProperty("plea") String plea,
                             @JsonProperty("interpreterRequired") Boolean interpreterRequired,
                             @JsonProperty("interpreterLanguage") String interpreterLanguage,
@@ -47,11 +48,11 @@ public class PleaUpdateDenied implements Serializable {
         this.denialReason = (denialReason != null ? DenialReason.valueOf(denialReason) : null);
     }
 
-    public String getCaseId() {
+    public UUID getCaseId() {
         return caseId;
     }
 
-    public String getOffenceId() {
+    public UUID getOffenceId() {
         return offenceId;
     }
 

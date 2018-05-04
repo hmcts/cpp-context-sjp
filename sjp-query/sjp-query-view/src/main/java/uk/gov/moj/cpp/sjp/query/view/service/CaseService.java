@@ -48,7 +48,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonArrayBuilder;
@@ -101,8 +104,8 @@ public class CaseService {
      * @param id id of the case to find.
      * @return CaseView. Null, when not found.
      */
-    public CaseView findCase(final String id) {
-        return getCaseView(caseRepository.findBy(fromString(id)));
+    public CaseView findCase(final UUID id) {
+        return getCaseView(caseRepository.findBy(id));
     }
 
     public CaseView findCaseAndFilterOtherAndFinancialMeansDocuments(String caseId) {
@@ -189,19 +192,18 @@ public class CaseService {
         }
     }
 
-    public SearchCaseByMaterialIdView searchCaseByMaterialId(final String q) {
+    public SearchCaseByMaterialIdView searchCaseByMaterialId(final UUID materialId) {
         SearchCaseByMaterialIdView searchCaseByMaterialIdView = new SearchCaseByMaterialIdView();
         try {
-            CaseDetail caseDetail = caseRepository.findByMaterialId(fromString(q));
+            final CaseDetail caseDetail = caseRepository.findByMaterialId(materialId);
             if (caseDetail != null) {
-                String caseId = caseDetail.getId().toString();
-                ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.valueOf(caseDetail.getProsecutingAuthority());
-                searchCaseByMaterialIdView = new SearchCaseByMaterialIdView(caseId, prosecutingAuthority);
+                final ProsecutingAuthority prosecutingAuthority = caseDetail.getProsecutingAuthority();
+                searchCaseByMaterialIdView = new SearchCaseByMaterialIdView(caseDetail.getId(), prosecutingAuthority);
             } else {
                 searchCaseByMaterialIdView = new SearchCaseByMaterialIdView(null, null);
             }
         } catch (NoResultException e) {
-            LOGGER.error("No case found with materialId='{}'", q, e);
+            LOGGER.error("No case found with materialId='{}'", materialId, e);
         }
         return searchCaseByMaterialIdView;
     }
@@ -213,18 +215,23 @@ public class CaseService {
      * @param caseId id of the case
      * @return case documents for the case
      */
-    public CaseDocumentsView findCaseDocuments(final String caseId) {
-        final List<CaseDocumentView> caseDocuments = caseRepository.findCaseDocuments(fromString(caseId)).stream().map(CaseDocumentView::new).collect(toList());
-        caseDocuments.sort(CaseDocumentView.BY_DOCUMENT_TYPE_AND_NUMBER);
-        return new CaseDocumentsView(caseDocuments);
+    public CaseDocumentsView findCaseDocuments(final UUID caseId) {
+        return findCaseDocuments(caseId, d -> true);
     }
 
-    public CaseDocumentsView findCaseDocumentsFilterOtherAndFinancialMeans(String caseId) {
-        List<CaseDocumentView> caseDocuments = caseRepository.findCaseDocuments(fromString(caseId)).stream().map(CaseDocumentView::new).collect(toList());
-        caseDocuments.sort(CaseDocumentView.BY_DOCUMENT_TYPE_AND_NUMBER);
-        final CaseDocumentsView caseDocumentsView = new CaseDocumentsView(caseDocuments);
-        filterOtherAndFinancialMeansDocuments(caseDocumentsView.getCaseDocuments());
-        return caseDocumentsView;
+    private CaseDocumentsView findCaseDocuments(final UUID caseId, final Predicate<CaseDocument> filter) {
+        return caseRepository.findCaseDocuments(caseId)
+                .stream()
+                .filter(filter)
+                .map(CaseDocumentView::new)
+                .sorted(CaseDocumentView.BY_DOCUMENT_TYPE_AND_NUMBER)
+                .collect(Collectors.collectingAndThen(toList(), CaseDocumentsView::new));
+    }
+
+    public CaseDocumentsView findCaseDocumentsFilterOtherAndFinancialMeans(UUID caseId) {
+        final List<String> WANTED = asList("SJPN", "PLEA", "CITN");
+
+        return findCaseDocuments(caseId, documentView -> WANTED.contains(documentView.getDocumentType()));
     }
 
     private CaseView getCaseView(CaseDetail caseDetail) {

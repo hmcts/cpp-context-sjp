@@ -42,19 +42,19 @@ public class OffenceUpdatedListener {
     @Inject
     private Clock clock;
 
-    @Handles("sjp.events.plea-updated")
+    @Handles(PleaUpdated.EVENT_NAME)
     @Transactional
     public void updatePlea(final JsonEnvelope envelope) {
         final PleaUpdated event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), PleaUpdated.class);
 
-        final OffenceDetail offenceDetail = offenceRepository.findBy(UUID.fromString(event.getOffenceId()));
+        final OffenceDetail offenceDetail = offenceRepository.findBy(event.getOffenceId());
 
         offenceDetail.setPlea(event.getPlea());
         offenceDetail.setPleaMethod(event.getPleaMethod());
         offenceDetail.setMitigation(event.getMitigation());
         offenceDetail.setNotGuiltyBecause(event.getNotGuiltyBecause());
 
-        updatePleaReceivedDate(UUID.fromString(event.getCaseId()),
+        updatePleaReceivedDate(event.getCaseId(),
                 envelope.metadata().createdAt().map(ZonedDateTime::toLocalDate)
                         .orElse(now()));
 
@@ -73,12 +73,12 @@ public class OffenceUpdatedListener {
     public void cancelPlea(final JsonEnvelope envelope) {
         final PleaCancelled event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), PleaCancelled.class);
 
-        final OffenceDetail offenceDetail = offenceRepository.findBy(UUID.fromString(event.getOffenceId()));
+        final OffenceDetail offenceDetail = offenceRepository.findBy(event.getOffenceId());
 
         offenceDetail.setPlea(null);
         offenceDetail.setPleaMethod(null);
 
-        updatePleaReceivedDate(UUID.fromString(event.getCaseId()), null);
+        updatePleaReceivedDate(event.getCaseId(), null);
 
     }
 

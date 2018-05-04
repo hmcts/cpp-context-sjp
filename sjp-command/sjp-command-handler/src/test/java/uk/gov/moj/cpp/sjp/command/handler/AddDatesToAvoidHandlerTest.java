@@ -5,7 +5,6 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataOf;
 import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedWith;
@@ -71,9 +70,7 @@ public class AddDatesToAvoidHandlerTest extends CaseAggregateBaseTest {
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
                                         .withName("sjp.events.dates-to-avoid-received"),
-                                payloadIsJson(allOf(
-                                        withJsonPath("$.datesToAvoid", equalTo(datesToAvoid))
-                                )))
+                                payloadIsJson(withJsonPath("$.datesToAvoid", equalTo(datesToAvoid))))
                 )));
     }
 

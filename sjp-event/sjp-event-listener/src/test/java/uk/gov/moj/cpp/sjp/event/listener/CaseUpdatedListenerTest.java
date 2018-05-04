@@ -107,7 +107,7 @@ public class CaseUpdatedListenerTest {
         when(jsonObjectToObjectConverter.convert(payload, CaseDocumentAdded.class)).thenReturn(caseDocumentEvent);
         when(caseDocumentConverter.convert(caseDocumentEvent)).thenReturn(caseDocument);
         when(caseDocument.getCaseId()).thenReturn(UUID.randomUUID());
-        when(caseDocumentEvent.getCaseId()).thenReturn(caseId.toString());
+        when(caseDocumentEvent.getCaseId()).thenReturn(caseId);
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
 
         listener.addCaseDocument(envelope);
@@ -120,7 +120,7 @@ public class CaseUpdatedListenerTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, CaseDocumentAdded.class)).thenReturn(caseDocumentEvent);
         when(caseDocumentConverter.convert(caseDocumentEvent)).thenReturn(caseDocument);
-        when(caseDocumentEvent.getCaseId()).thenReturn(caseId.toString());
+        when(caseDocumentEvent.getCaseId()).thenReturn(caseId);
         when(caseRepository.findBy(caseId)).thenReturn(null);
 
         listener.addCaseDocument(envelope);

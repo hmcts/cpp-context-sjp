@@ -94,7 +94,7 @@ public class UpdateInterpreterTest {
         assertThat(events, hasSize(1));
         assertThat(reflectionEquals(
                 events.get(0),
-                new DefendantNotFound(defendantId.toString(), "Update interpreter")),
+                new DefendantNotFound(defendantId, "Update interpreter")),
                 is(true));
     }
 

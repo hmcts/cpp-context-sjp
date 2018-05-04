@@ -27,8 +27,8 @@ public class AwaitingCasesIT extends BaseIntegrationTest {
     public void setUp()  {
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
         CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
-        
-        caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId().toString());
+
+        caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId());
         caseDocumentHelper.addDocumentAndVerifyAdded(); // add an SJPN document
 
         offenceCode = createCasePayloadBuilder.getOffenceBuilder().getLibraOffenceCode();

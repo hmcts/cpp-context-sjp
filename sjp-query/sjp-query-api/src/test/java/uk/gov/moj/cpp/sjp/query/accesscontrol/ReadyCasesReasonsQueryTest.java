@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.accesscontrol;
 
+import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.BDDMockito.given;
@@ -15,7 +16,6 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +37,7 @@ public class ReadyCasesReasonsQueryTest extends BaseDroolsAccessControlTest {
 
     @Override
     protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+        return singletonMap(UserAndGroupProvider.class, userAndGroupProvider);
     }
 
     @Before

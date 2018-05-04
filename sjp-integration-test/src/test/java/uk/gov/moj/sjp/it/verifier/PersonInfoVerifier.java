@@ -84,7 +84,6 @@ public class PersonInfoVerifier {
         return new PersonInfoVerifier(caseId, personalDetails);
     }
 
-
     public void verifyPersonInfo() {
         verifyPersonInfo(false);
     }
@@ -95,8 +94,8 @@ public class PersonInfoVerifier {
         if (includeContactsAndNiNumberFields) {
             fieldMatchers.addAll(getContactsAndNiNumberMatchers(personalDetails));
         }
- 
-         poll(getCaseById(caseId.toString()))
+
+        poll(getCaseById(caseId))
                 .until(status().is(OK), payload().isJson(allOf(
                         fieldMatchers.toArray(new Matcher[fieldMatchers.size()])
                 )));

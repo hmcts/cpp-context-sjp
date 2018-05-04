@@ -2,10 +2,12 @@ package uk.gov.moj.cpp.sjp.persistence.entity;
 
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -21,6 +23,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "offence")
 public class OffenceDetail implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     @Column(name = "id")
     @Id
     private UUID id;
@@ -81,7 +86,6 @@ public class OffenceDetail implements Serializable {
         super();
     }
 
-
     private OffenceDetail(final OffenceDetailBuilder builder) {
         this.id = builder.id;
         this.code = builder.code;
@@ -121,12 +125,14 @@ public class OffenceDetail implements Serializable {
         this.code = code;
     }
 
-    public String getPlea() {
-        return plea;
+    public PleaType getPlea() {
+        return Optional.ofNullable(this.plea)
+                .map(PleaType::valueOf)
+                .orElse(null);
     }
 
-    public void setPlea(String plea) {
-        this.plea = plea;
+    public void setPlea(PleaType plea) {
+        this.plea = plea == null ? null : plea.name();
     }
 
     public PleaMethod getPleaMethod() {
@@ -294,8 +300,11 @@ public class OffenceDetail implements Serializable {
             return this;
         }
 
-        public OffenceDetailBuilder setPlea(String plea) {
-            this.plea = plea;
+        public OffenceDetailBuilder setPlea(PleaType plea) {
+            if(plea != null) {
+                this.plea = plea.name();
+            }
+
             return this;
         }
 
@@ -313,7 +322,6 @@ public class OffenceDetail implements Serializable {
             this.wording = wording;
             return this;
         }
-
 
         public OffenceDetailBuilder setStartDate(LocalDate startDate) {
             this.startDate = startDate;

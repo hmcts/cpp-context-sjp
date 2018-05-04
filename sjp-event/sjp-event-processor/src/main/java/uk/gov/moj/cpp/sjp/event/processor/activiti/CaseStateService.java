@@ -6,7 +6,7 @@ import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static java.util.Collections.singletonMap;
 
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.sjp.domain.PleaType;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper;
 
 import java.time.LocalDate;

@@ -2,11 +2,12 @@ package uk.gov.moj.cpp.sjp.domain.aggregate.domain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class PleadOnlineOutcomes {
     private boolean pleaForOffencePreviouslySubmitted;
     private boolean trialRequested;
-    private List<String> offenceNotFoundIds = new ArrayList<>();
+    private List<UUID> offenceNotFoundIds = new ArrayList<>();
 
     public boolean isPleaForOffencePreviouslySubmitted() {
         return pleaForOffencePreviouslySubmitted;
@@ -24,11 +25,11 @@ public class PleadOnlineOutcomes {
         this.trialRequested = trialRequested;
     }
 
-    public List<String> getOffenceNotFoundIds() {
+    public List<UUID> getOffenceNotFoundIds() {
         return offenceNotFoundIds;
     }
 
-    public void setOffenceNotFoundIds(final List<String> offenceNotFoundIds) {
+    public void setOffenceNotFoundIds(final List<UUID> offenceNotFoundIds) {
         this.offenceNotFoundIds = offenceNotFoundIds;
     }
 }

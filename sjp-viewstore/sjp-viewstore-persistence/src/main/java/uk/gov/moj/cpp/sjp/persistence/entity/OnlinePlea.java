@@ -1,9 +1,11 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
 import static java.util.Arrays.asList;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
-import uk.gov.moj.cpp.sjp.domain.PleaType;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
@@ -75,7 +77,7 @@ public class OnlinePlea {
     }
 
     public OnlinePlea(final PleaUpdated pleaUpdated) {
-        this(UUID.fromString(pleaUpdated.getCaseId()), new PleaDetails(pleaUpdated), pleaUpdated.getUpdatedDate());
+        this(pleaUpdated.getCaseId(), new PleaDetails(pleaUpdated), pleaUpdated.getUpdatedDate());
     }
 
     public OnlinePlea(final UUID caseId, final String interpreterLanguage, final ZonedDateTime updatedDate) {
@@ -171,8 +173,9 @@ public class OnlinePlea {
 
     @Embeddable
     public static class PleaDetails {
+        @Enumerated(EnumType.STRING)
         @Column(name = "plea")
-        private String plea;
+        private PleaType plea;
         @Column(name = "come_to_court")
         private Boolean comeToCourt;
         @Column(name = "mitigation")
@@ -204,10 +207,10 @@ public class OnlinePlea {
             this.plea =  pleaUpdated.getPlea();
             this.mitigation = pleaUpdated.getMitigation();
             this.notGuiltyBecause = pleaUpdated.getNotGuiltyBecause();
-            this.comeToCourt = asList(PleaType.GUILTY_REQUEST_HEARING, PleaType.NOT_GUILTY).contains(PleaType.valueOf(plea));
+            this.comeToCourt = asList(GUILTY_REQUEST_HEARING, NOT_GUILTY).contains(plea);
         }
 
-        public String getPlea() {
+        public PleaType getPlea() {
             return plea;
         }
 

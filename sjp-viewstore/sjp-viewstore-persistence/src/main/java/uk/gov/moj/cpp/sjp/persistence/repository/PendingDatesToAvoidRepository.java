@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 
 import java.util.List;
@@ -23,7 +24,12 @@ public interface PendingDatesToAvoidRepository extends EntityRepository<PendingD
             "ORDER BY pda.pleaDate ASC")
     List<PendingDatesToAvoid> findCasesPendingDatesToAvoid(@QueryParam("prosecutingAuthority") String prosecutingAuthority);
 
+    default List<PendingDatesToAvoid> findCasesPendingDatesToAvoid(ProsecutingAuthority prosecutingAuthority) {
+        return findCasesPendingDatesToAvoid(prosecutingAuthority == null ? null : prosecutingAuthority.name());
+    }
+
     @Modifying
     @Query(value = "DELETE FROM PendingDatesToAvoid WHERE caseId=:caseId")
     void removeByCaseId(@QueryParam("caseId") UUID caseId);
+
 }

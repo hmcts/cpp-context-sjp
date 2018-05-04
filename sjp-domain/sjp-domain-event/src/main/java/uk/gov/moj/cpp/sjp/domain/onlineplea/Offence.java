@@ -1,14 +1,18 @@
 package uk.gov.moj.cpp.sjp.domain.onlineplea;
 
-import uk.gov.moj.cpp.sjp.domain.PleaType;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Offence implements Serializable {
-    private String id;
+
+    private static final long serialVersionUID = 1L;
+
+    private UUID id;
     private PleaType plea;
     private Boolean comeToCourt;
     private String mitigation;
@@ -17,7 +21,7 @@ public class Offence implements Serializable {
     public Offence() {}
 
     @JsonCreator
-    public Offence(@JsonProperty("id") final String id,
+    public Offence(@JsonProperty("id") final UUID id,
                    @JsonProperty("plea") final PleaType plea,
                    @JsonProperty("comeToCourt") final Boolean comeToCourt,
                    @JsonProperty("mitigation") final String mitigation,
@@ -29,7 +33,7 @@ public class Offence implements Serializable {
         this.notGuiltyBecause = notGuiltyBecause;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 

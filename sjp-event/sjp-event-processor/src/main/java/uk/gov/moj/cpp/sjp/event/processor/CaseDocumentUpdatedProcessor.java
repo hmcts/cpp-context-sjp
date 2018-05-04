@@ -6,6 +6,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -25,10 +26,10 @@ public class CaseDocumentUpdatedProcessor {
     @Inject
     private Enveloper enveloper;
 
-    static final String PUBLIC_CASE_DOCUMENT_ALREADY_ADDED_PUBLIC_EVENT = "public.sjp.case-document-already-exists";
+    private static final String PUBLIC_CASE_DOCUMENT_ALREADY_ADDED_PUBLIC_EVENT = "public.sjp.case-document-already-exists";
     private static final String PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT = "public.sjp.case-document-added";
 
-    @Handles("sjp.events.case-document-added")
+    @Handles(CaseDocumentAdded.EVENT_NAME)
     public void handleCaseDocumentAdded(final JsonEnvelope jsonEnvelope) {
         final String caseId = jsonEnvelope.payloadAsJsonObject().getString(EventProcessorConstants.CASE_ID);
         LOGGER.info("Received Case document added message for caseId {}", caseId);
@@ -46,7 +47,7 @@ public class CaseDocumentUpdatedProcessor {
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_CASE_DOCUMENT_ALREADY_ADDED_PUBLIC_EVENT).apply(publicEventPayload));
     }
 
-    JsonObject getCaseDocumentPublicEventPayload(String caseId, JsonObject caseDocument) {
+    private JsonObject getCaseDocumentPublicEventPayload(String caseId, JsonObject caseDocument) {
         final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder()
                 .add(EventProcessorConstants.CASE_ID, caseId)
                 .add(EventProcessorConstants.ID, caseDocument.getString(EventProcessorConstants.ID))
@@ -58,4 +59,5 @@ public class CaseDocumentUpdatedProcessor {
 
         return jsonObjectBuilder.build();
     }
+
 }

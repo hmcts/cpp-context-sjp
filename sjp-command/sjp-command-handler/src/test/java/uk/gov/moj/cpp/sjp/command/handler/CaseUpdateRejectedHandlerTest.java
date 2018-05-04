@@ -21,12 +21,12 @@ public class CaseUpdateRejectedHandlerTest extends CaseCommandHandlerTest {
     @Test
     public void shouldRejectCaseUpdate() throws Exception {
 
-        when(caseAggregate.caseUpdateRejected(CASE_ID.toString(), CaseUpdateRejected.RejectReason.CASE_COMPLETED)).thenReturn(events);
+        when(caseAggregate.caseUpdateRejected(CASE_ID, CaseUpdateRejected.RejectReason.CASE_COMPLETED)).thenReturn(events);
         when(jsonObject.getString(eq("reason"))).thenReturn(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name());
 
         caseUpdateRejectedHandler.caseUpdateRejected(jsonEnvelope);
 
         verify(jsonObject).getString(eq("reason"));
-        verify(caseAggregate).caseUpdateRejected(CASE_ID.toString(), CaseUpdateRejected.RejectReason.CASE_COMPLETED);
+        verify(caseAggregate).caseUpdateRejected(CASE_ID, CaseUpdateRejected.RejectReason.CASE_COMPLETED);
     }
 }

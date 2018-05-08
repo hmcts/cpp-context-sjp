@@ -23,7 +23,7 @@
         <referencedata.version>2.0.142</referencedata.version>
         <resulting.version>2.0.166</resulting.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
-        <usersgroups.version>2.0.91</usersgroups.version>
+        <usersgroups.version>2.0.95</usersgroups.version>
         <access-control-sjp-providers.version>3.2.9</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>

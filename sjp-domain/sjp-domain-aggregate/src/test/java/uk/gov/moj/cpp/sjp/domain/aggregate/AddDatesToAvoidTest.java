@@ -1,22 +1,27 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static java.lang.String.format;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.UUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import org.junit.Before;
-import org.junit.Test;
+
 import uk.gov.moj.cpp.sjp.domain.Case;
+import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
+import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
 
-public class AddDatesToAvoidTest {
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import org.junit.Before;
+import org.junit.Test;
+
+public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
 
     private CaseAggregate caseAggregate;
     private UUID caseId;
@@ -69,6 +74,36 @@ public class AddDatesToAvoidTest {
     private DatesToAvoidAdded datesToAvoidAddedEvent(final String datesToAvoid) {
         List<Object> datesToAvoidAddedEvents = caseAggregate.addDatesToAvoid(datesToAvoid).collect(toList());
         return (DatesToAvoidAdded) datesToAvoidAddedEvents.get(0);
+    }
+
+    @Test
+    public void caseCompleted() {
+        //given a completed case
+        caseAggregate.completeCase();
+
+        //when
+        List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID).collect(toList());
+
+        //then
+        assertThat(events, hasSize(1));
+        CaseUpdateRejected datesToAvoidReceived = (CaseUpdateRejected) events.get(0);
+        assertThat(datesToAvoidReceived.getCaseId(), equalTo(aCase.getId()));
+        assertThat(datesToAvoidReceived.getReason(), equalTo(CaseUpdateRejected.RejectReason.CASE_COMPLETED));
+    }
+
+    @Test
+    public void caseAssigned() {
+        //given an assigned case
+        caseAggregate.assignCase(UUID.randomUUID(), CaseAssignmentType.DELEGATED_POWERS_DECISION);
+
+        //when
+        List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID).collect(toList());
+
+        //then
+        assertThat(events, hasSize(1));
+        CaseUpdateRejected datesToAvoidReceived = (CaseUpdateRejected) events.get(0);
+        assertThat(datesToAvoidReceived.getCaseId(), equalTo(aCase.getId()));
+        assertThat(datesToAvoidReceived.getReason(), equalTo(CaseUpdateRejected.RejectReason.CASE_ASSIGNED));
     }
 
     private CaseReceived receiveCase() {

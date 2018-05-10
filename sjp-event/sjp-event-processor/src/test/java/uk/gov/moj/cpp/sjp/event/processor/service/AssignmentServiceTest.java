@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
@@ -19,21 +20,27 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.json.Json;
 
+import com.google.common.collect.ImmutableMap;
+import org.hamcrest.CustomTypeSafeMatcher;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -58,6 +65,9 @@ public class AssignmentServiceTest {
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
+
+    @Mock
+    private Sender sender;
 
     @InjectMocks
     private AssignmentService assignmentService;
@@ -135,5 +145,26 @@ public class AssignmentServiceTest {
         final List<AssignmentCandidate> assignmentCandidates = assignmentService.getAssignmentCandidates(sourceCommand, legalAdviserId, courtCode, DELEGATED_POWERS);
 
         assertThat(assignmentCandidates, hasSize(0));
+    }
+
+    @Test
+    public void shouldSendUnassignCaseCommand() {
+
+        final UUID caseId = UUID.randomUUID();
+
+        assignmentService.unassignCase(caseId);
+
+        verify(sender).sendAsAdmin(argThat(commandContainsAll(ImmutableMap.of("name", "sjp.command.unassign-case"), ImmutableMap.of(CASE_ID, caseId.toString()))));
+    }
+
+    private Matcher<JsonEnvelope> commandContainsAll(Map<String, String> headers, Map<String, String> payload) {
+        return new CustomTypeSafeMatcher<JsonEnvelope>("did not match all attributes") {
+            @Override
+            protected boolean matchesSafely(JsonEnvelope actualAttributes) {
+                return headers.entrySet().stream().allMatch(e -> e.getValue().equals(actualAttributes.metadata().asJsonObject().getString(e.getKey())))
+                        &&
+                        payload.entrySet().stream().allMatch(e -> e.getValue().equals(actualAttributes.payloadAsJsonObject().getString(e.getKey())));
+            }
+        };
     }
 }

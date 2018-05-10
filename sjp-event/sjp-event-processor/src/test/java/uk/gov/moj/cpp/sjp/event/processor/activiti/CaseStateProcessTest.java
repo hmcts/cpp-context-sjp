@@ -27,7 +27,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PROCE
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.WITHDRAWAL_REQUESTED_SIGNAL_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.WITHDRAWAL_REQUEST_CANCELLED_SIGNAL_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegateExecutionStubber.mockDelegate;
-import static uk.gov.moj.cpp.sjp.event.processor.matcher.DelegateExecutionBusinessKeyMatcher.withBusinessKey;
+import static uk.gov.moj.cpp.sjp.event.processor.matcher.DelegateExecutionProcessBusinessKeyMatcher.withProcessBusinessKey;
 import static uk.gov.moj.cpp.sjp.event.processor.matcher.DelegateExecutionVariableMatcher.withProcessVariable;
 
 import uk.gov.justice.services.messaging.Metadata;
@@ -118,7 +118,7 @@ public class CaseStateProcessTest {
         tryProcessPendingJobs();
 
         verify(caseStartedDelegate).execute(argThat(allOf(
-                withBusinessKey(caseId.toString()),
+                withProcessBusinessKey(caseId.toString()),
                 withProcessVariable(POSTING_DATE_VARIABLE, postingDate.toString()),
                 withProcessVariable(METADATA_VARIABLE, metadataHelper.metadataToString(metadata))
         )));

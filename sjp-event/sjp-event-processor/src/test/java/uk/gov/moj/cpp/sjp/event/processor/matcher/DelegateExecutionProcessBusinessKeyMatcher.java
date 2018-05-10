@@ -5,21 +5,21 @@ import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 
 
-public class DelegateExecutionBusinessKeyMatcher extends TypeSafeDiagnosingMatcher<DelegateExecution> {
+public class DelegateExecutionProcessBusinessKeyMatcher extends TypeSafeDiagnosingMatcher<DelegateExecution> {
 
     private final String businessKey;
 
-    public static DelegateExecutionBusinessKeyMatcher withBusinessKey(final String businessKey) {
-        return new DelegateExecutionBusinessKeyMatcher(businessKey);
+    private DelegateExecutionProcessBusinessKeyMatcher(final String businessKey) {
+        this.businessKey = businessKey;
     }
 
-    private DelegateExecutionBusinessKeyMatcher(final String businessKey) {
-        this.businessKey = businessKey;
+    public static DelegateExecutionProcessBusinessKeyMatcher withProcessBusinessKey(final String businessKey) {
+        return new DelegateExecutionProcessBusinessKeyMatcher(businessKey);
     }
 
     @Override
     protected boolean matchesSafely(final DelegateExecution delegateExecution, final Description mismatchDescription) {
-        return delegateExecution.getBusinessKey().equals(businessKey);
+        return delegateExecution.getProcessBusinessKey().equals(businessKey);
     }
 
     @Override

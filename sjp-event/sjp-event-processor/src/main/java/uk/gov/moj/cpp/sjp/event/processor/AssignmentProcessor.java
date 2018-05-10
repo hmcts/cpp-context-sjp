@@ -17,6 +17,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.event.processor.activiti.CaseAssignmentTimeoutProcess;
 import uk.gov.moj.cpp.sjp.event.processor.service.AssignmentService;
 import uk.gov.moj.cpp.sjp.event.session.CaseAlreadyAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
@@ -24,6 +25,7 @@ import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRequested;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,6 +37,8 @@ import javax.json.JsonObject;
 @ServiceComponent(EVENT_PROCESSOR)
 public class AssignmentProcessor {
 
+    private static final Duration CASE_TIMEOUT_DURATION = Duration.ofMinutes(60);
+
     @Inject
     private Sender sender;
 
@@ -43,6 +47,10 @@ public class AssignmentProcessor {
 
     @Inject
     private AssignmentService assignmentService;
+
+    @Inject
+    private CaseAssignmentTimeoutProcess caseAssignmentTimeoutProcess;
+
 
     @Handles(CaseAssignmentRequested.EVENT_NAME)
     public void handleCaseAssignmentRequestedEvent(final JsonEnvelope caseAssignmentRequest) {
@@ -91,22 +99,32 @@ public class AssignmentProcessor {
         sender.send(enveloper.withMetadataFrom(caseAssignedEvent, "assignment.command.add-assignment-to")
                 .apply(assignmentReplicationPayload));
 
+        caseAssignmentTimeoutProcess.startTimer(caseId, CASE_TIMEOUT_DURATION);
+
         emitCaseAssignedPublicEvent(caseId, caseAssignedEvent);
     }
 
     @Handles(CaseAlreadyAssigned.EVENT_NAME)
     public void handleCaseAlreadyAssignedEvent(final JsonEnvelope caseAssignedEvent) {
         final UUID caseId = UUID.fromString(caseAssignedEvent.payloadAsJsonObject().getString(CASE_ID));
+
+        caseAssignmentTimeoutProcess.resetTimer(caseId, CASE_TIMEOUT_DURATION);
+
         emitCaseAssignedPublicEvent(caseId, caseAssignedEvent);
     }
 
-    //TODO remove (ATCM-3097)
     @Handles(CaseUnassigned.EVENT_NAME)
     public void handleCaseUnassignedEvent(final JsonEnvelope caseUnassignedEvent) {
+
+        final UUID caseId = UUID.fromString(caseUnassignedEvent.payloadAsJsonObject().getString(CASE_ID));
+
         final JsonObject assignmentReplicationPayload = createObjectBuilder()
-                .add("domainObjectId", caseUnassignedEvent.payloadAsJsonObject().getString(CASE_ID))
+                .add("domainObjectId", caseId.toString())
                 .build();
 
+        caseAssignmentTimeoutProcess.cancelTimer(caseId);
+
+        //TODO remove (ATCM-3097)
         sender.send(enveloper.withMetadataFrom(caseUnassignedEvent, "assignment.command.remove-assignment")
                 .apply(assignmentReplicationPayload));
     }

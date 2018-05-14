@@ -121,11 +121,10 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void acceptsNewFirstName() {
-        givenNoPersonInfoWasAdded();
 
         final String newFirstName = "Newname";
         final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewFirstName(newFirstName)
+                defaultDefendantData().withNewDateOfBirth(null).withNewFirstName(newFirstName)
         );
 
         assertThat(events.size(), is(1));
@@ -136,33 +135,16 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void acceptsNewLastName() {
-        givenNoPersonInfoWasAdded();
 
         final String newLastName = "Newname";
         final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewLastName(newLastName)
+                defaultDefendantData().withNewDateOfBirth(null).withNewLastName(newLastName)
         );
 
         assertThat(events.size(), is(1));
 
         final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(0);
         assertThat(defendantDetailsUpdated.getLastName(), is(newLastName));
-    }
-
-    @Test
-    public void rejectsNullDateOfBirth() {
-        givenCaseWasReceivedWithDetaultDefendantData();
-
-        final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewDateOfBirth(null)
-        );
-
-        assertThat(events.size(), is(1));
-
-        final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
-        assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("dob parameter can not be null"));
     }
 
     @Test
@@ -254,9 +236,6 @@ public class CaseAggregateDefendantTest {
         assertThat(defendantDetailsUpdated.getAddress(), is(newAddress));
     }
 
-    private void givenNoPersonInfoWasAdded() {
-    }
-
     static class DefendantData {
         UUID id = CaseAggregateDefendantTest.id;
         UUID caseId = CaseAggregateDefendantTest.caseId;
@@ -325,7 +304,7 @@ public class CaseAggregateDefendantTest {
     }
 
     private List<Object> whenTheDefendantIsUpdated(final DefendantData updatedDefendantData) {
-        Person person = new Person(updatedDefendantData.title,
+        final Person person = new Person(updatedDefendantData.title,
                 updatedDefendantData.firstName, updatedDefendantData.lastName, updatedDefendantData.dateOfBirth,
                 updatedDefendantData.gender, updatedDefendantData.address);
 

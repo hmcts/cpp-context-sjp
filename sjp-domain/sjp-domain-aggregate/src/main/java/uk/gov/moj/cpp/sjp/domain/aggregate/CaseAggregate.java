@@ -155,8 +155,8 @@ public class CaseAggregate implements Aggregate {
         if (hasCaseBeenReceived()) {
             event = new CaseCreationFailedBecauseCaseAlreadyExisted(this.caseId, this.urn);
         } else {
-            Defendant caseDefendant = aCase.getDefendant();
-            Defendant eventDefendant = new Defendant(
+            final Defendant caseDefendant = aCase.getDefendant();
+            final Defendant eventDefendant = new Defendant(
                     UUID.randomUUID(),
                     caseDefendant.getTitle(),
                     caseDefendant.getFirstName(),
@@ -634,12 +634,6 @@ public class CaseAggregate implements Aggregate {
         return apply(streamBuilder.build());
     }
 
-    private void validateDefendant(String title, LocalDate dateOfBirth, Address address) {
-        validateDefendantTitle(title);
-        validateDefendantDateOfBirth(dateOfBirth);
-        validateDefendantAddress(address);
-    }
-
     private void validateDefendantAddress(final Address address) {
         if (this.defendantAddress != null) {
             ensureFieldIsNotBlankIfWasDefined(this.defendantAddress.getAddress1(), address.getAddress1(),
@@ -659,13 +653,6 @@ public class CaseAggregate implements Aggregate {
         }
     }
 
-    private void validateDefendantDateOfBirth(final LocalDate dateOfBirth) {
-        if (this.defendantDateOfBirth != null && dateOfBirth == null) {
-            throw new IllegalArgumentException(
-                    "dob parameter can not be null");
-        }
-    }
-
     private void validateDefendantTitle(final String title) {
         if (StringUtils.isBlank(title) && StringUtils.isNotBlank(this.defendantTitle)) {
             throw new IllegalArgumentException(String.format("title parameter can not be null as previous value is : %s", this.defendantTitle));
@@ -678,16 +665,17 @@ public class CaseAggregate implements Aggregate {
                                                  String homeNumber, String mobileNumber,
                                                  Person person, ZonedDateTime updatedDate) {
 
-        Stream.Builder<Object> events = Stream.builder();
+        final Stream.Builder<Object> events = Stream.builder();
 
         try {
-            validateDefendant(person.getTitle(), person.getDateOfBirth(), person.getAddress());
+            validateDefendantTitle(person.getTitle());
+            validateDefendantAddress(person.getAddress());
         } catch (IllegalArgumentException | IllegalStateException e) {
             LOGGER.error("Defendant details update failed for ID: {} with message {} ", defendantId, e);
             return apply(Stream.of(new DefendantDetailsUpdateFailed(caseId, defendantId, e.getMessage())));
         }
 
-        if ((defendantDateOfBirth != null) && (!person.getDateOfBirth().isEqual(defendantDateOfBirth))) {
+        if (defendantDateOfBirth != null && !Objects.equals(defendantDateOfBirth, person.getDateOfBirth())) {
             final DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = new DefendantDateOfBirthUpdated(caseId, defendantDateOfBirth, person.getDateOfBirth());
             events.add(defendantDateOfBirthUpdated);
         }
@@ -934,8 +922,8 @@ public class CaseAggregate implements Aggregate {
      * @return conversion to new event
      */
     @SuppressWarnings("deprecation")
-    private static CaseReceived convertSjpCaseCreatedToCaseReceived(SjpCaseCreated sjpCaseCreated) {
-        Defendant defendant = new Defendant(sjpCaseCreated.getDefendantId(),
+    private static CaseReceived convertSjpCaseCreatedToCaseReceived(final SjpCaseCreated sjpCaseCreated) {
+        final Defendant defendant = new Defendant(sjpCaseCreated.getDefendantId(),
                 null, null, null, null, null, null,
                 sjpCaseCreated.getNumPreviousConvictions(),
                 sjpCaseCreated.getOffences());

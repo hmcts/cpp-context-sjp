@@ -27,8 +27,9 @@ public class DefendantPersonalDetailsChangesListener {
     @Handles("sjp.events.defendant-personal-name-updated")
     @Transactional
     public void defendantPersonalNameUpdated(final JsonEnvelope envelope) {
-        DefendantPersonalNameUpdated defendantPersonalNameUpdated = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantPersonalNameUpdated.class);
-        CaseDetail caseDetail = caseRepository.findBy(defendantPersonalNameUpdated.getCaseId());
+        final DefendantPersonalNameUpdated defendantPersonalNameUpdated = jsonObjectToObjectConverter
+                .convert(envelope.payloadAsJsonObject(), DefendantPersonalNameUpdated.class);
+        final CaseDetail caseDetail = caseRepository.findBy(defendantPersonalNameUpdated.getCaseId());
         caseDetail.getDefendant().getPersonalDetails().setNameChanged(Boolean.TRUE);
         caseRepository.save(caseDetail);
     }
@@ -36,8 +37,9 @@ public class DefendantPersonalDetailsChangesListener {
     @Handles("sjp.events.defendant-address-updated")
     @Transactional
     public void defendantAddressUpdated(final JsonEnvelope envelope) {
-        DefendantAddressUpdated defendantAddressUpdated = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantAddressUpdated.class);
-        CaseDetail caseDetail = caseRepository.findBy(defendantAddressUpdated.getCaseId());
+        final DefendantAddressUpdated defendantAddressUpdated = jsonObjectToObjectConverter
+                .convert(envelope.payloadAsJsonObject(), DefendantAddressUpdated.class);
+        final CaseDetail caseDetail = caseRepository.findBy(defendantAddressUpdated.getCaseId());
         caseDetail.getDefendant().getPersonalDetails().setAddressChanged(Boolean.TRUE);
         caseRepository.save(caseDetail);
     }
@@ -45,8 +47,9 @@ public class DefendantPersonalDetailsChangesListener {
     @Handles("sjp.events.defendant-date-of-birth-updated")
     @Transactional
     public void defendantDateOfBirthUpdated(final JsonEnvelope envelope) {
-        DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantDateOfBirthUpdated.class);
-        CaseDetail caseDetail = caseRepository.findBy(defendantDateOfBirthUpdated.getCaseId());
+        final DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = jsonObjectToObjectConverter
+                .convert(envelope.payloadAsJsonObject(), DefendantDateOfBirthUpdated.class);
+        final CaseDetail caseDetail = caseRepository.findBy(defendantDateOfBirthUpdated.getCaseId());
         caseDetail.getDefendant().getPersonalDetails().setDobChanged(Boolean.TRUE);
         caseRepository.save(caseDetail);
     }

@@ -104,7 +104,6 @@
       "required": [
         "firstName",
         "lastName",
-        "dateOfBirth",
         "address"
       ]
     },

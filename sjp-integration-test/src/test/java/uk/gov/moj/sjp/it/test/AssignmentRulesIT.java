@@ -1,13 +1,34 @@
 package uk.gov.moj.sjp.it.test;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
+import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.EventedListener;
+import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestCancelHelper;
+import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
+import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
+import uk.gov.moj.sjp.it.stub.AssignmentStub;
+import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
+import uk.gov.moj.sjp.it.stub.SchedulingStub;
+import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
+
+import javax.json.JsonObject;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Stream;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -21,45 +42,13 @@ import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
-import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
-import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_SJP_CASE_UPDATE_REJECTED;
-import static uk.gov.moj.sjp.it.EventSelector.SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
-import static uk.gov.moj.sjp.it.EventSelector.SJP_EVENTS_CASE_UPDATE_REJECTED;
+import static uk.gov.moj.sjp.it.Constants.*;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.*;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.*;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
-
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.domain.SessionType;
-import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
-import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.helper.AssignmentHelper;
-import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestCancelHelper;
-import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
-import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
-import uk.gov.moj.sjp.it.stub.AssignmentStub;
-import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
-import uk.gov.moj.sjp.it.stub.SchedulingStub;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
-
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import javax.json.JsonObject;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 public class AssignmentRulesIT extends BaseIntegrationTest {
 
@@ -73,7 +62,6 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
     private CreateCase.CreateCasePayloadBuilder tflPiaCasePayloadBuilder, tflPleadedGuiltyCasePayloadBuilder, tflPleadedNotGuiltyCasePayloadBuilder, tflPendingWithdrawalCasePayloadBuilder,
             tvlPiaCasePayloadBuilder, tvlPleadedGuiltyRequestHearingCasePayloadBuilder, dvlaPiaCasePayloadBuilder, dvlaPleadedNotGuiltyCasePayloadBuilder;
 
-    private AssignmentHelper assignmentHelper;
     private UUID userId;
 
     private UpdatePleaHelper updatePleaHelper;
@@ -96,7 +84,6 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         AssignmentStub.stubRemoveAssignmentCommand();
         SchedulingStub.stubStartSjpSessionCommand();
 
-        assignmentHelper = new AssignmentHelper();
         updatePleaHelper = new UpdatePleaHelper();
 
         tflPiaCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
@@ -163,6 +150,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
 
         addDatesToAvoid(tflPleadedNotGuiltyCasePayloadBuilder.getId(), DATE_TO_AVOID);
         addDatesToAvoid(dvlaPleadedNotGuiltyCasePayloadBuilder.getId(), DATE_TO_AVOID);
+
     }
 
     @After
@@ -170,7 +158,6 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         final OffencesWithdrawalRequestCancelHelper offencesWithdrawalRequestCancelHelper = new OffencesWithdrawalRequestCancelHelper(tflPendingWithdrawalCasePayloadBuilder.getId(), SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED);
         offencesWithdrawalRequestCancelHelper.cancelRequestWithdrawalForAllOffences(userId);
         offencesWithdrawalRequestCancelHelper.close();
-        assignmentHelper.close();
     }
 
     @Test
@@ -220,19 +207,16 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
     public void shouldHandleConcurrentAssignmentRequestFromMultipleLegalAdvisers() {
         final Map<UUID, UUID> sessionIdByUserId = Stream.generate(UUID::randomUUID).limit(3).collect(toMap(identity(), la -> randomUUID()));
 
-        sessionIdByUserId.entrySet().parallelStream().forEach(sessionByUser ->
-                startSession(sessionByUser.getValue(), sessionByUser.getKey(), LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE));
+        sessionIdByUserId
+                .entrySet()
+                .parallelStream()
+                .forEach(sessionByUser -> startSession(sessionByUser.getValue(), sessionByUser.getKey(), LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE));
 
-        sessionIdByUserId.entrySet().parallelStream().forEach(sessionByUser ->
-                requestCaseAssignment(sessionByUser.getValue(), sessionByUser.getKey()));
-
-        final Map<UUID, UUID> assignedCaseByUserId = new HashMap<>(sessionIdByUserId.size());
-        for (int i = 0; i < sessionIdByUserId.size(); i++) {
-            final JsonObject assignment = assignmentHelper.getCaseAssignedPrivateEvent().payloadAsJsonObject();
-            final UUID assigneeId = UUID.fromString(assignment.getString("assigneeId"));
-            final UUID caseId = UUID.fromString(assignment.getString("caseId"));
-            assignedCaseByUserId.put(assigneeId, caseId);
-        }
+        final Map<UUID, UUID> assignedCaseByUserId = sessionIdByUserId
+                .entrySet()
+                .parallelStream()
+                .map((entry) -> assignCaseAndGetEventPayload(entry.getKey(), entry.getValue()) )
+                .collect(toMap(assignment -> UUID.fromString(assignment.getString("assigneeId")), assignment -> UUID.fromString(assignment.getString("caseId"))));
 
         assertThat(assignedCaseByUserId.keySet(), containsInAnyOrder(sessionIdByUserId.keySet().toArray()));
         assertThat(assignedCaseByUserId.values(), containsInAnyOrder(
@@ -262,10 +246,14 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         final UUID sessionId = randomUUID();
         final UUID userId = randomUUID();
 
-        startSession(sessionId, userId, courtHouseOUCode, sessionType);
-        requestCaseAssignment(sessionId, userId);
+        startSessionAndWaitForSuccess(courtHouseOUCode, sessionType, sessionId, userId);
 
-        final JsonEnvelope caseAssignedPrivateEvent = assignmentHelper.getCaseAssignedPrivateEvent();
+        EventedListener assignmentRunner = new EventedListener()
+                .subscribe(CASE_ASSIGNED_PRIVATE_EVENT)
+                .subscribe(CASE_ASSIGNED_PUBLIC_EVENT)
+                .run(() -> requestCaseAssignment(sessionId, userId));
+
+        final JsonEnvelope caseAssignedPrivateEvent = assignmentRunner.popEvent(CASE_ASSIGNED_PRIVATE_EVENT).get();
 
         assertThat(caseAssignedPrivateEvent,
                 jsonEnvelope(
@@ -276,11 +264,11 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
                                 withJsonPath("$.caseAssignmentType", equalTo(sessionType == MAGISTRATE ? MAGISTRATE_DECISION.toString() : DELEGATED_POWERS_DECISION.toString()))
                         ))));
 
-        final JsonEnvelope caseAssignedPublicEvent = assignmentHelper.getCaseAssignedPublicEvent();
+        final JsonEnvelope caseAssignedPublicEvent = assignmentRunner.popEvent(CASE_ASSIGNED_PUBLIC_EVENT).get();
 
         assertThat(caseAssignedPublicEvent,
                 jsonEnvelope(
-                        metadata().withName("public.sjp.case-assigned"),
+                        metadata().withName(CASE_ASSIGNED_PUBLIC_EVENT),
                         payload().isJson(withJsonPath("$.caseId", equalTo(caseId.toString())))));
     }
 
@@ -288,13 +276,31 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         final UUID sessionId = randomUUID();
         final UUID userId = randomUUID();
 
-        startSession(sessionId, userId, courtHouseOUCode, sessionType);
-        requestCaseAssignment(sessionId, userId);
+        startSessionAndWaitForSuccess(courtHouseOUCode, sessionType, sessionId, userId);
 
-        final JsonEnvelope assignedEvent = assignmentHelper.getCaseNotAssignedEvent();
+        final JsonEnvelope assignedEvent = new EventedListener()
+                .subscribe(CASE_NOT_ASSIGNED_EVENT)
+                .run(() -> requestCaseAssignment(sessionId, userId))
+                .popEvent(CASE_NOT_ASSIGNED_EVENT)
+                .get();
 
         assertThat(assignedEvent, not(nullValue()));
     }
 
+    private void startSessionAndWaitForSuccess(String courtHouseOUCode, SessionType sessionType, UUID sessionId, UUID userId) {
+        String expectedEvent = sessionType == SessionType.MAGISTRATE ? MAGISTRATE_SESSION_STARTED_EVENT : DELEGATED_POWERS_SESSION_ENDED_EVENT;
+        new EventedListener()
+                .subscribe(expectedEvent)
+                .run(() -> startSession(sessionId, userId, courtHouseOUCode, sessionType));
+    }
+
+    private static JsonObject assignCaseAndGetEventPayload(UUID userId, UUID sessionId) {
+        return new EventedListener()
+                .subscribe(CASE_ASSIGNED_PRIVATE_EVENT)
+                .run(() -> requestCaseAssignment(sessionId, userId))
+                .popEvent(CASE_ASSIGNED_PRIVATE_EVENT)
+                .get()
+                .payloadAsJsonObject();
+    }
 
 }

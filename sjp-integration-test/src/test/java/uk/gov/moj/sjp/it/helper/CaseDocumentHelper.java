@@ -20,10 +20,10 @@ import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.matchers.UuidStringMatcher.isAUuid;
-import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
-import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
-import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS;
-import static uk.gov.moj.sjp.it.EventSelector.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED;
+import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseDocumentsByCaseId;
@@ -34,7 +34,7 @@ import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
 import uk.gov.justice.services.test.utils.core.http.RestPoller;
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
-import uk.gov.moj.sjp.it.EventSelector;
+import uk.gov.moj.sjp.it.Constants;
 import uk.gov.moj.sjp.it.stub.MaterialStub;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
@@ -90,10 +90,10 @@ public class CaseDocumentHelper implements AutoCloseable {
         this.materialId = UUID.randomUUID().toString();
         this.caseId = caseId;
         privateEventsConsumer = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_CASE_DOCUMENT_ADDED);
-        publicConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED, EventSelector.PUBLIC_ACTIVE_MQ_TOPIC);
+        publicConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
 
-        publicCaseDocumentAlreadyExistsConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS, EventSelector.PUBLIC_ACTIVE_MQ_TOPIC);
-        publicCaseDocumentUploaded.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED, EventSelector.PUBLIC_ACTIVE_MQ_TOPIC);
+        publicCaseDocumentAlreadyExistsConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
+        publicCaseDocumentUploaded.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
     }
 
     private void addCaseDocument(UUID userId, String payload, String documentType) {

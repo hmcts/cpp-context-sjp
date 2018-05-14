@@ -33,3 +33,12 @@ rule "Command - Rule for assigning case"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Command - Rule for unassigning case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.unassign-case");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAssignCaseGroups()));
+  then
+    $outcome.setSuccess(true);
+end

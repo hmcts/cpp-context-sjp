@@ -2,16 +2,14 @@ package uk.gov.moj.sjp.it;
 
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
-import uk.gov.moj.cpp.sjp.event.CaseCompleted;
-import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 
-public class EventSelector {
-    public static final String EVENT_SELECTOR_CASE_COMPLETED = CaseCompleted.EVENT_NAME;
-    public static final String EVENT_SELECTOR_CASE_DOCUMENT_ADDED = CaseDocumentAdded.EVENT_NAME;
+public class Constants {
+    public static final String EVENT_SELECTOR_CASE_COMPLETED = "sjp.events.case-completed";
+    public static final String EVENT_SELECTOR_CASE_DOCUMENT_ADDED = "sjp.events.case-document-added";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS = "public.sjp.case-document-already-exists";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED = "public.sjp.case-document-uploaded";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED = "public.sjp.case-document-added";
@@ -35,4 +33,6 @@ public class EventSelector {
     public static final String PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE = "public.sjp.case-reopened-in-libra-undone";
     public static final String PUBLIC_ACTIVE_MQ_TOPIC = "public.event";
     public static final String PRIVATE_ACTIVE_MQ_TOPIC = "sjp.event";
+    public static final Integer MESSAGE_QUEUE_TIMEOUT = 10000;
+
 }

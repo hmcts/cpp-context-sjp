@@ -4,7 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
-import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_PLEA_UPDATED;
+import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_PLEA_UPDATED;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;

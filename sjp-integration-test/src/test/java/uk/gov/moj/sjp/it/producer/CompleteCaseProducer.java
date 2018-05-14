@@ -6,7 +6,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_CASE_COMPLETED;
+import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_COMPLETED;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;

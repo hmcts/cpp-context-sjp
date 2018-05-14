@@ -12,8 +12,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.SESSION_STARTED_PUBLIC_EVENT;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startDelegatedPowersSession;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSession;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.sjp.it.helper.EventedListener;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
@@ -41,8 +45,11 @@ public class SessionIT extends BaseIntegrationTest {
 
     @Test
     public void shouldStartAndEndDelegatedPowersSessionAndCreatePublicEventAndReplicateSessionInSchedulingContext() {
-
-        final JsonEnvelope sessionStartedEvent = SessionHelper.startDelegatedPowersSessionAndGetSessionStartedEvent(sessionId, userId, courtHouseOUCode);
+        final JsonEnvelope sessionStartedEvent = new EventedListener()
+                .subscribe(SESSION_STARTED_PUBLIC_EVENT)
+                .run(() -> startDelegatedPowersSession(sessionId, userId, courtHouseOUCode))
+                .popEvent(SESSION_STARTED_PUBLIC_EVENT)
+                .get();
 
         assertThat(sessionStartedEvent, jsonEnvelope(metadata().withName("public.sjp.session-started"),
                 payloadIsJson(allOf(
@@ -74,7 +81,11 @@ public class SessionIT extends BaseIntegrationTest {
 
         final String magistrate = "John Smith";
 
-        final JsonEnvelope sessionStartedEvent = SessionHelper.startMagistrateSessionAndGetSessionStartedEvent(sessionId, userId, courtHouseOUCode, magistrate);
+        final JsonEnvelope sessionStartedEvent = new EventedListener()
+                .subscribe(SESSION_STARTED_PUBLIC_EVENT)
+                .run(() -> startMagistrateSession(sessionId, userId, courtHouseOUCode, magistrate))
+                .popEvent(SESSION_STARTED_PUBLIC_EVENT)
+                .get();
 
         assertThat(sessionStartedEvent, jsonEnvelope(metadata().withName("public.sjp.session-started"),
                 payloadIsJson(allOf(

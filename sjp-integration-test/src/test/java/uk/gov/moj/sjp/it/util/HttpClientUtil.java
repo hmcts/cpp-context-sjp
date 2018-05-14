@@ -33,29 +33,37 @@ public class HttpClientUtil {
     private static final String WRITE_BASE_URL = BASE_URI + "/sjp-command-api/command/api/rest/sjp";
     private static final String READ_BASE_URL = BASE_URI + "/sjp-query-api/query/api/rest/sjp";
 
-    public static void makePostCall(String url, String mediaType, String payload) {
-        makePostCall(USER_ID, url, mediaType, payload, Response.Status.ACCEPTED);
+    public static UUID makePostCall(String url, String mediaType, String payload) {
+        return makePostCall(USER_ID, url, mediaType, payload, Response.Status.ACCEPTED);
     }
 
-    public static void makePostCall(String url, String mediaType, String payload, Response.Status expectedStatus) {
-        makePostCall(USER_ID, url, mediaType, payload, expectedStatus);
+    public static UUID makePostCall(String url, String mediaType, String payload, Response.Status expectedStatus) {
+        return makePostCall(USER_ID, url, mediaType, payload, expectedStatus);
     }
 
-    public static void makePostCall(UUID userId, String url, String mediaType, String payload, Response.Status expectedStatus) {
+    public static UUID makePostCall(UUID userId, String url, String mediaType, String payload, Response.Status expectedStatus) {
+        UUID correlationId = UUID.randomUUID();
+
         MultivaluedMap<String, Object> map = new MultivaluedHashMap<>();
         map.add(HeaderConstants.USER_ID, userId.toString());
+        map.add(HeaderConstants.CLIENT_CORRELATION_ID, correlationId);
+
         final String writeUrl = getWriteUrl(url);
         Response response = restClient.postCommand(writeUrl, mediaType, payload, map);
         LOGGER.info("Post call made: \n\tURL = {} \n\tMedia type = {} \n\tPayload = {}\n\tUser = {}\n",
                 writeUrl, mediaType, payload, userId);
         assertThat(response.getStatus(), is(expectedStatus.getStatusCode()));
+
+        return correlationId;
     }
 
-    public static void makeMultipartFormPostCall(UUID userId, String url, String fileFieldName, String fileName) {
+    public static UUID makeMultipartFormPostCall(UUID userId, String url, String fileFieldName, String fileName) {
         File file = new File(fileName);
+        UUID correlationId = UUID.randomUUID();
 
         MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
         headers.add(HeaderConstants.USER_ID, userId.toString());
+        headers.add(HeaderConstants.CLIENT_CORRELATION_ID, correlationId);
 
         MultipartFormDataOutput mdo = new MultipartFormDataOutput();
         mdo.addFormData(fileFieldName, file, MediaType.MULTIPART_FORM_DATA_TYPE, file.getName());
@@ -66,6 +74,8 @@ public class HttpClientUtil {
         );
         response.close();
         assertThat(response.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
+
+        return correlationId;
     }
 
     public static  Response makeGetCall(String url, String mediaType) {

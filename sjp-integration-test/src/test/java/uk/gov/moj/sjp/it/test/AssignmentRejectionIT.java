@@ -10,13 +10,15 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.SESSION_DOES_NOT_EXIST;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.SESSION_ENDED;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.SESSION_NOT_OWNED_BY_USER;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.endSessionAndGetEvent;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.startDelegatedPowersSessionAndGetSessionStartedEvent;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_ASSIGNMENT_REJECTED_PUBLIC_EVENT;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.DELEGATED_POWERS_SESSION_ENDED_EVENT;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.DELEGATED_POWERS_SESSION_STARTED_EVENT;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
-import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
-import uk.gov.moj.sjp.it.helper.AssignmentHelper;
+import uk.gov.moj.sjp.it.helper.EventedListener;
+import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
 
 import java.util.UUID;
@@ -61,23 +63,29 @@ public class AssignmentRejectionIT extends BaseIntegrationTest {
     }
 
     private void requestAssignmentAndVerifyRejectionReason(final UUID sessionId, final UUID userId, final CaseAssignmentRejected.RejectReason rejectionReason) {
-        try (final AssignmentHelper assignmentHelper = new AssignmentHelper()) {
-            assignmentHelper.requestCaseAssignment(sessionId, userId);
+        final JsonEnvelope caseAssignmentRejectedPublicEvent = new EventedListener()
+            .subscribe(CASE_ASSIGNMENT_REJECTED_PUBLIC_EVENT)
+            .run(() -> requestCaseAssignment(sessionId, userId))
+            .popEvent(CASE_ASSIGNMENT_REJECTED_PUBLIC_EVENT)
+            .get();
 
-            final JsonEnvelope caseAssignmentRejectedPublicEvent = assignmentHelper.getCaseAssignmentRejectedPublicEvent();
             assertThat(caseAssignmentRejectedPublicEvent,
                     jsonEnvelope(
                             metadata().withName("public.sjp.case-assignment-rejected"),
                             payload().isJson(withJsonPath("$.reason", equalTo(rejectionReason.name())))
                     ));
-        }
     }
 
     private static void startSession(final UUID sessionId, final UUID userId) {
-        startDelegatedPowersSessionAndGetSessionStartedEvent(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE);
+        new EventedListener()
+                .subscribe(DELEGATED_POWERS_SESSION_STARTED_EVENT)
+                .run(() -> SessionHelper.startDelegatedPowersSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE));
     }
 
     private static void endSession(final UUID sessionId, final UUID userId) {
-        endSessionAndGetEvent(sessionId, userId, DelegatedPowersSessionEnded.EVENT_NAME);
+        new EventedListener()
+                .subscribe(DELEGATED_POWERS_SESSION_ENDED_EVENT)
+                .run(() -> SessionHelper.endSession(sessionId, userId));
     }
+
 }

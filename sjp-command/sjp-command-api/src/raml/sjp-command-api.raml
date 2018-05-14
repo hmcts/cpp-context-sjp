@@ -434,6 +434,21 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
+/cases/{caseId}/unassign:
+  post:
+    description: |
+      Unassigning cases from a user
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.unassign-case+json
+          name: sjp.unassign-case
+      ...
+    body:
+      application/vnd.sjp.unassign-case+json: !!null
+    responses:
+      202:
+        description: Accepted
+
 /sessions/{sessionId}:
   post:
     description: |

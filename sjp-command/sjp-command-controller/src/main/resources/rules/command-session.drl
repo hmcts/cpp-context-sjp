@@ -26,3 +26,11 @@ rule "Command - Rule for assigning case"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Command - Rule for unassigning case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.unassign-case");
+  then
+    $outcome.setSuccess(true);
+end

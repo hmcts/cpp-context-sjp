@@ -2,7 +2,7 @@ package uk.gov.moj.sjp.it.verifier;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static uk.gov.moj.sjp.it.EventSelector.EVENT_SELECTOR_CASE_RECEIVED;
+import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_RECEIVED;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
 import uk.gov.moj.sjp.it.util.QueueUtil;

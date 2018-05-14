@@ -16,7 +16,7 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
-import uk.gov.moj.sjp.it.EventSelector;
+import uk.gov.moj.sjp.it.Constants;
 
 import java.time.LocalDate;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +34,7 @@ public class CaseCourtReferralHelper implements AutoCloseable {
     private MessageConsumerClient publicConsumer = new MessageConsumerClient();
 
     public CaseCourtReferralHelper() {
-        publicConsumer.startConsumer("public.sjp.court-referral-actioned", EventSelector.PUBLIC_ACTIVE_MQ_TOPIC);
+        publicConsumer.startConsumer("public.sjp.court-referral-actioned", Constants.PUBLIC_ACTIVE_MQ_TOPIC);
         this.hearingDate = LocalDate.now().plusWeeks(1);
     }
 

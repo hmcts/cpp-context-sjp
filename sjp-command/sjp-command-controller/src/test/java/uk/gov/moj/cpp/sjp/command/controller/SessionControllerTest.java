@@ -19,7 +19,8 @@ public class SessionControllerTest {
                 .with(allOf(
                         method("startSession").thatHandles("sjp.command.start-session").withSenderPassThrough(),
                         method("endSession").thatHandles("sjp.command.end-session").withSenderPassThrough(),
-                        method("assignCase").thatHandles("sjp.command.assign-case").withSenderPassThrough()
+                        method("assignCase").thatHandles("sjp.command.assign-case").withSenderPassThrough(),
+                        method("unassignCase").thatHandles("sjp.command.unassign-case").withSenderPassThrough()
                 )));
     }
 }

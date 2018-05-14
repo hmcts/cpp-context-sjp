@@ -57,6 +57,8 @@ public class SessionApiTest {
 
     private UUID sessionId = UUID.randomUUID();
 
+    private UUID caseId = UUID.randomUUID();
+
     @Test
     public void shouldEnhanceAndRenameStartSessionCommand() {
 
@@ -112,6 +114,7 @@ public class SessionApiTest {
                 payloadIsJson(withJsonPath("$.sessionId", equalTo(sessionId.toString()))))));
     }
 
+
     @Test
     public void shouldRenameAssignCaseCommand() {
         final JsonEnvelope assignCaseCommand = envelope().with(metadataWithRandomUUID("sjp.assign-case"))
@@ -125,12 +128,25 @@ public class SessionApiTest {
     }
 
     @Test
+    public void shouldRenameUnassignCaseCommand() {
+        final JsonEnvelope unassignCaseCommand = envelope().with(metadataWithRandomUUID("sjp.unassign-case"))
+                .withPayloadOf(caseId.toString(), "caseId")
+                .build();
+
+        sessionApi.unassignCase(unassignCaseCommand);
+
+        verify(sender).send(argThat(jsonEnvelope(withMetadataEnvelopedFrom(unassignCaseCommand).withName("sjp.command.unassign-case"),
+                payloadIsJson(withJsonPath("$.caseId", equalTo(caseId.toString()))))));
+    }
+
+    @Test
     public void shouldHandleSessionCommands() {
         assertThat(SessionApi.class, isHandlerClass(COMMAND_API)
                 .with(allOf(
                         method("startSession").thatHandles("sjp.start-session"),
                         method("endSession").thatHandles("sjp.end-session"),
-                        method("assignCase").thatHandles("sjp.assign-case")
+                        method("assignCase").thatHandles("sjp.assign-case"),
+                        method("unassignCase").thatHandles("sjp.unassign-case")
                 )));
     }
 

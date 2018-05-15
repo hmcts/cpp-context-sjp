@@ -1,0 +1,20 @@
+{
+  "_metadata": {
+    "name": "sjp.events.case-received"
+  },
+  "payload": {
+    "urn": "",
+    "prosecutingAuthority": "TVL",
+    "defendant": {
+      "id": "c9920987-1b8c-421d-b371-c3c40935a73c",
+      "numPreviousConvictions": 0,
+      "offences": [
+        {
+          "offenceSequenceNo": 0,
+          "libraOffenceDateCode": 0
+        }
+      ]
+    },
+    "createdOn": "2012-02-22T02:06:58.147Z"
+  }
+}

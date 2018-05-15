@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/case-received.offence.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "offenceSequenceNo": {
+      "type": "integer"
+    },
+    "libraOffenceCode": {
+      "type": "string"
+    },
+    "chargeDate": {
+      "type": "string"
+    },
+    "libraOffenceDateCode": {
+      "type": "integer"
+    },
+    "offenceDate": {
+      "type": "string"
+    },
+    "offenceWording": {
+      "type": "string"
+    },
+    "prosecutionFacts": {
+      "type": "string"
+    },
+    "witnessStatement": {
+      "type": "string"
+    },
+    "compensation": {
+      "type": "number"
+    }
+  },
+  "required" : [
+    "id",
+    "offenceSequenceNo",
+    "libraOffenceCode",
+    "chargeDate",
+    "libraOffenceDateCode",
+    "offenceDate",
+    "offenceWording"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,59 @@
+{
+  "id": "5c019f8a-b3a3-40e5-9709-c54bc4f1c55c",
+  "urn": "TFL75947ZQ8UE",
+  "defendant": {
+    "id": "c4d922ba-20c6-4d68-ab56-3611401bbc7c",
+    "offences": [
+      {
+        "id": "72289b9e-5403-4e5b-8219-1d6ab004bbda",
+        "offenceCode": "PS90010",
+        "offenceSequenceNumber": 1,
+        "wording": "On 02/07/2015 At threadneedle street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction ",
+        "cjsCode": "PS90010",
+        "sequenceNumber": 1,
+        "startDate": "2017-12-29",
+        "chargeDate": "2018-01-03",
+        "compensation": 10,
+        "prosecutionFacts": "An incident took place at GREEN PARK station whereby you were spoken to by a member of London Underground staff regarding your train journey and the associated fare.The facts of this incidents are now being considered and I must advise you that legal proceedings may be initiated against you regarding this matter in accordance with the LU prosecution policy"
+      }
+    ],
+    "caseId": "5c019f8a-b3a3-40e5-9709-c54bc4f1c55c",
+    "interpreter": {
+      "needed": false
+    },
+    "numPreviousConvictions": 2,
+    "personalDetails": {
+      "title": "Mr",
+      "firstName": "John",
+      "lastName": "Smith",
+      "dateOfBirth": "1965-12-27",
+      "gender": "Male",
+      "address": {
+        "address1": "Flat 1",
+        "address2": " Armageddon House",
+        "address3": "Giggleswick",
+        "address4": "Merton",
+        "postcode": "L32 1AB"
+      },
+      "contactDetails": {
+        "home": "020 7219 5206",
+        "mobile": "020 7219 5207"
+      }
+    }
+  },
+  "dateTimeCreated": "2018-02-02T12:51:58.742Z",
+  "caseDocuments": [
+    {
+      "id": "7bde207f-ce57-49e5-b961-7577831171fb",
+      "materialId": "7bde207f-ce57-49e5-b961-7577831171fb",
+      "documentType": "SJPN",
+      "documentNumber": 1
+    }
+  ],
+  "prosecutingAuthority": "TFL",
+  "completed": false,
+  "assigned": false,
+  "costs": 20,
+  "postingDate": "2018-01-05",
+  "enterpriseId": "FNHMNHBQNV7L"
+}

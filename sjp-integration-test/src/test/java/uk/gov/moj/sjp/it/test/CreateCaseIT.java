@@ -5,7 +5,6 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static uk.gov.moj.sjp.it.util.SchemaValidatorUtil.validateAgainstSchema;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.sjp.it.command.AssociateEnterpriseId;
@@ -14,7 +13,6 @@ import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.verifier.CaseReceivedMQVerifier;
 
 import com.jayway.restassured.path.json.JsonPath;
-import org.json.JSONObject;
 import org.junit.Test;
 
 /**
@@ -34,7 +32,6 @@ public class CreateCaseIT extends BaseIntegrationTest {
         }
 
         final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId());
-        validateAgainstSchema("sjp.query.case.json", JSONObject.class, jsonResponse);
 
         assertThat(jsonResponse.get("id"), equalTo(createCasePayloadBuilder.getId().toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCasePayloadBuilder.getUrn()));

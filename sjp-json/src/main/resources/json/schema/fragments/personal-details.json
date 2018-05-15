@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/personal-details.json",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "dateOfBirth": {
+      "type": "string"
+    },
+    "gender": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/gender.json"
+    },
+    "address": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+    },
+    "contactDetails": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json"
+    }
+  },
+  "additionalProperties": false
+}

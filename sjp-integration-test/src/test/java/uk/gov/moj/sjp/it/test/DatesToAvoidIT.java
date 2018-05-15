@@ -1,48 +1,58 @@
 package uk.gov.moj.sjp.it.test;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import com.jayway.restassured.path.json.JsonPath;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
+import javax.json.JsonObject;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.equalTo;
 import org.hamcrest.Matcher;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.lessThan;
+
+import org.hamcrest.MatcherAssert;
 import org.junit.After;
+
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.helper.AssignmentHelper;
-import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
-import uk.gov.moj.sjp.it.helper.SessionHelper;
-import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
-import uk.gov.moj.sjp.it.pollingquery.CasePoller;
-import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
-import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
 
-import javax.json.JsonObject;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
+import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.AssignmentHelper;
+import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
+import uk.gov.moj.sjp.it.helper.EventedListener;
+import uk.gov.moj.sjp.it.helper.SessionHelper;
+import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
+import uk.gov.moj.sjp.it.pollingquery.CasePoller;
+
 import static uk.gov.moj.sjp.it.pollingquery.PendingDatesToAvoidPoller.pollUntilPendingDatesToAvoidIsOk;
+import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
+import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.*;
 
@@ -50,8 +60,9 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
     private static final String LONDON_COURT_HOUSE_OU_CODE = "B01GU";
     private static final String LONDON_COURT_HOUSE_LJA_NATIONAL_COURT_CODE = "2577";
-    private static final Clock clock = new UtcClock();
+    private static final Clock CLOCK = new UtcClock();
     private static final String DATE_TO_AVOID = "a-date-to-avoid";
+    private static final String DATE_TO_AVOID_UPDATE = "I cannot come on Thursday";
 
     private UUID tflUserId;
     private UUID tvlUserId;
@@ -140,16 +151,44 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
     @Test
     public void shouldAddDatesToAvoidToCase() {
-        stubGetEmptyAssignmentsByDomainObjectId(tflCaseBuilder.getId());
-        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper();
-        ) {
-            updatePleaToNotGuilty(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), updatePleaHelper);
+        //given
+        final String DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME = "public.sjp.dates-to-avoid-added";
 
-            final String datesToAvoid = "I cannot come on Wednesdays";
-            addDatesToAvoid(tflCaseBuilder.getId(), datesToAvoid);
-            final Matcher caseDetailsDatesToAvoidFieldMatcher = withJsonPath("$.datesToAvoid", equalTo(datesToAvoid));
-            CasePoller.pollUntilCaseByIdIsOk(tflCaseBuilder.getId(), caseDetailsDatesToAvoidFieldMatcher);
-        }
+        final UUID caseId = tflCaseBuilder.getId();
+        stubGetEmptyAssignmentsByDomainObjectId(tflCaseBuilder.getId());
+
+        //when
+        addDatesToAvoid(caseId, DATE_TO_AVOID);
+
+        //then
+        EventedListener datesToAvoidAddedListener = new EventedListener()
+                .subscribe(DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME)
+                .run(() -> assertThatCaseHasDatesToAvoid(DATE_TO_AVOID));
+
+        assertThatDatesToAvoidPublicEventWasRaised(datesToAvoidAddedListener,
+                DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME, caseId, DATE_TO_AVOID);
+    }
+
+    @Test
+    public void shouldUpdateDatesToAvoidOnCase() {
+        //given
+        final String DATES_TO_AVOID_UPDATED_PUBLIC_EVENT_NAME = "public.sjp.dates-to-avoid-updated";
+
+        final UUID caseId = tflCaseBuilder.getId();
+
+        stubGetEmptyAssignmentsByDomainObjectId(caseId);
+        addDatesToAvoid(caseId, DATE_TO_AVOID);
+
+        //when
+        addDatesToAvoid(caseId, DATE_TO_AVOID_UPDATE);
+
+        //then
+        EventedListener datesToAvoidListener = new EventedListener()
+                .subscribe(DATES_TO_AVOID_UPDATED_PUBLIC_EVENT_NAME)
+                .run(() -> assertThatCaseHasDatesToAvoidUpdated(DATE_TO_AVOID_UPDATE));
+
+        assertThatDatesToAvoidPublicEventWasRaised(datesToAvoidListener,
+                DATES_TO_AVOID_UPDATED_PUBLIC_EVENT_NAME, caseId, DATE_TO_AVOID_UPDATE);
     }
 
     private void shouldCaseBePendingDatesToAvoidForResultedCaseScenario(UUID userId, CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder, int expectedPendingDatesToAvoidCount) {
@@ -235,6 +274,37 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     }
 
     private void assertWithinSeconds(final long value, final long tolerance) {
-        assertThat(Math.abs(clock.now().toEpochSecond() - value), lessThan(tolerance));
+        assertThat(Math.abs(CLOCK.now().toEpochSecond() - value), lessThan(tolerance));
+    }
+
+    private void assertThatCaseHasDatesToAvoid(final String datesToAvoid) {
+        pollForACaseWith(datesToAvoid);
+    }
+
+    private void assertThatCaseHasDatesToAvoidUpdated(final String datesToAvoidUpdate) {
+        pollForACaseWith(datesToAvoidUpdate);
+    }
+
+    private void pollForACaseWith(final String datesToAvoid) {
+        CasePoller.pollUntilCaseByIdIsOk(tflCaseBuilder.getId(),
+                withJsonPath("$.datesToAvoid", equalTo(datesToAvoid)));
+    }
+
+    private void assertThatDatesToAvoidPublicEventWasRaised(final EventedListener listener,
+                                                            final String eventName,
+                                                            final UUID caseId,
+                                                            final String datesToAvoid) {
+        final Optional<JsonEnvelope> datesToAvoidPublicEvent = listener
+                .popEvent(eventName);
+
+        assertThat(datesToAvoidPublicEvent.isPresent(), is(true));
+
+        MatcherAssert.assertThat(datesToAvoidPublicEvent.get(),
+                jsonEnvelope(
+                        metadata().withName(eventName),
+                        payload().isJson(allOf(
+                                withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                withJsonPath("$.datesToAvoid", equalTo(datesToAvoid))
+                        ))));
     }
 }

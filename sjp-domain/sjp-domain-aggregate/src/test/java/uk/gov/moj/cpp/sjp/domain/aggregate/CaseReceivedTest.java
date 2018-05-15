@@ -1,8 +1,11 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
+import java.util.Collection;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
+import java.util.List;
+import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang.builder.EqualsBuilder.reflectionEquals;
 import static org.hamcrest.Matchers.empty;
@@ -13,24 +16,18 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-
+import org.junit.Before;
+import org.junit.Test;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.Offence;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 public class CaseReceivedTest extends CaseAggregateBaseTest {
 
     @Before
+    @Override
     public void setUp() {
         super.setUp();
         caseAggregate = new CaseAggregate();
@@ -38,16 +35,7 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
         assertThat(caseAggregate.getUrn(), nullValue());
         assertThat(caseAggregate.getProsecutingAuthority(), nullValue());
         assertThat(caseAggregate.getOffenceIdsByDefendantId(), equalTo(emptyMap()));
-        assertThat(caseAggregate.hasCaseBeenReceived(), equalTo(false));
-    }
-
-    @After
-    public void hasNotMutatedUnnecessaryFields() {
-        assertThat(caseAggregate.getCaseDocuments(), equalTo(emptyMap()));
-        assertThat(caseAggregate.isCaseAssigned(), is(false));
-        assertThat(caseAggregate.isCaseCompleted(), is(false));
-        assertThat(caseAggregate.isCaseReopened(), is(false));
-        assertThat(caseAggregate.isWithdrawalAllOffencesRequested(), is(false));
+        assertThat(caseAggregate.isCaseReceived(), equalTo(false));
     }
 
     @Test
@@ -61,7 +49,7 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
                 expectedCaseReceived.getDefendant(),
                 singleton("id")), is(true));
 
-        assertThat(caseAggregate.hasCaseBeenReceived(), equalTo(true));
+        assertThat(caseAggregate.isCaseReceived(), equalTo(true));
         assertThat(caseAggregate.getCaseId(), notNullValue());
         assertThat(caseAggregate.getUrn(), notNullValue());
         assertThat(caseAggregate.getProsecutingAuthority(), notNullValue());

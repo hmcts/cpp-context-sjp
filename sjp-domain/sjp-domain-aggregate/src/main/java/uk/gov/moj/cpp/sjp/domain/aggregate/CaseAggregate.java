@@ -1,17 +1,26 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
+import java.time.LocalDate;
 import static java.time.ZoneOffset.UTC;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.justice.domain.aggregate.Aggregate;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
-import static uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus.EMPLOYED;
-import static uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason.CASE_ASSIGNED;
-import static uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason.PLEA_ALREADY_SUBMITTED;
-import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
-import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_ASSIGNED_TO_OTHER_USER;
-import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_COMPLETED;
-
-import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.moj.cpp.sjp.CourtReferralNotFound;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
@@ -34,6 +43,7 @@ import uk.gov.moj.cpp.sjp.domain.command.ChangePlea;
 import uk.gov.moj.cpp.sjp.domain.command.UpdatePlea;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
+import static uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus.EMPLOYED;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalDenied;
@@ -58,13 +68,17 @@ import uk.gov.moj.cpp.sjp.event.CaseStarted;
 import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason;
+import static uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason.CASE_ASSIGNED;
+import static uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason.PLEA_ALREADY_SUBMITTED;
 import uk.gov.moj.cpp.sjp.event.CourtReferralActioned;
 import uk.gov.moj.cpp.sjp.event.CourtReferralCreated;
-import uk.gov.moj.cpp.sjp.event.DatesToAvoidReceived;
+import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
+import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
+import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantNotEmployed;
 import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
 import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
@@ -87,26 +101,10 @@ import uk.gov.moj.cpp.sjp.event.TrialRequested;
 import uk.gov.moj.cpp.sjp.event.session.CaseAlreadyAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
+import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_ASSIGNED_TO_OTHER_USER;
+import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_COMPLETED;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassignmentRejected;
-
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
@@ -131,12 +129,14 @@ public class CaseAggregate implements Aggregate {
     private CaseReadinessReason readinessReason;
     private boolean caseReceived;
 
-    private Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
+    private String datesToAvoid;
 
-    private Map<UUID, CaseDocument> caseDocuments = new HashMap<>();
-    private List<UUID> offenceIdsWithPleas = new ArrayList<>();
+    private final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
 
-    private Map<UUID, String> defendantInterpreterLanguages = new HashMap<>();
+    private final Map<UUID, CaseDocument> caseDocuments = new HashMap<>();
+    private final List<UUID> offenceIdsWithPleas = new ArrayList<>();
+
+    private final Map<UUID, String> defendantInterpreterLanguages = new HashMap<>();
 
     private boolean trialRequested;
     private boolean trialRequestedPreviously;
@@ -144,7 +144,7 @@ public class CaseAggregate implements Aggregate {
     private String trialRequestedUWitnessDetails;
     private String trialRequestedWitnessDispute;
 
-    private DocumentCountByDocumentType documentCountByDocumentType = new DocumentCountByDocumentType();
+    private final DocumentCountByDocumentType documentCountByDocumentType = new DocumentCountByDocumentType();
 
     private ProsecutingAuthority prosecutingAuthority;
 
@@ -152,7 +152,7 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> receiveCase(final Case aCase, final ZonedDateTime createdOn) {
         final Object event;
-        if (hasCaseBeenReceived()) {
+        if (caseReceived) {
             event = new CaseCreationFailedBecauseCaseAlreadyExisted(this.caseId, this.urn);
         } else {
             Defendant caseDefendant = aCase.getDefendant();
@@ -363,7 +363,11 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> addDatesToAvoid(final String datesToAvoid) {
-        return apply(Stream.of(new DatesToAvoidReceived(this.caseId, datesToAvoid)));
+        if (this.datesToAvoid == null) {
+            return apply(Stream.of(new DatesToAvoidAdded(this.caseId, datesToAvoid)));
+        } else {
+            return apply(Stream.of(new DatesToAvoidUpdated(this.caseId, datesToAvoid)));
+        }
     }
 
     public Stream<Object> updateDefendantNationalInsuranceNumber(final UUID defendantId, final String newNationalInsuranceNumber) {
@@ -782,6 +786,8 @@ public class CaseAggregate implements Aggregate {
 
                     caseReceived = true;
                 }),
+                when(DatesToAvoidAdded.class).apply(e -> datesToAvoid = e.getDatesToAvoid()),
+                when(DatesToAvoidUpdated.class).apply(e -> datesToAvoid = e.getDatesToAvoid()),
                 when(CaseCompleted.class)
                         .apply(e -> this.caseCompleted = true),
                 when(CaseDocumentAdded.class).apply(e -> {
@@ -961,7 +967,7 @@ public class CaseAggregate implements Aggregate {
         return caseReopened;
     }
 
-    boolean hasCaseBeenReceived() {
+    public boolean isCaseReceived() {
         return caseReceived;
     }
 

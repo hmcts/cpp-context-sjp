@@ -23,7 +23,7 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest;
-import uk.gov.moj.cpp.sjp.event.DatesToAvoidReceived;
+import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
 
 import java.util.UUID;
 
@@ -40,7 +40,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class AddDatesToAvoidHandlerTest extends CaseAggregateBaseTest {
 
     @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(DatesToAvoidReceived.class);
+    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(DatesToAvoidAdded.class);
 
     @InjectMocks
     private AddDatesToAvoidHandler addDatesToAvoidHandler;
@@ -69,7 +69,7 @@ public class AddDatesToAvoidHandlerTest extends CaseAggregateBaseTest {
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(command)
-                                        .withName("sjp.events.dates-to-avoid-received"),
+                                        .withName("sjp.events.dates-to-avoid-added"),
                                 payloadIsJson(withJsonPath("$.datesToAvoid", equalTo(datesToAvoid))))
                 )));
     }

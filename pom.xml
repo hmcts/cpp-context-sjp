@@ -19,10 +19,10 @@
         <sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
-        <assignment.version>2.0.95</assignment.version>
+        <assignment.version>2.0.99</assignment.version>
         <material.version>2.0.101</material.version>
         <notification.notify.version>0.0.16</notification.notify.version>
-        <referencedata.version>2.0.142</referencedata.version>
+        <referencedata.version>2.0.144</referencedata.version>
         <resulting.version>2.0.166</resulting.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>2.0.95</usersgroups.version>

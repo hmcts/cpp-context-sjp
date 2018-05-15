@@ -14,23 +14,31 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.activiti.engine.delegate.DelegateExecution;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 @Named
 public class WithdrawalRequestedDelegate extends AbstractCaseDelegate {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WithdrawalRequestedDelegate.class);
+    private static final String WITHDRAWAL_REQUESTED_PUBLIC_EVENT_NAME = "public.sjp.all-offences-withdrawal-requested";
+
     @Override
-    public void execute(final UUID caseId, final Metadata metadata, final DelegateExecution execution) {
-        final Metadata publicEventMetadata = metadataFrom(metadata)
-                .withName("public.sjp.all-offences-withdrawal-requested")
-                .build();
+    public void execute(final UUID caseId, final Metadata metadata, final DelegateExecution execution, boolean processMigration) {
+        if (!processMigration) {
+            final Metadata publicEventMetadata = metadataFrom(metadata)
+                    .withName(WITHDRAWAL_REQUESTED_PUBLIC_EVENT_NAME)
+                    .build();
 
-        final JsonObject publicEventPayload = Json.createObjectBuilder()
-                .add(CASE_ID, caseId.toString())
-                .build();
+            final JsonObject publicEventPayload = Json.createObjectBuilder()
+                    .add(CASE_ID, caseId.toString())
+                    .build();
 
-        sender.send(envelopeFrom(publicEventMetadata, publicEventPayload));
-
+            sender.send(envelopeFrom(publicEventMetadata, publicEventPayload));
+        } else {
+            LOGGER.warn("Process migration. Event {} not emitted", WITHDRAWAL_REQUESTED_PUBLIC_EVENT_NAME);
+        }
         execution.setVariable(WITHDRAWAL_REQUESTED_VARIABLE, true);
     }
 

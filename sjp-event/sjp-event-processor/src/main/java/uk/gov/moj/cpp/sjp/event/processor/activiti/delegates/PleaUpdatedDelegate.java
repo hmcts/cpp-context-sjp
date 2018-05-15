@@ -18,27 +18,36 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.activiti.engine.delegate.DelegateExecution;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 @Named
 public class PleaUpdatedDelegate extends AbstractCaseDelegate {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PleaUpdatedDelegate.class);
+    private static final String PLEA_UPDATED_PUBLIC_EVENT_NAME = "public.sjp.plea-updated";
+
     @Override
-    public void execute(final UUID caseId, final Metadata metadata, final DelegateExecution execution) {
+    public void execute(final UUID caseId, final Metadata metadata, final DelegateExecution execution, boolean processMigration) {
         final String offenceId = execution.getVariable(OFFENCE_ID_VARIABLE, String.class);
         final PleaType plea = PleaType.valueOf(execution.getVariable(PLEA_TYPE_VARIABLE, String.class));
 
-        final Metadata publicEventMetadata = metadataFrom(metadata)
-                .withName("public.sjp.plea-updated")
-                .build();
+        if (!processMigration) {
+            final Metadata publicEventMetadata = metadataFrom(metadata)
+                    .withName(PLEA_UPDATED_PUBLIC_EVENT_NAME)
+                    .build();
 
-        final JsonObject publicEventPayload = Json.createObjectBuilder()
-                .add(CASE_ID, caseId.toString())
-                .add(OFFENCE_ID, offenceId)
-                .add(PLEA, plea.name())
-                .build();
+            final JsonObject publicEventPayload = Json.createObjectBuilder()
+                    .add(CASE_ID, caseId.toString())
+                    .add(OFFENCE_ID, offenceId)
+                    .add(PLEA, plea.name())
+                    .build();
 
-        sender.send(envelopeFrom(publicEventMetadata, publicEventPayload));
+            sender.send(envelopeFrom(publicEventMetadata, publicEventPayload));
+        } else {
+            LOGGER.warn("Process migration. Event {} not emitted", PLEA_UPDATED_PUBLIC_EVENT_NAME);
+        }
 
         execution.setVariable(PLEA_TYPE_VARIABLE, plea.name());
     }

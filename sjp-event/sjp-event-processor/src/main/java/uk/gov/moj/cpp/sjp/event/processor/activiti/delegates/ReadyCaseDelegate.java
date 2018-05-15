@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 
+import static java.time.LocalTime.MIDNIGHT;
+import static java.time.ZoneOffset.UTC;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
@@ -14,9 +16,11 @@ import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.MARKED_AT;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.REASON;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.CREATE_BY_PROCESS_MIGRATION_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.IS_READY_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.MARKED_READY_TIMESTAMP_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_TYPE_VARIABLE;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.POSTING_DATE_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PROVED_IN_ABSENCE_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.WITHDRAWAL_REQUESTED_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.ReadyCaseCalculator.isCaseReady;
@@ -26,6 +30,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.EnumMap;
 import java.util.Optional;
@@ -37,12 +42,15 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.activiti.engine.delegate.DelegateExecution;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 @Named
 public class ReadyCaseDelegate extends AbstractCaseDelegate {
 
-    private static EnumMap<PleaType, CaseReadinessReason> READINESS_REASON_BY_PLEA_TYPE = new EnumMap(PleaType.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReadyCaseDelegate.class);
+    private static final EnumMap<PleaType, CaseReadinessReason> READINESS_REASON_BY_PLEA_TYPE = new EnumMap(PleaType.class);
 
     static {
         READINESS_REASON_BY_PLEA_TYPE.put(GUILTY, PLEADED_GUILTY);
@@ -54,7 +62,7 @@ public class ReadyCaseDelegate extends AbstractCaseDelegate {
     private Clock clock;
 
     @Override
-    public void execute(final UUID caseId, final Metadata metadata, final DelegateExecution execution) {
+    public void execute(final UUID caseId, final Metadata metadata, final DelegateExecution execution, boolean processMigration) {
         final boolean withdrawalRequested = isTrue(execution.getVariable(WITHDRAWAL_REQUESTED_VARIABLE, Boolean.class));
         final boolean provedInAbsence = isTrue(execution.getVariable(PROVED_IN_ABSENCE_VARIABLE, Boolean.class));
         final boolean pleaReceived = execution.hasVariable(PLEA_TYPE_VARIABLE);
@@ -71,6 +79,15 @@ public class ReadyCaseDelegate extends AbstractCaseDelegate {
                 caseReadinessReason = READINESS_REASON_BY_PLEA_TYPE.get(pleaType);
             } else {
                 caseReadinessReason = PIA;
+
+                //TODO ATCM-3133 - remove
+                if (execution.hasVariable(CREATE_BY_PROCESS_MIGRATION_VARIABLE) && !getMarkedReadyTimestamp(execution).isPresent()) {
+                    LOGGER.warn("Migrated process. Marked ready timestamp for proved in absence case {} calculated based on posting date", caseId);
+
+                    final LocalDate postingDate = LocalDate.parse(execution.getVariable(POSTING_DATE_VARIABLE, String.class));
+                    final ZonedDateTime inferredMarkedReadyTimestamp = ZonedDateTime.of(postingDate.plusDays(28), MIDNIGHT, UTC);
+                    updateAndGetMarkedReadyTimestamp(execution, inferredMarkedReadyTimestamp);
+                }
             }
 
             final ZonedDateTime markedReadyTimestamp = getMarkedReadyTimestamp(execution)
@@ -116,8 +133,12 @@ public class ReadyCaseDelegate extends AbstractCaseDelegate {
 
     private ZonedDateTime updateAndGetMarkedReadyTimestamp(final DelegateExecution delegateExecution) {
         final ZonedDateTime newMarkedReadyTimestamp = clock.now();
-        delegateExecution.setVariable(MARKED_READY_TIMESTAMP_VARIABLE, newMarkedReadyTimestamp.toString());
-        return newMarkedReadyTimestamp;
+        return updateAndGetMarkedReadyTimestamp(delegateExecution, newMarkedReadyTimestamp);
+    }
+
+    private ZonedDateTime updateAndGetMarkedReadyTimestamp(final DelegateExecution delegateExecution, final ZonedDateTime timestamp) {
+        delegateExecution.setVariable(MARKED_READY_TIMESTAMP_VARIABLE, timestamp.toString());
+        return timestamp;
     }
 
     private Optional<ZonedDateTime> getMarkedReadyTimestamp(final DelegateExecution delegateExecution) {

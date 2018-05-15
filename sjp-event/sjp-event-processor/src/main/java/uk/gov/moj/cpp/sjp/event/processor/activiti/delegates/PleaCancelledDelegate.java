@@ -16,25 +16,34 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.activiti.engine.delegate.DelegateExecution;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 @Named
 public class PleaCancelledDelegate extends AbstractCaseDelegate {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PleaCancelledDelegate.class);
+    private static final String PLEA_CANCELLED_PUBLIC_EVENT_NAME = "public.sjp.plea-cancelled";
+
     @Override
-    public void execute(final UUID caseId, final Metadata metadata, final DelegateExecution execution) {
-        final String offenceId = execution.getVariable(OFFENCE_ID_VARIABLE, String.class);
+    public void execute(final UUID caseId, final Metadata metadata, final DelegateExecution execution, boolean processMigration) {
+        if (!processMigration) {
+            final String offenceId = execution.getVariable(OFFENCE_ID_VARIABLE, String.class);
 
-        final Metadata publicEventMetadata = metadataFrom(metadata)
-                .withName("public.sjp.plea-cancelled")
-                .build();
+            final Metadata publicEventMetadata = metadataFrom(metadata)
+                    .withName(PLEA_CANCELLED_PUBLIC_EVENT_NAME)
+                    .build();
 
-        final JsonObject publicEventPayload = Json.createObjectBuilder()
-                .add(CASE_ID, caseId.toString())
-                .add(OFFENCE_ID, offenceId)
-                .build();
+            final JsonObject publicEventPayload = Json.createObjectBuilder()
+                    .add(CASE_ID, caseId.toString())
+                    .add(OFFENCE_ID, offenceId)
+                    .build();
 
-        sender.send(envelopeFrom(publicEventMetadata, publicEventPayload));
+            sender.send(envelopeFrom(publicEventMetadata, publicEventPayload));
+        } else {
+            LOGGER.warn("Process migration. Event {} not emitted", PLEA_CANCELLED_PUBLIC_EVENT_NAME);
+        }
 
         execution.removeVariable(PLEA_TYPE_VARIABLE);
     }

@@ -10,8 +10,8 @@ import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_UPDATED;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
@@ -64,6 +64,10 @@ public class UpdatePleaHelper implements AutoCloseable {
 
     public void updatePlea(final UUID caseId, final UUID offenceId, final JsonObject payload) {
         requestHttpCallWithPayloadAndStatus(caseId, offenceId, payload.toString(), Response.Status.ACCEPTED);
+    }
+
+    public void updatePlea(final UUID caseId, final UUID offenceId, final PleaType pleaType) {
+        requestHttpCallWithPayloadAndStatus(caseId, offenceId, getPleaPayload(pleaType).toString(), Response.Status.ACCEPTED);
     }
 
     public void verifyInPublicTopic(final UUID caseId, final UUID offenceId, final PleaType pleaType, final String denialReason) {

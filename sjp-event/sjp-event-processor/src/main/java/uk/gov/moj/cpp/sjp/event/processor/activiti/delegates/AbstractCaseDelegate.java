@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.METADATA_VARIABLE;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PROCESS_MIGRATION_VARIABLE;
 
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.sender.Sender;
@@ -28,19 +29,24 @@ public abstract class AbstractCaseDelegate implements JavaDelegate {
     @Inject
     private MetadataHelper metadataHelper;
 
-    public abstract void execute(final UUID caseId, final Metadata metadata, final DelegateExecution execution);
+    public abstract void execute(final UUID caseId, final Metadata metadata, final DelegateExecution execution, boolean processMigration);
 
     @Override
     public void execute(DelegateExecution execution) {
-        LOGGER.info("{} started for process {}" + execution.getCurrentActivityName(), execution.getProcessInstanceId());
+        LOGGER.info("{} started for process {}",  execution.getCurrentActivityName(), execution.getProcessInstanceId());
 
         final UUID caseId = UUID.fromString(execution.getProcessBusinessKey());
         final String metadataAsString = execution.getVariable(METADATA_VARIABLE, String.class);
         final Metadata metadata = metadataHelper.metadataFromString(metadataAsString);
+        final boolean processMigration = execution.hasVariable(PROCESS_MIGRATION_VARIABLE);
 
-        execute(caseId, metadata, execution);
+        if(processMigration) {
+            execution.removeVariable(PROCESS_MIGRATION_VARIABLE);
+        }
 
-        LOGGER.info("{} ended for process {}" + execution.getCurrentActivityName(), execution.getProcessInstanceId());
+        execute(caseId, metadata, execution, processMigration);
+
+        LOGGER.info("{} ended for process {}", execution.getCurrentActivityName(), execution.getProcessInstanceId());
     }
 
 }

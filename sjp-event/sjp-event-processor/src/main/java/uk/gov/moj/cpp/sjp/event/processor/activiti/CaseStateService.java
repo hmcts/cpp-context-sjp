@@ -39,6 +39,8 @@ public class CaseStateService {
     public static final String IS_READY_VARIABLE = "isReady";
     public static final String OFFENCE_ID_VARIABLE = "offenceId";
     public static final String METADATA_VARIABLE = "metadata";
+    public static final String PROCESS_MIGRATION_VARIABLE = "processMigration";
+    public static final String CREATE_BY_PROCESS_MIGRATION_VARIABLE = "createdByProcessMigration";
 
     @Inject
     private ActivitiService activitiService;

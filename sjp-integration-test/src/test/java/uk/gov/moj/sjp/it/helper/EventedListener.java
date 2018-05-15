@@ -21,43 +21,48 @@ import com.google.common.base.Strings;
 /**
  * EventedListener
  *
- * An instantiated helper which makes it easier listen and receive the events happening in result of an asynchronous request.
- * It exposes a fluent API, in which it expects you to call a few methods in a subsequent fashion.
+ * An instantiated helper which makes it easier listen and receive the events happening in result of
+ * an asynchronous request. It exposes a fluent API, in which it expects you to call a few methods
+ * in a subsequent fashion.
  *
- * First, it expects you to specify probable events that you are interested in by calling 'subscribe' methods.
- * For each event you subscribed, execution will wait for those to occur (or timeout) synchronously before continuing.
- * Each subscribe call creates a separate event stack for that event type, in the events map.
- * When subscribing, it decides the topic of the event based on the event naming convention.
+ * First, it expects you to specify probable events that you are interested in by calling
+ * 'subscribe' methods. For each event you subscribed, execution will wait for those to occur (or
+ * timeout) synchronously before continuing. Each subscribe call creates a separate event stack for
+ * that event type, in the events map. When subscribing, it decides the topic of the event based on
+ * the event naming convention.
  *
- * Then, it expects you to call 'run' method with runnables or callables which would possibly execute asynchronous behaviour that may result in the subscribed events.
- * If the passed lambda returns a value then it is interpreted as a callable and runner expects that return value to be correlationId to filter coming events against.
- * If the passed lambda does not return a value it is interpreted as a runnable and runner treats the first incoming subscribed event to be the relevant one.
+ * Then, it expects you to call 'run' method with runnables or callables which would possibly
+ * execute asynchronous behaviour that may result in the subscribed events. If the passed lambda
+ * returns a value then it is interpreted as a callable and runner expects that return value to be
+ * correlationId to filter coming events against. If the passed lambda does not return a value it is
+ * interpreted as a runnable and runner treats the first incoming subscribed event to be the
+ * relevant one.
  *
- * Finally, it expect you to call 'popEvent' with the wanted event type,
- * to access event payloads that has been pushed to several different stacks.
+ * Finally, it expect you to call 'popEvent' with the wanted event type, to access event payloads
+ * that has been pushed to several different stacks.
  *
  * Same instance could be used with different jobs by calling 'reset' in between.
  *
- * Example usage;
- *  EventedListener runner = new EventedListener()
- *      .subscribe("event")
- *      .subscribe("differentEvent")
- *      .subscribe("totallyDifferentEvent")
- *      .run(() -> runnableThatDoesSomethingAsync())
- *      .run(() -> anotherRunnableThatDoesSomethingAsyncAlso())
+ * Example usage; EventedListener runner = new EventedListener() .subscribe("event")
+ * .subscribe("differentEvent") .subscribe("totallyDifferentEvent") .run(() ->
+ * runnableThatDoesSomethingAsync()) .run(() -> anotherRunnableThatDoesSomethingAsyncAlso())
  *
- * JsonObject event = runner.popEvent("event");
- * JsonObject anotherInstanceOfTheSameEvent = runner.popEvent("event");
- * JsonObject differentEvent = runner.popEvent("differentEvent");
+ * JsonObject event = runner.popEvent("event"); JsonObject anotherInstanceOfTheSameEvent =
+ * runner.popEvent("event"); JsonObject differentEvent = runner.popEvent("differentEvent");
  * JsonObject totallyDifferentEvent = runner.popEvent("totallyDifferentEvent");
- *
  */
 public class EventedListener {
 
-    private final Map<String,LinkedList<JsonEnvelope>> eventsByName;
+    private final Map<String, LinkedList<JsonEnvelope>> eventsByName;
+    private Integer maxWaitTime = MESSAGE_QUEUE_TIMEOUT;
 
     public EventedListener() {
         this.eventsByName = new HashMap<>();
+    }
+
+    public EventedListener withMaxWaiTime(final Integer maxWaiTime) {
+        this.maxWaitTime = maxWaiTime;
+        return this;
     }
 
     public EventedListener subscribe(String eventName) {
@@ -70,7 +75,7 @@ public class EventedListener {
         return this;
     }
 
-    public EventedListener run(final Runnable action){
+    public EventedListener run(final Runnable action) {
         Map<String, MessageConsumerClient> consumers = eventsByName.keySet().parallelStream().collect(toMap(p -> p, this::startConsumer));
 
         action.run();
@@ -80,12 +85,12 @@ public class EventedListener {
         return this;
     }
 
-    public EventedListener run(final Callable action){
+    public EventedListener run(final Callable action) {
         Map<String, MessageConsumerClient> consumers = eventsByName.keySet().parallelStream().collect(toMap(p -> p, this::startConsumer));
 
         Optional<UUID> correlationId = runAndCheckForCorrelationId(action);
 
-        if( correlationId.isPresent() ){
+        if (correlationId.isPresent()) {
             consumers.entrySet().parallelStream().forEach((entry) -> receiveAndClose(entry, correlationId.get()));
         } else {
             consumers.entrySet().parallelStream().forEach(this::receiveAndClose);
@@ -94,11 +99,11 @@ public class EventedListener {
         return this;
     }
 
-    public Optional<JsonEnvelope> popEvent(String eventName){
+    public Optional<JsonEnvelope> popEvent(String eventName) {
         return Optional.ofNullable(this.eventsByName.get(eventName).poll());
     }
 
-    public EventedListener reset(){
+    public EventedListener reset() {
         this.eventsByName.clear();
         return this;
     }
@@ -109,7 +114,7 @@ public class EventedListener {
         return messageConsumer;
     }
 
-    private Optional<UUID> runAndCheckForCorrelationId(final Callable action){
+    private Optional<UUID> runAndCheckForCorrelationId(final Callable action) {
         try {
             return Optional.of((UUID) action.call());
         } catch (Exception e) {
@@ -118,11 +123,11 @@ public class EventedListener {
     }
 
     private void receiveAndClose(Map.Entry<String, MessageConsumerClient> entry, UUID correlationId) {
-        try( MessageConsumerClient consumer = entry.getValue() ){
+        try (MessageConsumerClient consumer = entry.getValue()) {
 
-            while( true ){
-                Optional<String> optionalMessage = consumer.retrieveMessage(MESSAGE_QUEUE_TIMEOUT);
-                if(!optionalMessage.isPresent()) {
+            while (true) {
+                Optional<String> optionalMessage = consumer.retrieveMessage(maxWaitTime);
+                if (!optionalMessage.isPresent()) {
                     break;
                 }
 
@@ -130,7 +135,7 @@ public class EventedListener {
                 Optional<String> eventCorrelationId = jsonEnvelope.metadata().clientCorrelationId();
                 boolean matched = eventCorrelationId.isPresent() && correlationId.equals(UUID.fromString(eventCorrelationId.get()));
 
-                if( matched ){
+                if (matched) {
                     eventsByName.get(entry.getKey()).add(jsonEnvelope);
                     break;
                 }
@@ -139,10 +144,10 @@ public class EventedListener {
     }
 
     private void receiveAndClose(Map.Entry<String, MessageConsumerClient> entry) {
-        try( MessageConsumerClient consumer = entry.getValue() ) {
+        try (MessageConsumerClient consumer = entry.getValue()) {
             String eventName = entry.getKey();
 
-            Optional<String> optionalMessage = consumer.retrieveMessage(MESSAGE_QUEUE_TIMEOUT);
+            Optional<String> optionalMessage = consumer.retrieveMessage(maxWaitTime);
             optionalMessage.ifPresent((message) -> {
                 JsonEnvelope jsonEnvelope = new DefaultJsonObjectEnvelopeConverter().asEnvelope(message);
                 eventsByName.get(eventName).add(jsonEnvelope);
@@ -150,12 +155,12 @@ public class EventedListener {
         }
     }
 
-    private String determineTopic(String eventName){
-        if (Strings.isNullOrEmpty(eventName)){
+    private String determineTopic(String eventName) {
+        if (Strings.isNullOrEmpty(eventName)) {
             throw new RuntimeException("Event topic could not be determined");
-        } else if ( eventName.startsWith("public") ){
+        } else if (eventName.startsWith("public")) {
             return PUBLIC_ACTIVE_MQ_TOPIC;
-        } else if ( eventName.contains(PRIVATE_ACTIVE_MQ_TOPIC) ) {
+        } else if (eventName.contains(PRIVATE_ACTIVE_MQ_TOPIC)) {
             return PRIVATE_ACTIVE_MQ_TOPIC;
         } else {
             throw new RuntimeException("Event topic could not be determined");

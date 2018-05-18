@@ -30,13 +30,14 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
-import uk.gov.moj.cpp.sjp.event.CaseCompleted;
+import uk.gov.moj.cpp.sjp.event.processor.activiti.CaseAssignmentTimeoutProcess;
 import uk.gov.moj.cpp.sjp.event.processor.service.AssignmentService;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRequested;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -54,6 +55,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class AssignmentProcessorTest {
 
+    private final UUID sessionId = randomUUID();
+    private final UUID caseId = randomUUID();
+    private final UUID assigneeId = randomUUID();
+    private final String localJusticeAreaNationalCourtCode = randomNumeric(4);
+
     @Mock
     private Sender sender;
 
@@ -66,13 +72,11 @@ public class AssignmentProcessorTest {
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
+    @Mock
+    private CaseAssignmentTimeoutProcess caseAssignmentTimeoutProcess;
+
     @InjectMocks
     private AssignmentProcessor assignmentProcessor;
-
-    private final UUID sessionId = randomUUID();
-    private final UUID caseId = randomUUID();
-    private final UUID assigneeId = randomUUID();
-    private final String localJusticeAreaNationalCourtCode = randomNumeric(4);
 
     @Test
     public void shouldReturnListOfAssignmentCandidatesForMagistrateSession() {
@@ -155,7 +159,7 @@ public class AssignmentProcessorTest {
     }
 
     @Test
-    public void shouldEmitCaseAssignedPublicEventAndReplicateEventInAssignmentContext() {
+    public void shouldEmitCaseAssignedPublicEventAndReplicateEventInAssignmentContextAndStartAssignmentTimer() {
 
         final JsonEnvelope caseAssignedEvent = envelopeFrom(metadataWithRandomUUID(CaseAssigned.EVENT_NAME), createObjectBuilder()
                 .add(CASE_ID, caseId.toString())
@@ -181,17 +185,21 @@ public class AssignmentProcessorTest {
                         withJsonPath("assignee", equalTo(assigneeId.toString()))
                 ))
         )));
+
+        verify(caseAssignmentTimeoutProcess).startTimer(caseId, Duration.ofMinutes(60));
     }
 
     @Test
-    //TODO remove (ATCM-3097)
-    public void shouldReplicateCaseUnassignedEventInAssignmentContext() {
+    public void shouldReplicateCaseUnassignedEventInAssignmentContextAndCancelAssignmentTimer() {
         final JsonEnvelope caseAssignedEvent = envelopeFrom(metadataWithRandomUUID(CaseUnassigned.EVENT_NAME), createObjectBuilder()
                 .add(CASE_ID, caseId.toString())
                 .build());
 
         assignmentProcessor.handleCaseUnassignedEvent(caseAssignedEvent);
 
+        verify(caseAssignmentTimeoutProcess).cancelTimer(caseId);
+
+        //TODO remove (ATCM-3097)
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(caseAssignedEvent).withName("assignment.command.remove-assignment"),
                 payloadIsJson(withJsonPath("domainObjectId", equalTo(caseId.toString())))
@@ -212,6 +220,22 @@ public class AssignmentProcessorTest {
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(caseAssignmentRejectedEvent).withName("public.sjp.case-assignment-rejected"),
                 payloadIsJson(withJsonPath(REASON, equalTo(rejectionReason.toString())))
+        )));
+    }
+
+    @Test
+    public void shouldHandleCaseAlreadyAssignedEvent() {
+        final JsonEnvelope caseAlreadyAssignedEvent = envelopeFrom(metadataWithRandomUUID(CaseUnassigned.EVENT_NAME), createObjectBuilder()
+                .add(CASE_ID, caseId.toString())
+                .build());
+
+        assignmentProcessor.handleCaseAlreadyAssignedEvent(caseAlreadyAssignedEvent);
+
+        verify(caseAssignmentTimeoutProcess).resetTimer(caseId, Duration.ofMinutes(60));
+
+        verify(sender).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(caseAlreadyAssignedEvent).withName("public.sjp.case-assigned"),
+                payloadIsJson(withJsonPath(CASE_ID, equalTo(caseId.toString())))
         )));
     }
 }

@@ -45,6 +45,9 @@ function startVagrant {
   fi
 }
 
+function deployWiremock() {
+    mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=$WILDFLY_DEPLOYMENT_DIR -Dartifact=uk.gov.justice.services:wiremock-service:1.1.0:war
+}
 
 function runEventLogLiquibase() {
     echo "Executing event log Liquibase"
@@ -135,6 +138,7 @@ function buildDeployAndTest {
 
 function deployAndTest {
   deleteAndDeployWars
+  deployWiremock
   startVagrant
   runEventLogLiquibase
   runEventLogAggregateSnapshotLiquibase

@@ -34,9 +34,9 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
 
     @Before
     public void setUp() throws SQLException {
-        ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery(COURT_HOUSE_OU_CODE, "2572");
         SchedulingStub.stubStartSjpSessionCommand();
         SchedulingStub.stubEndSjpSessionCommand();
+        ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery(COURT_HOUSE_OU_CODE, "2572");
 
         cleaner.cleanAll();
 

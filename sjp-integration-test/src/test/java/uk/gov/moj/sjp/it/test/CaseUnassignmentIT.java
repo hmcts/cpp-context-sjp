@@ -1,24 +1,30 @@
 package uk.gov.moj.sjp.it.test;
 
-import org.junit.Before;
-import org.junit.Test;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_ASSIGNED_PRIVATE_EVENT;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_UNASSIGNED_EVENT;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseUnassignment;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.MAGISTRATE_SESSION_STARTED_EVENT;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSession;
+
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.helper.EventedListener;
+import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
-import javax.json.JsonObject;
 import java.sql.SQLException;
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.*;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.MAGISTRATE_SESSION_STARTED_EVENT;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSession;
+import javax.json.JsonObject;
+
+import org.junit.Before;
+import org.junit.Test;
 
 public class CaseUnassignmentIT extends BaseIntegrationTest {
 
@@ -36,6 +42,8 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
     public void setUp() throws SQLException {
         SchedulingStub.stubStartSjpSessionCommand();
         SchedulingStub.stubEndSjpSessionCommand();
+        AssignmentStub.stubAddAssignmentCommand();
+        AssignmentStub.stubRemoveAssignmentCommand();
         ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery(COURT_HOUSE_OU_CODE, "2572");
 
         cleaner.cleanAll();
@@ -76,6 +84,7 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
         assertThat(caseId, equalTo(createCasePayloadBuilder.getId()));
 
         assignmentHelper.assertCaseUnassigned(createCasePayloadBuilder.getId());
+        AssignmentStub.verifyRemoveAssignmentCommandSend(caseId);
     }
 
 }

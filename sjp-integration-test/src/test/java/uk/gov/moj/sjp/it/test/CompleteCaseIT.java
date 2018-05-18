@@ -1,6 +1,9 @@
 package uk.gov.moj.sjp.it.test;
 
+import uk.gov.moj.cpp.sjp.event.CaseCompleted;
+import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.EventedListener;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 
 import java.util.UUID;
@@ -13,21 +16,24 @@ import org.junit.Test;
  */
 public class CompleteCaseIT extends BaseIntegrationTest {
 
-    private UUID caseId;
+    private UUID caseId = UUID.randomUUID();
 
     @Before
-    public void setUp()  {
-        CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
-        CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
+    public void setUp() {
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseId);
 
-        caseId = createCasePayloadBuilder.getId();
+        new EventedListener()
+                .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder));
     }
 
     @Test
     public void completeCase() {
-        CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
-        completeCaseProducer.completeCase();
-        completeCaseProducer.verifyInActiveMQ();
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
+        new EventedListener()
+                .subscribe(CaseCompleted.EVENT_NAME)
+                .run(() -> completeCaseProducer.completeCase());
+
         completeCaseProducer.assertCaseCompleted();
     }
 

@@ -3,6 +3,7 @@ package uk.gov.moj.sjp.it.test;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.sjp.it.Constants.EVENT_CASE_MARKED_READY_FOR_DECISION;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_ASSIGNED_PRIVATE_EVENT;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_UNASSIGNED_EVENT;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
@@ -32,10 +33,8 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
     private static final UUID SESSION_ID = randomUUID();
     private static final String COURT_HOUSE_OU_CODE = "B01OK";
 
-
     private final AssignmentHelper assignmentHelper = new AssignmentHelper();
     private final SjpDatabaseCleaner cleaner = new SjpDatabaseCleaner();
-
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
     @Before
@@ -50,17 +49,24 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
 
         final String magistrate = "John Smith";
 
-        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
-        CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
-        UUID caseId = createCasePayloadBuilder.getId();
+        final UUID caseId = UUID.randomUUID();
 
-        final JsonObject sessionStartedEvent = new EventedListener()
+        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseId);
+
+        final EventedListener eventedListener = new EventedListener();
+
+        eventedListener
+                .subscribe(EVENT_CASE_MARKED_READY_FOR_DECISION)
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder));
+
+        final JsonObject sessionStartedEvent = eventedListener
+                .reset()
                 .subscribe(MAGISTRATE_SESSION_STARTED_EVENT)
                 .run(() -> startMagistrateSession(SESSION_ID, USER_ID, COURT_HOUSE_OU_CODE, magistrate))
                 .popEvent(MAGISTRATE_SESSION_STARTED_EVENT)
                 .get().payloadAsJsonObject();
 
-        UUID sessionId = UUID.fromString(sessionStartedEvent.getString("sessionId"));
+        final UUID sessionId = UUID.fromString(sessionStartedEvent.getString("sessionId"));
         assertThat(sessionId, equalTo(SESSION_ID));
 
         final JsonObject caseAssignedPrivateEvent = new EventedListener()

@@ -38,22 +38,45 @@ public class DatesToAvoidProcessorTest {
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
     @Test
-    public void raisesPublicEvent() {
+    public void raisesDatesToAvoidAddedPublicEvent() {
         final UUID caseId = UUID.randomUUID();
         final String datesToAvoid = "Mon - Wed";
-        final JsonEnvelope envelope = EnvelopeFactory.createEnvelope("sjp.events.dates-to-avoid-received",
+        final JsonEnvelope envelope = EnvelopeFactory.createEnvelope("sjp.events.dates-to-avoid-added",
                 createObjectBuilder()
                         .add("caseId", caseId.toString())
                         .add("datesToAvoid", datesToAvoid)
                         .build()
         );
 
-        processor.datesToAvoidProvided(envelope);
+        processor.publishDatesToAvoidAdded(envelope);
 
         verify(sender).send(argThat(jsonEnvelope(
                 metadata()
                         .envelopedWith(envelope.metadata())
-                        .withName("public.sjp.dates-to-avoid-received"),
+                        .withName("public.sjp.dates-to-avoid-added"),
+                payloadIsJson(allOf(
+                        withJsonPath("$.caseId", equalTo(caseId.toString())),
+                        withJsonPath("$.datesToAvoid", equalTo(datesToAvoid))
+                )))));
+    }
+
+    @Test
+    public void raisesDatesToAvoidUpdatedPublicEvent() {
+        final UUID caseId = UUID.randomUUID();
+        final String datesToAvoid = "Tue - Wed";
+        final JsonEnvelope envelope = EnvelopeFactory.createEnvelope("sjp.events.dates-to-avoid-updated",
+                createObjectBuilder()
+                        .add("caseId", caseId.toString())
+                        .add("datesToAvoid", datesToAvoid)
+                        .build()
+        );
+
+        processor.publishDatesToAvoidUpdated(envelope);
+
+        verify(sender).send(argThat(jsonEnvelope(
+                metadata()
+                        .envelopedWith(envelope.metadata())
+                        .withName("public.sjp.dates-to-avoid-updated"),
                 payloadIsJson(allOf(
                         withJsonPath("$.caseId", equalTo(caseId.toString())),
                         withJsonPath("$.datesToAvoid", equalTo(datesToAvoid))

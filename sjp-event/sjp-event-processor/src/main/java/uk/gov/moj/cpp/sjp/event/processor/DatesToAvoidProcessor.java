@@ -15,12 +15,19 @@ public class DatesToAvoidProcessor {
 
     @Inject
     private Sender sender;
+
     @Inject
     private Enveloper enveloper;
 
-    @Handles("sjp.events.dates-to-avoid-received")
-    public void datesToAvoidProvided(final JsonEnvelope envelope) {
-        sender.send(enveloper.withMetadataFrom(envelope, "public.sjp.dates-to-avoid-received")
+    @Handles("sjp.events.dates-to-avoid-added")
+    public void publishDatesToAvoidAdded(final JsonEnvelope envelope) {
+        sender.send(enveloper.withMetadataFrom(envelope, "public.sjp.dates-to-avoid-added")
+                .apply(envelope.payloadAsJsonObject()));
+    }
+
+    @Handles("sjp.events.dates-to-avoid-updated")
+    public void publishDatesToAvoidUpdated(final JsonEnvelope envelope) {
+        sender.send(enveloper.withMetadataFrom(envelope, "public.sjp.dates-to-avoid-updated")
                 .apply(envelope.payloadAsJsonObject()));
 
     }

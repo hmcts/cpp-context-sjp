@@ -7,6 +7,7 @@ import static javax.json.Json.createReader;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.not;
 import static uk.gov.justice.services.test.utils.core.http.BaseUriProvider.getBaseUri;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonValueIsJsonMatcher.isJson;
@@ -56,6 +57,10 @@ public class ActivitiHelper {
             return false;
         }
         return true;
+    }
+
+    public static void pollUntilProcessDeleted(final String processName, final String businessKey, final String reason) {
+        await().until(() -> isProcessDeleted(businessKey, processName, reason), is(true));
     }
 
     public static String createProcessInstance(final String processName, final String businessKey, final Map<String, Object> parameters) {

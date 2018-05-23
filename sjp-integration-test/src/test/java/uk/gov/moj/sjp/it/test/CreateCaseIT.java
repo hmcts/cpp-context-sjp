@@ -38,7 +38,9 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("defendant.personalDetails.title"), equalTo(createCasePayloadBuilder.getDefendantBuilder().getTitle()));
         assertThat(jsonResponse.get("defendant.personalDetails.firstName"), equalTo(createCasePayloadBuilder.getDefendantBuilder().getFirstName()));
         assertThat(jsonResponse.get("defendant.personalDetails.lastName"), equalTo(createCasePayloadBuilder.getDefendantBuilder().getLastName()));
-        assertThat(jsonResponse.get("defendant.personalDetails.dateOfBirth"), equalTo(LocalDates.to(createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth())));
+        if (createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth() != null) {
+            assertThat(jsonResponse.get("defendant.personalDetails.dateOfBirth"), equalTo(LocalDates.to(createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth())));
+        }
         assertThat(jsonResponse.get("defendant.personalDetails.gender"), equalTo(createCasePayloadBuilder.getDefendantBuilder().getGender()));
         assertThat(jsonResponse.get("defendant.numPreviousConvictions"), equalTo(createCasePayloadBuilder.getDefendantBuilder().getNumPreviousConvictions()));
         assertThat(jsonResponse.get("defendant.personalDetails.address.address1"), equalTo(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getAddress1()));

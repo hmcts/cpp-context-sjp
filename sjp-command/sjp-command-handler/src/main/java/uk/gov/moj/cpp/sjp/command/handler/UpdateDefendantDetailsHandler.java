@@ -59,7 +59,7 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
         final String homeNumber = getStringOrNull(contactNumberPayload, "home");
         final String mobileNumber = getStringOrNull(contactNumberPayload, "mobile");
         final Address address = createAddressFrom(payload);
-        final LocalDate birthDate = LocalDate.parse(dateOfBirth);
+        final LocalDate birthDate = dateOfBirth == null ? null : LocalDate.parse(dateOfBirth);
 
         final EventStream eventStream = eventSource.getStreamById(caseId);
 

@@ -37,7 +37,7 @@ public class CaseSearchResultListenerTest {
     private CaseSearchResultService caseSearchResultService = new CaseSearchResultService();
 
     @Mock
-    ReadyCase readyCase;
+    private ReadyCase readyCase;
 
     @Mock
     private CaseSearchResultRepository caseSearchResultRepository;

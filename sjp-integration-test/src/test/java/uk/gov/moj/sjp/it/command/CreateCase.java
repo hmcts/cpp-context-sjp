@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -60,7 +61,7 @@ public class CreateCase {
     }
 
     private JsonObject toJsonObjectRepresentingPayload(final CreateCasePayloadBuilder payloadBuilder) {
-        JsonObjectBuilder payload = createObjectBuilder();
+        final JsonObjectBuilder payload = createObjectBuilder();
 
         payload.add("id", payloadBuilder.id.toString());
         payload.add("urn", payloadBuilder.urn);
@@ -74,11 +75,12 @@ public class CreateCase {
         payload.add("timeOfHearing", "11:00");
         payload.add("costs", payloadBuilder.costs.doubleValue());
         payload.add("postingDate", LocalDates.to(payloadBuilder.postingDate));
-        payload.add("defendant", createObjectBuilder()
+
+        final JsonObjectBuilder defendantBuilder = createObjectBuilder()
                 .add("title", payloadBuilder.defendantBuilder.title)
                 .add("firstName", payloadBuilder.defendantBuilder.firstName)
                 .add("lastName", payloadBuilder.defendantBuilder.lastName)
-                .add("dateOfBirth", LocalDates.to(payloadBuilder.defendantBuilder.dateOfBirth))
+
                 .add("gender", payloadBuilder.defendantBuilder.gender)
                 .add("numPreviousConvictions", payloadBuilder.defendantBuilder.numPreviousConvictions)
                 .add("address", createObjectBuilder()
@@ -102,8 +104,12 @@ public class CreateCase {
                                 .add("witnessStatement", payloadBuilder.offenceBuilders.get(0).witnessStatement)
                                 .add("compensation", payloadBuilder.offenceBuilders.get(0).compensation.doubleValue())
                         )
-                )
-        );
+                );
+
+        Optional.ofNullable(payloadBuilder.defendantBuilder.dateOfBirth).map(LocalDates::to)
+                .ifPresent(dateOfBirth -> defendantBuilder.add("dateOfBirth", dateOfBirth));
+
+        payload.add("defendant", defendantBuilder);
 
         return payload.build();
     }

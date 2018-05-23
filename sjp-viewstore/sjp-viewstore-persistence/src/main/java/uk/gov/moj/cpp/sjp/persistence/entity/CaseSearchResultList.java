@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.persistence.entity;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -11,7 +12,7 @@ public class CaseSearchResultList {
 
     private final List<CaseSearchResult> caseSearchResults;
 
-    public CaseSearchResultList(List<CaseSearchResult> caseSearchResults) {
+    public CaseSearchResultList(final List<CaseSearchResult> caseSearchResults) {
         this.caseSearchResults = caseSearchResults;
     }
 
@@ -19,8 +20,9 @@ public class CaseSearchResultList {
         return caseSearchResults.stream().filter(r -> !r.isDeprecated()).findFirst();
     }
 
-    public void setName(UUID caseId, String newFirstName, String newLastName, LocalDate newDateOfBirth, ZonedDateTime dateAdded) {
-        Optional<CaseSearchResult> latest = getCurrent();
+    public void setName(final UUID caseId, final String newFirstName, final String newLastName,
+                        final LocalDate newDateOfBirth, final ZonedDateTime dateAdded) {
+        final Optional<CaseSearchResult> latest = getCurrent();
 
         caseSearchResults.forEach(entry -> {
             entry.setDeprecated(true);
@@ -28,7 +30,7 @@ public class CaseSearchResultList {
             entry.setCurrentLastName(newLastName);
         });
 
-        CaseSearchResult newEntry = new CaseSearchResult(caseId, newFirstName, newLastName, newDateOfBirth, dateAdded);
+        final CaseSearchResult newEntry = new CaseSearchResult(caseId, newFirstName, newLastName, newDateOfBirth, dateAdded);
 
         latest.ifPresent(r -> {
             newEntry.setPleaDate(r.getPleaDate());
@@ -38,18 +40,18 @@ public class CaseSearchResultList {
         caseSearchResults.add(newEntry);
     }
 
-    public void setDateOfBirth(LocalDate dateOfBirth) {
+    public void setDateOfBirth(final LocalDate dateOfBirth) {
         caseSearchResults.forEach(entry -> entry.setDateOfBirth(dateOfBirth));
     }
 
-    public void forEach(Consumer<CaseSearchResult> consumer) {
+    public void forEach(final Consumer<CaseSearchResult> consumer) {
         caseSearchResults.forEach(consumer);
     }
 
-    public boolean hasDateOfBirthChanged(LocalDate newDateOfBirth) {
+    public boolean hasDateOfBirthChanged(final LocalDate newDateOfBirth) {
         return getCurrent()
                 .map(old ->
-                        !newDateOfBirth.equals(old.getDateOfBirth()))
+                        !Objects.equals(old.getDateOfBirth(), newDateOfBirth))
                 .orElse(true);
     }
 

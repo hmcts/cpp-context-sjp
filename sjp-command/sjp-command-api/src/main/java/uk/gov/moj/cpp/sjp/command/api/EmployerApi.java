@@ -7,8 +7,12 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 @ServiceComponent(COMMAND_API)
 public class EmployerApi {
@@ -21,7 +25,20 @@ public class EmployerApi {
 
     @Handles("sjp.update-employer")
     public void updateEmployer(final JsonEnvelope envelope) {
-        sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.update-employer").apply(envelope.payloadAsJsonObject()));
+        final JsonObject payloadAsJsonObject = envelope.payloadAsJsonObject();
+        //TODO ATCM-3151: when the UI is adapted remove this code below
+        final JsonObjectBuilder employerDetails = JsonObjects.createObjectBuilderWithFilter(payloadAsJsonObject,
+                key -> !("caseId".equals(key) || "defendantId".equals(key)));
+
+
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("caseId", payloadAsJsonObject.getString("caseId"))
+                .add("defendantId", payloadAsJsonObject.getString("defendantId"))
+                .add("employer", employerDetails)
+                .build();
+
+        sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.update-employer")
+                .apply(payload));
     }
 
     @Handles("sjp.delete-employer")

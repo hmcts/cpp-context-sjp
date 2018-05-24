@@ -19,10 +19,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 public class UpdateFinancialMeansTest extends CaseAggregateBaseTest {
+
+    private UUID userId = UUID.randomUUID();
 
     @Test
     public void shouldCreateFinancialMeansUpdatedEventIfDefendantExists() {
@@ -32,7 +33,7 @@ public class UpdateFinancialMeansTest extends CaseAggregateBaseTest {
         final Benefits benefits = new Benefits(false, EMPTY);
         final FinancialMeans financialMeans = new FinancialMeans(defendantId, income, benefits, "EMPLOYED");
 
-        final Stream<Object> eventStream = caseAggregate.updateFinancialMeans(financialMeans);
+        final Stream<Object> eventStream = caseAggregate.updateFinancialMeans(userId, financialMeans);
         final List<Object> events = eventStream.collect(toList());
 
         assertThat(events, hasSize(1));
@@ -53,7 +54,7 @@ public class UpdateFinancialMeansTest extends CaseAggregateBaseTest {
         final Benefits benefits = new Benefits(false, EMPTY);
         final FinancialMeans financialMeans = new FinancialMeans(defendantId, income, benefits, "EMPLOYED");
 
-        final Stream<Object> eventStream = caseAggregate.updateFinancialMeans(financialMeans);
+        final Stream<Object> eventStream = caseAggregate.updateFinancialMeans(userId, financialMeans);
         final List<Object> events = eventStream.collect(toList());
 
         assertThat(events, hasSize(1));

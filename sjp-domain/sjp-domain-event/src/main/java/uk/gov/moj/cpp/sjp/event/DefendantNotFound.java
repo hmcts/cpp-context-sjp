@@ -4,8 +4,10 @@ import uk.gov.justice.domain.annotation.Event;
 
 import java.util.UUID;
 
-@Event("sjp.events.defendant-not-found")
+@Event(DefendantNotFound.EVENT_NAME)
 public class DefendantNotFound {
+
+    public static final String EVENT_NAME = "sjp.events.defendant-not-found";
 
     private final UUID defendantId;
     private final String description;

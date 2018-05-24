@@ -5,7 +5,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
-import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -18,19 +17,15 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_SJP_CASE_UPDATE_REJECTED;
 import static uk.gov.moj.sjp.it.Constants.SJP_EVENTS_CASE_UPDATE_REJECTED;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetAssignmentsByDomainObjectId;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.stubNotifications;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.verifyNotification;
-import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithDecision;
-import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.COURT_ADMINISTRATORS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.LEGAL_ADVISERS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
@@ -80,7 +75,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         financialMeansHelper = new FinancialMeansHelper();
         personInfoVerifier = PersonInfoVerifier.personInfoVerifierForCasePayload(createCasePayloadBuilder);
 
-        stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
         stubNotifications();
     }
 
@@ -169,7 +163,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     @Test
     public void shouldPleadNotGuiltyOnlineThenFailWithSecondPleadAttemptAsNotAllowedTwoPleasAgainstSameOffence() {
-        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
         try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper();
              final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(createCasePayloadBuilder.getId(),
                      SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
@@ -218,7 +211,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     @Test
     public void shouldPleadGuiltyRequestHearingOnline() {
-        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
         try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper()) {
             final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
             final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(createCasePayloadBuilder.getId(),
@@ -229,51 +221,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         }
     }
 
-    @Test
-    public void shouldRejectPleadOnlineWhenCaseAssigned() {
-        stubGetAssignmentsByDomainObjectId(createCasePayloadBuilder.getId(), randomUUID());
-        try (final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(createCasePayloadBuilder.getId(),
-                SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
-            final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
-            final JSONObject onlinePleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
-            pleadOnlineHelper.pleadOnline(onlinePleaPayload.toString());
-
-            caseUpdateRejectedHelper.verifyCaseUpdateRejectedPrivateInActiveMQ(CaseUpdateRejected.RejectReason.CASE_ASSIGNED.name());
-            caseUpdateRejectedHelper.verifyCaseUpdateRejectedPublicInActiveMQ(CaseUpdateRejected.RejectReason.CASE_ASSIGNED.name());
-        }
-    }
-
-    /*
-     * Do twice to check serialization works correctly
-     */
-    @Test
-    public void shouldRejectPleadOnlineWhenCaseCompletedTwice() {
-        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
-        stubGetCaseDecisionsWithDecision(createCasePayloadBuilder.getId());
-
-        try (final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(createCasePayloadBuilder.getId(),
-                SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
-            final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
-            final JSONObject onlinePleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
-            pleadOnlineHelper.pleadOnline(onlinePleaPayload.toString());
-
-            caseUpdateRejectedHelper.verifyCaseUpdateRejectedPrivateInActiveMQ(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name());
-            caseUpdateRejectedHelper.verifyCaseUpdateRejectedPublicInActiveMQ(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name());
-        }
-
-        try (final CaseUpdateRejectedHelper caseUpdateRejectedHelper = new CaseUpdateRejectedHelper(createCasePayloadBuilder.getId(),
-                SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED)) {
-            final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
-            final JSONObject onlinePleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
-            pleadOnlineHelper.pleadOnline(onlinePleaPayload.toString());
-
-            caseUpdateRejectedHelper.verifyCaseUpdateRejectedPrivateInActiveMQ(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name());
-            caseUpdateRejectedHelper.verifyCaseUpdateRejectedPublicInActiveMQ(CaseUpdateRejected.RejectReason.CASE_COMPLETED.name());
-        }
-    }
-
     private void pleadGuiltyOnlineWithUserAndExpectedFinances(Collection<UUID> userIds, boolean expectToHaveFinances) {
-        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
         try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper()) {
             final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
             final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(createCasePayloadBuilder.getId(),

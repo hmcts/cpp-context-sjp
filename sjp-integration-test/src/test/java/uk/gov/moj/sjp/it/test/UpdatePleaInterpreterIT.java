@@ -3,8 +3,6 @@ package uk.gov.moj.sjp.it.test;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
-import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.sjp.it.command.CreateCase;
@@ -25,8 +23,6 @@ public class UpdatePleaInterpreterIT extends BaseIntegrationTest {
     public void setUp() {
         this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
         CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
-        stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
-        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
     }
 
     @Test

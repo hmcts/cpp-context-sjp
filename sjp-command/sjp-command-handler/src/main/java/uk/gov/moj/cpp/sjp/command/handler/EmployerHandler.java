@@ -12,17 +12,16 @@ import uk.gov.moj.cpp.sjp.domain.Employer;
 
 import java.util.UUID;
 
-import javax.json.JsonObject;
-
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class EmployerHandler extends CaseCommandHandler {
 
     @Handles("sjp.command.update-employer")
     public void updateEmployer(final Envelope<UpdateEmployer> command) throws EventStreamException {
-        applyToCaseAggregate(command.payload().getCaseId(), command, aggregate -> aggregate.updateEmployer(prepareEmployer(command.payload())));
+        applyToCaseAggregate(command.payload().getCaseId(), command, aggregate -> aggregate.updateEmployer(
+                getUserId(command), prepareEmployer(command.payload())));
     }
 
-    private Employer prepareEmployer(UpdateEmployer employerPayload) {
+    private Employer prepareEmployer(final UpdateEmployer employerPayload) {
         final uk.gov.moj.cpp.sjp.Employer employer = employerPayload.getEmployer();
 
         final UUID defendantId = employerPayload.getDefendantId();
@@ -48,8 +47,8 @@ public class EmployerHandler extends CaseCommandHandler {
 
     @Handles("sjp.command.delete-employer")
     public void deleteEmployer(final JsonEnvelope command) throws EventStreamException {
-        final JsonObject payload = command.payloadAsJsonObject();
-        final UUID defendantId = UUID.fromString(payload.getString("defendantId"));
-        applyToCaseAggregate(command, aggregate -> aggregate.deleteEmployer(defendantId));
+        applyToCaseAggregate(command, aggregate -> aggregate.deleteEmployer(
+                getUserId(command),
+                UUID.fromString(command.payloadAsJsonObject().getString("defendantId"))));
     }
 }

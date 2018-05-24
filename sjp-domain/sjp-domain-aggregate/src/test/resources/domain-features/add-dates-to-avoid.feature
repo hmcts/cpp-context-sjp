@@ -1,4 +1,4 @@
-Feature: Receive a case
+Feature: Add dates to avoid
 
   Scenario: Dates to avoid is added to a case
 

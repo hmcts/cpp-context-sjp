@@ -18,6 +18,7 @@ public class UpdateDefendantNationalInsuranceNumberHandler extends CaseCommandHa
         final JsonObject payload = command.payloadAsJsonObject();
         final UUID defendantId = UUID.fromString(payload.getString("defendantId"));
         final String nationalInsuranceNumber = payload.getString("nationalInsuranceNumber", null);
-        applyToCaseAggregate(command, aggregate -> aggregate.updateDefendantNationalInsuranceNumber(defendantId, nationalInsuranceNumber));
+        applyToCaseAggregate(command, aggregate -> aggregate.updateDefendantNationalInsuranceNumber(
+                getUserId(command), defendantId, nationalInsuranceNumber));
     }
 }

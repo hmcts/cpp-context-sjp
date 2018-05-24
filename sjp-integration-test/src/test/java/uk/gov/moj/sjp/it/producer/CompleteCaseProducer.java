@@ -33,7 +33,7 @@ public class CompleteCaseProducer {
     }
 
     public void verifyInActiveMQ() {
-        JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
         assertThat(jsonResponse.get(CASE_ID_PROPERTY), equalTo(caseId.toString()));
     }
 

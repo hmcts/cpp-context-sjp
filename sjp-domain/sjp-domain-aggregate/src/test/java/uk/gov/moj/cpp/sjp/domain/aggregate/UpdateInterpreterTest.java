@@ -32,21 +32,22 @@ public class UpdateInterpreterTest {
     private CaseAggregate caseAggregate;
     private UUID caseId;
     private UUID defendantId;
+    private UUID userId;
 
     @Before
     public void initialiseCase() {
         clock = new UtcClock();
         caseAggregate = new CaseAggregate();
 
-
         CaseReceived caseReceived = receiveCase();
         caseId = caseReceived.getCaseId();
         defendantId = caseReceived.getDefendant().getId();
+        userId = randomUUID();
     }
 
     @Test
     public void shouldCreateInterpreterUpdatedForDefendantEvent() {
-        List<Object> events = caseAggregate.updateInterpreter(defendantId, LANGUAGE).collect(toList());
+        List<Object> events = caseAggregate.updateInterpreter(userId, defendantId, LANGUAGE).collect(toList());
 
         assertThat(events, hasSize(1));
 
@@ -60,16 +61,16 @@ public class UpdateInterpreterTest {
 
     @Test
     public void shouldNotCreateInterpreterUpdatedForDefendantEventIfInterpreterLanguageAlreadyExist() {
-        caseAggregate.updateInterpreter(defendantId, LANGUAGE);
+        caseAggregate.updateInterpreter(userId, defendantId, LANGUAGE);
 
-        assertThat(caseAggregate.updateInterpreter(defendantId, LANGUAGE).count(), is(0L));
+        assertThat(caseAggregate.updateInterpreter(userId, defendantId, LANGUAGE).count(), is(0L));
     }
 
     @Test
     public void shouldCreateInterpreterCancelledForDefendantEvent() {
-        caseAggregate.updateInterpreter(defendantId, LANGUAGE);
+        caseAggregate.updateInterpreter(userId, defendantId, LANGUAGE);
 
-        List<Object> events = caseAggregate.updateInterpreter(defendantId, null).collect(toList());
+        List<Object> events = caseAggregate.updateInterpreter(userId, defendantId, null).collect(toList());
 
         assertThat(events, hasSize(1));
 
@@ -81,7 +82,7 @@ public class UpdateInterpreterTest {
 
     @Test
     public void shouldNotCreateInterpreterCancelledForDefendantEventIfInterpreterDoestNotExist() {
-        long countedEvents = caseAggregate.updateInterpreter(defendantId, null).count();
+        long countedEvents = caseAggregate.updateInterpreter(userId, defendantId, null).count();
 
         assertThat(countedEvents, is(0L));
     }
@@ -89,7 +90,7 @@ public class UpdateInterpreterTest {
     @Test
     public void shouldCreateDefendantNotFoundEventIfDefendantDoesNotExist() {
         final UUID defendantId = randomUUID();
-        List<Object> events = caseAggregate.updateInterpreter(defendantId, LANGUAGE).collect(toList());
+        List<Object> events = caseAggregate.updateInterpreter(userId, defendantId, LANGUAGE).collect(toList());
 
         assertThat(events, hasSize(1));
         assertThat(reflectionEquals(

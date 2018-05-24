@@ -31,11 +31,11 @@ public class UpdateFinancialMeansHandlerTest extends CaseCommandHandlerTest {
         final FinancialMeans financialMeans = new FinancialMeans(UUID.randomUUID(), income, benefits, "EMPLOYED");
 
         when(converter.convert(jsonObject, FinancialMeans.class)).thenReturn(financialMeans);
-        when(caseAggregate.updateFinancialMeans(financialMeans)).thenReturn(events);
+        when(caseAggregate.updateFinancialMeans(userId, financialMeans)).thenReturn(events);
 
         updateFinancialMeansHandler.updateFinancialMeans(jsonEnvelope);
 
         verify(converter).convert(jsonObject, FinancialMeans.class);
-        verify(caseAggregate).updateFinancialMeans(financialMeans);
+        verify(caseAggregate).updateFinancialMeans(userId, financialMeans);
     }
 }

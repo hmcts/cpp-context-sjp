@@ -4,8 +4,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
-import uk.gov.moj.cpp.sjp.command.handler.CaseCommandHandlerTest;
-import uk.gov.moj.cpp.sjp.command.handler.UpdateInterpreterHandler;
 
 import java.util.UUID;
 
@@ -28,14 +26,14 @@ public class UpdateInterpreterHandlerTest extends CaseCommandHandlerTest {
         when(jsonObject.getString("defendantId")).thenReturn(defendantId.toString());
         when(jsonObject.getString("language", null)).thenReturn(language);
 
-        when(caseAggregate.updateInterpreter(defendantId, language)).thenReturn(events);
+        when(caseAggregate.updateInterpreter(userId, defendantId, language)).thenReturn(events);
 
         updateInterpreterHandler.updateInterpreter(jsonEnvelope);
 
         verify(jsonObject).getString("defendantId");
         verify(jsonObject).getString("language", null);
 
-        verify(caseAggregate).updateInterpreter(defendantId, language);
+        verify(caseAggregate).updateInterpreter(userId, defendantId, language);
     }
 
     @Test
@@ -45,13 +43,13 @@ public class UpdateInterpreterHandlerTest extends CaseCommandHandlerTest {
         when(jsonObject.getString("defendantId")).thenReturn(defendantId.toString());
         when(jsonObject.getString("language", null)).thenReturn(null);
 
-        when(caseAggregate.updateInterpreter(defendantId, null)).thenReturn(events);
+        when(caseAggregate.updateInterpreter(userId, defendantId, null)).thenReturn(events);
 
         updateInterpreterHandler.updateInterpreter(jsonEnvelope);
 
         verify(jsonObject).getString("defendantId");
         verify(jsonObject).getString("language", null);
 
-        verify(caseAggregate).updateInterpreter(defendantId, null);
+        verify(caseAggregate).updateInterpreter(userId, defendantId, null);
     }
 }

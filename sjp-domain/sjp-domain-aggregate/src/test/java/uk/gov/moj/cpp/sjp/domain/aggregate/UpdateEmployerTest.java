@@ -35,6 +35,8 @@ public class UpdateEmployerTest {
 
     private Clock clock = new UtcClock();
 
+    private UUID userId = UUID.randomUUID();
+
     @Before
     public void init() {
         caseAggregate = new CaseAggregate();
@@ -44,7 +46,7 @@ public class UpdateEmployerTest {
 
     @Test
     public void shouldCreateEmployerUpdatedAndEmploymentStatusUpdatedEventsIfDefendantDoesNotHaveEmploymentStatus() {
-        final Stream<Object> eventStream = caseAggregate.updateEmployer(employer);
+        final Stream<Object> eventStream = caseAggregate.updateEmployer(userId, employer);
         final List<Object> events = eventStream.collect(toList());
 
         assertThat(events, hasSize(2));
@@ -62,9 +64,9 @@ public class UpdateEmployerTest {
     public void shouldCreateOnlyEmployerUpdatedEventIfDefendantEmploymentStatusIsEmployed() {
         final FinancialMeans financialMeans = getFinancialMeans(defendantId, EmploymentStatus.EMPLOYED);
 
-        caseAggregate.updateFinancialMeans(financialMeans);
+        caseAggregate.updateFinancialMeans(userId, financialMeans);
 
-        final Stream<Object> eventStream = caseAggregate.updateEmployer(employer);
+        final Stream<Object> eventStream = caseAggregate.updateEmployer(userId, employer);
         final List<Object> events = eventStream.collect(toList());
 
         assertThat(events, hasSize(1));
@@ -77,9 +79,9 @@ public class UpdateEmployerTest {
     public void shouldCreateEmployerUpdatedAndEmploymentStatusUpdatedEventsIfDefendantEmploymentStatusIsDifferentThanEmployed() {
         final FinancialMeans financialMeans = getFinancialMeans(defendantId, EmploymentStatus.SELF_EMPLOYED);
 
-        caseAggregate.updateFinancialMeans(financialMeans);
+        caseAggregate.updateFinancialMeans(userId, financialMeans);
 
-        final Stream<Object> eventStream = caseAggregate.updateEmployer(employer);
+        final Stream<Object> eventStream = caseAggregate.updateEmployer(userId, employer);
         final List<Object> events = eventStream.collect(toList());
 
         assertThat(events, hasSize(2));

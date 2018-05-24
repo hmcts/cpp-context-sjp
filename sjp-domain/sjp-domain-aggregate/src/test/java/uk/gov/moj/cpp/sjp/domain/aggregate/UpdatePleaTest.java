@@ -39,6 +39,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
     private UUID defendantId;
     private UUID offenceId;
     private final ZonedDateTime now = clock.now();
+    private UUID userId = UUID.randomUUID();
 
     @Before
     public void setUp() {
@@ -52,7 +53,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
     public void shouldUpdatePlea() {
         //when
         final UpdatePlea updatePlea = PleaBuilder.defaultUpdatePlea(offenceId);
-        Stream<Object> eventStream = caseAggregate.updatePlea(updatePlea, now);
+        Stream<Object> eventStream = caseAggregate.updatePlea(userId, updatePlea, now);
 
         //then
         List<Object> events = asList(eventStream.toArray());
@@ -63,7 +64,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
                                   final boolean trialRequestedEventExpected, final boolean trialRequestCancelledEventExpected) {
         //when
         final UpdatePlea updatePlea = new UpdatePlea(caseId, offenceId, plea, true, interpreterLanguage);
-        final Stream<Object> eventStream = caseAggregate.updatePlea(updatePlea, now);
+        final Stream<Object> eventStream = caseAggregate.updatePlea(userId, updatePlea, now);
 
         //then
         final List<Object> events = asList(eventStream.toArray());
@@ -107,7 +108,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
     private void shouldCancelPlea(final boolean cancelInterpreter) {
         //when
         final CancelPlea cancelPlea = new CancelPlea(caseId, offenceId);
-        final Stream<Object> eventStream = caseAggregate.cancelPlea(cancelPlea, now);
+        final Stream<Object> eventStream = caseAggregate.cancelPlea(userId, cancelPlea, now);
 
         //then
         final List<Object> events = asList(eventStream.toArray());
@@ -158,11 +159,11 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
     @Test
     public void shouldUpdatePleaWhenWithdrawalOffencesRequested() {
         //given
-        caseAggregate.requestWithdrawalAllOffences(caseId);
+        caseAggregate.requestWithdrawalAllOffences();
 
         //when
         final UpdatePlea updatePlea = PleaBuilder.defaultUpdatePlea(offenceId);
-        Stream<Object> eventStream = caseAggregate.updatePlea(updatePlea, now);
+        Stream<Object> eventStream = caseAggregate.updatePlea(userId, updatePlea, now);
 
         //then
         List<Object> events = asList(eventStream.toArray());
@@ -172,12 +173,12 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
     @Test
     public void shouldUpdatePleaWhenWithdrawalOffencesRequestCancelled() {
         //given
-        caseAggregate.requestWithdrawalAllOffences(caseId);
-        caseAggregate.cancelRequestWithdrawalAllOffences(caseId);
+        caseAggregate.requestWithdrawalAllOffences();
+        caseAggregate.cancelRequestWithdrawalAllOffences();
 
         //when
         final UpdatePlea updatePlea = PleaBuilder.defaultUpdatePlea(offenceId);
-        Stream<Object> eventStream = caseAggregate.updatePlea(updatePlea, now);
+        Stream<Object> eventStream = caseAggregate.updatePlea(userId, updatePlea, now);
 
         //then
         List<Object> events = asList(eventStream.toArray());
@@ -188,7 +189,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
     public void shouldUpdatePleaWhenSjpnIsNotAdded() {
         //when
         final UpdatePlea updatePlea = PleaBuilder.defaultUpdatePlea(offenceId);
-        Stream<Object> eventStream = caseAggregate.updatePlea(updatePlea, now);
+        Stream<Object> eventStream = caseAggregate.updatePlea(userId, updatePlea, now);
 
         //then
         List<Object> events = asList(eventStream.toArray());
@@ -198,7 +199,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
     @Test
     public void shouldNotUpdatePleaWhenOffenceDoesNotExist() {
         final UpdatePlea updatePlea = PleaBuilder.defaultUpdatePlea(UUID.randomUUID());
-        List<Object> events = caseAggregate.updatePlea(updatePlea, now).collect(toList());
+        List<Object> events = caseAggregate.updatePlea(userId, updatePlea, now).collect(toList());
 
         assertThat(events, hasSize(1));
         assertThat(events.get(0) , instanceOf(OffenceNotFound.class));
@@ -355,7 +356,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
 
         //when
         final CancelPlea cancelPlea = new CancelPlea(caseId, offenceId);
-        Stream<Object> eventStream = caseAggregate.cancelPlea(cancelPlea, now);
+        Stream<Object> eventStream = caseAggregate.cancelPlea(userId, cancelPlea, now);
 
         //then
         assertHasBothPleaCancelledAndTrialCancelledEvents(eventStream);
@@ -368,7 +369,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
 
         //when
         final CancelPlea cancelPlea = new CancelPlea(caseId, offenceId);
-        Stream<Object> eventStream = caseAggregate.cancelPlea(cancelPlea, now);
+        Stream<Object> eventStream = caseAggregate.cancelPlea(userId, cancelPlea, now);
 
         //then
         assertHasPleaCancelledEventOnly(eventStream);
@@ -381,7 +382,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
 
         //when
         final CancelPlea cancelPlea = new CancelPlea(caseId, offenceId);
-        Stream<Object> eventStream = caseAggregate.cancelPlea(cancelPlea, now);
+        Stream<Object> eventStream = caseAggregate.cancelPlea(userId, cancelPlea, now);
 
         //then
         assertHasPleaCancelledEventOnly(eventStream);
@@ -394,7 +395,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
 
         //when
         final CancelPlea cancelPlea = new CancelPlea(caseId, offenceId);
-        Stream<Object> eventStream = caseAggregate.cancelPlea(cancelPlea, now);
+        Stream<Object> eventStream = caseAggregate.cancelPlea(userId, cancelPlea, now);
 
         //then
         assertHasBothPleaCancelledAndTrialCancelledEvents(eventStream);
@@ -446,7 +447,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         else if (pleaType.equals(PleaType.NOT_GUILTY)) {
             updatePlea = PleaBuilder.updatePleaNotGuilty(offenceId);
         }
-        return caseAggregate.updatePlea(updatePlea, now);
+        return caseAggregate.updatePlea(userId, updatePlea, now);
     }
 
     private void assertHasPleaUpdatedEventOnly(Stream<Object> eventStream) {
@@ -512,7 +513,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
 
         //then cancels plea
         final CancelPlea cancelPlea = new CancelPlea(caseId, offenceId);
-        eventStream = caseAggregate.cancelPlea(cancelPlea, now);
+        eventStream = caseAggregate.cancelPlea(userId, cancelPlea, now);
         assertHasBothPleaCancelledAndTrialCancelledEvents(eventStream);
 
         //then update to NOT_GUILTY

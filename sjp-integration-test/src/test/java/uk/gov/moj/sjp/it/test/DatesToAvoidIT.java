@@ -1,46 +1,36 @@
 package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import com.jayway.restassured.path.json.JsonPath;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import javax.json.JsonObject;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.hamcrest.Matcher;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.lessThan;
-
-import org.hamcrest.MatcherAssert;
-import org.junit.After;
-
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import org.junit.Before;
-import org.junit.Test;
-import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.justice.services.common.util.Clock;
-import uk.gov.justice.services.common.util.UtcClock;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
-
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
+import static uk.gov.moj.sjp.it.pollingquery.PendingDatesToAvoidPoller.pollUntilPendingDatesToAvoidIsOk;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
+
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
@@ -48,13 +38,23 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
-
-import static uk.gov.moj.sjp.it.pollingquery.PendingDatesToAvoidPoller.pollUntilPendingDatesToAvoidIsOk;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
-import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
-import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.*;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import com.jayway.restassured.path.json.JsonPath;
+import org.hamcrest.Matcher;
+import org.hamcrest.MatcherAssert;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class DatesToAvoidIT extends BaseIntegrationTest {
 
@@ -102,14 +102,12 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         createCasePayloadBuilder.withPostingDate(LocalDate.of(2000, 12, dayOfMonth));
 
         CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
-        stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
 
         return createCasePayloadBuilder;
     }
 
     @Test
     public void shouldCaseBePendingDatesToAvoidForPleaChangeScenarios() {
-        stubGetEmptyAssignmentsByDomainObjectId(tflCaseBuilder.getId());
         try (final CancelPleaHelper cancelPleaHelper = new CancelPleaHelper(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(),
                      EVENT_SELECTOR_PLEA_CANCELLED, PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED);
         ) {
@@ -155,7 +153,6 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         final String DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME = "public.sjp.dates-to-avoid-added";
 
         final UUID caseId = tflCaseBuilder.getId();
-        stubGetEmptyAssignmentsByDomainObjectId(tflCaseBuilder.getId());
 
         //when
         addDatesToAvoid(caseId, DATE_TO_AVOID);
@@ -176,7 +173,6 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
         final UUID caseId = tflCaseBuilder.getId();
 
-        stubGetEmptyAssignmentsByDomainObjectId(caseId);
         addDatesToAvoid(caseId, DATE_TO_AVOID);
 
         //when
@@ -192,8 +188,6 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     }
 
     private void shouldCaseBePendingDatesToAvoidForResultedCaseScenario(UUID userId, CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder, int expectedPendingDatesToAvoidCount) {
-        stubGetEmptyAssignmentsByDomainObjectId(tflCaseBuilder.getId());
-        stubGetEmptyAssignmentsByDomainObjectId(tvlCaseBuilder.getId());
 
         //updates plea to NOT_GUILTY for TFL case (making it pending dates-to-avoid submission)
         updatePleaToNotGuilty(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), updatePleaHelper);

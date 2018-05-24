@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.time.ZonedDateTime.now;
 import static java.util.Optional.of;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -29,7 +30,9 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.Address;
 import uk.gov.moj.cpp.sjp.Employer;
 import uk.gov.moj.cpp.sjp.UpdateEmployer;
+import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
@@ -74,8 +77,11 @@ public class EmployerHandlerTest {
     @Test
     public void shouldUpdateEmployer() throws EventStreamException {
         final CaseAggregate caseAggregate = new CaseAggregate();
-        final UUID caseId = UUID.randomUUID();
-        final UUID defendantId = UUID.randomUUID();
+        final Case aCase = CaseBuilder.aDefaultSjpCase().build();
+        caseAggregate.receiveCase(aCase, now());
+
+        // Note that the defendantId created by the builder is overwritten by the aggregate
+        final UUID defendantId = caseAggregate.getOffenceIdsByDefendantId().keySet().iterator().next();
 
         final Address address = Address.address()
                 .withAddress1(of("123 High St"))
@@ -91,13 +97,13 @@ public class EmployerHandlerTest {
                 .withAddress(of(address))
                 .build();
 
-        UpdateEmployer payload = updateEmployer()
-                .withCaseId(caseId)
+        final UpdateEmployer payload = updateEmployer()
+                .withCaseId(aCase.getId())
                 .withDefendantId(defendantId)
                 .withEmployer(employer)
                 .build();
 
-        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(eventSource.getStreamById(aCase.getId())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
         final Envelope<UpdateEmployer> envelope = envelopeFrom(metadataWithRandomUUID("sjp.command.update-employer"), payload);
@@ -139,17 +145,20 @@ public class EmployerHandlerTest {
     @Test
     public void shouldDeleteEmployer() throws EventStreamException {
         final CaseAggregate caseAggregate = new CaseAggregate();
-        final UUID defendantId = UUID.randomUUID();
-        caseAggregate.apply(new EmploymentStatusUpdated(defendantId, "EMPLOYED"));
-        final UUID caseId = UUID.randomUUID();
+        final Case aCase = CaseBuilder.aDefaultSjpCase().build();
+        caseAggregate.receiveCase(aCase, now());
 
+        // Note that the defendantId created by the builder is overwritten by the aggregate
+        final UUID defendantId = caseAggregate.getOffenceIdsByDefendantId().keySet().iterator().next();
+
+        caseAggregate.apply(new EmploymentStatusUpdated(defendantId, "EMPLOYED"));
 
         final JsonObject payload = createObjectBuilder()
-                .add("caseId", caseId.toString())
+                .add("caseId", aCase.getId().toString())
                 .add("defendantId", defendantId.toString())
                 .build();
 
-        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(eventSource.getStreamById(aCase.getId())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
         final JsonEnvelope envelope = EnvelopeFactory.createEnvelope("sjp.command.delete-employer", payload);

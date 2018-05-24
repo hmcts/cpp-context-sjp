@@ -19,7 +19,6 @@ import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_UPDATED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAddAssignmentCommand;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.signalProcessesInstanceId;
@@ -59,7 +58,6 @@ public class CaseStateProcessMigrationIT extends BaseIntegrationTest {
     @Before
     public void setUp() {
         stubGetCaseDecisionsWithNoDecision(caseId);
-        stubGetEmptyAssignmentsByDomainObjectId(caseId);
         stubAddAssignmentCommand();
         stubRemoveAssignmentCommand();
 

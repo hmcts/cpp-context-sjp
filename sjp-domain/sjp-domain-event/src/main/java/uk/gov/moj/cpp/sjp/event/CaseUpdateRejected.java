@@ -11,7 +11,6 @@ public class CaseUpdateRejected {
 
     public static final String EVENT_NAME = "sjp.events.case-update-rejected";
 
-    //should match CaseUpdateHelper class
     public enum RejectReason {
         WITHDRAWAL_PENDING,
         CASE_ASSIGNED,

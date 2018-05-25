@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
@@ -11,6 +12,10 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+
+import java.util.UUID;
+
+import javax.json.JsonObject;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +43,17 @@ public class UpdateEmployerTest {
 
     @Test
     public void shouldRenameUpdateCommand() {
-        final JsonEnvelope command = envelope().with(metadataWithRandomUUID("sjp.update-employer")).build();
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final String name = "employerName";
+        final String address1 = "address1";
+
+        final JsonEnvelope command = envelope().with(metadataWithRandomUUID("sjp.update-employer"))
+                .withPayloadOf(caseId, "caseId")
+                .withPayloadOf(defendantId, "defendantId")
+                .withPayloadOf(name, "name")
+                .withPayloadOf(address1, "address", "address1")
+                .build();
 
         employerApi.updateEmployer(command);
 
@@ -46,7 +61,17 @@ public class UpdateEmployerTest {
 
         final JsonEnvelope newCommand = envelopeCaptor.getValue();
         assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName("sjp.command.update-employer"));
-        assertThat(newCommand.payloadAsJsonObject(), equalTo(command.payloadAsJsonObject()));
+
+        final JsonObject expectedPayload = createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .add("defendantId", defendantId.toString())
+                .add("employer", createObjectBuilder()
+                        .add("name", name)
+                        .add("address", createObjectBuilder()
+                                .add("address1", address1))
+                )
+                .build();
+        assertThat(newCommand.payloadAsJsonObject(), equalTo(expectedPayload));
     }
 
     @Test

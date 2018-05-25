@@ -9,7 +9,7 @@ import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.helper.EventedListener;
+import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestCancelHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
@@ -248,7 +248,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
 
         startSessionAndWaitForSuccess(courtHouseOUCode, sessionType, sessionId, userId);
 
-        EventedListener assignmentRunner = new EventedListener()
+        EventListener assignmentRunner = new EventListener()
                 .subscribe(CASE_ASSIGNED_PRIVATE_EVENT)
                 .subscribe(CASE_ASSIGNED_PUBLIC_EVENT)
                 .run(() -> requestCaseAssignment(sessionId, userId));
@@ -278,7 +278,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
 
         startSessionAndWaitForSuccess(courtHouseOUCode, sessionType, sessionId, userId);
 
-        final JsonEnvelope assignedEvent = new EventedListener()
+        final JsonEnvelope assignedEvent = new EventListener()
                 .subscribe(CASE_NOT_ASSIGNED_EVENT)
                 .run(() -> requestCaseAssignment(sessionId, userId))
                 .popEvent(CASE_NOT_ASSIGNED_EVENT)
@@ -289,13 +289,13 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
 
     private void startSessionAndWaitForSuccess(String courtHouseOUCode, SessionType sessionType, UUID sessionId, UUID userId) {
         String expectedEvent = sessionType == SessionType.MAGISTRATE ? MAGISTRATE_SESSION_STARTED_EVENT : DELEGATED_POWERS_SESSION_ENDED_EVENT;
-        new EventedListener()
+        new EventListener()
                 .subscribe(expectedEvent)
                 .run(() -> startSession(sessionId, userId, courtHouseOUCode, sessionType));
     }
 
     private static JsonObject assignCaseAndGetEventPayload(UUID userId, UUID sessionId) {
-        return new EventedListener()
+        return new EventListener()
                 .subscribe(CASE_ASSIGNED_PRIVATE_EVENT)
                 .run(() -> requestCaseAssignment(sessionId, userId))
                 .popEvent(CASE_ASSIGNED_PRIVATE_EVENT)

@@ -3,7 +3,7 @@ package uk.gov.moj.sjp.it.test;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.helper.EventedListener;
+import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 
 import java.util.UUID;
@@ -22,7 +22,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
     public void setUp() {
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseId);
 
-        new EventedListener()
+        new EventListener()
                 .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
                 .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder));
     }
@@ -30,7 +30,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
     @Test
     public void completeCase() {
         final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
-        new EventedListener()
+        new EventListener()
                 .subscribe(CaseCompleted.EVENT_NAME)
                 .run(() -> completeCaseProducer.completeCase());
 

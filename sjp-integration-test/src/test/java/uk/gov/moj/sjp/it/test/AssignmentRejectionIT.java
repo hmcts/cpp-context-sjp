@@ -17,7 +17,7 @@ import static uk.gov.moj.sjp.it.helper.SessionHelper.DELEGATED_POWERS_SESSION_ST
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
-import uk.gov.moj.sjp.it.helper.EventedListener;
+import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
 
@@ -63,7 +63,7 @@ public class AssignmentRejectionIT extends BaseIntegrationTest {
     }
 
     private void requestAssignmentAndVerifyRejectionReason(final UUID sessionId, final UUID userId, final CaseAssignmentRejected.RejectReason rejectionReason) {
-        final JsonEnvelope caseAssignmentRejectedPublicEvent = new EventedListener()
+        final JsonEnvelope caseAssignmentRejectedPublicEvent = new EventListener()
             .subscribe(CASE_ASSIGNMENT_REJECTED_PUBLIC_EVENT)
             .run(() -> requestCaseAssignment(sessionId, userId))
             .popEvent(CASE_ASSIGNMENT_REJECTED_PUBLIC_EVENT)
@@ -77,13 +77,13 @@ public class AssignmentRejectionIT extends BaseIntegrationTest {
     }
 
     private static void startSession(final UUID sessionId, final UUID userId) {
-        new EventedListener()
+        new EventListener()
                 .subscribe(DELEGATED_POWERS_SESSION_STARTED_EVENT)
                 .run(() -> SessionHelper.startDelegatedPowersSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE));
     }
 
     private static void endSession(final UUID sessionId, final UUID userId) {
-        new EventedListener()
+        new EventListener()
                 .subscribe(DELEGATED_POWERS_SESSION_ENDED_EVENT)
                 .run(() -> SessionHelper.endSession(sessionId, userId));
     }

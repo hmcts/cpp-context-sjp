@@ -13,7 +13,7 @@ import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSession;
 
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
-import uk.gov.moj.sjp.it.helper.EventedListener;
+import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
@@ -53,7 +53,7 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
 
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseId);
 
-        final EventedListener eventedListener = new EventedListener();
+        final EventListener eventedListener = new EventListener();
 
         eventedListener
                 .subscribe(EVENT_CASE_MARKED_READY_FOR_DECISION)
@@ -69,7 +69,7 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
         final UUID sessionId = UUID.fromString(sessionStartedEvent.getString("sessionId"));
         assertThat(sessionId, equalTo(SESSION_ID));
 
-        final JsonObject caseAssignedPrivateEvent = new EventedListener()
+        final JsonObject caseAssignedPrivateEvent = new EventListener()
                 .subscribe(CASE_ASSIGNED_PRIVATE_EVENT)
                 .run(() -> requestCaseAssignment(SESSION_ID, USER_ID))
                 .popEvent(CASE_ASSIGNED_PRIVATE_EVENT)
@@ -81,7 +81,7 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
 
     @Test
     public void unassignCase() {
-        final JsonObject unassignment = new EventedListener()
+        final JsonObject unassignment = new EventListener()
                 .subscribe(CASE_UNASSIGNED_EVENT)
                 .run(() -> requestCaseUnassignment(createCasePayloadBuilder.getId(), USER_ID))
                 .popEvent(CASE_UNASSIGNED_EVENT).get().payloadAsJsonObject();

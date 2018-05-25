@@ -17,7 +17,7 @@ import static uk.gov.moj.sjp.it.helper.SessionHelper.startDelegatedPowersSession
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSession;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.sjp.it.helper.EventedListener;
+import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
@@ -45,7 +45,7 @@ public class SessionIT extends BaseIntegrationTest {
 
     @Test
     public void shouldStartAndEndDelegatedPowersSessionAndCreatePublicEventAndReplicateSessionInSchedulingContext() {
-        final JsonEnvelope sessionStartedEvent = new EventedListener()
+        final JsonEnvelope sessionStartedEvent = new EventListener()
                 .subscribe(SESSION_STARTED_PUBLIC_EVENT)
                 .run(() -> startDelegatedPowersSession(sessionId, userId, courtHouseOUCode))
                 .popEvent(SESSION_STARTED_PUBLIC_EVENT)
@@ -81,7 +81,7 @@ public class SessionIT extends BaseIntegrationTest {
 
         final String magistrate = "John Smith";
 
-        final JsonEnvelope sessionStartedEvent = new EventedListener()
+        final JsonEnvelope sessionStartedEvent = new EventListener()
                 .subscribe(SESSION_STARTED_PUBLIC_EVENT)
                 .run(() -> startMagistrateSession(sessionId, userId, courtHouseOUCode, magistrate))
                 .popEvent(SESSION_STARTED_PUBLIC_EVENT)

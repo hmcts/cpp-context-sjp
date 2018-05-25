@@ -19,7 +19,7 @@ import java.util.concurrent.Callable;
 import com.google.common.base.Strings;
 
 /**
- * EventedListener
+ * EventListener
  *
  * An instantiated helper which makes it easier listen and receive the events happening in result of
  * an asynchronous request. It exposes a fluent API, in which it expects you to call a few methods
@@ -43,7 +43,7 @@ import com.google.common.base.Strings;
  *
  * Same instance could be used with different jobs by calling 'reset' in between.
  *
- * Example usage; EventedListener runner = new EventedListener() .subscribe("event")
+ * Example usage; EventListener runner = new EventListener() .subscribe("event")
  * .subscribe("differentEvent") .subscribe("totallyDifferentEvent") .run(() ->
  * runnableThatDoesSomethingAsync()) .run(() -> anotherRunnableThatDoesSomethingAsyncAlso())
  *
@@ -51,31 +51,31 @@ import com.google.common.base.Strings;
  * runner.popEvent("event"); JsonObject differentEvent = runner.popEvent("differentEvent");
  * JsonObject totallyDifferentEvent = runner.popEvent("totallyDifferentEvent");
  */
-public class EventedListener {
+public class EventListener {
 
     private final Map<String, LinkedList<JsonEnvelope>> eventsByName;
     private Integer maxWaitTime = MESSAGE_QUEUE_TIMEOUT;
 
-    public EventedListener() {
+    public EventListener() {
         this.eventsByName = new HashMap<>();
     }
 
-    public EventedListener withMaxWaiTime(final Integer maxWaiTime) {
+    public EventListener withMaxWaiTime(final Integer maxWaiTime) {
         this.maxWaitTime = maxWaiTime;
         return this;
     }
 
-    public EventedListener subscribe(String eventName) {
+    public EventListener subscribe(String eventName) {
         this.eventsByName.putIfAbsent(eventName, new LinkedList<>());
         return this;
     }
 
-    public EventedListener unsubscribe(String eventName) {
+    public EventListener unsubscribe(String eventName) {
         this.eventsByName.remove(eventName);
         return this;
     }
 
-    public EventedListener run(final Runnable action) {
+    public EventListener run(final Runnable action) {
         Map<String, MessageConsumerClient> consumers = eventsByName.keySet().parallelStream().collect(toMap(p -> p, this::startConsumer));
 
         action.run();
@@ -85,7 +85,7 @@ public class EventedListener {
         return this;
     }
 
-    public EventedListener run(final Callable action) {
+    public EventListener run(final Callable action) {
         Map<String, MessageConsumerClient> consumers = eventsByName.keySet().parallelStream().collect(toMap(p -> p, this::startConsumer));
 
         Optional<UUID> correlationId = runAndCheckForCorrelationId(action);
@@ -103,7 +103,7 @@ public class EventedListener {
         return Optional.ofNullable(this.eventsByName.get(eventName).poll());
     }
 
-    public EventedListener reset() {
+    public EventListener reset() {
         this.eventsByName.clear();
         return this;
     }

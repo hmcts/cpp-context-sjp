@@ -29,7 +29,7 @@ import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
-import uk.gov.moj.sjp.it.helper.EventedListener;
+import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestCancelHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
@@ -54,7 +54,7 @@ public class CaseStateProcessMigrationIT extends BaseIntegrationTest {
     private final static String PROCESS_MIGRATION_VARIABLE = "processMigration";
     private final UUID caseId = UUID.randomUUID();
     private final UUID offenceId = UUID.randomUUID();
-    private final EventedListener eventListener = new EventedListener().withMaxWaiTime(5000);
+    private final EventListener eventListener = new EventListener().withMaxWaiTime(5000);
 
     @Before
     public void setUp() {

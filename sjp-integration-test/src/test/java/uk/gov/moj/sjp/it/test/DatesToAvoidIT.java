@@ -44,7 +44,7 @@ import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
-import uk.gov.moj.sjp.it.helper.EventedListener;
+import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
@@ -161,7 +161,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         addDatesToAvoid(caseId, DATE_TO_AVOID);
 
         //then
-        EventedListener datesToAvoidAddedListener = new EventedListener()
+        EventListener datesToAvoidAddedListener = new EventListener()
                 .subscribe(DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME)
                 .run(() -> assertThatCaseHasDatesToAvoid(DATE_TO_AVOID));
 
@@ -183,7 +183,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         addDatesToAvoid(caseId, DATE_TO_AVOID_UPDATE);
 
         //then
-        EventedListener datesToAvoidListener = new EventedListener()
+        EventListener datesToAvoidListener = new EventListener()
                 .subscribe(DATES_TO_AVOID_UPDATED_PUBLIC_EVENT_NAME)
                 .run(() -> assertThatCaseHasDatesToAvoidUpdated(DATE_TO_AVOID_UPDATE));
 
@@ -290,7 +290,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
                 withJsonPath("$.datesToAvoid", equalTo(datesToAvoid)));
     }
 
-    private void assertThatDatesToAvoidPublicEventWasRaised(final EventedListener listener,
+    private void assertThatDatesToAvoidPublicEventWasRaised(final EventListener listener,
                                                             final String eventName,
                                                             final UUID caseId,
                                                             final String datesToAvoid) {

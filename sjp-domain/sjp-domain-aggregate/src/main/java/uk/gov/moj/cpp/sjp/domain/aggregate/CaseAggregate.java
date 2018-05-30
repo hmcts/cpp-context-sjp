@@ -547,7 +547,15 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> cancelRequestWithdrawalAllOffences() {
         return applyEventStreamIfNotRejected("Cancel request withdrawal all offences", null, null,
-                () -> Stream.of(new AllOffencesWithdrawalRequestCancelled(this.caseId)));
+                () ->  {
+                    if (withdrawalAllOffencesRequested) {
+                        return Stream.of(new AllOffencesWithdrawalRequestCancelled(this.caseId));
+                    }
+                    else {
+                        LOGGER.warn("Cannot Cancel request withdrawal all offences for Case with ID {}", caseId);
+                        return Stream.empty();
+                    }
+        });
     }
 
     public Stream<Object> markCaseReopened(final CaseReopenDetails caseReopenDetails) {

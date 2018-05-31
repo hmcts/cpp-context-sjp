@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.time.ZoneOffset.UTC;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -26,12 +27,14 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
@@ -39,6 +42,7 @@ import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRequested;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -74,12 +78,16 @@ public class AssignmentHandlerTest {
     @Spy
     private Enveloper enveloper = createEnveloperWithEvents(CaseAssigned.class, CaseAssignmentRequested.class);
 
+    @Spy
+    private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
+
     @InjectMocks
     private AssignmentHandler assignmentHandler;
 
     @Test
     public void shouldAssignFirstAssignmentCandidateThatHasTheSameVersionAsCorrespondingCaseEventStream() throws EventStreamException {
 
+        final ZonedDateTime assignedAt = clock.now();
         final UUID sessionId = randomUUID();
         final UUID assigneeId = randomUUID();
 
@@ -106,7 +114,7 @@ public class AssignmentHandlerTest {
                 )
                 .build());
 
-        final CaseAssigned caseAssigned = new CaseAssigned(assignmentCandidate2Id, assigneeId, MAGISTRATE_DECISION);
+        final CaseAssigned caseAssigned = new CaseAssigned(assignmentCandidate2Id, assigneeId, assignedAt, MAGISTRATE_DECISION);
 
         when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
         when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);
@@ -122,7 +130,7 @@ public class AssignmentHandlerTest {
         when(eventSource.getStreamById(assignmentCandidate2Id)).thenReturn(case2EventStream);
         when(case1EventStream.getCurrentVersion()).thenReturn(assignmentCandidate1Version + 1);
         when(case2EventStream.getCurrentVersion()).thenReturn(assignmentCandidate2Version);
-        when(caseAggregate2.assignCase(assigneeId, MAGISTRATE_DECISION)).thenReturn(Stream.of(caseAssigned));
+        when(caseAggregate2.assignCase(assigneeId, assignedAt, MAGISTRATE_DECISION)).thenReturn(Stream.of(caseAssigned));
 
         assignmentHandler.assignCaseFromCandidatesList(assignCaseFromCandidatesListCommand);
 
@@ -138,6 +146,7 @@ public class AssignmentHandlerTest {
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(assignmentCandidate2Id.toString())),
                                         withJsonPath("$.assigneeId", equalTo(assigneeId.toString())),
+                                        withJsonPath("$.assignedAt", equalTo(assignedAt.toString())),
                                         withJsonPath("$.caseAssignmentType", equalTo(MAGISTRATE_DECISION.toString()))
                                 ))))));
     }

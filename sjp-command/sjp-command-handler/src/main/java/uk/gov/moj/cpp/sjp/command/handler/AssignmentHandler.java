@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toList;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.DELEGATED_POWERS_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
 
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -33,6 +34,9 @@ import org.slf4j.LoggerFactory;
 public class AssignmentHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AssignmentHandler.class);
+
+    @Inject
+    private Clock clock;
 
     @Inject
     private AggregateService aggregateService;
@@ -89,7 +93,7 @@ public class AssignmentHandler {
 
                 final CaseAssignmentType caseAssignmentType = session.getSessionType().equals(SessionType.MAGISTRATE) ? MAGISTRATE_DECISION : DELEGATED_POWERS_DECISION;
 
-                final Stream<Object> assignmentEvents = caseAggregate.assignCase(session.getUser(), caseAssignmentType);
+                final Stream<Object> assignmentEvents = caseAggregate.assignCase(session.getUser(), clock.now(), caseAssignmentType);
 
                 caseEventsStream.appendAfter(assignmentEvents.map(enveloper.withMetadataFrom(command)), assignmentCandidate.getCaseStreamVersion());
 

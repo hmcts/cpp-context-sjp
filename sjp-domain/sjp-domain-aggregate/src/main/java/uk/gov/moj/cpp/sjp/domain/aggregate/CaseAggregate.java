@@ -622,7 +622,7 @@ public class CaseAggregate implements Aggregate {
         return apply(Stream.of(new CaseReopenedUndone(caseId, caseReopenedDate)));
     }
 
-    public Stream<Object> assignCase(final UUID assigneeId, final CaseAssignmentType assignmentType) {
+    public Stream<Object> assignCase(final UUID assigneeId, final ZonedDateTime assignedAt, final CaseAssignmentType assignmentType) {
         final Stream.Builder streamBuilder = Stream.builder();
 
         if (caseCompleted) {
@@ -634,7 +634,7 @@ public class CaseAggregate implements Aggregate {
                 streamBuilder.add(new CaseAlreadyAssigned(caseId, assigneeId));
             }
         } else {
-            streamBuilder.add(new CaseAssigned(caseId, assigneeId, assignmentType));
+            streamBuilder.add(new CaseAssigned(caseId, assigneeId, assignedAt, assignmentType));
         }
 
         return apply(streamBuilder.build());

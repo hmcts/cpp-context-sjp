@@ -94,7 +94,7 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
     @Test
     public void caseAssigned() {
         //given an assigned case
-        caseAggregate.assignCase(UUID.randomUUID(), CaseAssignmentType.DELEGATED_POWERS_DECISION);
+        caseAggregate.assignCase(UUID.randomUUID(), clock.now(), CaseAssignmentType.DELEGATED_POWERS_DECISION);
 
         //when
         List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID).collect(toList());

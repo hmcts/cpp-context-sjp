@@ -1,9 +1,43 @@
 package uk.gov.moj.sjp.it.test;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.time.LocalDate.now;
+import static java.util.UUID.randomUUID;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
+import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.DELEGATED_POWERS_DECISION;
+import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_SJP_CASE_UPDATE_REJECTED;
+import static uk.gov.moj.sjp.it.Constants.SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
+import static uk.gov.moj.sjp.it.Constants.SJP_EVENTS_CASE_UPDATE_REJECTED;
+import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_ASSIGNED_PRIVATE_EVENT;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_ASSIGNED_PUBLIC_EVENT;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_NOT_ASSIGNED_EVENT;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.DELEGATED_POWERS_SESSION_ENDED_EVENT;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.MAGISTRATE_SESSION_STARTED_EVENT;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
+import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
+import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
+import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
+
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
@@ -18,37 +52,20 @@ import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
-import javax.json.JsonObject;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Stream;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.time.LocalDate.now;
-import static java.util.UUID.randomUUID;
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
-import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.DELEGATED_POWERS_DECISION;
-import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
-import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
-import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
-import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
-import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
-import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
-import static uk.gov.moj.sjp.it.Constants.*;
-import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.*;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.*;
-import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
-import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
+import javax.json.JsonObject;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class AssignmentRulesIT extends BaseIntegrationTest {
 
@@ -215,7 +232,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         final Map<UUID, UUID> assignedCaseByUserId = sessionIdByUserId
                 .entrySet()
                 .parallelStream()
-                .map((entry) -> assignCaseAndGetEventPayload(entry.getKey(), entry.getValue()) )
+                .map((entry) -> assignCaseAndGetEventPayload(entry.getKey(), entry.getValue()))
                 .collect(toMap(assignment -> UUID.fromString(assignment.getString("assigneeId")), assignment -> UUID.fromString(assignment.getString("caseId"))));
 
         assertThat(assignedCaseByUserId.keySet(), containsInAnyOrder(sessionIdByUserId.keySet().toArray()));
@@ -261,6 +278,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
                         payload().isJson(allOf(
                                 withJsonPath("$.caseId", equalTo(caseId.toString())),
                                 withJsonPath("$.assigneeId", equalTo(userId.toString())),
+                                withJsonPath("$.assignedAt", notNullValue()),
                                 withJsonPath("$.caseAssignmentType", equalTo(sessionType == MAGISTRATE ? MAGISTRATE_DECISION.toString() : DELEGATED_POWERS_DECISION.toString()))
                         ))));
 

@@ -18,10 +18,10 @@ import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Offence;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.command.CancelPlea;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
@@ -306,7 +306,7 @@ public class PleadOnlineTest {
         //asserts expectations for all pleas
         IntStream.range(0, pleaInformationArray.length).forEach(index -> {
             PleaUpdated pleaUpdated = (PleaUpdated) events.get(index);
-            PleaType expectedPleaType =  PleaType.valueOf(pleaInformationArray[index][3].toString());
+            PleaType expectedPleaType = PleaType.valueOf(pleaInformationArray[index][3].toString());
 
             assertThat(caseId, equalTo(pleaUpdated.getCaseId()));
             assertThat(PleaMethod.ONLINE, equalTo(pleaUpdated.getPleaMethod()));
@@ -380,7 +380,7 @@ public class PleadOnlineTest {
         final CaseReceived sjpCase = caseAggregate.receiveCase(createTestCase(), clock.now())
                 .map(CaseReceived.class::cast)
                 .collect(toList()).get(0);
-        caseAggregate.assignCase(userId, CaseAssignmentType.MAGISTRATE_DECISION);
+        caseAggregate.assignCase(userId, clock.now(), CaseAssignmentType.MAGISTRATE_DECISION);
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, sjpCase.getDefendant().getId());

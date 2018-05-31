@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event.session;
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -17,6 +18,7 @@ public class CaseAssigned {
 
     private final UUID caseId;
     private final UUID assigneeId;
+    private final ZonedDateTime assignedAt;
     //TODO remove (ATCM-3097)
     private final CaseAssignmentType caseAssignmentType;
 
@@ -24,9 +26,11 @@ public class CaseAssigned {
     public CaseAssigned(
             @JsonProperty("caseId") final UUID caseId,
             @JsonProperty("assigneeId") final UUID assigneeId,
+            @JsonProperty("assignedAt") final ZonedDateTime assignedAt,
             @JsonProperty("caseAssignmentType") final CaseAssignmentType caseAssignmentType) {
         this.caseId = caseId;
         this.assigneeId = assigneeId;
+        this.assignedAt = assignedAt;
         this.caseAssignmentType = caseAssignmentType;
     }
 
@@ -40,6 +44,10 @@ public class CaseAssigned {
 
     public CaseAssignmentType getCaseAssignmentType() {
         return caseAssignmentType;
+    }
+
+    public ZonedDateTime getAssignedAt() {
+        return assignedAt;
     }
 
     @Override

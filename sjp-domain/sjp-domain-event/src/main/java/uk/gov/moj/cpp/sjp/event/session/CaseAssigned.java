@@ -7,11 +7,13 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 @Event(CaseAssigned.EVENT_NAME)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CaseAssigned {
 
     public static final String EVENT_NAME = "sjp.events.case-assigned";

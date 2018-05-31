@@ -57,3 +57,10 @@ Feature: Requesting case assignment
     And case is assigned
     When you unassignCase on a CaseAggregate
     Then case is unassigned
+
+  Scenario: Case is assigned with old version of event which contains session id and does not contain assignedAt (backward compatibility)
+
+    Given case is created
+    And case is assigned with old version of event with session id
+    When you assignCase on a CaseAggregate using an assignee and assignment type
+    Then case remains assigned

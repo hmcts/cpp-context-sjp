@@ -22,8 +22,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
-import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
@@ -68,9 +66,6 @@ public class ReadyCaseIT extends BaseIntegrationTest {
         offenceId = randomUUID();
         postingDate = NOW_MINUS_NOTICE_DAYS.minusDays(1);
         readyCasesPoller = new ReadyCasesPoller(caseId);
-
-        stubGetCaseDecisionsWithNoDecision(caseId);
-        stubGetEmptyAssignmentsByDomainObjectId(caseId);
     }
 
     @Test

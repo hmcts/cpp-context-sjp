@@ -21,7 +21,7 @@ import javax.json.JsonValue;
 
 public class CaseCommandHandler {
 
-    static final String CASE_ID = "caseId";
+    static final String STREAM_ID = "caseId";
 
     @Inject
     private EventSource eventSource;
@@ -54,8 +54,10 @@ public class CaseCommandHandler {
     }
 
     protected UUID getCaseId(final JsonObject payload) {
-        return UUID.fromString(payload.getString(CASE_ID));
+        return UUID.fromString(payload.getString(STREAM_ID));
     }
 
-
+    protected UUID getUserId(final Envelope command) {
+        return command.metadata().userId().map(UUID::fromString).orElse(null);
+    }
 }

@@ -11,9 +11,6 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * Integration test for complete case.
- */
 public class CompleteCaseIT extends BaseIntegrationTest {
 
     private UUID caseId = UUID.randomUUID();
@@ -28,11 +25,11 @@ public class CompleteCaseIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void completeCase() {
+    public void shouldCompleteCase() {
         final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
         new EventListener()
                 .subscribe(CaseCompleted.EVENT_NAME)
-                .run(() -> completeCaseProducer.completeCase());
+                .run(completeCaseProducer::completeCase);
 
         completeCaseProducer.assertCaseCompleted();
     }

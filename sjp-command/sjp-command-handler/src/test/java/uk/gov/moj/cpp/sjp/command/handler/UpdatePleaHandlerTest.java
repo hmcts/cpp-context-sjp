@@ -34,12 +34,12 @@ public class UpdatePleaHandlerTest extends CaseCommandHandlerTest {
         final UpdatePlea updatePlea = new UpdatePlea(UUID.randomUUID(), UUID.randomUUID(), GUILTY);
 
         when(converter.convert(jsonObject, UpdatePlea.class)).thenReturn(updatePlea);
-        when(caseAggregate.updatePlea(updatePlea, clock.now())).thenReturn(events);
+        when(caseAggregate.updatePlea(userId, updatePlea, clock.now())).thenReturn(events);
 
         updatePleaHandler.updatePlea(jsonEnvelope);
 
         verify(converter).convert(jsonObject, UpdatePlea.class);
-        verify(caseAggregate).updatePlea(updatePlea, clock.now());
+        verify(caseAggregate).updatePlea(userId, updatePlea, clock.now());
     }
 
     @Test
@@ -47,11 +47,11 @@ public class UpdatePleaHandlerTest extends CaseCommandHandlerTest {
         final CancelPlea cancelPlea = new CancelPlea(UUID.randomUUID(), UUID.randomUUID());
 
         when(converter.convert(jsonObject, CancelPlea.class)).thenReturn(cancelPlea);
-        when(caseAggregate.cancelPlea(cancelPlea, clock.now())).thenReturn(events);
+        when(caseAggregate.cancelPlea(userId, cancelPlea, clock.now())).thenReturn(events);
 
         updatePleaHandler.cancelPlea(jsonEnvelope);
 
         verify(converter).convert(jsonObject, CancelPlea.class);
-        verify(caseAggregate).cancelPlea(cancelPlea, clock.now());
+        verify(caseAggregate).cancelPlea(userId, cancelPlea, clock.now());
     }
 }

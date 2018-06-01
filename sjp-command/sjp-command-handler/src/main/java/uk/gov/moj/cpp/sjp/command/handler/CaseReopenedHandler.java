@@ -45,7 +45,7 @@ public class CaseReopenedHandler extends CaseCommandHandler {
     public void undoCaseReopenedInLibra(final JsonEnvelope command) throws EventStreamException {
 
         applyToCaseAggregate(command, aCase -> aCase.undoCaseReopened(
-                UUID.fromString(command.payloadAsJsonObject().getString(CASE_ID))
+                UUID.fromString(command.payloadAsJsonObject().getString(STREAM_ID))
         ));
 
     }
@@ -54,7 +54,7 @@ public class CaseReopenedHandler extends CaseCommandHandler {
                                     final CaseAggregateHandler caseAggregateHandler) throws EventStreamException {
 
         final JsonObject payload = command.payloadAsJsonObject();
-        final String caseId = command.payloadAsJsonObject().getString(CASE_ID);
+        final String caseId = command.payloadAsJsonObject().getString(STREAM_ID);
         final LocalDate reopenedDate = LocalDate.parse(payload.getString("reopenedDate"));
         final String libraCaseNumber = payload.getString("libraCaseNumber");
         final String reason = payload.getString("reason");

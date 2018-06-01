@@ -1,4 +1,4 @@
-Feature: Compliting case
+Feature: Completing case
 
   Scenario: Case is completed
 

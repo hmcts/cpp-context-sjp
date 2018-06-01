@@ -29,6 +29,8 @@ public class DeleteEmployerTest {
 
     private Clock clock = new UtcClock();
 
+    private UUID userId = UUID.randomUUID();
+
     @Before
     public void init() {
         caseAggregate = new CaseAggregate();
@@ -40,7 +42,7 @@ public class DeleteEmployerTest {
         final UUID defendantId = receiveCase().getDefendant().getId();
         assertThat(addEmployer(defendantId), is(1L));
 
-        final Stream<Object> eventStream = caseAggregate.deleteEmployer(defendantId);
+        final Stream<Object> eventStream = caseAggregate.deleteEmployer(userId, defendantId);
 
         final List<Object> events = eventStream.collect(toList());
 
@@ -55,7 +57,7 @@ public class DeleteEmployerTest {
     public void shouldCreateDefendantNotEmployedEventIfDefendantHasNotEmployer() {
         final UUID defendantId = receiveCase().getDefendant().getId();
 
-        final Stream<Object> eventStream = caseAggregate.deleteEmployer(defendantId);
+        final Stream<Object> eventStream = caseAggregate.deleteEmployer(userId, defendantId);
 
         final List<Object> events = eventStream.collect(toList());
 
@@ -75,7 +77,7 @@ public class DeleteEmployerTest {
     private Long addEmployer(final UUID defendantId) {
         final Employer employer = new Employer(defendantId, "Burger King", "12345", "023402340234",
                 new Address("street", "suburb", "town", "county", "ZY9 8 XW"));
-        final Stream<Object> updateEmployerEvents = caseAggregate.updateEmployer(employer);
+        final Stream<Object> updateEmployerEvents = caseAggregate.updateEmployer(userId, employer);
 
         return updateEmployerEvents.filter(EmployerUpdated.class::isInstance).map(EmployerUpdated.class::cast).count();
     }

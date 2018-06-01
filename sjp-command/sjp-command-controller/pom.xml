@@ -43,30 +43,6 @@
                             </exclusion>
                         </exclusions>
                     </dependency>
-                    <dependency>
-                        <groupId>uk.gov.moj.cpp.assignment</groupId>
-                        <artifactId>assignment-query-api</artifactId>
-                        <version>${assignment.version}</version>
-                        <classifier>raml</classifier>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
-                        <groupId>uk.gov.moj.cpp.resulting</groupId>
-                        <artifactId>resulting-query-api</artifactId>
-                        <version>${resulting.version}</version>
-                        <classifier>raml</classifier>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
                 </dependencies>
                 <configuration>
                     <generatorProperties>

@@ -1,0 +1,17 @@
+{
+  "_metadata": {
+    "name": "sjp.events.employer-updated"
+  },
+  "defendantId": "50770ba9-37ea-4713-8cab-fe5bf1202716",
+  "name": "McDonald's",
+  "employeeReference": "12345",
+  "phone": "020 7998 9300",
+  "address": {
+    "address1": "14 Tottenham Court Road",
+    "address2": "London",
+    "address3": "England",
+    "address4": "UK",
+    "postcode": "W1T 1JY"
+  },
+  "updatedByOnlinePlea": false
+}

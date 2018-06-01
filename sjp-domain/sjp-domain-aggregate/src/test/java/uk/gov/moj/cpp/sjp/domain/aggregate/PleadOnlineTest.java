@@ -356,7 +356,7 @@ public class PleadOnlineTest {
         assertThat(CaseUpdateRejected.RejectReason.PLEA_ALREADY_SUBMITTED, equalTo(caseUpdateRejected.getReason()));
 
         //then cancel plea
-        caseAggregate.cancelPlea(new CancelPlea(caseId, offenceId), now);
+        caseAggregate.cancelPlea(userId, new CancelPlea(caseId, offenceId), now);
 
         //then plea again
         pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, sjpCase.getDefendant().getId());
@@ -400,7 +400,7 @@ public class PleadOnlineTest {
         final CaseReceived sjpCase = caseAggregate.receiveCase(createTestCase(), clock.now())
                 .map(CaseReceived.class::cast)
                 .collect(toList()).get(0);
-        caseAggregate.requestWithdrawalAllOffences(caseId);
+        caseAggregate.requestWithdrawalAllOffences();
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, sjpCase.getDefendant().getId());
@@ -423,8 +423,8 @@ public class PleadOnlineTest {
         final CaseReceived sjpCase = caseAggregate.receiveCase(createTestCase(), clock.now())
                 .map(CaseReceived.class::cast)
                 .collect(toList()).get(0);
-        caseAggregate.requestWithdrawalAllOffences(caseId);
-        caseAggregate.cancelRequestWithdrawalAllOffences(caseId);
+        caseAggregate.requestWithdrawalAllOffences();
+        caseAggregate.cancelRequestWithdrawalAllOffences();
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, sjpCase.getDefendant().getId());

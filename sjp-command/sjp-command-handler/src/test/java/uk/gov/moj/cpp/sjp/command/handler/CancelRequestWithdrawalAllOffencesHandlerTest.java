@@ -19,10 +19,10 @@ public class CancelRequestWithdrawalAllOffencesHandlerTest extends CaseCommandHa
 
     @Test
     public void shouldCancelRequestWithdrawalAllOffences() throws EventStreamException {
-        when(caseAggregate.cancelRequestWithdrawalAllOffences(CASE_ID)).thenReturn(events);
+        when(caseAggregate.cancelRequestWithdrawalAllOffences()).thenReturn(events);
 
         cancelRequestWithdrawalAllOffencesOffHandler.cancelRequestWithdrawalAllOffences(jsonEnvelope);
 
-        verify(caseAggregate).cancelRequestWithdrawalAllOffences(CASE_ID);
+        verify(caseAggregate).cancelRequestWithdrawalAllOffences();
     }
 }

@@ -8,10 +8,7 @@ import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessageAsJsonObject;
 
-import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
@@ -67,11 +64,6 @@ public class UpdateInterpreterHelper implements AutoCloseable {
                                 withJsonPath("id", is(defendantId.toString())),
                                 withJsonPath("interpreter", isJson(interpreterMatcher)))
                         ))));
-    }
-
-    public JsonEnvelope getEventFromPublicTopic() {
-        final String message = retrieveMessageAsJsonObject(messageConsumer).get().toString();
-        return new DefaultJsonObjectEnvelopeConverter().asEnvelope(message);
     }
 
     @Override

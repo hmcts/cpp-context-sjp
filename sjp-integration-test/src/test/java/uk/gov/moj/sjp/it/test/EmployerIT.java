@@ -12,9 +12,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
-import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithDecision;
-import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EmployerHelper;
@@ -64,8 +61,6 @@ public class EmployerIT extends BaseIntegrationTest {
 
     @Test
     public void shouldCreateUpdateAndDeleteEmployer() {
-            stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
-            stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
 
             final UUID caseId = createCasePayloadBuilder.getId();
             final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
@@ -98,22 +93,6 @@ public class EmployerIT extends BaseIntegrationTest {
         final UUID nonExistingDefendantId = randomUUID();
         final Response response = employerHelper.getEmployer(nonExistingDefendantId.toString());
         assertThat(response.readEntity(String.class), is("{}"));
-    }
-
-    @Test
-    public void shouldRejectEmployerUpdateIfCaseIsAlreadyCompleted() throws Exception {
-
-        stubGetCaseDecisionsWithDecision(createCasePayloadBuilder.getId());
-
-        final UUID caseId = createCasePayloadBuilder.getId();
-        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
-
-        final JsonObject employer = getEmployerPayload();
-
-        final Matcher expectedCaseUpdateRejectedMatcher = getCaseUpdateRejectedPublicEventMatcher(caseId, "CASE_COMPLETED");
-
-        employerHelper.updateEmployer(caseId, defendantId, employer);
-        assertThat(employerHelper.getEventFromPublicTopic(), expectedCaseUpdateRejectedMatcher);
     }
 
     // return new employer with random name and address line 1
@@ -163,14 +142,5 @@ public class EmployerIT extends BaseIntegrationTest {
                 .withPayloadOf(payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId.toString()))));
     }
 
-    private Matcher getCaseUpdateRejectedPublicEventMatcher(final UUID caseId, final String reason) {
-        final Matcher payloadMatcher = allOf(
-                withJsonPath("$.caseId", is(caseId.toString())),
-                withJsonPath("$.reason", is(reason)));
-
-        return jsonEnvelope()
-                .withMetadataOf(metadata().withName("public.sjp.case-update-rejected"))
-                .withPayloadOf(payloadIsJson(payloadMatcher));
-    }
 
 }

@@ -5,13 +5,17 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 public class SchedulingService {
 
@@ -21,6 +25,10 @@ public class SchedulingService {
     @Inject
     @FrameworkComponent(EVENT_PROCESSOR)
     private Sender sender;
+
+    @Inject
+    @FrameworkComponent(EVENT_PROCESSOR)
+    private Requester requester;
 
     public void startMagistrateSession(final String magistrate, final UUID sessionId, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final JsonEnvelope envelope) {
         final JsonObject startMagistrateSessionPayload = createObjectBuilder()
@@ -48,6 +56,16 @@ public class SchedulingService {
                 .add("id", sessionId.toString())
                 .build();
         sender.send(enveloper.withMetadataFrom(envelope, "scheduling.command.end-sjp-session").apply(endSessionPayload));
+    }
+
+    public Optional<JsonObject> getSession(final UUID sessionId, final JsonEnvelope envelope) {
+        final JsonObject requestPayload = Json.createObjectBuilder().add("sjpSessionId", sessionId.toString()).build();
+        final JsonEnvelope queryEnvelope = enveloper
+                .withMetadataFrom(envelope, "scheduling.query.sjp-session")
+                .apply(requestPayload);
+
+        final JsonValue responsePayload = requester.request(queryEnvelope).payload();
+        return JsonValue.NULL.equals(responsePayload) ? Optional.empty() : Optional.of((JsonObject) responsePayload);
     }
 
 }

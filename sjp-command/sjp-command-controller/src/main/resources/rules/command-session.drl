@@ -34,3 +34,11 @@ rule "Command - Rule for unassigning case"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Command - Rule for migrating session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.migrate-session");
+  then
+    $outcome.setSuccess(true);
+end

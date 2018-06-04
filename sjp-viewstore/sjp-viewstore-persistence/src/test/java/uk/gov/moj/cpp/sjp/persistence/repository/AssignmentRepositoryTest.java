@@ -45,8 +45,8 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 
-import javafx.util.Pair;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -258,7 +258,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
         // dates to avoid is not set -> return only older than 10 days
         AssignmentCandidate[] expectedAssignments = Stream.of(0, 1, 9, 10, 11, 20, 100)
-                .map(pastDaysFromNow -> new Pair<>(pastDaysFromNow, saveCaseDetails.apply(pastDaysFromNow).getId()))
+                .map(pastDaysFromNow -> Pair.of(pastDaysFromNow, saveCaseDetails.apply(pastDaysFromNow).getId()))
                 .filter(p -> p.getKey() > 10)
                 .map(Pair::getValue)
                 .map(caseId -> new AssignmentCandidate(caseId, 1))

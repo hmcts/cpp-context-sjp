@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.sjp.domain.testutils;
 
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.Offence;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.util.DefaultTestData;
 
 import java.math.BigDecimal;

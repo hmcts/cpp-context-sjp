@@ -13,6 +13,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EmployerHelper;
 import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
@@ -23,6 +24,7 @@ import java.util.UUID;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
+import com.jayway.jsonpath.ReadContext;
 import org.apache.commons.lang.RandomStringUtils;
 import org.hamcrest.Matcher;
 import org.junit.After;
@@ -78,7 +80,7 @@ public class EmployerIT extends BaseIntegrationTest {
 
             assertThat(employerHelper.getEventFromPublicTopic(), getEmployerUpdatedPublicEventMatcher(employer2));
 
-            final Matcher expectedFinancialMeans = isJson(withJsonPath("$.employmentStatus", is("EMPLOYED")));
+            final Matcher<Object> expectedFinancialMeans = isJson(withJsonPath("$.employmentStatus", is("EMPLOYED")));
             financialMeansHelper.getFinancialMeans(defendantId, expectedFinancialMeans);
 
             employerHelper.deleteEmployer(caseId.toString(), defendantId);
@@ -110,7 +112,7 @@ public class EmployerIT extends BaseIntegrationTest {
                 .add(FIELD_ADDRESS, address).build();
     }
 
-    private Matcher getEmployerUpdatedPayloadContentMatcher(final JsonObject employer) {
+    private Matcher<ReadContext> getEmployerUpdatedPayloadContentMatcher(final JsonObject employer) {
 
         final JsonObject address = employer.getJsonObject(FIELD_ADDRESS);
         return allOf(
@@ -125,21 +127,21 @@ public class EmployerIT extends BaseIntegrationTest {
         );
     }
 
-    private Matcher getEmployerUpdatedPayloadMatcher(final JsonObject employer) {
+    private Matcher<Object> getEmployerUpdatedPayloadMatcher(final JsonObject employer) {
         return isJson(getEmployerUpdatedPayloadContentMatcher(employer));
     }
 
-    private Matcher getEmployerUpdatedPublicEventMatcher(final JsonObject employer) {
-        final Matcher payloadContentMatcher = getEmployerUpdatedPayloadContentMatcher(employer);
+    private Matcher<JsonEnvelope> getEmployerUpdatedPublicEventMatcher(final JsonObject employer) {
+        final Matcher<ReadContext> payloadContentMatcher = getEmployerUpdatedPayloadContentMatcher(employer);
         return jsonEnvelope()
                 .withMetadataOf(metadata().withName("public.sjp.employer-updated"))
                 .withPayloadOf(payloadIsJson(payloadContentMatcher));
     }
 
-    private Matcher getEmployerDeletedPublicEventMatcher(final String defendantId) {
+    private Matcher<JsonEnvelope> getEmployerDeletedPublicEventMatcher(final String defendantId) {
         return jsonEnvelope()
                 .withMetadataOf(metadata().withName("public.sjp.employer-deleted"))
-                .withPayloadOf(payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId.toString()))));
+                .withPayloadOf(payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId))));
     }
 
 

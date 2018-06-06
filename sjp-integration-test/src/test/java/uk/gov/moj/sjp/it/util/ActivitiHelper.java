@@ -25,6 +25,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -40,7 +41,7 @@ public class ActivitiHelper {
     private static final UUID USER_ID = UUID.randomUUID();
 
     public static boolean processExists(final String businessKey, final String processName) {
-        final Matcher existsMatcher = isJson(withJsonPath("$.data", not(empty())));
+        final Matcher<JsonValue> existsMatcher = isJson(withJsonPath("$.data", not(empty())));
         try {
             pollForProcess(businessKey, processName, existsMatcher);
         } catch (final ConditionTimeoutException e) {
@@ -50,7 +51,7 @@ public class ActivitiHelper {
     }
 
     public static boolean isProcessDeleted(final String businessKey, final String processName, final String reason) {
-        final Matcher deletedMatcher = isJson(withJsonPath("$.data.[0].deleteReason", equalTo(reason)));
+        final Matcher<JsonValue> deletedMatcher = isJson(withJsonPath("$.data.[0].deleteReason", equalTo(reason)));
         try {
             pollForProcessHistory(businessKey, processName, deletedMatcher);
         } catch (final ConditionTimeoutException e) {
@@ -147,12 +148,12 @@ public class ActivitiHelper {
         return headers;
     }
 
-    private static JsonObject pollForProcess(final String businessKey, final String processName, final Matcher responseMatcher) {
+    private static JsonObject pollForProcess(final String businessKey, final String processName, final Matcher<JsonValue> responseMatcher) {
         final JsonObject body = await().until(() -> getProcesses(businessKey, processName), responseMatcher);
         return createReader(new StringReader(body.toString())).readObject().getJsonArray("data").getJsonObject(0);
     }
 
-    private static JsonObject pollForProcessHistory(final String businessKey, final String processName, final Matcher responseMatcher) {
+    private static JsonObject pollForProcessHistory(final String businessKey, final String processName, final Matcher<JsonValue> responseMatcher) {
         final JsonObject body = await().until(() -> getProcessesHistory(businessKey, processName), responseMatcher);
         return createReader(new StringReader(body.toString())).readObject();
     }

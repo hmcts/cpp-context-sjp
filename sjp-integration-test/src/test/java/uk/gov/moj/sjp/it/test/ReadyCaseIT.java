@@ -192,7 +192,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
         }
 
         private JsonPath pollUntilCaseReady(final UUID caseId, final CaseReadinessReason caseReadinessReason) {
-            final Matcher matcher = withJsonPath("readyCases.*", hasItem(isJson(allOf(
+            final Matcher<? super ReadContext> matcher = withJsonPath("readyCases.*", hasItem(isJson(allOf(
                     withJsonPath("caseId", equalTo(caseId.toString())),
                     withJsonPath("reason", equalTo(caseReadinessReason.name()))
             ))));
@@ -201,7 +201,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
         }
 
         private JsonPath pollUntilCaseNotReady(final UUID caseId) {
-            final Matcher matcher = withJsonPath("readyCases.*", not(hasItem(isJson(withJsonPath("caseId", equalTo(caseId.toString()))))));
+            final Matcher<? super ReadContext> matcher = withJsonPath("readyCases.*", not(hasItem(isJson(withJsonPath("caseId", equalTo(caseId.toString()))))));
 
             return pollUntil(QUERY_READY_CASES_RESOURCE, QUERY_READY_CASES, matcher);
         }
@@ -212,7 +212,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
                     .map(e -> hasItem(isJson(allOf(withJsonPath("reason", equalTo(e.getKey().name())), withJsonPath("count", equalTo(e.getValue()))))))
                     .collect(toList());
 
-            final Matcher jsonPayloadMatcher = withJsonPath("reasons.*", allOf(reasonsMatchers.toArray(new Matcher[original.size()])));
+            final Matcher<? super ReadContext> jsonPayloadMatcher = withJsonPath("reasons.*", allOf(reasonsMatchers.toArray(new Matcher[original.size()])));
 
             return pollUntil(QUERY_READY_CASES_REASONS_COUNTS_RESOURCE, QUERY_READY_CASES_REASONS_COUNTS, jsonPayloadMatcher);
         }
@@ -228,7 +228,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
                     );
         }
 
-        private JsonPath pollUntil(final String resource, final String mediaType, final Matcher matcher) {
+        private JsonPath pollUntil(final String resource, final String mediaType, final Matcher<? super ReadContext> matcher) {
             final RequestParamsBuilder requestParams = requestParams(getReadUrl(resource), mediaType)
                     .withHeader(HeaderConstants.USER_ID, USER_ID);
 

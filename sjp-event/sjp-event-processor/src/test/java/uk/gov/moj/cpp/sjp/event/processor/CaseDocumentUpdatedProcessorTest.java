@@ -64,7 +64,7 @@ public class CaseDocumentUpdatedProcessorTest {
     private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
 
     @Test
-    public void shouldRaisePublicEventForCaseDocumentAddedWithoutDocumentType() throws Exception {
+    public void shouldRaisePublicEventForCaseDocumentAddedWithoutDocumentType() {
         final JsonEnvelope privateEnvelope = buildCaseDocumentAddedEvent(Optional.empty(), PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT);
 
         caseDocumentUpdatedListener.handleCaseDocumentAdded(privateEnvelope);
@@ -83,7 +83,7 @@ public class CaseDocumentUpdatedProcessorTest {
     }
 
     @Test
-    public void shouldRaisePublicEventForCaseDocumentAddedWithDocumentType() throws Exception {
+    public void shouldRaisePublicEventForCaseDocumentAddedWithDocumentType() {
         final JsonEnvelope privateEnvelope = buildCaseDocumentAddedEvent(Optional.of(VALUE_DOCUMENT_TYPE), PUBLIC_CASE_DOCUMENT_ADDED_PUBLIC_EVENT);
 
         caseDocumentUpdatedListener.handleCaseDocumentAdded(privateEnvelope);
@@ -101,7 +101,7 @@ public class CaseDocumentUpdatedProcessorTest {
     }
 
     @Test
-    public void shouldRaisePublicEventForCaseDocumentAlreadyAdded() throws Exception {
+    public void shouldRaisePublicEventForCaseDocumentAlreadyAdded() {
         final JsonEnvelope privateEnvelope = buildCaseDocumentAddedEvent(Optional.empty(), PUBLIC_CASE_DOCUMENT_ALREADY_EXISTS_PUBLIC_EVENT);
 
         caseDocumentUpdatedListener.handleDuplicateCaseDocumentAddedEvent(privateEnvelope);

@@ -15,7 +15,6 @@ import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;

@@ -25,7 +25,7 @@ public class ReadyCaseListener {
 
     @Transactional
     @Handles(CaseMarkedReadyForDecision.EVENT_NAME)
-    public void handleCaseMarkedReadyForDecisison(final JsonEnvelope caseMarkedReadyForDecisionEvent) {
+    public void handleCaseMarkedReadyForDecision(final JsonEnvelope caseMarkedReadyForDecisionEvent) {
         final JsonObject caseMarkedReadyForDecision = caseMarkedReadyForDecisionEvent.payloadAsJsonObject();
         final ReadyCase readyCase = new ReadyCase(
                 UUID.fromString(caseMarkedReadyForDecision.getString("caseId")),

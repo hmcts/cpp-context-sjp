@@ -251,9 +251,8 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     }
 
     @Test
-    public void shouldNotFindNonExistingCase() throws Exception {
-        final UUID unkownId = UUID.randomUUID();
-        final CaseDetail caseDetail = caseRepository.findBy(unkownId);
+    public void shouldNotFindNonExistingCase() {
+        final CaseDetail caseDetail = caseRepository.findBy(UUID.randomUUID());
 
         assertThat(caseDetail, nullValue());
     }

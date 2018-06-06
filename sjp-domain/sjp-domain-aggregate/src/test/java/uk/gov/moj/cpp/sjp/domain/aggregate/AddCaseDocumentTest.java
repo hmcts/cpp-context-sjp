@@ -1,22 +1,25 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static java.util.Arrays.asList;
-import java.util.List;
-import java.util.UUID;
 import static java.util.stream.Collectors.toList;
-import java.util.stream.Stream;
-import org.hamcrest.CoreMatchers;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseDocumentBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAlreadyExists;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+import org.hamcrest.CoreMatchers;
+import org.junit.Test;
 
 public class AddCaseDocumentTest extends CaseAggregateBaseTest {
 
@@ -108,6 +111,6 @@ public class AddCaseDocumentTest extends CaseAggregateBaseTest {
         assertThat(objects.size(), is(1));
 
         Object object = objects.get(0);
-        assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CaseDocumentAlreadyExists.class)));
+        assertThat(object.getClass(), is(CoreMatchers.equalTo(CaseDocumentAlreadyExists.class)));
     }
 }

@@ -49,6 +49,7 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import com.jayway.jsonpath.ReadContext;
 import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
@@ -109,7 +110,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     @Test
     public void shouldCaseBePendingDatesToAvoidForPleaChangeScenarios() {
         try (final CancelPleaHelper cancelPleaHelper = new CancelPleaHelper(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(),
-                     EVENT_SELECTOR_PLEA_CANCELLED, PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED);
+                     EVENT_SELECTOR_PLEA_CANCELLED, PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED)
         ) {
             //checks that dates-to-avoid is pending submission when NOT_GUILTY plea submitted
             updatePleaToNotGuilty(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), updatePleaHelper);
@@ -226,7 +227,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     }
 
     private void assertThatDatesToAvoidIsPendingSubmissionForCase(final UUID userId, final CreateCase.CreateCasePayloadBuilder aCase) {
-        final Matcher pendingDatesToAvoidMatcher = allOf(
+        final Matcher<? super ReadContext> pendingDatesToAvoidMatcher = allOf(
                 withJsonPath("$.cases[0].caseId"),
                 withJsonPath("$.cases[0].pleaEntry"),
                 withJsonPath("$.cases[0].firstName"),

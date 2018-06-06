@@ -243,7 +243,7 @@ public class CaseStateProcessTest {
 
     @Test
     @Deployment(resources = {PROCESS_PATH})
-    public void shouldNotExecuteProvedInAbsenceDelegateWhenPostingDateIsYoungerThan28Days() throws Exception {
+    public void shouldNotExecuteProvedInAbsenceDelegateWhenPostingDateIsYoungerThan28Days() {
 
         final LocalDate postingDate = LocalDate.now().minusDays(27);
 
@@ -265,7 +265,7 @@ public class CaseStateProcessTest {
 
     @Test
     @Deployment(resources = {PROCESS_PATH})
-    public void shouldNotCompleteProcessIfNotInReadyState() throws Exception {
+    public void shouldNotCompleteProcessIfNotInReadyState() {
 
         final LocalDate postingDate = LocalDate.now().plusDays(1);
 
@@ -338,7 +338,7 @@ public class CaseStateProcessTest {
     }
 
     private void pleaCancelled(final ProcessInstance processInstance, final UUID offenceId, final Metadata metadata) {
-        final Map processParams = ImmutableMap.of(METADATA_VARIABLE, metadataHelper.metadataToString(metadata), OFFENCE_ID_VARIABLE, offenceId.toString());
+        final Map<String,Object> processParams = ImmutableMap.of(METADATA_VARIABLE, metadataHelper.metadataToString(metadata), OFFENCE_ID_VARIABLE, offenceId.toString());
         signalProcess(processInstance, PLEA_CANCELLED_SIGNAL_NAME, processParams);
     }
 

@@ -27,7 +27,7 @@ public class UserAndGroupsService {
     private Enveloper enveloper;
 
     private static final String PROSECUTOR_GROUP = "SJP Prosecutors";
-    final private String LEGAL_ADVISOR_GROUP = "Legal Advisers";
+    final private String LEGAL_ADVISER_GROUP = "Legal Advisers";
     final private String COURT_ADMINISTRATOR_GROUP = "Court Administrators";
 
 
@@ -44,7 +44,7 @@ public class UserAndGroupsService {
 
             return groups.getValuesAs(JsonObject.class).stream().anyMatch(group -> group.getString("groupName").equals(PROSECUTOR_GROUP)) &&
                     groups.getValuesAs(JsonObject.class).stream().noneMatch(group ->
-                            group.getString("groupName").equals(LEGAL_ADVISOR_GROUP) || group.getString("groupName").equals(COURT_ADMINISTRATOR_GROUP)
+                            group.getString("groupName").equals(LEGAL_ADVISER_GROUP) || group.getString("groupName").equals(COURT_ADMINISTRATOR_GROUP)
                     );
         } catch (ClassCastException e) {
             LOGGER.info("Could not cast: {}. Payload is null? {}", e.getMessage(), responseEnvelope.payload() == null, e);

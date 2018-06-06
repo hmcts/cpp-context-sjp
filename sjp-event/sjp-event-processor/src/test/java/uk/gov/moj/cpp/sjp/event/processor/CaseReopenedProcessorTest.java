@@ -50,17 +50,17 @@ public class CaseReopenedProcessorTest {
     private Enveloper envelopers = createEnveloper();
 
     @Test
-    public void shouldHandleCaseReopenedInLibraEventMessage() throws Exception {
+    public void shouldHandleCaseReopenedInLibraEventMessage() {
         verifyCaseReopenedEventMessage(EVENT_PUBLIC_CASE_REOPENED_IN_LIBRA, caseReopenInLibraProcessor::handleCaseReopenedInLibra);
     }
 
     @Test
-    public void shouldHandleCaseReopenedInLibraUpdatedEventMessage() throws Exception {
+    public void shouldHandleCaseReopenedInLibraUpdatedEventMessage() {
         verifyCaseReopenedEventMessage(EVENT_PUBLIC_CASE_REOPENED_IN_LIBRA_UPDATED, caseReopenInLibraProcessor::handleCaseReopenedInLibraUpdated);
     }
 
     @Test
-    public void shouldHandleCaseReopenedInLibraUndoneEventMessage() throws Exception {
+    public void shouldHandleCaseReopenedInLibraUndoneEventMessage() {
         verifyCaseReopenedUndoneEventMessage(EVENT_PUBLIC_CASE_REOPENED_IN_LIBRA_UNDONE,
                 caseReopenInLibraProcessor::handleCaseReopenedInLibraUndone);
     }

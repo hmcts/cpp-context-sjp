@@ -23,7 +23,6 @@ import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;

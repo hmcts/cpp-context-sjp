@@ -12,7 +12,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class CreateCaseControllerTest {
     @Test
-    public void shouldHandleCreateCaseCommand() throws Exception {
+    public void shouldHandleCreateCaseCommand() {
         assertThat(CreateCaseController.class, isHandlerClass(COMMAND_CONTROLLER)
                 .with(
                         method("createSjpCase")

@@ -124,15 +124,15 @@ public class CaseServiceTest {
 
     @Test
     public void shouldFindCaseViewWithDocumentsWherePostalPlea() {
-        assertExpectionsForFindCaseViewWithDocuments(false);
+        assertExpectationsForFindCaseViewWithDocuments(false);
     }
 
     @Test
     public void shouldFindCaseViewWithDocumentsWhereOnlinePlea() {
-        assertExpectionsForFindCaseViewWithDocuments(true);
+        assertExpectationsForFindCaseViewWithDocuments(true);
     }
 
-    private void assertExpectionsForFindCaseViewWithDocuments(boolean onlinePleaReceived) {
+    private void assertExpectationsForFindCaseViewWithDocuments(boolean onlinePleaReceived) {
         final CaseDetail caseDetail = createCaseDetailWithDocumentTypes(onlinePleaReceived,"FINANCIAL_MEANS", "OTHER", "Travelcard");
 
         given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
@@ -366,7 +366,7 @@ public class CaseServiceTest {
     }
 
     @Test
-    public void shouldFindAwatingCases() {
+    public void shouldFindAwaitingCases() {
 
         final CaseDetail caseDetail =
                 aCase().addDefendantDetail(aDefendantDetail().build()).build();

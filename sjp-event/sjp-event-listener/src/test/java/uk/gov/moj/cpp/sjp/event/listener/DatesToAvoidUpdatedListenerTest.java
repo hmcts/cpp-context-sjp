@@ -1,15 +1,18 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
+import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
+
 import java.util.UUID;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.verify;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
-import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DatesToAvoidUpdatedListenerTest {

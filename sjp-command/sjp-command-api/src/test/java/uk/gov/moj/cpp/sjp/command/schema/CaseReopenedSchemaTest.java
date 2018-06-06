@@ -1,5 +1,15 @@
 package uk.gov.moj.cpp.sjp.command.schema;
 
+import static org.junit.Assert.assertThat;
+import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
+import javax.json.Json;
+import javax.json.JsonValue;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -7,15 +17,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-
-import javax.json.Json;
-import javax.json.JsonValue;
-
-import static org.junit.Assert.assertThat;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 
 @RunWith(Parameterized.class)
 public class CaseReopenedSchemaTest {

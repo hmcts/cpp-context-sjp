@@ -15,7 +15,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.sjp.command.api.ActionCourtReferralApi;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

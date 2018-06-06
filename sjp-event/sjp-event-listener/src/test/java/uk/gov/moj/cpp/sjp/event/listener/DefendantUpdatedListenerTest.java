@@ -117,7 +117,7 @@ public class DefendantUpdatedListenerTest {
         MockitoAnnotations.initMocks(this);
     }
 
-    private void setupMocks(UUID caseId) throws JsonProcessingException {
+    private void setupMocks(UUID caseId) {
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
 
         caseDetail.getDefendant().setPersonalDetails(
@@ -135,7 +135,7 @@ public class DefendantUpdatedListenerTest {
         when(caseSearchResultRepository.findByCaseId(caseId)).thenReturn(Lists.newArrayList(buildCaseSearchResult(caseDetail)));
     }
 
-    private DefendantDetailsUpdated commonSetup(final boolean updateByOnlinePlea, final boolean nationalInsuranceNumberSuppliedInRequest) throws JsonProcessingException {
+    private DefendantDetailsUpdated commonSetup(final boolean updateByOnlinePlea, final boolean nationalInsuranceNumberSuppliedInRequest) {
         //WHEN
         defendantDetailsUpdatedBuilder = defendantDetailsUpdatedBuilder.withUpdateByOnlinePlea(updateByOnlinePlea);
         if (updateByOnlinePlea) {
@@ -155,7 +155,7 @@ public class DefendantUpdatedListenerTest {
         final PersonalDetails expectedPersonalDetails = buildPersonalDetails(defendantDetailsUpdated, updateByOnlinePlea, nationalInsuranceNumberSupplied);
         final List<CaseSearchResult> expectedSearchResults = singletonList(buildCaseSearchResult(defendantDetailsUpdated));
 
-        final int expectedSaveInvocations = expectedSearchResults.size() + 1; // Save invocations + 1. Update each old case serch entry and create a new one (+1)
+        final int expectedSaveInvocations = expectedSearchResults.size() + 1; // Save invocations + 1. Update each old case search entry and create a new one (+1)
         verify(caseRepository).save(actualPersonalDetailsCaptor.capture());
 
         verify(caseSearchResultRepository, times(expectedSaveInvocations)).save(actualSearchResultsCaptor.capture());
@@ -263,14 +263,14 @@ public class DefendantUpdatedListenerTest {
         commonAssertions(defendantDetailsUpdated, updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
     }
 
-    private JsonEnvelope command(DefendantsNationalInsuranceNumberUpdated defendantsNationalInsuranceNumberUpdated) throws JsonProcessingException {
+    private JsonEnvelope command(DefendantsNationalInsuranceNumberUpdated defendantsNationalInsuranceNumberUpdated) {
         return JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-national-insurance-number-updated"),
                 objectToJsonObjectConverter.convert(defendantsNationalInsuranceNumberUpdated)
         );
     }
 
-    private JsonEnvelope command(DefendantDetailsUpdated defendantDetailsUpdated) throws JsonProcessingException {
+    private JsonEnvelope command(DefendantDetailsUpdated defendantDetailsUpdated) {
         return JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-details-updated"),
                 objectToJsonObjectConverter.convert(defendantDetailsUpdated)

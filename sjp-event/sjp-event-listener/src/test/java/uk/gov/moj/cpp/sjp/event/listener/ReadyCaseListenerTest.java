@@ -50,7 +50,7 @@ public class ReadyCaseListenerTest {
                         .add("markedAt", LocalDateTime.now(UTC).toString())
                         .build());
 
-        readyCaseListener.handleCaseMarkedReadyForDecisison(caseMarkedReadyForDecisionEvent);
+        readyCaseListener.handleCaseMarkedReadyForDecision(caseMarkedReadyForDecisionEvent);
 
         verify(readyCasesRepository).save(readyCasesCaptor.capture());
 

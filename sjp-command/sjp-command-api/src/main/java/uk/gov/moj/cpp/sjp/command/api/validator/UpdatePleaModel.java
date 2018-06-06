@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.sjp.command.api.validator;
 
+import javax.json.JsonObject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.json.JsonObject;
 
 public class UpdatePleaModel {
 

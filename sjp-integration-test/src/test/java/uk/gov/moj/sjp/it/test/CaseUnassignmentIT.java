@@ -53,13 +53,13 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
 
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseId);
 
-        final EventListener eventedListener = new EventListener();
+        final EventListener eventListener = new EventListener();
 
-        eventedListener
+        eventListener
                 .subscribe(EVENT_CASE_MARKED_READY_FOR_DECISION)
                 .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder));
 
-        final JsonObject sessionStartedEvent = eventedListener
+        final JsonObject sessionStartedEvent = eventListener
                 .reset()
                 .subscribe(MAGISTRATE_SESSION_STARTED_EVENT)
                 .run(() -> startMagistrateSession(SESSION_ID, USER_ID, COURT_HOUSE_OU_CODE, magistrate))
@@ -89,7 +89,7 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
         final UUID caseId = UUID.fromString(unassignment.getString("caseId"));
         assertThat(caseId, equalTo(createCasePayloadBuilder.getId()));
 
-        assignmentHelper.assertCaseUnassigned(createCasePayloadBuilder.getId());
+        AssignmentHelper.assertCaseUnassigned(createCasePayloadBuilder.getId());
         AssignmentStub.verifyRemoveAssignmentCommandSend(caseId);
     }
 

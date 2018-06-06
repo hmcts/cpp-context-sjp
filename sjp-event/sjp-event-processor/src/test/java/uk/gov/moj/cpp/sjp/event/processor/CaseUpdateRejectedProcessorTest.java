@@ -44,7 +44,7 @@ public class CaseUpdateRejectedProcessorTest {
     private Enveloper envelopers = createEnveloper();
 
     @Test
-    public void caseUpdateRejectedPublicEvent() throws Exception {
+    public void caseUpdateRejectedPublicEvent() {
 
         final JsonEnvelope privateEvent = createEnvelope("sjp.events.case-update-rejected",
                 Json.createObjectBuilder()

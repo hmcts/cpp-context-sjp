@@ -12,7 +12,6 @@ import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.persistence.entity.FinancialMeans;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;

@@ -48,7 +48,7 @@ public class CourtReferralProcessorTest {
     private static final String CASE_ID = UUID.randomUUID().toString();
 
     @Test
-    public void shouldPublishPublicEvent() throws Exception {
+    public void shouldPublishPublicEvent() {
 
         final ZonedDateTime actioned = ZonedDateTime.now(UTC);
         final JsonEnvelope privateEvent = createEnvelope("sjp.events.court-referral-actioned",

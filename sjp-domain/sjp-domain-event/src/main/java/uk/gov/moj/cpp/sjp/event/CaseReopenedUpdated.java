@@ -1,8 +1,9 @@
 package uk.gov.moj.cpp.sjp.event;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
+
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 /**
  * Event for updating reopened case.

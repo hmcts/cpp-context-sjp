@@ -11,7 +11,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.sjp.command.api.CaseReopenedApi;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -60,7 +59,7 @@ public class CaseReopenedApiTest {
     private final String libraCaseId = UUID.randomUUID().toString();
 
     @Test
-    public void shouldHandleCommand() throws Exception {
+    public void shouldHandleCommand() {
         shouldPropagateCommandWhenValidDates(
                 caseReopenedApi::markCaseReopenedInLibra,
                 COMMAND_MARK,
@@ -91,7 +90,7 @@ public class CaseReopenedApiTest {
     }
 
     @Test
-    public void shouldNotMarkAndThrowExceptionForInvalidReOpenedDate() throws Exception {
+    public void shouldNotMarkAndThrowExceptionForInvalidReOpenedDate() {
         shouldThrowExceptionForInvalidReOpenedDate(
                 caseReopenedApi::markCaseReopenedInLibra,
                 COMMAND_MARK
@@ -99,7 +98,7 @@ public class CaseReopenedApiTest {
     }
 
     @Test
-    public void shouldNotUpdateAndThrowExceptionForInvalidReOpenedDate() throws Exception {
+    public void shouldNotUpdateAndThrowExceptionForInvalidReOpenedDate() {
         shouldThrowExceptionForInvalidReOpenedDate(
                 caseReopenedApi::updateCaseReopenedInLibra,
                 COMMAND_UPDATE

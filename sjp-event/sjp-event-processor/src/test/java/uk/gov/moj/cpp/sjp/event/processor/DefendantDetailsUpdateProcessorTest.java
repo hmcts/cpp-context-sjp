@@ -39,7 +39,7 @@ public class DefendantDetailsUpdateProcessorTest {
     private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
 
     @Test
-    public void updatesPeopleWhenDefendandDetailsUpdated() {
+    public void updatesPeopleWhenDefendantDetailsUpdated() {
         // given
         JsonObject eventPayload = createObjectBuilder().build();
         final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.defendant-details-updated"),

@@ -51,7 +51,7 @@ public class CaseDocumentUploadedProcessorTest {
     private MetadataHelper metadataHelper = new MetadataHelper();
 
     @Test
-    public void publishes() throws Exception {
+    public void publishes() {
         //given
         String caseId = UUID.randomUUID().toString();
         UUID documentReference = UUID.randomUUID();

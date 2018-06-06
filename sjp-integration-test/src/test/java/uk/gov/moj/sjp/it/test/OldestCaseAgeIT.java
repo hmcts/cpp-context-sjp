@@ -39,7 +39,7 @@ public class OldestCaseAgeIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldGetOldestCaseAge() throws InterruptedException {
+    public void shouldGetOldestCaseAge() {
         final Response response = makeGetCall("/cases/oldest-age",
                 "application/vnd.sjp.query.oldest-case-age+json");
 

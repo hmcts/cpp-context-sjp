@@ -57,7 +57,7 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
                 .add("benefits", createObjectBuilder())
                 .build();
 
-        final Matcher expectedFinancialMeansMatcher = isJson(allOf(
+        final Matcher<Object> expectedFinancialMeansMatcher = isJson(allOf(
                 withJsonPath("$.defendantId", is(defendantId)),
                 withoutJsonPath("$.income.frequency"),
                 withoutJsonPath("$.income.amount"),
@@ -97,7 +97,7 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
                         .add("type", updatedBenefits.getType()))
                 .build();
 
-        final Matcher expectedOriginal = isJson(allOf(
+        final Matcher<Object> expectedOriginal = isJson(allOf(
                 withJsonPath("$.income.frequency", is(originalIncome.getFrequency().name())),
                 withJsonPath("$.income.amount", is(originalIncome.getAmount().doubleValue())),
                 withoutJsonPath("$.benefits.claimed"),
@@ -105,7 +105,7 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
                 withJsonPath("$.employmentStatus", is(employmentStatus))
         ));
 
-        final Matcher expectedUpdated = isJson(allOf(
+        final Matcher<Object> expectedUpdated = isJson(allOf(
                 withJsonPath("$.income.frequency", is(updatedIncome.getFrequency().name())),
                 withJsonPath("$.income.amount", is(updatedIncome.getAmount().doubleValue())),
                 withJsonPath("$.benefits.claimed", is(updatedBenefits.getClaimed())),

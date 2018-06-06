@@ -96,7 +96,7 @@ public class CaseReceivedListenerTest {
     private static final LocalDate offenceDate = LocalDate.of(2017, 1, 5);
     private static final String offenceWording = "this is offence wording";
     private static final String prosecutionFacts = "this is prosecution facts";
-    private static final String witnessStatement = "this is wintess statement";
+    private static final String witnessStatement = "this is witness statement";
     private static final BigDecimal compensation = BigDecimal.valueOf(2.34);
 
     @Test

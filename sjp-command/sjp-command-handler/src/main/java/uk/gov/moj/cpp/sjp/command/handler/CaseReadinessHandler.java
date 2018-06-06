@@ -6,6 +6,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
+import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 
 import java.time.ZonedDateTime;
 
@@ -21,6 +22,6 @@ public class CaseReadinessHandler extends CaseCommandHandler {
 
     @Handles("sjp.command.unmark-case-ready-for-decision")
     public void unmarkCaseReadyForDecision(final JsonEnvelope command) throws EventStreamException {
-        applyToCaseAggregate(command, aCase -> aCase.unmarkCaseReadyForDecision());
+        applyToCaseAggregate(command, CaseAggregate::unmarkCaseReadyForDecision);
     }
 }

@@ -29,7 +29,7 @@ public class StoreOnlinePleaBuilder {
     private static final String NOT_GUILTY_BECAUSE = "I wasn't there";
     private static final String WITNESS_DISPUTE = "They were not there";
     private static final String WITNESS_DETAILS = "Job Bloggs";
-    private static final String UNAVAILABILITY = "Not availble from 12th Jan to 12th Feb";
+    private static final String UNAVAILABILITY = "Not available from 12th Jan to 12th Feb";
 
     private static final BigDecimal INCOME_AMOUNT = BigDecimal.valueOf(100.50);
     private static final Boolean BENEFITS_CLAIMED = true;
@@ -58,7 +58,7 @@ public class StoreOnlinePleaBuilder {
     private static final LocalDate PERSON_DOB = LocalDate.of(1981, 10, 1);
     private static final String PERSON_NI_NUMBER = "020734887";
 
-    private static final String OUTGOING_DESCRIPTION = "Accomodation";
+    private static final String OUTGOING_DESCRIPTION = "Accommodation";
     private static final BigDecimal OUTGOING_AMOUNT = BigDecimal.valueOf(400.50);
 
     public static PleadOnline defaultStoreOnlinePleaWithGuiltyPlea(final UUID offenceId, final UUID defendantId) {

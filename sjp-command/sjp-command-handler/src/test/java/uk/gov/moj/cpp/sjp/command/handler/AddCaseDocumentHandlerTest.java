@@ -85,14 +85,14 @@ public class AddCaseDocumentHandlerTest {
     private ArgumentCaptor<Stream<JsonEnvelope>> captor;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         caseAggregate = new CaseAggregate();
         when(eventSource.getStreamById(any(UUID.class))).thenReturn(eventStream);
         when(aggregateService.get(any(EventStream.class), any())).thenReturn(caseAggregate);
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         verify(eventSource).getStreamById(eq(CASE_ID));
         verify(aggregateService).get(eq(eventStream), eq(CaseAggregate.class));
         verifyNoMoreInteractions(eventStream, eventSource, aggregateService);

@@ -37,7 +37,7 @@ public class SjpCaseCreationFailedBecauseCaseAlreadyExistedIT extends BaseIntegr
     }
 
     @Test
-    public void publishesCaseCreationFailedBecauseCaseAlreadyExisted() throws Exception {
+    public void publishesCaseCreationFailedBecauseCaseAlreadyExisted() {
         Optional<JsonObject> message1 = QueueUtil.retrieveMessageAsJsonObject(sjpCaseCreated);
         assertTrue(message1.isPresent());
         assertThat(message1.get(), isJson(withJsonPath("$.id", Matchers.hasToString(

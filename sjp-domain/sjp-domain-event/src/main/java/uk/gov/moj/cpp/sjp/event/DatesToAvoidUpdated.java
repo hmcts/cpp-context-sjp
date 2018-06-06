@@ -1,9 +1,11 @@
 package uk.gov.moj.cpp.sjp.event;
 
+import uk.gov.justice.domain.annotation.Event;
+
+import java.util.UUID;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.UUID;
-import uk.gov.justice.domain.annotation.Event;
 
 @Event("sjp.events.dates-to-avoid-updated")
 public class DatesToAvoidUpdated {

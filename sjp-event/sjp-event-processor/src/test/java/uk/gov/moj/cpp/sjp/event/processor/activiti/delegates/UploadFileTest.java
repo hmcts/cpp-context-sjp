@@ -16,7 +16,6 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjectMetadata;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper;
 

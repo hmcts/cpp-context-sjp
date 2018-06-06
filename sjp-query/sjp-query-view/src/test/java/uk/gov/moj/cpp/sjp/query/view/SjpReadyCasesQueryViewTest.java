@@ -62,9 +62,9 @@ public class SjpReadyCasesQueryViewTest {
 
         when(readyCasesRepository.getReadyCasesReasonCount()).thenReturn(asList(readyCasesReasonCount1, readyCasesReasonCount2));
 
-        final JsonEnvelope readyCasesResonsCounts = sjpReadyCasesQueryView.getReadyCasesReasonsCounts(queryEnvelope);
+        final JsonEnvelope readyCasesReasonsCounts = sjpReadyCasesQueryView.getReadyCasesReasonsCounts(queryEnvelope);
 
-        assertThat(readyCasesResonsCounts, jsonEnvelope(metadata().withName("sjp.query.ready-cases-reasons-counts"),
+        assertThat(readyCasesReasonsCounts, jsonEnvelope(metadata().withName("sjp.query.ready-cases-reasons-counts"),
                 payload().isJson(allOf(withJsonPath("reasons", allOf(
                         hasItem(isJson(allOf(
                                 withJsonPath("reason", equalTo(PIA.name())),

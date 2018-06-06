@@ -14,7 +14,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.sjp.command.api.UpdateFinancialMeansApi;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,7 +49,7 @@ public class UpdateFinancialMeansApiTest {
     }
 
     @Test
-    public void shouldRenameCommand() throws Exception {
+    public void shouldRenameCommand() {
         final JsonEnvelope command = envelope().with(metadataWithRandomUUID(COMMAND_NAME)).build();
 
         updateFinancialMeansApi.updateFinancialMeans(command);

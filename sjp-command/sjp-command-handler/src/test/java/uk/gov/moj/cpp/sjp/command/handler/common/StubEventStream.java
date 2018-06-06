@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.command.handler.common;
 
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.Tolerance;
-import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.ArrayList;
@@ -29,19 +28,19 @@ public class StubEventStream implements EventStream {
     }
 
     @Override
-    public long append(Stream<JsonEnvelope> events) throws EventStreamException {
+    public long append(Stream<JsonEnvelope> events) {
         events.forEach(this.events::add);
         return 0;
     }
 
     @Override
-    public long append(Stream<JsonEnvelope> stream, Tolerance tolerance) throws EventStreamException {
-        events.forEach(this.events::add);
+    public long append(Stream<JsonEnvelope> stream, Tolerance tolerance) {
+        stream.forEach(this.events::add);
         return 0;
     }
 
     @Override
-    public long appendAfter(Stream<JsonEnvelope> stream, long l) throws EventStreamException {
+    public long appendAfter(Stream<JsonEnvelope> stream, long l) {
         return 0;
     }
 

@@ -13,7 +13,7 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_PHONE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_POSTCODE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_REFERENCE;
-import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_BENEFITS_CLAINED;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_BENEFITS_CLAIMED;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_BENEFITS_DEDUCT_PENALTY_PREFERENCE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_BENEFITS_TYPE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_INCOME_FREQUENCY;
@@ -120,7 +120,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         EMPLOYMENT_INCOME_PAYMENT_AMOUNT(o -> o.getEmployment().getIncomePaymentAmount(), "employment", "incomePaymentAmount"),
         EMPLOYMENT_INCOME_FREQUENCY(o -> o.getEmployment().getIncomePaymentFrequency(), "employment", "incomePaymentFrequency"),
         EMPLOYMENT_BENEFITS_TYPE(o -> o.getEmployment().getBenefitsType(), "employment", "benefitsType"),
-        EMPLOYMENT_BENEFITS_CLAINED(o -> o.getEmployment().getBenefitsClaimed(), "employment", "benefitsClaimed"),
+        EMPLOYMENT_BENEFITS_CLAIMED(o -> o.getEmployment().getBenefitsClaimed(), "employment", "benefitsClaimed"),
         EMPLOYMENT_BENEFITS_DEDUCT_PENALTY_PREFERENCE(o -> o.getEmployment().getBenefitsDeductPenaltyPreference(), "employment", "benefitsDeductPenaltyPreference"),
         EMPLOYMENT_STATUS(o -> o.getEmployment().getEmploymentStatus(), "employment", "employmentStatus"),
         EMPLOYMENT_STATUS_DETAILS(o -> o.getEmployment().getEmploymentStatusDetails(), "employment", "employmentStatusDetails"),
@@ -185,7 +185,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
                     EMPLOYMENT_INCOME_PAYMENT_AMOUNT,
                     EMPLOYMENT_INCOME_FREQUENCY,
                     EMPLOYMENT_BENEFITS_TYPE,
-                    EMPLOYMENT_BENEFITS_CLAINED,
+                    EMPLOYMENT_BENEFITS_CLAIMED,
                     EMPLOYMENT_BENEFITS_DEDUCT_PENALTY_PREFERENCE,
                     EMPLOYMENT_STATUS,
                     EMPLOYMENT_STATUS_DETAILS,

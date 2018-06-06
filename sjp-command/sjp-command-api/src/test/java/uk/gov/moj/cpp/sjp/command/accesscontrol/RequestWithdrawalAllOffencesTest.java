@@ -1,17 +1,18 @@
 package uk.gov.moj.cpp.sjp.command.accesscontrol;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
-import org.kie.api.runtime.ExecutionResults;
-import org.mockito.Mock;
+import static org.mockito.BDDMockito.given;
+import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getRequestWithdrawalOfAllOffencesGroups;
+
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
 import java.util.Map;
 
-import static org.mockito.BDDMockito.given;
-import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getRequestWithdrawalOfAllOffencesGroups;
+import com.google.common.collect.ImmutableMap;
+import org.junit.Test;
+import org.kie.api.runtime.ExecutionResults;
+import org.mockito.Mock;
 
 public class RequestWithdrawalAllOffencesTest extends BaseDroolsAccessControlTest {
 
@@ -20,7 +21,7 @@ public class RequestWithdrawalAllOffencesTest extends BaseDroolsAccessControlTes
     private UserAndGroupProvider userAndGroupProvider;
 
     @Test
-    public void shouldAcceptWithdrawalOffencesRequestForAppriopriateUsers() {
+    public void shouldAcceptWithdrawalOffencesRequestForAppropriateUsers() {
         final Action action = createActionFor(SJP_COMMAND_REQUEST_WITHDRAWAL_ALL_OFFENCES);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, getRequestWithdrawalOfAllOffencesGroups()))
                 .willReturn(true);

@@ -1,9 +1,8 @@
 package uk.gov.moj.cpp.sjp.command.accesscontrol;
 
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
-import org.kie.api.runtime.ExecutionResults;
-import org.mockito.Mock;
+import static org.mockito.BDDMockito.given;
+import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getCaseReopenedActionGroups;
+
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
@@ -11,8 +10,10 @@ import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.mockito.BDDMockito.given;
-import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getCaseReopenedActionGroups;
+import com.google.common.collect.ImmutableMap;
+import org.junit.Test;
+import org.kie.api.runtime.ExecutionResults;
+import org.mockito.Mock;
 
 public class UndoCaseReopenedTest extends BaseDroolsAccessControlTest {
 

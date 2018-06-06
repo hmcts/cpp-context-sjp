@@ -51,7 +51,7 @@ public class PleadOnlineHelper {
         return HttpClientUtil.makeGetCall(resource, contentType, userId);
     }
 
-    public String getOnlinePlea(final String caseId, final Matcher<String> jsonMatcher, final UUID userId) {
+    public String getOnlinePlea(final String caseId, final Matcher<Object> jsonMatcher, final UUID userId) {
         return await().atMost(20, TimeUnit.SECONDS).until(() -> {
             Response onlinePlea = getOnlinePlea(caseId, userId);
             if(onlinePlea.getStatus() != OK.getStatusCode()) {

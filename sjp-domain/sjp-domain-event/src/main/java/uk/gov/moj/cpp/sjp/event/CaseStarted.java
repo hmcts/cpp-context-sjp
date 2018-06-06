@@ -1,11 +1,12 @@
 package uk.gov.moj.cpp.sjp.event;
 
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import uk.gov.justice.domain.annotation.Event;
 
 import java.util.UUID;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 @Event("sjp.events.case-started")
 public class CaseStarted {

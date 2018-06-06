@@ -99,6 +99,6 @@ public class CaseStateService {
 
         final Map<String, Object> params = ImmutableMap.of(METADATA_VARIABLE, metadataHelper.metadataToString(metadata));
 
-        activitiService.signalProcess(processInstanceId.toString(), CASE_COMPLETED_SIGNAL_NAME, params);
+        activitiService.signalProcess(processInstanceId, CASE_COMPLETED_SIGNAL_NAME, params);
     }
 }

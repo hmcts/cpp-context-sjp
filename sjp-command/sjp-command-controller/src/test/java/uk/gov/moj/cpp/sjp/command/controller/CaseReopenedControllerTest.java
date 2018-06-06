@@ -12,7 +12,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class CaseReopenedControllerTest {
     @Test
-    public void shouldHandleMarkCaseReopenedInLibraCommand() throws Exception {
+    public void shouldHandleMarkCaseReopenedInLibraCommand() {
         assertThat(CaseReopenedController.class, isHandlerClass(COMMAND_CONTROLLER)
                 .with(
                         method("markCaseReopenedInLibra")
@@ -22,7 +22,7 @@ public class CaseReopenedControllerTest {
     }
 
     @Test
-    public void shouldHandleUpdateCaseReopenedInLibraCommand() throws Exception {
+    public void shouldHandleUpdateCaseReopenedInLibraCommand() {
         assertThat(CaseReopenedController.class, isHandlerClass(COMMAND_CONTROLLER)
                 .with(
                         method("updateCaseReopenedInLibra")
@@ -32,7 +32,7 @@ public class CaseReopenedControllerTest {
     }
 
     @Test
-    public void shouldHandleUndoCaseReopenedInLibraCommand() throws Exception {
+    public void shouldHandleUndoCaseReopenedInLibraCommand() {
         assertThat(CaseReopenedController.class, isHandlerClass(COMMAND_CONTROLLER)
                 .with(
                         method("undoCaseReopenedInLibra")

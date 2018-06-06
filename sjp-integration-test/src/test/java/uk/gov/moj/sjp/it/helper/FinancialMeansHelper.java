@@ -38,11 +38,11 @@ public class FinancialMeansHelper implements AutoCloseable {
         return HttpClientUtil.makeGetCall(resource, contentType);
     }
 
-    public String getFinancialMeans(final String defendantId, final Matcher jsonMatcher) {
+    public String getFinancialMeans(final String defendantId, final Matcher<Object> jsonMatcher) {
         return await().atMost(20, TimeUnit.SECONDS).until(() -> getFinancialMeans(defendantId).readEntity(String.class), jsonMatcher);
     }
 
-    public String getEventFromPublicTopic(final Matcher jsonMatcher) {
+    public String getEventFromPublicTopic(final Matcher<Object> jsonMatcher) {
         final String event = retrieveMessageAsJsonObject(messageConsumer).get().toString();
         assertThat(event, jsonMatcher);
         return event;

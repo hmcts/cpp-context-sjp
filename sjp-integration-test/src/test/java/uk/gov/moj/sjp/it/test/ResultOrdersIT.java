@@ -61,7 +61,7 @@ public class ResultOrdersIT extends BaseIntegrationTest {
                 .withHeader(HeaderConstants.USER_ID, USER_ID);
 
         //then
-        //the order of case0 and case1 is missed as the sorting is descending by the creationg date, so newest are first
+        //the order of case0 and case1 is missed as the sorting is descending by the creation date, so newest are first
         poll(resultOrders).until(status().is(OK), payload().isJson(allOf(
                 withJsonPath("$.resultOrders[0].caseId", is(case1.getId().toString())),
                 withJsonPath("$.resultOrders[0].urn", is(case1.getUrn())),

@@ -16,9 +16,9 @@ public class DelegateExecutionVariableMatcher extends TypeSafeDiagnosingMatcher<
         return new DelegateExecutionVariableMatcher(variableName, variableValue);
     }
 
-    private DelegateExecutionVariableMatcher(final String variableName, final Object variableVlue) {
+    private DelegateExecutionVariableMatcher(final String variableName, final Object variableValue) {
         this.variableName = variableName;
-        this.variableValue = variableVlue;
+        this.variableValue = variableValue;
     }
 
     @Override

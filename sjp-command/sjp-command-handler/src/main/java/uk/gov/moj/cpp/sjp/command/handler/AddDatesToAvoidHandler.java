@@ -12,7 +12,7 @@ import javax.json.JsonObject;
 public class AddDatesToAvoidHandler extends CaseCommandHandler {
 
     @Handles("sjp.command.add-dates-to-avoid")
-    public void addDatesToAvoid(final JsonEnvelope command) throws EventStreamException {        ;
+    public void addDatesToAvoid(final JsonEnvelope command) throws EventStreamException {
         final JsonObject payload = command.payloadAsJsonObject();
         final String datesToAvoid = payload.getString("datesToAvoid");
         applyToCaseAggregate(command, aggregate -> aggregate.addDatesToAvoid(datesToAvoid));

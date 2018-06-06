@@ -25,6 +25,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import com.google.common.base.Strings;
+import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 
 public class SessionHelper {
@@ -62,7 +63,7 @@ public class SessionHelper {
         return getSession(sessionId, userId, withJsonPath("$.startedAt", notNullValue()));
     }
 
-    public static JsonObject getSession(final UUID sessionId, final UUID userId, final Matcher payloadMatcher) {
+    public static JsonObject getSession(final UUID sessionId, final UUID userId, final Matcher<? super ReadContext> payloadMatcher) {
         final RequestParamsBuilder requestParamsBuilder = requestParams(getReadUrl("/sessions/" + sessionId), "application/vnd.sjp.query.session+json")
                 .withHeader(HeaderConstants.USER_ID, userId);
         final String payload = poll(requestParamsBuilder).until(status().is(OK), payload().isJson(payloadMatcher)).getPayload();

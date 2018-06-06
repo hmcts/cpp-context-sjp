@@ -152,7 +152,7 @@ public class EmployerListenerTest {
         assertThat(employer.getAddress4(), equalTo(employerUpdated.getAddress().getAddress4()));
         assertThat(employer.getPostcode(), equalTo(employerUpdated.getAddress().getPostcode()));
 
-        //check that OnlinePlea is contructed properly
+        //check that OnlinePlea is constructed properly
         assertThat(onlinePleaCaptor.getValue().getCaseId(), equalTo(defendantDetail.getCaseDetail().getId()));
         assertThat(onlinePleaCaptor.getValue().getEmployer().getName(), equalTo(employerUpdated.getName()));
         assertThat(onlinePleaCaptor.getValue().getEmployer().getEmployeeReference(), equalTo(employerUpdated.getEmployeeReference()));

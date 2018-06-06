@@ -130,7 +130,7 @@ public class CaseDocumentHelper implements AutoCloseable {
     }
 
     public void uploadDocument(String documentType) {
-        //It doesn't matter the files are plea, jut to make it simplier
+        //It doesn't matter the files are plea, jut to make it simpler
         uploadCaseDocument(USER_ID, documentType, FILE_PATH_PLEA + '/' + FILE_NAME_PLEA);
     }
 

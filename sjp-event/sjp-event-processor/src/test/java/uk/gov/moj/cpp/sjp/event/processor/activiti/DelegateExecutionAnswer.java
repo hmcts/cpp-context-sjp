@@ -9,10 +9,10 @@ import org.mockito.stubbing.Answer;
 public interface DelegateExecutionAnswer<T> extends Answer<Void> {
 
     @Override
-    default Void answer(InvocationOnMock invocationOnMock) throws Throwable {
+    default Void answer(InvocationOnMock invocationOnMock) {
         answer(invocationOnMock.getArgumentAt(0, DelegateExecution.class));
         return null;
     }
 
-    void answer(final DelegateExecution delegateExecution) throws Throwable;
+    void answer(final DelegateExecution delegateExecution);
 }

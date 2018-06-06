@@ -24,6 +24,7 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.LEGAL_ADVISERS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
@@ -48,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
 import org.junit.After;
@@ -154,7 +156,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                 .verifyPersonInfo(true);
 
         //verify online-plea
-        final Matcher expectedResult = getSavedOnlinePleaPayloadContentMatcher(pleaType, pleaPayload, createCasePayloadBuilder.getId().toString(), defendantId, expectToHaveFinances);
+        final Matcher<Object> expectedResult = getSavedOnlinePleaPayloadContentMatcher(pleaType, pleaPayload, createCasePayloadBuilder.getId().toString(), defendantId, expectToHaveFinances);
         userIds.forEach(userId -> pleadOnlineHelper.getOnlinePlea(createCasePayloadBuilder.getId().toString(), expectedResult, userId));
         pleadOnlineHelper.verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
 
@@ -247,18 +249,18 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         return jsonObject;
     }
 
-    private Matcher getEmployerUpdatedPayloadMatcher(final JSONObject employer) {
+    private Matcher<Object> getEmployerUpdatedPayloadMatcher(final JSONObject employer) {
         return isJson(getEmployerUpdatedPayloadContentMatcher(employer));
     }
 
-    private Matcher getEmployerUpdatedPublicEventMatcher(final JSONObject employer) {
-        final Matcher payloadContentMatcher = getEmployerUpdatedPayloadContentMatcher(employer);
+    private Matcher<JsonEnvelope> getEmployerUpdatedPublicEventMatcher(final JSONObject employer) {
+        final Matcher<ReadContext> payloadContentMatcher = getEmployerUpdatedPayloadContentMatcher(employer);
         return jsonEnvelope()
                 .withMetadataOf(metadata().withName("public.sjp.employer-updated"))
                 .withPayloadOf(payloadIsJson(payloadContentMatcher));
     }
 
-    private Matcher getEmployerUpdatedPayloadContentMatcher(final JSONObject onlinePleaPayload) {
+    private Matcher<ReadContext> getEmployerUpdatedPayloadContentMatcher(final JSONObject onlinePleaPayload) {
         final JSONObject employer = onlinePleaPayload.getJSONObject("employer");
         final JSONObject address = employer.getJSONObject("address");
         return allOf(
@@ -273,7 +275,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         );
     }
 
-    private Matcher getFinancialMeansUpdatedPayloadContentMatcher(final JSONObject onlinePleaPayload, final String defendantId) {
+    private Matcher<Object> getFinancialMeansUpdatedPayloadContentMatcher(final JSONObject onlinePleaPayload, final String defendantId) {
         final JSONObject financialMeans = onlinePleaPayload.getJSONObject("financialMeans");
         return isJson(allOf(
                 withJsonPath("$.defendantId", equalTo(defendantId)),
@@ -284,7 +286,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         ));
     }
 
-    private Matcher getSavedOnlinePleaPayloadContentMatcher(final PleaType pleaType, final JSONObject onlinePleaPayload, final String caseId, final String defendantId, final boolean expectToHaveFinances) {
+    private Matcher<Object> getSavedOnlinePleaPayloadContentMatcher(final PleaType pleaType, final JSONObject onlinePleaPayload, final String caseId, final String defendantId, final boolean expectToHaveFinances) {
         List<Matcher> fieldMatchers = getCommonFieldMatchers(onlinePleaPayload, caseId, defendantId, expectToHaveFinances);
         List<Matcher> extraMatchers;
         if (PleaType.NOT_GUILTY.equals(pleaType)) {
@@ -297,7 +299,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         fieldMatchers.addAll(extraMatchers);
 
         return isJson(allOf(
-                fieldMatchers.toArray(new Matcher[fieldMatchers.size()])
+                fieldMatchers.<Matcher<ReadContext>>toArray(new Matcher[fieldMatchers.size()])
         ));
     }
 

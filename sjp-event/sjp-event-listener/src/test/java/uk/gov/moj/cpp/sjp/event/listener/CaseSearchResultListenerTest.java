@@ -70,18 +70,18 @@ public class CaseSearchResultListenerTest {
         when(readyCasesRepository.findBy(caseId)).thenReturn(readyCase);
 
         //given
-        searchResults.forEach(searchResult -> {
-            assertThat(searchResult.isAssigned(), is(false));
-        });
+        searchResults.forEach(searchResult ->
+            assertThat(searchResult.isAssigned(), is(false))
+        );
         assertThat(caseDetail.getAssigneeId(), nullValue());
 
         //when
         caseSearchResultListener.caseAssigned(event);
 
         //then
-        searchResults.forEach(searchResult -> {
-            assertThat(searchResult.isAssigned(), is(true));
-        });
+        searchResults.forEach(searchResult ->
+            assertThat(searchResult.isAssigned(), is(true))
+        );
         assertThat(caseDetail.getAssigneeId(), is(assigneeId));
 
         verify(readyCase).setAssigneeId(assigneeId);
@@ -107,18 +107,18 @@ public class CaseSearchResultListenerTest {
         when(readyCasesRepository.findBy(caseId)).thenReturn(readyCase);
 
         //given
-        searchResults.forEach(searchResult -> {
-            assertThat(searchResult.isAssigned(), is(true));
-        });
+        searchResults.forEach(searchResult ->
+            assertThat(searchResult.isAssigned(), is(true))
+        );
         assertThat(caseDetail.getAssigneeId(), is(assigneeId));
 
         //when
         caseSearchResultListener.caseUnassigned(event);
 
         //then
-        searchResults.forEach(searchResult -> {
-            assertThat(searchResult.isAssigned(), is(false));
-        });
+        searchResults.forEach(searchResult ->
+            assertThat(searchResult.isAssigned(), is(false))
+        );
         assertThat(caseDetail.getAssigneeId(), nullValue());
         verify(readyCase).setAssigneeId(null);
     }

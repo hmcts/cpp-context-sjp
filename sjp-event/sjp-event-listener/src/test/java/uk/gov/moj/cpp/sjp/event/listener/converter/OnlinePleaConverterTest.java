@@ -7,7 +7,6 @@ import static uk.gov.moj.cpp.sjp.domain.IncomeFrequency.FORTNIGHTLY;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
-import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.Outgoing;
@@ -71,7 +70,7 @@ public class OnlinePleaConverterTest {
                                              final BigDecimal childMaintenanceAmount, final String otherDescription,
                                              final BigDecimal otherAmount, final String secondOtherDescription,
                                              final BigDecimal secondOtherAmount) {
-        final List<Outgoing> outgoings = new ArrayList<Outgoing>();
+        final List<Outgoing> outgoings = new ArrayList<>();
         outgoings.add(new Outgoing(OnlinePleaOutgoingOption.ACCOMMODATION.getDescription(), accommodationAmount));
         outgoings.add(new Outgoing(OnlinePleaOutgoingOption.COUNCIL_TAX.getDescription(), councilTaxAmount));
         outgoings.add(new Outgoing(OnlinePleaOutgoingOption.HOUSEHOLD_BILLS.getDescription(), householdBillsAmount));

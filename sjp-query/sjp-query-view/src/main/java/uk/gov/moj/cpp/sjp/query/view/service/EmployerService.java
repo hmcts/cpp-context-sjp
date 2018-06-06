@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
-import uk.gov.moj.cpp.sjp.query.view.converter.EmployerConverter;
 import uk.gov.moj.cpp.sjp.persistence.entity.Employer;
 import uk.gov.moj.cpp.sjp.persistence.repository.EmployerRepository;
+import uk.gov.moj.cpp.sjp.query.view.converter.EmployerConverter;
 
 import java.util.Optional;
 import java.util.UUID;

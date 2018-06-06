@@ -15,7 +15,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseReferredToCourt;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,7 +45,7 @@ public class CaseReferredToCourtRepositoryTest extends BaseTransactionalTest {
     private Clock clock;
 
     @Test
-    public void shouldFindUnactionedCases() throws Exception {
+    public void shouldFindUnactionedCases() {
 
         // check ordering by hearing date
         CaseReferredToCourt case2 = createCaseReferredToCourt(LocalDate.now().plusWeeks(2));

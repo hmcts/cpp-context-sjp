@@ -45,7 +45,7 @@ public class CaseReopenDetailsBuilder {
         return caseReopenDetails;
     }
 
-    public JsonObject buildJsobObject() {
+    public JsonObject buildJsonObject() {
         return createObjectBuilder()
                 .add("caseId", caseReopenDetails.getCaseId().toString())
                 .add("reopenedDate", caseReopenDetails.getReopenedDate().toString())
@@ -56,6 +56,6 @@ public class CaseReopenDetailsBuilder {
     public JsonEnvelope buildJsonEnvelope(String actionName) {
         return JsonEnvelopeBuilder.envelopeFrom(
                 JsonObjectMetadata.metadataOf(CASE_ID, actionName).build(),
-                buildJsobObject());
+                buildJsonObject());
     }
 }

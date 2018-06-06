@@ -54,24 +54,24 @@ public class SearchCasesIT extends BaseIntegrationTest {
     public void findsDefendantByHistoricalLastName() {
 
         // Given a case is created, which defendant record's name will be updated
-        final CreateCase.CreateCasePayloadBuilder historicalsCaseToBeUpdated = CreateCase.CreateCasePayloadBuilder.withDefaults();
-        historicalsCaseToBeUpdated
+        final CreateCase.CreateCasePayloadBuilder historicalCaseToBeUpdated = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        historicalCaseToBeUpdated
                 .getDefendantBuilder()
                 .withLastName("deHistorical");
-        createCaseForPayloadBuilder(historicalsCaseToBeUpdated);
+        createCaseForPayloadBuilder(historicalCaseToBeUpdated);
 
         // and second case is created with the same defendants last name
-        final CreateCase.CreateCasePayloadBuilder historicalsCaseWithoutUpdates = CreateCase.CreateCasePayloadBuilder.withDefaults();
-        historicalsCaseWithoutUpdates
+        final CreateCase.CreateCasePayloadBuilder historicalCaseWithoutUpdates = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        historicalCaseWithoutUpdates
                 .getDefendantBuilder()
                 .withLastName("deHistorical");
-        createCaseForPayloadBuilder(historicalsCaseWithoutUpdates);
+        createCaseForPayloadBuilder(historicalCaseWithoutUpdates);
 
         // when last name is updated for the first case
         UpdateDefendantDetails.DefendantDetailsPayloadBuilder updatedDefendantPayload = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults()
                 .withLastName("von Neumann");
 
-        final UUID caseId = historicalsCaseToBeUpdated.getId();
+        final UUID caseId = historicalCaseToBeUpdated.getId();
         UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseId, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id")), updatedDefendantPayload);
 
         // then the first case (and second) will be found and system will mark the name as outdated
@@ -83,7 +83,7 @@ public class SearchCasesIT extends BaseIntegrationTest {
                                         withJsonPath("foundCasesWithOutdatedDefendantsName", is(true)),
                                         withJsonPath(
                                                 "$.results[*]", hasItem(isJson(allOf(
-                                                        withJsonPath("urn", is(historicalsCaseToBeUpdated.getUrn())),
+                                                        withJsonPath("urn", is(historicalCaseToBeUpdated.getUrn())),
                                                         withJsonPath("defendant.lastName", is("von Neumann")),
                                                         withJsonPath("defendant.outdated", is(true))
 
@@ -91,7 +91,7 @@ public class SearchCasesIT extends BaseIntegrationTest {
                                         ),
                                         withJsonPath(
                                                 "$.results[*]", hasItem(isJson(allOf(
-                                                        withJsonPath("urn", is(historicalsCaseWithoutUpdates.getUrn())),
+                                                        withJsonPath("urn", is(historicalCaseWithoutUpdates.getUrn())),
                                                         withJsonPath("defendant.lastName", is("deHistorical")),
                                                         withJsonPath("defendant.outdated", is(false))
 

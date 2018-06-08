@@ -17,7 +17,9 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
+import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
+import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.sql.SQLException;
@@ -29,7 +31,7 @@ import javax.json.JsonObject;
 import org.junit.Before;
 import org.junit.Test;
 
-public class CaseUpdateRejectedIT {
+public class CaseUpdateRejectedIT extends BaseIntegrationTest {
 
     private static final String LONDON_LJA_NATIONAL_COURT_CODE = "2572";
     private static final String LONDON_COURT_HOUSE_OU_CODE = "B01OK";
@@ -37,11 +39,14 @@ public class CaseUpdateRejectedIT {
     private UUID caseId;
 
     @Before
-    public void setup() throws SQLException {
+    public void init() throws SQLException {
 
         new SjpDatabaseCleaner().cleanAll();
 
         ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
+        //TODO remove after ATCM-3219
+        SchedulingStub.stubStartSjpSessionCommand();
+        AssignmentStub.stubAddAssignmentCommand();
 
         caseId = randomUUID();
 

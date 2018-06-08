@@ -10,10 +10,13 @@ import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
 
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -44,26 +47,42 @@ public class SessionHandler {
         final String localJusticeAreaNationalCourtCode = startSession.getString("localJusticeAreaNationalCourtCode");
         final Optional<String> magistrate = Optional.ofNullable(startSession.getString("magistrate", null));
 
-        final EventStream eventStream = eventSource.getStreamById(sessionId);
-        final Session session = aggregateService.get(eventStream, Session.class);
-
-        final Stream<Object> events = magistrate
-                .map(m -> session.startMagistrateSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, clock.now(), m))
-                .orElseGet(() -> session.startDelegatedPowersSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, clock.now()));
-
-        eventStream.append(events.map(enveloper.withMetadataFrom(startSessionCommand)));
+        applyToSessionAggregate(startSessionCommand, (session) -> magistrate
+                .map(providedMagistrate -> session.startMagistrateSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, clock.now(), providedMagistrate))
+                .orElseGet(() -> session.startDelegatedPowersSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, clock.now())));
     }
 
     @Handles("sjp.command.end-session")
     public void endSession(final JsonEnvelope endSessionCommand) throws EventStreamException {
-
         final UUID sessionId = UUID.fromString(endSessionCommand.payloadAsJsonObject().getString("sessionId"));
+        applyToSessionAggregate(endSessionCommand, (session) -> session.endSession(sessionId, clock.now()));
+    }
 
+    @Handles("sjp.command.migrate-session")
+    public void migrateSession(final JsonEnvelope migrateSessionCommand) throws EventStreamException {
+        final JsonObject migrateSession = migrateSessionCommand.payloadAsJsonObject();
+
+        final UUID userId = UUID.fromString(migrateSession.getString("userId"));
+        final UUID sessionId = UUID.fromString(migrateSession.getString("sessionId"));
+        final ZonedDateTime startedAt = ZonedDateTime.parse(migrateSession.getString("startedAt"));
+        final String courtHouseName = migrateSession.getString("courtHouseName");
+        final String localJusticeAreaNationalCourtCode = migrateSession.getString("localJusticeAreaNationalCourtCode");
+        final Optional<String> magistrate = Optional.ofNullable(migrateSession.getString("magistrate", null));
+
+        applyToSessionAggregate(migrateSessionCommand, (session) -> magistrate
+                .map(providedMagistrate -> session.startMagistrateSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, providedMagistrate))
+                .orElseGet(() -> session.startDelegatedPowersSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt)));
+    }
+
+    private void applyToSessionAggregate(JsonEnvelope sessionCommand, final Function<Session, Stream<Object>> function) throws EventStreamException {
+        final UUID sessionId = UUID.fromString(sessionCommand.payloadAsJsonObject().getString("sessionId"));
         final EventStream eventStream = eventSource.getStreamById(sessionId);
         final Session session = aggregateService.get(eventStream, Session.class);
 
-        final Stream<Object> events = session.endSession(sessionId, clock.now());
-        eventStream.append(events.map(enveloper.withMetadataFrom(endSessionCommand)));
+        final Stream<Object> events = function.apply(session);
+
+        eventStream.append(events.map(enveloper.withMetadataFrom(sessionCommand)));
     }
+
 
 }

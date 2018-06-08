@@ -53,7 +53,7 @@ public class CaseStateProcessMigrationIT extends BaseIntegrationTest {
     private final static String PROCESS_MIGRATION_VARIABLE = "processMigration";
     private final UUID caseId = UUID.randomUUID();
     private final UUID offenceId = UUID.randomUUID();
-    private final EventListener eventListener = new EventListener().withMaxWaiTime(5000);
+    private final EventListener eventListener = new EventListener().withMaxWaitTime(5000);
 
     @Before
     public void setUp() {

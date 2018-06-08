@@ -150,6 +150,12 @@
                         <classifier>raml</classifier>
                     </dependency>
                     <dependency>
+                        <groupId>uk.gov.moj.cpp.scheduling</groupId>
+                        <artifactId>scheduling-query-api</artifactId>
+                        <version>${scheduling.version}</version>
+                        <classifier>raml</classifier>
+                    </dependency>
+                    <dependency>
                         <groupId>uk.gov.moj.cpp.assignment</groupId>
                         <artifactId>assignment-command-api</artifactId>
                         <version>${assignment.version}</version>

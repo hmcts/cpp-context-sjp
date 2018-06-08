@@ -60,8 +60,8 @@ public class EventListener {
         this.eventsByName = new HashMap<>();
     }
 
-    public EventListener withMaxWaiTime(final Integer maxWaiTime) {
-        this.maxWaitTime = maxWaiTime;
+    public EventListener withMaxWaitTime(final Integer maxWaitTime) {
+        this.maxWaitTime = maxWaitTime;
         return this;
     }
 

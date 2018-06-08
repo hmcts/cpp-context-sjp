@@ -14,6 +14,7 @@ import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionEnded;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -34,10 +35,13 @@ public class SessionProcessor {
 
     @Handles(MagistrateSessionStarted.EVENT_NAME)
     public void magistrateSessionStarted(final JsonEnvelope magistrateSessionStartedEvent) {
-
         final JsonObject magistrateSessionStarted = magistrateSessionStartedEvent.payloadAsJsonObject();
-
         final UUID sessionId = UUID.fromString(magistrateSessionStarted.getString("sessionId"));
+        final Optional<JsonObject> schedulingSession = schedulingService.getSession(sessionId, magistrateSessionStartedEvent);
+        if (schedulingSession.isPresent()) {
+            return;
+        }
+
         final String magistrate = magistrateSessionStarted.getString("magistrate");
         final String courtHouseName = magistrateSessionStarted.getString("courtHouseName");
         final String localJusticeAreaNationalCourtCode = magistrateSessionStarted.getString("localJusticeAreaNationalCourtCode");
@@ -49,8 +53,12 @@ public class SessionProcessor {
     @Handles(DelegatedPowersSessionStarted.EVENT_NAME)
     public void delegatedPowersSessionStarted(final JsonEnvelope delegatedPowersSessionStartedEvent) {
         final JsonObject magistrateSessionStarted = delegatedPowersSessionStartedEvent.payloadAsJsonObject();
-
         final UUID sessionId = UUID.fromString(magistrateSessionStarted.getString("sessionId"));
+        final Optional<JsonObject> schedulingSession = schedulingService.getSession(sessionId, delegatedPowersSessionStartedEvent);
+        if (schedulingSession.isPresent()) {
+            return;
+        }
+
         final String courtHouseName = magistrateSessionStarted.getString("courtHouseName");
         final String localJusticeAreaNationalCourtCode = magistrateSessionStarted.getString("localJusticeAreaNationalCourtCode");
 

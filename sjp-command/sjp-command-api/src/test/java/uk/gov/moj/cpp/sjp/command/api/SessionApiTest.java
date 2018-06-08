@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.time.ZoneOffset.UTC;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -16,13 +17,16 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.command.api.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.domain.SessionCourt;
 
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -49,6 +53,9 @@ public class SessionApiTest {
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
+    @Spy
+    private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
+
     @Mock
     private Sender sender;
 
@@ -58,6 +65,8 @@ public class SessionApiTest {
     private UUID sessionId = UUID.randomUUID();
 
     private UUID caseId = UUID.randomUUID();
+
+    private UUID userId = UUID.randomUUID();
 
     @Test
     public void shouldEnhanceAndRenameStartSessionCommand() {
@@ -138,6 +147,34 @@ public class SessionApiTest {
         verify(sender).send(argThat(jsonEnvelope(withMetadataEnvelopedFrom(unassignCaseCommand).withName("sjp.command.unassign-case"),
                 payloadIsJson(withJsonPath("$.caseId", equalTo(caseId.toString()))))));
     }
+
+
+    @Test
+    public void shouldRenameMigrateSessionCommand() {
+        final SessionCourt sessionCourt = new SessionCourt("Wimbledon Magistrates' Court", "2577");
+        ZonedDateTime now = clock.now();
+        String startedAt = now.toString();
+
+        final JsonEnvelope migrateSessionCommand = envelope().with(metadataWithRandomUUID("sjp.migrate-session"))
+                .withPayloadOf(sessionId.toString(), "sessionId")
+                .withPayloadOf(userId.toString(), "userId")
+                .withPayloadOf(startedAt, "startedAt")
+                .withPayloadOf(sessionCourt.getLocalJusticeAreaNationalCourtCode(), "localJusticeAreaNationalCourtCode")
+                .withPayloadOf(sessionCourt.getCourtHouseName(), "courtHouseName")
+                .build();
+
+        sessionApi.migrateSession(migrateSessionCommand);
+
+        verify(sender).send(argThat(jsonEnvelope(withMetadataEnvelopedFrom(migrateSessionCommand).withName("sjp.command.migrate-session"),
+                payloadIsJson(allOf(
+                        withJsonPath("$.sessionId", equalTo(sessionId.toString())),
+                        withJsonPath("$.userId", equalTo(userId.toString())),
+                        withJsonPath("$.startedAt", equalTo(startedAt)),
+                        withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(sessionCourt.getLocalJusticeAreaNationalCourtCode())),
+                        withJsonPath("$.courtHouseName", equalTo(sessionCourt.getCourtHouseName()))
+                )))));
+    }
+
 
     @Test
     public void shouldHandleSessionCommands() {

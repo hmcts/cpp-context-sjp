@@ -22,14 +22,16 @@ import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
+import com.google.common.base.Strings;
 import org.hamcrest.Matcher;
 
 public class SessionHelper {
 
     public static final String SESSION_STARTED_PUBLIC_EVENT = "public.sjp.session-started";
-    public static final String MAGISTRATE_SESSION_STARTED_EVENT  = "sjp.events.magistrate-session-started";
-    public static final String DELEGATED_POWERS_SESSION_STARTED_EVENT  = "sjp.events.delegated-powers-session-started";
+    public static final String MAGISTRATE_SESSION_STARTED_EVENT = "sjp.events.magistrate-session-started";
+    public static final String DELEGATED_POWERS_SESSION_STARTED_EVENT = "sjp.events.delegated-powers-session-started";
     public static final String DELEGATED_POWERS_SESSION_ENDED_EVENT = DelegatedPowersSessionEnded.EVENT_NAME;
 
     public static UUID startDelegatedPowersSession(final UUID sessionId, final UUID userId, final String courtHouseOUCode) {
@@ -75,6 +77,35 @@ public class SessionHelper {
 
     private static UUID startSession(final UUID sessionId, final UUID userId, final JsonObject payload) {
         final String contentType = "application/vnd.sjp.start-session+json";
+        final String url = String.format("/sessions/%s", sessionId);
+        return HttpClientUtil.makePostCall(userId, url, contentType, payload.toString(), ACCEPTED);
+    }
+
+    public static UUID migrateSession(final UUID sessionId, final UUID userId, final String courthouseName, final String localJusticeAreaNationalCourtCode, final String startedAt) {
+        return migrateSession(sessionId, userId, courthouseName, localJusticeAreaNationalCourtCode, startedAt, "");
+    }
+
+    public static UUID migrateSession(final UUID sessionId,
+                                      final UUID userId,
+                                      final String courtHouseName,
+                                      final String localJusticeAreaNationalCourtCode,
+                                      final String startedAt,
+                                      final String magistrate) {
+
+        JsonObjectBuilder sessionBuilder = createObjectBuilder()
+                .add("sessionId", sessionId.toString())
+                .add("userId", userId.toString())
+                .add("courtHouseName", courtHouseName)
+                .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                .add("startedAt", startedAt);
+
+        if (!Strings.isNullOrEmpty(magistrate)) {
+            sessionBuilder.add("magistrate", magistrate);
+        }
+
+        final JsonObject payload = sessionBuilder.build();
+
+        final String contentType = "application/vnd.sjp.migrate-session+json";
         final String url = String.format("/sessions/%s", sessionId);
         return HttpClientUtil.makePostCall(userId, url, contentType, payload.toString(), ACCEPTED);
     }

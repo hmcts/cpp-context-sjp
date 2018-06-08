@@ -54,6 +54,11 @@ public class SessionApi {
         sender.send(enveloper.withMetadataFrom(endSessionCommand, "sjp.command.end-session").apply(endSessionCommand.payloadAsJsonObject()));
     }
 
+    @Handles("sjp.migrate-session")
+    public void migrateSession(final JsonEnvelope migrateSessionCommand) {
+        sender.send(enveloper.withMetadataFrom(migrateSessionCommand, "sjp.command.migrate-session").apply(migrateSessionCommand.payloadAsJsonObject()));
+    }
+
     @Handles("sjp.assign-case")
     public void assignCase(final JsonEnvelope assignCaseCommand) {
         sender.send(enveloper.withMetadataFrom(assignCaseCommand, "sjp.command.assign-case").apply(assignCaseCommand.payloadAsJsonObject()));

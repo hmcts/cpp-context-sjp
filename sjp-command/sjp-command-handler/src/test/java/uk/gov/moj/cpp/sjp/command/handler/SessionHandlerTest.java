@@ -118,7 +118,6 @@ public class SessionHandlerTest {
                         .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
                         .build());
 
-
         final MagistrateSessionStarted sessionStartedEvent = new MagistrateSessionStarted(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate);
 
         when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
@@ -183,6 +182,77 @@ public class SessionHandlerTest {
     @Test
     public void shouldEndMagistrateSession() throws EventStreamException {
         shouldEndSession(new MagistrateSessionEnded(sessionId, endedAt));
+    }
+
+    @Test
+    public void shouldMigrateMagistrateSession() throws EventStreamException {
+        final String magistrate = randomAlphanumeric(20);
+
+        final JsonEnvelope startSessionCommand = envelopeFrom(metadataWithRandomUUID(START_SESSION_COMMAND).withUserId(userId.toString()),
+                createObjectBuilder()
+                        .add("userId", userId.toString())
+                        .add("sessionId", sessionId.toString())
+                        .add("magistrate", magistrate)
+                        .add("courtHouseName", courtHouseName)
+                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                        .add("startedAt", startedAt.toString())
+                        .build());
+
+        final MagistrateSessionStarted sessionStartedEvent = new MagistrateSessionStarted(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate);
+
+        when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
+        when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);
+        when(session.startMagistrateSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate)).thenReturn(Stream.of(sessionStartedEvent));
+
+        sessionHandler.migrateSession(startSessionCommand);
+
+        assertThat(sessionEventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(startSessionCommand)
+                                        .withName(MagistrateSessionStarted.EVENT_NAME),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.sessionId", equalTo(sessionId.toString())),
+                                        withJsonPath("$.userId", equalTo(userId.toString())),
+                                        withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
+                                        withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
+                                        withJsonPath("$.magistrate", equalTo(magistrate)),
+                                        withJsonPath("$.startedAt", equalTo(startedAt.toString()))
+                                ))))));
+    }
+
+    @Test
+    public void shouldMigrateDelegatedPowersSession() throws EventStreamException {
+        final JsonEnvelope startSessionCommand = envelopeFrom(metadataWithRandomUUID(START_SESSION_COMMAND).withUserId(userId.toString()),
+                createObjectBuilder()
+                        .add("userId", userId.toString())
+                        .add("sessionId", sessionId.toString())
+                        .add("courtHouseName", courtHouseName)
+                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                        .add("startedAt", startedAt.toString())
+                        .build());
+
+        final DelegatedPowersSessionStarted sessionStartedEvent = new DelegatedPowersSessionStarted(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
+
+        when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
+        when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);
+        when(session.startDelegatedPowersSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt)).thenReturn(Stream.of(sessionStartedEvent));
+
+        sessionHandler.migrateSession(startSessionCommand);
+
+        assertThat(sessionEventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(startSessionCommand)
+                                        .withName(DelegatedPowersSessionStarted.EVENT_NAME),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.sessionId", equalTo(sessionId.toString())),
+                                        withJsonPath("$.userId", equalTo(userId.toString())),
+                                        withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
+                                        withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
+                                        withJsonPath("$.startedAt", equalTo(startedAt.toString())),
+                                        withoutJsonPath("$.magistrate")
+                                ))))));
     }
 
     private void shouldEndSession(final SessionEnded sessionEnded) throws EventStreamException {

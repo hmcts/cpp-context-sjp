@@ -23,6 +23,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMat
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
@@ -232,7 +233,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
             final RequestParamsBuilder requestParams = requestParams(getReadUrl(resource), mediaType)
                     .withHeader(HeaderConstants.USER_ID, USER_ID);
 
-            final ResponseData responseData = poll(requestParams)
+            final ResponseData responseData = pollWithDefaults(requestParams)
                     .until(anyOf(
                             allOf(status().is(OK), payload().isJson(matcher)),
                             status().is(INTERNAL_SERVER_ERROR),

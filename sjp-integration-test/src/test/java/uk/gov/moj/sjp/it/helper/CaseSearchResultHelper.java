@@ -19,6 +19,7 @@ import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSession;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
@@ -56,14 +57,14 @@ public class CaseSearchResultHelper {
     }
 
     public void verifyPersonFound(final String urn, final String lastName) {
-        poll(searchCases(lastName, searchUserId))
+        pollWithDefaults(searchCases(lastName, searchUserId))
                 .until(status().is(OK), payload().isJson(
                         withJsonPath("$.results[?(@.urn=='" + urn + "')]", hasSize(1))
                 ));
     }
 
     public void verifyPersonNotFound(final String urn, final String lastName) {
-        poll(searchCases(lastName, searchUserId))
+        pollWithDefaults(searchCases(lastName, searchUserId))
                 .timeout(5, TimeUnit.SECONDS)
                 .until(status().is(OK), payload().isJson(
                         withJsonPath("$.results[?(@.urn=='" + urn + "')]", hasSize(0))
@@ -71,47 +72,47 @@ public class CaseSearchResultHelper {
     }
 
     public void verifyPleaReceivedDate() {
-        poll(searchCases(urn, searchUserId))
+        pollWithDefaults(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(
                         withJsonPath("$.results[0].pleaDate", notNullValue())
                 ));
     }
 
     public void verifyNoPleaReceivedDate() {
-        poll(searchCases(urn, searchUserId))
+        pollWithDefaults(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(
                         withoutJsonPath("$.results[0].pleaDate")
                 ));
     }
 
     public void verifyWithdrawalRequestedDate() {
-        poll(searchCases(urn, searchUserId))
+        pollWithDefaults(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(
                         withJsonPath("$.results[0].withdrawalRequestedDate", notNullValue())
                 ));
     }
 
     public void verifyNoWithdrawalRequestedDate() {
-        poll(searchCases(urn, searchUserId))
+        pollWithDefaults(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(
                         withoutJsonPath("$.results[0].withdrawalRequestedDate")
                 ));
     }
 
     public void verifyAssignment(final boolean assigned) {
-        poll(searchCases(urn, searchUserId))
+        pollWithDefaults(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(allOf(
                         withJsonPath("$.results[0].urn", is(urn)),
                         withJsonPath("$.results[0].assigned", is(assigned)))));
     }
 
     public void verifyUrnFound(final String urn) {
-        poll(searchCases(urn, searchUserId))
+        pollWithDefaults(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(withJsonPath("$.results", hasSize(1))));
     }
 
     public void verifyUrnNotFound(final String urn) {
-        poll(searchCases(urn, searchUserId))
+        pollWithDefaults(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(withJsonPath("$.results", hasSize(0))));
     }
 
@@ -138,7 +139,7 @@ public class CaseSearchResultHelper {
     }
 
     private void verifyPersonInfo(final String query, final String lastName, final LocalDate dateOfBirth) {
-        poll(searchCases(query, searchUserId))
+        pollWithDefaults(searchCases(query, searchUserId))
                 .until(status().is(OK), payload().isJson(allOf(
                         withJsonPath("$.results[*]", hasItem(isJson(
                                 allOf(

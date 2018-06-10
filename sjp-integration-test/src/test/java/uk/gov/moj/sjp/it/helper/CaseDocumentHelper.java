@@ -16,7 +16,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.matchers.UuidStringMatcher.isAUuid;
@@ -31,8 +30,8 @@ import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeMultipartFormPostCall;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
-import uk.gov.justice.services.test.utils.core.http.RestPoller;
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.moj.sjp.it.Constants;
 import uk.gov.moj.sjp.it.stub.MaterialStub;
@@ -192,11 +191,11 @@ public class CaseDocumentHelper implements AutoCloseable {
         assertDocumentAdded(USER_ID);
     }
 
-    public void assertDocumentAdded(UUID userId) {
-        JsonPath jsonRequest = new JsonPath(request);
+    public void assertDocumentAdded(final UUID userId) {
+        final JsonPath jsonRequest = new JsonPath(request);
 
-        Filter caseDocumentFilter = Filter.filter(where("id").is(id));
-        poll(getCaseDocumentsByCaseId(caseId, userId))
+        final Filter caseDocumentFilter = Filter.filter(where("id").is(id));
+        pollWithDefaults(getCaseDocumentsByCaseId(caseId, userId))
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
@@ -207,8 +206,8 @@ public class CaseDocumentHelper implements AutoCloseable {
                 );
     }
 
-    public void assertDocumentNumber(UUID userId, int index, String documentType, int documentNumber) {
-        poll(getCaseDocumentsByCaseId(caseId, userId))
+    public void assertDocumentNumber(final UUID userId, final int index, final String documentType, final int documentNumber) {
+        pollWithDefaults(getCaseDocumentsByCaseId(caseId, userId))
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
@@ -220,19 +219,21 @@ public class CaseDocumentHelper implements AutoCloseable {
     }
 
     public void verifyDocumentNotVisibleForProsecutorWhenQueryingForCaseDocuments(final UUID tflUserId) {
-        Filter caseDocumentFilter = Filter.filter(where("id").is(id));
-        RestPoller.poll(getCaseDocumentsByCaseId(caseId, tflUserId)).until(payload()
-                .isJson(
-                        withJsonPath(compile("$.caseDocuments[?]", caseDocumentFilter), hasSize(0))
-                ));
+        final Filter caseDocumentFilter = Filter.filter(where("id").is(id));
+        pollWithDefaults(getCaseDocumentsByCaseId(caseId, tflUserId))
+                .until(payload()
+                        .isJson(
+                                withJsonPath(compile("$.caseDocuments[?]", caseDocumentFilter), hasSize(0))
+                        ));
     }
 
     public void verifyDocumentNotVisibleForProsecutorWhenQueryingForACase(final UUID tflUserId) {
-        Filter caseDocumentFilter = Filter.filter(where("id").is(id));
-        RestPoller.poll(getCaseById(caseId, tflUserId)).until(payload()
-                .isJson(
-                        withJsonPath(compile("$.caseDocuments[?]", caseDocumentFilter), hasSize(0))
-                ));
+        final Filter caseDocumentFilter = Filter.filter(where("id").is(id));
+        pollWithDefaults(getCaseById(caseId, tflUserId))
+                .until(payload()
+                        .isJson(
+                                withJsonPath(compile("$.caseDocuments[?]", caseDocumentFilter), hasSize(0))
+                        ));
     }
 
     public void addDocumentAndVerifyAdded() {

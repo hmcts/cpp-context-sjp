@@ -2,10 +2,10 @@ package uk.gov.moj.sjp.it.pollingquery;
 
 import static javax.ws.rs.core.Response.Status.OK;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
@@ -26,7 +26,7 @@ public class PendingDatesToAvoidPoller {
     }
 
     public static JsonPath pollUntilPendingDatesToAvoidIsOk(final String userId, final Matcher<? super ReadContext> jsonPayloadMatcher) {
-        return new JsonPath(poll(getDatesToAvoid(userId))
+        return new JsonPath(pollWithDefaults(getDatesToAvoid(userId))
                 .timeout(POLLING_TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),

@@ -6,10 +6,10 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.http.HeaderConstants;
@@ -62,7 +62,7 @@ public class ResultOrdersIT extends BaseIntegrationTest {
 
         //then
         //the order of case0 and case1 is missed as the sorting is descending by the creation date, so newest are first
-        poll(resultOrders).until(status().is(OK), payload().isJson(allOf(
+        pollWithDefaults(resultOrders).until(status().is(OK), payload().isJson(allOf(
                 withJsonPath("$.resultOrders[0].caseId", is(case1.getId().toString())),
                 withJsonPath("$.resultOrders[0].urn", is(case1.getUrn())),
                 withJsonPath("$.resultOrders[0].defendant.title", is(case1.getDefendantBuilder().getTitle())),

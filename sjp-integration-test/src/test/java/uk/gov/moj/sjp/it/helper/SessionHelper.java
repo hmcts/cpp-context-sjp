@@ -6,10 +6,10 @@ import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.Matchers.notNullValue;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
@@ -66,7 +66,8 @@ public class SessionHelper {
     public static JsonObject getSession(final UUID sessionId, final UUID userId, final Matcher<? super ReadContext> payloadMatcher) {
         final RequestParamsBuilder requestParamsBuilder = requestParams(getReadUrl("/sessions/" + sessionId), "application/vnd.sjp.query.session+json")
                 .withHeader(HeaderConstants.USER_ID, userId);
-        final String payload = poll(requestParamsBuilder).until(status().is(OK), payload().isJson(payloadMatcher)).getPayload();
+        final String payload = pollWithDefaults(requestParamsBuilder)
+                .until(status().is(OK), payload().isJson(payloadMatcher)).getPayload();
         return Json.createReader(new StringReader(payload)).readObject();
     }
 

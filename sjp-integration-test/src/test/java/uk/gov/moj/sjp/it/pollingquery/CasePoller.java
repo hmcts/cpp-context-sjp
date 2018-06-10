@@ -8,10 +8,10 @@ import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
 import static org.junit.Assert.fail;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.test.utils.core.http.ResponseData;
 
@@ -30,7 +30,7 @@ public class CasePoller {
     }
 
     public static JsonPath pollUntilCaseByIdIsOk(final UUID caseId, final Matcher<? super ReadContext> jsonPayloadMatcher) {
-        ResponseData responseData = poll(getCaseById(caseId))
+        ResponseData responseData = pollWithDefaults(getCaseById(caseId))
                 .timeout(POLLING_TIMEOUT, SECONDS)
                 .until(
                         anyOf(
@@ -41,7 +41,7 @@ public class CasePoller {
                                 status().is(FORBIDDEN))
                 );
 
-        if(responseData.getStatus() != OK) {
+        if (responseData.getStatus() != OK) {
             fail("Polling interrupted, please fix the error before continue. Status code: " + responseData.getStatus());
         }
 

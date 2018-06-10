@@ -6,12 +6,11 @@ import static java.lang.String.format;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.fail;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
-import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 
@@ -54,7 +53,7 @@ public class PleadOnlineHelper {
     public String getOnlinePlea(final String caseId, final Matcher<Object> jsonMatcher, final UUID userId) {
         return await().atMost(20, TimeUnit.SECONDS).until(() -> {
             Response onlinePlea = getOnlinePlea(caseId, userId);
-            if(onlinePlea.getStatus() != OK.getStatusCode()) {
+            if (onlinePlea.getStatus() != OK.getStatusCode()) {
                 fail("Polling interrupted, please fix the error before continue. Status code: " + onlinePlea.getStatus());
             }
 
@@ -63,7 +62,7 @@ public class PleadOnlineHelper {
     }
 
     public void verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(UUID caseId, boolean onlinePleaReceived) {
-        final ResponseData caseResponse = poll(getCaseById(caseId))
+        pollWithDefaults(getCaseById(caseId))
                 .timeout(20, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),

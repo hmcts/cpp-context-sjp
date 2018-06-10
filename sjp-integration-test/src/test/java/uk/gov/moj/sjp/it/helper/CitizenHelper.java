@@ -9,6 +9,7 @@ import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseByUrnAndPostcode;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import javax.json.JsonObject;
 
@@ -18,7 +19,7 @@ public class CitizenHelper {
 
     // TODO maybe this needs to remain as it was with the numbers
     public void verifyCaseByPersonUrnAndPostcode(final JsonObject expected, final String urn, final String postcode) {
-        poll(getCaseByUrnAndPostcode(urn, postcode))
+        pollWithDefaults(getCaseByUrnAndPostcode(urn, postcode))
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(withJsonPath("$.id"),
@@ -41,7 +42,7 @@ public class CitizenHelper {
     }
 
     public void verifyCaseByPersonUrnWithoutPrefixAndPostcode(final JsonObject expected, final String urnWithoutPrefix, String urn, final String postcode) {
-        poll(getCaseByUrnAndPostcode(urnWithoutPrefix, postcode))
+        pollWithDefaults(getCaseByUrnAndPostcode(urnWithoutPrefix, postcode))
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
@@ -67,6 +68,7 @@ public class CitizenHelper {
     }
 
     public void verifyNoCaseByPersonUrnAndPostcode(final String urn, final String postcode) {
-        poll(getCaseByUrnAndPostcode(urn, postcode)).until(status().is(NOT_FOUND));
+        pollWithDefaults(getCaseByUrnAndPostcode(urn, postcode))
+                .until(status().is(NOT_FOUND));
     }
 }

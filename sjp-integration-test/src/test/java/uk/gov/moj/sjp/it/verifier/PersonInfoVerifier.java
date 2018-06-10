@@ -8,6 +8,7 @@ import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
@@ -40,7 +41,7 @@ public class PersonInfoVerifier {
     public static PersonInfoVerifier personInfoVerifierForCasePayload(CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder) {
         final CreateCase.DefendantBuilder defendantBuilder = createCasePayloadBuilder.getDefendantBuilder();
         final PersonalDetails personalDetails = new PersonalDetails(
-            defendantBuilder.getTitle(),
+                defendantBuilder.getTitle(),
                 defendantBuilder.getFirstName(),
                 defendantBuilder.getLastName(),
                 defendantBuilder.getDateOfBirth(),
@@ -68,11 +69,11 @@ public class PersonInfoVerifier {
                 payloadBuilder.getGender(),
                 payloadBuilder.getNationalInsuranceNumber(),
                 new Address(
-                  payloadBuilder.getAddressBuilder().getAddress1(),
-                  payloadBuilder.getAddressBuilder().getAddress2(),
-                  payloadBuilder.getAddressBuilder().getAddress3(),
-                  payloadBuilder.getAddressBuilder().getAddress4(),
-                  payloadBuilder.getAddressBuilder().getPostcode()
+                        payloadBuilder.getAddressBuilder().getAddress1(),
+                        payloadBuilder.getAddressBuilder().getAddress2(),
+                        payloadBuilder.getAddressBuilder().getAddress3(),
+                        payloadBuilder.getAddressBuilder().getAddress4(),
+                        payloadBuilder.getAddressBuilder().getPostcode()
                 ),
                 new ContactDetails(
                         payloadBuilder.getContactDetailsBuilder().getEmail(),
@@ -95,7 +96,7 @@ public class PersonInfoVerifier {
             fieldMatchers.addAll(getContactsAndNiNumberMatchers(personalDetails));
         }
 
-        poll(getCaseById(caseId))
+        pollWithDefaults(getCaseById(caseId))
                 .until(status().is(OK), payload().isJson(allOf(
                         fieldMatchers.toArray(new Matcher[fieldMatchers.size()])
                 )));

@@ -1,8 +1,5 @@
 package uk.gov.moj.sjp.it.test;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
@@ -31,7 +28,6 @@ import uk.gov.moj.sjp.it.stub.SchedulingStub;
 
 import java.util.UUID;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -52,7 +48,7 @@ public class SessionIT extends BaseIntegrationTest {
         SchedulingStub.stubStartSjpSessionCommand();
         SchedulingStub.stubEndSjpSessionCommand();
         SchedulingStub.stubSessionQuery(existingSessionId);
-        SchedulingStub.stubSessionQueryNotFound();
+        SchedulingStub.stubSessionQueryNotFound(sessionId);
     }
 
     @Test
@@ -144,8 +140,7 @@ public class SessionIT extends BaseIntegrationTest {
                 ))));
 
         SessionHelper.getSession(existingSessionId, userId, withJsonPath("$.startedAt", equalTo(startedAt)));
-        verifyStartSessionIsNotCalled();
-
+        verifyStartSessionIsNotCalled(existingSessionId);
     }
 
 }

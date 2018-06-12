@@ -41,9 +41,9 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
     body:
       application/vnd.enterprise-id+json:
         example:
-          !include json/enterprise-id.json
+          !include json/sjp.associate-enterprise-id.json
         schema:
-          !include json/schema/enterprise-id.json
+          !include json/schema/sjp.associate-enterprise-id.json
     responses:
       202:
         description: Accepted

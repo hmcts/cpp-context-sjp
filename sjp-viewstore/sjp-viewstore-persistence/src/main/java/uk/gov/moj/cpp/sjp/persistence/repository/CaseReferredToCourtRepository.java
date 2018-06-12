@@ -14,12 +14,10 @@ public class CaseReferredToCourtRepository {
     private EntityManager em;
 
     private static final String UNACTIONED_CASES =
-            "select cr.case_id, c.urn, sr.first_name, sr.last_name, d.interpreter_language, cr.hearing_date " +
+            "select cr.case_id, c.urn, d.first_name, d.last_name, d.interpreter_language, cr.hearing_date " +
             "from court_referral cr " +
             "join case_details c " +
             "on cr.case_id = c.id " +
-            "join case_search_result sr " +
-            "on cr.case_id = sr.case_id " +
             "join defendant d " +
             "on cr.case_id = d.case_id " +
             "where cr.actioned is null " +

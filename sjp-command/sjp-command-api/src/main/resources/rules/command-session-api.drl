@@ -47,7 +47,7 @@ rule "Command - Rule for migrating a session"
   when
     $outcome: Outcome();
     $action: Action(name == "sjp.migrate-session");
-    eval(userAndGroupProvider.isSystemUser($action));
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getMigrateSessionGroups()));
   then
     $outcome.setSuccess(true);
 end

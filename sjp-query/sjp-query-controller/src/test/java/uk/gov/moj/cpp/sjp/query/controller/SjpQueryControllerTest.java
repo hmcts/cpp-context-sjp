@@ -72,7 +72,8 @@ public class SjpQueryControllerTest {
                         method("getOldestCaseAge").thatHandles("sjp.query.oldest-case-age").withRequesterPassThrough(),
                         method("getResultOrders").thatHandles("sjp.query.result-orders").withRequesterPassThrough(),
                         method("getReadyCasesReasonsCounts").thatHandles("sjp.query.ready-cases-reasons-counts").withRequesterPassThrough(),
-                        method("getReadyCases").thatHandles("sjp.query.ready-cases").withRequesterPassThrough()
+                        method("getReadyCases").thatHandles("sjp.query.ready-cases").withRequesterPassThrough(),
+                        method("getCaseAssignment").thatHandles("sjp.query.case-assignment").withRequesterPassThrough()
                 )));
     }
 

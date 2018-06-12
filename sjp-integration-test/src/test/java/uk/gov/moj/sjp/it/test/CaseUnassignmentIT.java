@@ -1,11 +1,15 @@
 package uk.gov.moj.sjp.it.test;
 
 import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.Constants.EVENT_CASE_MARKED_READY_FOR_DECISION;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_ASSIGNED_PRIVATE_EVENT;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_UNASSIGNED_EVENT;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.getCaseAssignment;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.isCaseAssignedToUser;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseUnassignment;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.MAGISTRATE_SESSION_STARTED_EVENT;
@@ -29,16 +33,16 @@ import org.junit.Test;
 
 public class CaseUnassignmentIT extends BaseIntegrationTest {
 
-    private static final UUID USER_ID = randomUUID();
-    private static final UUID SESSION_ID = randomUUID();
     private static final String COURT_HOUSE_OU_CODE = "B01OK";
+    private final UUID userId = randomUUID();
+    private final UUID sessionId = randomUUID();
 
     private final AssignmentHelper assignmentHelper = new AssignmentHelper();
     private final SjpDatabaseCleaner cleaner = new SjpDatabaseCleaner();
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
     @Before
-    public void setUp() throws SQLException {
+    public void assignCase() throws SQLException {
         SchedulingStub.stubStartSjpSessionCommand();
         SchedulingStub.stubEndSjpSessionCommand();
         AssignmentStub.stubAddAssignmentCommand();
@@ -51,6 +55,8 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
 
         final UUID caseId = UUID.randomUUID();
 
+        assertThat(getCaseAssignment(caseId, userId).getStatus(), is(NOT_FOUND.getStatusCode()));
+
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseId);
 
         final EventListener eventListener = new EventListener();
@@ -62,28 +68,28 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
         final JsonObject sessionStartedEvent = eventListener
                 .reset()
                 .subscribe(MAGISTRATE_SESSION_STARTED_EVENT)
-                .run(() -> startMagistrateSession(SESSION_ID, USER_ID, COURT_HOUSE_OU_CODE, magistrate))
+                .run(() -> startMagistrateSession(sessionId, userId, COURT_HOUSE_OU_CODE, magistrate))
                 .popEvent(MAGISTRATE_SESSION_STARTED_EVENT)
                 .get().payloadAsJsonObject();
 
-        final UUID sessionId = UUID.fromString(sessionStartedEvent.getString("sessionId"));
-        assertThat(sessionId, equalTo(SESSION_ID));
+        assertThat(UUID.fromString(sessionStartedEvent.getString("sessionId")), equalTo(sessionId));
 
         final JsonObject caseAssignedPrivateEvent = new EventListener()
                 .subscribe(CASE_ASSIGNED_PRIVATE_EVENT)
-                .run(() -> requestCaseAssignment(SESSION_ID, USER_ID))
+                .run(() -> requestCaseAssignment(sessionId, userId))
                 .popEvent(CASE_ASSIGNED_PRIVATE_EVENT)
                 .get().payloadAsJsonObject();
 
         final UUID caseIdActual = UUID.fromString(caseAssignedPrivateEvent.getString("caseId"));
         assertThat(caseId, equalTo(caseIdActual));
+        assertThat(isCaseAssignedToUser(caseId, userId), is(true));
     }
 
     @Test
     public void unassignCase() {
         final JsonObject unassignment = new EventListener()
                 .subscribe(CASE_UNASSIGNED_EVENT)
-                .run(() -> requestCaseUnassignment(createCasePayloadBuilder.getId(), USER_ID))
+                .run(() -> requestCaseUnassignment(createCasePayloadBuilder.getId(), userId))
                 .popEvent(CASE_UNASSIGNED_EVENT).get().payloadAsJsonObject();
 
         final UUID caseId = UUID.fromString(unassignment.getString("caseId"));
@@ -91,6 +97,7 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
 
         AssignmentHelper.assertCaseUnassigned(createCasePayloadBuilder.getId());
         AssignmentStub.verifyRemoveAssignmentCommandSend(caseId);
+        assertThat(isCaseAssignedToUser(caseId, userId), is(false));
     }
 
 }

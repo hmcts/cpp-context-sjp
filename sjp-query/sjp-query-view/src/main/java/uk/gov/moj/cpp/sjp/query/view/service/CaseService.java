@@ -345,6 +345,10 @@ public class CaseService {
         return createObjectBuilder().add("oldestCaseAge", age).build();
     }
 
+    public Optional<CaseDetail> getCase(final UUID caseId) {
+        return Optional.ofNullable(caseRepository.findBy(caseId));
+    }
+
     private void filterOtherAndFinancialMeansDocuments(Collection<CaseDocumentView> caseDocumentsView) {
         Set<String> documentsTypeToRetain = Sets.newHashSet("SJPN", "PLEA", "CITN");
         caseDocumentsView.removeIf(

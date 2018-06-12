@@ -34,6 +34,11 @@ function deleteAndDeployWars {
   echo "Copied wars to $WILDFLY_DEPLOYMENT_DIR"
 }
 
+
+function deployWiremock() {
+    mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=$WILDFLY_DEPLOYMENT_DIR -Dartifact=uk.gov.justice.services:wiremock-service:1.1.0:war
+}
+
 function startVagrant {
   export VAGRANT_CWD=$VAGRANT_DIR
 
@@ -135,6 +140,7 @@ function buildDeployAndTest {
 
 function deployAndTest {
   deleteAndDeployWars
+  deployWiremock
   startVagrant
   runEventLogLiquibase
   runEventLogAggregateSnapshotLiquibase

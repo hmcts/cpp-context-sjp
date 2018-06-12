@@ -135,64 +135,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Deployment dependencies -->
-        <dependency>
-            <groupId>uk.gov.moj.cpp.sjp</groupId>
-            <artifactId>sjp-command-api</artifactId>
-            <version>${project.version}</version>
-            <type>war</type>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.moj.cpp.sjp</groupId>
-            <artifactId>sjp-command-controller</artifactId>
-            <version>${project.version}</version>
-            <type>war</type>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.moj.cpp.sjp</groupId>
-            <artifactId>sjp-command-handler</artifactId>
-            <version>${project.version}</version>
-            <type>war</type>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.moj.cpp.sjp</groupId>
-            <artifactId>sjp-event-listener</artifactId>
-            <version>${project.version}</version>
-            <type>war</type>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.moj.cpp.sjp</groupId>
-            <artifactId>sjp-query-api</artifactId>
-            <version>${project.version}</version>
-            <type>war</type>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.moj.cpp.sjp</groupId>
-            <artifactId>sjp-query-controller</artifactId>
-            <version>${project.version}</version>
-            <type>war</type>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.moj.cpp.sjp</groupId>
-            <artifactId>sjp-query-view</artifactId>
-            <version>${project.version}</version>
-            <type>war</type>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.justice.services</groupId>
-            <artifactId>wiremock-service</artifactId>
-            <version>${wiremock.service.version}</version>
-            <type>war</type>
-            <scope>runtime</scope>
-        </dependency>
-
         <!-- Need to come last otherwise are deployed in preference to the WARs -->
         <dependency>
             <groupId>uk.gov.moj.cpp.sjp</groupId>

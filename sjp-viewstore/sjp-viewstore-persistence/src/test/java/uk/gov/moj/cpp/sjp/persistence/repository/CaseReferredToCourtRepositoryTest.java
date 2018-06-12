@@ -3,13 +3,11 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CourtReferral;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseReferredToCourt;
@@ -24,7 +22,6 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
 @RunWith(CdiTestRunner.class)
 public class CaseReferredToCourtRepositoryTest extends BaseTransactionalTest {
@@ -34,9 +31,6 @@ public class CaseReferredToCourtRepositoryTest extends BaseTransactionalTest {
 
     @Inject
     private CourtReferralRepository courtReferralRepository;
-
-    @Inject
-    private CaseSearchResultRepository caseSearchResultRepository;
 
     @Inject
     private CaseRepository caseRepository;
@@ -54,7 +48,7 @@ public class CaseReferredToCourtRepositoryTest extends BaseTransactionalTest {
         final List<CaseReferredToCourt> unactionedCases = caseReferredToCourtRepository.findUnactionedCases();
 
         assertThat(unactionedCases.size(), is(2));
-        assertThat(case1, new ReflectionEquals(unactionedCases.get(0)));
+        assertThat(unactionedCases.get(0).getCaseId(), is(case1.getCaseId()));
     }
 
     private CaseReferredToCourt createCaseReferredToCourt(final LocalDate hearingDate) {
@@ -77,9 +71,6 @@ public class CaseReferredToCourtRepositoryTest extends BaseTransactionalTest {
                 .build();
 
         caseRepository.save(caseDetail);
-
-        caseSearchResultRepository.save(new CaseSearchResult(caseReferredToCourt.getCaseId(),
-                caseReferredToCourt.getFirstName(), caseReferredToCourt.getLastName(), LocalDates.from("2001-02-03"), clock.now()));
 
         courtReferralRepository.save(new CourtReferral(caseReferredToCourt.getCaseId(), hearingDate));
 

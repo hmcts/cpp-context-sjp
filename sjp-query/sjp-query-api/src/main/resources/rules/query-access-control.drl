@@ -169,6 +169,15 @@ rule "sjp - Query - API - Get session"
     $outcome.setSuccess(true);
 end
 
+rule "sjp - Query - API - Get case assignment"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-assignment");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCaseAssignmentGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "sjp - Query - API - Get ready cases reasons counts"
   when
     $outcome: Outcome();

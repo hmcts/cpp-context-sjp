@@ -2,6 +2,7 @@ package uk.gov.moj.sjp.it.helper;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
+import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.is;
 
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
@@ -10,8 +11,13 @@ import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.json.Json;
+import javax.ws.rs.core.Response;
+
+import com.jayway.restassured.path.json.JsonPath;
+
 
 public class AssignmentHelper {
 
@@ -27,8 +33,18 @@ public class AssignmentHelper {
         return HttpClientUtil.makePostCall(userId, url, contentType, Json.createObjectBuilder().build().toString(), ACCEPTED);
     }
 
-    public static void assertCaseAssigned(final UUID caseId) {
-        CasePoller.pollUntilCaseByIdIsOk(caseId, withJsonPath("$.unassigned", is(true)));
+    public static Response getCaseAssignment(final UUID caseId, final UUID userId) {
+        final String contentType = "application/vnd.sjp.query.case-assignment+json";
+        final String url = String.format("/cases/%s/assignment", caseId);
+        return HttpClientUtil.makeGetCall(url, contentType, userId);
+    }
+
+    public static boolean isCaseAssignedToUser(final UUID caseId, final UUID userId) {
+        return Stream.of(getCaseAssignment(caseId, userId))
+                .filter(response -> response.getStatus() == OK.getStatusCode())
+                .map(response -> new JsonPath(response.readEntity(String.class)).getBoolean("assignedToMe"))
+                .findFirst()
+                .orElse(false);
     }
 
     public static UUID requestCaseUnassignment(final UUID caseId, final UUID userId) {
@@ -40,6 +56,5 @@ public class AssignmentHelper {
     public static void assertCaseUnassigned(final UUID caseId) {
         CasePoller.pollUntilCaseByIdIsOk(caseId, withJsonPath("$.assigned", is(false)));
     }
-
 
 }

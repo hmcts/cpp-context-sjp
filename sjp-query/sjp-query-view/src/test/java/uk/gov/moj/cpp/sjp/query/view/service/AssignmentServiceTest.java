@@ -46,7 +46,7 @@ public class AssignmentServiceTest {
     }
 
     @Test
-    public void shouldGetAssignmentCandidatesForMagistrateSession2() {
+    public void shouldGetAssignmentCandidatesForMagistrateSession() {
         final SessionType sessionType = SessionType.MAGISTRATE;
 
         when(assignmentRepository.getAssignmentCandidatesForMagistrateSession(assigneeId, excludedProsecutingAuthorities, QUERY_LIMIT)).thenReturn(expectedAssignmentCandidates);
@@ -57,7 +57,7 @@ public class AssignmentServiceTest {
     }
 
     @Test
-    public void shouldGetAssignmentCandidatesForDelegatedPowersSession2() {
+    public void shouldGetAssignmentCandidatesForDelegatedPowersSession() {
         final SessionType sessionType = SessionType.DELEGATED_POWERS;
         when(assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, excludedProsecutingAuthorities, QUERY_LIMIT)).thenReturn(expectedAssignmentCandidates);
 

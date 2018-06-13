@@ -335,6 +335,23 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
                   schema: !include json/schema/sjp.query.defendants-online-plea.json
                   example: !include json/sjp.query.defendants-online-plea.json
 
+/cases/{caseId}/assignment:
+  get:
+    description: |
+      Get case assignment.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-assignment+json
+          name: sjp.query.case-assignment
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.case-assignment+json:
+                  schema: !include json/schema/sjp.query.case-assignment.json
+                  example: !include json/sjp.query.case-assignment.json
+
 /cases/assignment/candidates/{sessionType}:
   get:
     description: |

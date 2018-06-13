@@ -162,3 +162,11 @@ rule "sjp.query.ready-cases"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp.query.case-assignment"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-assignment");
+  then
+    $outcome.setSuccess(true);
+end

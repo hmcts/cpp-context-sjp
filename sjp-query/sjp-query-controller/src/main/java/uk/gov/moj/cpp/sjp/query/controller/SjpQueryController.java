@@ -151,4 +151,9 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.case-assignment")
+    public JsonEnvelope getCaseAssignment(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
 }

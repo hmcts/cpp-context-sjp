@@ -133,7 +133,7 @@ public class CaseServiceTest {
     }
 
     private void assertExpectationsForFindCaseViewWithDocuments(boolean onlinePleaReceived) {
-        final CaseDetail caseDetail = createCaseDetailWithDocumentTypes(onlinePleaReceived,"FINANCIAL_MEANS", "OTHER", "Travelcard");
+        final CaseDetail caseDetail = createCaseDetailWithDocumentTypes(onlinePleaReceived, "FINANCIAL_MEANS", "OTHER", "Travelcard");
 
         given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
         CaseView caseView = service.findCase(CASE_ID);
@@ -544,6 +544,21 @@ public class CaseServiceTest {
         // then
         assertThat(result.getCaseMissingSjpnWithDetailsView(), hasSize(0));
 
+    }
+
+    @Test
+    public void shouldReturnCaseDetailsWhenCaseExists() {
+        final CaseDetail caseDetail = createCaseDetail();
+        when(caseRepository.findBy(CASE_ID)).thenReturn(caseDetail);
+
+        assertThat(service.getCase(CASE_ID).get(), equalTo(caseDetail));
+    }
+
+    @Test
+    public void shouldReturnEmptyCaseWhenCaseDoesNotExist() {
+        when(caseRepository.findBy(CASE_ID)).thenReturn(null);
+
+        assertThat(service.getCase(CASE_ID).isPresent(), is(false));
     }
 
     private CaseDetail createCaseDetail() {

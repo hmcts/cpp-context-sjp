@@ -12,12 +12,17 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
+import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
+import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 
 import java.io.StringReader;
+import java.util.EnumMap;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.Json;
@@ -35,14 +40,31 @@ public class SessionHelper {
     public static final String DELEGATED_POWERS_SESSION_STARTED_EVENT = "sjp.events.delegated-powers-session-started";
     public static final String DELEGATED_POWERS_SESSION_ENDED_EVENT = DelegatedPowersSessionEnded.EVENT_NAME;
 
-    public static UUID startDelegatedPowersSession(final UUID sessionId, final UUID userId, final String courtHouseOUCode) {
+    private static final EnumMap<SessionType, String> SESSION_CREATED_EVENT_NAME_BY_SESSION_TYPE = new EnumMap(SessionType.class);
+
+    static {
+        SESSION_CREATED_EVENT_NAME_BY_SESSION_TYPE.put(SessionType.MAGISTRATE, MagistrateSessionStarted.EVENT_NAME);
+        SESSION_CREATED_EVENT_NAME_BY_SESSION_TYPE.put(SessionType.DELEGATED_POWERS, DelegatedPowersSessionStarted.EVENT_NAME);
+    }
+
+    public static UUID startDelegatedPowersSessionAsync(final UUID sessionId, final UUID userId, final String courtHouseOUCode) {
         final JsonObject payload = createObjectBuilder()
                 .add("courtHouseOUCode", courtHouseOUCode)
                 .build();
         return startSession(sessionId, userId, payload);
     }
 
-    public static UUID startMagistrateSession(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate) {
+    public static Optional<JsonEnvelope> startDelegatedPowersSessionAndWaitForEvent(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String eventName) {
+        return new EventListener().subscribe(eventName)
+                .run(() -> startDelegatedPowersSessionAsync(sessionId, userId, courtHouseOUCode))
+                .popEvent(eventName);
+    }
+
+    public static Optional<JsonEnvelope> startDelegatedPowersSession(final UUID sessionId, final UUID userId, final String courtHouseOUCode) {
+        return startDelegatedPowersSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, DelegatedPowersSessionStarted.EVENT_NAME);
+    }
+
+    public static UUID startMagistrateSessionAsync(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate) {
         final JsonObject payload = createObjectBuilder()
                 .add("courtHouseOUCode", courtHouseOUCode)
                 .add("magistrate", magistrate)
@@ -51,12 +73,37 @@ public class SessionHelper {
         return startSession(sessionId, userId, payload);
     }
 
-    public static UUID startSession(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final SessionType sessionType) {
-        if (SessionType.MAGISTRATE.equals(sessionType)) {
-            return startMagistrateSession(sessionId, userId, courtHouseOUCode, "John Smith");
-        } else {
-            return startDelegatedPowersSession(sessionId, userId, courtHouseOUCode);
+    public static Optional<JsonEnvelope> startMagistrateSessionAndWaitForEvent(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate, final String eventName) {
+        return new EventListener().subscribe(eventName)
+                .run(() -> startMagistrateSessionAsync(sessionId, userId, courtHouseOUCode, magistrate))
+                .popEvent(eventName);
+    }
+
+    public static Optional<JsonEnvelope> startMagistrateSession(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate) {
+        return startMagistrateSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, magistrate, MagistrateSessionStarted.EVENT_NAME);
+    }
+
+    public static void startSessionAsync(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final SessionType sessionType) {
+        switch (sessionType) {
+            case MAGISTRATE:
+                startMagistrateSessionAsync(sessionId, userId, courtHouseOUCode, "John Smith " + sessionId);
+                break;
+            case DELEGATED_POWERS:
+                startDelegatedPowersSessionAsync(sessionId, userId, courtHouseOUCode);
+                break;
+            default:
+                throw new UnsupportedOperationException(String.format("Creation session of type {} is not supported", sessionType));
         }
+    }
+
+    public static Optional<JsonEnvelope> startSession(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final SessionType sessionType) {
+        return startSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, sessionType, SESSION_CREATED_EVENT_NAME_BY_SESSION_TYPE.get(sessionType));
+    }
+
+    public static Optional<JsonEnvelope> startSessionAndWaitForEvent(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final SessionType sessionType, final String eventName) {
+        return new EventListener().subscribe(eventName)
+                .run(() -> startSessionAsync(sessionId, userId, courtHouseOUCode, sessionType))
+                .popEvent(eventName);
     }
 
     public static JsonObject getSession(final UUID sessionId, final UUID userId) {
@@ -94,7 +141,7 @@ public class SessionHelper {
                                       final String startedAt,
                                       final String magistrate) {
 
-        JsonObjectBuilder sessionBuilder = createObjectBuilder()
+        final JsonObjectBuilder sessionBuilder = createObjectBuilder()
                 .add("sessionId", sessionId.toString())
                 .add("userId", userId.toString())
                 .add("courtHouseName", courtHouseName)

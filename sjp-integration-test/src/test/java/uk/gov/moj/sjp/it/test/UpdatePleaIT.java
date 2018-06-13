@@ -9,6 +9,10 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonValueIsJsonMatcher.isJson;
+import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
+import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_NOT_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.POSTAL;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_PLEA_CANCELLED;
@@ -17,8 +21,9 @@ import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_UPDATED;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
@@ -30,6 +35,9 @@ import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 
 import java.util.Optional;
 
+import javax.json.JsonValue;
+
+import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,7 +52,7 @@ public class UpdatePleaIT extends BaseIntegrationTest {
         this.updatePleaHelper = new UpdatePleaHelper();
         this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
         new EventListener()
-                .subscribe(CaseReceived.EVENT_NAME)
+                .subscribe(CaseReceived.EVENT_NAME, CaseMarkedReadyForDecision.EVENT_NAME)
                 .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder));
     }
 
@@ -61,66 +69,92 @@ public class UpdatePleaIT extends BaseIntegrationTest {
 
             caseSearchResultHelper.verifyPersonInfoByUrn();
 
-            final PleaMethod pleaMethod = PleaMethod.POSTAL;
+            final EventListener eventListener = new EventListener();
+
             final PleaType guiltyPlea = GUILTY;
 
-            final Optional<JsonEnvelope> pleadedGuiltyPublicEvent = new EventListener()
-                    .subscribe(PleaUpdated.EVENT_NAME)
-                    .subscribe(PUBLIC_EVENT_SELECTOR_PLEA_UPDATED)
-                    .run(() -> updatePleaHelper.updatePlea(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), getPleaPayload(guiltyPlea)))
-                    .popEvent(PUBLIC_EVENT_SELECTOR_PLEA_UPDATED);
+            eventListener
+                    .subscribe(PleaUpdated.EVENT_NAME, CaseMarkedReadyForDecision.EVENT_NAME, PUBLIC_EVENT_SELECTOR_PLEA_UPDATED)
+                    .run(() -> updatePleaHelper.updatePlea(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), getPleaPayload(guiltyPlea)));
 
-            assertThat(pleadedGuiltyPublicEvent.isPresent(), is(true));
-            assertThat(pleadedGuiltyPublicEvent.get(), jsonEnvelope(
-                    metadata().withName(PUBLIC_EVENT_SELECTOR_PLEA_UPDATED),
-                    payload(isJson(allOf(
-                            withJsonPath("caseId", equalTo(createCasePayloadBuilder.getId().toString())),
-                            withJsonPath("offenceId", equalTo(createCasePayloadBuilder.getOffenceId().toString())),
-                            withJsonPath("plea", equalTo(guiltyPlea.toString()))
-                    )))
-            ));
+            verifyPrivatePleaUpdatedEventEmitted(eventListener, guiltyPlea);
+            verifyPublicPleaUpdatedEventEmitted(eventListener, guiltyPlea);
+            verifyPrivateCaseMarkedReadyEventEmitted(eventListener, PLEADED_GUILTY);
+            updatePleaHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), guiltyPlea, POSTAL);
+            caseSearchResultHelper.verifyPleaReceivedDate();
 
-            updatePleaHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), guiltyPlea, pleaMethod);
 
             final PleaType notGuiltyPlea = NOT_GUILTY;
 
-            caseSearchResultHelper.verifyPleaReceivedDate();
+            eventListener.reset()
+                    .subscribe(PleaUpdated.EVENT_NAME, CaseMarkedReadyForDecision.EVENT_NAME, PUBLIC_EVENT_SELECTOR_PLEA_UPDATED)
+                    .run(() -> updatePleaHelper.updatePlea(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), getPleaPayload(notGuiltyPlea)));
 
-            final Optional<JsonEnvelope> pleadedNotGuiltyPublicEvent = new EventListener()
-                    .subscribe(PleaUpdated.EVENT_NAME)
-                    .subscribe(PUBLIC_EVENT_SELECTOR_PLEA_UPDATED)
-                    .run(() -> updatePleaHelper.updatePlea(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), getPleaPayload(notGuiltyPlea)))
-                    .popEvent(PUBLIC_EVENT_SELECTOR_PLEA_UPDATED);
+            verifyPrivatePleaUpdatedEventEmitted(eventListener, notGuiltyPlea);
+            verifyPublicPleaUpdatedEventEmitted(eventListener, notGuiltyPlea);
+            verifyPrivateCaseMarkedReadyEventEmitted(eventListener, PLEADED_NOT_GUILTY);
+            updatePleaHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), notGuiltyPlea, POSTAL);
 
-            assertThat(pleadedNotGuiltyPublicEvent.isPresent(), is(true));
-            assertThat(pleadedNotGuiltyPublicEvent.get(), jsonEnvelope(
-                    metadata().withName(PUBLIC_EVENT_SELECTOR_PLEA_UPDATED),
-                    payload(isJson(allOf(
-                            withJsonPath("caseId", equalTo(createCasePayloadBuilder.getId().toString())),
-                            withJsonPath("offenceId", equalTo(createCasePayloadBuilder.getOffenceId().toString())),
-                            withJsonPath("plea", equalTo(notGuiltyPlea.toString()))
-                    )))
-            ));
 
-            final Optional<JsonEnvelope> pleaCancelledPublicEvent = new EventListener()
-                    .subscribe(PleaCancelled.EVENT_NAME)
-                    .subscribe(PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED)
-                    .run(() -> cancelPleaHelper.cancelPlea())
-                    .popEvent(PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED);
+            eventListener.reset()
+                    .subscribe(PleaCancelled.EVENT_NAME, CaseMarkedReadyForDecision.EVENT_NAME, PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED)
+                    .run(() -> cancelPleaHelper.cancelPlea());
 
-            assertThat(pleaCancelledPublicEvent.isPresent(), is(true));
-            assertThat(pleaCancelledPublicEvent.get(), jsonEnvelope(
-                    metadata().withName(PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED),
-                    payload(isJson(allOf(
-                            withJsonPath("caseId", equalTo(createCasePayloadBuilder.getId().toString())),
-                            withJsonPath("offenceId", equalTo(createCasePayloadBuilder.getOffenceId().toString()))
-                    )))
-            ));
+            verifyPrivatePleaCancelledEventEmitted(eventListener);
+            verifyPublicPleaCancelledEventEmitted(eventListener);
+            verifyPrivateCaseMarkedReadyEventEmitted(eventListener, PIA);
 
             cancelPleaHelper.verifyPleaCancelled();
-
             caseSearchResultHelper.verifyNoPleaReceivedDate();
         }
+    }
+
+    private void verifyPublicPleaUpdatedEventEmitted(final EventListener eventListener, final PleaType pleaType) {
+        verifyEventEmitted(eventListener, PUBLIC_EVENT_SELECTOR_PLEA_UPDATED, isJson(allOf(
+                withJsonPath("caseId", equalTo(createCasePayloadBuilder.getId().toString())),
+                withJsonPath("offenceId", equalTo(createCasePayloadBuilder.getOffenceId().toString())),
+                withJsonPath("plea", equalTo(pleaType.toString()))
+        )));
+    }
+
+    private void verifyPublicPleaCancelledEventEmitted(final EventListener eventListener) {
+        verifyEventEmitted(eventListener, PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED, isJson(allOf(
+                withJsonPath("caseId", equalTo(createCasePayloadBuilder.getId().toString())),
+                withJsonPath("offenceId", equalTo(createCasePayloadBuilder.getOffenceId().toString()))
+        )));
+    }
+
+    private void verifyPrivatePleaCancelledEventEmitted(final EventListener eventListener) {
+        verifyEventEmitted(eventListener, PleaCancelled.EVENT_NAME, isJson(allOf(
+                withJsonPath("caseId", equalTo(createCasePayloadBuilder.getId().toString())),
+                withJsonPath("offenceId", equalTo(createCasePayloadBuilder.getOffenceId().toString()))
+        )));
+    }
+
+    private void verifyPrivatePleaUpdatedEventEmitted(final EventListener eventListener, final PleaType pleaType) {
+        verifyEventEmitted(eventListener, PleaUpdated.EVENT_NAME, isJson(allOf(
+                withJsonPath("caseId", equalTo(createCasePayloadBuilder.getId().toString())),
+                withJsonPath("offenceId", equalTo(createCasePayloadBuilder.getOffenceId().toString())),
+                withJsonPath("plea", equalTo(pleaType.toString()))
+        )));
+    }
+
+    private void verifyPrivateCaseMarkedReadyEventEmitted(final EventListener eventListener, final CaseReadinessReason readinessReason) {
+        verifyEventEmitted(eventListener, CaseMarkedReadyForDecision.EVENT_NAME, isJson(allOf(
+                withJsonPath("caseId", equalTo(createCasePayloadBuilder.getId().toString())),
+                withJsonPath("reason", equalTo(readinessReason.toString()))
+        )));
+    }
+
+    private void verifyEventEmitted(final EventListener eventListener, final String eventName, final TypeSafeDiagnosingMatcher<JsonValue> paylaodMatcher) {
+        final Optional<JsonEnvelope> event = eventListener.popEvent(eventName);
+
+        assertThat(event.isPresent(), is(true));
+
+        assertThat(event.get(), jsonEnvelope(
+                metadata().withName(eventName),
+                payload(paylaodMatcher)
+        ));
     }
 
 }

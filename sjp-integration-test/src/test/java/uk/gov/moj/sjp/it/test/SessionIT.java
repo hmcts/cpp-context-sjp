@@ -5,6 +5,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
@@ -15,8 +16,7 @@ import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.MAGISTRATE_SESSION_STARTED_EVENT;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.SESSION_STARTED_PUBLIC_EVENT;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.migrateSession;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.startDelegatedPowersSession;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSession;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSessionAndWaitForEvent;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.verifyStartSessionIsNotCalled;
 
 import uk.gov.justice.services.common.util.UtcClock;
@@ -26,6 +26,7 @@ import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -53,13 +54,10 @@ public class SessionIT extends BaseIntegrationTest {
 
     @Test
     public void shouldStartAndEndDelegatedPowersSessionAndCreatePublicEventAndReplicateSessionInSchedulingContext() {
-        final JsonEnvelope sessionStartedEvent = new EventListener()
-                .subscribe(SESSION_STARTED_PUBLIC_EVENT)
-                .run(() -> startDelegatedPowersSession(sessionId, userId, courtHouseOUCode))
-                .popEvent(SESSION_STARTED_PUBLIC_EVENT)
-                .get();
+        final Optional<JsonEnvelope> sessionStartedEvent = SessionHelper.startDelegatedPowersSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, SESSION_STARTED_PUBLIC_EVENT);
 
-        assertThat(sessionStartedEvent, jsonEnvelope(metadata().withName("public.sjp.session-started"),
+        assertThat(sessionStartedEvent.isPresent(), is(true));
+        assertThat(sessionStartedEvent.get(), jsonEnvelope(metadata().withName(SESSION_STARTED_PUBLIC_EVENT),
                 payloadIsJson(allOf(
                         withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                         withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
@@ -86,16 +84,12 @@ public class SessionIT extends BaseIntegrationTest {
 
     @Test
     public void shouldStartAndEndMagistrateSessionAndCreatePublicEventAndReplicateSessionInSchedulingContext() {
-
         final String magistrate = "John Smith";
 
-        final JsonEnvelope sessionStartedEvent = new EventListener()
-                .subscribe(SESSION_STARTED_PUBLIC_EVENT)
-                .run(() -> startMagistrateSession(sessionId, userId, courtHouseOUCode, magistrate))
-                .popEvent(SESSION_STARTED_PUBLIC_EVENT)
-                .get();
+        final Optional<JsonEnvelope> sessionStartedEvent = startMagistrateSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, magistrate, SESSION_STARTED_PUBLIC_EVENT);
 
-        assertThat(sessionStartedEvent, jsonEnvelope(metadata().withName("public.sjp.session-started"),
+        assertThat(sessionStartedEvent.isPresent(), is(true));
+        assertThat(sessionStartedEvent.get(), jsonEnvelope(metadata().withName(SESSION_STARTED_PUBLIC_EVENT),
                 payloadIsJson(allOf(
                         withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                         withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
@@ -129,7 +123,7 @@ public class SessionIT extends BaseIntegrationTest {
                 .popEvent(MAGISTRATE_SESSION_STARTED_EVENT)
                 .get();
 
-        assertThat(sessionStartedEvent, jsonEnvelope(metadata().withName("sjp.events.magistrate-session-started"),
+        assertThat(sessionStartedEvent, jsonEnvelope(metadata().withName(MAGISTRATE_SESSION_STARTED_EVENT),
                 payloadIsJson(allOf(
                         withJsonPath("$.magistrate", equalTo(magistrate)),
                         withJsonPath("$.sessionId", equalTo(existingSessionId.toString())),

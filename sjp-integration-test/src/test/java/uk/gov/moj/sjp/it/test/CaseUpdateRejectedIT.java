@@ -5,14 +5,13 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.jgroups.util.Util.assertTrue;
 import static org.junit.Assert.assertThat;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_ASSIGNED_PUBLIC_EVENT;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.DELEGATED_POWERS_SESSION_STARTED_EVENT;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.sjp.it.Constants;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
@@ -96,14 +95,9 @@ public class CaseUpdateRejectedIT extends BaseIntegrationTest {
 
         final UUID userId = randomUUID();
 
-        new EventListener()
-                .subscribe(DELEGATED_POWERS_SESSION_STARTED_EVENT)
-                .run(() -> SessionHelper.startMagistrateSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, "Reggie Gates"));
+        SessionHelper.startMagistrateSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, "Reggie Gates");
 
-        final Optional<JsonEnvelope> jsonEnvelope = new EventListener()
-                .subscribe(CASE_ASSIGNED_PUBLIC_EVENT)
-                .run(() -> requestCaseAssignment(sessionId, userId))
-                .popEvent(CASE_ASSIGNED_PUBLIC_EVENT);
+        final Optional<JsonEnvelope> jsonEnvelope = AssignmentHelper.requestCaseAssignmentAndWaitForEvent(sessionId, userId, CASE_ASSIGNED_PUBLIC_EVENT);
 
         return jsonEnvelope.map(envelope ->
                 UUID.fromString(envelope.payloadAsJsonObject().getString("caseId")))

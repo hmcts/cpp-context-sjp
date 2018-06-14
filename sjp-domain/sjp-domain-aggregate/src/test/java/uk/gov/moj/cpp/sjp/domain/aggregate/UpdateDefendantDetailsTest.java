@@ -65,7 +65,7 @@ public class UpdateDefendantDetailsTest {
 
     @Test
     public void shouldCreateUpdateEvents() {
-        Person person = new Person(title, firstName, lastName,
+        final Person person = new Person(title, firstName, lastName,
                 dateOfBirth, gender, address);
         caseAggregate.receiveCase(
                 CaseBuilder.aDefaultSjpCase().withDefendant(new Defendant(
@@ -91,12 +91,12 @@ public class UpdateDefendantDetailsTest {
                 hasItem(isA(DefendantDetailsUpdated.class))
         );
 
-        DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(0);
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(0);
         assertThat(defendantDetailsUpdated.getFirstName(), is(firstName));
         assertThat(defendantDetailsUpdated.getLastName(), is(lastName));
         assertThat(defendantDetailsUpdated.getTitle(), is(title));
 
-        Person updatedPerson = new Person(title, firstNameUpdated, lastName,
+        final Person updatedPerson = new Person(title, firstNameUpdated, lastName,
                 dateOfBirthUpdated, gender, addressUpdated);
 
         eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
@@ -108,22 +108,22 @@ public class UpdateDefendantDetailsTest {
                 is(4)
         );
 
-        DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = (DefendantDateOfBirthUpdated) events.get(0);
+        final DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = (DefendantDateOfBirthUpdated) events.get(0);
         assertThat(defendantDateOfBirthUpdated.getOldDateOfBirth(), is(dateOfBirth));
         assertThat(defendantDateOfBirthUpdated.getNewDateOfBirth(), is(dateOfBirthUpdated));
 
-        DefendantAddressUpdated defendantAddressUpdated = (DefendantAddressUpdated) events.get(1);
+        final DefendantAddressUpdated defendantAddressUpdated = (DefendantAddressUpdated) events.get(1);
         assertThat(defendantAddressUpdated.getOldAddress().getAddress1(), is(ADDRESS_1));
         assertThat(defendantAddressUpdated.getNewAddress().getAddress1(), is(ADDRESS_1_UPDATED));
 
-        DefendantPersonalNameUpdated defendantPersonalNameUpdated = (DefendantPersonalNameUpdated) events.get(2);
+        final DefendantPersonalNameUpdated defendantPersonalNameUpdated = (DefendantPersonalNameUpdated) events.get(2);
         assertThat(defendantPersonalNameUpdated.getOldPersonalName().getFirstName(), is(firstName));
         assertThat(defendantPersonalNameUpdated.getNewPersonalName().getFirstName(), is(firstNameUpdated));
     }
 
     @Test
     public void shouldFailValidation() {
-        Person personInfoDetails = new Person(title, firstName, lastName,
+        final Person personInfoDetails = new Person(title, firstName, lastName,
                 dateOfBirth, gender, address);
         caseAggregate.receiveCase(
                 new Case(
@@ -153,12 +153,12 @@ public class UpdateDefendantDetailsTest {
                 ),
                 clock.now()
         );
-        Person personInfoDetailsWithoutTitle = new Person(null, firstName, lastName,
+        final Person personInfoDetailsWithoutTitle = new Person(null, firstName, lastName,
                 dateOfBirth, gender, address);
-        Stream<Object> eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
+        final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
                 gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, personInfoDetailsWithoutTitle, clock.now());
 
-        List<Object> events = asList(eventStream.toArray());
+        final List<Object> events = asList(eventStream.toArray());
 
         assertThat("has no defendant details Updated failed event", events,
                 hasItem(isA(DefendantDetailsUpdateFailed.class)));

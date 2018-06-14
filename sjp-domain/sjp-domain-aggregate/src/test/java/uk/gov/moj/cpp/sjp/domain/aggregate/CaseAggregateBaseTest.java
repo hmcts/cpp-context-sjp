@@ -15,7 +15,7 @@ public abstract class CaseAggregateBaseTest {
 
     protected final Clock clock = new StoppedClock(new UtcClock().now());
     protected CaseAggregate caseAggregate;
-    Case aCase;
+    protected Case aCase;
     protected CaseReceived caseReceivedEvent;
 
     @Before

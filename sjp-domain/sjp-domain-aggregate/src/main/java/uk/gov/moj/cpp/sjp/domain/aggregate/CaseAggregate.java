@@ -32,6 +32,7 @@ import uk.gov.moj.cpp.sjp.domain.command.CancelPlea;
 import uk.gov.moj.cpp.sjp.domain.command.ChangePlea;
 import uk.gov.moj.cpp.sjp.domain.command.UpdatePlea;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -492,20 +493,23 @@ public class CaseAggregate implements Aggregate {
                                                                final UUID defendantId,
                                                                final ZonedDateTime createdOn) {
         //TODO: we need to query the defendant to see if any of the incoming defendant data is different from the pre-existing defendant data. If no changes, no event
-        final ContactDetails contactDetails = pleadOnline.getPersonalDetails().getContactDetails();
-        final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdated()
+        final PersonalDetails personalDetails = pleadOnline.getPersonalDetails();
+        final ContactDetails contactDetails = personalDetails.getContactDetails();
+        streamBuilder.add(defendantDetailsUpdated()
                 .withCaseId(caseId)
                 .withDefendantId(defendantId)
-                .withFirstName(pleadOnline.getPersonalDetails().getFirstName())
-                .withLastName(pleadOnline.getPersonalDetails().getLastName())
-                .withDateOfBirth(pleadOnline.getPersonalDetails().getDateOfBirth())
-                .withNationalInsuranceNumber(pleadOnline.getPersonalDetails().getNationalInsuranceNumber())
+                .withFirstName(personalDetails.getFirstName())
+                .withLastName(personalDetails.getLastName())
+                .withDateOfBirth(personalDetails.getDateOfBirth())
+                .withNationalInsuranceNumber(personalDetails.getNationalInsuranceNumber())
                 .withContactDetails(new ContactDetails(contactDetails.getHome(), contactDetails.getMobile(), contactDetails.getEmail()))
-                .withAddress(pleadOnline.getPersonalDetails().getAddress())
+                .withAddress(personalDetails.getAddress())
                 .withUpdateByOnlinePlea(true)
                 .withUpdatedDate(createdOn)
-                .build();
-        streamBuilder.add(defendantDetailsUpdated);
+                .build());
+        getDefendantWarningEvents(personalDetails.getDateOfBirth(), personalDetails.getAddress(),
+                defendantTitle, personalDetails.getFirstName(), personalDetails.getLastName())
+                .forEach(streamBuilder::add);
         streamBuilder.add(FinancialMeansUpdated.createEventForOnlinePlea(defendantId, pleadOnline.getFinancialMeans().getIncome(),
                 pleadOnline.getFinancialMeans().getBenefits(), pleadOnline.getFinancialMeans().getEmploymentStatus(),
                 pleadOnline.getOutgoings(), createdOn));
@@ -516,7 +520,7 @@ public class CaseAggregate implements Aggregate {
         updateInterpreter(pleadOnline.getInterpreterLanguage(), defendantId, true, createdOn)
                 .ifPresent(streamBuilder::add);
         streamBuilder.add(new OnlinePleaReceived(urn, this.caseId, pleadOnline.getDefendantId(), pleadOnline.getUnavailability(), pleadOnline.getInterpreterLanguage(),
-                pleadOnline.getWitnessDetails(), pleadOnline.getWitnessDispute(), pleadOnline.getPersonalDetails(),
+                pleadOnline.getWitnessDetails(), pleadOnline.getWitnessDispute(), personalDetails,
                 pleadOnline.getFinancialMeans(), pleadOnline.getEmployer(), pleadOnline.getOutgoings()));
     }
 
@@ -659,25 +663,8 @@ public class CaseAggregate implements Aggregate {
             return apply(Stream.of(new DefendantDetailsUpdateFailed(caseId, defendantId, e.getMessage())));
         }
 
-        if (defendantDateOfBirth != null && !Objects.equals(defendantDateOfBirth, person.getDateOfBirth())) {
-            final DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = new DefendantDateOfBirthUpdated(caseId, defendantDateOfBirth, person.getDateOfBirth());
-            events.add(defendantDateOfBirthUpdated);
-        }
-
-        if ((defendantAddress != null) && (!defendantAddress.equals(person.getAddress()))) {
-            final DefendantAddressUpdated defendantAddressUpdated = new DefendantAddressUpdated(caseId, defendantAddress, person.getAddress());
-            events.add(defendantAddressUpdated);
-        }
-
-        if ((defendantTitle != null) && ((!defendantTitle.equalsIgnoreCase(person.getTitle())) ||
-                (!defendantFirstName.equalsIgnoreCase(person.getFirstName())) ||
-                (!defendantLastName.equalsIgnoreCase(person.getLastName())))
-                ) {
-            final DefendantPersonalNameUpdated defendantPersonalNameUpdated = new DefendantPersonalNameUpdated(caseId,
-                    new PersonalName(defendantTitle, defendantFirstName, defendantLastName),
-                    new PersonalName(person.getTitle(), person.getFirstName(), person.getLastName()));
-            events.add(defendantPersonalNameUpdated);
-        }
+        getDefendantWarningEvents(person.getDateOfBirth(), person.getAddress(), person.getTitle(),
+                person.getFirstName(), person.getLastName()).forEach(events::add);
 
         final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdated()
                 .withCaseId(caseId)
@@ -695,6 +682,34 @@ public class CaseAggregate implements Aggregate {
                 .build();
         events.add(defendantDetailsUpdated);
         return apply(events.build());
+    }
+
+    private Stream<Object> getDefendantWarningEvents(final LocalDate dateOfBirth,
+                                                     final Address address,
+                                                     final String title,
+                                                     final String firstName,
+                                                     final String lastName) {
+        final Stream.Builder<Object> events = Stream.builder();
+
+        if (defendantDateOfBirth != null && !defendantDateOfBirth.equals(dateOfBirth)) {
+            final DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = new DefendantDateOfBirthUpdated(caseId, defendantDateOfBirth, dateOfBirth);
+            events.add(defendantDateOfBirthUpdated);
+        }
+
+        if (defendantAddress != null && !defendantAddress.equals(address)) {
+            final DefendantAddressUpdated defendantAddressUpdated = new DefendantAddressUpdated(caseId, defendantAddress, address);
+            events.add(defendantAddressUpdated);
+        }
+
+        if ((defendantTitle != null && !defendantTitle.equalsIgnoreCase(title)) ||
+                !StringUtils.equalsIgnoreCase(defendantFirstName, firstName) ||
+                !StringUtils.equalsIgnoreCase(defendantLastName, lastName)) {
+            final DefendantPersonalNameUpdated defendantPersonalNameUpdated = new DefendantPersonalNameUpdated(caseId,
+                    new PersonalName(defendantTitle, defendantFirstName, defendantLastName),
+                    new PersonalName(title, firstName, lastName));
+            events.add(defendantPersonalNameUpdated);
+        }
+        return events.build();
     }
 
     public Stream<Object> markCaseReadyForDecision(final CaseReadinessReason readinessReason, final ZonedDateTime markedAt) {

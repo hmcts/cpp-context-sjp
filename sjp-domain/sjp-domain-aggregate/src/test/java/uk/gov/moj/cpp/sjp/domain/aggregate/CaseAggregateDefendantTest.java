@@ -127,9 +127,12 @@ public class CaseAggregateDefendantTest {
                 defaultDefendantData().withNewDateOfBirth(null).withNewFirstName(newFirstName)
         );
 
-        assertThat(events.size(), is(1));
+        assertThat(events.size(), is(2));
 
-        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(0);
+        final DefendantPersonalNameUpdated personalNameUpdated = (DefendantPersonalNameUpdated) events.get(0);
+        assertThat(personalNameUpdated.getNewPersonalName().getFirstName(), is(newFirstName));
+
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(1);
         assertThat(defendantDetailsUpdated.getFirstName(), is(newFirstName));
     }
 
@@ -141,9 +144,12 @@ public class CaseAggregateDefendantTest {
                 defaultDefendantData().withNewDateOfBirth(null).withNewLastName(newLastName)
         );
 
-        assertThat(events.size(), is(1));
+        assertThat(events.size(), is(2));
 
-        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(0);
+        final DefendantPersonalNameUpdated personalNameUpdated = (DefendantPersonalNameUpdated) events.get(0);
+        assertThat(personalNameUpdated.getNewPersonalName().getLastName(), is(newLastName));
+
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(1);
         assertThat(defendantDetailsUpdated.getLastName(), is(newLastName));
     }
 

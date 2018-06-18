@@ -6,9 +6,8 @@ import static java.util.UUID.randomUUID;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -30,10 +29,8 @@ import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_ASSIGNED_PRIVATE_EVENT;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_ASSIGNED_PUBLIC_EVENT;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_NOT_ASSIGNED_EVENT;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.DELEGATED_POWERS_SESSION_ENDED_EVENT;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.MAGISTRATE_SESSION_STARTED_EVENT;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignmentAsync;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAsync;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
@@ -43,9 +40,11 @@ import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestCancelHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
+import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
@@ -57,10 +56,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
-
-import javax.json.JsonObject;
 
 import org.junit.After;
 import org.junit.Before;
@@ -227,12 +225,15 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         sessionIdByUserId
                 .entrySet()
                 .parallelStream()
-                .forEach(sessionByUser -> startSession(sessionByUser.getValue(), sessionByUser.getKey(), LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE));
+                .forEach(sessionByUser -> startSessionAsync(sessionByUser.getValue(), sessionByUser.getKey(), LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE));
 
         final Map<UUID, UUID> assignedCaseByUserId = sessionIdByUserId
                 .entrySet()
                 .parallelStream()
-                .map((entry) -> assignCaseAndGetEventPayload(entry.getKey(), entry.getValue()))
+                .map(entry -> AssignmentHelper.requestCaseAssignment(entry.getValue(), entry.getKey()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(JsonEnvelope::payloadAsJsonObject)
                 .collect(toMap(assignment -> UUID.fromString(assignment.getString("assigneeId")), assignment -> UUID.fromString(assignment.getString("caseId"))));
 
         assertThat(assignedCaseByUserId.keySet(), containsInAnyOrder(sessionIdByUserId.keySet().toArray()));
@@ -243,32 +244,31 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         );
     }
 
-    private void verifyCaseAssignedFromMagistrateSession(final String courtHouseOUCode, final UUID caseId) {
+    private static void verifyCaseAssignedFromMagistrateSession(final String courtHouseOUCode, final UUID caseId) {
         verifyCaseAssigned(courtHouseOUCode, MAGISTRATE, caseId);
     }
 
-    private void verifyCaseAssignedFromDelegatedPowersSession(final String courtHouseOUCode, final UUID caseId) {
+    private static void verifyCaseAssignedFromDelegatedPowersSession(final String courtHouseOUCode, final UUID caseId) {
         verifyCaseAssigned(courtHouseOUCode, DELEGATED_POWERS, caseId);
     }
 
-    private void verifyCaseNotFoundInMagistrateSession(final String courtHouseOUCode) {
+    private static void verifyCaseNotFoundInMagistrateSession(final String courtHouseOUCode) {
         verifyCaseNotFound(courtHouseOUCode, MAGISTRATE);
     }
 
-    private void verifyCaseNotFoundInDelegatedPowersSession(final String courtHouseOUCode) {
+    private static void verifyCaseNotFoundInDelegatedPowersSession(final String courtHouseOUCode) {
         verifyCaseNotFound(courtHouseOUCode, DELEGATED_POWERS);
     }
 
-    private void verifyCaseAssigned(final String courtHouseOUCode, final SessionType sessionType, final UUID caseId) {
+    private static void verifyCaseAssigned(final String courtHouseOUCode, final SessionType sessionType, final UUID caseId) {
         final UUID sessionId = randomUUID();
         final UUID userId = randomUUID();
 
-        startSessionAndWaitForSuccess(courtHouseOUCode, sessionType, sessionId, userId);
+        SessionHelper.startSession(sessionId, userId, courtHouseOUCode, sessionType);
 
-        EventListener assignmentRunner = new EventListener()
-                .subscribe(CASE_ASSIGNED_PRIVATE_EVENT)
-                .subscribe(CASE_ASSIGNED_PUBLIC_EVENT)
-                .run(() -> requestCaseAssignment(sessionId, userId));
+        final EventListener assignmentRunner = new EventListener()
+                .subscribe(CASE_ASSIGNED_PRIVATE_EVENT, CASE_ASSIGNED_PUBLIC_EVENT)
+                .run(() -> requestCaseAssignmentAsync(sessionId, userId));
 
         final JsonEnvelope caseAssignedPrivateEvent = assignmentRunner.popEvent(CASE_ASSIGNED_PRIVATE_EVENT).get();
 
@@ -288,37 +288,18 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
                 jsonEnvelope(
                         metadata().withName(CASE_ASSIGNED_PUBLIC_EVENT),
                         payload().isJson(withJsonPath("$.caseId", equalTo(caseId.toString())))));
+
+        assertThat(AssignmentHelper.isCaseAssignedToUser(caseId, userId), is(true));
     }
 
-    private void verifyCaseNotFound(final String courtHouseOUCode, final SessionType sessionType) {
+    private static void verifyCaseNotFound(final String courtHouseOUCode, final SessionType sessionType) {
         final UUID sessionId = randomUUID();
         final UUID userId = randomUUID();
 
-        startSessionAndWaitForSuccess(courtHouseOUCode, sessionType, sessionId, userId);
+        SessionHelper.startSession(sessionId, userId, courtHouseOUCode, sessionType);
 
-        final JsonEnvelope assignedEvent = new EventListener()
-                .subscribe(CASE_NOT_ASSIGNED_EVENT)
-                .run(() -> requestCaseAssignment(sessionId, userId))
-                .popEvent(CASE_NOT_ASSIGNED_EVENT)
-                .get();
+        final Optional<JsonEnvelope> assignedEvent = AssignmentHelper.requestCaseAssignmentAndWaitForEvent(sessionId, userId, CASE_NOT_ASSIGNED_EVENT);
 
-        assertThat(assignedEvent, not(nullValue()));
+        assertThat(assignedEvent.isPresent(), is(true));
     }
-
-    private void startSessionAndWaitForSuccess(String courtHouseOUCode, SessionType sessionType, UUID sessionId, UUID userId) {
-        String expectedEvent = sessionType == SessionType.MAGISTRATE ? MAGISTRATE_SESSION_STARTED_EVENT : DELEGATED_POWERS_SESSION_ENDED_EVENT;
-        new EventListener()
-                .subscribe(expectedEvent)
-                .run(() -> startSession(sessionId, userId, courtHouseOUCode, sessionType));
-    }
-
-    private static JsonObject assignCaseAndGetEventPayload(UUID userId, UUID sessionId) {
-        return new EventListener()
-                .subscribe(CASE_ASSIGNED_PRIVATE_EVENT)
-                .run(() -> requestCaseAssignment(sessionId, userId))
-                .popEvent(CASE_ASSIGNED_PRIVATE_EVENT)
-                .get()
-                .payloadAsJsonObject();
-    }
-
 }

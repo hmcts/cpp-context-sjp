@@ -2,9 +2,8 @@ package uk.gov.moj.sjp.it.test;
 
 import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_ASSIGNED_PRIVATE_EVENT;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.assertCaseUnassigned;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.DELEGATED_POWERS_SESSION_STARTED_EVENT;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAddAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
@@ -17,8 +16,6 @@ import static uk.gov.moj.sjp.it.util.ActivitiHelper.pollUntilProcessExists;
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.helper.AssignmentHelper;
-import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
@@ -82,15 +79,7 @@ public class AssignmentTimeoutIT extends BaseIntegrationTest {
     }
 
     private static void startSession(final UUID sessionId, final UUID userId) {
-        new EventListener()
-                .subscribe(DELEGATED_POWERS_SESSION_STARTED_EVENT)
-                .run(() -> SessionHelper.startMagistrateSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, "John Smith"));
-    }
-
-    private static void requestCaseAssignment(final UUID sessionId, final UUID userId) {
-        new EventListener()
-                .subscribe(CASE_ASSIGNED_PRIVATE_EVENT)
-                .run(() -> AssignmentHelper.requestCaseAssignment(sessionId, userId));
+        SessionHelper.startMagistrateSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, "John Smith");
     }
 
     private static void saveDecision(final UUID caseId) {

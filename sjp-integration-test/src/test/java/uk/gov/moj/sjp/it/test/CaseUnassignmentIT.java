@@ -6,15 +6,13 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.Constants.EVENT_CASE_MARKED_READY_FOR_DECISION;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_ASSIGNED_PRIVATE_EVENT;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_UNASSIGNED_EVENT;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.getCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.isCaseAssignedToUser;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseUnassignment;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.MAGISTRATE_SESSION_STARTED_EVENT;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSession;
 
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
@@ -24,6 +22,7 @@ import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -65,22 +64,15 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
                 .subscribe(EVENT_CASE_MARKED_READY_FOR_DECISION)
                 .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder));
 
-        final JsonObject sessionStartedEvent = eventListener
-                .reset()
-                .subscribe(MAGISTRATE_SESSION_STARTED_EVENT)
-                .run(() -> startMagistrateSession(sessionId, userId, COURT_HOUSE_OU_CODE, magistrate))
-                .popEvent(MAGISTRATE_SESSION_STARTED_EVENT)
-                .get().payloadAsJsonObject();
+        final Optional<JsonEnvelope> sessionStartedEvent = startMagistrateSession(sessionId, userId, COURT_HOUSE_OU_CODE, magistrate);
 
-        assertThat(UUID.fromString(sessionStartedEvent.getString("sessionId")), equalTo(sessionId));
+        assertThat(sessionStartedEvent.isPresent(), is(true));
+        assertThat(UUID.fromString(sessionStartedEvent.get().payloadAsJsonObject().getString("sessionId")), equalTo(sessionId));
 
-        final JsonObject caseAssignedPrivateEvent = new EventListener()
-                .subscribe(CASE_ASSIGNED_PRIVATE_EVENT)
-                .run(() -> requestCaseAssignment(sessionId, userId))
-                .popEvent(CASE_ASSIGNED_PRIVATE_EVENT)
-                .get().payloadAsJsonObject();
+        final Optional<JsonEnvelope> caseAssignedPrivateEvent = AssignmentHelper.requestCaseAssignment(sessionId, userId);
 
-        final UUID caseIdActual = UUID.fromString(caseAssignedPrivateEvent.getString("caseId"));
+        assertThat(caseAssignedPrivateEvent.isPresent(), is(true));
+        final UUID caseIdActual = UUID.fromString(caseAssignedPrivateEvent.get().payloadAsJsonObject().getString("caseId"));
         assertThat(caseId, equalTo(caseIdActual));
         assertThat(isCaseAssignedToUser(caseId, userId), is(true));
     }

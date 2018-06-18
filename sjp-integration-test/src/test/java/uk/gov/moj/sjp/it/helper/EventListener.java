@@ -65,8 +65,10 @@ public class EventListener {
         return this;
     }
 
-    public EventListener subscribe(String eventName) {
-        this.eventsByName.putIfAbsent(eventName, new LinkedList<>());
+    public EventListener subscribe(final String... eventNames) {
+        for (String eventName : eventNames) {
+            this.eventsByName.putIfAbsent(eventName, new LinkedList<>());
+        }
         return this;
     }
 

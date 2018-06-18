@@ -110,7 +110,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     @Test
     public void shouldCaseBePendingDatesToAvoidForPleaChangeScenarios() {
         try (final CancelPleaHelper cancelPleaHelper = new CancelPleaHelper(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(),
-                     EVENT_SELECTOR_PLEA_CANCELLED, PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED)
+                EVENT_SELECTOR_PLEA_CANCELLED, PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED)
         ) {
             //checks that dates-to-avoid is pending submission when NOT_GUILTY plea submitted
             updatePleaToNotGuilty(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), updatePleaHelper);
@@ -125,8 +125,8 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
             updatePleaToNotGuilty(tflCaseBuilder.getId(), tflCaseBuilder.getOffenceId(), updatePleaHelper);
             assertThatDatesToAvoidIsPendingSubmissionForCase(tflUserId, tflCaseBuilder);
 
-            UUID sessionId = randomUUID();
-            UUID userId = randomUUID();
+            final UUID sessionId = randomUUID();
+            final UUID userId = randomUUID();
 
             //checks that dates-to-avoid NOT pending submission when case in session
             addDatesToAvoid(tflCaseBuilder.getId(), DATE_TO_AVOID);
@@ -134,6 +134,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
             SessionHelper.startSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, DELEGATED_POWERS);
             AssignmentHelper.requestCaseAssignment(sessionId, userId);
+
             assertThatNumberOfCasesPendingDatesToAvoidIsAccurate(tflUserId, tflInitialPendingDatesToAvoidCount);
         }
     }

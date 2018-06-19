@@ -210,6 +210,7 @@ public class CaseAggregate implements Aggregate {
             event = new CaseReceived(
                     aCase.getId(),
                     aCase.getUrn(),
+                    aCase.getEnterpriseId(),
                     aCase.getProsecutingAuthority(),
                     aCase.getCosts(),
                     aCase.getPostingDate(),
@@ -935,7 +936,7 @@ public class CaseAggregate implements Aggregate {
                 sjpCaseCreated.getNumPreviousConvictions(),
                 sjpCaseCreated.getOffences());
 
-        return new CaseReceived(UUID.fromString(sjpCaseCreated.getId()), sjpCaseCreated.getUrn(),
+        return new CaseReceived(UUID.fromString(sjpCaseCreated.getId()), sjpCaseCreated.getUrn(), null,
                 sjpCaseCreated.getProsecutingAuthority(), sjpCaseCreated.getCosts(), sjpCaseCreated.getPostingDate(),
                 defendant, sjpCaseCreated.getCreatedOn());
     }

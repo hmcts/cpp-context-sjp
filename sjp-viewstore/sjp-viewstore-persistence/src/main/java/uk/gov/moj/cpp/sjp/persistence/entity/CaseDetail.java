@@ -145,6 +145,7 @@ public class CaseDetail implements Serializable {
 
     public CaseDetail(final UUID id,
                       final String urn,
+                      final String enterpriseId,
                       final ProsecutingAuthority prosecutingAuthority,
                       final String initiationCode,
                       final Boolean completed,
@@ -152,6 +153,7 @@ public class CaseDetail implements Serializable {
                       final ZonedDateTime createdOn, final DefendantDetail defendantDetail, final BigDecimal costs, final LocalDate postingDate) {
         this(id);
         this.urn = urn;
+        this.enterpriseId = enterpriseId;
         this.prosecutingAuthority = prosecutingAuthority == null ? null : prosecutingAuthority.name();
         this.initiationCode = initiationCode;
         this.completed = completed;

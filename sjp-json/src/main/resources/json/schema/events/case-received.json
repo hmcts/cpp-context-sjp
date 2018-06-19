@@ -6,6 +6,9 @@
     "caseId": {
       "type": "string"
     },
+    "enterpriseId": {
+      "type": "string"
+    },
     "urn": {
       "type": "string"
     },

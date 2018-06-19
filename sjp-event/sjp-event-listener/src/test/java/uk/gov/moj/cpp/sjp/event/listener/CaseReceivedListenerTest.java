@@ -35,6 +35,7 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -72,6 +73,7 @@ public class CaseReceivedListenerTest {
     private static final UUID caseId = UUID.randomUUID();
     private static final ProsecutingAuthority prosecutingAuthority = TFL;
     private static final String urn = prosecutingAuthority.name() + "1234";
+    private static final String enterpriseId = RandomStringUtils.randomAlphanumeric(12).toUpperCase();
     private static final BigDecimal costs = BigDecimal.valueOf(12.23);
     private static final LocalDate postingDate = LocalDate.of(2017, 1, 1);
     private static final UUID defendantId = UUID.randomUUID();
@@ -134,6 +136,7 @@ public class CaseReceivedListenerTest {
         final CaseDetail expectedCaseDetail = new CaseDetail(
                 caseId,
                 urn,
+                enterpriseId,
                 prosecutingAuthority,
                 null,
                 false,

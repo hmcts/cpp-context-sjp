@@ -20,6 +20,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class CreateCase {
     private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.create-sjp-case+json";
@@ -65,6 +66,7 @@ public class CreateCase {
 
         payload.add("id", payloadBuilder.id.toString());
         payload.add("urn", payloadBuilder.urn);
+        payload.add("enterpriseId", payloadBuilder.enterpriseId);
         payload.add("ptiUrn", payloadBuilder.urn);
         payload.add("prosecutingAuthority", payloadBuilder.prosecutingAuthority.name());
         payload.add("initiationCode", "J");
@@ -117,6 +119,7 @@ public class CreateCase {
     public static class CreateCasePayloadBuilder {
         private UUID id;
         private String urn;
+        private String enterpriseId;
         private ProsecutingAuthority prosecutingAuthority;
         private BigDecimal costs;
         private LocalDate postingDate;
@@ -131,6 +134,7 @@ public class CreateCase {
             this.offenceBuilders = Lists.newArrayList(OffenceBuilder.withDefaults());
             this.id = UUID.randomUUID();
             this.urn = UrnProvider.generate(prosecutingAuthority);
+            this.enterpriseId = RandomStringUtils.randomAlphanumeric(12).toUpperCase();
             this.getOffenceBuilder().withId(UUID.randomUUID());
         }
 
@@ -189,6 +193,9 @@ public class CreateCase {
             return urn;
         }
 
+        public String getEnterpriseId() {
+            return enterpriseId;
+        }
     }
 
     public static class DefendantBuilder {

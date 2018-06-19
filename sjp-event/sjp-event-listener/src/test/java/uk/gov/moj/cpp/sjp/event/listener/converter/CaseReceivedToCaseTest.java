@@ -27,22 +27,22 @@ public class CaseReceivedToCaseTest {
 
     private final CaseReceivedToCase caseConverter = new CaseReceivedToCase();
 
-    private DefendantToDefendantDetails defendantToDefendantDetails = new DefendantToDefendantDetails(null);
+    private final DefendantToDefendantDetails defendantToDefendantDetails = new DefendantToDefendantDetails(null);
 
     @Test
     public void shouldCaseReceivedToCase() {
-        CaseReceived event = buildCaseReceived();
+        final CaseReceived event = buildCaseReceived();
 
-        CaseDetail actualCaseDetails = caseConverter.convert(event);
+        final CaseDetail actualCaseDetails = caseConverter.convert(event);
 
-        CaseDetail expectedCaseDetails = buildExpectedCaseDetail(event);
+        final CaseDetail expectedCaseDetails = buildExpectedCaseDetail(event);
 
         assertThat(actualCaseDetails.getDefendant().getCaseDetail(), is(actualCaseDetails));
 
         assertTrue(reflectionEquals(actualCaseDetails, expectedCaseDetails, "defendant"));
 
-        DefendantDetail actualDefendantDetail = actualCaseDetails.getDefendant();
-        DefendantDetail expectedDefendantDetail = expectedCaseDetails.getDefendant();
+        final DefendantDetail actualDefendantDetail = actualCaseDetails.getDefendant();
+        final DefendantDetail expectedDefendantDetail = expectedCaseDetails.getDefendant();
 
         assertTrue(reflectionEquals(actualDefendantDetail, expectedDefendantDetail, "caseDetail", "personalDetails", "offences"));
 
@@ -54,8 +54,11 @@ public class CaseReceivedToCaseTest {
         actualDefendantDetail.getOffences().forEach(o -> assertThat(o.getDefendantDetail(), is(actualDefendantDetail)));
     }
 
-    private CaseDetail buildExpectedCaseDetail(CaseReceived event) {
-        return new CaseDetail(event.getCaseId(), event.getUrn(),
+    private CaseDetail buildExpectedCaseDetail(final CaseReceived event) {
+        return new CaseDetail(
+                event.getCaseId(),
+                event.getUrn(),
+                event.getEnterpriseId(),
                 event.getProsecutingAuthority(),
                 null,
                 false,
@@ -67,17 +70,17 @@ public class CaseReceivedToCaseTest {
     }
 
     private static CaseReceived buildCaseReceived() {
-        Offence offence = new Offence(UUID.randomUUID(), 1, "PS00001",
+        final Offence offence = new Offence(UUID.randomUUID(), 1, "PS00001",
                 LocalDate.of(2016, 1, 1), 6,
                 LocalDate.of(2016, 1, 2), "Committed some offence",
                 "Prosecution facts", "Witness statement", BigDecimal.ONE);
 
-        Defendant defendant = new Defendant(randomUUID(), "Mr", "Roger", "Smith",
+        final Defendant defendant = new Defendant(randomUUID(), "Mr", "Roger", "Smith",
                 LocalDate.of(1980, 1, 1), "M",
                 new Address("a1", "a2", "a3", "a4", "pc"),
                 30, singletonList(offence));
 
-        return new CaseReceived(UUID.randomUUID(), "TFL243179", TFL, BigDecimal.valueOf(33.5),
+        return new CaseReceived(UUID.randomUUID(), "TFL243179", "2K2SLYFC743H", TFL, BigDecimal.valueOf(33.5),
                 LocalDate.of(2016, 1, 3), defendant, ZonedDateTime.now(UTC));
     }
 

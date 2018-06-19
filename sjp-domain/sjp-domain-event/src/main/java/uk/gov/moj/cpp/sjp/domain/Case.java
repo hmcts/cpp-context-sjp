@@ -11,6 +11,7 @@ public class Case {
 
     private UUID id;
     private String urn;
+    private String enterpriseId;
     private String ptiUrn;
     private String initiationCode;
     private String summonsCode;
@@ -26,6 +27,7 @@ public class Case {
     @JsonCreator
     public Case(@JsonProperty("id") UUID id,
                 @JsonProperty("urn") String urn,
+                @JsonProperty("enterpriseId") String enterpriseId,
                 @JsonProperty("ptiUrn") String ptiUrn,
                 @JsonProperty("prosecutingAuthority") ProsecutingAuthority prosecutingAuthority,
                 @JsonProperty("initiationCode") String initiationCode,
@@ -39,6 +41,7 @@ public class Case {
                 @JsonProperty("defendant") Defendant defendant) {
         this.id = id;
         this.urn = urn;
+        this.enterpriseId = enterpriseId;
         this.ptiUrn = ptiUrn;
         this.initiationCode = initiationCode;
         this.summonsCode = summonsCode;
@@ -52,12 +55,16 @@ public class Case {
         this.defendant = defendant;
     }
 
+    public UUID getId() {
+        return id;
+    }
+
     public String getUrn() {
         return urn;
     }
 
-    public UUID getId() {
-        return id;
+    public String getEnterpriseId() {
+        return enterpriseId;
     }
 
     public String getPtiUrn() {

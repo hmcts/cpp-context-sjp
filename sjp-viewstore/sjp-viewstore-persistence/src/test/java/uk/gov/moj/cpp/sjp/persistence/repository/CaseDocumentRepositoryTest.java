@@ -17,6 +17,7 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class CaseDocumentRepositoryTest extends BaseTransactionalTest {
     @Test
     public void findCaseDocuments() {
         //when
-        List<CaseDocument> caseDocuments = caseDocumentRepository
+        final List<CaseDocument> caseDocuments = caseDocumentRepository
                 .findCaseDocumentsOrderedByAddedByDescending(
                         addedAt_2017_01_01, addedAt_2017_01_10,
                         CaseDocument.RESULT_ORDER_DOCUMENT_TYPE);
@@ -62,12 +63,12 @@ public class CaseDocumentRepositoryTest extends BaseTransactionalTest {
         assertEquals(DOCUMENT_NUMBER, caseDocument.getDocumentNumber());
     }
 
-    private void addCaseDocument(ZonedDateTime addedAt) {
+    private void addCaseDocument(final ZonedDateTime addedAt) {
 
-        DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null, 1);
-        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234567", ProsecutingAuthority.TFL, null, null, null, null, defendantDetail, null, LocalDate.now());
+        final DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null, 1);
+        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234567", RandomStringUtils.randomAlphanumeric(12).toUpperCase(), ProsecutingAuthority.TFL, null, null, null, null, defendantDetail, null, LocalDate.now());
         caseDetail.setDefendant(defendantDetail);
-        CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
+        final CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
                 addedAt, caseDetail.getId(), DOCUMENT_NUMBER);
 

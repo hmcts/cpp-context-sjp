@@ -20,13 +20,11 @@ import org.junit.Test;
  */
 public class CreateCaseIT extends BaseIntegrationTest {
 
-
     @Test
     public void shouldAssociateEnterpriseIdWithCase() {
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
-        
 
-        try (CaseReceivedMQVerifier caseReceivedMQVerifier = new CaseReceivedMQVerifier()) {
+        try (final CaseReceivedMQVerifier caseReceivedMQVerifier = new CaseReceivedMQVerifier()) {
             CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
             caseReceivedMQVerifier.verifyInPrivateActiveMQ(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getUrn());
         }
@@ -35,6 +33,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
 
         assertThat(jsonResponse.get("id"), equalTo(createCasePayloadBuilder.getId().toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCasePayloadBuilder.getUrn()));
+        assertThat(jsonResponse.get("enterpriseId"), equalTo(createCasePayloadBuilder.getEnterpriseId()));
         assertThat(jsonResponse.get("defendant.personalDetails.title"), equalTo(createCasePayloadBuilder.getDefendantBuilder().getTitle()));
         assertThat(jsonResponse.get("defendant.personalDetails.firstName"), equalTo(createCasePayloadBuilder.getDefendantBuilder().getFirstName()));
         assertThat(jsonResponse.get("defendant.personalDetails.lastName"), equalTo(createCasePayloadBuilder.getDefendantBuilder().getLastName()));

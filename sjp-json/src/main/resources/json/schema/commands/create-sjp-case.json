@@ -4,50 +4,42 @@
   "type": "object",
   "properties": {
     "urn": {
-      "id": "/urn",
       "type": "string"
     },
     "id": {
-      "id": "/id",
+      "type": "string"
+    },
+    "enterpriseId": {
       "type": "string"
     },
     "ptiUrn": {
-      "id": "/ptiUrn",
       "type": "string"
     },
     "prosecutingAuthority": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/prosecuting-authority.json"
     },
     "initiationCode": {
-      "id": "/initiationCode",
       "type": "string"
     },
     "summonsCode": {
-      "id": "/summonsCode",
       "type": "string"
     },
     "libraOriginatingOrg": {
-      "id": "/libraOriginatingOrg",
       "type": "string"
     },
     "libraHearingLocation": {
-      "id": "/libraHearingLocation",
       "type": "string"
     },
     "dateOfHearing": {
-      "id": "/dateOfHearing",
       "type": "string"
     },
     "timeOfHearing": {
-      "id": "/timeOfHearing",
       "type": "string"
     },
     "costs": {
-      "id": "/costs",
       "type": "number"
     },
     "postingDate": {
-      "id": "/postingDate",
       "type": "string"
     },
     "defendant": {

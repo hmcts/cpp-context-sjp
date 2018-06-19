@@ -57,6 +57,7 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -500,7 +501,7 @@ public class PleadOnlineTest {
 
     private Case createTestCase() {
         final Offence offence = new Offence(UUID.randomUUID(), 1, null, null, 1, null, null, null, null, null);
-        return new Case(UUID.randomUUID(), "TFL123456", null, ProsecutingAuthority.TFL, "J", null, null, null, null, null, null, null,
+        return new Case(UUID.randomUUID(), "TFL123456", RandomStringUtils.randomAlphanumeric(12).toUpperCase(), null, ProsecutingAuthority.TFL, "J", null, null, null, null, null, null, null,
                 new Defendant(UUID.randomUUID(), null, PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_DOB, null,
                         new Address(PERSON_ADDRESS_1, PERSON_ADDRESS_2, PERSON_ADDRESS_3, PERSON_ADDRESS_4, PERSON_POSTCODE), 1, new ArrayList<>(asList(offence))));
     }

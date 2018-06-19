@@ -129,6 +129,7 @@ public class UpdateDefendantDetailsTest {
                 new Case(
                         UUID.randomUUID(),
                         "URN",
+                        "enterpriseId",
                         "ptiUrn",
                         ProsecutingAuthority.TFL,
                         "J",

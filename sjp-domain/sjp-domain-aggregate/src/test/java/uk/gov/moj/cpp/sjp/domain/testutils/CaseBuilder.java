@@ -16,6 +16,7 @@ import java.util.UUID;
 public class CaseBuilder {
 
     public static final String URN = "urnValue";
+    public static final String ENTERPRISE_ID = "enterpriseIdValue";
     public static final String PTI_URN = "ptiUrnValue";
     public static final String INITIATION_CODE = "J";
     public static final String SUMMONS_CODE = "M";
@@ -33,6 +34,7 @@ public class CaseBuilder {
 
     private UUID id;
     private String urn;
+    private String enterpriseId;
     private String ptiUrn;
     private String initiationCode;
     private String summonsCode;
@@ -46,6 +48,7 @@ public class CaseBuilder {
     private CaseBuilder() {
         id = DefaultTestData.CASE_ID;
         urn = URN;
+        enterpriseId = ENTERPRISE_ID;
         ptiUrn = PTI_URN;
         initiationCode = INITIATION_CODE;
         summonsCode = SUMMONS_CODE;
@@ -70,6 +73,7 @@ public class CaseBuilder {
     public Case build() {
         return new Case(id,
                 urn,
+                enterpriseId,
                 ptiUrn,
                 prosecutingAuthority,
                 initiationCode,

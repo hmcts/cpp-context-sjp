@@ -15,10 +15,13 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.commons.lang3.RandomStringUtils;
+
 public class CaseDetailBuilder {
 
     private UUID id = UUID.randomUUID();
     private String urn = id.toString().toUpperCase();
+    private String enterpriseId = RandomStringUtils.randomAlphanumeric(12).toUpperCase();
     private ProsecutingAuthority prosecutingAuthority;
     private Set<CaseDocument> caseDocuments = new LinkedHashSet<>();
     private DefendantDetail defendant;
@@ -110,6 +113,7 @@ public class CaseDetailBuilder {
         CaseDetail caseDetail = new CaseDetail(
                 id,
                 urn,
+                enterpriseId,
                 prosecutingAuthority,
                 initiationCode,
                 completed,

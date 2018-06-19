@@ -37,6 +37,10 @@ import javax.json.JsonObject;
 @ServiceComponent(EVENT_PROCESSOR)
 public class AssignmentProcessor {
 
+    public static final String PUBLIC_SJP_CASE_ASSIGNED = "public.sjp.case-assigned";
+    public static final String PUBLIC_SJP_CASE_NOT_ASSIGNED = "public.sjp.case-not-assigned";
+    public static final String PUBLIC_SJP_CASE_ASSIGNMENT_REJECTED = "public.sjp.case-assignment-rejected";
+
     private static final Duration CASE_TIMEOUT_DURATION = Duration.ofMinutes(60);
 
     @Inject
@@ -76,7 +80,7 @@ public class AssignmentProcessor {
                 .add(REASON, caseAssignmentRejectedEvent.payloadAsJsonObject().getString(REASON))
                 .build();
 
-        sender.send(enveloper.withMetadataFrom(caseAssignmentRejectedEvent, "public.sjp.case-assignment-rejected")
+        sender.send(enveloper.withMetadataFrom(caseAssignmentRejectedEvent, PUBLIC_SJP_CASE_ASSIGNMENT_REJECTED)
                 .apply(publicEventPayload));
     }
 
@@ -130,7 +134,7 @@ public class AssignmentProcessor {
     }
 
     private void emitCaseNotAssignedPublicEvent(final JsonEnvelope envelope) {
-        sender.send(enveloper.withMetadataFrom(envelope, "public.sjp.case-not-assigned")
+        sender.send(enveloper.withMetadataFrom(envelope, PUBLIC_SJP_CASE_NOT_ASSIGNED)
                 .apply(createObjectBuilder().build()));
     }
 
@@ -139,7 +143,7 @@ public class AssignmentProcessor {
                 .add(CASE_ID, caseId.toString())
                 .build();
 
-        sender.send(enveloper.withMetadataFrom(event, "public.sjp.case-assigned")
+        sender.send(enveloper.withMetadataFrom(event, PUBLIC_SJP_CASE_ASSIGNED)
                 .apply(publicEventPayload));
     }
 

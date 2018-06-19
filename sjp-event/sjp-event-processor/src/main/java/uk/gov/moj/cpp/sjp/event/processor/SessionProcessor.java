@@ -24,6 +24,8 @@ import javax.json.JsonObject;
 @ServiceComponent(EVENT_PROCESSOR)
 public class SessionProcessor {
 
+    public static final String PUBLIC_SJP_SESSION_STARTED = "public.sjp.session-started";
+
     @Inject
     private Sender sender;
 
@@ -86,6 +88,6 @@ public class SessionProcessor {
                 .add("type", sessionType.name())
                 .build();
 
-        sender.send(enveloper.withMetadataFrom(event, "public.sjp.session-started").apply(payload));
+        sender.send(enveloper.withMetadataFrom(event, PUBLIC_SJP_SESSION_STARTED).apply(payload));
     }
 }

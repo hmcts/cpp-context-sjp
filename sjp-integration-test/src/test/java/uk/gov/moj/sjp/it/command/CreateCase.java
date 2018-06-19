@@ -22,6 +22,7 @@ import javax.json.JsonObjectBuilder;
 import com.google.common.collect.Lists;
 
 public class CreateCase {
+
     private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.create-sjp-case+json";
     private final CreateCasePayloadBuilder payloadBuilder;
 

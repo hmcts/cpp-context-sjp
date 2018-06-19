@@ -35,11 +35,6 @@ import org.hamcrest.Matcher;
 
 public class SessionHelper {
 
-    public static final String SESSION_STARTED_PUBLIC_EVENT = "public.sjp.session-started";
-    public static final String MAGISTRATE_SESSION_STARTED_EVENT = "sjp.events.magistrate-session-started";
-    public static final String DELEGATED_POWERS_SESSION_STARTED_EVENT = "sjp.events.delegated-powers-session-started";
-    public static final String DELEGATED_POWERS_SESSION_ENDED_EVENT = DelegatedPowersSessionEnded.EVENT_NAME;
-
     private static final EnumMap<SessionType, String> SESSION_CREATED_EVENT_NAME_BY_SESSION_TYPE = new EnumMap(SessionType.class);
 
     static {

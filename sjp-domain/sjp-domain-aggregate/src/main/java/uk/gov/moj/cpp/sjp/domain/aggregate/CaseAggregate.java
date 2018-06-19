@@ -869,6 +869,7 @@ public class CaseAggregate implements Aggregate {
                 when(CaseNotReopened.class).apply(e -> {
                     //nothing to update
                 }),
+                // Old event
                 when(EnterpriseIdAssociated.class).apply(e -> {
                     //nothing to update
                 }),

@@ -6,7 +6,9 @@ import java.util.UUID;
 
 /**
  * Event: Signifies that an Enterprise ID has been associated with a Case.
+ * @deprecated Enterprise ID now included in CaseReceived event
  */
+@Deprecated
 @Event("sjp.events.enterprise-id-associated")
 public class EnterpriseIdAssociated {
 

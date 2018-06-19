@@ -1,13 +1,9 @@
 package uk.gov.moj.sjp.it.test;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import uk.gov.justice.services.common.converter.LocalDates;
-import uk.gov.moj.sjp.it.command.AssociateEnterpriseId;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.verifier.CaseReceivedMQVerifier;
@@ -50,16 +46,5 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("defendant.offences[0].offenceSequenceNumber"), equalTo(1)); //supporting only one - 1st 
         assertThat(jsonResponse.get("defendant.offences[0].wording"), equalTo(createCasePayloadBuilder.getOffenceBuilder().getOffenceWording()));
         assertThat(jsonResponse.get("defendant.offences[0].chargeDate"), equalTo(LocalDates.to(createCasePayloadBuilder.getOffenceBuilder().getChargeDate())));
-
-        final String enterpriseId = "2K2SLYFC743H";
-        AssociateEnterpriseId associateCommand = new AssociateEnterpriseId(enterpriseId, createCasePayloadBuilder.getId());
-        associateCommand.associateEnterpriseIdWIthCase();
-
-        CasePoller.pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId(),
-                allOf(
-                        withJsonPath("$.urn", is(createCasePayloadBuilder.getUrn())),
-                        withJsonPath("$.enterpriseId", is(enterpriseId))
-                )
-        );
     }
 }

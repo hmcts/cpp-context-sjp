@@ -26,30 +26,6 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
-/cases/{caseId}:
-  uriParameters:
-    caseId:
-      description: The ID of the case for which enterprise id is attached
-  post:
-    description: |
-      Associate an enterprise ID with an existing case.
-      ...
-      (mapping):
-          requestType: application/vnd.enterprise-id+json
-          name: sjp.associate-enterprise-id
-      ...
-    body:
-      application/vnd.enterprise-id+json:
-        example:
-          !include json/enterprise-id.json
-        schema:
-          !include json/schema/enterprise-id.json
-    responses:
-      202:
-        description: Accepted
-      500:
-        description: Internal Server Error
-
 /cases/{caseId}/defendant/{defendantId}/financial-means:
   uriParameters:
     caseId:

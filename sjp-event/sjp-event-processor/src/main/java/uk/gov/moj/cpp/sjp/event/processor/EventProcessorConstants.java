@@ -10,7 +10,6 @@ public class EventProcessorConstants {
     public static final String ASSIGNEE_ID = "assigneeId";
     public static final String PLEA = "plea";
     public static final String POSTING_DATE = "postingDate";
-    public static final String ENTERPRISE_ID = "enterpriseId";
     public static final String CASE_DOCUMENT = "caseDocument";
     public static final String MATERIAL_ID = "materialId";
     public static final String DOCUMENT_REFERENCE = "documentReference";

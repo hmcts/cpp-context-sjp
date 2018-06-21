@@ -28,7 +28,9 @@ public class SjpDatabaseCleaner {
                 "case_document",
                 "defendant",
                 "online_plea",
-                "case_details"
+                "session",
+                "case_details",
+                "ready_cases"
         );
     }
 

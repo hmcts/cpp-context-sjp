@@ -34,7 +34,7 @@ public class CaseReopenedTest extends CaseAggregateBaseTest {
     public void setupCaseReopenDetails() {
         super.setUp();
         caseReopenDetails = new CaseReopenDetails(
-                caseAggregate.getCaseId().toString(),
+                caseAggregate.getCaseId(),
                 LocalDates.from(REOPENED_DATE),
                 LIBRA_CASE_NUMBER,
                 REASON
@@ -121,7 +121,7 @@ public class CaseReopenedTest extends CaseAggregateBaseTest {
     }
 
     private void assertCaseReopenedDetails(CaseReopenDetails caseReopenDetails) {
-        assertEquals(aCase.getId().toString(), caseReopenDetails.getCaseId());
+        assertEquals(aCase.getId(), caseReopenDetails.getCaseId());
         assertEquals(LIBRA_CASE_NUMBER, caseReopenDetails.getLibraCaseNumber());
         assertEquals(REOPENED_DATE, caseReopenDetails.getReopenedDate().toString());
         assertEquals(REASON, caseReopenDetails.getReason());

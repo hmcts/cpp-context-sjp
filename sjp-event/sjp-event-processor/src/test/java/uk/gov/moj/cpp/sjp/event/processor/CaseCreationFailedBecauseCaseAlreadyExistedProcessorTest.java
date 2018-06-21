@@ -41,7 +41,7 @@ public class CaseCreationFailedBecauseCaseAlreadyExistedProcessorTest {
     private Enveloper envelopers = createEnveloper();
 
     @Test
-    public void publish() throws Exception {
+    public void publish() {
         //given
         final String URN = "urn";
 

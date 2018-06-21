@@ -47,10 +47,10 @@ public class UserAndGroupsServiceTest {
 
     private JsonEnvelope setupMocksAndStubData(String[] userGroupNames) {
         final JsonArrayBuilder groupsArray = Json.createArrayBuilder();
-        Arrays.stream(userGroupNames).forEach(userGroup -> {
+        Arrays.stream(userGroupNames).forEach(userGroup ->
             groupsArray.add(createObjectBuilder().add("groupId", UUID.randomUUID().toString())
-                    .add("groupName", userGroup));
-        });
+                    .add("groupName", userGroup))
+        );
 
         final JsonObject groupsPayload = createObjectBuilder()
                 .add("groups", groupsArray).build();
@@ -90,7 +90,7 @@ public class UserAndGroupsServiceTest {
     }
 
     @Test
-    public void isSjpProsecutorWhenUserIsLegalAdvisorUserGroupOnly() {
+    public void isSjpProsecutorWhenUserIsLegalAdviserUserGroupOnly() {
         String[] userGroupNames = { "Legal Advisers" };
         final JsonEnvelope originalEnvelope = setupMocksAndStubData(userGroupNames);
 
@@ -117,7 +117,7 @@ public class UserAndGroupsServiceTest {
     }
 
     @Test
-    public void isSjpProsecutorWhenUserHasTflAndLegalAdvisorUserGroups() {
+    public void isSjpProsecutorWhenUserHasTflAndLegalAdviserUserGroups() {
         String[] userGroupNames = { "TFL Prosecutors", "Legal Advisers" };
         final JsonEnvelope originalEnvelope = setupMocksAndStubData(userGroupNames);
 
@@ -126,7 +126,7 @@ public class UserAndGroupsServiceTest {
     }
 
     @Test
-    public void isSjpProsecutorWhenUserHasCourtAdminAndLegalAdvisorUserGroups() {
+    public void isSjpProsecutorWhenUserHasCourtAdminAndLegalAdviserUserGroups() {
         String[] userGroupNames = { "Court Administrators", "Legal Advisers" };
         final JsonEnvelope originalEnvelope = setupMocksAndStubData(userGroupNames);
 

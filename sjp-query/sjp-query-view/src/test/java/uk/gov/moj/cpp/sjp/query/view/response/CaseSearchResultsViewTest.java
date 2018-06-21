@@ -102,12 +102,12 @@ public class CaseSearchResultsViewTest {
         // when
         CaseSearchResultsView viewWithOutdatedEntry = new CaseSearchResultsView(dataWithOutdatedEntry);
         CaseSearchResultsView viewWithAllOutdatedEntries = new CaseSearchResultsView(dataWithAllOutdatedEntries);
-        CaseSearchResultsView wiewWithoutOutdatedEntry = new CaseSearchResultsView(dataWithoutOutdatedEntry);
+        CaseSearchResultsView viewWithoutOutdatedEntry = new CaseSearchResultsView(dataWithoutOutdatedEntry);
 
         // then
         assertTrue(viewWithOutdatedEntry.isFoundCasesWithOutdatedDefendantsName());
         assertTrue(viewWithAllOutdatedEntries.isFoundCasesWithOutdatedDefendantsName());
-        assertFalse(wiewWithoutOutdatedEntry.isFoundCasesWithOutdatedDefendantsName());
+        assertFalse(viewWithoutOutdatedEntry.isFoundCasesWithOutdatedDefendantsName());
     }
 
     private CaseSearchResult createCaseSearchResult() {

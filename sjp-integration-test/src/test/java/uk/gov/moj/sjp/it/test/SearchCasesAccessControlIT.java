@@ -8,14 +8,16 @@ import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
 
+import java.util.UUID;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class SearchCasesAccessControlIT extends BaseIntegrationTest {
 
-    private final static String ALL_PROSECUTING_AUTHORITY_ACCESS_USER = randomUUID().toString();
-    private final static String NO_PROSECUTING_AUTHORITY_ACCESS_USER = randomUUID().toString();
-    private final static String PROSECUTING_AUTHORITY_1_ACCESS_USER = randomUUID().toString();
+    private final static UUID ALL_PROSECUTING_AUTHORITY_ACCESS_USER = randomUUID();
+    private final static UUID NO_PROSECUTING_AUTHORITY_ACCESS_USER = randomUUID();
+    private final static UUID PROSECUTING_AUTHORITY_1_ACCESS_USER = randomUUID();
 
     private static CreateCase.CreateCasePayloadBuilder prosecutor1CasePayloadBuilder, prosecutor2CasePayloadBuilder;
     private static CaseSearchResultHelper caseSearchResultHelper;
@@ -27,12 +29,12 @@ public class SearchCasesAccessControlIT extends BaseIntegrationTest {
         final ProsecutingAuthority PROSECUTING_AUTHORITY_1 = ProsecutingAuthority.TFL;
         final ProsecutingAuthority PROSECUTING_AUTHORITY_2 = ProsecutingAuthority.DVLA;
 
-        prosecutor1CasePayloadBuilder = createCaseForProsecutingAuthority(PROSECUTING_AUTHORITY_1);
-        prosecutor2CasePayloadBuilder = createCaseForProsecutingAuthority(PROSECUTING_AUTHORITY_2);
-
         stubForUserDetails(ALL_PROSECUTING_AUTHORITY_ACCESS_USER, "ALL");
         stubForUserDetails(PROSECUTING_AUTHORITY_1_ACCESS_USER, PROSECUTING_AUTHORITY_1.name());
         stubForUserDetails(NO_PROSECUTING_AUTHORITY_ACCESS_USER);
+
+        prosecutor1CasePayloadBuilder = createCaseForProsecutingAuthority(PROSECUTING_AUTHORITY_1);
+        prosecutor2CasePayloadBuilder = createCaseForProsecutingAuthority(PROSECUTING_AUTHORITY_2);
     }
 
     private static CreateCase.CreateCasePayloadBuilder createCaseForProsecutingAuthority(final ProsecutingAuthority prosecutingAuthority) {

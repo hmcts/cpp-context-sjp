@@ -5,7 +5,6 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.command.handler.CaseCommandHandler;
 
 import java.util.UUID;
 
@@ -19,6 +18,7 @@ public class UpdateInterpreterHandler extends CaseCommandHandler {
         final JsonObject payload = command.payloadAsJsonObject();
         final UUID defendantId = UUID.fromString(payload.getString("defendantId"));
         final String interpreterLanguage = payload.getString("language", null);
-        applyToCaseAggregate(command, aggregate -> aggregate.updateInterpreter(defendantId, interpreterLanguage));
+        applyToCaseAggregate(command, aggregate -> aggregate.updateInterpreter(
+                getUserId(command), defendantId, interpreterLanguage));
     }
 }

@@ -4,10 +4,10 @@ import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.Filter.filter;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static javax.ws.rs.core.Response.Status.OK;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.findAwaitingCases;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
@@ -24,11 +24,11 @@ public class AwaitingCasesIT extends BaseIntegrationTest {
     private String offenceCode;
 
     @Before
-    public void setUp()  {
+    public void setUp() {
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
         CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
-        
-        caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId().toString());
+
+        caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId());
         caseDocumentHelper.addDocumentAndVerifyAdded(); // add an SJPN document
 
         offenceCode = createCasePayloadBuilder.getOffenceBuilder().getLibraOffenceCode();
@@ -41,9 +41,10 @@ public class AwaitingCasesIT extends BaseIntegrationTest {
 
     @Test
     public void shouldFindAwaitingCases() {
-        poll(findAwaitingCases()).until(status().is(OK),
-                payload().isJson(withJsonPath("$.awaitingCases[?]",
-                        filter(where("firstName").is("David")
-                                .and("offenceCode").is(offenceCode)))));
+        pollWithDefaults(findAwaitingCases())
+                .until(status().is(OK),
+                        payload().isJson(withJsonPath("$.awaitingCases[?]",
+                                filter(where("firstName").is("David")
+                                        .and("offenceCode").is(offenceCode)))));
     }
 }

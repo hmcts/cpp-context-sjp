@@ -7,14 +7,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isIn;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -33,6 +34,9 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
 
     @Inject
     private CaseRepository caseRepository;
+
+    @Inject
+    private Clock clock;
 
     private List<CaseDetail> sjpCasesWithSjpn;
     private List<CaseDetail> uncompletedSjpCasesWithSjpn;
@@ -126,7 +130,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
         for (CaseDetail caseDetail : cases) {
             caseDetail.setId(UUID.randomUUID());
             caseDetail.setInitiationCode(initiationCode);
-            caseDetail.setProsecutingAuthority("TFL");
+            caseDetail.setProsecutingAuthority(TFL);
             caseDetail.setPostingDate(now().minusDays(i--));
             caseRepository.save(caseDetail);
         }
@@ -144,7 +148,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
 
     private void createCaseDocuments(final List<CaseDetail> cases, final String documentType) {
         for (final CaseDetail caseDetail : cases) {
-            final CaseDocument sjpNotice = new CaseDocument(UUID.randomUUID(), UUID.randomUUID(), documentType, ZonedDateTime.now(), caseDetail.getId(), 1);
+            final CaseDocument sjpNotice = new CaseDocument(UUID.randomUUID(), UUID.randomUUID(), documentType, clock.now(), caseDetail.getId(), 1);
             caseDetail.addCaseDocuments(sjpNotice);
             caseRepository.save(caseDetail);
         }

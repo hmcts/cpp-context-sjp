@@ -8,6 +8,8 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 
+import java.util.UUID;
+
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
@@ -31,9 +33,9 @@ public class AddCaseDocumentHandler extends CaseCommandHandler {
     }
 
     private CaseDocument caseDocumentFrom(final JsonObject payload) {
-
-        return new CaseDocument(payload.getString("id"),
-                payload.getString("materialId"),
+        return new CaseDocument(
+                UUID.fromString(payload.getString("id")),
+                UUID.fromString(payload.getString("materialId")),
                 payload.getString("documentType", null),
                 clock.now());
     }

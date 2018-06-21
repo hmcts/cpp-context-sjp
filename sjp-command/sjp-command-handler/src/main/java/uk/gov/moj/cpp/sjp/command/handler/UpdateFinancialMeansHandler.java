@@ -16,6 +16,7 @@ public class UpdateFinancialMeansHandler extends CaseCommandHandler {
     public void updateFinancialMeans(final JsonEnvelope command) throws EventStreamException {
         final JsonObject payload = command.payloadAsJsonObject();
         final FinancialMeans financialMeans = converter.convert(payload, FinancialMeans.class);
-        applyToCaseAggregate(command, aggregate -> aggregate.updateFinancialMeans(financialMeans));
+        applyToCaseAggregate(command, aggregate -> aggregate.updateFinancialMeans(
+                getUserId(command), financialMeans));
     }
 }

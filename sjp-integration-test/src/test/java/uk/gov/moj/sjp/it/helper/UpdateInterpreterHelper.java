@@ -8,10 +8,7 @@ import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessageAsJsonObject;
 
-import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
@@ -22,6 +19,7 @@ import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
+import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 
 public class UpdateInterpreterHelper implements AutoCloseable {
@@ -39,13 +37,13 @@ public class UpdateInterpreterHelper implements AutoCloseable {
     }
 
     private Response getCase(final String caseId) {
-        final String resource = format("/cases/%s", caseId.toString());
+        final String resource = format("/cases/%s", caseId);
         final String contentType = "application/vnd.sjp.query.case+json";
         return HttpClientUtil.makeGetCall(resource, contentType);
     }
 
     public String pollForInterpreter(final UUID caseId, final String defendantId, final String expectedInterpreterLanguage) {
-        final Matcher interpreterMatcher = allOf(
+        final Matcher<? super ReadContext> interpreterMatcher = allOf(
                 withJsonPath("language", equalTo(expectedInterpreterLanguage)),
                 withJsonPath("needed", equalTo(true))
         );
@@ -53,25 +51,20 @@ public class UpdateInterpreterHelper implements AutoCloseable {
     }
 
     public String pollForEmptyInterpreter(final UUID caseId, final String defendantId) {
-        final Matcher interpreterMatcher = allOf(
+        final Matcher<? super ReadContext> interpreterMatcher = allOf(
                 withoutJsonPath("language"),
                 withJsonPath("needed", equalTo(false))
         );
         return pollForInterpreter(caseId, defendantId, interpreterMatcher);
     }
 
-    private String pollForInterpreter(final UUID caseId, final String defendantId, final Matcher interpreterMatcher) {
+    private String pollForInterpreter(final UUID caseId, final String defendantId, final Matcher<? super ReadContext> interpreterMatcher) {
         return await().atMost(20, TimeUnit.SECONDS).until(() -> getCase(caseId.toString()).readEntity(String.class),
                 isJson(withJsonPath("$.defendant",
                         isJson(allOf(
-                                withJsonPath("id", is(defendantId.toString())),
+                                withJsonPath("id", is(defendantId)),
                                 withJsonPath("interpreter", isJson(interpreterMatcher)))
                         ))));
-    }
-
-    public JsonEnvelope getEventFromPublicTopic() {
-        final String message = retrieveMessageAsJsonObject(messageConsumer).get().toString();
-        return new DefaultJsonObjectEnvelopeConverter().asEnvelope(message);
     }
 
     @Override

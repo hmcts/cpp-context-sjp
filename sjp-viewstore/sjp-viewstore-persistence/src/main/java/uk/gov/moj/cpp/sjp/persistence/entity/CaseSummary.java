@@ -25,8 +25,6 @@ public class CaseSummary implements Serializable {
     private String urn;
     @Column(name = "enterprise_id")
     private String enterpriseId;
-    @Column(name = "initiation_code")
-    private String initiationCode;
     @Column(name = "prosecuting_authority")
     private String prosecutingAuthority;
     @Column(name = "posting_date")
@@ -59,14 +57,6 @@ public class CaseSummary implements Serializable {
 
     public void setEnterpriseId(String enterpriseId) {
         this.enterpriseId = enterpriseId;
-    }
-
-    public String getInitiationCode() {
-        return initiationCode;
-    }
-
-    public void setInitiationCode(String initiationCode) {
-        this.initiationCode = initiationCode;
     }
 
     public String getProsecutingAuthority() {

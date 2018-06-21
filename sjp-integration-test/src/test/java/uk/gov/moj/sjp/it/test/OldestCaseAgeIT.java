@@ -17,29 +17,29 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.ws.rs.core.Response;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class OldestCaseAgeIT extends BaseIntegrationTest {
 
-    private long oldestCaseAge;
+    private static long oldestCaseAge;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         AuthorisationServiceStub.stubEnableAllCapabilities();
         //TODO: This assumes that cases this old won't be created anywhere else
         final LocalDate postingDate = LocalDate.of(2000, 1, 1);
         CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
                 .withPostingDate(postingDate);
         CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
-        
+
         //make sure the case is created otherwise test is flaky
         CasePoller.pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId());
         oldestCaseAge = ChronoUnit.DAYS.between(postingDate, LocalDate.now());
     }
 
     @Test
-    public void shouldGetOldestCaseAge() throws InterruptedException {
+    public void shouldGetOldestCaseAge() {
         final Response response = makeGetCall("/cases/oldest-age",
                 "application/vnd.sjp.query.oldest-case-age+json");
 

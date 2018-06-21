@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
 import static java.time.ZoneOffset.UTC;
+import static java.util.Collections.emptyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -19,7 +20,6 @@ import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -41,7 +41,7 @@ public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
     public void shouldPleadOnline() throws EventStreamException {
         final UUID defendantId = UUID.randomUUID();
         final PleadOnline pleadOnline = new PleadOnline(
-                defendantId.toString(), new ArrayList<>(), "unavailability",
+                defendantId, emptyList(), "unavailability",
                 "French", "witnessDetails", "witnessDispute",
                 new PersonalDetails("firstName", "lastName",
                         new Address("address"),
@@ -53,7 +53,7 @@ public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
                 new Employer(
                         defendantId,  "employer", "employeeReference", "phone", new Address("address")
                 ),
-                new ArrayList<>()
+                emptyList()
         );
 
         when(converter.convert(jsonObject, PleadOnline.class)).thenReturn(pleadOnline);

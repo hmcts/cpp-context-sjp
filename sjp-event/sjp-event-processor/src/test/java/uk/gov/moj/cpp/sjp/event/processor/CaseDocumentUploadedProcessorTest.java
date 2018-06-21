@@ -16,7 +16,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
-import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.MATERIAL_ID;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.MATERIAL_ID;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
@@ -51,7 +51,7 @@ public class CaseDocumentUploadedProcessorTest {
     private MetadataHelper metadataHelper = new MetadataHelper();
 
     @Test
-    public void publishes() throws Exception {
+    public void publishes() {
         //given
         String caseId = UUID.randomUUID().toString();
         UUID documentReference = UUID.randomUUID();

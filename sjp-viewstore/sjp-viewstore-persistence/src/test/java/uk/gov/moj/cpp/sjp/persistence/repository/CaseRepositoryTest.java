@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
-import static java.time.ZoneOffset.UTC;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -15,8 +14,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -49,7 +50,8 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     private static final Map<UUID, CaseDetail> CASE_HOLDER = new HashMap<>();
 
-    private static final String PROSECUTING_AUTHORITY_PREFIX = TFL.name();
+    private static final ProsecutingAuthority PROSECUTING_AUTHORITY = TFL;
+    private static final String PROSECUTING_AUTHORITY_PREFIX = PROSECUTING_AUTHORITY.name();
 
     private static final UUID VALID_CASE_ID_1 = randomUUID();
     private static final UUID VALID_CASE_ID_2 = randomUUID();
@@ -75,10 +77,14 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     @Inject
     private CaseRepository caseRepository;
 
-    private ZonedDateTime caseCreatedOn = ZonedDateTime.now(UTC);
+    @Inject
+    private Clock clock;
+
+    private ZonedDateTime caseCreatedOn;
 
     @Override
     public void setUpBefore() {
+        caseCreatedOn = clock.now();
         // given 3 cases exist in database
         CaseDetail case1 = getCase(VALID_CASE_ID_1, VALID_URN_1, VALID_DEFENDANT_ID_1);
         case1.setInitiationCode("J");
@@ -245,9 +251,8 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     }
 
     @Test
-    public void shouldNotFindNonExistingCase() throws Exception {
-        final UUID unkownId = UUID.randomUUID();
-        final CaseDetail caseDetail = caseRepository.findBy(unkownId);
+    public void shouldNotFindNonExistingCase() {
+        final CaseDetail caseDetail = caseRepository.findBy(UUID.randomUUID());
 
         assertThat(caseDetail, nullValue());
     }
@@ -382,7 +387,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         return getCase(caseId, urn, defendantId, randomUUID(), false, POSTCODE);
     }
 
-    private CaseDetail getCase(UUID caseId, String urn, UUID defendantId,  UUID materialId, boolean withdrawn, String postcode) {
+    private CaseDetail getCase(UUID caseId, String urn, UUID defendantId, UUID materialId, boolean withdrawn, String postcode) {
 
         final DefendantDetail defendantDetail = DefendantDetailBuilder.aDefendantDetail()
                 .withId(defendantId)
@@ -394,7 +399,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         final CaseDetail caseDetail = CaseDetailBuilder.aCase()
                 .withCaseId(caseId)
                 .withUrn(urn)
-                .withProsecutingAuthority(PROSECUTING_AUTHORITY_PREFIX)
+                .withProsecutingAuthority(PROSECUTING_AUTHORITY)
                 .withCosts(COSTS)
                 .withPostingDate(POSTING_DATE)
                 .addDefendantDetail(defendantDetail)
@@ -408,7 +413,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
 
     private CaseDocument getCaseDocument(UUID caseId, UUID materialId) {
-        return new CaseDocument(randomUUID(), materialId, "SJPN", ZonedDateTime.now(), caseId, 1);
+        return new CaseDocument(randomUUID(), materialId, "SJPN", clock.now(), caseId, 1);
     }
 
     private static String randomUrn() {

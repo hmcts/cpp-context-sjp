@@ -29,10 +29,6 @@ public final class RuleConstants {
         return Collections.singletonList(GROUP_ONLINE_PLEA_SYSTEM_USERS);
     }
 
-    public static List<String> getQueryCasesSearchActionGroups() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SJP_PROSECUTORS);
-    }
-
     public static List<String> getQueryCasesMissingSjpnActionGroups() {
         return asList(GROUP_SJP_PROSECUTORS, GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
@@ -52,10 +48,6 @@ public final class RuleConstants {
 
     public static List<String> getQueryCaseDocumentsActionGroups() {
         return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SJP_PROSECUTORS);
-    }
-
-    public static List<String> getQueryCaseDefendantsActionGroups() {
-        return asList(GROUP_SYSTEM_USERS, GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
     public static List<String> getQueryCasesSearchByMaterialIdActionGroups() {
@@ -87,6 +79,27 @@ public final class RuleConstants {
     }
 
     public static List<String> getQueryDefendantsOnlinePleaGroups() {
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SJP_PROSECUTORS);
+    }
+
+    public static List<String> getQueryPendingDatesToAvoidActionGroups() {
+        return asList(GROUP_SJP_PROSECUTORS);
+    }
+
+    public static List<String> getQuerySessionGroups() {
         return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
+
+    public static List<String> getQueryCaseAssignmentGroups() {
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+    }
+
+    public static List<String> getReadyCasesReasonsCountsGroups() {
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
+    }
+
+    public static List<String> getReadyCasesGroups() {
+        return asList(GROUP_SYSTEM_USERS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
+    }
+
 }

@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -26,7 +27,7 @@ public class MaterialStub {
         stubFor(post(urlPathEqualTo(QUERY_URL))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)
                         .withHeader("CPPID", UUID.randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)));
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)));
 
         stubFor(get(urlPathEqualTo(QUERY_URL))
                 .willReturn(aResponse().withStatus(SC_OK)));

@@ -1,0 +1,10 @@
+{
+  "_metadata": {
+    "name": "sjp.events.delegated-powers-session-started"
+  },
+  "sessionId": "0c565f6a-7c26-47af-910d-bb59043e8fc6",
+  "userId": "4c8770db-02e6-4f4b-829e-2af9ea97d12f",
+  "courtHouseName": "Lavender Hill Magistrates' Court",
+  "localJusticeAreaNationalCourtCode": "2577",
+  "startedAt": "2012-02-22T02:06:58.147Z"
+}

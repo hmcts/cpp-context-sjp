@@ -5,6 +5,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.Employer;
@@ -14,7 +16,6 @@ import uk.gov.moj.cpp.sjp.event.DefendantNotEmployed;
 import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -25,6 +26,10 @@ import org.junit.Test;
 public class DeleteEmployerTest {
 
     private CaseAggregate caseAggregate;
+
+    private Clock clock = new UtcClock();
+
+    private UUID userId = UUID.randomUUID();
 
     @Before
     public void init() {
@@ -37,7 +42,7 @@ public class DeleteEmployerTest {
         final UUID defendantId = receiveCase().getDefendant().getId();
         assertThat(addEmployer(defendantId), is(1L));
 
-        final Stream<Object> eventStream = caseAggregate.deleteEmployer(defendantId);
+        final Stream<Object> eventStream = caseAggregate.deleteEmployer(userId, defendantId);
 
         final List<Object> events = eventStream.collect(toList());
 
@@ -52,7 +57,7 @@ public class DeleteEmployerTest {
     public void shouldCreateDefendantNotEmployedEventIfDefendantHasNotEmployer() {
         final UUID defendantId = receiveCase().getDefendant().getId();
 
-        final Stream<Object> eventStream = caseAggregate.deleteEmployer(defendantId);
+        final Stream<Object> eventStream = caseAggregate.deleteEmployer(userId, defendantId);
 
         final List<Object> events = eventStream.collect(toList());
 
@@ -65,14 +70,14 @@ public class DeleteEmployerTest {
 
     private CaseReceived receiveCase() {
         final Case sjpCase = CaseBuilder.aDefaultSjpCase().build();
-        final Stream<Object> receiveCase = caseAggregate.receiveCase(sjpCase, ZonedDateTime.now());
+        final Stream<Object> receiveCase = caseAggregate.receiveCase(sjpCase, clock.now());
         return receiveCase.filter(CaseReceived.class::isInstance).map(CaseReceived.class::cast).findFirst().get();
     }
 
     private Long addEmployer(final UUID defendantId) {
         final Employer employer = new Employer(defendantId, "Burger King", "12345", "023402340234",
                 new Address("street", "suburb", "town", "county", "ZY9 8 XW"));
-        final Stream<Object> updateEmployerEvents = caseAggregate.updateEmployer(employer);
+        final Stream<Object> updateEmployerEvents = caseAggregate.updateEmployer(userId, employer);
 
         return updateEmployerEvents.filter(EmployerUpdated.class::isInstance).map(EmployerUpdated.class::cast).count();
     }

@@ -23,9 +23,9 @@ public class ActionCourtReferralTest extends CaseAggregateBaseTest {
 
     @Test
     public void shouldActionCourtReferral() {
-        caseAggregate.createCourtReferral(aCase.getId().toString(), LocalDate.now().plusWeeks(1));
+        caseAggregate.createCourtReferral(aCase.getId(), LocalDate.now(UTC).plusWeeks(1));
 
-        final List<Object> events = caseAggregate.actionCourtReferral(aCase.getId().toString()).collect(Collectors.toList());
+        final List<Object> events = caseAggregate.actionCourtReferral(aCase.getId()).collect(Collectors.toList());
 
         assertThat(events, hasSize(1));
 
@@ -37,7 +37,7 @@ public class ActionCourtReferralTest extends CaseAggregateBaseTest {
 
     @Test
     public void shouldNotActionCourtReferral() {
-        final List<Object> events = caseAggregate.actionCourtReferral(randomUUID().toString()).collect(Collectors.toList());
+        final List<Object> events = caseAggregate.actionCourtReferral(randomUUID()).collect(Collectors.toList());
 
         assertThat(events, hasSize(1));
 

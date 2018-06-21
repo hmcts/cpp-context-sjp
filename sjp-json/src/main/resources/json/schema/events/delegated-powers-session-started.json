@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/delegated-powers-session-started.json",
+  "type": "object",
+  "properties": {
+    "sessionId": {
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+    },
+    "userId": {
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+    },
+    "courtHouseName": {
+      "type": "string"
+    },
+    "localJusticeAreaNationalCourtCode": {
+      "type": "string"
+    },
+    "startedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "sessionId",
+    "userId",
+    "courtHouseName",
+    "localJusticeAreaNationalCourtCode",
+    "startedAt"
+  ],
+  "additionalProperties": false
+
+}

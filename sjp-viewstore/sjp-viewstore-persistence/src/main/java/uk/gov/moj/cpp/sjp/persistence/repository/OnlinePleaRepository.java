@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.CASE_ID;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.COME_TO_COURT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.DEFENDANT_ID;
@@ -12,7 +13,7 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_PHONE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_POSTCODE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_REFERENCE;
-import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_BENEFITS_CLAINED;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_BENEFITS_CLAIMED;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_BENEFITS_DEDUCT_PENALTY_PREFERENCE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_BENEFITS_TYPE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_INCOME_FREQUENCY;
@@ -61,14 +62,17 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
 import org.apache.deltaspike.data.api.EntityRepository;
+import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.Repository;
+import org.apache.deltaspike.data.api.SingleResultType;
 
+@Repository
 public abstract class OnlinePleaRepository implements EntityRepository<OnlinePlea, UUID> {
 
     @Inject
-    protected EntityManager entityManager;
+    private EntityManager entityManager;
 
-    private final String INSERT_STATEMENT = "INSERT INTO online_plea(case_id, submitted_on) VALUES (?, ?) ON CONFLICT (case_id) DO NOTHING";
+    private static final String INSERT_STATEMENT = "INSERT INTO online_plea(case_id, submitted_on) VALUES (?, ?) ON CONFLICT (case_id) DO NOTHING";
 
     public void saveOnlinePlea(OnlinePlea onlinePlea) {
         final Query insertStatement = entityManager.createNativeQuery(INSERT_STATEMENT);
@@ -83,14 +87,20 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         final CriteriaUpdate<OnlinePlea> criteria = cb.createCriteriaUpdate(OnlinePlea.class);
         final Root<OnlinePlea> from = criteria.from(OnlinePlea.class);
 
-        getFieldsToUpdate().forEach(field -> {
-            criteria.set(field.getDbFieldPath(from), field.convertValue(onlinePlea));
-        });
+        getFieldsToUpdate().forEach(field -> criteria.set(field.getDbFieldPath(from), field.convertValue(onlinePlea)));
 
         criteria.where(cb.equal(CASE_ID.getDbFieldPath(from), onlinePlea.getCaseId()));
 
         entityManager.createQuery(criteria).executeUpdate();
     }
+
+    /**
+     * Hide employment, employer and outgoings.
+     */
+    @org.apache.deltaspike.data.api.Query(
+            value = "SELECT new OnlinePlea(op.caseId, op.pleaDetails, op.defendantDetail, op.personalDetails, op.submittedOn) FROM OnlinePlea op WHERE op.caseId = :caseId",
+            singleResult = SingleResultType.OPTIONAL)
+    public abstract OnlinePlea findOnlinePleaWithoutFinances(@QueryParam("caseId") UUID caseId);
 
     abstract List<FIELDS> getFieldsToUpdate();
 
@@ -110,7 +120,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         EMPLOYMENT_INCOME_PAYMENT_AMOUNT(o -> o.getEmployment().getIncomePaymentAmount(), "employment", "incomePaymentAmount"),
         EMPLOYMENT_INCOME_FREQUENCY(o -> o.getEmployment().getIncomePaymentFrequency(), "employment", "incomePaymentFrequency"),
         EMPLOYMENT_BENEFITS_TYPE(o -> o.getEmployment().getBenefitsType(), "employment", "benefitsType"),
-        EMPLOYMENT_BENEFITS_CLAINED(o -> o.getEmployment().getBenefitsClaimed(), "employment", "benefitsClaimed"),
+        EMPLOYMENT_BENEFITS_CLAIMED(o -> o.getEmployment().getBenefitsClaimed(), "employment", "benefitsClaimed"),
         EMPLOYMENT_BENEFITS_DEDUCT_PENALTY_PREFERENCE(o -> o.getEmployment().getBenefitsDeductPenaltyPreference(), "employment", "benefitsDeductPenaltyPreference"),
         EMPLOYMENT_STATUS(o -> o.getEmployment().getEmploymentStatus(), "employment", "employmentStatus"),
         EMPLOYMENT_STATUS_DETAILS(o -> o.getEmployment().getEmploymentStatusDetails(), "employment", "employmentStatusDetails"),
@@ -154,11 +164,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
             this.fieldGetter = fieldGetter;
         }
 
-        public String[] getFieldPath() {
-            return fieldPath;
-        }
-
-        public Path getDbFieldPath(Root<OnlinePlea> from) {
+        public Path<Object> getDbFieldPath(Root<OnlinePlea> from) {
             Path<Object> objectPath = from.get(fieldPath[0]);
             for (int i = 1; i < fieldPath.length; i++) {
                 objectPath = objectPath.get(fieldPath[i]);
@@ -171,17 +177,15 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    @Repository
     public static abstract class FinancialMeansOnlinePleaRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
-            // just list here the column to update
             return asList(
                     DEFENDANT_ID,
                     EMPLOYMENT_INCOME_PAYMENT_AMOUNT,
                     EMPLOYMENT_INCOME_FREQUENCY,
                     EMPLOYMENT_BENEFITS_TYPE,
-                    EMPLOYMENT_BENEFITS_CLAINED,
+                    EMPLOYMENT_BENEFITS_CLAIMED,
                     EMPLOYMENT_BENEFITS_DEDUCT_PENALTY_PREFERENCE,
                     EMPLOYMENT_STATUS,
                     EMPLOYMENT_STATUS_DETAILS,
@@ -196,7 +200,6 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    @Repository
     public static abstract class EmployerOnlinePleaRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
@@ -214,7 +217,6 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    @Repository
     public static abstract class TrialOnlinePleaRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
@@ -227,15 +229,13 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    @Repository
     public static abstract class InterpreterLanguageOnlinePleaRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
-            return asList(INTERPRETER_LANGUAGE);
+            return singletonList(INTERPRETER_LANGUAGE);
         }
     }
 
-    @Repository
     public static abstract class PersonDetailsOnlinePleaRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
@@ -256,7 +256,6 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    @Repository
     public static abstract class PleaDetailsRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
@@ -268,4 +267,5 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
             );
         }
     }
+
 }

@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -20,10 +19,10 @@ public class CancelRequestWithdrawalAllOffencesHandlerTest extends CaseCommandHa
 
     @Test
     public void shouldCancelRequestWithdrawalAllOffences() throws EventStreamException {
-        when(caseAggregate.cancelRequestWithdrawalAllOffences(CASE_ID.toString())).thenReturn(events);
+        when(caseAggregate.cancelRequestWithdrawalAllOffences()).thenReturn(events);
 
         cancelRequestWithdrawalAllOffencesOffHandler.cancelRequestWithdrawalAllOffences(jsonEnvelope);
 
-        verify(caseAggregate).cancelRequestWithdrawalAllOffences(CASE_ID.toString());
+        verify(caseAggregate).cancelRequestWithdrawalAllOffences();
     }
 }

@@ -8,6 +8,8 @@ import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.util.UUID;
+
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
@@ -25,7 +27,7 @@ public class ActionCourtReferralHandler extends CaseCommandHandler {
 
         final JsonObject payload = command.payloadAsJsonObject();
         applyToCaseAggregate(command, aggregate -> aggregate.actionCourtReferral(
-                payload.getString("caseId")));
+                UUID.fromString(payload.getString("caseId"))));
     }
 
 }

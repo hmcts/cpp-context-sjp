@@ -13,7 +13,6 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -63,7 +62,9 @@ public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
         sjpCasesWithoutSjpn = sjpCases.subList(2, sjpCases.size());
 
         sjpnDocuments = sjpCasesWithSjpn.stream()
-                .map(caseHelper -> new CaseDocumentHelper(caseHelper.getId().toString())).collect(toList());
+                .map(CreateCase.CreateCasePayloadBuilder::getId)
+                .map(CaseDocumentHelper::new)
+                .collect(toList());
     }
 
     @After
@@ -72,7 +73,7 @@ public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void findCasesMissingSjpn() throws IOException {
+    public void findCasesMissingSjpn() {
         int casesMissingSjpnCount = getCasesMissingSjpn().getInt("count");
         int casesOlderThan3DaysMissingSjpnCount = getCasesMissingSjpnPostedDaysAgo(3).getInt("count");
         int expectedCasesMissingSjpnCount = casesMissingSjpnCount + sjpCasesWithoutSjpn.size();

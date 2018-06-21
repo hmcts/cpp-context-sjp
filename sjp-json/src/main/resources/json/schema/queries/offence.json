@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/offence.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "offenceCode": {
+      "type": "string"
+    },
+    "plea": {
+      "type": "string"
+    },
+    "pleaMethod": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/plea-method.json"
+    },
+    "offenceSequenceNumber": {
+      "type": "integer"
+    },
+    "wording": {
+      "type": "string"
+    },
+    "cjsCode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sequenceNumber": {
+      "type": "integer"
+    },
+    "startDate": {
+      "type": "string"
+    },
+    "chargeDate": {
+      "type": "string"
+    },
+    "pendingWithdrawal": {
+      "type": "boolean"
+    },
+    "compensation": {
+      "type": "number"
+    },
+    "prosecutionFacts": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

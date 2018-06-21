@@ -6,10 +6,10 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.http.HeaderConstants;
@@ -38,10 +38,10 @@ public class ResultOrdersIT extends BaseIntegrationTest {
     @Before
     public void givenResultOrders() {
         case0 = createCase();
-        resultOrder0 = createResultOrder(case0.getId().toString());
+        resultOrder0 = createResultOrder(case0.getId());
 
         case1 = createCase();
-        resultOrder1 = createResultOrder(case1.getId().toString());
+        resultOrder1 = createResultOrder(case1.getId());
     }
 
     @After
@@ -61,8 +61,8 @@ public class ResultOrdersIT extends BaseIntegrationTest {
                 .withHeader(HeaderConstants.USER_ID, USER_ID);
 
         //then
-        //the order of case0 and case1 is missed as the sorting is descending by the creationg date, so newest are first
-        poll(resultOrders).until(status().is(OK), payload().isJson(allOf(
+        //the order of case0 and case1 is missed as the sorting is descending by the creation date, so newest are first
+        pollWithDefaults(resultOrders).until(status().is(OK), payload().isJson(allOf(
                 withJsonPath("$.resultOrders[0].caseId", is(case1.getId().toString())),
                 withJsonPath("$.resultOrders[0].urn", is(case1.getUrn())),
                 withJsonPath("$.resultOrders[0].defendant.title", is(case1.getDefendantBuilder().getTitle())),
@@ -95,7 +95,7 @@ public class ResultOrdersIT extends BaseIntegrationTest {
         return casePayloadBuilder;
     }
 
-    private CaseDocumentHelper createResultOrder(String caseId) {
+    private static CaseDocumentHelper createResultOrder(UUID caseId) {
         CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId);
         caseDocumentHelper.addCaseDocument(
                 Json.createObjectBuilder().add("id", UUID.randomUUID().toString())

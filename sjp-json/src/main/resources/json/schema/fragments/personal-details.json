@@ -23,6 +23,15 @@
     },
     "contactDetails": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json"
+    },
+    "dobChanged": {
+      "type": "boolean"
+    },
+    "addressChanged": {
+      "type": "boolean"
+    },
+    "nameChanged": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false

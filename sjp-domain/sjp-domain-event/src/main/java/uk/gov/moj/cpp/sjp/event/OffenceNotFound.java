@@ -2,18 +2,22 @@ package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
 
-@Event("sjp.events.plea-update-failed")
+import java.util.UUID;
+
+@Event(OffenceNotFound.EVENT_NAME)
 public class OffenceNotFound {
 
-    private final String offenceId;
+    public static final String EVENT_NAME = "sjp.events.plea-update-failed";
+
+    private final UUID offenceId;
     private final String description;
 
-    public OffenceNotFound(String offenceId, String description) {
+    public OffenceNotFound(final UUID offenceId, final String description) {
         this.offenceId = offenceId;
         this.description = description;
     }
 
-    public String getOffenceId() {
+    public UUID getOffenceId() {
         return offenceId;
     }
 

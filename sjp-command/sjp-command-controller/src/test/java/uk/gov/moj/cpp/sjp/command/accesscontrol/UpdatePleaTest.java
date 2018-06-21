@@ -34,7 +34,7 @@ public class UpdatePleaTest extends BaseDroolsAccessControlTest {
     }
 
     @Test
-    public void shouldAllowCancellPleaCommand() {
+    public void shouldAllowCancelPleaCommand() {
         final JsonObject inputPayload = createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .build();

@@ -1,44 +1,43 @@
 package uk.gov.moj.sjp.it.test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.core.Is.is;
+import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 
-import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
+import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 
 import java.util.UUID;
 
-import com.jayway.restassured.path.json.JsonPath;
 import org.junit.Before;
 import org.junit.Test;
 
-public class DefendantDetailsIT extends BaseIntegrationTest{
+public class DefendantDetailsIT extends BaseIntegrationTest {
 
-    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
+    private final UUID caseId = randomUUID();
 
     @Before
     public void setUp() {
-        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
-        CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
+        new EventListener()
+                .subscribe(CaseReceived.EVENT_NAME)
+                .run(() -> createCaseForPayloadBuilder(withDefaults().withId(caseId)));
     }
 
     @Test
-    public void shouldUpdateDefendantDetails()  {
+    public void shouldUpdateDefendantDetails() {
         UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults();
 
-        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(createCasePayloadBuilder.getId(), UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId()).getString("defendant.id")), payloadBuilder);
+        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseId, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id")), payloadBuilder);
 
-        final JsonPath updatedCase = CasePoller.pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId());
-        final boolean nameChanged = updatedCase.getBoolean("defendant.personalDetails.nameChanged");
-        final boolean dobChanged = updatedCase.getBoolean("defendant.personalDetails.dobChanged");
-        final boolean addressChanged = updatedCase.getBoolean("defendant.personalDetails.addressChanged");
-
-        assertThat(nameChanged, is(Boolean.TRUE));
-        assertThat(dobChanged, is(Boolean.TRUE));
-        assertThat(addressChanged, is(Boolean.TRUE));
-
+        CasePoller.pollUntilCaseByIdIsOk(caseId, allOf(
+                withJsonPath("$.defendant.personalDetails.nameChanged", is(true)),
+                withJsonPath("$.defendant.personalDetails.dobChanged", is(true)),
+                withJsonPath("$.defendant.personalDetails.addressChanged", is(true))
+        ));
     }
-
-
 }

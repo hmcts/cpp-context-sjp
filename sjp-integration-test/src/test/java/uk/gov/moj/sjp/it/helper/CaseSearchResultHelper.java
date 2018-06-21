@@ -3,7 +3,7 @@ package uk.gov.moj.sjp.it.helper;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
-import static javax.json.Json.createObjectBuilder;
+import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -11,36 +11,35 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.hasSize;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSession;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.common.converter.LocalDates;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
+import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 
 import java.time.LocalDate;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.json.JsonObject;
-
-public class CaseSearchResultHelper  {
+public class CaseSearchResultHelper {
 
     public static final String CASE_SEARCH_RESULTS_MEDIA_TYPE = "application/vnd.sjp.query.case-search-results+json";
+    private static final String LONDON_LJA_NATIONAL_COURT_CODE = "2572";
+    private static final String LONDON_COURT_HOUSE_OU_CODE = "B01OK";
 
-    private final String assignmentNatureType = "for-magistrate-decision";
     private final UUID caseId;
     private final String urn;
     private final String lastName;
     private final LocalDate dateOfBirth;
-    private final String searchUserId;
+    private final UUID searchUserId;
 
-    public CaseSearchResultHelper(final String searchUserId) {
+    public CaseSearchResultHelper(final UUID searchUserId) {
         this(null, null, null, null, searchUserId);
     }
 
@@ -48,7 +47,7 @@ public class CaseSearchResultHelper  {
         this(caseId, urn, defendantLastName, dateOfBirth, USER_ID);
     }
 
-    private CaseSearchResultHelper(final UUID caseId, final String urn, final String defendantLastName, final LocalDate dateOfBirth, final String searchUserId) {
+    private CaseSearchResultHelper(final UUID caseId, final String urn, final String defendantLastName, final LocalDate dateOfBirth, final UUID searchUserId) {
         this.caseId = caseId;
         this.urn = urn;
         this.lastName = defendantLastName;
@@ -56,46 +55,15 @@ public class CaseSearchResultHelper  {
         this.searchUserId = searchUserId;
     }
 
-    public void assignmentCreated() {
-        final JsonObject payload = createObjectBuilder()
-                .add("domainObjectId", caseId.toString())
-                .add("assignee", UUID.randomUUID().toString())
-                .add("assignmentNatureType", assignmentNatureType)
-                .build();
-
-        final JsonEnvelope eventEnvelope = envelopeFrom(
-                metadataWithRandomUUID("assignment.assignment-created"), payload);
-
-        try (MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer("public.event");
-            producerClient.sendMessage("assignment.assignment-created", eventEnvelope);
-        }
-    }
-
-    public void assignmentDeleted() {
-        final JsonObject payload = createObjectBuilder()
-                .add("domainObjectId", caseId.toString())
-                .add("assignmentNatureType", assignmentNatureType)
-                .build();
-
-        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("assignment.assignment-deleted"),
-                payload);
-
-        try (MessageProducerClient producerClient = new MessageProducerClient()) {
-            producerClient.startProducer("public.event");
-            producerClient.sendMessage("assignment.assignment-deleted", eventEnvelope);
-        }
-    }
-
     public void verifyPersonFound(final String urn, final String lastName) {
-        poll(searchCases(lastName, searchUserId))
+        pollWithDefaults(searchCases(lastName, searchUserId))
                 .until(status().is(OK), payload().isJson(
                         withJsonPath("$.results[?(@.urn=='" + urn + "')]", hasSize(1))
                 ));
     }
 
     public void verifyPersonNotFound(final String urn, final String lastName) {
-        poll(searchCases(lastName, searchUserId))
+        pollWithDefaults(searchCases(lastName, searchUserId))
                 .timeout(5, TimeUnit.SECONDS)
                 .until(status().is(OK), payload().isJson(
                         withJsonPath("$.results[?(@.urn=='" + urn + "')]", hasSize(0))
@@ -103,52 +71,48 @@ public class CaseSearchResultHelper  {
     }
 
     public void verifyPleaReceivedDate() {
-        poll(searchCases(urn, searchUserId))
+        pollWithDefaults(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(
                         withJsonPath("$.results[0].pleaDate", notNullValue())
                 ));
     }
 
     public void verifyNoPleaReceivedDate() {
-        poll(searchCases(urn, searchUserId))
+        pollWithDefaults(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(
                         withoutJsonPath("$.results[0].pleaDate")
                 ));
     }
 
     public void verifyWithdrawalRequestedDate() {
-        poll(searchCases(urn, searchUserId))
+        pollWithDefaults(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(
                         withJsonPath("$.results[0].withdrawalRequestedDate", notNullValue())
                 ));
     }
 
     public void verifyNoWithdrawalRequestedDate() {
-        poll(searchCases(urn, searchUserId))
+        pollWithDefaults(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(
                         withoutJsonPath("$.results[0].withdrawalRequestedDate")
                 ));
     }
 
-
     public void verifyAssignment(final boolean assigned) {
-        poll(searchCases(urn, searchUserId))
+        pollWithDefaults(searchCases(urn, searchUserId))
                 .until(status().is(OK), payload().isJson(allOf(
                         withJsonPath("$.results[0].urn", is(urn)),
                         withJsonPath("$.results[0].assigned", is(assigned)))));
     }
 
-
     public void verifyUrnFound(final String urn) {
-        poll(searchCases(urn, searchUserId))
-                .until(status().is(OK), payload().isJson(allOf(
-                        withJsonPath("$.results", hasSize(1)))));
+        pollWithDefaults(searchCases(urn, searchUserId))
+                .until(status().is(OK), payload().isJson(withJsonPath("$.results", hasSize(1))));
     }
 
     public void verifyUrnNotFound(final String urn) {
-        poll(searchCases(urn, searchUserId))
-                .until(status().is(OK), payload().isJson(allOf(
-                        withJsonPath("$.results", hasSize(0)))));
+        pollWithDefaults(searchCases(urn, searchUserId))
+                .until(status().is(OK), payload().isJson(withJsonPath("$.results", hasSize(0))));
     }
 
     public void verifyPersonInfoByUrn() {
@@ -159,8 +123,22 @@ public class CaseSearchResultHelper  {
         verifyPersonInfo(lastName, lastName, dateOfBirth);
     }
 
+    public void startSessionAndAssignCase() {
+        stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
+
+        final UUID sessionId = randomUUID();
+        final UUID userId = randomUUID();
+
+        startMagistrateSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, "Alan Smith");
+        requestCaseAssignment(sessionId, userId);
+    }
+
+    public void completeCase() {
+        new CompleteCaseProducer(caseId).completeCase();
+    }
+
     private void verifyPersonInfo(final String query, final String lastName, final LocalDate dateOfBirth) {
-        poll(searchCases(query, searchUserId))
+        pollWithDefaults(searchCases(query, searchUserId))
                 .until(status().is(OK), payload().isJson(allOf(
                         withJsonPath("$.results[*]", hasItem(isJson(
                                 allOf(

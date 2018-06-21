@@ -18,7 +18,7 @@ public class OnlinePleaConverter {
 
     enum OnlinePleaEmploymentStatus {
         EMPLOYED, SELF_EMPLOYED, UNEMPLOYED, OTHER
-    };
+    }
 
     public OnlinePlea convertToOnlinePleaEntity(final DefendantDetail defendantDetail, final FinancialMeansUpdated financialMeansUpdated) {
         final OnlinePlea.Outgoings outgoings = generateOutgoings(financialMeansUpdated.getOutgoings());

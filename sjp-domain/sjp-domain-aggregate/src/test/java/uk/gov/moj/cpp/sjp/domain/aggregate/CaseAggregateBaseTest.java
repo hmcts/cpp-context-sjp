@@ -1,30 +1,28 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 
-import java.time.ZonedDateTime;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 
-abstract class CaseAggregateBaseTest {
+public abstract class CaseAggregateBaseTest {
 
-    Clock clock = new StoppedClock(ZonedDateTime.now());
-    CaseAggregate caseAggregate;
-    Case aCase;
-    CaseReceived caseReceivedEvent;
+    protected final Clock clock = new StoppedClock(new UtcClock().now());
+    protected CaseAggregate caseAggregate;
+    protected Case aCase;
+    protected CaseReceived caseReceivedEvent;
 
     @Before
     public void setUp() {
         caseAggregate = new CaseAggregate();
         aCase = CaseBuilder.aDefaultSjpCase().build();
-        caseReceivedEvent = caseAggregate.receiveCase(aCase, clock.now())
-                .findFirst()
-                .map(CaseReceived.class::cast)
-                .orElseThrow(() -> new AssertionError("Expected just a single instance of " + CaseReceived.class.getSimpleName()));
+        caseReceivedEvent = collectSingleEvent(caseAggregate.receiveCase(aCase, clock.now()), CaseReceived.class);
     }
 
     CaseReceived buildCaseReceived(Case aCase) {
@@ -37,4 +35,11 @@ abstract class CaseAggregateBaseTest {
                 aCase.getDefendant(),
                 clock.now());
     }
+
+    <T> T collectSingleEvent(Stream<Object> events, Class<T> eventType) {
+        return events.findFirst()
+                .map(eventType::cast)
+                .orElseThrow(() -> new AssertionError("Expected just a single instance of " + eventType.getSimpleName()));
+    }
+
 }

@@ -31,6 +31,9 @@
         },
         "type": {
           "type": "string"
+        },
+        "deductPenaltyPreference": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false

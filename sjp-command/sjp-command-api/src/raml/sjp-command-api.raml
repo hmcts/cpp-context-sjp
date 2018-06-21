@@ -106,32 +106,6 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
-/cases/{caseId}/fixdefendant:
-  uriParameters:
-    caseId:
-      description: The ID of the case to modify
-      type: string
-      required: true
-  post:
-    description: |
-      Fix defendant's personal details or interpreter
-      ...
-      (mapping):
-          requestType: application/vnd.sjp.fix-defendant-details+json
-          name: sjp.fix-defendant-details
-      ...
-    body:
-      application/vnd.sjp.fix-defendant-details+json:
-        example:
-          !include json/sjp.fix-defendant-details.json
-        schema:
-          !include json/schema/sjp.fix-defendant-details.json
-    responses:
-      500:
-        description: Internal Server Error
-      202:
-        description: Accepted
-
 /cases/{caseId}/defendant/{defendantId}/nationalInsuranceNumber:
   uriParameters:
     caseId:
@@ -460,7 +434,22 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
-/session/{sessionId}:
+/cases/{caseId}/unassign:
+  post:
+    description: |
+      Unassigning cases from a user
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.unassign-case+json
+          name: sjp.unassign-case
+      ...
+    body:
+      application/vnd.sjp.unassign-case+json: !!null
+    responses:
+      202:
+        description: Accepted
+
+/sessions/{sessionId}:
   post:
     description: |
       Sjp session related commands
@@ -468,6 +457,15 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       (mapping):
           requestType: application/vnd.sjp.start-session+json
           name: sjp.start-session
+      (mapping):
+          requestType: application/vnd.sjp.end-session+json
+          name: sjp.end-session
+      (mapping):
+          requestType: application/vnd.sjp.assign-case+json
+          name: sjp.assign-case
+      (mapping):
+          requestType: application/vnd.sjp.migrate-session+json
+          name: sjp.migrate-session
       ...
     body:
       application/vnd.sjp.start-session+json:
@@ -475,6 +473,39 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
           !include json/sjp.start-session.json
         schema:
           !include json/schema/sjp.start-session.json
+      application/vnd.sjp.migrate-session+json:
+        example:
+          !include json/sjp.migrate-session.json
+        schema:
+          !include json/schema/sjp.migrate-session.json
+      application/vnd.sjp.end-session+json: !!null
+      application/vnd.sjp.assign-case+json: !!null
     responses:
+      202:
+        description: Accepted
+
+
+/cases/{caseId}/dates-to-avoid:
+  uriParameters:
+    caseId:
+      description: The ID of the case to modify
+      type: string
+  post:
+    description: |
+      Add dates-to-avoid
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.add-dates-to-avoid+json
+          name: sjp.add-dates-to-avoid
+      ...
+    body:
+          application/vnd.sjp.add-dates-to-avoid+json:
+            example:
+              !include json/sjp.add-dates-to-avoid.json
+            schema:
+              !include json/schema/sjp.add-dates-to-avoid.json
+    responses:
+      500:
+        description: Internal Server Error
       202:
         description: Accepted

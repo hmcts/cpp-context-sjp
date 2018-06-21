@@ -4,7 +4,6 @@ import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 public class PersonalDetails {
     private final String firstName;

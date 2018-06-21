@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/case-assignment-requested.json",
+  "type": "object",
+  "properties": {
+    "session": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+        },
+        "type": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/session-type.json"
+        },
+        "userId": {
+          "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+        },
+        "localJusticeAreaNationalCourtCode": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "userId",
+        "localJusticeAreaNationalCourtCode"
+      ]
+    }
+  },
+  "required": [
+    "session"
+  ],
+  "additionalProperties": false
+}

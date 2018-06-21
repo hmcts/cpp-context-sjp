@@ -11,9 +11,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.IncomeFrequency.MONTHLY;
 import static uk.gov.moj.cpp.sjp.domain.IncomeFrequency.WEEKLY;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
-import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithDecision;
-import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.Income;
@@ -37,7 +34,6 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
     private FinancialMeansHelper financialMeansHelper;
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
-
     @Before
     public void setUp() {
         financialMeansHelper = new FinancialMeansHelper();
@@ -52,8 +48,6 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
 
     @Test
     public void shouldUpdateAndFetchFinancialMeansWithoutOptionalFields() {
-        stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
-        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
 
         final UUID caseId = createCasePayloadBuilder.getId();
         final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
@@ -63,7 +57,7 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
                 .add("benefits", createObjectBuilder())
                 .build();
 
-        final Matcher expectedFinancialMeansMatcher = isJson(allOf(
+        final Matcher<Object> expectedFinancialMeansMatcher = isJson(allOf(
                 withJsonPath("$.defendantId", is(defendantId)),
                 withoutJsonPath("$.income.frequency"),
                 withoutJsonPath("$.income.amount"),
@@ -78,8 +72,6 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
 
     @Test
     public void shouldAddUpdateAndFetchFinancialMeans() {
-        stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
-        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
 
         final UUID caseId = createCasePayloadBuilder.getId();
         final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
@@ -105,7 +97,7 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
                         .add("type", updatedBenefits.getType()))
                 .build();
 
-        final Matcher expectedOriginal = isJson(allOf(
+        final Matcher<Object> expectedOriginal = isJson(allOf(
                 withJsonPath("$.income.frequency", is(originalIncome.getFrequency().name())),
                 withJsonPath("$.income.amount", is(originalIncome.getAmount().doubleValue())),
                 withoutJsonPath("$.benefits.claimed"),
@@ -113,7 +105,7 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
                 withJsonPath("$.employmentStatus", is(employmentStatus))
         ));
 
-        final Matcher expectedUpdated = isJson(allOf(
+        final Matcher<Object> expectedUpdated = isJson(allOf(
                 withJsonPath("$.income.frequency", is(updatedIncome.getFrequency().name())),
                 withJsonPath("$.income.amount", is(updatedIncome.getAmount().doubleValue())),
                 withJsonPath("$.benefits.claimed", is(updatedBenefits.getClaimed())),
@@ -137,31 +129,4 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
         assertThat(response.readEntity(String.class), is("{}"));
     }
 
-    @Test
-    public void shouldRejectFinancialMeansUpdateIfCaseIsAlreadyCompleted() throws Exception {
-
-        stubGetCaseDecisionsWithDecision(createCasePayloadBuilder.getId());
-
-        final UUID caseId = createCasePayloadBuilder.getId();
-        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
-        final Income income = new Income(MONTHLY, BigDecimal.valueOf(1000.50));
-        final Benefits benefits = new Benefits(true, "Benefits type", null);
-
-        final JsonObject payload = createObjectBuilder()
-                .add("income", createObjectBuilder()
-                        .add("frequency", income.getFrequency().name())
-                        .add("amount", income.getAmount()))
-                .add("benefits", createObjectBuilder()
-                        .add("claimed", benefits.getClaimed())
-                        .add("type", benefits.getType()))
-                .build();
-
-        final Matcher expectedCaseUpdateRejectedMatcher = isJson(allOf(
-                withJsonPath("$.caseId", is(caseId.toString())),
-                withJsonPath("$.reason", is("CASE_COMPLETED"))
-        ));
-
-        financialMeansHelper.updateFinancialMeans(caseId, defendantId, payload);
-        financialMeansHelper.getEventFromPublicTopic(expectedCaseUpdateRejectedMatcher);
-    }
 }

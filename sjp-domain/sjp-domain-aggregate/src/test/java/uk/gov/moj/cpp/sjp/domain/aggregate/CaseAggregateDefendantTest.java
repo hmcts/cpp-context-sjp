@@ -7,6 +7,8 @@ import static org.hamcrest.core.StringContains.containsString;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateDefendantTest.DefendantData.defaultDefendantData;
 
 import uk.gov.justice.services.common.converter.LocalDates;
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Person;
@@ -18,7 +20,6 @@ import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -45,7 +46,7 @@ public class CaseAggregateDefendantTest {
     private static final String title = "Mr";
     private static final Address address = new Address("address1", "address2",
             "address3", "address4", "CR02FW");
-
+    private static final Clock clock = new UtcClock();
 
     @Test
     public void updatesToValidTitle() {
@@ -65,7 +66,7 @@ public class CaseAggregateDefendantTest {
 
         assertThat(events.size(), greaterThan(0));
 
-        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(events.size()-1);
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(events.size() - 1);
         assertThat(defendantDetailsUpdated.getTitle(), is(validTitle));
     }
 
@@ -80,8 +81,8 @@ public class CaseAggregateDefendantTest {
         assertThat(events.size(), is(1));
 
         final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId.toString()));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId.toString()));
+        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
+        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
         assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("title parameter can not be null as previous value is : Mr"));
     }
 
@@ -96,8 +97,8 @@ public class CaseAggregateDefendantTest {
         assertThat(events.size(), is(1));
 
         final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId.toString()));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId.toString()));
+        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
+        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
         assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("title parameter can not be null as previous value is : Mr"));
     }
 
@@ -120,48 +121,36 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void acceptsNewFirstName() {
-        givenNoPersonInfoWasAdded();
 
         final String newFirstName = "Newname";
         final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewFirstName(newFirstName)
+                defaultDefendantData().withNewDateOfBirth(null).withNewFirstName(newFirstName)
         );
 
-        assertThat(events.size(), is(1));
+        assertThat(events.size(), is(2));
 
-        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(0);
+        final DefendantPersonalNameUpdated personalNameUpdated = (DefendantPersonalNameUpdated) events.get(0);
+        assertThat(personalNameUpdated.getNewPersonalName().getFirstName(), is(newFirstName));
+
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(1);
         assertThat(defendantDetailsUpdated.getFirstName(), is(newFirstName));
     }
 
     @Test
     public void acceptsNewLastName() {
-        givenNoPersonInfoWasAdded();
 
         final String newLastName = "Newname";
         final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewLastName(newLastName)
+                defaultDefendantData().withNewDateOfBirth(null).withNewLastName(newLastName)
         );
 
-        assertThat(events.size(), is(1));
+        assertThat(events.size(), is(2));
 
-        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(0);
+        final DefendantPersonalNameUpdated personalNameUpdated = (DefendantPersonalNameUpdated) events.get(0);
+        assertThat(personalNameUpdated.getNewPersonalName().getLastName(), is(newLastName));
+
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(1);
         assertThat(defendantDetailsUpdated.getLastName(), is(newLastName));
-    }
-
-    @Test
-    public void rejectsNullDateOfBirth() {
-        givenCaseWasReceivedWithDetaultDefendantData();
-
-        final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewDateOfBirth(null)
-        );
-
-        assertThat(events.size(), is(1));
-
-        final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId.toString()));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId.toString()));
-        assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("dob parameter can not be null"));
     }
 
     @Test
@@ -195,8 +184,8 @@ public class CaseAggregateDefendantTest {
         assertThat(events.size(), is(1));
 
         final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId.toString()));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId.toString()));
+        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
+        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
         assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("street (address1) can not be blank as previous value is: address1"));
     }
 
@@ -212,8 +201,8 @@ public class CaseAggregateDefendantTest {
         assertThat(events.size(), is(1));
 
         final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId.toString()));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId.toString()));
+        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
+        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
         assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("town (address4) can not be blank as previous value is: address4"));
     }
 
@@ -229,8 +218,8 @@ public class CaseAggregateDefendantTest {
         assertThat(events.size(), is(1));
 
         final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId.toString()));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId.toString()));
+        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
+        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
         assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("postcode can not be blank as previous value is: CR02FW"));
     }
 
@@ -251,9 +240,6 @@ public class CaseAggregateDefendantTest {
 
         final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(1);
         assertThat(defendantDetailsUpdated.getAddress(), is(newAddress));
-    }
-
-    private void givenNoPersonInfoWasAdded() {
     }
 
     static class DefendantData {
@@ -319,19 +305,19 @@ public class CaseAggregateDefendantTest {
                         0,
                         Lists.newArrayList()
                 )).build(),
-                ZonedDateTime.now()
+                clock.now()
         );
     }
 
     private List<Object> whenTheDefendantIsUpdated(final DefendantData updatedDefendantData) {
-        Person person = new Person(updatedDefendantData.title,
+        final Person person = new Person(updatedDefendantData.title,
                 updatedDefendantData.firstName, updatedDefendantData.lastName, updatedDefendantData.dateOfBirth,
                 updatedDefendantData.gender, updatedDefendantData.address);
 
         final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(updatedDefendantData.caseId,
                 updatedDefendantData.defendantId, updatedDefendantData.gender, updatedDefendantData.nationalInsuranceNumber,
                 updatedDefendantData.email, updatedDefendantData.homeNumber, updatedDefendantData.mobileNumber,
-                person, ZonedDateTime.now());
+                person, clock.now());
 
         return eventStream.collect(Collectors.toList());
     }

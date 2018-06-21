@@ -3,14 +3,16 @@ package uk.gov.moj.cpp.sjp.event;
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 
+import java.util.UUID;
+
 @Event("sjp.events.case-document-already-exists")
 public class CaseDocumentAlreadyAdded {
 
-    private String caseId;
+    private final UUID caseId;
 
-    private CaseDocument caseDocument;
+    private final CaseDocument caseDocument;
 
-    public CaseDocumentAlreadyAdded(String caseId, CaseDocument caseDocument) {
+    public CaseDocumentAlreadyAdded(UUID caseId, CaseDocument caseDocument) {
         this.caseId = caseId;
         this.caseDocument = caseDocument;
     }
@@ -19,7 +21,7 @@ public class CaseDocumentAlreadyAdded {
         return caseDocument;
     }
 
-    public String getCaseId() {
+    public UUID getCaseId() {
         return caseId;
     }
 

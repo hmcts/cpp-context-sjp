@@ -21,7 +21,7 @@ public class CasesReferredToCourtTest extends BaseDroolsAccessControlTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         action = createActionFor(CONTENT_TYPE);
     }
 

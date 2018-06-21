@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.sjp.domain.plea;
 
+import java.io.Serializable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
-import java.io.Serializable;
 
 public class Money implements Serializable {
 

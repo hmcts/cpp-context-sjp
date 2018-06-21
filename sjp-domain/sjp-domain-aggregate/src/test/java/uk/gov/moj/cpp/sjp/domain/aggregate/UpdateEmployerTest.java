@@ -6,17 +6,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
-import uk.gov.moj.cpp.sjp.event.CaseReceived;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -32,6 +33,10 @@ public class UpdateEmployerTest {
 
     private Employer employer;
 
+    private Clock clock = new UtcClock();
+
+    private UUID userId = UUID.randomUUID();
+
     @Before
     public void init() {
         caseAggregate = new CaseAggregate();
@@ -41,7 +46,7 @@ public class UpdateEmployerTest {
 
     @Test
     public void shouldCreateEmployerUpdatedAndEmploymentStatusUpdatedEventsIfDefendantDoesNotHaveEmploymentStatus() {
-        final Stream<Object> eventStream = caseAggregate.updateEmployer(employer);
+        final Stream<Object> eventStream = caseAggregate.updateEmployer(userId, employer);
         final List<Object> events = eventStream.collect(toList());
 
         assertThat(events, hasSize(2));
@@ -59,9 +64,9 @@ public class UpdateEmployerTest {
     public void shouldCreateOnlyEmployerUpdatedEventIfDefendantEmploymentStatusIsEmployed() {
         final FinancialMeans financialMeans = getFinancialMeans(defendantId, EmploymentStatus.EMPLOYED);
 
-        caseAggregate.updateFinancialMeans(financialMeans);
+        caseAggregate.updateFinancialMeans(userId, financialMeans);
 
-        final Stream<Object> eventStream = caseAggregate.updateEmployer(employer);
+        final Stream<Object> eventStream = caseAggregate.updateEmployer(userId, employer);
         final List<Object> events = eventStream.collect(toList());
 
         assertThat(events, hasSize(1));
@@ -74,9 +79,9 @@ public class UpdateEmployerTest {
     public void shouldCreateEmployerUpdatedAndEmploymentStatusUpdatedEventsIfDefendantEmploymentStatusIsDifferentThanEmployed() {
         final FinancialMeans financialMeans = getFinancialMeans(defendantId, EmploymentStatus.SELF_EMPLOYED);
 
-        caseAggregate.updateFinancialMeans(financialMeans);
+        caseAggregate.updateFinancialMeans(userId, financialMeans);
 
-        final Stream<Object> eventStream = caseAggregate.updateEmployer(employer);
+        final Stream<Object> eventStream = caseAggregate.updateEmployer(userId, employer);
         final List<Object> events = eventStream.collect(toList());
 
         assertThat(events, hasSize(2));
@@ -91,7 +96,7 @@ public class UpdateEmployerTest {
 
     private CaseReceived receiveCase() {
         final Case sjpCase = CaseBuilder.aDefaultSjpCase().build();
-        final Stream<Object> caseCreatedEvents = caseAggregate.receiveCase(sjpCase, ZonedDateTime.now());
+        final Stream<Object> caseCreatedEvents = caseAggregate.receiveCase(sjpCase, clock.now());
         return caseCreatedEvents.filter(CaseReceived.class::isInstance)
                 .map(CaseReceived.class::cast)
                 .findFirst()

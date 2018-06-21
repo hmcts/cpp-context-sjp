@@ -1,7 +1,10 @@
 package uk.gov.moj.sjp.it.helper;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
+import static uk.gov.moj.sjp.it.Constants.SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
@@ -28,6 +31,10 @@ public class OffencesWithdrawalRequestHelper implements AutoCloseable {
     private MessageConsumerClient publicConsumer = new MessageConsumerClient();
     private MessageConsumer privateEventsConsumer;
     private MessageConsumer publicEventsConsumer;
+
+    public OffencesWithdrawalRequestHelper(final UUID caseId) {
+        this(caseId, SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
+    }
 
     public OffencesWithdrawalRequestHelper(UUID caseId, String privateEvent, String publicEvent) {
         this.caseId = caseId;
@@ -63,6 +70,7 @@ public class OffencesWithdrawalRequestHelper implements AutoCloseable {
         final JsonPath jsRequest = new JsonPath(request);
         LOGGER.info("Request payload: {}", jsRequest.prettify());
         final JsonPath messageInQueue = retrieveMessage(messageConsumer);
+        assertThat(messageInQueue, notNullValue());
         assertThat(messageInQueue.get(CASE_ID), equalTo(caseId.toString()));
     }
 
@@ -70,6 +78,7 @@ public class OffencesWithdrawalRequestHelper implements AutoCloseable {
         final JsonPath jsRequest = new JsonPath(request);
         LOGGER.info("Request payload: {}", jsRequest.prettify());
         final JsonPath messageInQueue = retrieveMessage(messageConsumer);
+        assertThat(messageInQueue, notNullValue());
         assertThat(messageInQueue.get(CASE_ID), equalTo(caseId.toString()));
         assertThat(messageInQueue.get("reason"), equalTo(expectedReason));
     }

@@ -12,10 +12,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
-import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithDecision;
-import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EmployerHelper;
 import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
@@ -26,6 +24,7 @@ import java.util.UUID;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
+import com.jayway.jsonpath.ReadContext;
 import org.apache.commons.lang.RandomStringUtils;
 import org.hamcrest.Matcher;
 import org.junit.After;
@@ -64,8 +63,6 @@ public class EmployerIT extends BaseIntegrationTest {
 
     @Test
     public void shouldCreateUpdateAndDeleteEmployer() {
-            stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
-            stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
 
             final UUID caseId = createCasePayloadBuilder.getId();
             final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
@@ -83,7 +80,7 @@ public class EmployerIT extends BaseIntegrationTest {
 
             assertThat(employerHelper.getEventFromPublicTopic(), getEmployerUpdatedPublicEventMatcher(employer2));
 
-            final Matcher expectedFinancialMeans = isJson(withJsonPath("$.employmentStatus", is("EMPLOYED")));
+            final Matcher<Object> expectedFinancialMeans = isJson(withJsonPath("$.employmentStatus", is("EMPLOYED")));
             financialMeansHelper.getFinancialMeans(defendantId, expectedFinancialMeans);
 
             employerHelper.deleteEmployer(caseId.toString(), defendantId);
@@ -98,22 +95,6 @@ public class EmployerIT extends BaseIntegrationTest {
         final UUID nonExistingDefendantId = randomUUID();
         final Response response = employerHelper.getEmployer(nonExistingDefendantId.toString());
         assertThat(response.readEntity(String.class), is("{}"));
-    }
-
-    @Test
-    public void shouldRejectEmployerUpdateIfCaseIsAlreadyCompleted() throws Exception {
-
-        stubGetCaseDecisionsWithDecision(createCasePayloadBuilder.getId());
-
-        final UUID caseId = createCasePayloadBuilder.getId();
-        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
-
-        final JsonObject employer = getEmployerPayload();
-
-        final Matcher expectedCaseUpdateRejectedMatcher = getCaseUpdateRejectedPublicEventMatcher(caseId, "CASE_COMPLETED");
-
-        employerHelper.updateEmployer(caseId, defendantId, employer);
-        assertThat(employerHelper.getEventFromPublicTopic(), expectedCaseUpdateRejectedMatcher);
     }
 
     // return new employer with random name and address line 1
@@ -131,7 +112,7 @@ public class EmployerIT extends BaseIntegrationTest {
                 .add(FIELD_ADDRESS, address).build();
     }
 
-    private Matcher getEmployerUpdatedPayloadContentMatcher(final JsonObject employer) {
+    private Matcher<ReadContext> getEmployerUpdatedPayloadContentMatcher(final JsonObject employer) {
 
         final JsonObject address = employer.getJsonObject(FIELD_ADDRESS);
         return allOf(
@@ -146,31 +127,22 @@ public class EmployerIT extends BaseIntegrationTest {
         );
     }
 
-    private Matcher getEmployerUpdatedPayloadMatcher(final JsonObject employer) {
+    private Matcher<Object> getEmployerUpdatedPayloadMatcher(final JsonObject employer) {
         return isJson(getEmployerUpdatedPayloadContentMatcher(employer));
     }
 
-    private Matcher getEmployerUpdatedPublicEventMatcher(final JsonObject employer) {
-        final Matcher payloadContentMatcher = getEmployerUpdatedPayloadContentMatcher(employer);
+    private Matcher<JsonEnvelope> getEmployerUpdatedPublicEventMatcher(final JsonObject employer) {
+        final Matcher<ReadContext> payloadContentMatcher = getEmployerUpdatedPayloadContentMatcher(employer);
         return jsonEnvelope()
                 .withMetadataOf(metadata().withName("public.sjp.employer-updated"))
                 .withPayloadOf(payloadIsJson(payloadContentMatcher));
     }
 
-    private Matcher getEmployerDeletedPublicEventMatcher(final String defendantId) {
+    private Matcher<JsonEnvelope> getEmployerDeletedPublicEventMatcher(final String defendantId) {
         return jsonEnvelope()
                 .withMetadataOf(metadata().withName("public.sjp.employer-deleted"))
-                .withPayloadOf(payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId.toString()))));
+                .withPayloadOf(payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId))));
     }
 
-    private Matcher getCaseUpdateRejectedPublicEventMatcher(final UUID caseId, final String reason) {
-        final Matcher payloadMatcher = allOf(
-                withJsonPath("$.caseId", is(caseId.toString())),
-                withJsonPath("$.reason", is(reason)));
-
-        return jsonEnvelope()
-                .withMetadataOf(metadata().withName("public.sjp.case-update-rejected"))
-                .withPayloadOf(payloadIsJson(payloadMatcher));
-    }
 
 }

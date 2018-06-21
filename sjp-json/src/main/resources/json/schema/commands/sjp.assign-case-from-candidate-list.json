@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/commands/sjp.assign-case-from-candidates-list.json",
+  "type": "object",
+  "properties": {
+    "sessionId": {
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+    },
+    "assignmentCandidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+          },
+          "caseStreamVersion": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "caseId",
+          "caseStreamVersion"
+        ]
+      }
+    }
+  },
+  "required": [
+    "sessionId",
+    "assignmentCandidates"
+  ]
+}

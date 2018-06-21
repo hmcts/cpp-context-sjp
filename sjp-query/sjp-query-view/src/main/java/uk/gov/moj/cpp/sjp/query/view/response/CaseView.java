@@ -26,12 +26,13 @@ public class CaseView {
     private final String reopenedInLibraReason;
     private String enterpriseId;
     private boolean onlinePleaReceived;
+    private String datesToAvoid;
 
     public CaseView(CaseDetail caseDetail) {
 
         this.id = caseDetail.getId().toString();
         this.urn = caseDetail.getUrn();
-        this.prosecutingAuthority = ProsecutingAuthority.valueOf(caseDetail.getProsecutingAuthority());
+        this.prosecutingAuthority = caseDetail.getProsecutingAuthority();
 
         this.defendant = new DefendantView(caseDetail.getDefendant());
         this.dateTimeCreated = caseDetail.getDateTimeCreated();
@@ -42,7 +43,7 @@ public class CaseView {
         }
 
         completed = caseDetail.getCompleted();
-        assigned = caseDetail.getAssigneeId() == null ? false : true;
+        assigned = caseDetail.getAssigneeId() != null;
 
         this.costs = caseDetail.getCosts();
         this.postingDate = caseDetail.getPostingDate();
@@ -50,7 +51,8 @@ public class CaseView {
         this.libraCaseNumber = caseDetail.getLibraCaseNumber();
         this.reopenedInLibraReason = caseDetail.getReopenedInLibraReason();
         this.enterpriseId = caseDetail.getEnterpriseId();
-        this.onlinePleaReceived = Boolean.valueOf(caseDetail.getOnlinePleaReceived());
+        this.onlinePleaReceived = Boolean.TRUE.equals(caseDetail.getOnlinePleaReceived());
+        this.datesToAvoid = caseDetail.getDatesToAvoid();
     }
 
     public String getId() {
@@ -111,5 +113,9 @@ public class CaseView {
 
     public boolean isOnlinePleaReceived() {
         return onlinePleaReceived;
+    }
+
+    public String getDatesToAvoid() {
+        return datesToAvoid;
     }
 }

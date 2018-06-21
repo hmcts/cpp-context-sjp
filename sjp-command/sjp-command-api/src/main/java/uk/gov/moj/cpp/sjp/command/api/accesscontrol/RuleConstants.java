@@ -9,6 +9,7 @@ import java.util.List;
 public final class RuleConstants {
 
     private static final String GROUP_SYSTEM_USERS = "System Users";
+    private static final String GROUP_SUPPORT_USERS = "Support Users";
     private static final String GROUP_ONLINE_PLEA_SYSTEM_USERS = "Online Plea System Users";
     private static final String GROUP_SJP_PROSECUTORS = "SJP Prosecutors";
     private static final String GROUP_LEGAL_ADVISERS = "Legal Advisers";
@@ -88,6 +89,22 @@ public final class RuleConstants {
     }
 
     public static List<String> getStartSessionGroups() {
+        return Arrays.asList(GROUP_LEGAL_ADVISERS);
+    }
+
+    public static List<String> getMigrateSessionGroups() {
+        return Arrays.asList(GROUP_SUPPORT_USERS);
+    }
+
+    public static List<String> getAddDatesToAvoidActionGroups() {
+        return Arrays.asList(GROUP_SJP_PROSECUTORS);
+    }
+
+    public static List<String> getEndSessionGroups() {
+        return Arrays.asList(GROUP_LEGAL_ADVISERS);
+    }
+
+    public static List<String> getAssignCaseGroups() {
         return Arrays.asList(GROUP_LEGAL_ADVISERS);
     }
 }

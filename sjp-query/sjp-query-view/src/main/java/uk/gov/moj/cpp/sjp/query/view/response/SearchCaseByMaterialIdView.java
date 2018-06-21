@@ -3,12 +3,14 @@ package uk.gov.moj.cpp.sjp.query.view.response;
 
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 
+import java.util.UUID;
+
 public class SearchCaseByMaterialIdView {
 
-    private String caseId;
+    private UUID caseId;
     private ProsecutingAuthority prosecutingAuthority;
 
-    public SearchCaseByMaterialIdView(String caseId, ProsecutingAuthority prosecutingAuthority) {
+    public SearchCaseByMaterialIdView(UUID caseId, ProsecutingAuthority prosecutingAuthority) {
         this.caseId = caseId;
         this.prosecutingAuthority = prosecutingAuthority;
     }
@@ -17,7 +19,7 @@ public class SearchCaseByMaterialIdView {
         this(null, null);
     }
 
-    public String getCaseId() {
+    public UUID getCaseId() {
         return caseId;
     }
 

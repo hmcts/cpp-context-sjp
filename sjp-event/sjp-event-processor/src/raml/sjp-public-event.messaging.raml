@@ -64,12 +64,6 @@ baseUri: message://event/processor/message/sjp
                   application/vnd.public.sjp.employer-deleted+json:
                       schema: !include json/schema/public.sjp.employer-deleted.json
                       example: !include json/public.sjp.employer-deleted.json
-                  application/vnd.public.sjp.events.offences-for-defendant-updated+json:
-                       schema: !include json/schema/public.sjp.events.offences-for-defendant-updated.json
-                       example: !include json/public.sjp.events.offences-for-defendant-updated.json
-                  application/vnd.public.sjp.events.defendant-offences-does-not-have-required-modeoftrial+json:
-                       schema: !include json/schema/public.sjp.events.defendant-offences-does-not-have-required-modeoftrial.json
-                       example: !include json/public.sjp.events.defendant-offences-does-not-have-required-modeoftrial.json
                   application/vnd.public.sjp.court-referral-actioned+json:
                       schema: !include json/schema/public.sjp.court-referral-actioned.json
                       example: !include json/public.sjp.court-referral-actioned.json
@@ -77,3 +71,16 @@ baseUri: message://event/processor/message/sjp
                   application/vnd.public.sjp.session-started+json:
                       schema: !include json/schema/public.sjp.session-started.json
                       example: !include json/public.sjp.session-started.json
+                  application/vnd.public.sjp.case-not-assigned+json: !!null
+                  application/vnd.public.sjp.case-assigned+json:
+                      schema: !include json/schema/public.sjp.case-assigned.json
+                      example: !include json/public.sjp.case-assigned.json
+                  application/vnd.public.sjp.case-assignment-rejected+json:
+                      schema: !include json/schema/public.sjp.case-assignment-rejected.json
+                      example: !include json/public.sjp.case-assignment-rejected.json
+                  application/vnd.public.sjp.dates-to-avoid-added+json:
+                      schema: !include json/schema/public.sjp.events.dates-to-avoid-added.json
+                      example: !include json/public.sjp.events.dates-to-avoid-added.json
+                  application/vnd.public.sjp.dates-to-avoid-updated+json:
+                      schema: !include json/schema/public.sjp.events.dates-to-avoid-updated.json
+                      example: !include json/public.sjp.events.dates-to-avoid-updated.json

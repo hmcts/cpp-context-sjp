@@ -7,6 +7,8 @@ import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
@@ -21,7 +23,6 @@ import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -53,6 +54,7 @@ public class UpdateDefendantDetailsTest {
     private static final Address addressUpdated = new Address(ADDRESS_1_UPDATED, ADDRESS_2, ADDRESS_3, ADDRESS_4, POSTCODE);
     private static final LocalDate dateOfBirth = LocalDate.of(1980, 7, 15);
     private static final LocalDate dateOfBirthUpdated = LocalDate.of(1980, 6, 15);
+    private static final Clock clock = new UtcClock();
 
     private CaseAggregate caseAggregate;
 
@@ -63,7 +65,7 @@ public class UpdateDefendantDetailsTest {
 
     @Test
     public void shouldCreateUpdateEvents() {
-        Person person = new Person(title, firstName, lastName,
+        final Person person = new Person(title, firstName, lastName,
                 dateOfBirth, gender, address);
         caseAggregate.receiveCase(
                 CaseBuilder.aDefaultSjpCase().withDefendant(new Defendant(
@@ -77,11 +79,11 @@ public class UpdateDefendantDetailsTest {
                         0,
                         Lists.newArrayList()
                 )).build(),
-                ZonedDateTime.now()
+                clock.now()
         );
 
         Stream<Object> eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
-                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, person, ZonedDateTime.now());
+                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, person, clock.now());
 
         List<Object> events = asList(eventStream.toArray());
 
@@ -89,16 +91,16 @@ public class UpdateDefendantDetailsTest {
                 hasItem(isA(DefendantDetailsUpdated.class))
         );
 
-        DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(0);
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(0);
         assertThat(defendantDetailsUpdated.getFirstName(), is(firstName));
         assertThat(defendantDetailsUpdated.getLastName(), is(lastName));
         assertThat(defendantDetailsUpdated.getTitle(), is(title));
 
-        Person updatedPerson = new Person(title, firstNameUpdated, lastName,
+        final Person updatedPerson = new Person(title, firstNameUpdated, lastName,
                 dateOfBirthUpdated, gender, addressUpdated);
 
         eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
-                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, updatedPerson, ZonedDateTime.now());
+                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, updatedPerson, clock.now());
 
         events = asList(eventStream.toArray());
 
@@ -106,22 +108,22 @@ public class UpdateDefendantDetailsTest {
                 is(4)
         );
 
-        DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = (DefendantDateOfBirthUpdated) events.get(0);
+        final DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = (DefendantDateOfBirthUpdated) events.get(0);
         assertThat(defendantDateOfBirthUpdated.getOldDateOfBirth(), is(dateOfBirth));
         assertThat(defendantDateOfBirthUpdated.getNewDateOfBirth(), is(dateOfBirthUpdated));
 
-        DefendantAddressUpdated defendantAddressUpdated = (DefendantAddressUpdated) events.get(1);
+        final DefendantAddressUpdated defendantAddressUpdated = (DefendantAddressUpdated) events.get(1);
         assertThat(defendantAddressUpdated.getOldAddress().getAddress1(), is(ADDRESS_1));
         assertThat(defendantAddressUpdated.getNewAddress().getAddress1(), is(ADDRESS_1_UPDATED));
 
-        DefendantPersonalNameUpdated defendantPersonalNameUpdated = (DefendantPersonalNameUpdated) events.get(2);
+        final DefendantPersonalNameUpdated defendantPersonalNameUpdated = (DefendantPersonalNameUpdated) events.get(2);
         assertThat(defendantPersonalNameUpdated.getOldPersonalName().getFirstName(), is(firstName));
         assertThat(defendantPersonalNameUpdated.getNewPersonalName().getFirstName(), is(firstNameUpdated));
     }
 
     @Test
     public void shouldFailValidation() {
-        Person personInfoDetails = new Person(title, firstName, lastName,
+        final Person personInfoDetails = new Person(title, firstName, lastName,
                 dateOfBirth, gender, address);
         caseAggregate.receiveCase(
                 new Case(
@@ -149,14 +151,14 @@ public class UpdateDefendantDetailsTest {
                                 Lists.newArrayList()
                         )
                 ),
-                ZonedDateTime.now()
+                clock.now()
         );
-        Person personInfoDetailsWithoutTitle = new Person(null, firstName, lastName,
+        final Person personInfoDetailsWithoutTitle = new Person(null, firstName, lastName,
                 dateOfBirth, gender, address);
-        Stream<Object> eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
-                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, personInfoDetailsWithoutTitle, ZonedDateTime.now());
+        final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
+                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, personInfoDetailsWithoutTitle, clock.now());
 
-        List<Object> events = asList(eventStream.toArray());
+        final List<Object> events = asList(eventStream.toArray());
 
         assertThat("has no defendant details Updated failed event", events,
                 hasItem(isA(DefendantDetailsUpdateFailed.class)));

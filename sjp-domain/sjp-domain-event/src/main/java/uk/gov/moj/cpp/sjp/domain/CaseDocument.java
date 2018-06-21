@@ -2,17 +2,18 @@ package uk.gov.moj.cpp.sjp.domain;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CaseDocument implements Serializable {
 
-    private static final long serialVersionUID = 2677950639351341051L;
+    private static final long serialVersionUID = 1L;
 
-    private final String id;
+    private final UUID id;
 
-    private final String materialId;
+    private final UUID materialId;
 
     private String documentName;
 
@@ -20,18 +21,18 @@ public class CaseDocument implements Serializable {
 
     private final ZonedDateTime addedAt;
 
-    public CaseDocument(String id, String materialId, String documentType, ZonedDateTime addedAt) {
+    public CaseDocument(UUID id, UUID materialId, String documentType, ZonedDateTime addedAt) {
         this.id = id;
         this.materialId = materialId;
         this.documentType = documentType;
         this.addedAt = addedAt;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    public String getMaterialId() {
+    public UUID getMaterialId() {
         return materialId;
     }
 

@@ -2,8 +2,8 @@ package uk.gov.moj.sjp.it.util;
 
 
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.test.utils.core.http.RequestParams;
 
@@ -23,11 +23,7 @@ public class WiremockTestHelper {
     }
 
     public static void waitForStubToBeReady(String resource, String mediaType, Status expectedStatus) {
-        RequestParams requestParams = requestParams(BASE_URI + resource, mediaType).build();
-
-        poll(requestParams)
-                .until(
-                        status().is(expectedStatus)
-                );
+        final RequestParams requestParams = requestParams(BASE_URI + resource, mediaType).build();
+        pollWithDefaults(requestParams).until(status().is(expectedStatus));
     }
 }

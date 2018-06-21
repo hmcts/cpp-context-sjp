@@ -29,7 +29,6 @@ public class CaseSearchResult implements Serializable {
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "case_id", updatable = false, insertable = false, foreignKey = @ForeignKey(name = "none", value = NO_CONSTRAINT))
-    @org.hibernate.annotations.ForeignKey(name = "none")
     private CaseSummary caseSummary;
 
     // because there is no foreign key we can create this entity before the CaseSummary if we want

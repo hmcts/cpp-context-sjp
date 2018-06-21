@@ -25,7 +25,7 @@ public class OffenceToOffenceDetailTest {
 
         OffenceDetail outputOffence = offenceToOffenceDetail.convert(inputOffence);
 
-        OffenceDetail expectedoffence = OffenceDetail.builder()
+        OffenceDetail expectedOffence = OffenceDetail.builder()
                 .setId(inputOffence.getId())
                 .setCode(inputOffence.getLibraOffenceCode())
                 .setSequenceNumber(inputOffence.getOffenceSequenceNo())
@@ -38,6 +38,6 @@ public class OffenceToOffenceDetailTest {
                 .withCompensation(inputOffence.getCompensation())
                 .build();
 
-        assertTrue(reflectionEquals(outputOffence, expectedoffence));
+        assertTrue(reflectionEquals(outputOffence, expectedOffence));
     }
 }

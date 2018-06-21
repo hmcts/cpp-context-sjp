@@ -8,6 +8,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 
@@ -22,10 +23,10 @@ public class NotifyStub {
         InternalEndpointMockUtils.stubPingFor("notificationnotify-service");
 
         stubFor(post(urlPathMatching(COMMAND_URL + ".*"))
-                .withHeader("Content-Type", equalTo(COMMAND_MEDIA_TYPE))
+                .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE))
                 .willReturn(aResponse().withStatus(ACCEPTED.getStatusCode())
                         .withHeader("CPPID", randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)));
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)));
     }
 
     public static void verifyNotification(final String email, final String urn) {

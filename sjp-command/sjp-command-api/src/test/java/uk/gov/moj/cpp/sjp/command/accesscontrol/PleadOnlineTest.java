@@ -1,13 +1,14 @@
 package uk.gov.moj.cpp.sjp.command.accesscontrol;
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.eq;
 import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getPleadOnlineActionGroups;
 
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
-import java.util.Arrays;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
@@ -35,7 +36,7 @@ public class PleadOnlineTest extends BaseDroolsAccessControlTest {
     @Test
     public void shouldNotAllowUserNotInAuthorisedGroupToUpdatePlea() {
         final Action action = createActionFor(SJP_COMMAND_PLEAD_ONLINE);
-        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, Arrays.asList("random group")))
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, eq(anyListOf(String.class))))
                 .willReturn(true);
 
         final ExecutionResults results = executeRulesWith(action);

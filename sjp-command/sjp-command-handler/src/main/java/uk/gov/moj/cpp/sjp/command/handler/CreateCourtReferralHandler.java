@@ -9,6 +9,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -27,7 +28,7 @@ public class CreateCourtReferralHandler extends CaseCommandHandler {
 
         final JsonObject payload = command.payloadAsJsonObject();
         applyToCaseAggregate(command, aggregate -> aggregate.createCourtReferral(
-                payload.getString("caseId"),
+                UUID.fromString(payload.getString("caseId")),
                 LocalDate.parse(payload.getString("hearingDate"))));
     }
 

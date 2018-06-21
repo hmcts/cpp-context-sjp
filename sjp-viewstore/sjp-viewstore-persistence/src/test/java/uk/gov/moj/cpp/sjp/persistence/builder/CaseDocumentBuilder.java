@@ -1,11 +1,14 @@
 package uk.gov.moj.cpp.sjp.persistence.builder;
 
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 public class CaseDocumentBuilder {
+
+    private static final Clock clock = new UtcClock();
 
     private UUID id;
     private UUID materialId;
@@ -32,7 +35,7 @@ public class CaseDocumentBuilder {
     }
 
     public CaseDocument build() {
-        return new CaseDocument(id, materialId, documentType, ZonedDateTime.now(), UUID.randomUUID(), 1);
+        return new CaseDocument(id, materialId, documentType, clock.now(), UUID.randomUUID(), 1);
     }
 
 }

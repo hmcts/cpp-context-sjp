@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-command</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>0.0.22-SNAPSHOT</version>
+        <version>1.0.69-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -35,30 +35,6 @@
                         <groupId>uk.gov.moj.cpp.referencedata</groupId>
                         <artifactId>referencedata-query-api</artifactId>
                         <version>${referencedata.version}</version>
-                        <classifier>raml</classifier>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
-                        <groupId>uk.gov.moj.cpp.assignment</groupId>
-                        <artifactId>assignment-query-api</artifactId>
-                        <version>${assignment.version}</version>
-                        <classifier>raml</classifier>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
-                        <groupId>uk.gov.moj.cpp.resulting</groupId>
-                        <artifactId>resulting-query-api</artifactId>
-                        <version>${resulting.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>

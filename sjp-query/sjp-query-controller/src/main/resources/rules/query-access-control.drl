@@ -43,14 +43,6 @@ rule "sjp.query.case-documents"
     $outcome.setSuccess(true);
 end
 
-rule "sjp.query.case-defendants"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.case-defendants");
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "sjp.query.case-by-urn-postcode"
   when
     $outcome: Outcome();
@@ -63,14 +55,6 @@ rule "sjp.query.cases-search-by-material-id"
   when
     $outcome: Outcome();
     $action: Action(name == "sjp.query.cases-search-by-material-id");
-  then
-    $outcome.setSuccess(true);
-end
-
-rule "sjp.query.cases-search"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.cases-search");
   then
     $outcome.setSuccess(true);
 end
@@ -143,6 +127,46 @@ rule "sjp.query.defendants-online-plea"
   when
     $outcome: Outcome();
     $action: Action(name == "sjp.query.defendants-online-plea");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.pending-dates-to-avoid"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.pending-dates-to-avoid");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.session");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.ready-cases-reasons-counts"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.ready-cases-reasons-counts");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.ready-cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.ready-cases");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-assignment"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-assignment");
   then
     $outcome.setSuccess(true);
 end

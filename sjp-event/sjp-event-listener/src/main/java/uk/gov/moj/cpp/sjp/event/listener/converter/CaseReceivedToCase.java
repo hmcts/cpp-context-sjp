@@ -12,7 +12,7 @@ public class CaseReceivedToCase implements Converter<CaseReceived, CaseDetail> {
     public CaseDetail convert(CaseReceived event) {
         return new CaseDetail(event.getCaseId(),
                 event.getUrn(),
-                event.getProsecutingAuthority().toString(),
+                event.getProsecutingAuthority(),
                 null,
                 false,
                 null,

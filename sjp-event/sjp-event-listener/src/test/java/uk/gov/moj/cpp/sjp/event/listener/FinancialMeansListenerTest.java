@@ -7,8 +7,8 @@ import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
@@ -74,7 +74,7 @@ public class FinancialMeansListenerTest {
     @InjectMocks
     private FinancialMeansListener financialMeansListener = new FinancialMeansListener();
 
-    private Clock clock = new StoppedClock(ZonedDateTime.now());
+    private Clock clock = new UtcClock();
     private ZonedDateTime now = clock.now();
 
     @Test

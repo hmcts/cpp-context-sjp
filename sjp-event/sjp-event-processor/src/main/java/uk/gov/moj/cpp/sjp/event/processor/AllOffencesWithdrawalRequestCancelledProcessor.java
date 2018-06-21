@@ -1,14 +1,15 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.CASE_ID;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
+import uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService;
+
+import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -17,17 +18,11 @@ import javax.inject.Inject;
 public class AllOffencesWithdrawalRequestCancelledProcessor {
 
     @Inject
-    private Sender sender;
-    @Inject
-    private Enveloper enveloper;
+    private CaseStateService caseStateService;
 
-    @Handles("sjp.events.all-offences-withdrawal-request-cancelled")
-    public void publishAllOffencesWithdrawalRequestCancelledEvent(final JsonEnvelope event) {
-        final JsonEnvelope newEventEnvelope = enveloper.withMetadataFrom(event,
-                "public.sjp.all-offences-withdrawal-request-cancelled")
-                .apply(createObjectBuilder()
-                        .add(CASE_ID, event.payloadAsJsonObject().getString(CASE_ID))
-                        .build());
-        sender.send(newEventEnvelope);
+    @Handles(AllOffencesWithdrawalRequestCancelled.EVENT_NAME)
+    public void handleWithdrawalRequestCancellation(final JsonEnvelope event) {
+        final UUID caseId = UUID.fromString(event.payloadAsJsonObject().getString(CASE_ID));
+        caseStateService.withdrawalRequestCancelled(caseId, event.metadata());
     }
 }

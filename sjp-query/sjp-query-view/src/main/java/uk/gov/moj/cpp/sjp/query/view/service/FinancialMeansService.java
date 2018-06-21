@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
-import uk.gov.moj.cpp.sjp.query.view.converter.FinancialMeansConverter;
 import uk.gov.moj.cpp.sjp.persistence.entity.FinancialMeans;
 import uk.gov.moj.cpp.sjp.persistence.repository.FinancialMeansRepository;
+import uk.gov.moj.cpp.sjp.query.view.converter.FinancialMeansConverter;
 
 import java.util.Optional;
 import java.util.UUID;

@@ -5,10 +5,6 @@ public class WitnessCall {
     private String contactDetails;
     private LanguageInterpreter languageInterpreter;
 
-    public WitnessCall() {
-        //default constructor
-    }
-
     public WitnessCall(String contactDetails, LanguageInterpreter languageInterpreter) {
         this.contactDetails = contactDetails;
         this.languageInterpreter = languageInterpreter;

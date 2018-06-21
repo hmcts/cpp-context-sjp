@@ -1,41 +1,43 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 
+import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.ASSIGNMENT_ASSIGNEE;
-import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.ASSIGNMENT_DOMAIN_OBJECT_ID;
-import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.ASSIGNMENT_NATURE_TYPE;
-import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.CASE_ASSIGNMENT_TYPE;
-import static uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants.CASE_ID;
+import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.UNKNOWN;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.ASSIGNEE_ID;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ASSIGNMENT_TYPE;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.REASON;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
+import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.event.processor.activiti.CaseAssignmentTimeoutProcess;
+import uk.gov.moj.cpp.sjp.event.processor.service.AssignmentService;
+import uk.gov.moj.cpp.sjp.event.session.CaseAlreadyAssigned;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRequested;
+import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
-import java.util.Optional;
+import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class AssignmentProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AssignmentProcessor.class.getCanonicalName());
-
-    static final String ASSIGNMENT_CONTEXT_ASSIGNMENT_CREATED = "assignment.assignment-created";
-    static final String ASSIGNMENT_CONTEXT_ASSIGNMENT_DELETED = "assignment.assignment-deleted";
-
-    static final String SJP_COMMAND_HANDLER_ASSIGNMENT_CREATED = "sjp.command.case-assignment-created";
-    static final String SJP_COMMAND_HANDLER_ASSIGNMENT_DELETED = "sjp.command.case-assignment-deleted";
+    private static final Duration CASE_TIMEOUT_DURATION = Duration.ofMinutes(60);
 
     @Inject
     private Sender sender;
@@ -43,50 +45,115 @@ public class AssignmentProcessor {
     @Inject
     private Enveloper enveloper;
 
-    @Handles(ASSIGNMENT_CONTEXT_ASSIGNMENT_CREATED)
-    public void handleAssignmentCreated(final JsonEnvelope envelope) {
-        final JsonObject payload = envelope.payloadAsJsonObject();
-        final String id = payload.getString(ASSIGNMENT_DOMAIN_OBJECT_ID, "NULL");
-        LOGGER.debug("Received assignment created message for id: {}", id);
+    @Inject
+    private AssignmentService assignmentService;
 
-        final String caseAssignmentTypeString = payload.getString(ASSIGNMENT_NATURE_TYPE, "NULL");
-        final Optional<CaseAssignmentType> caseAssignmentType = CaseAssignmentType.from(caseAssignmentTypeString);
+    @Inject
+    private CaseAssignmentTimeoutProcess caseAssignmentTimeoutProcess;
 
-        if (caseAssignmentType.isPresent()) {
-            final Optional<UUID> assignee = Optional.ofNullable(payload.getString(ASSIGNMENT_ASSIGNEE, null)).map(UUID::fromString);
-            sender.send(createEvent(SJP_COMMAND_HANDLER_ASSIGNMENT_CREATED, envelope, id, caseAssignmentType.get(), assignee));
+
+    @Handles(CaseAssignmentRequested.EVENT_NAME)
+    public void handleCaseAssignmentRequestedEvent(final JsonEnvelope caseAssignmentRequest) {
+        final JsonObject session = caseAssignmentRequest.payloadAsJsonObject().getJsonObject("session");
+
+        final UUID sessionId = UUID.fromString(session.getString("id"));
+        final SessionType sessionType = SessionType.valueOf(session.getString("type"));
+        final UUID userId = UUID.fromString(session.getString("userId"));
+        final String localJusticeAreaNationalCourtCode = session.getString("localJusticeAreaNationalCourtCode");
+
+        final List<AssignmentCandidate> assignmentCandidates = assignmentService.getAssignmentCandidates(caseAssignmentRequest, userId, localJusticeAreaNationalCourtCode, sessionType);
+
+        if (assignmentCandidates.isEmpty()) {
+            emitCaseNotAssignedPublicEvent(caseAssignmentRequest);
         } else {
-            LOGGER.debug("Ignoring non-ATCM assignment creation type: {}", caseAssignmentTypeString);
+            assignCase(caseAssignmentRequest, sessionId, assignmentCandidates);
         }
     }
 
-    @Handles(ASSIGNMENT_CONTEXT_ASSIGNMENT_DELETED)
-    public void handleAssignmentDeleted(final JsonEnvelope envelope) {
-        final JsonObject payload = envelope.payloadAsJsonObject();
-        final String id = payload.getString(ASSIGNMENT_DOMAIN_OBJECT_ID, "NULL");
-        LOGGER.debug("Received assignment deleted message for id: {}", id);
+    @Handles(CaseAssignmentRejected.EVENT_NAME)
+    public void handleCaseAssignmentRejectedEvent(final JsonEnvelope caseAssignmentRejectedEvent) {
+        final JsonObject publicEventPayload = createObjectBuilder()
+                .add(REASON, caseAssignmentRejectedEvent.payloadAsJsonObject().getString(REASON))
+                .build();
 
-        final String caseAssignmentTypeString = payload.getString(ASSIGNMENT_NATURE_TYPE, "unknown");
-        final Optional<CaseAssignmentType> caseAssignmentType = CaseAssignmentType.from(caseAssignmentTypeString);
-
-        if (caseAssignmentType.isPresent()) {
-            sender.send(createEvent(SJP_COMMAND_HANDLER_ASSIGNMENT_DELETED, envelope, id, caseAssignmentType.get(), Optional.empty()));
-        } else {
-            LOGGER.debug("Ignoring non-ATCM assignment deletion type: {}", caseAssignmentTypeString);
-        }
+        sender.send(enveloper.withMetadataFrom(caseAssignmentRejectedEvent, "public.sjp.case-assignment-rejected")
+                .apply(publicEventPayload));
     }
 
-    private JsonEnvelope createEvent(final String command,
-                                     final JsonEnvelope envelope,
-                                     final String id,
-                                     final CaseAssignmentType caseAssignmentType,
-                                     final Optional<UUID> assignee) {
-        final JsonObjectBuilder publicEventPayloadBuilder = Json.createObjectBuilder()
-                .add(CASE_ID, id)
-                .add(CASE_ASSIGNMENT_TYPE, caseAssignmentType.toString());
+    @Handles(CaseAssigned.EVENT_NAME)
+    public void handleCaseAssignedEvent(final JsonEnvelope caseAssignedEvent) {
+        final JsonObject caseAssigned = caseAssignedEvent.payloadAsJsonObject();
+        final UUID caseId = UUID.fromString(caseAssigned.getString(CASE_ID));
+        final String assigneeId = caseAssigned.getString(ASSIGNEE_ID);
+        final CaseAssignmentType caseAssignmentType = CaseAssignmentType.from(caseAssigned.getString(CASE_ASSIGNMENT_TYPE)).orElse(UNKNOWN);
 
-        assignee.ifPresent(a -> publicEventPayloadBuilder.add("assigneeId", a.toString()));
+        final JsonObject assignmentReplicationPayload = createObjectBuilder()
+                .add("id", UUID.randomUUID().toString())
+                .add("version", 0)
+                .add("domainObjectId", caseId.toString())
+                .add("assignmentNatureType", caseAssignmentType.toString())
+                .add("assignee", assigneeId)
+                .build();
 
-        return enveloper.withMetadataFrom(envelope, command).apply(publicEventPayloadBuilder.build());
+        //TODO remove (ATCM-3097)
+        sender.send(enveloper.withMetadataFrom(caseAssignedEvent, "assignment.command.add-assignment-to")
+                .apply(assignmentReplicationPayload));
+
+        caseAssignmentTimeoutProcess.startTimer(caseId, CASE_TIMEOUT_DURATION);
+
+        emitCaseAssignedPublicEvent(caseId, caseAssignedEvent);
+    }
+
+    @Handles(CaseAlreadyAssigned.EVENT_NAME)
+    public void handleCaseAlreadyAssignedEvent(final JsonEnvelope caseAssignedEvent) {
+        final UUID caseId = UUID.fromString(caseAssignedEvent.payloadAsJsonObject().getString(CASE_ID));
+
+        caseAssignmentTimeoutProcess.resetTimer(caseId, CASE_TIMEOUT_DURATION);
+
+        emitCaseAssignedPublicEvent(caseId, caseAssignedEvent);
+    }
+
+    @Handles(CaseUnassigned.EVENT_NAME)
+    public void handleCaseUnassignedEvent(final JsonEnvelope caseUnassignedEvent) {
+
+        final UUID caseId = UUID.fromString(caseUnassignedEvent.payloadAsJsonObject().getString(CASE_ID));
+
+        final JsonObject assignmentReplicationPayload = createObjectBuilder()
+                .add("domainObjectId", caseId.toString())
+                .build();
+
+        caseAssignmentTimeoutProcess.cancelTimer(caseId);
+
+        //TODO remove (ATCM-3097)
+        sender.send(enveloper.withMetadataFrom(caseUnassignedEvent, "assignment.command.remove-assignment")
+                .apply(assignmentReplicationPayload));
+    }
+
+    private void emitCaseNotAssignedPublicEvent(final JsonEnvelope envelope) {
+        sender.send(enveloper.withMetadataFrom(envelope, "public.sjp.case-not-assigned")
+                .apply(createObjectBuilder().build()));
+    }
+
+    private void emitCaseAssignedPublicEvent(final UUID caseId, final JsonEnvelope event) {
+        final JsonObject publicEventPayload = createObjectBuilder()
+                .add(CASE_ID, caseId.toString())
+                .build();
+
+        sender.send(enveloper.withMetadataFrom(event, "public.sjp.case-assigned")
+                .apply(publicEventPayload));
+    }
+
+    private void assignCase(final JsonEnvelope envelope, final UUID sessionId, final List<AssignmentCandidate> assignmentCandidates) {
+        final JsonArrayBuilder assignmentCandidatesBuilder = Json.createArrayBuilder();
+        assignmentCandidates.forEach(assignmentCandidate -> assignmentCandidatesBuilder.add(createObjectBuilder()
+                .add("caseId", assignmentCandidate.getCaseId().toString())
+                .add("caseStreamVersion", assignmentCandidate.getCaseStreamVersion())));
+
+        final JsonObject payload = createObjectBuilder()
+                .add("sessionId", sessionId.toString())
+                .add("assignmentCandidates", assignmentCandidatesBuilder)
+                .build();
+
+        sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.assign-case-from-candidates-list").apply(payload));
     }
 }

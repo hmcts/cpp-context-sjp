@@ -4,6 +4,7 @@ import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
 
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseReferredToCourt;
 
@@ -130,21 +131,28 @@ public class CaseDetail implements Serializable {
     @Column(name = "online_plea_received")
     private Boolean onlinePleaReceived = Boolean.FALSE;
 
+    @Column(name = "dates_to_avoid")
+    private String datesToAvoid;
+
     public CaseDetail() {
         defendant.setCaseDetail(this);
     }
 
+    public CaseDetail(final UUID id) {
+        this();
+        this.id = id;
+    }
+
     public CaseDetail(final UUID id,
                       final String urn,
-                      final String prosecutingAuthority,
+                      final ProsecutingAuthority prosecutingAuthority,
                       final String initiationCode,
                       final Boolean completed,
                       final UUID assigneeId,
                       final ZonedDateTime createdOn, final DefendantDetail defendantDetail, final BigDecimal costs, final LocalDate postingDate) {
-        this();
-        this.id = id;
+        this(id);
         this.urn = urn;
-        this.prosecutingAuthority = prosecutingAuthority;
+        this.prosecutingAuthority = prosecutingAuthority == null ? null : prosecutingAuthority.name();
         this.initiationCode = initiationCode;
         this.completed = completed;
         this.assigneeId = assigneeId;
@@ -205,12 +213,12 @@ public class CaseDetail implements Serializable {
         this.initiationCode = initiationCode;
     }
 
-    public String getProsecutingAuthority() {
-        return prosecutingAuthority;
+    public ProsecutingAuthority getProsecutingAuthority() {
+        return this.prosecutingAuthority == null ? null : ProsecutingAuthority.valueOf(prosecutingAuthority);
     }
 
-    public void setProsecutingAuthority(String prosecutingAuthority) {
-        this.prosecutingAuthority = prosecutingAuthority;
+    public void setProsecutingAuthority(ProsecutingAuthority prosecutingAuthority) {
+        this.prosecutingAuthority = prosecutingAuthority == null ? null : prosecutingAuthority.name();
     }
 
     public Boolean getCompleted() {
@@ -323,6 +331,14 @@ public class CaseDetail implements Serializable {
 
     public void setCaseSearchResults(Set<CaseSearchResult> caseSearchResults) {
         this.caseSearchResults = caseSearchResults;
+    }
+
+    public String getDatesToAvoid() {
+        return datesToAvoid;
+    }
+
+    public void setDatesToAvoid(final String datesToAvoid) {
+        this.datesToAvoid = datesToAvoid;
     }
 
     @Override

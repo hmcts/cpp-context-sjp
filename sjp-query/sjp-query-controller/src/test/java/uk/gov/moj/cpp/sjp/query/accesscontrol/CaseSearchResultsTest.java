@@ -21,12 +21,12 @@ public class CaseSearchResultsTest extends BaseDroolsAccessControlTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         action = createActionFor(CONTENT_TYPE);
     }
 
     @Test
-    public void shouldFallThrough() throws Exception {
+    public void shouldFallThrough() {
         assertSuccessfulOutcome(executeRulesWith(action));
     }
 }

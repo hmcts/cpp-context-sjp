@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-command</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>0.0.22-SNAPSHOT</version>
+        <version>1.0.69-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -71,7 +71,6 @@
             <artifactId>commons-testing</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -91,6 +90,12 @@
                                 <artifactId>*</artifactId>
                             </exclusion>
                         </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.referencedata</groupId>
+                        <artifactId>referencedata-query-api</artifactId>
+                        <version>${referencedata.version}</version>
+                        <classifier>raml</classifier>
                     </dependency>
                 </dependencies>
             </plugin>

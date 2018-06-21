@@ -33,7 +33,7 @@ public class CreateCaseTest extends BaseDroolsAccessControlTest {
     }
 
     @Test
-    public void shouldNotAllowUnathrorisedUserToCreateCase() {
+    public void shouldNotAllowUnauthorisedUserToCreateCase() {
         final String unAllowedGroup = "un allowed group";
         final Action action = createActionFor(SJP_COMMAND_CREATE_CASE);
         given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, Arrays.asList(unAllowedGroup)))

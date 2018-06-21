@@ -4,7 +4,6 @@ import static org.mockito.Mockito.verify;
 
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.command.controller.AddCaseDocumentController;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

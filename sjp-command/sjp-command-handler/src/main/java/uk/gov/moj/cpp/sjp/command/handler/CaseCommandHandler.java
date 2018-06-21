@@ -6,6 +6,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 
@@ -15,11 +16,12 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 
 public class CaseCommandHandler {
 
-    static final String CASE_ID = "caseId";
+    static final String STREAM_ID = "caseId";
 
     @Inject
     private EventSource eventSource;
@@ -41,9 +43,21 @@ public class CaseCommandHandler {
         eventStream.append(events.map(enveloper.withMetadataFrom(command)));
     }
 
-    protected UUID getCaseId(final JsonObject payload) {
-        return UUID.fromString(payload.getString(CASE_ID));
+    protected void applyToCaseAggregate(final UUID caseId, final Envelope<?> command, final Function<CaseAggregate, Stream<Object>> function) throws EventStreamException {
+        final EventStream eventStream = eventSource.getStreamById(caseId);
+        final CaseAggregate aCase = aggregateService.get(eventStream, CaseAggregate.class);
+
+        final Stream<Object> events = function.apply(aCase);
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(command.metadata(), JsonValue.NULL);
+        eventStream.append(events.map(enveloper.withMetadataFrom(jsonEnvelope)));
+
     }
 
+    protected UUID getCaseId(final JsonObject payload) {
+        return UUID.fromString(payload.getString(STREAM_ID));
+    }
 
+    protected UUID getUserId(final Envelope command) {
+        return command.metadata().userId().map(UUID::fromString).orElse(null);
+    }
 }

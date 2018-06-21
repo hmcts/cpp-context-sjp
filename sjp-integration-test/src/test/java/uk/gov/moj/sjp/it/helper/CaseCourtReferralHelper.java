@@ -8,15 +8,15 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCasesReferredToCourt;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
-import uk.gov.moj.sjp.it.EventSelector;
+import uk.gov.moj.sjp.it.Constants;
 
 import java.time.LocalDate;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +34,7 @@ public class CaseCourtReferralHelper implements AutoCloseable {
     private MessageConsumerClient publicConsumer = new MessageConsumerClient();
 
     public CaseCourtReferralHelper() {
-        publicConsumer.startConsumer("public.sjp.court-referral-actioned", EventSelector.PUBLIC_ACTIVE_MQ_TOPIC);
+        publicConsumer.startConsumer("public.sjp.court-referral-actioned", Constants.PUBLIC_ACTIVE_MQ_TOPIC);
         this.hearingDate = LocalDate.now().plusWeeks(1);
     }
 
@@ -61,7 +61,7 @@ public class CaseCourtReferralHelper implements AutoCloseable {
                                         final String firstName,
                                         final String lastName,
                                         final String interpreterLanguage) {
-        poll(getCasesReferredToCourt())
+        pollWithDefaults(getCasesReferredToCourt())
                 .timeout(20, TimeUnit.SECONDS)
                 .until(status().is(OK), payload().isJson(withJsonPath("$.cases",
                         hasItem(isJson(allOf(
@@ -75,7 +75,7 @@ public class CaseCourtReferralHelper implements AutoCloseable {
     }
 
     public void verifyCaseCourtReferralActioned(final String caseId) {
-        poll(getCasesReferredToCourt())
+        pollWithDefaults(getCasesReferredToCourt())
                 .until(status().is(OK), payload().isJson(withJsonPath("$.cases",
                         not(hasItem(isJson(withJsonPath("caseId", is(caseId))))))));
     }

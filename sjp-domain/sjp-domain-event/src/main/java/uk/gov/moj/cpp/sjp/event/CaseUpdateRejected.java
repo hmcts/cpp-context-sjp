@@ -6,10 +6,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 //generic event used to indicate to the front-end the update to a case couldn't be applied due to business rules
-@Event("sjp.events.case-update-rejected")
+@Event(CaseUpdateRejected.EVENT_NAME)
 public class CaseUpdateRejected {
 
-    //should match CaseUpdateHelper class
+    public static final String EVENT_NAME = "sjp.events.case-update-rejected";
+
     public enum RejectReason {
         WITHDRAWAL_PENDING,
         CASE_ASSIGNED,
@@ -18,10 +19,12 @@ public class CaseUpdateRejected {
         PLEA_ALREADY_SUBMITTED
     }
 
-    private UUID caseId;
-    private RejectReason reason;
+    private final UUID caseId;
+    private final RejectReason reason;
 
-    private CaseUpdateRejected() {}
+    private CaseUpdateRejected() {
+        this(null, null);
+    }
 
     public CaseUpdateRejected(final UUID caseId, final RejectReason rejectReason) {
         this.caseId = caseId;
@@ -45,12 +48,12 @@ public class CaseUpdateRejected {
             return false;
         }
         final CaseUpdateRejected that = (CaseUpdateRejected) o;
-        return Objects.equals(getCaseId(), that.getCaseId()) &&
-                Objects.equals(getReason(), that.getReason());
+        return Objects.equals(this.caseId, that.caseId) &&
+                Objects.equals(this.reason, that.reason);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getCaseId(), getReason());
+        return Objects.hash(caseId, reason);
     }
 }

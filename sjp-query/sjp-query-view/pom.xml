@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-query</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>0.0.22-SNAPSHOT</version>
+        <version>1.0.69-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -107,6 +107,11 @@
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-library</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.access-control</groupId>
+            <artifactId>access-control-common-providers</artifactId>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

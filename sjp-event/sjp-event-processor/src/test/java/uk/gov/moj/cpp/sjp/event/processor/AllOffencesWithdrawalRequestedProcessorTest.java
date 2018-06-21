@@ -1,58 +1,50 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static javax.json.Json.createObjectBuilder;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
-import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
+import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
+import uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService;
 
 import java.util.UUID;
 
-import javax.json.Json;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AllOffencesWithdrawalRequestedProcessorTest {
 
-    private static final String CASE_ID = UUID.randomUUID().toString();
+    @Mock
+    private CaseStateService caseStateService;
 
     @InjectMocks
     private AllOffencesWithdrawalRequestedProcessor allOffencesWithdrawalRequestedProcessor;
-    @Mock
-    private Sender sender;
-    @Captor
-    private ArgumentCaptor<JsonEnvelope> captor;
-    @Spy
-    private Enveloper envelopers = createEnveloper();
 
     @Test
-    public void publishAllOffencesWithdrawalRequestedPublicEvent() throws Exception {
+    public void shouldUpdateCaseState() {
 
-        final JsonEnvelope privateEvent = createEnvelope("sjp.events.all-offences-withdrawal-requested",
-                Json.createObjectBuilder().add("caseId", CASE_ID).build());
-        allOffencesWithdrawalRequestedProcessor.publishAllOffencesWithdrawalEvent(privateEvent);
+        final UUID caseId = UUID.randomUUID();
 
-        verify(sender).send(captor.capture());
-        final JsonEnvelope publicEvent = captor.getValue();
-        assertThat(publicEvent, jsonEnvelope(
-                metadata().withName("public.sjp.all-offences-withdrawal-requested"),
-                payloadIsJson(withJsonPath("$.caseId", equalTo(CASE_ID)))
-        ));
+        final JsonEnvelope privateEvent = createEnvelope(AllOffencesWithdrawalRequested.EVENT_NAME,
+                createObjectBuilder().add(CASE_ID, caseId.toString()).build());
+        allOffencesWithdrawalRequestedProcessor.handleAllOffencesWithdrawalEvent(privateEvent);
+
+        verify(caseStateService).withdrawalRequested(caseId, privateEvent.metadata());
+    }
+
+    @Test
+    public void shouldHandleAllOffencesWithdrawalRequested() {
+        assertThat(AllOffencesWithdrawalRequestedProcessor.class, isHandlerClass(EVENT_PROCESSOR)
+                .with(method("handleAllOffencesWithdrawalEvent").thatHandles(AllOffencesWithdrawalRequested.EVENT_NAME)));
     }
 }

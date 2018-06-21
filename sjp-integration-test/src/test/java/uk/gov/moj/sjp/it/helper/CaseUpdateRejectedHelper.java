@@ -1,6 +1,7 @@
 package uk.gov.moj.sjp.it.helper;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
@@ -38,6 +39,7 @@ public class CaseUpdateRejectedHelper implements AutoCloseable {
 
     private void verifyCaseUpdateRejectedInActiveMQ(final MessageConsumer messageConsumer, String reasonExpected) {
         final JsonPath messageInQueue = retrieveMessage(messageConsumer);
+        assertThat(messageInQueue, notNullValue());
         assertThat(messageInQueue.get(CASE_ID), equalTo(caseId.toString()));
         assertThat(messageInQueue.get("reason"), equalTo(reasonExpected));
     }

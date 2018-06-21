@@ -25,8 +25,9 @@ public class FileUtil {
                     Resources.getResource(path),
                     Charset.defaultCharset()
             );
-        } catch (Exception e) {
-            LOGGER.error(String.format("Error consuming file from location {}", path), e);
+        }
+        catch (Exception e) {
+            LOGGER.error("Error consuming file from location {}", path, e);
             fail("Error consuming file from location " + path);
         }
         return request;

@@ -23,11 +23,11 @@ public class CreateCourtReferralHandlerTest extends CaseCommandHandlerTest {
         final LocalDate hearingDate = LocalDate.now().plusWeeks(1);
         when(jsonObject.getString("hearingDate")).thenReturn(hearingDate.toString());
 
-        when(caseAggregate.createCourtReferral(CASE_ID.toString(), hearingDate)).thenReturn(events);
+        when(caseAggregate.createCourtReferral(CASE_ID, hearingDate)).thenReturn(events);
 
         createCourtReferralHandler.createCourtReferral(jsonEnvelope);
 
-        verify(caseAggregate).createCourtReferral(CASE_ID.toString(), hearingDate);
+        verify(caseAggregate).createCourtReferral(CASE_ID, hearingDate);
         verify(jsonObject).getString("hearingDate");
     }
 }

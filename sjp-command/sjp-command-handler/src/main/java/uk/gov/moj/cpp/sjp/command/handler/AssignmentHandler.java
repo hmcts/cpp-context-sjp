@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toList;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.DELEGATED_POWERS_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
 
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -35,6 +36,9 @@ public class AssignmentHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(AssignmentHandler.class);
 
     @Inject
+    private Clock clock;
+
+    @Inject
     private AggregateService aggregateService;
 
     @Inject
@@ -45,6 +49,29 @@ public class AssignmentHandler {
 
     @Handles("sjp.command.assign-case")
     public void assignCase(final JsonEnvelope command) throws EventStreamException {
+        final UUID sessionId = UUID.fromString(command.payloadAsJsonObject().getString("sessionId"));
+        final UUID userId = UUID.fromString(command.metadata().userId().get());
+
+        final EventStream sessionEventStream = eventSource.getStreamById(sessionId);
+        final Session session = aggregateService.get(sessionEventStream, Session.class);
+        final Stream<Object> events = session.requestCaseAssignment(userId);
+
+        sessionEventStream.append(events.map(enveloper.withMetadataFrom(command)));
+    }
+
+    @Handles("sjp.command.unassign-case")
+    public void unassignCase(final JsonEnvelope command) throws EventStreamException {
+        final UUID caseId = UUID.fromString(command.payloadAsJsonObject().getString("caseId"));
+
+        final EventStream caseEventStream = eventSource.getStreamById(caseId);
+        final CaseAggregate aCase = aggregateService.get(caseEventStream, CaseAggregate.class);
+        final Stream<Object> events = aCase.unassignCase();
+
+        caseEventStream.append(events.map(enveloper.withMetadataFrom(command)));
+    }
+
+    @Handles("sjp.command.assign-case-from-candidates-list")
+    public void assignCaseFromCandidatesList(final JsonEnvelope command) throws EventStreamException {
         final UUID sessionId = UUID.fromString(command.payloadAsJsonObject().getString("sessionId"));
 
         final EventStream sessionEventStream = eventSource.getStreamById(sessionId);
@@ -66,7 +93,7 @@ public class AssignmentHandler {
 
                 final CaseAssignmentType caseAssignmentType = session.getSessionType().equals(SessionType.MAGISTRATE) ? MAGISTRATE_DECISION : DELEGATED_POWERS_DECISION;
 
-                final Stream<Object> assignmentEvents = caseAggregate.assignCase(session.getId(), session.getUser(), caseAssignmentType);
+                final Stream<Object> assignmentEvents = caseAggregate.assignCase(session.getUser(), clock.now(), caseAssignmentType);
 
                 caseEventsStream.appendAfter(assignmentEvents.map(enveloper.withMetadataFrom(command)), assignmentCandidate.getCaseStreamVersion());
 

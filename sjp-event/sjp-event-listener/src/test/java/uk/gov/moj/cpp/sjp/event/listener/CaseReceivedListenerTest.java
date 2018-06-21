@@ -15,6 +15,7 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseReceivedToCase;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
@@ -69,16 +70,16 @@ public class CaseReceivedListenerTest {
     private JsonObjectToObjectConverter converter = new JsonObjectToObjectConverter();
 
     private static final UUID caseId = UUID.randomUUID();
-    private static final String urn = "TFL1234";
-    private static final String prosecutingAuthority = TFL.name();
+    private static final ProsecutingAuthority prosecutingAuthority = TFL;
+    private static final String urn = prosecutingAuthority.name() + "1234";
     private static final BigDecimal costs = BigDecimal.valueOf(12.23);
-    private static final LocalDate postingDate = LocalDates.from("2017-01-01");
+    private static final LocalDate postingDate = LocalDate.of(2017, 1, 1);
     private static final UUID defendantId = UUID.randomUUID();
 
     private static final String defendantTitle = "Mr";
     private static final String defendantFirstName = "John";
     private static final String defendantLastName = "Smith";
-    private static final LocalDate defendantDateOfBirth = LocalDates.from("1960-01-01");
+    private static final LocalDate defendantDateOfBirth = LocalDate.of(1960, 1, 1);
     private static final String defendantGender = "Male";
     private static final int numPreviousConvictions = 2;
 
@@ -91,11 +92,11 @@ public class CaseReceivedListenerTest {
     private static final UUID offenceId = UUID.randomUUID();
     private static final int offenceSequenceNo = 1;
     private static final String offenceCode = "PS00001";
-    private static final LocalDate chargeDate = LocalDates.from("2017-01-10");
-    private static final LocalDate offenceDate = LocalDates.from("2017-01-05");
+    private static final LocalDate chargeDate = LocalDate.of(2017, 1, 1);
+    private static final LocalDate offenceDate = LocalDate.of(2017, 1, 5);
     private static final String offenceWording = "this is offence wording";
     private static final String prosecutionFacts = "this is prosecution facts";
-    private static final String witnessStatement = "this is wintess statement";
+    private static final String witnessStatement = "this is witness statement";
     private static final BigDecimal compensation = BigDecimal.valueOf(2.34);
 
     @Test
@@ -233,7 +234,7 @@ public class CaseReceivedListenerTest {
         final JsonObject caseReceivedEventPayload = createObjectBuilder()
                 .add("caseId", caseId.toString())
                 .add("urn", urn)
-                .add("prosecutingAuthority", prosecutingAuthority)
+                .add("prosecutingAuthority", prosecutingAuthority.name())
                 .add("costs", costs)
                 .add("postingDate", LocalDates.to(postingDate))
                 .add("createdOn", caseCreatedOn)

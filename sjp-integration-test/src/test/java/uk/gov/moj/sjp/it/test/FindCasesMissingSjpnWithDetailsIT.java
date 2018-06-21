@@ -1,5 +1,6 @@
 package uk.gov.moj.sjp.it.test;
 
+import static java.time.ZoneOffset.UTC;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -44,7 +45,7 @@ public class FindCasesMissingSjpnWithDetailsIT extends BaseIntegrationTest {
     @Before
     public void init() {
         stubEnableAllCapabilities();
-        final LocalDate now = LocalDate.now();
+        final LocalDate now = LocalDate.now(UTC);
         sjpCasesYoungerThan21Days = Arrays.asList(
                 CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(21)),
                 CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(20)),
@@ -68,7 +69,9 @@ public class FindCasesMissingSjpnWithDetailsIT extends BaseIntegrationTest {
         sjpCasesWithoutSjpn = Stream.concat(sjpCasesYoungerThan21DaysWithoutSjpn.stream(), sjpCasesOlderThan21DaysWithoutSjpn.stream()).collect(toList());
 
         sjpnDocuments = sjpCasesWithSjpn.stream()
-                .map(casePayloadBuilder -> new CaseDocumentHelper(casePayloadBuilder.getId().toString())).collect(toList());
+                .map(CreateCase.CreateCasePayloadBuilder::getId)
+                .map(CaseDocumentHelper::new)
+                .collect(toList());
 
         sjpCases = Stream.concat(combinedSjpCasesYoungerThan21Days.stream(), combinedSjpCasesOlderThan21Days.stream()).collect(toList());
     }

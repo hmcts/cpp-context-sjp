@@ -19,4 +19,25 @@ public class SessionController {
     public void startSession(final JsonEnvelope envelope) {
         sender.send(envelope);
     }
+
+    @Handles("sjp.command.end-session")
+    public void endSession(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
+
+    @Handles("sjp.command.migrate-session")
+    public void migrateSession(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
+
+    @Handles("sjp.command.assign-case")
+    public void assignCase(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
+
+    @Handles("sjp.command.unassign-case")
+    public void unassignCase(final JsonEnvelope envelope) {
+        sender.send(envelope);
+    }
+
 }

@@ -40,11 +40,6 @@ public class SjpQueryApi {
         return requester.request(query);
     }
 
-    @Handles("sjp.query.cases-search")
-    public JsonEnvelope searchCasesByPersonId(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
     @Handles("sjp.query.case-search-results")
     public JsonEnvelope findCaseSearchResults(final JsonEnvelope query) {
         return requester.request(query);
@@ -62,11 +57,6 @@ public class SjpQueryApi {
 
     @Handles("sjp.query.case-documents")
     public JsonEnvelope findCaseDocuments(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
-    @Handles("sjp.query.case-defendants")
-    public JsonEnvelope findCaseDefendants(final JsonEnvelope query) {
         return requester.request(query);
     }
 
@@ -103,6 +93,26 @@ public class SjpQueryApi {
 
     @Handles("sjp.query.defendants-online-plea")
     public JsonEnvelope getDefendantsOnlinePlea(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
+    @Handles("sjp.query.pending-dates-to-avoid")
+    public JsonEnvelope getPendingDatesToAvoid(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
+    @Handles("sjp.query.ready-cases-reasons-counts")
+    public JsonEnvelope getReadyCasesReasonsCounts(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
+    @Handles("sjp.query.ready-cases")
+    public JsonEnvelope getReadyCases(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
+    @Handles("sjp.query.case-assignment")
+    public JsonEnvelope getCaseAssignment(final JsonEnvelope query) {
         return requester.request(query);
     }
 }

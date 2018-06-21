@@ -1,30 +1,37 @@
 package uk.gov.moj.sjp.it.test;
 
+import uk.gov.moj.cpp.sjp.event.CaseCompleted;
+import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.helper.CompleteCaseHelper;
+import uk.gov.moj.sjp.it.helper.EventListener;
+import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
+
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * Integration test for complete case.
- */
 public class CompleteCaseIT extends BaseIntegrationTest {
 
-    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
+    private UUID caseId = UUID.randomUUID();
 
     @Before
-    public void setUp()  {
-        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
-        CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
+    public void setUp() {
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseId);
+
+        new EventListener()
+                .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder));
     }
 
     @Test
-    public void completeCase() {
-        try (final CompleteCaseHelper completeCaseHelper = new CompleteCaseHelper(createCasePayloadBuilder.getId())) {
-            completeCaseHelper.completeCase();
-            completeCaseHelper.verifyInActiveMQ();
-            completeCaseHelper.assertCaseCompleted();
-        }
+    public void shouldCompleteCase() {
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
+        new EventListener()
+                .subscribe(CaseCompleted.EVENT_NAME)
+                .run(completeCaseProducer::completeCase);
+
+        completeCaseProducer.assertCaseCompleted();
     }
+
 }

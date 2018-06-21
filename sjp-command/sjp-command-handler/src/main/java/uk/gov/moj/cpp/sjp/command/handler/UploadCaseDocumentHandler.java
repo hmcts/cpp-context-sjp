@@ -7,9 +7,10 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.util.UUID;
+
 import javax.inject.Inject;
 import javax.json.JsonObject;
-import java.util.UUID;
 
 @SuppressWarnings("WeakerAccess")
 @ServiceComponent(Component.COMMAND_HANDLER)

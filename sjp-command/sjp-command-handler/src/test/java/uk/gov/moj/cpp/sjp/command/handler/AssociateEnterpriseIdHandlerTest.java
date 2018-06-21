@@ -62,7 +62,7 @@ public class AssociateEnterpriseIdHandlerTest {
 
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
 
-        associateEnterpriseIdHandler.associateEneterpriseId(command);
+        associateEnterpriseIdHandler.associateEnterpriseId(command);
 
         assertThat(eventStream, eventStreamAppendedWith(
                 streamContaining(

@@ -17,16 +17,16 @@ public class CaseSearchResultService {
 
     @Transactional
     public void onDefendantDetailsUpdated(final UUID caseId, final String newFirstName, final String newLastName, final LocalDate newDateOfBirth, final ZonedDateTime dateAdded) {
-        final CaseSearchResultList exisingEntryList = new CaseSearchResultList(repository.findByCaseId(caseId));
+        final CaseSearchResultList existingEntryList = new CaseSearchResultList(repository.findByCaseId(caseId));
 
-        if (exisingEntryList.hasDateOfBirthChanged(newDateOfBirth)) {
-            exisingEntryList.setDateOfBirth(newDateOfBirth);
+        if (existingEntryList.hasDateOfBirthChanged(newDateOfBirth)) {
+            existingEntryList.setDateOfBirth(newDateOfBirth);
         }
-        if (exisingEntryList.hasNameChanged(newFirstName, newLastName)) {
-            exisingEntryList.setName(caseId, newFirstName, newLastName, newDateOfBirth, dateAdded);
+        if (existingEntryList.hasNameChanged(newFirstName, newLastName)) {
+            existingEntryList.setName(caseId, newFirstName, newLastName, newDateOfBirth, dateAdded);
         }
 
-        exisingEntryList.forEach(repository::save);
+        existingEntryList.forEach(repository::save);
     }
 
     @Transactional

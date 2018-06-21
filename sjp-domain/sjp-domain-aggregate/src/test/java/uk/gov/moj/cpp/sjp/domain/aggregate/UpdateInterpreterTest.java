@@ -9,6 +9,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
@@ -16,7 +18,6 @@ import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,22 +28,26 @@ public class UpdateInterpreterTest {
 
     private static final String LANGUAGE = "French";
 
+    private Clock clock;
     private CaseAggregate caseAggregate;
     private UUID caseId;
     private UUID defendantId;
+    private UUID userId;
 
     @Before
     public void initialiseCase() {
+        clock = new UtcClock();
         caseAggregate = new CaseAggregate();
 
         CaseReceived caseReceived = receiveCase();
         caseId = caseReceived.getCaseId();
         defendantId = caseReceived.getDefendant().getId();
+        userId = randomUUID();
     }
 
     @Test
     public void shouldCreateInterpreterUpdatedForDefendantEvent() {
-        List<Object> events = caseAggregate.updateInterpreter(defendantId, LANGUAGE).collect(toList());
+        List<Object> events = caseAggregate.updateInterpreter(userId, defendantId, LANGUAGE).collect(toList());
 
         assertThat(events, hasSize(1));
 
@@ -56,16 +61,16 @@ public class UpdateInterpreterTest {
 
     @Test
     public void shouldNotCreateInterpreterUpdatedForDefendantEventIfInterpreterLanguageAlreadyExist() {
-        caseAggregate.updateInterpreter(defendantId, LANGUAGE);
+        caseAggregate.updateInterpreter(userId, defendantId, LANGUAGE);
 
-        assertThat(caseAggregate.updateInterpreter(defendantId, LANGUAGE).count(), is(0L));
+        assertThat(caseAggregate.updateInterpreter(userId, defendantId, LANGUAGE).count(), is(0L));
     }
 
     @Test
     public void shouldCreateInterpreterCancelledForDefendantEvent() {
-        caseAggregate.updateInterpreter(defendantId, LANGUAGE);
+        caseAggregate.updateInterpreter(userId, defendantId, LANGUAGE);
 
-        List<Object> events = caseAggregate.updateInterpreter(defendantId, null).collect(toList());
+        List<Object> events = caseAggregate.updateInterpreter(userId, defendantId, null).collect(toList());
 
         assertThat(events, hasSize(1));
 
@@ -77,7 +82,7 @@ public class UpdateInterpreterTest {
 
     @Test
     public void shouldNotCreateInterpreterCancelledForDefendantEventIfInterpreterDoestNotExist() {
-        long countedEvents = caseAggregate.updateInterpreter(defendantId, null).count();
+        long countedEvents = caseAggregate.updateInterpreter(userId, defendantId, null).count();
 
         assertThat(countedEvents, is(0L));
     }
@@ -85,19 +90,19 @@ public class UpdateInterpreterTest {
     @Test
     public void shouldCreateDefendantNotFoundEventIfDefendantDoesNotExist() {
         final UUID defendantId = randomUUID();
-        List<Object> events = caseAggregate.updateInterpreter(defendantId, LANGUAGE).collect(toList());
+        List<Object> events = caseAggregate.updateInterpreter(userId, defendantId, LANGUAGE).collect(toList());
 
         assertThat(events, hasSize(1));
         assertThat(reflectionEquals(
                 events.get(0),
-                new DefendantNotFound(defendantId.toString(), "Update interpreter")),
+                new DefendantNotFound(defendantId, "Update interpreter")),
                 is(true));
     }
 
     private CaseReceived receiveCase() {
         Case sjpCase = CaseBuilder.aDefaultSjpCase().build();
 
-        return caseAggregate.receiveCase(sjpCase, ZonedDateTime.now())
+        return caseAggregate.receiveCase(sjpCase, clock.now())
                 .filter(CaseReceived.class::isInstance)
                 .map(CaseReceived.class::cast)
                 .findFirst()

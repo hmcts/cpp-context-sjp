@@ -1,54 +1,162 @@
 package uk.gov.moj.sjp.it.helper;
 
-import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessageAsJsonObject;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static javax.json.Json.createObjectBuilder;
+import static javax.ws.rs.core.Response.Status.ACCEPTED;
+import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.Matchers.notNullValue;
+import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
-import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
+import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
+import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
+import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
+import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
-import uk.gov.moj.sjp.it.util.QueueUtil;
 
+import java.io.StringReader;
+import java.util.EnumMap;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.MessageConsumer;
 import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.ws.rs.core.Response;
 
-public class SessionHelper implements AutoCloseable {
+import com.google.common.base.Strings;
+import com.jayway.jsonpath.ReadContext;
+import org.hamcrest.Matcher;
 
-    private MessageConsumer privateMessageConsumer;
-    private MessageConsumer publicMessageConsumer;
+public class SessionHelper {
 
-    public SessionHelper() {
-        privateMessageConsumer = QueueUtil.privateEvents.createConsumerForMultipleSelectors("sjp.events.case-assigned");
-        publicMessageConsumer = QueueUtil.publicEvents.createConsumerForMultipleSelectors("public.sjp.session-started");
+    public static final String SESSION_STARTED_PUBLIC_EVENT = "public.sjp.session-started";
+    public static final String MAGISTRATE_SESSION_STARTED_EVENT = "sjp.events.magistrate-session-started";
+    public static final String DELEGATED_POWERS_SESSION_STARTED_EVENT = "sjp.events.delegated-powers-session-started";
+    public static final String DELEGATED_POWERS_SESSION_ENDED_EVENT = DelegatedPowersSessionEnded.EVENT_NAME;
+
+    private static final EnumMap<SessionType, String> SESSION_CREATED_EVENT_NAME_BY_SESSION_TYPE = new EnumMap(SessionType.class);
+
+    static {
+        SESSION_CREATED_EVENT_NAME_BY_SESSION_TYPE.put(SessionType.MAGISTRATE, MagistrateSessionStarted.EVENT_NAME);
+        SESSION_CREATED_EVENT_NAME_BY_SESSION_TYPE.put(SessionType.DELEGATED_POWERS, DelegatedPowersSessionStarted.EVENT_NAME);
     }
 
-    public void startSession(final UUID sessionId, final UUID userId, final String courtCode, final Optional<String> magistrate) {
-        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder()
-                .add("courtCode", courtCode);
-        magistrate.ifPresent(m -> payloadBuilder.add("magistrate", m));
+    public static UUID startDelegatedPowersSessionAsync(final UUID sessionId, final UUID userId, final String courtHouseOUCode) {
+        final JsonObject payload = createObjectBuilder()
+                .add("courtHouseOUCode", courtHouseOUCode)
+                .build();
+        return startSession(sessionId, userId, payload);
+    }
 
-        final String resource = String.format("/session/%s/", sessionId);
+    public static Optional<JsonEnvelope> startDelegatedPowersSessionAndWaitForEvent(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String eventName) {
+        return new EventListener().subscribe(eventName)
+                .run(() -> startDelegatedPowersSessionAsync(sessionId, userId, courtHouseOUCode))
+                .popEvent(eventName);
+    }
+
+    public static Optional<JsonEnvelope> startDelegatedPowersSession(final UUID sessionId, final UUID userId, final String courtHouseOUCode) {
+        return startDelegatedPowersSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, DelegatedPowersSessionStarted.EVENT_NAME);
+    }
+
+    public static UUID startMagistrateSessionAsync(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate) {
+        final JsonObject payload = createObjectBuilder()
+                .add("courtHouseOUCode", courtHouseOUCode)
+                .add("magistrate", magistrate)
+                .build();
+
+        return startSession(sessionId, userId, payload);
+    }
+
+    public static Optional<JsonEnvelope> startMagistrateSessionAndWaitForEvent(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate, final String eventName) {
+        return new EventListener().subscribe(eventName)
+                .run(() -> startMagistrateSessionAsync(sessionId, userId, courtHouseOUCode, magistrate))
+                .popEvent(eventName);
+    }
+
+    public static Optional<JsonEnvelope> startMagistrateSession(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final String magistrate) {
+        return startMagistrateSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, magistrate, MagistrateSessionStarted.EVENT_NAME);
+    }
+
+    public static void startSessionAsync(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final SessionType sessionType) {
+        switch (sessionType) {
+            case MAGISTRATE:
+                startMagistrateSessionAsync(sessionId, userId, courtHouseOUCode, "John Smith " + sessionId);
+                break;
+            case DELEGATED_POWERS:
+                startDelegatedPowersSessionAsync(sessionId, userId, courtHouseOUCode);
+                break;
+            default:
+                throw new UnsupportedOperationException(String.format("Creation session of type {} is not supported", sessionType));
+        }
+    }
+
+    public static Optional<JsonEnvelope> startSession(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final SessionType sessionType) {
+        return startSessionAndWaitForEvent(sessionId, userId, courtHouseOUCode, sessionType, SESSION_CREATED_EVENT_NAME_BY_SESSION_TYPE.get(sessionType));
+    }
+
+    public static Optional<JsonEnvelope> startSessionAndWaitForEvent(final UUID sessionId, final UUID userId, final String courtHouseOUCode, final SessionType sessionType, final String eventName) {
+        return new EventListener().subscribe(eventName)
+                .run(() -> startSessionAsync(sessionId, userId, courtHouseOUCode, sessionType))
+                .popEvent(eventName);
+    }
+
+    public static JsonObject getSession(final UUID sessionId, final UUID userId) {
+        return getSession(sessionId, userId, withJsonPath("$.startedAt", notNullValue()));
+    }
+
+    public static JsonObject getSession(final UUID sessionId, final UUID userId, final Matcher<? super ReadContext> payloadMatcher) {
+        final RequestParamsBuilder requestParamsBuilder = requestParams(getReadUrl("/sessions/" + sessionId), "application/vnd.sjp.query.session+json")
+                .withHeader(HeaderConstants.USER_ID, userId);
+        final String payload = pollWithDefaults(requestParamsBuilder)
+                .until(status().is(OK), payload().isJson(payloadMatcher)).getPayload();
+        return Json.createReader(new StringReader(payload)).readObject();
+    }
+
+    public static UUID endSession(final UUID sessionId, final UUID userId) {
+        final String contentType = "application/vnd.sjp.end-session+json";
+        final String url = String.format("/sessions/%s", sessionId);
+        return HttpClientUtil.makePostCall(userId, url, contentType, createObjectBuilder().build().toString(), ACCEPTED);
+    }
+
+    private static UUID startSession(final UUID sessionId, final UUID userId, final JsonObject payload) {
         final String contentType = "application/vnd.sjp.start-session+json";
-
-        HttpClientUtil.makePostCall(userId, resource, contentType, payloadBuilder.build().toString(), Response.Status.ACCEPTED);
+        final String url = String.format("/sessions/%s", sessionId);
+        return HttpClientUtil.makePostCall(userId, url, contentType, payload.toString(), ACCEPTED);
     }
 
-    public JsonEnvelope getEventFromPublicTopic() {
-        final String message = retrieveMessageAsJsonObject(publicMessageConsumer).get().toString();
-        return new DefaultJsonObjectEnvelopeConverter().asEnvelope(message);
+    public static UUID migrateSession(final UUID sessionId, final UUID userId, final String courthouseName, final String localJusticeAreaNationalCourtCode, final String startedAt) {
+        return migrateSession(sessionId, userId, courthouseName, localJusticeAreaNationalCourtCode, startedAt, "");
     }
 
-    public JsonEnvelope getEventFromPrivateTopic() {
-        final String message = retrieveMessageAsJsonObject(privateMessageConsumer).get().toString();
-        return new DefaultJsonObjectEnvelopeConverter().asEnvelope(message);
+    public static UUID migrateSession(final UUID sessionId,
+                                      final UUID userId,
+                                      final String courtHouseName,
+                                      final String localJusticeAreaNationalCourtCode,
+                                      final String startedAt,
+                                      final String magistrate) {
+
+        final JsonObjectBuilder sessionBuilder = createObjectBuilder()
+                .add("sessionId", sessionId.toString())
+                .add("userId", userId.toString())
+                .add("courtHouseName", courtHouseName)
+                .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                .add("startedAt", startedAt);
+
+        if (!Strings.isNullOrEmpty(magistrate)) {
+            sessionBuilder.add("magistrate", magistrate);
+        }
+
+        final JsonObject payload = sessionBuilder.build();
+
+        final String contentType = "application/vnd.sjp.migrate-session+json";
+        final String url = String.format("/sessions/%s", sessionId);
+        return HttpClientUtil.makePostCall(userId, url, contentType, payload.toString(), ACCEPTED);
     }
 
-    @Override
-    public void close() throws Exception {
-        privateMessageConsumer.close();
-        publicMessageConsumer.close();
-    }
 }

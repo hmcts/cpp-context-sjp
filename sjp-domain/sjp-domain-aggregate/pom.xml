@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-domain</artifactId>
-        <version>0.0.22-SNAPSHOT</version>
+        <version>1.0.69-SNAPSHOT</version>
     </parent>
 
     <artifactId>sjp-domain-aggregate</artifactId>
@@ -52,7 +52,7 @@
                                     <cucumberOutput>${project.build.directory}/cucumber.json
                                     </cucumberOutput>
                                     <skippedFails>true</skippedFails>
-                                    <buildNumber>${maven.build.timestamp}</buildNumber>
+                                    <buildNumber>${ci.build}</buildNumber>
                                 </configuration>
                             </execution>
                         </executions>

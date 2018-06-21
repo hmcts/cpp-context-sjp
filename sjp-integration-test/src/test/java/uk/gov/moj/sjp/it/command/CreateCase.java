@@ -2,18 +2,18 @@ package uk.gov.moj.sjp.it.command;
 
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
 import uk.gov.justice.services.common.converter.LocalDates;
-import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
+import uk.gov.moj.sjp.it.util.UrnProvider;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -61,7 +61,7 @@ public class CreateCase {
     }
 
     private JsonObject toJsonObjectRepresentingPayload(final CreateCasePayloadBuilder payloadBuilder) {
-        JsonObjectBuilder payload = createObjectBuilder();
+        final JsonObjectBuilder payload = createObjectBuilder();
 
         payload.add("id", payloadBuilder.id.toString());
         payload.add("urn", payloadBuilder.urn);
@@ -75,11 +75,12 @@ public class CreateCase {
         payload.add("timeOfHearing", "11:00");
         payload.add("costs", payloadBuilder.costs.doubleValue());
         payload.add("postingDate", LocalDates.to(payloadBuilder.postingDate));
-        payload.add("defendant", createObjectBuilder()
+
+        final JsonObjectBuilder defendantBuilder = createObjectBuilder()
                 .add("title", payloadBuilder.defendantBuilder.title)
                 .add("firstName", payloadBuilder.defendantBuilder.firstName)
                 .add("lastName", payloadBuilder.defendantBuilder.lastName)
-                .add("dateOfBirth", LocalDates.to(payloadBuilder.defendantBuilder.dateOfBirth))
+
                 .add("gender", payloadBuilder.defendantBuilder.gender)
                 .add("numPreviousConvictions", payloadBuilder.defendantBuilder.numPreviousConvictions)
                 .add("address", createObjectBuilder()
@@ -103,36 +104,33 @@ public class CreateCase {
                                 .add("witnessStatement", payloadBuilder.offenceBuilders.get(0).witnessStatement)
                                 .add("compensation", payloadBuilder.offenceBuilders.get(0).compensation.doubleValue())
                         )
-                )
-        );
+                );
+
+        Optional.ofNullable(payloadBuilder.defendantBuilder.dateOfBirth).map(LocalDates::to)
+                .ifPresent(dateOfBirth -> defendantBuilder.add("dateOfBirth", dateOfBirth));
+
+        payload.add("defendant", defendantBuilder);
 
         return payload.build();
     }
 
     public static class CreateCasePayloadBuilder {
-        public static final String PROSECUTING_AUTHORITY_PREFIX = TFL.name();
-
-        UUID id;
-        String urn;
-        ProsecutingAuthority prosecutingAuthority;
-        BigDecimal costs;
-        LocalDate postingDate;
-
-        DefendantBuilder defendantBuilder;
-
-        List<OffenceBuilder> offenceBuilders;
+        private UUID id;
+        private String urn;
+        private ProsecutingAuthority prosecutingAuthority;
+        private BigDecimal costs;
+        private LocalDate postingDate;
+        private DefendantBuilder defendantBuilder;
+        private List<OffenceBuilder> offenceBuilders;
 
         private CreateCasePayloadBuilder() {
             this.prosecutingAuthority = ProsecutingAuthority.TFL;
             this.costs = BigDecimal.valueOf(1.23);
             this.postingDate = LocalDate.of(2015, 12, 2);
-
             this.defendantBuilder = DefendantBuilder.withDefaults();
             this.offenceBuilders = Lists.newArrayList(OffenceBuilder.withDefaults());
             this.id = UUID.randomUUID();
-            this.urn = PROSECUTING_AUTHORITY_PREFIX + RandomGenerator.integer(100000000, 999999999).next();
-            this.prosecutingAuthority = ProsecutingAuthority.TFL;
-
+            this.urn = UrnProvider.generate(prosecutingAuthority);
             this.getOffenceBuilder().withId(UUID.randomUUID());
         }
 
@@ -150,8 +148,14 @@ public class CreateCase {
             return this;
         }
 
+        public CreateCasePayloadBuilder withOffenceId(final UUID offenceId) {
+            this.offenceBuilders.get(0).withId(offenceId);
+            return this;
+        }
+
         public CreateCasePayloadBuilder withProsecutingAuthority(final ProsecutingAuthority prosecutingAuthority) {
             this.prosecutingAuthority = prosecutingAuthority;
+            this.urn = UrnProvider.generate(prosecutingAuthority);
             return this;
         }
 
@@ -250,15 +254,15 @@ public class CreateCase {
     }
 
     public static class OffenceBuilder {
-        UUID id;
-        String libraOffenceCode;
-        LocalDate chargeDate;
-        int libraOffenceDateCode;
-        LocalDate offenceDate;
-        String offenceWording;
-        String prosecutionFacts;
-        String witnessStatement;
-        BigDecimal compensation;
+        private UUID id;
+        private String libraOffenceCode;
+        private LocalDate chargeDate;
+        private int libraOffenceDateCode;
+        private LocalDate offenceDate;
+        private String offenceWording;
+        private String prosecutionFacts;
+        private String witnessStatement;
+        private BigDecimal compensation;
 
         private OffenceBuilder() {
 
@@ -268,9 +272,9 @@ public class CreateCase {
             final OffenceBuilder builder = new OffenceBuilder();
 
             builder.libraOffenceCode = "PS00001";
-            builder.chargeDate = LocalDates.from("2016-01-01");
+            builder.chargeDate = LocalDate.of(2016, 1, 1);
             builder.libraOffenceDateCode = 1;
-            builder.offenceDate = LocalDates.from("2016-01-01");
+            builder.offenceDate = LocalDate.of(2016, 1, 1);
             builder.offenceWording = "Committed some offence";
             builder.prosecutionFacts = "No ticket at the gates, forgery";
             builder.witnessStatement = "Jumped over the barriers";

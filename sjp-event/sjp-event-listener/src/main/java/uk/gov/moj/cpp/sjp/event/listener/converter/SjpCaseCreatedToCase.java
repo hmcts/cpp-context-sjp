@@ -21,7 +21,7 @@ public class SjpCaseCreatedToCase implements Converter<SjpCaseCreated, CaseDetai
     public CaseDetail convert(SjpCaseCreated event) {
         return new CaseDetail(UUID.fromString(event.getId()),
                 event.getUrn(),
-                event.getProsecutingAuthority().toString(),
+                event.getProsecutingAuthority(),
                 event.getInitiationCode(),
                 false,
                 null,

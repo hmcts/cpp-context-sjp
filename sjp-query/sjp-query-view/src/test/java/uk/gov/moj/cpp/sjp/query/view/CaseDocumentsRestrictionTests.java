@@ -85,7 +85,7 @@ public class CaseDocumentsRestrictionTests {
         final CaseDocument caseDocument = CaseDocumentBuilder.aCaseDocument().withMaterialId(materialId).build();
         CaseDocumentsView caseDocumentsView = new CaseDocumentsView(Collections.singletonList(new CaseDocumentView(caseDocument)));
 
-        when(caseService.findCaseDocumentsFilterOtherAndFinancialMeans(caseId.toString()))
+        when(caseService.findCaseDocumentsFilterOtherAndFinancialMeans(caseId))
                 .thenReturn(caseDocumentsView);
 
         //when

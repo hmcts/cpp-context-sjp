@@ -17,8 +17,8 @@ import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuil
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -74,7 +74,7 @@ public class EmployerListenerTest {
     @Captor
     private ArgumentCaptor<OnlinePlea> onlinePleaCaptor;
 
-    private Clock clock = new StoppedClock(ZonedDateTime.now());
+    private Clock clock = new UtcClock();
     private ZonedDateTime now = clock.now();
     private DefendantDetail defendantDetail;
 
@@ -87,13 +87,12 @@ public class EmployerListenerTest {
 
     private EmployerUpdated stubEmployerUpdatedEvent(boolean updatedByOnlinePlea) {
         final UUID defendantId = UUID.randomUUID();
-        final uk.gov.moj.cpp.sjp.domain.Employer employer = new uk.gov.moj.cpp.sjp.domain.Employer(defendantId,"Test",
+        final uk.gov.moj.cpp.sjp.domain.Employer employer = new uk.gov.moj.cpp.sjp.domain.Employer(defendantId, "Test",
                 "123", "07777888999",
                 new Address("street", "suburb", "town", "county", "AA1 2BB"));
         if (updatedByOnlinePlea) {
             return EmployerUpdated.createEventForOnlinePlea(defendantId, employer, now);
-        }
-        else {
+        } else {
             return EmployerUpdated.createEvent(defendantId, employer);
         }
     }
@@ -153,7 +152,7 @@ public class EmployerListenerTest {
         assertThat(employer.getAddress4(), equalTo(employerUpdated.getAddress().getAddress4()));
         assertThat(employer.getPostcode(), equalTo(employerUpdated.getAddress().getPostcode()));
 
-        //check that OnlinePlea is contructed properly
+        //check that OnlinePlea is constructed properly
         assertThat(onlinePleaCaptor.getValue().getCaseId(), equalTo(defendantDetail.getCaseDetail().getId()));
         assertThat(onlinePleaCaptor.getValue().getEmployer().getName(), equalTo(employerUpdated.getName()));
         assertThat(onlinePleaCaptor.getValue().getEmployer().getEmployeeReference(), equalTo(employerUpdated.getEmployeeReference()));

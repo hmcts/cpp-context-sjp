@@ -33,15 +33,6 @@ rule "sjp.query.case-documents"
     $outcome.setSuccess(true);
 end
 
-rule "sjp.query.case-defendants"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.case-defendants");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCaseDefendantsActionGroups()))
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "sjp.query.case-by-urn-postcode"
   when
     $outcome: Outcome();
@@ -57,15 +48,6 @@ rule "sjp.query.cases-search-by-material-id"
     $outcome: Outcome();
     $action: Action(name == "sjp.query.cases-search-by-material-id");
      eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCasesSearchByMaterialIdActionGroups()))
-  then
-    $outcome.setSuccess(true);
-end
-
-rule "sjp.query.cases-search"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.cases-search");
-      eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCasesSearchActionGroups()))
   then
     $outcome.setSuccess(true);
 end
@@ -169,3 +151,47 @@ rule "sjp - Query - API - Get defendant's online plea"
     $outcome.setSuccess(true);
 end
 
+rule "sjp - Query - API - Get cases that are pending submission of dates-to-avoid for the case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.pending-dates-to-avoid");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryPendingDatesToAvoidActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.session");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQuerySessionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get case assignment"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-assignment");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCaseAssignmentGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get ready cases reasons counts"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.ready-cases-reasons-counts");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getReadyCasesReasonsCountsGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get ready cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.ready-cases");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getReadyCasesGroups()))
+  then
+    $outcome.setSuccess(true);
+end

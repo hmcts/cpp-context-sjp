@@ -30,7 +30,7 @@ public class AssociateEnterpriseIdHandler {
     private Enveloper enveloper;
 
     @Handles("sjp.command.associate-enterprise-id")
-    public void associateEneterpriseId(final JsonEnvelope command) throws EventStreamException {
+    public void associateEnterpriseId(final JsonEnvelope command) throws EventStreamException {
 
         final JsonObject payload = command.payloadAsJsonObject();
 

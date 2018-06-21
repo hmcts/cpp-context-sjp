@@ -41,8 +41,8 @@ public class DefendantUpdatedListener {
     @Transactional
     public void defendantNationalInsuranceNumberUpdated(final JsonEnvelope envelope) {
 
-        DefendantsNationalInsuranceNumberUpdated event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantsNationalInsuranceNumberUpdated.class);
-        DefendantDetail defendantDetail = caseRepository.findCaseDefendant(event.getCaseId());
+        final DefendantsNationalInsuranceNumberUpdated event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantsNationalInsuranceNumberUpdated.class);
+        final DefendantDetail defendantDetail = caseRepository.findCaseDefendant(event.getCaseId());
 
         if (!defendantDetail.getId().equals(event.getDefendantId())) {
             throw new IllegalArgumentException("Mismatch of defendant IDs: " + defendantDetail.getId() + " != " + event.getDefendantId() + " for case: " + defendantDetail.getCaseDetail().getId());
@@ -55,9 +55,9 @@ public class DefendantUpdatedListener {
     @Transactional
     public void defendantDetailsUpdated(final JsonEnvelope envelope) {
 
-        DefendantDetailsUpdated defendantDetailsUpdated = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantDetailsUpdated.class);
+        final DefendantDetailsUpdated defendantDetailsUpdated = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantDetailsUpdated.class);
 
-        CaseDetail caseDetail = caseRepository.findBy(defendantDetailsUpdated.getCaseId());
+        final CaseDetail caseDetail = caseRepository.findBy(defendantDetailsUpdated.getCaseId());
 
         if (caseDetail == null) {
             throw new IllegalArgumentException("Unable to update defendant's details of a case that does not exist: " + defendantDetailsUpdated.getCaseId());
@@ -81,12 +81,12 @@ public class DefendantUpdatedListener {
         }
     }
 
-    private void updateDefendant(DefendantDetail defendantDetailEntity, DefendantDetailsUpdated newData) {
+    private void updateDefendant(final DefendantDetail defendantDetailEntity, final DefendantDetailsUpdated newData) {
         if (defendantDetailEntity.getPersonalDetails() == null) {
             defendantDetailEntity.setPersonalDetails(new PersonalDetails());
         }
 
-        PersonalDetails entity = defendantDetailEntity.getPersonalDetails();
+        final PersonalDetails entity = defendantDetailEntity.getPersonalDetails();
 
         entity.setFirstName(newData.getFirstName());
         entity.setLastName(newData.getLastName());

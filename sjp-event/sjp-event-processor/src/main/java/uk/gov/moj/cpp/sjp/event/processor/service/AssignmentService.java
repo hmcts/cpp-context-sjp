@@ -1,14 +1,22 @@
 package uk.gov.moj.cpp.sjp.event.processor.service;
 
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 
+import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 
@@ -29,6 +37,10 @@ public class AssignmentService {
     @Inject
     @FrameworkComponent(EVENT_PROCESSOR)
     private Requester requester;
+
+    @Inject
+    @ServiceComponent(Component.EVENT_PROCESSOR)
+    private Sender sender;
 
     public List<AssignmentCandidate> getAssignmentCandidates(final JsonEnvelope envelope, final UUID legalAdviserId, final String courtCode, final SessionType sessionType) {
 
@@ -56,4 +68,12 @@ public class AssignmentService {
                 .collect(toList());
     }
 
+    public void unassignCase(final UUID caseId) {
+
+        final Metadata metadata = metadataBuilder().withId(randomUUID()).withName("sjp.command.unassign-case").build();
+
+        final JsonObject payload = createObjectBuilder().add(CASE_ID, caseId.toString()).build();
+
+        sender.sendAsAdmin(envelopeFrom(metadata, payload));
+    }
 }

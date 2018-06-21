@@ -19,13 +19,13 @@ public class UpdatePleaHandler extends CaseCommandHandler {
 
     @Handles("sjp.command.update-plea")
     public void updatePlea(final JsonEnvelope command) throws EventStreamException {
-        applyToCaseAggregate(command, aCase ->
-                aCase.updatePlea(converter.convert(command.payloadAsJsonObject(), UpdatePlea.class), clock.now()));
+        applyToCaseAggregate(command, aCase -> aCase.updatePlea(getUserId(command),
+                converter.convert(command.payloadAsJsonObject(), UpdatePlea.class), clock.now()));
     }
 
     @Handles("sjp.command.cancel-plea")
     public void cancelPlea(final JsonEnvelope command) throws EventStreamException {
-        applyToCaseAggregate(command, aCase ->
-                aCase.cancelPlea(converter.convert(command.payloadAsJsonObject(), CancelPlea.class), clock.now()));
+        applyToCaseAggregate(command, aCase -> aCase.cancelPlea(getUserId(command),
+                        converter.convert(command.payloadAsJsonObject(), CancelPlea.class), clock.now()));
     }
 }

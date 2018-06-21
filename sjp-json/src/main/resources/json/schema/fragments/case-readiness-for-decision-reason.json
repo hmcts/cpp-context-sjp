@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/case-readiness-for-decision-reason.json",
+  "enum": [
+    "PIA",
+    "WITHDRAWAL_REQUESTED",
+    "PLEADED_GUILTY",
+    "PLEADED_NOT_GUILTY",
+    "PLEADED_GUILTY_REQUEST_HEARING"
+  ]
+}

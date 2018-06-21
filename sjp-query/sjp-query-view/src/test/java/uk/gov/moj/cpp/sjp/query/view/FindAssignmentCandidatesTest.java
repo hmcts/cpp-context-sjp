@@ -12,11 +12,11 @@ import static org.hamcrest.core.AllOf.allOf;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
@@ -51,7 +51,7 @@ public class FindAssignmentCandidatesTest {
     private AssignmentService assignmentService;
 
     @InjectMocks
-    private SjpQueryView sjpQueryView;
+    private AssignmentQueryView assignmentQueryView;
 
     private UUID assigneeId;
     private int limit;
@@ -79,7 +79,7 @@ public class FindAssignmentCandidatesTest {
         when(assignmentService.getAssignmentCandidates(eq(assigneeId), eq(sessionType), (Set) argThat(containsInAnyOrder("TFL", "DVLA")), eq(limit)))
                 .thenReturn(asList(assignmentCandidate1, assignmentCandidate2));
 
-        final JsonEnvelope assignmentCandidates = sjpQueryView.findAssignmentCandidates(query);
+        final JsonEnvelope assignmentCandidates = assignmentQueryView.findAssignmentCandidates(query);
 
         assertThat(assignmentCandidates, jsonEnvelope(metadata().withName(QUERY_NAME), payload().isJson(allOf(
                 withJsonPath("$.assignmentCandidates[0].caseId", equalTo(assignmentCandidate1.getCaseId().toString())),
@@ -106,7 +106,7 @@ public class FindAssignmentCandidatesTest {
         when(assignmentService.getAssignmentCandidates(eq(assigneeId), eq(sessionType), (Set) argThat(containsInAnyOrder("TFL", "DVLA")), eq(limit)))
                 .thenReturn(asList(assignmentCandidate1, assignmentCandidate2));
 
-        final JsonEnvelope assignmentCandidates = sjpQueryView.findAssignmentCandidates(query);
+        final JsonEnvelope assignmentCandidates = assignmentQueryView.findAssignmentCandidates(query);
 
         assertThat(assignmentCandidates, jsonEnvelope(metadata().withName(QUERY_NAME), payload().isJson(allOf(
                 withJsonPath("$.assignmentCandidates[0].caseId", equalTo(assignmentCandidate1.getCaseId().toString())),
@@ -130,7 +130,7 @@ public class FindAssignmentCandidatesTest {
         when(assignmentService.getAssignmentCandidates(eq(assigneeId), eq(sessionType), (Set) argThat(containsInAnyOrder("TFL", "DVLA")), eq(limit)))
                 .thenReturn(Collections.emptyList());
 
-        final JsonEnvelope assignmentCandidates = sjpQueryView.findAssignmentCandidates(query);
+        final JsonEnvelope assignmentCandidates = assignmentQueryView.findAssignmentCandidates(query);
 
         assertThat(assignmentCandidates, jsonEnvelope(metadata().withName(QUERY_NAME), payload().isJson(
                 withJsonPath("$.assignmentCandidates.*", hasSize(0))
@@ -152,7 +152,7 @@ public class FindAssignmentCandidatesTest {
         when(assignmentService.getAssignmentCandidates(eq(assigneeId), eq(sessionType), (Set) argThat(empty()), eq(limit)))
                 .thenReturn(asList(assignmentCandidate));
 
-        final JsonEnvelope assignmentCandidates = sjpQueryView.findAssignmentCandidates(query);
+        final JsonEnvelope assignmentCandidates = assignmentQueryView.findAssignmentCandidates(query);
 
         assertThat(assignmentCandidates, jsonEnvelope(metadata().withName(QUERY_NAME), payload().isJson(allOf(
                 withJsonPath("$.assignmentCandidates[0].caseId", equalTo(assignmentCandidate.getCaseId().toString())),

@@ -14,14 +14,14 @@ import org.junit.Test;
 
 public class DefendantViewTest {
 
-    private static final String INTERPETER_LANG = "French";
+    private static final String INTERPRETER_LANG = "French";
 
     @Test
     public void shouldGetOffences() {
         DefendantView defendantView = new DefendantView(buildDefendantDetail());
 
         assertTrue(defendantView.getOffences().isEmpty());
-        assertThat(defendantView.getInterpreter().getLanguage(), is(INTERPETER_LANG));
+        assertThat(defendantView.getInterpreter().getLanguage(), is(INTERPRETER_LANG));
     }
 
     private static DefendantDetail buildDefendantDetail() {
@@ -29,7 +29,7 @@ public class DefendantViewTest {
         caseDetail.setId(UUID.randomUUID());
 
         InterpreterDetail interpreterDetail = new InterpreterDetail();
-        interpreterDetail.setLanguage(INTERPETER_LANG);
+        interpreterDetail.setLanguage(INTERPRETER_LANG);
 
         DefendantDetail defendantDetail = new DefendantDetail();
         defendantDetail.setCaseDetail(caseDetail);

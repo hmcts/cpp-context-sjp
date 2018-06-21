@@ -50,7 +50,6 @@ public class SjpCaseCreatedToCaseTest {
     private List<Offence> offences = new ArrayList<>();
 
     private UUID offenceId = UUID.randomUUID();
-    private String prosecutorCaseId = "TFL21345";
     private int offenceSequenceNo = 1;
     private String libraOffenceCode = "PS00001";
     private LocalDate chargeDate = LocalDate.parse("2016-01-01", formatter);
@@ -83,20 +82,20 @@ public class SjpCaseCreatedToCaseTest {
 
     @Test
     public void shouldConvertToCase() {
-        CaseDetail kase = caseConverter.convert(event);
+        CaseDetail aCase = caseConverter.convert(event);
 
-        assertThat(kase, is(notNullValue()));
-        assertThat(kase.getId(), is(UUID.fromString(caseId)));
-        assertThat(kase.getUrn(), is(urn));
-        assertThat(kase.getProsecutingAuthority(), is("TFL"));
-        assertThat(kase.getInitiationCode(), is(initiationCode));
-        assertThat(kase.getCompleted(), is(false));
-        assertThat(kase.getAssigneeId(), nullValue());
+        assertThat(aCase, is(notNullValue()));
+        assertThat(aCase.getId(), is(UUID.fromString(caseId)));
+        assertThat(aCase.getUrn(), is(urn));
+        assertThat(aCase.getProsecutingAuthority(), is(TFL));
+        assertThat(aCase.getInitiationCode(), is(initiationCode));
+        assertThat(aCase.getCompleted(), is(false));
+        assertThat(aCase.getAssigneeId(), nullValue());
 
-        assertThat(kase.getDefendant().getNumPreviousConvictions(), is(30)); // assuming there is just one defendant for now
-        assertThat(kase.getCosts(), is(BigDecimal.valueOf(33.5)));
-        assertThat(kase.getPostingDate(), is(LocalDate.parse("2016-12-03", formatter)));
-        assertThat(kase.getDateTimeCreated(), is(createdOn));
+        assertThat(aCase.getDefendant().getNumPreviousConvictions(), is(30)); // assuming there is just one defendant for now
+        assertThat(aCase.getCosts(), is(BigDecimal.valueOf(33.5)));
+        assertThat(aCase.getPostingDate(), is(LocalDate.parse("2016-12-03", formatter)));
+        assertThat(aCase.getDateTimeCreated(), is(createdOn));
     }
 
     @Test

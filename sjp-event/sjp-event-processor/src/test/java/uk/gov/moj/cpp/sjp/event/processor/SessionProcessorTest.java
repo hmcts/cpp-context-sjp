@@ -1,17 +1,20 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.core.AllOf.allOf;
-import static org.junit.Assert.assertThat;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.allOf;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
@@ -19,21 +22,21 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
-import uk.gov.moj.cpp.sjp.event.processor.service.AssignmentService;
+import uk.gov.moj.cpp.sjp.event.processor.service.SchedulingService;
+import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
+import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
+import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionEnded;
+import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-import org.apache.commons.lang3.RandomStringUtils;
+import javax.json.Json;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.mockito.AdditionalMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -42,16 +45,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class SessionProcessorTest {
 
-    private static final String EVENT_NAME = "sjp.events.session-started";
-
     @Mock
     private Sender sender;
 
     @Mock
-    private AssignmentService assignmentService;
-
-    @Captor
-    private ArgumentCaptor<JsonEnvelope> jsonEnvelopeCaptor;
+    private SchedulingService schedulingService;
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
@@ -59,99 +57,126 @@ public class SessionProcessorTest {
     @InjectMocks
     private SessionProcessor sessionProcessor;
 
-    private UUID sessionId, assigneeId;
-    private String courtCode;
-    private LocalDateTime startedAt;
+    private final UUID existingSessionId = UUID.randomUUID();
+    private final UUID newSessionId = UUID.randomUUID();
+    private final String courtHouseName = "Wimbledon Magistrates' Court";
+    private final String localJusticeAreaNationalCourtCode = "2577";
+    private final String magistrate = "John Smith";
 
     @Before
-    public void init() {
-        sessionId = randomUUID();
-        assigneeId = randomUUID();
-        courtCode = RandomStringUtils.randomNumeric(4);
-        startedAt = LocalDateTime.now();
+    public void setUp() {
+        when(schedulingService.getSession(eq(existingSessionId), any())).thenReturn(Optional.of(Json.createObjectBuilder().build()));
+        when(schedulingService.getSession(AdditionalMatchers.not(eq(existingSessionId)), any())).thenReturn(Optional.empty());
     }
 
     @Test
-    public void shouldReturnListOfAssignmentCandidatesForMagistrateSession() {
+    public void shouldStartMagistrateSessionInSchedulingAndEmitPublicSessionStartedEventWhenNewSessionIsCreated() {
 
-        final String magistrate = "Magistrate";
+        final JsonEnvelope magistrateSessionStartedEvent = envelopeFrom(metadataWithRandomUUID(MagistrateSessionStarted.EVENT_NAME),
+                createObjectBuilder()
+                        .add("sessionId", newSessionId.toString())
+                        .add("magistrate", magistrate)
+                        .add("courtHouseName", courtHouseName)
+                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                        .build());
 
-        final JsonEnvelope sessionStartedEvent = envelope().with(metadataWithRandomUUID(EVENT_NAME))
-                .withPayloadOf(sessionId, "sessionId")
-                .withPayloadOf(assigneeId, "legalAdviserId")
-                .withPayloadOf(courtCode, "courtCode")
-                .withPayloadOf(startedAt.toString(), "startedAt")
-                .withPayloadOf(magistrate, "magistrate")
-                .build();
+        sessionProcessor.magistrateSessionStarted(magistrateSessionStartedEvent);
 
-        final AssignmentCandidate assignmentCandidate1 = new AssignmentCandidate(randomUUID(), 1);
-        final AssignmentCandidate assignmentCandidate2 = new AssignmentCandidate(randomUUID(), 2);
+        verify(schedulingService).startMagistrateSession(magistrate, newSessionId, courtHouseName, localJusticeAreaNationalCourtCode, magistrateSessionStartedEvent);
 
-        final List<AssignmentCandidate> assignmentCandidates = Arrays.asList(assignmentCandidate1, assignmentCandidate2);
-
-        when(assignmentService.getAssignmentCandidates(sessionStartedEvent, assigneeId, courtCode, MAGISTRATE)).thenReturn(assignmentCandidates);
-
-        sessionProcessor.magistrateSessionStarted(sessionStartedEvent);
-
-        verify(sender).send(jsonEnvelopeCaptor.capture());
-        assertThat(jsonEnvelopeCaptor.getValue(), jsonEnvelope(withMetadataEnvelopedFrom(sessionStartedEvent)
-                .withName("sjp.command.assign-case"), payload().isJson(allOf(
-                withJsonPath("$.sessionId", equalTo(sessionId.toString())),
-                withJsonPath("$.assignmentCandidates[0].caseId", equalTo(assignmentCandidate1.getCaseId().toString())),
-                withJsonPath("$.assignmentCandidates[0].caseStreamVersion", equalTo(assignmentCandidate1.getCaseStreamVersion())),
-                withJsonPath("$.assignmentCandidates[1].caseId", equalTo(assignmentCandidate2.getCaseId().toString())),
-                withJsonPath("$.assignmentCandidates[1].caseStreamVersion", equalTo(assignmentCandidate2.getCaseStreamVersion()))
-        ))).thatMatchesSchema());
+        verify(sender).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(magistrateSessionStartedEvent).withName("public.sjp.session-started"),
+                payloadIsJson(allOf(
+                        withJsonPath("$.sessionId", equalTo(newSessionId.toString())),
+                        withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
+                        withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
+                        withJsonPath("$.type", equalTo(MAGISTRATE.name()))
+                )))));
     }
 
     @Test
-    public void shouldReturnListOfAssignmentCandidatesForDelegatedPowersSession() {
+    public void shouldStartDelegatedPowersSessionInSchedulingAndEmitPublicSessionStartedEventWhenNewSessionIsCreated() {
 
-        final JsonEnvelope sessionStartedEvent = envelope().with(metadataWithRandomUUID(EVENT_NAME))
-                .withPayloadOf(sessionId, "sessionId")
-                .withPayloadOf(assigneeId, "legalAdviserId")
-                .withPayloadOf(courtCode, "courtCode")
-                .withPayloadOf(startedAt.toString(), "startedAt")
-                .build();
+        final JsonEnvelope delegatedPowersSessionStartedEvent = envelopeFrom(metadataWithRandomUUID(DelegatedPowersSessionStarted.EVENT_NAME),
+                createObjectBuilder()
+                        .add("sessionId", newSessionId.toString())
+                        .add("courtHouseName", courtHouseName)
+                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                        .build());
 
-        final AssignmentCandidate assignmentCandidate1 = new AssignmentCandidate(randomUUID(), 1);
-        final AssignmentCandidate assignmentCandidate2 = new AssignmentCandidate(randomUUID(), 2);
+        sessionProcessor.delegatedPowersSessionStarted(delegatedPowersSessionStartedEvent);
 
-        final List<AssignmentCandidate> assignmentCandidates = Arrays.asList(assignmentCandidate1, assignmentCandidate2);
+        verify(schedulingService).startDelegatedPowersSession(newSessionId, courtHouseName, localJusticeAreaNationalCourtCode, delegatedPowersSessionStartedEvent);
 
-        when(assignmentService.getAssignmentCandidates(sessionStartedEvent, assigneeId, courtCode, DELEGATED_POWERS)).thenReturn(assignmentCandidates);
+        verify(sender).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(delegatedPowersSessionStartedEvent).withName("public.sjp.session-started"),
+                payloadIsJson(allOf(
+                        withJsonPath("$.sessionId", equalTo(newSessionId.toString())),
+                        withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
+                        withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
+                        withJsonPath("$.type", equalTo(DELEGATED_POWERS.name()))
+                )))));
+    }
 
-        sessionProcessor.delegatedPowersSessionStarted(sessionStartedEvent);
 
-        verify(sender).send(jsonEnvelopeCaptor.capture());
-        assertThat(jsonEnvelopeCaptor.getValue(), jsonEnvelope(withMetadataEnvelopedFrom(sessionStartedEvent)
-                .withName("sjp.command.assign-case"), payload().isJson(allOf(
-                withJsonPath("$.sessionId", equalTo(sessionId.toString())),
-                withJsonPath("$.assignmentCandidates[0].caseId", equalTo(assignmentCandidate1.getCaseId().toString())),
-                withJsonPath("$.assignmentCandidates[0].caseStreamVersion", equalTo(assignmentCandidate1.getCaseStreamVersion())),
-                withJsonPath("$.assignmentCandidates[1].caseId", equalTo(assignmentCandidate2.getCaseId().toString())),
-                withJsonPath("$.assignmentCandidates[1].caseStreamVersion", equalTo(assignmentCandidate2.getCaseStreamVersion()))
-        ))).thatMatchesSchema());
+    @Test
+    public void shouldNotDoAnythingWhenExistingDelegatedPowersSessionIsMigrated() {
+        final JsonEnvelope delegatedPowersSessionStartedEvent = envelopeFrom(metadataWithRandomUUID(DelegatedPowersSessionStarted.EVENT_NAME),
+                createObjectBuilder()
+                        .add("sessionId", existingSessionId.toString())
+                        .add("courtHouseName", courtHouseName)
+                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                        .build());
+
+        sessionProcessor.delegatedPowersSessionStarted(delegatedPowersSessionStartedEvent);
+
+        verify(schedulingService, never()).startDelegatedPowersSession(any(),any(),any(),any());
+        verify(sender, never()).send(any());
     }
 
     @Test
-    public void shouldCreatePublicSessionCreatedEventWithoutAssignment() {
+    public void shouldNotDoAnythingWhenExistingMagistrateSessionIsMigrated() {
+        final JsonEnvelope magistrateSessionStartedEvent = envelopeFrom(metadataWithRandomUUID(MagistrateSessionStarted.EVENT_NAME),
+                createObjectBuilder()
+                        .add("sessionId", existingSessionId.toString())
+                        .add("courtHouseName", courtHouseName)
+                        .add("magistrate", magistrate)
+                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                        .build());
 
-        final JsonEnvelope sessionStartedEvent = envelope().with(metadataWithRandomUUID(EVENT_NAME))
-                .withPayloadOf(sessionId, "sessionId")
-                .withPayloadOf(assigneeId, "legalAdviserId")
-                .withPayloadOf(courtCode, "courtCode")
-                .withPayloadOf(startedAt.toString(), "startedAt")
-                .build();
+        sessionProcessor.magistrateSessionStarted(magistrateSessionStartedEvent);
 
-        when(assignmentService.getAssignmentCandidates(sessionStartedEvent, assigneeId, courtCode, DELEGATED_POWERS)).thenReturn(Collections.emptyList());
+        verify(schedulingService, never()).startMagistrateSession(any(),any(),any(),any(),any());
+        verify(sender, never()).send(any());
+    }
 
-        sessionProcessor.delegatedPowersSessionStarted(sessionStartedEvent);
+    @Test
+    public void shouldEndMagistrateSessionInScheduling() {
+        final JsonEnvelope magistrateSessionEndedEvent = envelopeFrom(metadataWithRandomUUID(MagistrateSessionEnded.EVENT_NAME),
+                createObjectBuilder().add("sessionId", existingSessionId.toString()).build());
 
-        verify(sender).send(jsonEnvelopeCaptor.capture());
-        assertThat(jsonEnvelopeCaptor.getValue(), jsonEnvelope(withMetadataEnvelopedFrom(sessionStartedEvent)
-                .withName("public.sjp.session-started"), payload().isJson(allOf(
-                withJsonPath("$.sessionId", equalTo(sessionId.toString()))
-        ))).thatMatchesSchema());
+        sessionProcessor.magistrateSessionEnded(magistrateSessionEndedEvent);
+
+        verify(schedulingService).endSession(existingSessionId, magistrateSessionEndedEvent);
+    }
+
+    @Test
+    public void shouldEndDelegatedPowersSessionInScheduling() {
+        final JsonEnvelope delegatedPowersSessionEndedEvent = envelopeFrom(metadataWithRandomUUID(DelegatedPowersSessionEnded.EVENT_NAME),
+                createObjectBuilder().add("sessionId", existingSessionId.toString()).build());
+
+        sessionProcessor.magistrateSessionEnded(delegatedPowersSessionEndedEvent);
+
+        verify(schedulingService).endSession(existingSessionId, delegatedPowersSessionEndedEvent);
+    }
+
+    @Test
+    public void delegatedPowersSessionEndedTest() {
+        final JsonEnvelope sessionEndedEvent = envelopeFrom(metadataWithRandomUUID(DelegatedPowersSessionEnded.EVENT_NAME),
+                createObjectBuilder().add("sessionId", existingSessionId.toString()).build());
+
+        sessionProcessor.delegatedPowersSessionEnded(sessionEndedEvent);
+
+        verify(schedulingService).endSession(existingSessionId, sessionEndedEvent);
     }
 }

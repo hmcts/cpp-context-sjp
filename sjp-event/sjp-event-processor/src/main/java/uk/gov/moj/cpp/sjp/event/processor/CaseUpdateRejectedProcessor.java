@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.REASON;
 
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -8,7 +10,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.event.processor.listener.EventProcessorConstants;
+import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -19,15 +21,16 @@ public class CaseUpdateRejectedProcessor {
 
     @Inject
     private Sender sender;
+
     @Inject
     private Enveloper enveloper;
 
-    @Handles("sjp.events.case-update-rejected")
+    @Handles(CaseUpdateRejected.EVENT_NAME)
     public void caseUpdateRejected(final JsonEnvelope event) {
         final JsonObject payload = event.payloadAsJsonObject();
         final JsonObject newPayload = createObjectBuilder()
-                .add(EventProcessorConstants.CASE_ID, payload.getString(EventProcessorConstants.CASE_ID))
-                .add("reason", payload.getString("reason"))
+                .add(CASE_ID, payload.getString(CASE_ID))
+                .add(REASON, payload.getString(REASON))
                 .build();
         final JsonEnvelope newEventEnvelope = enveloper.withMetadataFrom(event,
                 "public.sjp.case-update-rejected").apply(newPayload);

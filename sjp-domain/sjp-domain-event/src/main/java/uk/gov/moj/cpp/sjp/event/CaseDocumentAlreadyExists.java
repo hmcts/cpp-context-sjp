@@ -2,18 +2,20 @@ package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
 
+import java.util.UUID;
+
 @Event("sjp.events.case-document-addition-failed")
 public class CaseDocumentAlreadyExists {
 
-    private final String documentId;
+    private final UUID documentId;
     private final String description;
 
-    public CaseDocumentAlreadyExists(String documentId, String description) {
+    public CaseDocumentAlreadyExists(UUID documentId, String description) {
         this.documentId = documentId;
         this.description = description;
     }
 
-    public String getDocumentId() {
+    public UUID getDocumentId() {
         return documentId;
     }
 

@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-command</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>0.0.22-SNAPSHOT</version>
+        <version>1.0.69-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -12,6 +12,7 @@
 
     <properties>
         <cpp.service-component>COMMAND_HANDLER</cpp.service-component>
+        <skip.schema.pojo.generation>false</skip.schema.pojo.generation>
     </properties>
 
     <dependencies>
@@ -71,6 +72,60 @@
             <groupId>uk.gov.justice.utils</groupId>
             <artifactId>utilities-core</artifactId>
         </dependency>
-
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>generator-plugin</artifactId>
+                <groupId>uk.gov.justice.maven.generator</groupId>
+                <executions>
+                    <execution>
+                        <id>pojo-generation</id>
+                        <configuration>
+                            <basePackageName>uk.gov.moj.cpp.events.people</basePackageName>
+                            <sourceDirectory>${project.basedir}/src/raml/json/schema</sourceDirectory>
+                            <includes>**/sjp.command.update-employer.json</includes>
+                            <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
+                                <plugins>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.SupportJavaOptionalsPlugin</plugin>
+                                </plugins>
+                                <typeMappings>
+                                    <typeMapping>
+                                        <name>uuid</name>
+                                        <type>reference</type>
+                                        <implementation>java.util.UUID</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
+                                        <name>date</name>
+                                        <type>reference</type>
+                                        <implementation>java.time.LocalDate</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
+                                        <name>date</name>
+                                        <type>format</type>
+                                        <implementation>java.time.LocalDate</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
+                                        <name>date-time</name>
+                                        <type>format</type>
+                                        <implementation>java.time.ZonedDateTime</implementation>
+                                    </typeMapping>
+                                </typeMappings>
+                            </generatorProperties>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>${project.groupId}</groupId>
+                        <artifactId>sjp-json</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
 </project>

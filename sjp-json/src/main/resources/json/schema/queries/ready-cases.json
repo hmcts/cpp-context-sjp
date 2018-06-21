@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/ready-cases-reasons-counts.json",
+  "type": "object",
+  "properties": {
+    "readyCases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+          },
+          "reason": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/case-readiness-for-decision-reason.json"
+          },
+          "assigneeId": {
+            "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+          }
+        },
+        "required": [
+          "caseId",
+          "reason"
+        ]
+      }
+    }
+  },
+  "required": [
+    "readyCases"
+  ],
+  "additionalProperties": false
+}

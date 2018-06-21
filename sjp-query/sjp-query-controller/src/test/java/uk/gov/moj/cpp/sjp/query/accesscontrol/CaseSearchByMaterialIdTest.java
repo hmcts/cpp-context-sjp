@@ -1,12 +1,13 @@
 package uk.gov.moj.cpp.sjp.query.accesscontrol;
 
-import org.junit.Before;
-import org.junit.Test;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
 
 public class CaseSearchByMaterialIdTest extends BaseDroolsAccessControlTest {
 
@@ -20,7 +21,7 @@ public class CaseSearchByMaterialIdTest extends BaseDroolsAccessControlTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         action = createActionFor(CONTENT_TYPE);
     }
 

@@ -8,9 +8,11 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 
-import javax.json.JsonObject;
 import java.time.LocalDate;
+import java.util.UUID;
 import java.util.stream.Stream;
+
+import javax.json.JsonObject;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class CaseReopenedHandler extends CaseCommandHandler {
@@ -43,7 +45,7 @@ public class CaseReopenedHandler extends CaseCommandHandler {
     public void undoCaseReopenedInLibra(final JsonEnvelope command) throws EventStreamException {
 
         applyToCaseAggregate(command, aCase -> aCase.undoCaseReopened(
-                command.payloadAsJsonObject().getString(CASE_ID)
+                UUID.fromString(command.payloadAsJsonObject().getString(STREAM_ID))
         ));
 
     }
@@ -52,13 +54,13 @@ public class CaseReopenedHandler extends CaseCommandHandler {
                                     final CaseAggregateHandler caseAggregateHandler) throws EventStreamException {
 
         final JsonObject payload = command.payloadAsJsonObject();
-        final String caseId = command.payloadAsJsonObject().getString(CASE_ID);
+        final String caseId = command.payloadAsJsonObject().getString(STREAM_ID);
         final LocalDate reopenedDate = LocalDate.parse(payload.getString("reopenedDate"));
         final String libraCaseNumber = payload.getString("libraCaseNumber");
         final String reason = payload.getString("reason");
 
         applyToCaseAggregate(command, aCase ->
                 caseAggregateHandler.apply(aCase).apply(
-                        new CaseReopenDetails(caseId, reopenedDate, libraCaseNumber, reason)));
+                        new CaseReopenDetails(UUID.fromString(caseId), reopenedDate, libraCaseNumber, reason)));
     }
 }

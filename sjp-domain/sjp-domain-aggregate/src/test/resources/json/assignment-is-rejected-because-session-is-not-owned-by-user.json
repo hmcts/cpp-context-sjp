@@ -1,0 +1,6 @@
+{
+  "_metadata": {
+    "name": "sjp.events.case-assignment-rejected"
+  },
+  "reason": "SESSION_NOT_OWNED_BY_USER"
+}

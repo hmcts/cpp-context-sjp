@@ -7,7 +7,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjectMetadata;
@@ -40,9 +39,9 @@ public class CaseReopenedListenerTest {
     private static final String METHOD_UNDO_CASE_REOPENED = "undoCaseReopened";
 
     private static final CaseReopenDetails MARK_CASE_REOPEN_DETAILS = new CaseReopenDetails(
-            UUID.randomUUID().toString(), LocalDates.from("2016-02-02"), "LIBRA12345", "Mandatory Reason");
+            UUID.randomUUID(), LocalDate.of(2016, 2, 2), "LIBRA12345", "Mandatory Reason");
     private static final CaseReopenDetails UPDATE_CASE_REOPEN_DETAILS = new CaseReopenDetails(
-            MARK_CASE_REOPEN_DETAILS.getCaseId(), LocalDate.parse("2016-09-10"), "LIBRA13579", "Some Reason");
+            MARK_CASE_REOPEN_DETAILS.getCaseId(), LocalDate.of(2016, 9, 10), "LIBRA13579", "Some Reason");
 
 
     @Mock
@@ -70,26 +69,26 @@ public class CaseReopenedListenerTest {
     }
 
     @Test
-    public void shouldUpdateCaseWhenMarkCaseReOpenedRequested() throws Exception {
+    public void shouldUpdateCaseWhenMarkCaseReOpenedRequested() {
         testCaseReopenDetailsUpdated(listener::markCaseReopened, MARK_CASE_REOPEN_DETAILS);
     }
 
     @Test
-    public void shouldUpdateCaseWhenUpdateCaseReOpenedRequested() throws Exception {
+    public void shouldUpdateCaseWhenUpdateCaseReOpenedRequested() {
         testCaseReopenDetailsUpdated(listener::updateCaseReopened, UPDATE_CASE_REOPEN_DETAILS);
     }
 
     @Test
-    public void shouldUndoCaseWhenUndoCaseReOpenedRequested() throws Exception {
-        final String caseId = MARK_CASE_REOPEN_DETAILS.getCaseId();
-        when(caseRepository.findBy(UUID.fromString(caseId))).thenReturn(caseDetails);
+    public void shouldUndoCaseWhenUndoCaseReOpenedRequested() {
+        final UUID caseId = MARK_CASE_REOPEN_DETAILS.getCaseId();
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetails);
 
         final JsonEnvelope event = JsonEnvelopeBuilder.envelope()
                 .with(JsonObjectMetadata.metadataWithRandomUUID("sjp.events.case-reopened-in-libra-undone"))
                 .withPayloadOf(caseId, "caseId").build();
         listener.undoCaseReopened(event);
 
-        verify(caseRepository).findBy(UUID.fromString(caseId));
+        verify(caseRepository).findBy(caseId);
         assertThat(caseDetails.getReopenedDate(), is(nullValue()));
         assertThat(caseDetails.getLibraCaseNumber(), is(nullValue()));
         assertThat(caseDetails.getReopenedInLibraReason(), is(nullValue()));
@@ -106,11 +105,11 @@ public class CaseReopenedListenerTest {
                 .withPayloadOf(caseReopenDetails.getReason(), "reason")
                 .build();
 
-        when(caseRepository.findBy(UUID.fromString(caseReopenDetails.getCaseId()))).thenReturn(caseDetails);
+        when(caseRepository.findBy(caseReopenDetails.getCaseId())).thenReturn(caseDetails);
 
         consumer.accept(event);
 
-        verify(caseRepository).findBy(UUID.fromString(caseReopenDetails.getCaseId()));
+        verify(caseRepository).findBy(caseReopenDetails.getCaseId());
         verify(caseDetails).setReopenedDate(caseReopenDetails.getReopenedDate());
         verify(caseDetails).setLibraCaseNumber(caseReopenDetails.getLibraCaseNumber());
         verify(caseDetails).setReopenedInLibraReason(caseReopenDetails.getReason());

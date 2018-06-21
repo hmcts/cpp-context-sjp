@@ -25,16 +25,17 @@ public class SjpQueryApiTest {
                         method("findCaseByUrnPostcode").thatHandles("sjp.query.case-by-urn-postcode").withRequesterPassThrough(),
                         method("findFinancialMeans").thatHandles("sjp.query.financial-means").withRequesterPassThrough(),
                         method("findEmployer").thatHandles("sjp.query.employer").withRequesterPassThrough(),
-                        method("searchCasesByPersonId").thatHandles("sjp.query.cases-search").withRequesterPassThrough(),
                         method("findCaseSearchResults").thatHandles("sjp.query.case-search-results").withRequesterPassThrough(),
                         method("findCasesMissingSjpn").thatHandles("sjp.query.cases-missing-sjpn").withRequesterPassThrough(),
                         method("findCasesMissingSjpnWithDetails").thatHandles("sjp.query.cases-missing-sjpn-with-details").withRequesterPassThrough(),
                         method("findCaseDocuments").thatHandles("sjp.query.case-documents").withRequesterPassThrough(),
-                        method("findCaseDefendants").thatHandles("sjp.query.case-defendants").withRequesterPassThrough(),
                         method("searchCaseByMaterialId").thatHandles("sjp.query.cases-search-by-material-id").withRequesterPassThrough(),
                         method("getAwaitingCases").thatHandles("sjp.query.awaiting-cases").withRequesterPassThrough(),
                         method("getCasesReferredToCourt").thatHandles("sjp.query.cases-referred-to-court").withRequesterPassThrough(),
-                        method("getResultOrders").thatHandles("sjp.query.result-orders").withRequesterPassThrough()
+                        method("getResultOrders").thatHandles("sjp.query.result-orders").withRequesterPassThrough(),
+                        method("getReadyCasesReasonsCounts").thatHandles("sjp.query.ready-cases-reasons-counts").withRequesterPassThrough(),
+                        method("getReadyCases").thatHandles("sjp.query.ready-cases").withRequesterPassThrough(),
+                        method("getCaseAssignment").thatHandles("sjp.query.case-assignment").withRequesterPassThrough()
                 )));
     }
 }

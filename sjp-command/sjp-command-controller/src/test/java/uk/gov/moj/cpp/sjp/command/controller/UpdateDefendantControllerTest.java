@@ -13,7 +13,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class UpdateDefendantControllerTest {
 
     @Test
-    public void shouldHandleUpdateDefendantDetailsCommand() throws Exception {
+    public void shouldHandleUpdateDefendantDetailsCommand() {
         assertThat(UpdateDefendantController.class, isHandlerClass(COMMAND_CONTROLLER)
                 .with(
                         method("updateDefendantDetails")

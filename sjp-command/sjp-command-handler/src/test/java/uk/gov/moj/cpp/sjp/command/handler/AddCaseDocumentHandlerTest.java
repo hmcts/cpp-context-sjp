@@ -19,18 +19,18 @@ import static uk.gov.moj.cpp.sjp.command.handler.builder.AddCaseDocumentCommandB
 import static uk.gov.moj.cpp.sjp.command.handler.builder.AddCaseDocumentCommandBuilder.anMinimumAddCaseDocumentCommand;
 import static uk.gov.moj.cpp.sjp.domain.testutils.CaseDocumentBuilder.aCaseDocument;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_DOCUMENT_ID_STR;
-import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_DOCUMENT_MATERIAL_ID;
+import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_DOCUMENT_MATERIAL_ID_STR;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_DOCUMENT_TYPE_SJPN;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_ID;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_ID_STR;
 
 import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
@@ -39,7 +39,6 @@ import uk.gov.moj.cpp.sjp.event.CaseDocumentAlreadyAdded;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAlreadyExists;
 import uk.gov.moj.cpp.sjp.event.CaseStarted;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -80,20 +79,20 @@ public class AddCaseDocumentHandlerTest {
     private AddCaseDocumentHandler addCaseDocumentHandler;
 
     @Spy
-    private Clock clock = new StoppedClock(ZonedDateTime.now());
+    private Clock clock = new UtcClock();
 
     @Captor
     private ArgumentCaptor<Stream<JsonEnvelope>> captor;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         caseAggregate = new CaseAggregate();
         when(eventSource.getStreamById(any(UUID.class))).thenReturn(eventStream);
         when(aggregateService.get(any(EventStream.class), any())).thenReturn(caseAggregate);
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         verify(eventSource).getStreamById(eq(CASE_ID));
         verify(aggregateService).get(eq(eventStream), eq(CaseAggregate.class));
         verifyNoMoreInteractions(eventStream, eventSource, aggregateService);
@@ -116,7 +115,7 @@ public class AddCaseDocumentHandlerTest {
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", is(CASE_ID_STR)),
                                         withJsonPath("$.caseDocument.id", is(CASE_DOCUMENT_ID_STR)),
-                                        withJsonPath("$.caseDocument.materialId", is(CASE_DOCUMENT_MATERIAL_ID)),
+                                        withJsonPath("$.caseDocument.materialId", is(CASE_DOCUMENT_MATERIAL_ID_STR)),
                                         withJsonPath("$.caseDocument.documentType", is(CASE_DOCUMENT_TYPE_SJPN))
                                 ))))));
     }
@@ -136,9 +135,7 @@ public class AddCaseDocumentHandlerTest {
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(addCaseDocumentCommand)
                                         .withName("sjp.events.case-document-addition-failed"),
-                                payloadIsJson(allOf(
-                                        withJsonPath("$.documentId", is(CASE_DOCUMENT_ID_STR))
-                                ))))));
+                                payloadIsJson(withJsonPath("$.documentId", is(CASE_DOCUMENT_ID_STR)))))));
     }
 
     @Test
@@ -155,7 +152,7 @@ public class AddCaseDocumentHandlerTest {
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", is(CASE_ID_STR)),
                                         withJsonPath("$.caseDocument.id", is(CASE_DOCUMENT_ID_STR)),
-                                        withJsonPath("$.caseDocument.materialId", is(CASE_DOCUMENT_MATERIAL_ID)),
+                                        withJsonPath("$.caseDocument.materialId", is(CASE_DOCUMENT_MATERIAL_ID_STR)),
                                         withoutJsonPath("$.caseDocument.documentType")
                                 ))))));
     }
@@ -175,7 +172,7 @@ public class AddCaseDocumentHandlerTest {
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", is(CASE_ID_STR)),
                                         withJsonPath("$.caseDocument.id", is(CASE_DOCUMENT_ID_STR)),
-                                        withJsonPath("$.caseDocument.materialId", is(CASE_DOCUMENT_MATERIAL_ID)),
+                                        withJsonPath("$.caseDocument.materialId", is(CASE_DOCUMENT_MATERIAL_ID_STR)),
                                         withoutJsonPath("$.caseDocument.documentType")
                                 ))))));
     }

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/employer.json",
+  "type": "object",
+  "properties": {
+    "employeeReference": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 35
+    },
+    "phone": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "address": {
+      "type": "object",
+      "properties": {
+        "address1": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "address2": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "address3": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "address4": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "postcode": {
+          "type": "string",
+          "maxLength": 10
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#This script will unzip the command and query raml files onto the
+# This script will unzip the command and query raml files onto the
 # integration-test target folder, so that the Integration Tests can be run from the IDE.
 
 #Copy files

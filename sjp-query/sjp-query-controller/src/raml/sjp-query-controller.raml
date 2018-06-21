@@ -173,10 +173,6 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
       Search for cases
       ...
       (mapping):
-          responseType: application/vnd.sjp.query.cases-search+json
-          name: sjp.query.cases-search
-
-      (mapping):
           responseType: application/vnd.sjp.query.cases-search-by-material-id+json
           name: sjp.query.cases-search-by-material-id
 
@@ -194,10 +190,6 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
         200:
           description: OK
           body:
-                application/vnd.sjp.query.cases-search+json:
-                  schema: !include json/schema/sjp.query.cases-search.json
-                  example: !include json/sjp.query.cases-search.json
-
                 application/vnd.sjp.query.cases-search-by-material-id+json:
                   schema: !include json/schema/sjp.query.cases-search-by-material-id.json
                   example: !include json/sjp.query.cases-search-by-material-id.json
@@ -225,26 +217,6 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
           application/vnd.sjp.query.case-documents+json:
             schema: !include json/schema/sjp.query.case-documents.json
             example: !include json/sjp.query.case-documents.json
-
-/cases/{caseId}/defendants:
-  description: Get list of case defendants for a case
-  uriParameters:
-    caseId:
-      description: Case ID
-      type: string
-  get:
-    description: |
-      ...
-      (mapping):
-          responseType: application/vnd.sjp.query.case-defendants+json
-          name: sjp.query.case-defendants
-      ...
-    responses:
-      200:
-        body:
-          application/vnd.sjp.query.case-defendants+json:
-            schema: !include json/schema/sjp.query.case-defendants.json
-            example: !include json/sjp.query.case-defendants.json
 
 /cases/awaiting:
   description: return the 600 oldest not resulted SJP cases, that have SJPN documents
@@ -352,3 +324,91 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
                 application/vnd.sjp.query.defendants-online-plea+json:
                   schema: !include json/schema/sjp.query.defendants-online-plea.json
                   example: !include json/sjp.query.defendants-online-plea.json
+
+/cases/{caseId}/assignment:
+  get:
+    description: |
+      Get case assignment.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-assignment+json
+          name: sjp.query.case-assignment
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.case-assignment+json:
+                  schema: !include json/schema/sjp.query.case-assignment.json
+                  example: !include json/sjp.query.case-assignment.json
+
+/cases/pending-dates-to-avoid:
+  get:
+    description: |
+      Get all cases that are pending submission (from the prosecutor) of any dates-to-avoid for the case's trial.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.pending-dates-to-avoid+json
+          name: sjp.query.pending-dates-to-avoid
+      ...
+    queryParameters:
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.pending-dates-to-avoid+json:
+                  schema: !include json/schema/sjp.query.pending-dates-to-avoid.json
+                  example: !include json/sjp.query.pending-dates-to-avoid.json
+
+/cases/ready-cases-reasons-counts:
+  get:
+    description: |
+      Get count of ready cases grouped by reason
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.ready-cases-reasons-counts+json
+          name: sjp.query.ready-cases-reasons-counts
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.ready-cases-reasons-counts+json:
+            schema: !include json/schema/sjp.query.ready-cases-reasons-counts.json
+            example: !include json/sjp.query.ready-cases-reasons-counts.json
+
+/cases/ready-cases:
+  get:
+    description: |
+      Get ready cases
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.ready-cases+json
+          name: sjp.query.ready-cases
+      ...
+    queryParameters:
+      assigneeId:
+        type: string
+        required: false
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.ready-cases+json:
+            schema: !include json/schema/sjp.query.ready-cases.json
+            example: !include json/sjp.query.ready-cases.json
+
+/sessions/{sessionId}:
+  get:
+    description: |
+      Get session.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.session+json
+          name: sjp.query.session
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.session+json:
+                  schema: !include json/schema/sjp.query.session.json
+                  example: !include json/sjp.query.session.json

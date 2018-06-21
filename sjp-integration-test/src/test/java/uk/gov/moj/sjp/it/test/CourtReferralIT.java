@@ -1,8 +1,6 @@
 package uk.gov.moj.sjp.it.test;
 
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
-import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
-import static uk.gov.moj.sjp.it.test.UpdatePleaIT.PLEA_NOT_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.sjp.it.test.UpdatePleaInterpreterIT.getPleaPayload;
 
 import uk.gov.moj.sjp.it.command.CreateCase;
@@ -19,7 +17,7 @@ import org.junit.Test;
 public class CourtReferralIT extends BaseIntegrationTest {
 
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
-    private UpdatePleaHelper updatePleaHelper;
+    private UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper();
 
     private UUID caseId;
 
@@ -31,13 +29,9 @@ public class CourtReferralIT extends BaseIntegrationTest {
         CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
         caseId = createCasePayloadBuilder.getId();
 
-        // needed before adding an interpreter language
-        stubGetCaseDecisionsWithNoDecision(caseId);
-        stubGetEmptyAssignmentsByDomainObjectId(caseId);
-
         // case needs to be created before adding an interpreter language
-        updatePleaHelper = new UpdatePleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId());
-        updatePleaHelper.updatePlea(getPleaPayload(PLEA_NOT_GUILTY, true, interpreterLanguage));
+        updatePleaHelper.updatePlea(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(),
+                getPleaPayload(NOT_GUILTY, true, interpreterLanguage));
     }
 
     @After

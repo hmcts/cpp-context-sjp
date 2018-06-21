@@ -1,0 +1,104 @@
+package uk.gov.moj.cpp.sjp.persistence.entity;
+
+import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+
+import uk.gov.moj.cpp.sjp.domain.SessionType;
+
+import java.time.ZonedDateTime;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "session")
+public class Session {
+
+    @Id
+    @Column(name = "id")
+    private UUID sessionId;
+
+    @Column(name = "user_id")
+    private UUID userId;
+
+    @Column(name = "court_house_name")
+    private String courtHouseName;
+
+    @Column(name = "local_justice_area_national_court_code")
+    private String localJusticeAreaNationalCourtCode;
+
+    @Column(name = "magistrate")
+    private String magistrate;
+
+    @Column(name = "started_at")
+    private ZonedDateTime startedAt;
+
+    @Column(name = "ended_at")
+    private ZonedDateTime endedAt;
+
+    @Column(name = "type")
+    @Enumerated(EnumType.STRING)
+    private SessionType type;
+
+    public Session() {
+        //for JPA
+    }
+
+    public Session(final UUID sessionId, final UUID userId, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final String magistrate, final ZonedDateTime startedAt) {
+        this.sessionId = sessionId;
+        this.userId = userId;
+        this.courtHouseName = courtHouseName;
+        this.localJusticeAreaNationalCourtCode = localJusticeAreaNationalCourtCode;
+        this.startedAt = startedAt;
+        this.magistrate = magistrate;
+        this.type = Objects.isNull(magistrate) ? DELEGATED_POWERS : MAGISTRATE;
+    }
+
+    public Session(final UUID sessionId, final UUID userId, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final ZonedDateTime startedAt) {
+        this(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, null, startedAt);
+    }
+
+    public UUID getSessionId() {
+        return sessionId;
+    }
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public String getCourtHouseName() {
+        return courtHouseName;
+    }
+
+    public String getLocalJusticeAreaNationalCourtCode() {
+        return localJusticeAreaNationalCourtCode;
+    }
+
+    public SessionType getType() {
+        return type;
+    }
+
+    public Optional<String> getMagistrate() {
+        return Optional.ofNullable(magistrate);
+    }
+
+    public ZonedDateTime getStartedAt() {
+        return startedAt;
+    }
+
+    public Optional<ZonedDateTime> getEndedAt() {
+        return Optional.ofNullable(endedAt);
+    }
+
+    public void setEndedAt(ZonedDateTime endedAt) {
+        this.endedAt = endedAt;
+    }
+
+}

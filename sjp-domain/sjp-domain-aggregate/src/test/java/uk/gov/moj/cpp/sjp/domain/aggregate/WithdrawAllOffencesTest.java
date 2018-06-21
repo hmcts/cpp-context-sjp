@@ -1,13 +1,16 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
+import uk.gov.moj.cpp.sjp.event.CaseNotFound;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -17,7 +20,7 @@ public class WithdrawAllOffencesTest extends CaseAggregateBaseTest {
 
     @Test
     public void shouldWithdrawAllOffences() {
-        final List<Object> events = caseAggregate.requestWithdrawalAllOffences(UUID.randomUUID().toString()).collect(Collectors.toList());
+        final List<Object> events = caseAggregate.requestWithdrawalAllOffences().collect(Collectors.toList());
 
         assertThat(events.size(), is(1));
 
@@ -28,9 +31,11 @@ public class WithdrawAllOffencesTest extends CaseAggregateBaseTest {
     @Test
     public void shouldReturnCaseNotFoundWhenTheCaseIsNotCreated() {
 
-        final Stream<Object> stream = new CaseAggregate().requestWithdrawalAllOffences(UUID.randomUUID().toString());
+        final Stream<Object> stream = new CaseAggregate().requestWithdrawalAllOffences();
 
-        assertThat(stream.count(), is(1L));
+        final Optional<Object> event = stream.findFirst();
+        assertTrue(event.isPresent());
+        assertThat(event.get().getClass(), equalTo(CaseNotFound.class));
     }
 }
 

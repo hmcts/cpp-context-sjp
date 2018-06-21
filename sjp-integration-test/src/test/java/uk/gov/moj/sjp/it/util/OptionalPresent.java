@@ -26,8 +26,8 @@ public class OptionalPresent<T> {
 
     public static <X, Y> OptionalPresent<Y> ifPresent(Optional<X> opt, Function<? super X, Y> function) {
         if (opt.isPresent()) {
-            return new OptionalPresent(function.apply(opt.get()));
+            return new OptionalPresent<>(function.apply(opt.get()));
         }
-        return new OptionalPresent(null);
+        return new OptionalPresent<>(null);
     }
 }

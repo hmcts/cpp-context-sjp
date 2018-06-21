@@ -1,11 +1,10 @@
 package uk.gov.moj.sjp.it.test;
 
 import static javax.json.Json.createObjectBuilder;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
-import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
-import static uk.gov.moj.sjp.it.test.UpdatePleaIT.PLEA_GUILTY;
-import static uk.gov.moj.sjp.it.test.UpdatePleaIT.PLEA_NOT_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
@@ -24,34 +23,32 @@ public class UpdatePleaInterpreterIT extends BaseIntegrationTest {
     public void setUp() {
         this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
         CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
-        stubGetCaseDecisionsWithNoDecision(createCasePayloadBuilder.getId());
-        stubGetEmptyAssignmentsByDomainObjectId(createCasePayloadBuilder.getId());
     }
 
     @Test
     public void shouldAddUpdateAndCancelPleaAndInterpreterLanguage() {
-        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId());
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper();
              final CancelPleaHelper cancelPleaHelper = new CancelPleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId())) {
 
             String language = "Swahili";
-            final JsonObject addPleaRequest = getPleaPayload(PLEA_NOT_GUILTY, true, language);
-            updatePleaHelper.updatePlea(addPleaRequest);
-            updatePleaHelper.verifyInterpreterLanguage(language);
+            final JsonObject addPleaRequest = getPleaPayload(NOT_GUILTY, true, language);
+            updatePleaHelper.updatePlea(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), addPleaRequest);
+            updatePleaHelper.verifyInterpreterLanguage(createCasePayloadBuilder.getId(), language);
 
             language = "Elvish";
-            final JsonObject updateInterpreterRequest = getPleaPayload(PLEA_NOT_GUILTY, true, language);
-            updatePleaHelper.updatePlea(updateInterpreterRequest);
-            updatePleaHelper.verifyInterpreterLanguage(language);
+            final JsonObject updateInterpreterRequest = getPleaPayload(NOT_GUILTY, true, language);
+            updatePleaHelper.updatePlea(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), updateInterpreterRequest);
+            updatePleaHelper.verifyInterpreterLanguage(createCasePayloadBuilder.getId(), language);
 
             language = null;
-            final JsonObject cancelInterpreterRequest = getPleaPayload(PLEA_NOT_GUILTY, false, language);
-            updatePleaHelper.updatePlea(cancelInterpreterRequest);
+            final JsonObject cancelInterpreterRequest = getPleaPayload(NOT_GUILTY, false, language);
+            updatePleaHelper.updatePlea(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), cancelInterpreterRequest);
             cancelPleaHelper.verifyInterpreterCancelled();
 
             language = "Hindi";
-            final JsonObject addInterpreterRequest = getPleaPayload(PLEA_NOT_GUILTY, true, language);
-            updatePleaHelper.updatePlea(addInterpreterRequest);
-            updatePleaHelper.verifyInterpreterLanguage(language);
+            final JsonObject addInterpreterRequest = getPleaPayload(NOT_GUILTY, true, language);
+            updatePleaHelper.updatePlea(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), addInterpreterRequest);
+            updatePleaHelper.verifyInterpreterLanguage(createCasePayloadBuilder.getId(), language);
 
             cancelPleaHelper.cancelPlea();
             cancelPleaHelper.verifyInterpreterCancelled();
@@ -61,16 +58,16 @@ public class UpdatePleaInterpreterIT extends BaseIntegrationTest {
     // We could also test other invalid bad requests but these should already be covered by unit tests
     @Test
     public void shouldRejectInvalidInterpreterRequest() {
-        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId())) {
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper()) {
             // Interpreter fields shouldn't be set for GUILTY pleas
-            final JsonObject addPleaRequest = getPleaPayload(PLEA_GUILTY, true, "Swedish");
-            updatePleaHelper.updatePleaAndExpectBadRequest(addPleaRequest);
+            final JsonObject addPleaRequest = getPleaPayload(GUILTY, true, "Swedish");
+            updatePleaHelper.updatePleaAndExpectBadRequest(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), addPleaRequest);
         }
     }
 
-    public static JsonObject getPleaPayload(final String plea, final Boolean interpreterRequired, final String interpreterLanguage) {
+    public static JsonObject getPleaPayload(final PleaType pleaType, final Boolean interpreterRequired, final String interpreterLanguage) {
         final JsonObjectBuilder builder = createObjectBuilder()
-                .add("plea", plea);
+                .add("plea", pleaType.name());
         if (interpreterRequired != null) {
             builder.add("interpreterRequired", interpreterRequired);
         }

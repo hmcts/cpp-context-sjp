@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
+import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -14,7 +15,7 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
-import com.google.common.collect.Sets;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +35,7 @@ public class OffenceRepositoryTest extends BaseTransactionalTest {
     private CaseRepository caseRepository;
 
     @Test
-    public void shouldFindOptionalBy() throws Exception {
+    public void shouldFindOptionalBy() {
         //given
         caseRepository.save(getCaseWithDefendantOffences());
 
@@ -43,27 +44,28 @@ public class OffenceRepositoryTest extends BaseTransactionalTest {
         assertEquals(VALID_OFFENCE_DETAIL_ID, actual.getId());
     }
 
-    private CaseDetail getCaseWithDefendantOffences() {
+    private static CaseDetail getCaseWithDefendantOffences() {
         CaseDetail caseDetail = new CaseDetail();
         caseDetail.setId(UUID.randomUUID());
         caseDetail.setDefendant(new DefendantDetail(
                         UUID.randomUUID(),
                         new PersonalDetails(),
-                        Sets.newHashSet(getOffenceDetail(VALID_OFFENCE_DETAIL_ID)),
+                        singleton(getOffenceDetail(VALID_OFFENCE_DETAIL_ID)),
                         1
                 )
 
         );
+
         return caseDetail;
     }
 
-    private OffenceDetail getOffenceDetail(UUID uuid) {
+    private static OffenceDetail getOffenceDetail(final UUID uuid) {
         return new OffenceDetail.OffenceDetailBuilder()
                 .setId(uuid)
                 .setChargeDate(LocalDate.now())
                 .setSequenceNumber(123)
-                .setCode("")
-                .setPlea("")
+                .setCode(StringUtils.EMPTY)
+                .setPlea(null)
                 .setPleaMethod(null)
                 .setSequenceNumber(1)
                 .setStartDate(LocalDate.now())

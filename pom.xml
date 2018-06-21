@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -10,7 +12,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>0.0.22-SNAPSHOT</version>
+    <version>1.0.69-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -20,8 +22,8 @@
         <assignment.version>2.0.99</assignment.version>
         <material.version>2.0.101</material.version>
         <notification.notify.version>0.0.16</notification.notify.version>
-        <referencedata.version>2.0.146</referencedata.version>
-        <resulting.version>2.0.166</resulting.version>
+        <referencedata.version>2.0.151</referencedata.version>
+        <scheduling.version>2.0.84</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>2.0.99</usersgroups.version>
         <access-control-sjp-providers.version>3.2.9</access-control-sjp-providers.version>
@@ -66,12 +68,12 @@
                 <artifactId>jgitflow-maven-plugin</artifactId>
                 <configuration>
                     <flowInitContext>
-                        <masterBranchName>dev/release</masterBranchName>
+                        <masterBranchName>dev/sjp-release</masterBranchName>
                         <developBranchName>master</developBranchName>
-                        <featureBranchPrefix>dev/feature-</featureBranchPrefix>
-                        <releaseBranchPrefix>dev/release-</releaseBranchPrefix>
-                        <hotfixBranchPrefix>dev/hotfix-</hotfixBranchPrefix>
-                        <versionTagPrefix>v</versionTagPrefix>
+                        <featureBranchPrefix>dev/sjp-feature-</featureBranchPrefix>
+                        <releaseBranchPrefix>dev/sjp-release-</releaseBranchPrefix>
+                        <hotfixBranchPrefix>dev/sjp-hotfix-</hotfixBranchPrefix>
+                        <versionTagPrefix>sjp-tag-</versionTagPrefix>
                     </flowInitContext>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <enableSshAgent>true</enableSshAgent>

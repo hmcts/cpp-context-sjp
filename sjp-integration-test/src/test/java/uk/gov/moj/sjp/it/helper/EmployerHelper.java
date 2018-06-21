@@ -39,7 +39,7 @@ public class EmployerHelper implements AutoCloseable {
         return HttpClientUtil.makeGetCall(resource, contentType);
     }
 
-    public String getEmployer(final String defendantId, final Matcher jsonMatcher) {
+    public String getEmployer(final String defendantId, final Matcher<Object> jsonMatcher) {
         return await().atMost(20, TimeUnit.SECONDS).until(() -> getEmployer(defendantId).readEntity(String.class), jsonMatcher);
     }
 

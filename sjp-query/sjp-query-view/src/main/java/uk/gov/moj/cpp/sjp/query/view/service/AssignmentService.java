@@ -22,7 +22,7 @@ public class AssignmentService {
             case DELEGATED_POWERS:
                 return assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, excludedProsecutingAuthorities, limit);
             default:
-                throw new UnsupportedOperationException(String.format("Session type % is not supported", sessionType));
+                throw new UnsupportedOperationException(String.format("Session type %s is not supported", sessionType));
         }
     }
 }

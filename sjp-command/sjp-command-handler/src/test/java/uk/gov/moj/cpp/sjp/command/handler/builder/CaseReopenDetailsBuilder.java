@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.sjp.command.handler.builder;
 
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_ID;
-import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_ID_STR;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.REOPEN_DATE;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.REOPEN_LIBRA_NUMBER;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.REOPEN_REASON;
@@ -27,13 +26,13 @@ public class CaseReopenDetailsBuilder {
 
     public static CaseReopenDetailsBuilder defaultCaseReopenDetails() {
         return new CaseReopenDetailsBuilder().withCaseReopenDetails(new CaseReopenDetails(
-                CASE_ID_STR, REOPEN_DATE, REOPEN_LIBRA_NUMBER, REOPEN_REASON
+                CASE_ID, REOPEN_DATE, REOPEN_LIBRA_NUMBER, REOPEN_REASON
         ));
     }
 
     public static CaseReopenDetailsBuilder defaultCaseReopenUpdatedDetails() {
         return new CaseReopenDetailsBuilder().withCaseReopenDetails(new CaseReopenDetails(
-                CASE_ID_STR, REOPEN_UPDATE_DATE, REOPEN_UPDATE_LIBRA_NUMBER, REOPEN_UPDATE_REASON
+                CASE_ID, REOPEN_UPDATE_DATE, REOPEN_UPDATE_LIBRA_NUMBER, REOPEN_UPDATE_REASON
         ));
     }
 
@@ -46,9 +45,9 @@ public class CaseReopenDetailsBuilder {
         return caseReopenDetails;
     }
 
-    public JsonObject buildJsobObject() {
+    public JsonObject buildJsonObject() {
         return createObjectBuilder()
-                .add("caseId", caseReopenDetails.getCaseId())
+                .add("caseId", caseReopenDetails.getCaseId().toString())
                 .add("reopenedDate", caseReopenDetails.getReopenedDate().toString())
                 .add("libraCaseNumber", caseReopenDetails.getLibraCaseNumber())
                 .add("reason", caseReopenDetails.getReason()).build();
@@ -57,6 +56,6 @@ public class CaseReopenDetailsBuilder {
     public JsonEnvelope buildJsonEnvelope(String actionName) {
         return JsonEnvelopeBuilder.envelopeFrom(
                 JsonObjectMetadata.metadataOf(CASE_ID, actionName).build(),
-                buildJsobObject());
+                buildJsonObject());
     }
 }

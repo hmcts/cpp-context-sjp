@@ -203,7 +203,6 @@ public class CaseService {
         return searchCaseByMaterialIdView;
     }
 
-
     /**
      * Find case documents
      *
@@ -212,6 +211,11 @@ public class CaseService {
      */
     public CaseDocumentsView findCaseDocuments(final UUID caseId) {
         return findCaseDocuments(caseId, d -> true);
+    }
+
+    public Optional<CaseDocumentView> findCaseDocument(final UUID caseId, final UUID documentId) {
+        return findCaseDocuments(caseId, document -> document.getId().equals(documentId))
+                .getCaseDocuments().stream().findFirst();
     }
 
     private CaseDocumentsView findCaseDocuments(final UUID caseId, final Predicate<CaseDocument> filter) {

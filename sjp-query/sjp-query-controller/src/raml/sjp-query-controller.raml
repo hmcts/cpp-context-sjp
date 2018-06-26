@@ -218,6 +218,22 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
             schema: !include json/schema/sjp.query.case-documents.json
             example: !include json/sjp.query.case-documents.json
 
+/cases/{caseId}/documents/{documentId}:
+  description: get case document
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-document+json
+          name: sjp.query.case-document
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case-document+json:
+            schema: !include json/schema/sjp.query.case-document.json
+            example: !include json/sjp.query.case-document.json
+
 /cases/awaiting:
   description: return the 600 oldest not resulted SJP cases, that have SJPN documents
   get:

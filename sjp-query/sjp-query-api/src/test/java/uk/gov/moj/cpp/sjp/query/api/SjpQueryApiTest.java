@@ -28,7 +28,6 @@ public class SjpQueryApiTest {
                         method("findCaseSearchResults").thatHandles("sjp.query.case-search-results").withRequesterPassThrough(),
                         method("findCasesMissingSjpn").thatHandles("sjp.query.cases-missing-sjpn").withRequesterPassThrough(),
                         method("findCasesMissingSjpnWithDetails").thatHandles("sjp.query.cases-missing-sjpn-with-details").withRequesterPassThrough(),
-                        method("findCaseDocuments").thatHandles("sjp.query.case-documents").withRequesterPassThrough(),
                         method("searchCaseByMaterialId").thatHandles("sjp.query.cases-search-by-material-id").withRequesterPassThrough(),
                         method("getAwaitingCases").thatHandles("sjp.query.awaiting-cases").withRequesterPassThrough(),
                         method("getCasesReferredToCourt").thatHandles("sjp.query.cases-referred-to-court").withRequesterPassThrough(),

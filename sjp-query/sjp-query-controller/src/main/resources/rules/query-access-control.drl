@@ -35,6 +35,14 @@ rule "sjp.query.employer"
     $outcome.setSuccess(true);
 end
 
+rule "sjp.query.case-document"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-document");
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "sjp.query.case-documents"
   when
     $outcome: Outcome();

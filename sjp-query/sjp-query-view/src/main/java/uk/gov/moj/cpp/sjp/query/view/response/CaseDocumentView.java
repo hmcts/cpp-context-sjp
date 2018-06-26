@@ -24,11 +24,15 @@ public class CaseDocumentView {
         return first.documentNumber.compareTo(second.documentNumber);
     };
 
-    public CaseDocumentView(CaseDocument caseDocument) {
-        this.id = caseDocument.getId();
-        this.materialId = caseDocument.getMaterialId();
-        this.documentType = caseDocument.getDocumentType();
-        this.documentNumber = caseDocument.getDocumentNumber();
+    public CaseDocumentView(final CaseDocument caseDocument) {
+        this(caseDocument.getId(), caseDocument.getMaterialId(), caseDocument.getDocumentType(), caseDocument.getDocumentNumber());
+    }
+
+    public CaseDocumentView(final UUID id, final UUID materialId, final String documentType, final Integer documentNumber) {
+        this.id = id;
+        this.materialId = materialId;
+        this.documentType = documentType;
+        this.documentNumber = documentNumber;
     }
 
     public UUID getId() {

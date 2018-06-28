@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.lang3.RandomStringUtils;
 
 public class CreateCase {
+
     private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.create-sjp-case+json";
     private final CreateCasePayloadBuilder payloadBuilder;
 

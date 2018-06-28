@@ -11,12 +11,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.SESSION_DOES_NOT_EXIST;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.SESSION_ENDED;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.SESSION_NOT_OWNED_BY_USER;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_ASSIGNMENT_REJECTED_PUBLIC_EVENT;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.DELEGATED_POWERS_SESSION_ENDED_EVENT;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.event.processor.AssignmentProcessor;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
+import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
@@ -65,12 +65,12 @@ public class AssignmentRejectionIT extends BaseIntegrationTest {
     }
 
     private void requestAssignmentAndVerifyRejectionReason(final UUID sessionId, final UUID userId, final CaseAssignmentRejected.RejectReason rejectionReason) {
-        final Optional<JsonEnvelope> caseAssignmentRejectedPublicEvent = AssignmentHelper.requestCaseAssignmentAndWaitForEvent(sessionId, userId, CASE_ASSIGNMENT_REJECTED_PUBLIC_EVENT);
+        final Optional<JsonEnvelope> caseAssignmentRejectedPublicEvent = AssignmentHelper.requestCaseAssignmentAndWaitForEvent(sessionId, userId, AssignmentProcessor.PUBLIC_SJP_CASE_ASSIGNMENT_REJECTED);
 
         assertThat(caseAssignmentRejectedPublicEvent.isPresent(), is(true));
         assertThat(caseAssignmentRejectedPublicEvent.get(),
                 jsonEnvelope(
-                        metadata().withName(CASE_ASSIGNMENT_REJECTED_PUBLIC_EVENT),
+                        metadata().withName(AssignmentProcessor.PUBLIC_SJP_CASE_ASSIGNMENT_REJECTED),
                         payload().isJson(withJsonPath("$.reason", equalTo(rejectionReason.name())))
                 ));
     }
@@ -81,7 +81,7 @@ public class AssignmentRejectionIT extends BaseIntegrationTest {
 
     private static void endSession(final UUID sessionId, final UUID userId) {
         new EventListener()
-                .subscribe(DELEGATED_POWERS_SESSION_ENDED_EVENT)
+                .subscribe(DelegatedPowersSessionStarted.EVENT_NAME)
                 .run(() -> SessionHelper.endSession(sessionId, userId));
     }
 

@@ -26,10 +26,6 @@ import static uk.gov.moj.sjp.it.Constants.PUBLIC_SJP_CASE_UPDATE_REJECTED;
 import static uk.gov.moj.sjp.it.Constants.SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
 import static uk.gov.moj.sjp.it.Constants.SJP_EVENTS_CASE_UPDATE_REJECTED;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_ASSIGNED_PRIVATE_EVENT;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_ASSIGNED_PUBLIC_EVENT;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.CASE_NOT_ASSIGNED_EVENT;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignmentAsync;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAsync;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
@@ -38,10 +34,11 @@ import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDec
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.event.processor.AssignmentProcessor;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
+import uk.gov.moj.sjp.it.commandclient.AssignCaseClient;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
-import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestCancelHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
@@ -64,6 +61,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mortbay.log.Log;
 
 public class AssignmentRulesIT extends BaseIntegrationTest {
 
@@ -266,28 +264,26 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
 
         SessionHelper.startSession(sessionId, userId, courtHouseOUCode, sessionType);
 
-        final EventListener assignmentRunner = new EventListener()
-                .subscribe(CASE_ASSIGNED_PRIVATE_EVENT, CASE_ASSIGNED_PUBLIC_EVENT)
-                .run(() -> requestCaseAssignmentAsync(sessionId, userId));
+        AssignCaseClient assignCase = AssignCaseClient.builder().sessionId(sessionId).build();
+        assignCase.assignedPrivateHandler = (envelope) -> {
+            assertThat((JsonEnvelope) envelope,
+                    jsonEnvelope(
+                            metadata().withName(CaseAssigned.EVENT_NAME),
+                            payload().isJson(allOf(
+                                    withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                    withJsonPath("$.assigneeId", equalTo(userId.toString())),
+                                    withJsonPath("$.assignedAt", notNullValue()),
+                                    withJsonPath("$.caseAssignmentType", equalTo(sessionType == MAGISTRATE ? MAGISTRATE_DECISION.toString() : DELEGATED_POWERS_DECISION.toString()))
+                            ))));
+        };
+        assignCase.assignedPublicHandler = (envelope) -> {
+            assertThat((JsonEnvelope) envelope,
+                    jsonEnvelope(
+                            metadata().withName(AssignmentProcessor.PUBLIC_SJP_CASE_ASSIGNED),
+                            payload().isJson(withJsonPath("$.caseId", equalTo(caseId.toString())))));
 
-        final JsonEnvelope caseAssignedPrivateEvent = assignmentRunner.popEvent(CASE_ASSIGNED_PRIVATE_EVENT).get();
-
-        assertThat(caseAssignedPrivateEvent,
-                jsonEnvelope(
-                        metadata().withName(CaseAssigned.EVENT_NAME),
-                        payload().isJson(allOf(
-                                withJsonPath("$.caseId", equalTo(caseId.toString())),
-                                withJsonPath("$.assigneeId", equalTo(userId.toString())),
-                                withJsonPath("$.assignedAt", notNullValue()),
-                                withJsonPath("$.caseAssignmentType", equalTo(sessionType == MAGISTRATE ? MAGISTRATE_DECISION.toString() : DELEGATED_POWERS_DECISION.toString()))
-                        ))));
-
-        final JsonEnvelope caseAssignedPublicEvent = assignmentRunner.popEvent(CASE_ASSIGNED_PUBLIC_EVENT).get();
-
-        assertThat(caseAssignedPublicEvent,
-                jsonEnvelope(
-                        metadata().withName(CASE_ASSIGNED_PUBLIC_EVENT),
-                        payload().isJson(withJsonPath("$.caseId", equalTo(caseId.toString())))));
+        };
+        assignCase.getExecutor().setExecutingUserId(userId).executeSync();
 
         assertThat(AssignmentHelper.isCaseAssignedToUser(caseId, userId), is(true));
     }
@@ -298,8 +294,8 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
 
         SessionHelper.startSession(sessionId, userId, courtHouseOUCode, sessionType);
 
-        final Optional<JsonEnvelope> assignedEvent = AssignmentHelper.requestCaseAssignmentAndWaitForEvent(sessionId, userId, CASE_NOT_ASSIGNED_EVENT);
-
-        assertThat(assignedEvent.isPresent(), is(true));
+        AssignCaseClient assignCase = AssignCaseClient.builder().sessionId(sessionId).build();
+        assignCase.notAssignedHandler = (envelope) -> Log.info("Case Not Assigned");
+        assignCase.getExecutor().setExecutingUserId(userId).executeSync();
     }
 }

@@ -107,7 +107,7 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     public abstract DefendantDetail findCaseDefendant(@QueryParam("caseId") final UUID caseId);
 
     @Query(value = "select cd from CaseDetail cd JOIN cd.caseDocuments cdocs " +
-            "WHERE cdocs.materialId = :materialId" )
+            "WHERE cdocs.materialId = :materialId")
     public abstract CaseDetail findByMaterialId(@QueryParam("materialId") final UUID materialId);
 
     @Query(value = "SELECT DISTINCT cd FROM CaseDetail cd JOIN cd.caseDocuments doc ON doc.documentType = 'SJPN' " +
@@ -117,6 +117,9 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     @Query(value = "SELECT min(cd.postingDate) FROM CaseDetail cd " +
             "WHERE cd.completed IS NOT true")
     public abstract LocalDate findOldestUncompletedPostingDate();
+
+    @Query(value = "SELECT cd.prosecutingAuthority FROM CaseDetail cd WHERE cd.id = :caseId", singleResult = SingleResultType.OPTIONAL)
+    public abstract String getProsecutingAuthority(@QueryParam("caseId") final UUID caseId);
 
     @Modifying
     @Query(value = "UPDATE CaseDetail cd set cd.datesToAvoid=:datesToAvoid WHERE cd.id=:id")

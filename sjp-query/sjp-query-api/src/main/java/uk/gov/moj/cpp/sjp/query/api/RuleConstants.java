@@ -102,4 +102,8 @@ public final class RuleConstants {
         return asList(GROUP_SYSTEM_USERS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
     }
 
+    public static List<String> getProsecutingAuthorityGroups() {
+        return asList(GROUP_SYSTEM_USERS);
+    }
+
 }

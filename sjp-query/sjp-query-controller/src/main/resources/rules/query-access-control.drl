@@ -170,3 +170,11 @@ rule "sjp.query.case-assignment"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp.query.case-prosecuting-authority"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-prosecuting-authority");
+  then
+    $outcome.setSuccess(true);
+end

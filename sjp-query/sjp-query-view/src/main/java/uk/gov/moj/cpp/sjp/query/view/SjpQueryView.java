@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view;
 
 import static java.util.Optional.empty;
+import static javax.json.Json.createObjectBuilder;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.core.annotation.Component;
@@ -11,6 +12,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
@@ -46,6 +48,8 @@ public class SjpQueryView {
     @Inject
     private CaseService caseService;
 
+    @Inject
+    private CaseRepository caseRepository;
 
     @Inject
     private FinancialMeansService financialMeansService;
@@ -206,6 +210,17 @@ public class SjpQueryView {
     public JsonEnvelope findPendingDatesToAvoid(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, "sjp.pending-dates-to-avoid")
                 .apply(datesToAvoidService.findCasesPendingDatesToAvoid(envelope));
+    }
+
+    @Handles("sjp.query.case-prosecuting-authority")
+    public JsonEnvelope getProsecutingAuthority(final JsonEnvelope query) {
+        final UUID caseId = UUID.fromString(query.payloadAsJsonObject().getString(FIELD_CASE_ID));
+
+        final JsonObject prosecutingAuthorityPayload = Optional.ofNullable(caseRepository.getProsecutingAuthority(caseId))
+                .map(prosecutingAuthority -> createObjectBuilder().add("prosecutingAuthority", prosecutingAuthority).build())
+                .orElse(null);
+
+        return enveloper.withMetadataFrom(query, "sjp.query.case-prosecuting-authority").apply(prosecutingAuthorityPayload);
     }
 
     private static String extract(JsonEnvelope envelope, String fieldName) {

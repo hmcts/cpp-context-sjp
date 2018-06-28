@@ -1,12 +1,18 @@
 package uk.gov.moj.sjp.it.test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.helper.CaseProsecutingAuthorityHelper.getProsecutingAuthority;
 
 import uk.gov.justice.services.common.converter.LocalDates;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.verifier.CaseReceivedMQVerifier;
+
+import java.util.UUID;
 
 import com.jayway.restassured.path.json.JsonPath;
 import org.junit.Test;
@@ -18,16 +24,21 @@ public class CreateCaseIT extends BaseIntegrationTest {
 
     @Test
     public void shouldAssociateEnterpriseIdWithCase() {
-        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        final UUID caseId = UUID.randomUUID();
+        final ProsecutingAuthority prosecutingAuthority = TFL;
+
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
+                .withId(caseId)
+                .withProsecutingAuthority(prosecutingAuthority);
 
         try (final CaseReceivedMQVerifier caseReceivedMQVerifier = new CaseReceivedMQVerifier()) {
             CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
-            caseReceivedMQVerifier.verifyInPrivateActiveMQ(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getUrn());
+            caseReceivedMQVerifier.verifyInPrivateActiveMQ(caseId, createCasePayloadBuilder.getUrn());
         }
 
-        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId());
+        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId);
 
-        assertThat(jsonResponse.get("id"), equalTo(createCasePayloadBuilder.getId().toString()));
+        assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCasePayloadBuilder.getUrn()));
         assertThat(jsonResponse.get("enterpriseId"), equalTo(createCasePayloadBuilder.getEnterpriseId()));
         assertThat(jsonResponse.get("defendant.personalDetails.title"), equalTo(createCasePayloadBuilder.getDefendantBuilder().getTitle()));
@@ -46,5 +57,6 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("defendant.offences[0].offenceSequenceNumber"), equalTo(1)); //supporting only one - 1st 
         assertThat(jsonResponse.get("defendant.offences[0].wording"), equalTo(createCasePayloadBuilder.getOffenceBuilder().getOffenceWording()));
         assertThat(jsonResponse.get("defendant.offences[0].chargeDate"), equalTo(LocalDates.to(createCasePayloadBuilder.getOffenceBuilder().getChargeDate())));
+        assertThat(getProsecutingAuthority(caseId), is(prosecutingAuthority.name()));
     }
 }

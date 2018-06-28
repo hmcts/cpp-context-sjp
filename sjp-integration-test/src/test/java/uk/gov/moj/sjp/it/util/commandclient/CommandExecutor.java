@@ -125,7 +125,7 @@ public class CommandExecutor {
             CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures);
             combinedFuture.get();
         } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(format("Event listeners for command %s cancelled", this.commandInstance.getClass().getName()), e);
+            throw new RuntimeException(e);
         }
         return this;
     }
@@ -134,7 +134,7 @@ public class CommandExecutor {
         try {
             this.listeners.get(key).getFuture().get();
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e.getCause());
+            throw new RuntimeException(format("Event listener with the key %s for command %s cancelled", key, this.commandInstance.getClass().getName()), e);
         }
         return this;
     }
@@ -328,8 +328,7 @@ public class CommandExecutor {
     private Optional<Consumer> getHandlerFor(String event) {
         try {
             return Optional.of((Consumer) getHandlerFieldFor(event).get(this.commandInstance));
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        } catch (IllegalAccessException | NullPointerException e) {
             return Optional.empty();
         }
     }

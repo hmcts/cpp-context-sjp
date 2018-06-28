@@ -1,8 +1,5 @@
 package uk.gov.moj.sjp.it.commandclient;
 
-import static uk.gov.moj.cpp.sjp.event.processor.AssignmentProcessor.PUBLIC_SJP_CASE_ASSIGNED;
-import static uk.gov.moj.cpp.sjp.event.processor.AssignmentProcessor.PUBLIC_SJP_CASE_ASSIGNMENT_REJECTED;
-import static uk.gov.moj.cpp.sjp.event.processor.AssignmentProcessor.PUBLIC_SJP_CASE_NOT_ASSIGNED;
 import static uk.gov.moj.sjp.it.util.commandclient.ListeningStrategy.UNTIL_RECEIVAL;
 import static uk.gov.moj.sjp.it.util.commandclient.ListeningStrategy.UNTIL_TIMEOUT;
 
@@ -11,7 +8,6 @@ import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
 import uk.gov.moj.sjp.it.util.commandclient.CommandClient;
 import uk.gov.moj.sjp.it.util.commandclient.CommandExecutor;
-import uk.gov.moj.sjp.it.util.commandclient.DeclareJointListener;
 import uk.gov.moj.sjp.it.util.commandclient.EventHandler;
 import uk.gov.moj.sjp.it.util.commandclient.ListenerConfig;
 
@@ -25,9 +21,7 @@ import lombok.Builder;
 @CommandClient(
         URI = "/sessions/{sessionId}",
         contentType = "application/vnd.sjp.assign-case+json",
-        jointListeners = {@DeclareJointListener(key = "public", topic = "public.sjp", events = {PUBLIC_SJP_CASE_ASSIGNED, PUBLIC_SJP_CASE_ASSIGNMENT_REJECTED, PUBLIC_SJP_CASE_NOT_ASSIGNED})},
         listenerConfigs = {
-                @ListenerConfig(key = "public", until = UNTIL_RECEIVAL, timeout = 12000),
                 @ListenerConfig(key = CaseAssigned.EVENT_NAME, until = UNTIL_RECEIVAL, timeout = 8000),
                 @ListenerConfig(key = CaseAssignmentRejected.EVENT_NAME, until = UNTIL_TIMEOUT, timeout = 11000)
         }

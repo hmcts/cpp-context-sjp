@@ -53,7 +53,7 @@ class EventListener implements AutoCloseable {
     }
 
     public void start(JMSContext jmsContext) {
-        final String messageSelector = format(MESSAGE_SELECTOR_TEMPLATE, StringUtils.join(this.events, ", "));
+        final String messageSelector = format(MESSAGE_SELECTOR_TEMPLATE, StringUtils.join(this.events, "', '"));
         this.eventConsumer = jmsContext.createConsumer(new ActiveMQTopic(this.topic), messageSelector);
         this.eventConsumer.setMessageListener(message -> {
             try {

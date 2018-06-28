@@ -18,6 +18,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import lombok.Builder;
+import org.apache.commons.lang3.RandomStringUtils;
 
 @Builder
 @CommandClient(
@@ -35,6 +36,9 @@ public class CreateCaseClient {
 
     @Builder.Default
     public String ptiUrn = UrnProvider.generate(ProsecutingAuthority.TFL);
+
+    @Builder.Default
+    public String enterpriseId = RandomStringUtils.randomAlphanumeric(12).toUpperCase();
 
     @Builder.Default
     @NotNull(message = "Prosecuting authority is required")

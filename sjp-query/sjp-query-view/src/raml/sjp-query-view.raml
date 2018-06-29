@@ -453,3 +453,18 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
                   schema: !include json/schema/sjp.query.session.json
                   example: !include json/sjp.query.session.json
 
+/cases/{caseId}/prosecuting-authority:
+  get:
+    description: |
+      get case prosecuting authority
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-prosecuting-authority+json
+          name: sjp.query.case-prosecuting-authority
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case-prosecuting-authority+json:
+            schema: !include json/schema/sjp.query.case-prosecuting-authority.json
+            example: !include json/sjp.query.case-prosecuting-authority.json

@@ -19,6 +19,5 @@
     "caseId",
     "resultedOn",
     "sjpSessionId"
-  ],
-  "additionalProperties": false
+  ]
 }

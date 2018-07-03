@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
 
-#The prerequisite for this script is that vagrant is running
-#Script that runs, liquibase, deploys wars and runs integration tests
-
-
 ${VAGRANT_DIR:?"Please export VAGRANT_DIR environment variable to point at atcm-vagrant"}
 WILDFLY_DEPLOYMENT_DIR="${VAGRANT_DIR}/deployments"
 CONTEXT_NAME=sjp
 EVENT_LOG_VERSION=4.1.2
 EVENT_BUFFER_VERSION=4.1.2
+CPP_ACTIVITI_VERSION=5.22.0
 
 #fail script on error
 set -e
@@ -63,6 +60,12 @@ function runEventLogAggregateSnapshotLiquibase() {
     echo "Finished executing EventLogAggregateSnapshotLiquibase liquibase"
 }
 
+function runViewstoreLiquibase {
+  echo "running runViewstoreLiquibase"
+  mvn -f ${CONTEXT_NAME}-viewstore/${CONTEXT_NAME}-viewstore-liquibase/pom.xml -Dliquibase.url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}viewstore -Dliquibase.username=${CONTEXT_NAME} -Dliquibase.password=${CONTEXT_NAME} -Dliquibase.logLevel=info resources:resources liquibase:update
+  echo "Finished executing runViewstoreLiquibase"
+}
+
 function runEventBufferLiquibase() {
     echo "running event buffer liquibase"
     mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.services:event-buffer-liquibase:${EVENT_BUFFER_VERSION}:jar
@@ -70,11 +73,12 @@ function runEventBufferLiquibase() {
     echo "finished running event buffer liquibase"
 }
 
-function runLiquibase {
-  #run liquibase for context
-  mvn -f ${CONTEXT_NAME}-viewstore/${CONTEXT_NAME}-viewstore-liquibase/pom.xml -Dliquibase.url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}viewstore -Dliquibase.username=${CONTEXT_NAME} -Dliquibase.password=${CONTEXT_NAME} -Dliquibase.logLevel=info resources:resources liquibase:update
 
- echo "Finished executing liquibase"
+function runActivitiLiquibase() {
+    echo "running activiti liquibase"
+    mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.moj.cpp.activiti:activiti-liquibase:${CPP_ACTIVITI_VERSION}:jar
+    java -jar target/activiti-liquibase-${CPP_ACTIVITI_VERSION}.jar --url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}activiti --username=${CONTEXT_NAME} --password=${CONTEXT_NAME} --logLevel=info update
+    echo "finished running event buffer liquibase"
 }
 
 function healthCheck {
@@ -115,19 +119,15 @@ function healthCheck {
       echo "Time Now is $TIME_NOW"
       echo "Time elapsed is $TIME_ELAPSED"
 
-
      [ "${TIME_ELAPSED}" -gt "${TIMEOUT}" ] && exit
       sleep $RETRY_DELAY
-
   done
 }
 
 function integrationTests {
   echo
   echo "Running Integration Tests"
-
   mvn -B verify -pl ${CONTEXT_NAME}-integration-test -P${CONTEXT_NAME}-integration-test -DINTEGRATION_HOST_KEY=localhost
-
   echo "Finished running Integration Tests"
 }
 
@@ -137,16 +137,16 @@ function buildDeployAndTest {
 }
 
 function deployAndTest {
-  deleteAndDeployWars
-  deployWiremock
   startVagrant
   runEventLogLiquibase
   runEventLogAggregateSnapshotLiquibase
+  runViewstoreLiquibase
   runEventBufferLiquibase
-  runLiquibase
+  runActivitiLiquibase
+  deleteAndDeployWars
+  deployWiremock
   healthCheck
   integrationTests
 }
 
 buildDeployAndTest
-

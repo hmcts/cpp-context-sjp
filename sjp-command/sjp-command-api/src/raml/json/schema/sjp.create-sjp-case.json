@@ -1,5 +1,36 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.create-sjp-case.json",
-  "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/commands/sjp.create-sjp-case.json"
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/commands/sjp.create-sjp-case.json",
+  "type": "object",
+  "properties": {
+    "urn": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "enterpriseId": {
+      "type": "string"
+    },
+    "prosecutingAuthority": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/prosecuting-authority.json"
+    },
+    "costs": {
+      "type": "number"
+    },
+    "postingDate": {
+      "type": "string"
+    },
+    "defendant": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/commands/defendant.json"
+    }
+  },
+  "required": [
+    "urn",
+    "id",
+    "enterpriseId",
+    "prosecutingAuthority",
+    "postingDate",
+    "defendant"
+  ]
 }

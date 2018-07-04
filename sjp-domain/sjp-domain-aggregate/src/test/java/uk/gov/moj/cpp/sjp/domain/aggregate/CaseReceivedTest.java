@@ -110,10 +110,10 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
      */
     @SuppressWarnings("deprecation")
     private SjpCaseCreated buildSjpCaseCreated(Case aCase) {
-        return new SjpCaseCreated(aCase.getId().toString(), aCase.getUrn(), aCase.getPtiUrn(),
-                aCase.getInitiationCode(), aCase.getSummonsCode(), aCase.getProsecutingAuthority(),
-                aCase.getLibraOriginatingOrg(), aCase.getLibraHearingLocation(), aCase.getDateOfHearing(),
-                aCase.getTimeOfHearing(), aCase.getDefendant().getId(),
+        return new SjpCaseCreated(aCase.getId().toString(), aCase.getUrn(), null,
+                null, null, aCase.getProsecutingAuthority(),
+                null, null, null,
+                null, aCase.getDefendant().getId(),
                 aCase.getDefendant().getNumPreviousConvictions(), aCase.getCosts(), aCase.getPostingDate(),
                 aCase.getDefendant().getOffences(), clock.now());
     }

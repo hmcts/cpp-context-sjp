@@ -18,24 +18,6 @@
     "prosecutingAuthority": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/prosecuting-authority.json"
     },
-    "initiationCode": {
-      "type": "string"
-    },
-    "summonsCode": {
-      "type": "string"
-    },
-    "libraOriginatingOrg": {
-      "type": "string"
-    },
-    "libraHearingLocation": {
-      "type": "string"
-    },
-    "dateOfHearing": {
-      "type": "string"
-    },
-    "timeOfHearing": {
-      "type": "string"
-    },
     "costs": {
       "type": "number"
     },

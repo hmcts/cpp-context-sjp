@@ -75,10 +75,11 @@ public class UpdateDefendantDetailsHandlerTest {
 
     private static final String ADDRESS_1 = "14 Tottenham Court Road";
     private static final String ADDRESS_2 = "London";
-    private static final String ADDRESS_3 = "England";
-    private static final String ADDRESS_4 = "UK";
+    private static final String ADDRESS_3 = "Surrey";
+    private static final String ADDRESS_4 = "England";
+    private static final String ADDRESS_5 = "United Kingdom";
     private static final String POSTCODE = "W1T 1JY";
-    private static final Address address = new Address(ADDRESS_1,ADDRESS_2,ADDRESS_3,ADDRESS_4,POSTCODE);
+    private static final Address ADDRESS = new Address(ADDRESS_1, ADDRESS_2, ADDRESS_3, ADDRESS_4, ADDRESS_5, POSTCODE);
 
     @Test
     public void shouldUpdateDefendantDetails() throws EventStreamException {
@@ -86,7 +87,7 @@ public class UpdateDefendantDetailsHandlerTest {
         final CaseAggregate caseAggregate = new CaseAggregate();
 
         final JsonEnvelope command = createUpdateDefendantDetailsCommand(caseId, defendantId, firstName,
-                lastName, email, gender, nationalInsuranceNumber, homeNumber, mobileNumber, address, dateOfBirth);
+                lastName, email, gender, nationalInsuranceNumber, homeNumber, mobileNumber, ADDRESS, dateOfBirth);
 
         final EventStream eventStream = Mockito.mock(EventStream.class);
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
@@ -150,6 +151,7 @@ public class UpdateDefendantDetailsHandlerTest {
                 .add("address2", address.getAddress2())
                 .add("address3", address.getAddress3())
                 .add("address4", address.getAddress4())
+                .add("address5", address.getAddress5())
                 .add("postcode", address.getPostcode())
                 .build();
     }

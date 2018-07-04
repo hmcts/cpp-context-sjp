@@ -21,6 +21,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 /**
  * @deprecated Replaced by {@link CaseReceived}
  */
+@Deprecated
 @Event("sjp.events.sjp-case-created")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SjpCaseCreated {
@@ -58,6 +59,10 @@ public class SjpCaseCreated {
         this.createdOn = createdOn;
     }
 
+    public UUID getId() {
+        return id;
+    }
+
     public String getUrn() {
         return urn;
     }
@@ -72,10 +77,6 @@ public class SjpCaseCreated {
 
     public List<Offence> getOffences() {
         return offences;
-    }
-
-    public UUID getId() {
-        return id;
     }
 
     public int getNumPreviousConvictions() {

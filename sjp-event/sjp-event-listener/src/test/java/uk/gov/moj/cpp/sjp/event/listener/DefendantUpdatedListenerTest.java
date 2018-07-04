@@ -106,14 +106,14 @@ public class DefendantUpdatedListenerTest {
 
     private DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder defendantDetailsUpdatedBuilder = defendantDetailsUpdated()
             .withCaseId(caseDetail.getId())
-            .withContactDetails(new ContactDetails("123", "456", "test@test.com"))
+            .withContactDetails(new ContactDetails("123", "456", "789", "test@test.com", "test_email2@test.com"))
             .withTitle("Mr")
             .withFirstName("Mark")
             .withLastName("Smith")
             .withGender("Male")
             .withUpdatedDate(clock.now())
             .withDateOfBirth(LocalDate.of(1960, 1, 1))
-            .withAddress(new Address("address1", "address2", "address3", "address4", "postcode"));
+            .withAddress(new Address("address1", "address2", "address3", "address4", "address5", "postcode"));
 
     @Captor
     private ArgumentCaptor<CaseDetail> actualPersonalDetailsCaptor;

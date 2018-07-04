@@ -3,7 +3,9 @@ package uk.gov.moj.cpp.sjp.domain.testutils;
 
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
+import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
+import uk.gov.moj.cpp.sjp.domain.Language;
 import uk.gov.moj.cpp.sjp.domain.Offence;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.util.DefaultTestData;
@@ -13,6 +15,8 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class CaseBuilder {
 
@@ -24,10 +28,17 @@ public class CaseBuilder {
                     0, null, null, null, null, COMPENSATION)
     );
     private static final int NUM_PREVIOUS_CONVICTIONS = 3;
-    private static final Address ADDRESS = new Address("street", "suburb", "town", "county", "AA1 2BB");
+    private static final Address ADDRESS = new Address("street", "suburb", "town", "county", "address5", "AA1 2BB");
 
     private static BigDecimal COSTS = BigDecimal.valueOf(33.33);
     private static LocalDate POSTING_DATE = LocalDate.of(2015, 12, 3);
+
+    private static final String NATIONAL_INSURANCE_NUMBER = RandomStringUtils.random(10);
+    private static final ContactDetails CONTACT_DETAILS = new ContactDetails("020734777", "020734888", "020734999", "email1§@bbb.ccc", "email2@bbb.ccc");
+
+    private static final Language DOCUMENTATION_LANGUAGE = Language.WELSH;
+    private static final Language HEARING_LANGUAGE_INDICATOR = Language.ENGLISH;
+    private static final String LANGUAGE_NEEDS = RandomStringUtils.random(10);
 
     private UUID id;
     private String urn;
@@ -40,8 +51,9 @@ public class CaseBuilder {
         urn = URN;
         enterpriseId = ENTERPRISE_ID;
         prosecutingAuthority = ProsecutingAuthority.TFL;
-        defendant = new Defendant(DefaultTestData.DEFENDANT_ID, null, null, null,
-                null, null, ADDRESS, NUM_PREVIOUS_CONVICTIONS, OFFENCES);
+        defendant = new Defendant(DefaultTestData.DEFENDANT_ID, null, null, null, null, null,null,
+                null, null, NATIONAL_INSURANCE_NUMBER, ADDRESS, CONTACT_DETAILS,NUM_PREVIOUS_CONVICTIONS, OFFENCES,
+                DOCUMENTATION_LANGUAGE, HEARING_LANGUAGE_INDICATOR, LANGUAGE_NEEDS);
     }
 
         public static CaseBuilder aDefaultSjpCase() {

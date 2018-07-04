@@ -45,7 +45,7 @@ public class PersonInfoVerifier {
                 defendantBuilder.getLastName(),
                 defendantBuilder.getDateOfBirth(),
                 defendantBuilder.getGender(),
-                null,
+                defendantBuilder.getNationalInsuranceNumber(),
                 new Address(
                         defendantBuilder.getAddressBuilder().getAddress1(),
                         defendantBuilder.getAddressBuilder().getAddress2(),
@@ -53,7 +53,11 @@ public class PersonInfoVerifier {
                         defendantBuilder.getAddressBuilder().getAddress4(),
                         defendantBuilder.getAddressBuilder().getPostcode()
                 ),
-                ContactDetails.EMPTY
+                new ContactDetails(
+                        defendantBuilder.getContactDetailsBuilder().getEmail(),
+                        defendantBuilder.getContactDetailsBuilder().getHome(),
+                        defendantBuilder.getContactDetailsBuilder().getMobile()
+                )
         );
 
         return new PersonInfoVerifier(createCasePayloadBuilder.getId(), personalDetails);
@@ -76,7 +80,7 @@ public class PersonInfoVerifier {
                 ),
                 new ContactDetails(
                         payloadBuilder.getContactDetailsBuilder().getEmail(),
-                        payloadBuilder.getContactDetailsBuilder().getHomeNumber(),
+                        payloadBuilder.getContactDetailsBuilder().getHome(),
                         payloadBuilder.getContactDetailsBuilder().getMobile()
                 )
         );

@@ -7,6 +7,7 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
+import uk.gov.moj.sjp.it.command.builder.ContactDetailsBuilder;
 import uk.gov.moj.sjp.it.util.UrnProvider;
 
 import java.math.BigDecimal;
@@ -199,8 +200,10 @@ public class CreateCase {
         LocalDate dateOfBirth;
         String gender;
         int numPreviousConvictions;
+        String nationalInsuranceNumber;
 
         AddressBuilder addressBuilder;
+        ContactDetailsBuilder contactDetailsBuilder;
 
         private DefendantBuilder() {
 
@@ -215,7 +218,9 @@ public class CreateCase {
             builder.dateOfBirth = LocalDates.from("1980-07-15");
             builder.gender = "Male";
             builder.numPreviousConvictions = 2;
+            builder.nationalInsuranceNumber = "NIN";
             builder.addressBuilder = AddressBuilder.withDefaults();
+            builder.contactDetailsBuilder = ContactDetailsBuilder.withDefaults();
 
             return builder;
         }
@@ -249,9 +254,18 @@ public class CreateCase {
             return numPreviousConvictions;
         }
 
+        public String getNationalInsuranceNumber() {
+            return nationalInsuranceNumber;
+        }
+
         public AddressBuilder getAddressBuilder() {
             return addressBuilder;
         }
+
+        public ContactDetailsBuilder getContactDetailsBuilder() {
+            return contactDetailsBuilder;
+        }
+
     }
 
     public static class OffenceBuilder {

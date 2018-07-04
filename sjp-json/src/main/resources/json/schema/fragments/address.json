@@ -23,6 +23,11 @@
       "description": "Address Line 4",
       "maxLength": 35
     },
+    "address5": {
+      "type": "string",
+      "description": "Address Line 5",
+      "maxLength": 32
+    },
     "postcode": {
       "type": "string",
       "description": "Address Postcode",

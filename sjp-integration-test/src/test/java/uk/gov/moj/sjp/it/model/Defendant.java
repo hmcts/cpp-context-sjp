@@ -1,5 +1,7 @@
 package uk.gov.moj.sjp.it.model;
 
+import uk.gov.moj.cpp.sjp.domain.Language;
+
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
 
@@ -13,6 +15,12 @@ public class Defendant {
 
     @Builder.Default
     public String firstName = "David";
+
+    @Builder.Default
+    public String forename2 = "Adam";
+
+    @Builder.Default
+    public String forename3 = "John";
 
     @Builder.Default
     public String lastName = "LLOYD";
@@ -34,5 +42,20 @@ public class Defendant {
     @Builder.Default
     @Size(min = 1, max = 1, message = "Only one offence is supported")
     public Offence[] offences = {Offence.builder().build()};
+
+    @Builder.Default
+    public Language documentationLanguage = Language.WELSH;
+
+    @Builder.Default
+    public String hearingLanguageIndicator = "E";
+
+    @Builder.Default
+    public String languageNeeds = "No special needs";
+
+    @Builder.Default
+    public String nationalInsuranceNumber = "QQ123456C";
+
+    @Builder.Default
+    public String driverNumber = "Driver number";
 
 }

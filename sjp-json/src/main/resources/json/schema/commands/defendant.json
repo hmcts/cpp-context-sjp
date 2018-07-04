@@ -9,6 +9,12 @@
     "firstName": {
       "type": "string"
     },
+    "forename2": {
+      "type": "string"
+    },
+    "forename3": {
+      "type": "string"
+    },
     "lastName": {
       "type": "string"
     },
@@ -20,6 +26,23 @@
     },
     "numPreviousConvictions": {
       "type": "integer"
+    },
+    "hearingLanguageIndicator": {
+      "type": "string",
+      "enum": ["E", "W"]
+    },
+    "documentationLanguage": {
+      "type": "string",
+      "enum": ["E", "W"]
+    },
+    "driverNumber": {
+      "type": "string"
+    },
+    "languageNeeds": {
+      "type": "string"
+    },
+    "nationalInsuranceNumber": {
+      "type": "string"
     },
     "address": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"

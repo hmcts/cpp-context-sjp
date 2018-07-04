@@ -12,6 +12,7 @@ import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
+import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
@@ -37,8 +38,9 @@ public class UpdateDefendantDetailsTest {
     private static final String ADDRESS_1 = "14 Tottenham Court Road";
     private static final String ADDRESS_1_UPDATED = "15 Tottenham Court Road";
     private static final String ADDRESS_2 = "London";
-    private static final String ADDRESS_3 = "England";
-    private static final String ADDRESS_4 = "UK";
+    private static final String ADDRESS_3 = "Surrey";
+    private static final String ADDRESS_4 = "England";
+    private static final String ADDRESS_5 = "United Kingdom";
     private static final String POSTCODE = "W1T 1JY";
     private static final UUID defendantId = randomUUID();
     private static final UUID caseId = randomUUID();
@@ -46,13 +48,16 @@ public class UpdateDefendantDetailsTest {
     private static final String firstName = "test";
     private static final String firstNameUpdated = "tester";
     private static final String lastName = "lastName";
-    private static final String email = "email";
+    private static final String email = "email1@aaa.bbb";
+    private static final String email2 = "email2@aaa.bbb";
     private static final String gender = "gender";
     private static final String nationalInsuranceNumber = "nationalInsuranceNumber";
-    private static final String homeNumber = "homeNumber";
-    private static final String mobileNumber = "mobileNumber";
-    private static final Address address = new Address(ADDRESS_1, ADDRESS_2, ADDRESS_3, ADDRESS_4, POSTCODE);
-    private static final Address addressUpdated = new Address(ADDRESS_1_UPDATED, ADDRESS_2, ADDRESS_3, ADDRESS_4, POSTCODE);
+    private static final String homeNumber = "123123777";
+    private static final String mobileNumber = "456456888";
+    private static final String businessNumber = "789789999";
+    private static final Address address = new Address(ADDRESS_1, ADDRESS_2, ADDRESS_3, ADDRESS_4, ADDRESS_5, POSTCODE);
+    private static final Address addressUpdated = new Address(ADDRESS_1_UPDATED, ADDRESS_2, ADDRESS_3, ADDRESS_4, ADDRESS_5, POSTCODE);
+    private static final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
     private static final LocalDate dateOfBirth = LocalDate.of(1980, 7, 15);
     private static final LocalDate dateOfBirthUpdated = LocalDate.of(1980, 6, 15);
     private static final Clock clock = new UtcClock();
@@ -67,7 +72,7 @@ public class UpdateDefendantDetailsTest {
     @Test
     public void shouldCreateUpdateEvents() {
         final Person person = new Person(title, firstName, lastName,
-                dateOfBirth, gender, address);
+                dateOfBirth, gender, nationalInsuranceNumber, address, contactDetails);
         caseAggregate.receiveCase(
                 CaseBuilder.aDefaultSjpCase().withDefendant(new Defendant(
                         defendantId,
@@ -76,15 +81,16 @@ public class UpdateDefendantDetailsTest {
                         person.getLastName(),
                         person.getDateOfBirth(),
                         person.getGender(),
+                        person.getNationalInsuranceNumber(),
                         person.getAddress(),
+                        person.getContactDetails(),
                         0,
                         emptyList()
                 )).build(),
                 clock.now()
         );
 
-        Stream<Object> eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
-                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, person, clock.now());
+        Stream<Object> eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId, person, clock.now());
 
         List<Object> events = asList(eventStream.toArray());
 
@@ -98,10 +104,9 @@ public class UpdateDefendantDetailsTest {
         assertThat(defendantDetailsUpdated.getTitle(), is(title));
 
         final Person updatedPerson = new Person(title, firstNameUpdated, lastName,
-                dateOfBirthUpdated, gender, addressUpdated);
+                dateOfBirthUpdated, gender, nationalInsuranceNumber, addressUpdated, contactDetails);
 
-        eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
-                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, updatedPerson, clock.now());
+        eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId, updatedPerson, clock.now());
 
         events = asList(eventStream.toArray());
 
@@ -125,7 +130,8 @@ public class UpdateDefendantDetailsTest {
     @Test
     public void shouldFailValidation() {
         final Person personInfoDetails = new Person(title, firstName, lastName, dateOfBirth, gender,
-                address);
+                nationalInsuranceNumber, address, contactDetails);
+
         caseAggregate.receiveCase(
                 new Case(
                         UUID.randomUUID(),
@@ -141,7 +147,9 @@ public class UpdateDefendantDetailsTest {
                                 personInfoDetails.getLastName(),
                                 personInfoDetails.getDateOfBirth(),
                                 personInfoDetails.getGender(),
+                                personInfoDetails.getNationalInsuranceNumber(),
                                 personInfoDetails.getAddress(),
+                                personInfoDetails.getContactDetails(),
                                 0,
                                 Lists.newArrayList()
                         )
@@ -149,9 +157,8 @@ public class UpdateDefendantDetailsTest {
                 clock.now()
         );
         final Person personInfoDetailsWithoutTitle = new Person(null, firstName, lastName,
-                dateOfBirth, gender, address);
-        final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId,
-                gender, nationalInsuranceNumber, email, homeNumber, mobileNumber, personInfoDetailsWithoutTitle, clock.now());
+                dateOfBirth, gender, nationalInsuranceNumber, address, contactDetails);
+        final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(caseId, defendantId, personInfoDetailsWithoutTitle, clock.now());
 
         final List<Object> events = asList(eventStream.toArray());
 

@@ -10,13 +10,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus.EMPLOYED;
+import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_CONTACT_DETAILS;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_ADDRESS;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_DOB;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_FIRST_NAME;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_LAST_NAME;
+import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_NI_NUMBER;
 
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
@@ -141,20 +142,14 @@ public class PleadOnlineTest {
             assertThat(createDate, equalTo(trialRequested.getUpdatedDate()));
         }
 
-        assertNull(defendantDetailsUpdated.getTitle());
-        assertNull(defendantDetailsUpdated.getGender());
+        assertThat(pleadOnline.getPersonalDetails().getTitle(), equalTo(defendantDetailsUpdated.getTitle()));
         assertThat(pleadOnline.getPersonalDetails().getFirstName(), equalTo(defendantDetailsUpdated.getFirstName()));
         assertThat(pleadOnline.getPersonalDetails().getLastName(), equalTo(defendantDetailsUpdated.getLastName()));
-        assertThat(pleadOnline.getPersonalDetails().getContactDetails().getHome(), equalTo(defendantDetailsUpdated.getContactDetails().getHome()));
-        assertThat(pleadOnline.getPersonalDetails().getContactDetails().getMobile(), equalTo(defendantDetailsUpdated.getContactDetails().getMobile()));
-        assertThat(pleadOnline.getPersonalDetails().getContactDetails().getEmail(), equalTo(defendantDetailsUpdated.getContactDetails().getEmail()));
         assertThat(pleadOnline.getPersonalDetails().getDateOfBirth(), equalTo(defendantDetailsUpdated.getDateOfBirth()));
+        assertThat(pleadOnline.getPersonalDetails().getGender(), equalTo(defendantDetailsUpdated.getGender()));
         assertThat(pleadOnline.getPersonalDetails().getNationalInsuranceNumber(), equalTo(defendantDetailsUpdated.getNationalInsuranceNumber()));
-        assertThat(pleadOnline.getPersonalDetails().getAddress().getAddress1(), equalTo(defendantDetailsUpdated.getAddress().getAddress1()));
-        assertThat(pleadOnline.getPersonalDetails().getAddress().getAddress2(), equalTo(defendantDetailsUpdated.getAddress().getAddress2()));
-        assertThat(pleadOnline.getPersonalDetails().getAddress().getAddress3(), equalTo(defendantDetailsUpdated.getAddress().getAddress3()));
-        assertThat(pleadOnline.getPersonalDetails().getAddress().getAddress4(), equalTo(defendantDetailsUpdated.getAddress().getAddress4()));
-        assertThat(pleadOnline.getPersonalDetails().getAddress().getPostcode(), equalTo(defendantDetailsUpdated.getAddress().getPostcode()));
+        assertThat(pleadOnline.getPersonalDetails().getAddress(), equalTo(defendantDetailsUpdated.getAddress()));
+        assertThat(pleadOnline.getPersonalDetails().getContactDetails(), equalTo(defendantDetailsUpdated.getContactDetails()));
         assertTrue(defendantDetailsUpdated.isUpdateByOnlinePlea());
     }
 
@@ -501,7 +496,8 @@ public class PleadOnlineTest {
 
         return new Case(UUID.randomUUID(), "TFL123456", RandomStringUtils.randomAlphanumeric(12).toUpperCase(),
                 ProsecutingAuthority.TFL,  null, null,
-                new Defendant(UUID.randomUUID(), null, PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_DOB, null, PERSON_ADDRESS, 1, offences));
+                new Defendant(UUID.randomUUID(), null, PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_DOB,
+                        null, PERSON_NI_NUMBER, PERSON_ADDRESS, PERSON_CONTACT_DETAILS, 1, offences));
     }
 
 }

@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.instanceOf;
@@ -11,7 +13,9 @@ import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
+import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
+import uk.gov.moj.cpp.sjp.domain.Language;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
@@ -23,10 +27,9 @@ import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.common.collect.Lists;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 
 public class CaseAggregateDefendantTest {
@@ -39,15 +42,23 @@ public class CaseAggregateDefendantTest {
     private static final String gender = "M";
     private static final String firstName = "Random";
     private static final String lastName = "Guy";
+    private static final String forename2 = "forename2_" + RandomStringUtils.randomAlphabetic(10);
+    private static final String forename3 = "forename3_" + RandomStringUtils.randomAlphabetic(10);
     private static final String nationalInsuranceNumber = "valid nino";
+    private static final String driverNumber = "valid_driverNumber";
     private static final LocalDate dateOfBirth = LocalDates.from("2000-01-01");
-    private static final String email = "test@example.com";
+    private static final String email = "test_email1@example.com";
+    private static final String email2 = "test_email2@example.com";
     private static final String homeNumber = "10";
-    private static final String mobileNumber = "number";
+    private static final String mobileNumber = "mobileNumber";
+    private static final String businessNumber = "businessNumber";
     private static final String title = "Mr";
-    private static final Address address = new Address("address1", "address2",
-            "address3", "address4", "CR02FW");
+    private static final Address address = new Address("address1", "address2", "address3", "address4", "address5","CR02FW");
     private static final Clock clock = new UtcClock();
+    private static final Language documentationLanguage = Language.WELSH;
+    private static final Language hearingLanguageIndicator = Language.ENGLISH;
+    private static final String languageNeeds = "languageNeeds_" + RandomStringUtils.randomAlphabetic(10);
+    private static final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
 
     @Test
     public void updatesToValidTitle() {
@@ -163,7 +174,9 @@ public class CaseAggregateDefendantTest {
                 defaultDefendantData().withNewDateOfBirth(newDateOfBirth)
         );
 
-        assertThat(events.size(), is(2));
+        assertThat("Event Types: " + events.stream().map(e -> e.getClass().getSimpleName()).collect(toList()),
+                events.size(),
+                is(2));
 
         final DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = (DefendantDateOfBirthUpdated) events.get(0);
         assertThat(defendantDateOfBirthUpdated.getOldDateOfBirth(), is(dateOfBirth));
@@ -236,7 +249,9 @@ public class CaseAggregateDefendantTest {
                 defaultDefendantData().withNewAddress(newAddress)
         );
 
-        assertThat(events.size(), is(2));
+        assertThat("Event Types: " + events.stream().map(e -> e.getClass().getSimpleName()).collect(toList()),
+                events.size(),
+                is(2));
 
         final DefendantAddressUpdated defendantAddressUpdated = (DefendantAddressUpdated) events.get(0);
         assertThat(defendantAddressUpdated.getNewAddress(), is(newAddress));
@@ -251,16 +266,19 @@ public class CaseAggregateDefendantTest {
         UUID caseId = CaseAggregateDefendantTest.caseId;
         UUID defendantId = CaseAggregateDefendantTest.defendantId;
         String gender = CaseAggregateDefendantTest.gender;
+        String title = CaseAggregateDefendantTest.title;
         String firstName = CaseAggregateDefendantTest.firstName;
         String lastName = CaseAggregateDefendantTest.lastName;
+        String forename2 = CaseAggregateDefendantTest.forename2;
+        String forename3 = CaseAggregateDefendantTest.forename3;
         String nationalInsuranceNumber = CaseAggregateDefendantTest.nationalInsuranceNumber;
+        String driverNumber = CaseAggregateDefendantTest.driverNumber;
         LocalDate dateOfBirth = CaseAggregateDefendantTest.dateOfBirth;
-        String email = CaseAggregateDefendantTest.email;
-        String homeNumber = CaseAggregateDefendantTest.homeNumber;
-        String mobileNumber = CaseAggregateDefendantTest.mobileNumber;
         Address address = CaseAggregateDefendantTest.address;
-
-        String title = CaseAggregateDefendantTest.title;
+        Language documentationLanguage = CaseAggregateDefendantTest.documentationLanguage;
+        Language hearingLanguageIndicator = CaseAggregateDefendantTest.hearingLanguageIndicator;
+        String languageNeeds = CaseAggregateDefendantTest.languageNeeds;
+        ContactDetails contactDetails = CaseAggregateDefendantTest.contactDetails;
 
         DefendantData withNewTitle(final String newTitle) {
             this.title = newTitle;
@@ -303,31 +321,44 @@ public class CaseAggregateDefendantTest {
                         defendantData.title,
                         defendantData.firstName,
                         defendantData.lastName,
+                        defendantData.forename2,
+                        defendantData.forename3,
                         defendantData.dateOfBirth,
                         defendantData.gender,
+                        defendantData.nationalInsuranceNumber,
+                        defendantData.driverNumber,
                         defendantData.address,
+                        defendantData.contactDetails,
                         0,
-                        Lists.newArrayList()
+                        emptyList(),
+                        defendantData.documentationLanguage,
+                        defendantData.hearingLanguageIndicator,
+                        defendantData.languageNeeds
                 )).build(),
                 clock.now()
         );
     }
 
     private List<Object> whenTheDefendantIsUpdated(final DefendantData updatedDefendantData) {
-        final Person person = new Person(updatedDefendantData.title,
-                updatedDefendantData.firstName, updatedDefendantData.lastName, updatedDefendantData.dateOfBirth,
-                updatedDefendantData.gender, updatedDefendantData.address);
+        final Person person = new Person(
+                updatedDefendantData.title,
+                updatedDefendantData.firstName,
+                updatedDefendantData.lastName,
+                updatedDefendantData.forename2,
+                updatedDefendantData.forename3,
+                updatedDefendantData.dateOfBirth,
+                updatedDefendantData.gender,
+                updatedDefendantData.nationalInsuranceNumber,
+                updatedDefendantData.driverNumber,
+                updatedDefendantData.address,
+                updatedDefendantData.contactDetails);
 
         final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(
                 updatedDefendantData.caseId,
                 updatedDefendantData.defendantId,
-                updatedDefendantData.gender,
-                updatedDefendantData.nationalInsuranceNumber,
-                updatedDefendantData.email,
-                updatedDefendantData.homeNumber,
-                updatedDefendantData.mobileNumber,
-                person, clock.now());
+                person,
+                clock.now());
 
-        return eventStream.collect(Collectors.toList());
+        return eventStream.collect(toList());
     }
 }

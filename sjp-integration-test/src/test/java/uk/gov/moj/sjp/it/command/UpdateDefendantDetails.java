@@ -47,7 +47,7 @@ public class UpdateDefendantDetails {
                         .add("postcode", payloadBuilder.getAddressBuilder().getPostcode())
                 )
                 .add("contactNumber", Json.createObjectBuilder()
-                        .add("home", payloadBuilder.getContactDetailsBuilder().getHomeNumber())
+                        .add("home", payloadBuilder.getContactDetailsBuilder().getHome())
                         .add("mobile", payloadBuilder.getContactDetailsBuilder().getMobile())
                 )
                 .add("nationalInsuranceNumber", payloadBuilder.getNationalInsuranceNumber())

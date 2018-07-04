@@ -18,6 +18,9 @@ public class Address {
     public String address4 = "UK";
 
     @Builder.Default
+    public String address5 = "Europe";
+
+    @Builder.Default
     public String postcode = "W1T 1JY";
 
 }

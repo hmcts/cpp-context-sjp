@@ -16,7 +16,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Event("sjp.events.defendant-details-updated")
 public class DefendantDetailsUpdated {
 
-    private static final long serialVersionUID = 4588504221253549019L;
     private final UUID caseId;
     private final UUID defendantId;
     private final String title;

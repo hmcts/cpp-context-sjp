@@ -18,7 +18,6 @@ import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
-import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
@@ -498,8 +497,7 @@ public class CaseAggregate implements Aggregate {
                 .withUpdateByOnlinePlea(true)
                 .withUpdatedDate(createdOn)
                 .build());
-        getDefendantWarningEvents(personalDetails.getDateOfBirth(), personalDetails.getAddress(),
-                defendantTitle, personalDetails.getFirstName(), personalDetails.getLastName())
+        getDefendantWarningEvents(personalDetails)
                 .forEach(streamBuilder::add);
         streamBuilder.add(FinancialMeansUpdated.createEventForOnlinePlea(defendantId, pleadOnline.getFinancialMeans().getIncome(),
                 pleadOnline.getFinancialMeans().getBenefits(), pleadOnline.getFinancialMeans().getEmploymentStatus(),
@@ -644,11 +642,8 @@ public class CaseAggregate implements Aggregate {
         }
     }
 
-    @SuppressWarnings("squid:S00107") //Proper fix requires proper remodelling / guidance
-    public Stream<Object> updateDefendantDetails(UUID caseId, UUID defendantId, String gender,
-                                                 String nationalInsuranceNumber, String email,
-                                                 String homeNumber, String mobileNumber,
-                                                 Person person, ZonedDateTime updatedDate) {
+    public Stream<Object> updateDefendantDetails(final UUID caseId, final UUID defendantId,
+            final Person person, final ZonedDateTime updatedDate) {
         //TODO check reject reasons
 
         final Stream.Builder<Object> events = Stream.builder();
@@ -662,8 +657,7 @@ public class CaseAggregate implements Aggregate {
             return apply(Stream.of(new DefendantDetailsUpdateFailed(caseId, defendantId, e.getMessage())));
         }
 
-        getDefendantWarningEvents(person.getDateOfBirth(), person.getAddress(), person.getTitle(),
-                person.getFirstName(), person.getLastName()).forEach(events::add);
+        getDefendantWarningEvents(person).forEach(events::add);
 
         final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdated()
                 .withCaseId(caseId)
@@ -672,9 +666,9 @@ public class CaseAggregate implements Aggregate {
                 .withFirstName(person.getFirstName())
                 .withLastName(person.getLastName())
                 .withDateOfBirth(person.getDateOfBirth())
-                .withGender(gender)
-                .withNationalInsuranceNumber(nationalInsuranceNumber)
-                .withContactDetails(new ContactDetails(homeNumber, mobileNumber, email))
+                .withGender(person.getGender())
+                .withNationalInsuranceNumber(person.getNationalInsuranceNumber())
+                .withContactDetails(person.getContactDetails())
                 .withAddress(person.getAddress())
                 .withUpdateByOnlinePlea(false)
                 .withUpdatedDate(updatedDate)
@@ -683,29 +677,25 @@ public class CaseAggregate implements Aggregate {
         return apply(events.build());
     }
 
-    private Stream<Object> getDefendantWarningEvents(final LocalDate dateOfBirth,
-                                                     final Address address,
-                                                     final String title,
-                                                     final String firstName,
-                                                     final String lastName) {
+    private <P extends Person> Stream<Object> getDefendantWarningEvents(final P person) {
         final Stream.Builder<Object> events = Stream.builder();
 
-        if (defendantDateOfBirth != null && !defendantDateOfBirth.equals(dateOfBirth)) {
-            final DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = new DefendantDateOfBirthUpdated(caseId, defendantDateOfBirth, dateOfBirth);
+        if (defendantDateOfBirth != null && !defendantDateOfBirth.equals(person.getDateOfBirth())) {
+            final DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = new DefendantDateOfBirthUpdated(caseId, defendantDateOfBirth, person.getDateOfBirth());
             events.add(defendantDateOfBirthUpdated);
         }
 
-        if (defendantAddress != null && !defendantAddress.equals(address)) {
-            final DefendantAddressUpdated defendantAddressUpdated = new DefendantAddressUpdated(caseId, defendantAddress, address);
+        if (defendantAddress != null && !defendantAddress.equals(person.getAddress())) {
+            final DefendantAddressUpdated defendantAddressUpdated = new DefendantAddressUpdated(caseId, defendantAddress, person.getAddress());
             events.add(defendantAddressUpdated);
         }
 
-        if ((defendantTitle != null && !defendantTitle.equalsIgnoreCase(title)) ||
-                !StringUtils.equalsIgnoreCase(defendantFirstName, firstName) ||
-                !StringUtils.equalsIgnoreCase(defendantLastName, lastName)) {
+        if ((defendantTitle != null && !defendantTitle.equalsIgnoreCase(person.getTitle())) ||
+                !StringUtils.equalsIgnoreCase(defendantFirstName, person.getFirstName()) ||
+                !StringUtils.equalsIgnoreCase(defendantLastName, person.getLastName())) {
             final DefendantPersonalNameUpdated defendantPersonalNameUpdated = new DefendantPersonalNameUpdated(caseId,
                     new PersonalName(defendantTitle, defendantFirstName, defendantLastName),
-                    new PersonalName(title, firstName, lastName));
+                    new PersonalName(person.getTitle(), person.getFirstName(), person.getLastName()));
             events.add(defendantPersonalNameUpdated);
         }
         return events.build();
@@ -923,9 +913,8 @@ public class CaseAggregate implements Aggregate {
     @SuppressWarnings("deprecation")
     private static CaseReceived convertSjpCaseCreatedToCaseReceived(final SjpCaseCreated sjpCaseCreated) {
         final Defendant defendant = new Defendant(sjpCaseCreated.getDefendantId(),
-                null, null, null, null, null, null,
-                sjpCaseCreated.getNumPreviousConvictions(),
-                sjpCaseCreated.getOffences());
+                null, null, null, null, null, null, null, null, null, null, null,
+                sjpCaseCreated.getNumPreviousConvictions(), sjpCaseCreated.getOffences(), null, null, null);
 
         return new CaseReceived(sjpCaseCreated.getId(), sjpCaseCreated.getUrn(), null,
                 sjpCaseCreated.getProsecutingAuthority(), sjpCaseCreated.getCosts(), sjpCaseCreated.getPostingDate(),

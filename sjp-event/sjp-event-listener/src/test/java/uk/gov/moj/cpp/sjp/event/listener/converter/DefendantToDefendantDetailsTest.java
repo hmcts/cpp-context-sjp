@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -39,9 +40,10 @@ public class DefendantToDefendantDetailsTest {
     public void shouldConvertDefendantToDefendantDetails() {
         // GIVEN
         Defendant inputDefendant = new Defendant(UUID.randomUUID(), "title", "firstName", "lastName",
-                LocalDate.of(1980, 1,1), "M",
-                new uk.gov.moj.cpp.sjp.domain.Address("l1", "l2", "l3", "l4", "p"),
-        3, asList(mock(Offence.class), mock(Offence.class)));
+                LocalDate.of(1980, 1,1), "M", RandomStringUtils.random(10),
+                new uk.gov.moj.cpp.sjp.domain.Address("l1", "l2", "l3", "l4", "l5", "p"),
+                new uk.gov.moj.cpp.sjp.domain.ContactDetails("home", "mobile", "business" , "email1@abc.com", "email2@abc.com"),
+                3, asList(mock(Offence.class), mock(Offence.class)));
 
         final PersonalDetails mockedPersonalDetails = mock(PersonalDetails.class);
         when(personToPersonalDetailsEntity.convert(inputDefendant)).thenReturn(mockedPersonalDetails);

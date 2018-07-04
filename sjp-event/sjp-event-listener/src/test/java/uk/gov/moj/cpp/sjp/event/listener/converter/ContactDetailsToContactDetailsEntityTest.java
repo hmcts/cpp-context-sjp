@@ -13,13 +13,13 @@ public class ContactDetailsToContactDetailsEntityTest {
 
     @Test
     public void shouldConvertContactDetailsToContactDetailsEntity() {
-        uk.gov.moj.cpp.sjp.domain.ContactDetails inputContactDetails = new uk.gov.moj.cpp.sjp.domain.ContactDetails(
-                "home","mobile", "email"
+        final uk.gov.moj.cpp.sjp.domain.ContactDetails inputContactDetails = new uk.gov.moj.cpp.sjp.domain.ContactDetails(
+                "home","mobile", "business", "email", "email2"
         );
 
-        ContactDetails outputContactDetails = contactDetailsToContactDetailsEntity.convert(inputContactDetails);
+        final ContactDetails outputContactDetails = contactDetailsToContactDetailsEntity.convert(inputContactDetails);
 
-        ContactDetails expectedContactDetails = new ContactDetails(
+        final ContactDetails expectedContactDetails = new ContactDetails(
                 inputContactDetails.getEmail(),
                 inputContactDetails.getHome(),
                 inputContactDetails.getMobile()

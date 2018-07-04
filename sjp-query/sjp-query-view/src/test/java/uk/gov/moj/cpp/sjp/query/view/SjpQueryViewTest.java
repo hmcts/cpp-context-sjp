@@ -299,7 +299,7 @@ public class SjpQueryViewTest {
                 .withPayloadOf(defendantId, "defendantId")
                 .build();
 
-        final Address address = new Address("address 1", "address 2", "address 3", "address 4", "AB3 4CD");
+        final Address address = new Address("address 1", "address 2", "address 3", "address 4", "address 5", "AB3 4CD");
         final Employer employer = new Employer(defendantId, "KFC", "abcdef", "02020202020", address);
 
         when(employerService.getEmployer(defendantId)).thenReturn(Optional.of(employer));

@@ -40,19 +40,20 @@ public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
     @Test
     public void shouldPleadOnline() throws EventStreamException {
         final UUID defendantId = UUID.randomUUID();
+        final Address address = new Address("l1", "l2", "l3", "l4", "l5", "postcode");
+
         final PleadOnline pleadOnline = new PleadOnline(
-                defendantId, emptyList(), "unavailability",
-                "French", "witnessDetails", "witnessDispute",
-                new PersonalDetails("firstName", "lastName",
-                        new Address("address"),
-                        new ContactDetails("email", "homeTelephone", "mobile"),
+                defendantId, emptyList(), "unavailability", "French", "witnessDetails", "witnessDispute",
+                new PersonalDetails("firstName", "lastName", address,
+                        new ContactDetails("homeTelephone", "mobile", "business", "email1@aaa.bbb", "email2@aaa.bbb"),
                         null, "nationalInsuranceNumber"),
                 new FinancialMeans(
-                    defendantId, new Income(IncomeFrequency.WEEKLY, BigDecimal.valueOf(2000.22)), new Benefits(), "employmentStatus"
+                        defendantId,
+                        new Income(IncomeFrequency.WEEKLY, BigDecimal.valueOf(2000.22)),
+                        new Benefits(),
+                        "employmentStatus"
                 ),
-                new Employer(
-                        defendantId,  "employer", "employeeReference", "phone", new Address("address")
-                ),
+                new Employer(defendantId, "employer", "employeeReference", "phone", address),
                 emptyList()
         );
 

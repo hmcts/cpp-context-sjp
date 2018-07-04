@@ -76,7 +76,7 @@ public class DeleteEmployerTest {
 
     private Long addEmployer(final UUID defendantId) {
         final Employer employer = new Employer(defendantId, "Burger King", "12345", "023402340234",
-                new Address("street", "suburb", "town", "county", "ZY9 8 XW"));
+                new Address("street", "suburb", "town", "county", "address5","ZY9 8 XW"));
         final Stream<Object> updateEmployerEvents = caseAggregate.updateEmployer(userId, employer);
 
         return updateEmployerEvents.filter(EmployerUpdated.class::isInstance).map(EmployerUpdated.class::cast).count();

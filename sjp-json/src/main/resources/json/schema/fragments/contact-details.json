@@ -9,7 +9,14 @@
     "mobile": {
       "type": "string"
     },
+    "business": {
+      "type": "string"
+    },
     "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "email2": {
       "type": "string",
       "format": "email"
     }

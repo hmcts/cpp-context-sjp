@@ -15,7 +15,7 @@ import javax.json.JsonObject;
 
 public class CompleteCaseProducer {
 
-    private UUID caseId;
+    private final UUID caseId;
 
     public CompleteCaseProducer(final UUID caseId) {
         this.caseId = caseId;

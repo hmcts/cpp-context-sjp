@@ -11,6 +11,9 @@ public class PersonToPersonalDetailsEntity<P extends Person> implements Converte
     @Inject
     private AddressToAddressEntity addressToAddressEntityConverter;
 
+    @Inject
+    private ContactDetailsToContactDetailsEntity contactDetailsToContactDetailsEntity;
+
     @Override
     public PersonalDetails convert(P person) {
         return new PersonalDetails(
@@ -19,9 +22,9 @@ public class PersonToPersonalDetailsEntity<P extends Person> implements Converte
                 person.getLastName(),
                 person.getDateOfBirth(),
                 person.getGender(),
-                null,
+                person.getNationalInsuranceNumber(),
                 addressToAddressEntityConverter.convert(person.getAddress()),
-                null
+                contactDetailsToContactDetailsEntity.convert(person.getContactDetails())
         );
     }
 

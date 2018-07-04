@@ -3,6 +3,12 @@
   "id": "http://justice.gov.uk/json/schemas/domains/sjp/public/events/defendant-details-updated.json",
   "type": "object",
   "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+    },
     "title": {
       "type": "string"
     },

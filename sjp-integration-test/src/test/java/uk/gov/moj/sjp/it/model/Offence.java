@@ -43,6 +43,9 @@ public class Offence {
     public String offenceWording = "Committed some offence";
 
     @Builder.Default
+    public String offenceWordingWelsh = "Wedi ymrwymo rhywfaint o drosedd";
+
+    @Builder.Default
     public String prosecutionFacts = "No ticket at the gates, forgery";
 
     @Builder.Default
@@ -50,5 +53,14 @@ public class Offence {
 
     @Builder.Default
     public BigDecimal compensation = BigDecimal.valueOf(2.34);
+
+    @Builder.Default
+    public BigDecimal backDuty = BigDecimal.valueOf(250.25);
+
+    @Builder.Default
+    public String backDutyDateFrom = "2018-01-01";
+
+    @Builder.Default
+    public String backDutyDateTo = "2018-05-01";
 
 }

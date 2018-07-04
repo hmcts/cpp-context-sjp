@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
+import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import org.junit.Test;
@@ -22,6 +23,9 @@ public class PersonToPersonalDetailsEntityTest {
     @Mock
     private AddressToAddressEntity addressToAddressEntityConverter;
 
+    @Mock
+    private ContactDetailsToContactDetailsEntity contactDetailsToContactDetailsEntityConverter;
+
     @InjectMocks
     private PersonToPersonalDetailsEntity<Person> converterUnderTest = new PersonToPersonalDetailsEntity<>();
 
@@ -32,6 +36,9 @@ public class PersonToPersonalDetailsEntityTest {
         final Address mockedAddress = mock(Address.class);
         when(addressToAddressEntityConverter.convert(inputPerson.getAddress())).thenReturn(mockedAddress);
 
+        final ContactDetails mockedContactDetails = mock(ContactDetails.class);
+        when(contactDetailsToContactDetailsEntityConverter.convert(inputPerson.getContactDetails())).thenReturn(mockedContactDetails);
+
         final PersonalDetails outputPersonalDetails = converterUnderTest.convert(inputPerson);
 
         final PersonalDetails expectedPerson = new PersonalDetails(
@@ -40,9 +47,9 @@ public class PersonToPersonalDetailsEntityTest {
                 inputPerson.getLastName(),
                 inputPerson.getDateOfBirth(),
                 inputPerson.getGender(),
-                null,
+                inputPerson.getNationalInsuranceNumber(),
                 mockedAddress,
-                null
+                mockedContactDetails
         );
 
         assertTrue(reflectionEquals(outputPersonalDetails, expectedPerson));

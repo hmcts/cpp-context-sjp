@@ -107,6 +107,7 @@ public class CaseReceivedListenerTest {
     private static final String defendantLastName = "Smith";
     private static final LocalDate defendantDateOfBirth = LocalDate.of(1960, 1, 1);
     private static final String defendantGender = "Male";
+    private static final String nationalInsuranceNumber = RandomStringUtils.randomAlphanumeric(10);
     private static final int numPreviousConvictions = 2;
 
     private static final String address1 = "Flat 1, Apple Building";
@@ -173,7 +174,7 @@ public class CaseReceivedListenerTest {
                                 defendantLastName,
                                 defendantDateOfBirth,
                                 defendantGender,
-                                null,
+                                nationalInsuranceNumber,
                                 new Address(
                                         address1,
                                         address2,

@@ -33,7 +33,6 @@ public class Address implements Serializable {
     }
 
     public Address(String address1, String address2, String address3, String address4, String postcode) {
-        this();
         this.address1 = address1;
         this.address2 = address2;
         this.address3 = address3;

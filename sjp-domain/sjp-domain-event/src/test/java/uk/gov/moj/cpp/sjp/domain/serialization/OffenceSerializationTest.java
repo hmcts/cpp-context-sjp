@@ -19,14 +19,25 @@ public class OffenceSerializationTest extends AbstractSerializationTest<Offence>
             "libra_offence_code", LocalDate.of(2010, 1, 1),
             456, LocalDate.of(2009, 2, 2),
             "offence_wording", "prosecution_facts",
+            "witness_statement", BigDecimal.TEN,
+            "prosecution_charge_wording_welsh", 789,
+            LocalDate.of(2010, 3, 3),
+            LocalDate.of(2011, 4, 4));
+
+    private static final String EXPECTED_FULL_OFFENCE_SERIALIZATION = "{\"id\":\"2159f6e6-aa4e-49e4-b983-6a3673de67f1\",\"offenceSequenceNo\":123,\"libraOffenceCode\":\"libra_offence_code\",\"chargeDate\":\"2010-01-01\",\"libraOffenceDateCode\":456,\"offenceDate\":\"2009-02-02\",\"offenceWording\":\"offence_wording\",\"prosecutionFacts\":\"prosecution_facts\",\"witnessStatement\":\"witness_statement\",\"compensation\":10,\"prosecutionChargeWordingWelsh\":\"prosecution_charge_wording_welsh\",\"backDuty\":789,\"backDutyDateFrom\":\"2010-03-03\",\"backDutyDateTo\":\"2011-04-04\"}";
+
+    private static final Offence OFFENCE_WITHOUT_OPTIONAL_FIELDS = new Offence(
+            UUID.fromString("2159f6e6-aa4e-49e4-b983-6a3673de67f1"), 123, "libra_offence_code", LocalDate.of(2010, 1, 1), 456,
+            LocalDate.of(2009, 2, 2), "offence_wording", "prosecution_facts",
             "witness_statement", BigDecimal.TEN);
 
-    private static final String EXPECTED_FULL_OFFENCE_SERIALIZATION = "{\"id\":\"2159f6e6-aa4e-49e4-b983-6a3673de67f1\",\"offenceSequenceNo\":123,\"libraOffenceCode\":\"libra_offence_code\",\"chargeDate\":\"2010-01-01\",\"libraOffenceDateCode\":456,\"offenceDate\":\"2009-02-02\",\"offenceWording\":\"offence_wording\",\"prosecutionFacts\":\"prosecution_facts\",\"witnessStatement\":\"witness_statement\",\"compensation\":10}";
+    private static final String EXPECTED_OFFENCE_WITHOUT_OPTIONAL_FIELDS_SERIALIZATION = "{\"id\":\"2159f6e6-aa4e-49e4-b983-6a3673de67f1\",\"offenceSequenceNo\":123,\"libraOffenceCode\":\"libra_offence_code\",\"chargeDate\":\"2010-01-01\",\"libraOffenceDateCode\":456,\"offenceDate\":\"2009-02-02\",\"offenceWording\":\"offence_wording\",\"prosecutionFacts\":\"prosecution_facts\",\"witnessStatement\":\"witness_statement\",\"compensation\":10}";
 
     @Override
     Map<Offence, Matcher<String>> getParams() {
         return ImmutableMap.of(
-                FULL_OFFENCE, equalTo(EXPECTED_FULL_OFFENCE_SERIALIZATION)
+                FULL_OFFENCE, equalTo(EXPECTED_FULL_OFFENCE_SERIALIZATION),
+                OFFENCE_WITHOUT_OPTIONAL_FIELDS, equalTo(EXPECTED_OFFENCE_WITHOUT_OPTIONAL_FIELDS_SERIALIZATION)
         );
     }
 

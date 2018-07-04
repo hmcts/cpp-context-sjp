@@ -89,7 +89,7 @@ public class EmployerListenerTest {
         final UUID defendantId = UUID.randomUUID();
         final uk.gov.moj.cpp.sjp.domain.Employer employer = new uk.gov.moj.cpp.sjp.domain.Employer(defendantId, "Test",
                 "123", "07777888999",
-                new Address("street", "suburb", "town", "county", "AA1 2BB"));
+                new Address("street", "suburb", "town", "county", "nation", "AA1 2BB"));
         if (updatedByOnlinePlea) {
             return EmployerUpdated.createEventForOnlinePlea(defendantId, employer, now);
         } else {

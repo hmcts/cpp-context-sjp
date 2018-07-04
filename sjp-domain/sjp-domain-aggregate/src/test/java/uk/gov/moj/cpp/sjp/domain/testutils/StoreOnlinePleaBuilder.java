@@ -43,23 +43,30 @@ public class StoreOnlinePleaBuilder {
     private static final String EMPLOYER_ADDRESS_2 = "Abbeymead";
     private static final String EMPLOYER_ADDRESS_3 = "Cheltenham";
     private static final String EMPLOYER_ADDRESS_4 = "Gloucestershire";
+    private static final String EMPLOYER_ADDRESS_5 = "UK";
     private static final String EMPLOYER_POSTCODE = "GL538FB";
-    private static final Address EMPLOYER_ADDRESS = new Address(EMPLOYER_ADDRESS_1, EMPLOYER_ADDRESS_2, EMPLOYER_ADDRESS_3, EMPLOYER_ADDRESS_4, EMPLOYER_POSTCODE);
+    private static final Address EMPLOYER_ADDRESS = new Address(EMPLOYER_ADDRESS_1, EMPLOYER_ADDRESS_2, EMPLOYER_ADDRESS_3, EMPLOYER_ADDRESS_4, EMPLOYER_ADDRESS_5, EMPLOYER_POSTCODE);
 
     public static final String PERSON_FIRST_NAME = "Derek";
     public static final String PERSON_LAST_NAME = "Smith";
+
     private static final String PERSON_ADDRESS_1 = "1 test road";
     private static final String PERSON_ADDRESS_2 = "Tulse Hill";
     private static final String PERSON_ADDRESS_3 = "Brixton";
     private static final String PERSON_ADDRESS_4 = "London";
+    private static final String PERSON_ADDRESS_5 = "United Kingdom";
     private static final String PERSON_POSTCODE = "SE249HG";
-    public static final Address PERSON_ADDRESS = new Address(PERSON_ADDRESS_1, PERSON_ADDRESS_2, PERSON_ADDRESS_3, PERSON_ADDRESS_4, PERSON_POSTCODE);
+    public static final Address PERSON_ADDRESS = new Address(PERSON_ADDRESS_1, PERSON_ADDRESS_2, PERSON_ADDRESS_3, PERSON_ADDRESS_4, PERSON_ADDRESS_5, PERSON_POSTCODE);
+
     private static final String PERSON_HOME_PHONE = "020734887";
     private static final String PERSON_MOBILE = "020734888";
-    private static final String PERSON_EMAIL = "aaa@bbb.ccc";
+    private static final String PERSON_BUSINESS = "020734999";
+    private static final String PERSON_EMAIL = "email1@bbb.ccc";
+    private static final String PERSON_EMAIL2 = "email2@bbb.ccc";
+    public static final ContactDetails PERSON_CONTACT_DETAILS = new ContactDetails(PERSON_HOME_PHONE, PERSON_MOBILE, PERSON_BUSINESS, PERSON_EMAIL, PERSON_EMAIL2);
+
     public static final LocalDate PERSON_DOB = LocalDate.of(1981, 10, 1);
     public static final String PERSON_NI_NUMBER = "QQ123456C";
-    public static final ContactDetails CONTACT_DETAILS = new ContactDetails(PERSON_EMAIL, PERSON_HOME_PHONE, PERSON_MOBILE);
 
     private static final String OUTGOING_DESCRIPTION = "Accommodation";
     private static final BigDecimal OUTGOING_AMOUNT = BigDecimal.valueOf(400.50);
@@ -104,8 +111,8 @@ public class StoreOnlinePleaBuilder {
         final LocalDate dob = newDob ? LocalDate.now().minusYears(18) : PERSON_DOB;
 
         final PersonalDetails person = new PersonalDetails(firstName, PERSON_LAST_NAME,
-                new Address(address1, PERSON_ADDRESS_2, PERSON_ADDRESS_3, PERSON_ADDRESS_4, PERSON_POSTCODE),
-                CONTACT_DETAILS, dob, PERSON_NI_NUMBER);
+                new Address(address1, PERSON_ADDRESS_2, PERSON_ADDRESS_3, PERSON_ADDRESS_4, PERSON_ADDRESS_5, PERSON_POSTCODE),
+                PERSON_CONTACT_DETAILS, dob, PERSON_NI_NUMBER);
 
 
         final FinancialMeans financialMeans = new FinancialMeans(null, new Income(IncomeFrequency.MONTHLY, INCOME_AMOUNT),
@@ -143,7 +150,7 @@ public class StoreOnlinePleaBuilder {
                 .collect(Collectors.toList());
 
         final PersonalDetails person = new PersonalDetails(PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_ADDRESS,
-                new ContactDetails(PERSON_EMAIL, PERSON_HOME_PHONE, PERSON_MOBILE), PERSON_DOB, PERSON_NI_NUMBER);
+                PERSON_CONTACT_DETAILS, PERSON_DOB, PERSON_NI_NUMBER);
         final FinancialMeans financialMeans = new FinancialMeans(null, new Income(IncomeFrequency.MONTHLY, INCOME_AMOUNT),
                 new Benefits(BENEFITS_CLAIMED, BENEFITS_TYPE, BENEFITS_DEDUCT), EMPLOYMENT_STATUS);
         final Employer employer = new Employer(null, EMPLOYER_NAME, EMPLOYER_REFERENCE, EMPLOYER_PHONE, EMPLOYER_ADDRESS);

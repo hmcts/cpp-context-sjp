@@ -590,7 +590,8 @@ public class CaseServiceTest {
     }
 
     private CaseDetail createCaseDetail(final boolean onlinePleaReceived) {
-        final CaseDetail caseDetail = new CaseDetail(CASE_ID, URN, ENTERPRISE_ID, CPS, COMPLETED, null, clock.now(), new DefendantDetail(), null, null);
+        final CaseDetail caseDetail = new CaseDetail(CASE_ID, URN, ENTERPRISE_ID, CPS, COMPLETED,
+                null, clock.now(), new DefendantDetail(), null, null);
         caseDetail.setOnlinePleaReceived(onlinePleaReceived);
         return caseDetail;
     }

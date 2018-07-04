@@ -8,6 +8,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Offence {
@@ -22,6 +23,19 @@ public class Offence {
     private final String prosecutionFacts;
     private final String witnessStatement;
     private final BigDecimal compensation;
+    private final String prosecutionChargeWordingWelsh;
+
+    @JsonUnwrapped
+    private final BackDuty backDuty;
+
+    @SuppressWarnings("squid:S00107")
+    public Offence(UUID id, int offenceSequenceNo, String libraOffenceCode, LocalDate chargeDate,
+                   int libraOffenceDateCode, LocalDate offenceDate, String offenceWording,
+                   String prosecutionFacts, String witnessStatement, BigDecimal compensation) {
+        this(id, offenceSequenceNo, libraOffenceCode, chargeDate, libraOffenceDateCode, offenceDate,
+                offenceWording, prosecutionFacts, witnessStatement, compensation,
+                null, null, null, null);
+    }
 
     @JsonCreator
     public Offence(@JsonProperty("id") UUID id,
@@ -33,7 +47,11 @@ public class Offence {
                    @JsonProperty("offenceWording") String offenceWording,
                    @JsonProperty("prosecutionFacts") String prosecutionFacts,
                    @JsonProperty("witnessStatement") String witnessStatement,
-                   @JsonProperty("compensation") BigDecimal compensation) {
+                   @JsonProperty("compensation") BigDecimal compensation,
+                   @JsonProperty("prosecutionChargeWordingWelsh") String prosecutionChargeWordingWelsh,
+                   @JsonProperty("backDuty") Integer backDuty,
+                   @JsonProperty("backDutyDateFrom") LocalDate backDutyDateFrom,
+                   @JsonProperty("backDutyDateTo") LocalDate backDutyDateTo) {
         this.id = id;
         this.offenceSequenceNo = offenceSequenceNo;
         this.libraOffenceCode = libraOffenceCode;
@@ -44,6 +62,8 @@ public class Offence {
         this.prosecutionFacts = prosecutionFacts;
         this.witnessStatement = witnessStatement;
         this.compensation = compensation;
+        this.prosecutionChargeWordingWelsh = prosecutionChargeWordingWelsh;
+        this.backDuty = new BackDuty(backDuty, backDutyDateFrom, backDutyDateTo);
     }
 
     public UUID getId() {
@@ -86,6 +106,14 @@ public class Offence {
         return compensation;
     }
 
+    public String getProsecutionChargeWordingWelsh() {
+        return prosecutionChargeWordingWelsh;
+    }
+
+    public BackDuty getBackDuty() {
+        return backDuty;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -106,13 +134,15 @@ public class Offence {
                 Objects.equals(offenceWording, that.offenceWording) &&
                 Objects.equals(prosecutionFacts, that.prosecutionFacts) &&
                 Objects.equals(witnessStatement, that.witnessStatement) &&
-                Objects.equals(compensation, that.compensation);
+                Objects.equals(compensation, that.compensation) &&
+                Objects.equals(prosecutionChargeWordingWelsh, that.prosecutionChargeWordingWelsh) &&
+                Objects.equals(backDuty, that.backDuty);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, offenceSequenceNo, libraOffenceCode, chargeDate,
                 libraOffenceDateCode, offenceDate, offenceWording, prosecutionFacts,
-                witnessStatement, compensation);
+                witnessStatement, compensation, prosecutionChargeWordingWelsh, backDuty);
     }
 }

@@ -431,8 +431,8 @@ public class CaseServiceTest {
                 resultOrdersView.getResultOrders().get(0).getCaseId());
         assertEquals(caseDetail.getUrn(),
                 resultOrdersView.getResultOrders().get(0).getUrn());
-        assertEquals(caseDocument.getMaterialId(),
-                resultOrdersView.getResultOrders().get(0).getOrder().getMaterialId());
+        assertEquals(caseDocument.getId(),
+                resultOrdersView.getResultOrders().get(0).getOrder().getDocumentId());
         assertEquals(caseDocument.getAddedAt(),
                 resultOrdersView.getResultOrders().get(0).getOrder().getAddedAt());
     }

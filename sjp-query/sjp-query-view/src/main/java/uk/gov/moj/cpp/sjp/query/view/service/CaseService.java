@@ -301,10 +301,9 @@ public class CaseService {
                             .setCaseId(caseDocument.getCaseId())
                             .setUrn(caseDetail.getUrn())
                             .setDefendant(caseDetail.getDefendant().getPersonalDetails())
-                            .setOrder(caseDocument.getMaterialId(), caseDocument.getAddedAt())
+                            .setOrder(caseDocument.getId(), caseDocument.getAddedAt())
                             .build());
         };
-
 
         resultOrders.stream().filter(e -> caseRepository.findBy(e.getCaseId()) != null).forEach(caseDocumentConsumer);
 

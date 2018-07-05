@@ -74,7 +74,7 @@ public class ResultOrdersIT extends BaseIntegrationTest {
                 withJsonPath("$.resultOrders[0].defendant.address.address3", is(case1.getDefendantBuilder().getAddressBuilder().getAddress3())),
                 withJsonPath("$.resultOrders[0].defendant.address.address4", is(case1.getDefendantBuilder().getAddressBuilder().getAddress4())),
                 withJsonPath("$.resultOrders[0].defendant.address.postCode", is(case1.getDefendantBuilder().getAddressBuilder().getPostcode())),
-                withJsonPath("$.resultOrders[0].order.materialId", is(resultOrder1.getMaterialId())),
+                withJsonPath("$.resultOrders[0].order.documentId", is(resultOrder1.getDocumentId())),
                 withJsonPath("$.resultOrders[1].caseId", is(case0.getId().toString())),
                 withJsonPath("$.resultOrders[1].urn", is(case0.getUrn())),
                 withJsonPath("$.resultOrders[1].defendant.title", is(case0.getDefendantBuilder().getTitle())),
@@ -86,7 +86,7 @@ public class ResultOrdersIT extends BaseIntegrationTest {
                 withJsonPath("$.resultOrders[1].defendant.address.address3", is(case0.getDefendantBuilder().getAddressBuilder().getAddress3())),
                 withJsonPath("$.resultOrders[1].defendant.address.address4", is(case0.getDefendantBuilder().getAddressBuilder().getAddress4())),
                 withJsonPath("$.resultOrders[1].defendant.address.postCode", is(case0.getDefendantBuilder().getAddressBuilder().getPostcode())),
-                withJsonPath("$.resultOrders[1].order.materialId", is(resultOrder0.getMaterialId())))));
+                withJsonPath("$.resultOrders[1].order.documentId", is(resultOrder0.getDocumentId())))));
     }
 
     private CreateCase.CreateCasePayloadBuilder createCase() {
@@ -95,10 +95,10 @@ public class ResultOrdersIT extends BaseIntegrationTest {
         return casePayloadBuilder;
     }
 
-    private static CaseDocumentHelper createResultOrder(UUID caseId) {
+    private static CaseDocumentHelper createResultOrder(final UUID caseId) {
         CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId);
         caseDocumentHelper.addCaseDocument(
-                Json.createObjectBuilder().add("id", UUID.randomUUID().toString())
+                Json.createObjectBuilder().add("id", caseDocumentHelper.getDocumentId())
                         .add("materialId", UUID.randomUUID().toString())
                         .add("documentType", "RESULT_ORDER").build().toString());
         return caseDocumentHelper;

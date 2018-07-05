@@ -258,8 +258,8 @@ public class CaseDocumentHelper implements AutoCloseable {
         assertThat(caseDocument.get(DOCUMENT_TYPE_PROPERTY), is(jsonRequest.getString(DOCUMENT_TYPE_PROPERTY)));
     }
 
-    public String getMaterialId() {
-        return materialId;
+    public String getDocumentId() {
+        return id;
     }
 
     @Override

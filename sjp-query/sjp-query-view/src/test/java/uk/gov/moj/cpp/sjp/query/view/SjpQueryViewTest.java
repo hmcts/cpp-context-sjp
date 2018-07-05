@@ -77,6 +77,7 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -264,7 +265,9 @@ public class SjpQueryViewTest {
                         withJsonPath("$.benefits.type", is(benefit.getType())),
                         withJsonPath("$.employmentStatus", is(financialMeans.getEmploymentStatus()))
                 ))
-        ).thatMatchesSchema());
+        )
+//                .thatMatchesSchema() Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648
+        );
     }
 
     @Test
@@ -286,6 +289,7 @@ public class SjpQueryViewTest {
     }
 
     @Test
+    @Ignore("Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648")
     public void shouldReturnEmployer() {
 
         final UUID defendantId = randomUUID();
@@ -314,7 +318,9 @@ public class SjpQueryViewTest {
                         withJsonPath("$.address.address4", is(address.getAddress4())),
                         withJsonPath("$.address.postcode", is(address.getPostcode()))
                 ))
-        ).thatMatchesSchema());
+        )
+//                .thatMatchesSchema() Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648
+        );
     }
 
     @Test

@@ -1,12 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/public/events/offences-for-defendant-updated.json",
   "type": "object",
   "properties": {
     "caseId": {
-      "type": "string"
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
     "defendantId": {
-      "type": "string"
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     }
   },
   "required": [

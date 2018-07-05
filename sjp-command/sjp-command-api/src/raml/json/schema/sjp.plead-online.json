@@ -16,22 +16,10 @@
           "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
         },
         "contactDetails": {
-          "type": "object",
-          "properties": {
-            "home": {
-              "type": "string"
-            },
-            "mobile": {
-              "type": "string"
-            },
-            "email": {
-              "type": "string"
-            }
-          },
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json",
           "required": [
             "email"
-          ],
-          "additionalProperties": false
+          ]
         },
         "dateOfBirth": {
           "type": "string"

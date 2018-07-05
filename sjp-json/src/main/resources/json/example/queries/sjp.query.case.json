@@ -37,7 +37,8 @@
       },
       "contactDetails": {
         "home": "020 7219 5206",
-        "mobile": "020 7219 5207"
+        "mobile": "020 7219 5207",
+        "email": "email@email.com"
       }
     }
   },

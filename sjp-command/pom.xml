@@ -21,7 +21,6 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.sjp</groupId>
             <artifactId>sjp-json</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

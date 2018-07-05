@@ -15,4 +15,11 @@
         <module>sjp-query-api</module>
     </modules>
 
+    <dependencies>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.sjp</groupId>
+            <artifactId>sjp-json</artifactId>
+        </dependency>
+    </dependencies>
+
 </project>

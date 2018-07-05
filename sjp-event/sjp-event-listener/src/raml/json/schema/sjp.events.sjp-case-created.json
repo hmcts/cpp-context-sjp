@@ -1,16 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "definitions": {
-    "uuid": {
-      "type": "string",
-      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-    }
-  },
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/sjp-case-created.json",
   "type": "object",
   "properties": {
     "id": {
-      "$ref": "#/definitions/uuid",
-      "type": "string"
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
     "urn": {
       "id": "/urn",
@@ -54,12 +48,10 @@
       "type": "string"
     },
     "personId": {
-      "id": "/personId",
-      "type": "string"
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
     "defendantId": {
-      "id": "/defendantId",
-      "type": "string"
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
     "numPreviousConvictions": {
       "id": "/numPreviousConvictions",

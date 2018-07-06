@@ -45,7 +45,6 @@ public final class RuleConstants {
         return asList(GROUP_SJP_PROSECUTORS, GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
-
     public static List<String> getQueryCaseDocumentsActionGroups() {
         return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SJP_PROSECUTORS);
     }

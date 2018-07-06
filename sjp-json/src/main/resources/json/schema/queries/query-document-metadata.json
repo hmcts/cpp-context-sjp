@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/document-metadata.json",
+  "type": "object",
+  "properties": {
+    "fileName": {
+      "type": "string"
+    },
+    "mimeType": {
+      "type": "string"
+    },
+    "addedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["fileName", "mimeType", "addedAt" ]
+}

@@ -5,28 +5,7 @@
     "caseDocuments": {
       "type": "array",
       "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "materialId": {
-            "type": "string"
-          },
-          "documentType": {
-            "type": "string"
-          },
-          "documentNumber": {
-            "type": "integer"
-          }
-        },
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "materialId",
-          "documentType",
-          "documentNumber"
-        ]
+        "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/queries/document.json"
       }
     }
   },

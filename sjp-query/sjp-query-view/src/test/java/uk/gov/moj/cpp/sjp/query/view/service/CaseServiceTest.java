@@ -336,6 +336,30 @@ public class CaseServiceTest {
     }
 
     @Test
+    public void shouldFindCaseDocument() {
+        final CaseDocument caseDocument = new CaseDocument(randomUUID(), randomUUID(), "SJPN", clock.now(), CASE_ID, 2);
+
+        when(caseRepository.findCaseDocuments(CASE_ID)).thenReturn(Arrays.asList(caseDocument));
+
+        final Optional<CaseDocumentView> caseDocumentView = service.findCaseDocument(CASE_ID, caseDocument.getId());
+
+        assertThat(caseDocumentView.isPresent(), is(true));
+        assertThat(caseDocumentView.get().getId(), is(caseDocument.getId()));
+        assertThat(caseDocumentView.get().getMaterialId(), is(caseDocument.getMaterialId()));
+        assertThat(caseDocumentView.get().getDocumentType(), is(caseDocument.getDocumentType()));
+        assertThat(caseDocumentView.get().getDocumentNumber(), is(caseDocument.getDocumentNumber()));
+    }
+
+    @Test
+    public void shouldReturnEmptyCaseDocumentIfDocumentDoesNotExist() {
+        when(caseRepository.findCaseDocuments(CASE_ID)).thenReturn(emptyList());
+
+        final Optional<CaseDocumentView> caseDocumentView = service.findCaseDocument(CASE_ID, randomUUID());
+
+        assertThat(caseDocumentView.isPresent(), is(false));
+    }
+
+    @Test
     public void shouldFindCaseDocumentsViewWithFilteringOfOtherAndFinancialMeansDocuments() {
         final List<CaseDocument> caseDocuments = createCaseDocuments("FINANCIAL_MEANS", "OTHER", "OTHER-Travelcard");
 

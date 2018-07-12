@@ -29,25 +29,7 @@
       "type": "string"
     },
     "address": {
-      "type": "object",
-      "properties": {
-        "address1": {
-          "type": "string"
-        },
-        "address2": {
-          "type": "string"
-        },
-        "address3": {
-          "type": "string"
-        },
-        "address4": {
-          "type": "string"
-        },
-        "postcode": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
     },
     "contactNumber": {
       "type": "object",

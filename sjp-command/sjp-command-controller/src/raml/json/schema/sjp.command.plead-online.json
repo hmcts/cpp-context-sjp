@@ -1,32 +1,5 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "definitions": {
-    "address": {
-      "type": "object",
-      "properties": {
-        "address1": {
-          "type": "string"
-        },
-        "address2": {
-          "type": "string"
-        },
-        "address3": {
-          "type": "string"
-        },
-        "address4": {
-          "type": "string"
-        },
-        "postcode": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "address1",
-        "postcode"
-      ],
-      "additionalProperties": false
-    }
-  },
   "type": "object",
   "properties": {
     "caseId": {
@@ -45,7 +18,7 @@
           "type": "string"
         },
         "address": {
-          "$ref": "#/definitions/address"
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
         },
         "contactDetails": {
           "type": "object",
@@ -184,7 +157,7 @@
           "type": "string"
         },
         "address": {
-          "$ref": "#/definitions/address"
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
         }
       },
       "required": [

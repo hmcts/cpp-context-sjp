@@ -13,16 +13,11 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus.EMPLOYED;
-import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_ADDRESS_1;
-import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_ADDRESS_2;
-import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_ADDRESS_3;
-import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_ADDRESS_4;
+import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_ADDRESS;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_DOB;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_FIRST_NAME;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_LAST_NAME;
-import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_POSTCODE;
 
-import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
@@ -50,7 +45,6 @@ import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -287,10 +281,10 @@ public class PleadOnlineTest {
                 {UUID.randomUUID(), PleaType.GUILTY, true, PleaType.GUILTY_REQUEST_HEARING},
                 {UUID.randomUUID(), PleaType.NOT_GUILTY, true, PleaType.NOT_GUILTY},
         };
-        final Case caseWithMultipleOffences = createTestCaseWithExtraOffences(
-                Arrays.stream(pleaInformationArray).map(pleaInformation ->
-                        (UUID) pleaInformation[0]).collect(toList())
-        );
+        final UUID[] extraOffenceIds = Arrays.stream(pleaInformationArray).map(pleaInformation ->
+                (UUID) pleaInformation[0]).toArray(UUID[]::new);
+
+        final Case caseWithMultipleOffences = createTestCase(extraOffenceIds);
         setup(caseWithMultipleOffences); // Override the @Before
 
         final String interpreterLanguage = "French";
@@ -499,19 +493,15 @@ public class PleadOnlineTest {
         assertThat(events, hasItem(instanceOf(DefendantDateOfBirthUpdated.class)));
     }
 
-    private Case createTestCase() {
-        final Offence offence = new Offence(UUID.randomUUID(), 1, null, null, 1, null, null, null, null, null);
-        return new Case(UUID.randomUUID(), "TFL123456", RandomStringUtils.randomAlphanumeric(12).toUpperCase(), ProsecutingAuthority.TFL,  null, null,
-                new Defendant(UUID.randomUUID(), null, PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_DOB, null,
-                        new Address(PERSON_ADDRESS_1, PERSON_ADDRESS_2, PERSON_ADDRESS_3, PERSON_ADDRESS_4, PERSON_POSTCODE), 1, new ArrayList<>(asList(offence))));
+    private static Case createTestCase(UUID... extraOffenceIds) {
+        final List<Offence> offences = Stream.concat(Stream.of(UUID.randomUUID()), Arrays.stream(extraOffenceIds))
+                .map(id -> new Offence(id, 1, null, null,
+                        1, null, null, null, null, null))
+                .collect(toList());
+
+        return new Case(UUID.randomUUID(), "TFL123456", RandomStringUtils.randomAlphanumeric(12).toUpperCase(),
+                ProsecutingAuthority.TFL,  null, null,
+                new Defendant(UUID.randomUUID(), null, PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_DOB, null, PERSON_ADDRESS, 1, offences));
     }
 
-    private Case createTestCaseWithExtraOffences(List<UUID> offenceIds) {
-        final Case sjpCase = createTestCase();
-        offenceIds.forEach(offenceId -> {
-            final Offence sjpOffence = new Offence(offenceId, 1, null, null, 1, null, null, null, null, null);
-            sjpCase.getDefendant().getOffences().add(sjpOffence);
-        });
-        return sjpCase;
-    }
 }

@@ -94,7 +94,7 @@ public class Offence {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        
+
         Offence that = (Offence) o;
 
         return offenceSequenceNo == that.offenceSequenceNo &&
@@ -111,6 +111,8 @@ public class Offence {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, offenceSequenceNo, libraOffenceCode, chargeDate, libraOffenceDateCode, offenceDate, offenceWording, prosecutionFacts, witnessStatement, compensation);
+        return Objects.hash(id, offenceSequenceNo, libraOffenceCode, chargeDate,
+                libraOffenceDateCode, offenceDate, offenceWording, prosecutionFacts,
+                witnessStatement, compensation);
     }
 }

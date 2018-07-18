@@ -3,6 +3,7 @@ package uk.gov.moj.sjp.it.commandclient;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.sjp.it.util.commandclient.CommandClient;
 import uk.gov.moj.sjp.it.util.commandclient.CommandExecutor;
 import uk.gov.moj.sjp.it.util.commandclient.EventHandler;
@@ -76,6 +77,9 @@ public class CreateCaseClient {
 
     @EventHandler(CaseMarkedReadyForDecision.EVENT_NAME)
     public Consumer markedReadyForDecisionHandler;
+
+    @EventHandler(CaseReceived.EVENT_NAME)
+    public Consumer caseReceivedHandler;
 
     public CommandExecutor getExecutor() {
         return new CommandExecutor(this);

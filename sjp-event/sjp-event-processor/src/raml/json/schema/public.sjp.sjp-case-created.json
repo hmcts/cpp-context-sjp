@@ -6,7 +6,7 @@
     "id": {
       "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
-    "dateOfHearing": {
+    "postingDate": {
       "id": "/postingDate",
       "type": "string"
     }

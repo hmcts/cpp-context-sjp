@@ -4,19 +4,29 @@
   "type": "object",
   "properties": {
     "address1": {
-      "type": "string"
+      "type": "string",
+      "description": "Address Line 1",
+      "maxLength": 35
     },
     "address2": {
-      "type": "string"
+      "type": "string",
+      "description": "Address Line 2",
+      "maxLength": 35
     },
     "address3": {
-      "type": "string"
+      "type": "string",
+      "description": "Address Line 3",
+      "maxLength": 35
     },
     "address4": {
-      "type": "string"
+      "type": "string",
+      "description": "Address Line 4",
+      "maxLength": 35
     },
     "postcode": {
-      "type": "string"
+      "type": "string",
+      "description": "Address Postcode",
+      "maxLength": 8
     }
   },
   "additionalProperties": false

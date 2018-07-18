@@ -13,7 +13,6 @@ public class Person {
     private final String lastName;
     private final LocalDate dateOfBirth;
     private final String gender;
-
     private final Address address;
 
     @JsonCreator

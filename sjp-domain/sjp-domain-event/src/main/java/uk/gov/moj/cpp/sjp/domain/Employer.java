@@ -2,7 +2,9 @@ package uk.gov.moj.cpp.sjp.domain;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties("caseId")
 public class Employer {
@@ -17,7 +19,12 @@ public class Employer {
 
     private Address address;
 
-    public Employer(UUID defendantId, String name, String employeeReference, String phone, Address address) {
+    @JsonCreator
+    public Employer(@JsonProperty("defendantId") UUID defendantId,
+                    @JsonProperty("name") String name,
+                    @JsonProperty("employeeReference") String employeeReference,
+                    @JsonProperty("phone") String phone,
+                    @JsonProperty("address") Address address) {
         this.defendantId = defendantId;
         this.name = name;
         this.employeeReference = employeeReference;

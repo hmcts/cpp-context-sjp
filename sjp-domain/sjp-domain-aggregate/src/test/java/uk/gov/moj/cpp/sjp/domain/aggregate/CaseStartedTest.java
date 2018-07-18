@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder.URN;
 import static uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder.aDefaultSjpCase;
 
 import uk.gov.moj.cpp.sjp.domain.Case;
@@ -27,8 +26,8 @@ public class CaseStartedTest extends CaseAggregateBaseTest {
         Case aCase = aDefaultSjpCase().build();
         caseAggregate.receiveCase(aCase, clock.now());
 
-        assertThat("Sets case id", caseAggregate.getCaseId(), equalTo(DefaultTestData.CASE_ID));
-        assertThat("Sets urn", caseAggregate.getUrn(), equalTo(URN));
+        assertThat("Sets case id", caseAggregate.getCaseId(), equalTo(aCase.getId()));
+        assertThat("Sets urn", caseAggregate.getUrn(), equalTo(aCase.getUrn()));
     }
 
 

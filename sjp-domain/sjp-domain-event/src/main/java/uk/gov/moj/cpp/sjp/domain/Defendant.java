@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.domain;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -65,6 +66,33 @@ public class Defendant extends Person {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), id, numPreviousConvictions, offences);
+    }
+
+    public static class DefendantBuilder {
+
+        private UUID id;
+
+        public DefendantBuilder withId(UUID id) {
+            this.id = id;
+            return this;
+        }
+
+        /**
+         * Overwrite not-set values with the ones of the specified object.
+         */
+        public Defendant buildBasedFrom(Defendant defendant) {
+            return new Defendant(
+                    Optional.ofNullable(id).orElse(defendant.getId()),
+                    defendant.getTitle(),
+                    defendant.getFirstName(),
+                    defendant.getLastName(),
+                    defendant.getDateOfBirth(),
+                    defendant.getGender(),
+                    defendant.getAddress(),
+                    defendant.getNumPreviousConvictions(),
+                    defendant.getOffences());
+        }
+
     }
 
 }

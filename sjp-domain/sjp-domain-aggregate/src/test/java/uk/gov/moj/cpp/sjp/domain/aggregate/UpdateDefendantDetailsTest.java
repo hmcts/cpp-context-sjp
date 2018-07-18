@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.isA;
@@ -77,7 +78,7 @@ public class UpdateDefendantDetailsTest {
                         person.getGender(),
                         person.getAddress(),
                         0,
-                        Lists.newArrayList()
+                        emptyList()
                 )).build(),
                 clock.now()
         );
@@ -123,8 +124,8 @@ public class UpdateDefendantDetailsTest {
 
     @Test
     public void shouldFailValidation() {
-        final Person personInfoDetails = new Person(title, firstName, lastName,
-                dateOfBirth, gender, address);
+        final Person personInfoDetails = new Person(title, firstName, lastName, dateOfBirth, gender,
+                address);
         caseAggregate.receiveCase(
                 new Case(
                         UUID.randomUUID(),

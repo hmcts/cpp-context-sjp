@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.StringContains.containsString;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateDefendantTest.DefendantData.defaultDefendantData;
@@ -183,7 +184,10 @@ public class CaseAggregateDefendantTest {
 
         assertThat(events.size(), is(1));
 
-        final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
+        final Object event = events.get(0);
+        assertThat(event, instanceOf(DefendantDetailsUpdateFailed.class));
+
+        final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) event;
         assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
         assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
         assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("street (address1) can not be blank as previous value is: address1"));
@@ -314,9 +318,14 @@ public class CaseAggregateDefendantTest {
                 updatedDefendantData.firstName, updatedDefendantData.lastName, updatedDefendantData.dateOfBirth,
                 updatedDefendantData.gender, updatedDefendantData.address);
 
-        final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(updatedDefendantData.caseId,
-                updatedDefendantData.defendantId, updatedDefendantData.gender, updatedDefendantData.nationalInsuranceNumber,
-                updatedDefendantData.email, updatedDefendantData.homeNumber, updatedDefendantData.mobileNumber,
+        final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(
+                updatedDefendantData.caseId,
+                updatedDefendantData.defendantId,
+                updatedDefendantData.gender,
+                updatedDefendantData.nationalInsuranceNumber,
+                updatedDefendantData.email,
+                updatedDefendantData.homeNumber,
+                updatedDefendantData.mobileNumber,
                 person, clock.now());
 
         return eventStream.collect(Collectors.toList());

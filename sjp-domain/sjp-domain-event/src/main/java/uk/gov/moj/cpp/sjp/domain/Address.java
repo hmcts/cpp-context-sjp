@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -26,9 +28,9 @@ public class Address implements Serializable {
             @JsonProperty("address3") String address3,
             @JsonProperty("address4") String address4,
             @JsonProperty("postcode") String postcode,
-            // Backward compatibility
-            @JsonProperty("postCode") String postCode) {
-        this(address1, address2, address3, address4, postcode != null ? postcode : postCode);
+            @JsonProperty("postCode") String postCode // Backward compatibility
+    ) {
+        this(address1, address2, address3, address4, firstNonNull(postcode, postCode));
     }
 
     @JsonCreator(mode = Mode.DISABLED)

@@ -22,14 +22,11 @@ public class PersonToPersonalDetailsEntityTest {
     @Mock
     private AddressToAddressEntity addressToAddressEntityConverter;
 
-    @Mock
-    private ContactDetailsToContactDetailsEntity contactDetailsToContactDetailsEntityConverter;
-
     @InjectMocks
     private PersonToPersonalDetailsEntity<Person> converterUnderTest = new PersonToPersonalDetailsEntity<>();
 
     @Test
-    public void shouldConvertAddressToAddressEntity() {
+    public void shouldConvertPersonToPersonalDetailsEntity() {
         uk.gov.moj.cpp.sjp.domain.Person inputPerson = CaseBuilder.aDefaultSjpCase().build().getDefendant();
 
         final Address mockedAddress = mock(Address.class);

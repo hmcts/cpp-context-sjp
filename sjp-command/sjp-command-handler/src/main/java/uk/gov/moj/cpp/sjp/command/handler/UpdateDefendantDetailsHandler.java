@@ -40,7 +40,7 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
     @Handles("sjp.command.update-defendant-details")
     public void updateDefendantDetails(final JsonEnvelope command) throws EventStreamException {
 
-        final ZonedDateTime createdAt = command.metadata().createdAt().orElse(clock.now());
+        final ZonedDateTime createdAt = command.metadata().createdAt().orElseGet(clock::now);
 
         final JsonObject payload = command.payloadAsJsonObject();
 

@@ -194,18 +194,9 @@ public class CaseAggregate implements Aggregate {
             event = new CaseCreationFailedBecauseCaseAlreadyExisted(this.caseId, this.urn);
         }
         else {
-            final Defendant caseDefendant = aCase.getDefendant();
-            final Defendant eventDefendant = new Defendant(
-                    UUID.randomUUID(),
-                    caseDefendant.getTitle(),
-                    caseDefendant.getFirstName(),
-                    caseDefendant.getLastName(),
-                    caseDefendant.getDateOfBirth(),
-                    caseDefendant.getGender(),
-                    caseDefendant.getAddress(),
-                    caseDefendant.getNumPreviousConvictions(),
-                    caseDefendant.getOffences()
-            );
+            final Defendant defendant = new Defendant.DefendantBuilder()
+                    .withId(UUID.randomUUID())
+                    .buildBasedFrom(aCase.getDefendant());
 
             event = new CaseReceived(
                     aCase.getId(),
@@ -214,7 +205,7 @@ public class CaseAggregate implements Aggregate {
                     aCase.getProsecutingAuthority(),
                     aCase.getCosts(),
                     aCase.getPostingDate(),
-                    eventDefendant,
+                    defendant,
                     createdOn);
         }
 
@@ -495,7 +486,6 @@ public class CaseAggregate implements Aggregate {
                                                                final ZonedDateTime createdOn) {
         //TODO: we need to query the defendant to see if any of the incoming defendant data is different from the pre-existing defendant data. If no changes, no event
         final PersonalDetails personalDetails = pleadOnline.getPersonalDetails();
-        final ContactDetails contactDetails = personalDetails.getContactDetails();
         streamBuilder.add(defendantDetailsUpdated()
                 .withCaseId(caseId)
                 .withDefendantId(defendantId)
@@ -503,7 +493,7 @@ public class CaseAggregate implements Aggregate {
                 .withLastName(personalDetails.getLastName())
                 .withDateOfBirth(personalDetails.getDateOfBirth())
                 .withNationalInsuranceNumber(personalDetails.getNationalInsuranceNumber())
-                .withContactDetails(new ContactDetails(contactDetails.getHome(), contactDetails.getMobile(), contactDetails.getEmail()))
+                .withContactDetails(personalDetails.getContactDetails())
                 .withAddress(personalDetails.getAddress())
                 .withUpdateByOnlinePlea(true)
                 .withUpdatedDate(createdOn)

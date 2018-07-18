@@ -63,4 +63,5 @@ public class Case {
     public Defendant getDefendant() {
         return defendant;
     }
+
 }

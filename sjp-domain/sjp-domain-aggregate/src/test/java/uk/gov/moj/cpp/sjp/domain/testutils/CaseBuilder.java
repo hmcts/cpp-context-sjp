@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.testutils;
 
 
+import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Offence;
@@ -15,15 +16,18 @@ import java.util.UUID;
 
 public class CaseBuilder {
 
-    public static final String URN = "urnValue";
-    public static final String ENTERPRISE_ID = "enterpriseIdValue";
+    private static final String URN = "urnValue";
+    private static final String ENTERPRISE_ID = "enterpriseIdValue";
     private static BigDecimal COMPENSATION = BigDecimal.valueOf(11.11);
-    public static final List<Offence> OFFENCES = Collections.singletonList(
-            new Offence(UUID.randomUUID(), 0, null, null, 0, null, null, null, null, COMPENSATION)
+    private static final List<Offence> OFFENCES = Collections.singletonList(
+            new Offence(UUID.randomUUID(), 0, null, null,
+                    0, null, null, null, null, COMPENSATION)
     );
-    public static final int NUM_PREVIOUS_CONVICTIONS = 3;
-    public static BigDecimal COSTS = BigDecimal.valueOf(33.33);
-    public static LocalDate POSTING_DATE = LocalDate.of(2015, 12, 3);
+    private static final int NUM_PREVIOUS_CONVICTIONS = 3;
+    private static final Address ADDRESS = new Address("street", "suburb", "town", "county", "AA1 2BB");
+
+    private static BigDecimal COSTS = BigDecimal.valueOf(33.33);
+    private static LocalDate POSTING_DATE = LocalDate.of(2015, 12, 3);
 
     private UUID id;
     private String urn;
@@ -37,10 +41,10 @@ public class CaseBuilder {
         enterpriseId = ENTERPRISE_ID;
         prosecutingAuthority = ProsecutingAuthority.TFL;
         defendant = new Defendant(DefaultTestData.DEFENDANT_ID, null, null, null,
-                null, null, null, NUM_PREVIOUS_CONVICTIONS, OFFENCES);
+                null, null, ADDRESS, NUM_PREVIOUS_CONVICTIONS, OFFENCES);
     }
 
-    public static CaseBuilder aDefaultSjpCase() {
+        public static CaseBuilder aDefaultSjpCase() {
         return new CaseBuilder();
     }
 

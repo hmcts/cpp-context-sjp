@@ -12,7 +12,7 @@ public class TrialRequestCancelled {
     private final UUID caseId;
 
     @JsonCreator
-    public TrialRequestCancelled(@JsonProperty(value = "caseId") final UUID caseId) {
+    public TrialRequestCancelled(@JsonProperty("caseId") final UUID caseId) {
         this.caseId = caseId;
     }
 

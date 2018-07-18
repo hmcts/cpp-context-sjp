@@ -12,9 +12,9 @@ public class ContactDetails implements Serializable {
 
     @JsonCreator
     public ContactDetails(
-            @JsonProperty(value = "home") final String home,
-            @JsonProperty(value = "mobile") final String mobile,
-            @JsonProperty(value = "email") final String email) {
+            @JsonProperty("home") final String home,
+            @JsonProperty("mobile") final String mobile,
+            @JsonProperty("email") final String email) {
         this.home = home;
         this.mobile = mobile;
         this.email = email;

@@ -15,8 +15,8 @@ public class InterpreterCancelledForDefendant {
 
     @JsonCreator
     public InterpreterCancelledForDefendant(
-            @JsonProperty(value = "caseId") UUID caseId,
-            @JsonProperty(value = "defendantId") UUID defendantId) {
+            @JsonProperty("caseId") UUID caseId,
+            @JsonProperty("defendantId") UUID defendantId) {
         this.caseId = caseId;
         this.defendantId = defendantId;
     }

@@ -4,7 +4,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
@@ -54,7 +53,7 @@ public class PersonInfoVerifier {
                         defendantBuilder.getAddressBuilder().getAddress4(),
                         defendantBuilder.getAddressBuilder().getPostcode()
                 ),
-                new ContactDetails(null, null, null)
+                ContactDetails.EMPTY
         );
 
         return new PersonInfoVerifier(createCasePayloadBuilder.getId(), personalDetails);

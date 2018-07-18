@@ -937,7 +937,7 @@ public class CaseAggregate implements Aggregate {
                 sjpCaseCreated.getNumPreviousConvictions(),
                 sjpCaseCreated.getOffences());
 
-        return new CaseReceived(UUID.fromString(sjpCaseCreated.getId()), sjpCaseCreated.getUrn(), null,
+        return new CaseReceived(sjpCaseCreated.getId(), sjpCaseCreated.getUrn(), null,
                 sjpCaseCreated.getProsecutingAuthority(), sjpCaseCreated.getCosts(), sjpCaseCreated.getPostingDate(),
                 defendant, sjpCaseCreated.getCreatedOn());
     }

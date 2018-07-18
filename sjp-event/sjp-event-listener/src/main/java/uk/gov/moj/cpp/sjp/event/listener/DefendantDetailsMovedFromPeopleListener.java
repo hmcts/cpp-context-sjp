@@ -7,10 +7,10 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsMovedFromPeople;
+import uk.gov.moj.cpp.sjp.event.listener.converter.AddressToAddressEntity;
+import uk.gov.moj.cpp.sjp.event.listener.converter.ContactDetailsToContactDetailsEntity;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
-import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
@@ -30,6 +30,12 @@ public class DefendantDetailsMovedFromPeopleListener {
 
     @Inject
     private CaseSearchResultService caseSearchResultService;
+
+    @Inject
+    private ContactDetailsToContactDetailsEntity contactDetailsToContactDetailsEntity;
+
+    @Inject
+    private AddressToAddressEntity addressToAddressEntity;
 
     @Handles("sjp.events.defendant-details-moved-from-people")
     @Transactional
@@ -66,18 +72,9 @@ public class DefendantDetailsMovedFromPeopleListener {
         personalDetails.setTitle(event.getTitle());
         personalDetails.setNationalInsuranceNumber(event.getNationalInsuranceNumber());
         personalDetails.setDateOfBirth(event.getDateOfBirth());
-        personalDetails.setAddress(new Address(
-                event.getAddress().getAddress1(),
-                event.getAddress().getAddress2(),
-                event.getAddress().getAddress3(),
-                event.getAddress().getAddress4(),
-                event.getAddress().getPostcode()
-        ));
-        personalDetails.setContactDetails(new ContactDetails(
-                event.getContactNumber().getEmail(),
-                event.getContactNumber().getHome(),
-                event.getContactNumber().getMobile()
-        ));
+        personalDetails.setAddress(addressToAddressEntity.convert(event.getAddress()));
+        personalDetails.setContactDetails(contactDetailsToContactDetailsEntity.convert(event.getContactNumber()));
+
         return personalDetails;
     }
 }

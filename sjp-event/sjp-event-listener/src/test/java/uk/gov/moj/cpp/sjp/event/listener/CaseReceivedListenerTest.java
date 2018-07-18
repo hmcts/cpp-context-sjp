@@ -17,7 +17,12 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
+import uk.gov.moj.cpp.sjp.event.listener.converter.AddressToAddressEntity;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseReceivedToCase;
+import uk.gov.moj.cpp.sjp.event.listener.converter.ContactDetailsToContactDetailsEntity;
+import uk.gov.moj.cpp.sjp.event.listener.converter.DefendantToDefendantDetails;
+import uk.gov.moj.cpp.sjp.event.listener.converter.OffenceToOffenceDetail;
+import uk.gov.moj.cpp.sjp.event.listener.converter.PersonToPersonalDetailsEntity;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -38,6 +43,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -56,7 +62,25 @@ public class CaseReceivedListenerTest {
     @Mock
     private CaseSearchResultRepository searchResultRepository;
 
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private AddressToAddressEntity addressToAddressEntityConverter;
+
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private ContactDetailsToContactDetailsEntity contactDetailsToContactDetailsEntityConverter;
+
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private OffenceToOffenceDetail offenceToOffenceDetailConverter;
+
     @Spy
+    @InjectMocks
+    private PersonToPersonalDetailsEntity personToPersonalDetailsEntity = new PersonToPersonalDetailsEntity();
+
+    @Spy
+    @InjectMocks
+    private DefendantToDefendantDetails defendantToDefendantDetailsConverter = new DefendantToDefendantDetails();
+
+    @Spy
+    @InjectMocks
     private CaseReceivedToCase caseReceivedToCaseConverter = new CaseReceivedToCase();
 
     @Spy

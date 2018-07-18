@@ -8,6 +8,8 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
+import uk.gov.moj.cpp.sjp.event.listener.converter.AddressToAddressEntity;
+import uk.gov.moj.cpp.sjp.event.listener.converter.ContactDetailsToContactDetailsEntity;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
@@ -18,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -46,6 +49,12 @@ public class DefendantDetailsMovedFromPeopleListenerTest {
 
     @Mock
     private CaseSearchResultService caseSearchResultService;
+
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private ContactDetailsToContactDetailsEntity contactDetailsToContactDetailsEntity;
+
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private AddressToAddressEntity addressToAddressEntity;
 
     @Spy
     private JsonEnvelope eventEnvelope = JsonEnvelope.envelopeFrom(

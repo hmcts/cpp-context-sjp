@@ -23,7 +23,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 @JsonIgnoreProperties("personId")
 public class SjpCaseCreated {
 
-    private String id;
+    private UUID id;
     private String urn;
     private String ptiUrn;
     private String initiationCode;
@@ -44,7 +44,7 @@ public class SjpCaseCreated {
     public SjpCaseCreated() {
     }
 
-    public SjpCaseCreated(String id,
+    public SjpCaseCreated(UUID id,
                           String urn,
                           String ptiUrn,
                           String initiationCode,
@@ -130,11 +130,11 @@ public class SjpCaseCreated {
         this.offences = offences;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

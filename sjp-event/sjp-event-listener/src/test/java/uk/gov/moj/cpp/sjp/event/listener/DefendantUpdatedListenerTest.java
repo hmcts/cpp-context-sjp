@@ -24,6 +24,8 @@ import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantsNationalInsuranceNumberUpdated;
+import uk.gov.moj.cpp.sjp.event.listener.converter.AddressToAddressEntity;
+import uk.gov.moj.cpp.sjp.event.listener.converter.ContactDetailsToContactDetailsEntity;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
@@ -45,6 +47,7 @@ import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -82,6 +85,12 @@ public class DefendantUpdatedListenerTest {
 
     @Mock
     private OnlinePleaRepository.PersonDetailsOnlinePleaRepository onlinePleaRepository;
+
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private ContactDetailsToContactDetailsEntity contactDetailsToContactDetailsEntity;
+
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private AddressToAddressEntity addressToAddressEntity;
 
     @Captor
     private ArgumentCaptor<OnlinePlea> onlinePleaCaptor;

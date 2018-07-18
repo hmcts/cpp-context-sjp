@@ -4,33 +4,22 @@ import static java.util.stream.Collectors.toSet;
 
 import uk.gov.justice.services.common.converter.Converter;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
-import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
+import javax.inject.Inject;
+
 public class DefendantToDefendantDetails implements Converter<Defendant, DefendantDetail> {
 
-    private AddressToAddressEntity addressToAddressEntityConverter = new AddressToAddressEntity();
-    private OffenceToOffenceDetail offenceToOffenceDetailConverter = new OffenceToOffenceDetail();
+    @Inject
+    private PersonToPersonalDetailsEntity<Defendant> personToPersonalDetailsEntity;
 
-    private final String nationalInsuranceNumber;
-
-    public DefendantToDefendantDetails(String nationalInsuranceNumber) {
-        this.nationalInsuranceNumber = nationalInsuranceNumber;
-    }
+    @Inject
+    private OffenceToOffenceDetail offenceToOffenceDetailConverter;
 
     @Override
     public DefendantDetail convert(Defendant defendant) {
-        PersonalDetails personalDetails = new PersonalDetails(
-                defendant.getTitle(),
-                defendant.getFirstName(),
-                defendant.getLastName(),
-                defendant.getDateOfBirth(),
-                defendant.getGender(),
-                nationalInsuranceNumber,
-                addressToAddressEntityConverter.convert(defendant.getAddress()),
-                new ContactDetails()
-        );
+        final PersonalDetails personalDetails = personToPersonalDetailsEntity.convert(defendant);
 
         return new DefendantDetail(
                 defendant.getId(),

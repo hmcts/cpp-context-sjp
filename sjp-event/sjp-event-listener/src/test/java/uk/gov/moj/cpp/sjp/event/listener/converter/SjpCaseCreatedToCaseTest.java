@@ -25,6 +25,9 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -34,10 +37,14 @@ public class SjpCaseCreatedToCaseTest {
 
     @SuppressWarnings("deprecation")
     private SjpCaseCreated event;
-    @SuppressWarnings("deprecation")
-    private SjpCaseCreatedToCase caseConverter;
 
-    private String caseId = UUID.randomUUID().toString();
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private OffenceToOffenceDetail offenceToOffenceDetailConverter;
+
+    @InjectMocks
+    private SjpCaseCreatedToCase caseConverter = new SjpCaseCreatedToCase();
+
+    private UUID caseId = UUID.randomUUID();
     private String urn = "TFL243179";
     private String ptiUrn = "TFL243179";
     private String initiationCode = "J";
@@ -53,7 +60,7 @@ public class SjpCaseCreatedToCaseTest {
     private int offenceSequenceNo = 1;
     private String libraOffenceCode = "PS00001";
     private LocalDate chargeDate = LocalDate.parse("2016-01-01", formatter);
-    private int libraOffenceDateCode = 6;
+    private final int libraOffenceDateCode = 6;
     private LocalDate offenceDate = LocalDate.parse("2016-01-01", formatter);
     private String offenceWording = "Committed some offence";
     private BigDecimal compensation = BigDecimal.ONE;
@@ -69,7 +76,6 @@ public class SjpCaseCreatedToCaseTest {
         offences.clear();
         offences.add(offence);
 
-        caseConverter = new SjpCaseCreatedToCase();
         event = null;
 
         int numPreviousConvictions = 30;
@@ -85,7 +91,7 @@ public class SjpCaseCreatedToCaseTest {
         CaseDetail aCase = caseConverter.convert(event);
 
         assertThat(aCase, is(notNullValue()));
-        assertThat(aCase.getId(), is(UUID.fromString(caseId)));
+        assertThat(aCase.getId(), is(caseId));
         assertThat(aCase.getUrn(), is(urn));
         assertThat(aCase.getProsecutingAuthority(), is(TFL));
         assertThat(aCase.getInitiationCode(), is(initiationCode));
@@ -122,7 +128,7 @@ public class SjpCaseCreatedToCaseTest {
         assertThat(offenceDetail.getStartDate(), is(offenceDate));
         assertThat(offenceDetail.getWitnessStatement(), is("Witness statement"));
         assertThat(offenceDetail.getProsecutionFacts(), is("Prosecution facts"));
-        assertThat(offenceDetail.getLibraOffenceDateCode(), is(6));
+        assertThat(offenceDetail.getLibraOffenceDateCode(), is(libraOffenceDateCode));
         assertThat(offenceDetail.getDefendantDetail(), is(defendant));
     }
 }

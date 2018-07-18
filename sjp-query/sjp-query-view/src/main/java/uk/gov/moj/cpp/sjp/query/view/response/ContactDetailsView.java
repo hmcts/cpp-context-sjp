@@ -2,36 +2,32 @@ package uk.gov.moj.cpp.sjp.query.view.response;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 
+import java.util.Optional;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class ContactDetailsView {
 
-    private final String email;
-
-    private final String home;
-
-    private final String mobile;
+    private final ContactDetails contactDetails;
 
     public ContactDetailsView(final ContactDetails contactDetails) {
-        if (contactDetails != null) {
-            this.email = contactDetails.getEmail();
-            this.home = contactDetails.getHome();
-            this.mobile = contactDetails.getMobile();
-        }
-        else {
-            this.email = null;
-            this.home = null;
-            this.mobile = null;
-        }
+        this.contactDetails = Optional.ofNullable(contactDetails)
+                .orElse(ContactDetails.EMPTY);
     }
 
+    @JsonProperty("email")
     public String getEmail() {
-        return email;
+        return contactDetails.getEmail();
     }
 
+    @JsonProperty("home")
     public String getHome() {
-        return home;
+        return contactDetails.getHome();
     }
 
+    @JsonProperty("mobile")
     public String getMobile() {
-        return mobile;
+        return contactDetails.getMobile();
     }
+
 }

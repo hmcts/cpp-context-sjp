@@ -94,7 +94,7 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
 
         caseAggregate.apply(sjpCaseCreated);
 
-        assertThat("Case id does not match", caseAggregate.getCaseId().toString(), equalTo(sjpCaseCreated.getId()));
+        assertThat("Case id does not match", caseAggregate.getCaseId(), equalTo(sjpCaseCreated.getId()));
         assertThat("Case urn does not match", caseAggregate.getUrn(), equalTo(sjpCaseCreated.getUrn()));
         assertThat("Case prosecutingAuthority does not match", caseAggregate.getProsecutingAuthority(), equalTo(sjpCaseCreated.getProsecutingAuthority()));
         assertThat("Case offenceIdsByDefendantId does not match", caseAggregate.getOffenceIdsByDefendantId(),
@@ -110,7 +110,7 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
      */
     @SuppressWarnings("deprecation")
     private SjpCaseCreated buildSjpCaseCreated(Case aCase) {
-        return new SjpCaseCreated(aCase.getId().toString(), aCase.getUrn(), null,
+        return new SjpCaseCreated(aCase.getId(), aCase.getUrn(), null,
                 null, null, aCase.getProsecutingAuthority(),
                 null, null, null,
                 null, aCase.getDefendant().getId(),

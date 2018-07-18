@@ -32,13 +32,13 @@ public class NotReadyCaseRepositoryTest extends BaseTransactionalTest {
     public void shouldGroupByAge() {
         final LocalDate now = LocalDate.now();
         final CaseDetail case1 = CaseDetailBuilder.aCase().addDefendantDetail(aDefendantDetail().build())
-                .withCompleted(false).withInitiationCode("J").withPostingDate(now.minusDays(1)).build();
+                .withCompleted(false).withPostingDate(now.minusDays(1)).build();
         final CaseDetail case2 = CaseDetailBuilder.aCase().addDefendantDetail(aDefendantDetail().build())
-                .withCompleted(false).withInitiationCode("J").withPostingDate(now.minusDays(2)).build();
+                .withCompleted(false).withPostingDate(now.minusDays(2)).build();
         final CaseDetail case3 = CaseDetailBuilder.aCase().addDefendantDetail(aDefendantDetail().build())
-                .withCompleted(false).withInitiationCode("J").withPostingDate(now.minusDays(3)).build();
+                .withCompleted(false).withPostingDate(now.minusDays(3)).build();
         final CaseDetail case4 = CaseDetailBuilder.aCase().addDefendantDetail(aDefendantDetail().build())
-                .withCompleted(false).withInitiationCode("J").withPostingDate(now.minusDays(3)).build();
+                .withCompleted(false).withPostingDate(now.minusDays(3)).build();
 
         caseRepository.save(case1);
         caseRepository.save(case2);

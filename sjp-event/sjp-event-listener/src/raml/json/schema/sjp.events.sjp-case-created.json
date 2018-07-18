@@ -10,18 +10,6 @@
       "id": "/urn",
       "type": "string"
     },
-    "ptiUrn": {
-      "id": "/ptiUrn",
-      "type": "string"
-    },
-    "initiationCode": {
-      "id": "/initiationCode",
-      "type": "string"
-    },
-    "summonsCode": {
-      "id": "/summonsCode",
-      "type": "string"
-    },
     "prosecutingAuthority": {
       "id": "/prosecutingAuthority",
       "type": "string",
@@ -30,22 +18,6 @@
         "TVL",
         "DVLA"
       ]
-    },
-    "libraOriginatingOrg": {
-      "id": "/libraOriginatingOrg",
-      "type": "string"
-    },
-    "libraHearingLocation": {
-      "id": "/libraHearingLocation",
-      "type": "string"
-    },
-    "dateOfHearing": {
-      "id": "/dateOfHearing",
-      "type": "string"
-    },
-    "timeOfHearing": {
-      "id": "/timeOfHearing",
-      "type": "string"
     },
     "personId": {
       "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
@@ -120,14 +92,7 @@
   "required": [
     "id",
     "urn",
-    "ptiUrn",
-    "initiationCode",
-    "summonsCode",
     "prosecutingAuthority",
-    "libraOriginatingOrg",
-    "libraHearingLocation",
-    "dateOfHearing",
-    "timeOfHearing",
     "personId",
     "defendantId",
     "offences",

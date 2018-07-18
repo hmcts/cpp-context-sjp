@@ -13,11 +13,11 @@ public class CaseReceivedToCase implements Converter<CaseReceived, CaseDetail> {
 
     @Override
     public CaseDetail convert(CaseReceived event) {
-        return new CaseDetail(event.getCaseId(),
+        return new CaseDetail(
+                event.getCaseId(),
                 event.getUrn(),
                 event.getEnterpriseId(),
                 event.getProsecutingAuthority(),
-                null,
                 false,
                 null,
                 event.getCreatedOn(),

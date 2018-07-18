@@ -46,13 +46,6 @@ public class SjpCaseCreatedToCaseTest {
 
     private UUID caseId = UUID.randomUUID();
     private String urn = "TFL243179";
-    private String ptiUrn = "TFL243179";
-    private String initiationCode = "J";
-    private String summonsCode = "M";
-    private String libraOriginatingOrg = "GAFTL00";
-    private String libraHearingLocation = "C01CE03";
-    private LocalDate dateOfHearing = LocalDate.parse("2016-01-01", formatter);
-    private String timeOfHearing = "11:00";
     private UUID defendantId = UUID.randomUUID();
     private List<Offence> offences = new ArrayList<>();
 
@@ -81,9 +74,8 @@ public class SjpCaseCreatedToCaseTest {
         int numPreviousConvictions = 30;
         BigDecimal costs = BigDecimal.valueOf(33.5);
         LocalDate postingDate = LocalDate.parse("2016-12-03", formatter);
-        event = new SjpCaseCreated(caseId, urn, ptiUrn, initiationCode, summonsCode, TFL, libraOriginatingOrg,
-                libraHearingLocation, dateOfHearing, timeOfHearing, defendantId,
-                numPreviousConvictions, costs, postingDate, offences, createdOn);
+        event = new SjpCaseCreated(caseId, urn, TFL, defendantId, numPreviousConvictions, costs,
+                postingDate, offences, createdOn);
     }
 
     @Test
@@ -94,7 +86,6 @@ public class SjpCaseCreatedToCaseTest {
         assertThat(aCase.getId(), is(caseId));
         assertThat(aCase.getUrn(), is(urn));
         assertThat(aCase.getProsecutingAuthority(), is(TFL));
-        assertThat(aCase.getInitiationCode(), is(initiationCode));
         assertThat(aCase.getCompleted(), is(false));
         assertThat(aCase.getAssigneeId(), nullValue());
 

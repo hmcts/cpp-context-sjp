@@ -25,8 +25,6 @@ public class CaseDetailBuilder {
     private ProsecutingAuthority prosecutingAuthority;
     private Set<CaseDocument> caseDocuments = new LinkedHashSet<>();
     private DefendantDetail defendant;
-    //TODO no longer used
-    private String initiationCode;
     private Boolean completed;
     private UUID assigneeId;
     private BigDecimal costs;
@@ -65,11 +63,6 @@ public class CaseDetailBuilder {
 
     public CaseDetailBuilder withAssigneeId(UUID assigneeId) {
         this.assigneeId = assigneeId;
-        return this;
-    }
-
-    public CaseDetailBuilder withInitiationCode(String initiationCode) {
-        this.initiationCode = initiationCode;
         return this;
     }
 
@@ -115,7 +108,6 @@ public class CaseDetailBuilder {
                 urn,
                 enterpriseId,
                 prosecutingAuthority,
-                initiationCode,
                 completed,
                 assigneeId,
                 createdOn, defendant, costs, postingDate);

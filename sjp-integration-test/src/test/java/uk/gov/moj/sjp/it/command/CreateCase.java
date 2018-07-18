@@ -68,14 +68,7 @@ public class CreateCase {
         payload.add("id", payloadBuilder.id.toString());
         payload.add("urn", payloadBuilder.urn);
         payload.add("enterpriseId", payloadBuilder.enterpriseId);
-        payload.add("ptiUrn", payloadBuilder.urn);
         payload.add("prosecutingAuthority", payloadBuilder.prosecutingAuthority.name());
-        payload.add("initiationCode", "J");
-        payload.add("summonsCode", "M");
-        payload.add("libraOriginatingOrg", "GAFTL00");
-        payload.add("libraHearingLocation", "B01CE03");
-        payload.add("dateOfHearing", "2016-01-01");
-        payload.add("timeOfHearing", "11:00");
         payload.add("costs", payloadBuilder.costs.doubleValue());
         payload.add("postingDate", LocalDates.to(payloadBuilder.postingDate));
 

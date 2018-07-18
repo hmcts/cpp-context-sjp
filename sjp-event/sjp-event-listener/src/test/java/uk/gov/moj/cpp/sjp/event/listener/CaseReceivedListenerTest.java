@@ -162,7 +162,6 @@ public class CaseReceivedListenerTest {
                 urn,
                 enterpriseId,
                 prosecutingAuthority,
-                null,
                 false,
                 null,
                 ZonedDateTimes.fromString(caseCreatedOn),

@@ -24,7 +24,6 @@ public class SjpCaseCreatedToCase implements Converter<SjpCaseCreated, CaseDetai
                 event.getUrn(),
                 null,
                 event.getProsecutingAuthority(),
-                event.getInitiationCode(),
                 false,
                 null,
                 event.getCreatedOn(), createDefendantDetail(event), event.getCosts(), event.getPostingDate());

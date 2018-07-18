@@ -51,7 +51,6 @@ public class CaseReceivedToCaseTest {
                 event.getUrn(),
                 event.getEnterpriseId(),
                 event.getProsecutingAuthority(),
-                null,
                 false,
                 null,
                 event.getCreatedOn(),

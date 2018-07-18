@@ -413,7 +413,7 @@ public class CaseServiceTest {
         final LocalDate TO_DATE = LocalDates.from("2017-01-10");
 
         final DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null, 0);
-        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", "2K2SLYFC743H", null, null, null, null, null, defendantDetail, null, null);
+        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", "2K2SLYFC743H", null, null, null, null, defendantDetail, null, null);
 
         final CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
@@ -444,7 +444,7 @@ public class CaseServiceTest {
         final LocalDate TO_DATE = LocalDates.from("2017-01-10");
 
         final DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null, 0);
-        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", "2K2SLYFC743H", null, null, null, null, null, defendantDetail, null, null);
+        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", "2K2SLYFC743H", null, null, null, null, defendantDetail, null, null);
         final CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
                 clock.now(), caseDetail.getId(), null);
@@ -590,8 +590,7 @@ public class CaseServiceTest {
     }
 
     private CaseDetail createCaseDetail(final boolean onlinePleaReceived) {
-        final CaseDetail caseDetail = new CaseDetail(CASE_ID, URN, ENTERPRISE_ID, CPS,
-                null, COMPLETED, null, clock.now(), new DefendantDetail(), null, null);
+        final CaseDetail caseDetail = new CaseDetail(CASE_ID, URN, ENTERPRISE_ID, CPS, COMPLETED, null, clock.now(), new DefendantDetail(), null, null);
         caseDetail.setOnlinePleaReceived(onlinePleaReceived);
         return caseDetail;
     }

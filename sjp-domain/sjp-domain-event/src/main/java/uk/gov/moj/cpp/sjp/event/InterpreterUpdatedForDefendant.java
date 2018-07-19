@@ -22,10 +22,10 @@ public class InterpreterUpdatedForDefendant {
 
     @JsonCreator
     private InterpreterUpdatedForDefendant(
-            @JsonProperty(value = "caseId") UUID caseId,
-            @JsonProperty(value = "defendantId") UUID defendantId,
-            @JsonProperty(value = "interpreter") Interpreter interpreter,
-            @JsonProperty(value = "updatedByOnlinePlea") boolean updatedByOnlinePlea,
+            @JsonProperty("caseId") UUID caseId,
+            @JsonProperty("defendantId") UUID defendantId,
+            @JsonProperty("interpreter") Interpreter interpreter,
+            @JsonProperty("updatedByOnlinePlea") boolean updatedByOnlinePlea,
             @JsonProperty("updatedDate") final ZonedDateTime updatedDate) {
         this.caseId = caseId;
         this.defendantId = defendantId;

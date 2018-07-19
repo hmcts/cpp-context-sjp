@@ -4,26 +4,20 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
-import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_COMPLETED;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
-import uk.gov.moj.sjp.it.util.QueueUtil;
 
 import java.util.UUID;
 
-import javax.jms.MessageConsumer;
 import javax.json.Json;
 import javax.json.JsonObject;
 
 public class CompleteCaseProducer {
 
-    private static final String CASE_ID_PROPERTY = "caseId";
-
     private UUID caseId;
-    private MessageConsumer privateEventsConsumer = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_CASE_COMPLETED);
 
-    public CompleteCaseProducer(UUID caseId) {
+    public CompleteCaseProducer(final UUID caseId) {
         this.caseId = caseId;
     }
 

@@ -87,7 +87,6 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         caseCreatedOn = clock.now();
         // given 3 cases exist in database
         CaseDetail case1 = getCase(VALID_CASE_ID_1, VALID_URN_1, VALID_DEFENDANT_ID_1);
-        case1.setInitiationCode("J");
         case1.setEnterpriseId(ENTERPRISE_ID);
         // case 2 is withdrawn
         CaseDetail case2 = getCase(VALID_CASE_ID_2, VALID_URN_2, VALID_DEFENDANT_ID_2, VALID_MATERIAL_ID, true, POSTCODE);
@@ -263,13 +262,11 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         final LocalDate oldestPostingDate = POSTING_DATE.minusDays(1);
 
         final CaseDetail oldestUncompletedCase = getCase(randomUUID(), randomUrn());
-        oldestUncompletedCase.setInitiationCode("J");
         oldestUncompletedCase.setCompleted(false);
         oldestUncompletedCase.setPostingDate(oldestPostingDate);
         caseRepository.save(oldestUncompletedCase);
 
         final CaseDetail completedCase = getCase(randomUUID(), randomUrn());
-        completedCase.setInitiationCode("J");
         completedCase.setCompleted(true);
         completedCase.setPostingDate(POSTING_DATE.minusDays(2));
         caseRepository.save(completedCase);

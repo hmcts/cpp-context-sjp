@@ -46,7 +46,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
     @Before
     public void addCasesAndDocuments() {
 
-        final List<CaseDetail> sjpCases = createCases(8, "J");
+        final List<CaseDetail> sjpCases = createCases(8);
 
         sjpCasesWithSjpn = sjpCases.subList(0, 3);
         createSjpNotices(sjpCasesWithSjpn);
@@ -121,7 +121,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
 
     }
 
-    private List<CaseDetail> createCases(final int count, final String initiationCode) {
+    private List<CaseDetail> createCases(final int count) {
 
         final List<CaseDetail> cases = Stream.generate(CaseDetail::new)
                 .limit(count).collect(Collectors.toList());
@@ -129,7 +129,6 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
         int i = cases.size();
         for (CaseDetail caseDetail : cases) {
             caseDetail.setId(UUID.randomUUID());
-            caseDetail.setInitiationCode(initiationCode);
             caseDetail.setProsecutingAuthority(TFL);
             caseDetail.setPostingDate(now().minusDays(i--));
             caseRepository.save(caseDetail);

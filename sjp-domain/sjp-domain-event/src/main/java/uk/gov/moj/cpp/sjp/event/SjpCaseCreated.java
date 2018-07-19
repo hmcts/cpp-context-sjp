@@ -27,14 +27,7 @@ public class SjpCaseCreated {
 
     private final UUID id;
     private final String urn;
-    private final String ptiUrn;
-    private final String initiationCode;
-    private final String summonsCode;
     private final ProsecutingAuthority prosecutingAuthority;
-    private final String libraOriginatingOrg;
-    private final String libraHearingLocation;
-    private final LocalDate dateOfHearing;
-    private final String timeOfHearing;
     private final UUID defendantId;
     private final BigDecimal costs;
     private final int numPreviousConvictions;
@@ -47,14 +40,7 @@ public class SjpCaseCreated {
     public SjpCaseCreated(
             @JsonProperty("id") final UUID id,
             @JsonProperty("urn") final String urn,
-            @JsonProperty("ptiUrn") final String ptiUrn,
-            @JsonProperty("initiationCode") final String initiationCode,
-            @JsonProperty("summonsCode") final String summonsCode,
             @JsonProperty("prosecutingAuthority") final ProsecutingAuthority prosecutingAuthority,
-            @JsonProperty("libraOriginatingOrg") final String libraOriginatingOrg,
-            @JsonProperty("libraHearingLocation") final String libraHearingLocation,
-            @JsonProperty("dateOfHearing") final LocalDate dateOfHearing,
-            @JsonProperty("timeOfHearing") final String timeOfHearing,
             @JsonProperty("defendantId") final UUID defendantId,
             @JsonProperty("numPreviousConvictions") final int numPreviousConvictions,
             @JsonProperty("costs") final BigDecimal costs,
@@ -63,14 +49,7 @@ public class SjpCaseCreated {
             @JsonProperty("createdOn") final ZonedDateTime createdOn) {
         this.urn = urn;
         this.id = id;
-        this.ptiUrn = ptiUrn;
-        this.initiationCode = initiationCode;
-        this.summonsCode = summonsCode;
         this.prosecutingAuthority = prosecutingAuthority;
-        this.libraOriginatingOrg = libraOriginatingOrg;
-        this.libraHearingLocation = libraHearingLocation;
-        this.dateOfHearing = dateOfHearing;
-        this.timeOfHearing = timeOfHearing;
         this.defendantId = defendantId;
         this.numPreviousConvictions = numPreviousConvictions;
         this.costs = costs;
@@ -83,32 +62,8 @@ public class SjpCaseCreated {
         return urn;
     }
 
-    public String getPtiUrn() {
-        return ptiUrn;
-    }
-
-    public String getInitiationCode() {
-        return initiationCode;
-    }
-
-    public String getSummonsCode() {
-        return summonsCode;
-    }
-
     public ProsecutingAuthority getProsecutingAuthority() {
         return prosecutingAuthority;
-    }
-
-    public String getLibraOriginatingOrg() {
-        return libraOriginatingOrg;
-    }
-
-    public String getLibraHearingLocation() {
-        return libraHearingLocation;
-    }
-
-    public String getTimeOfHearing() {
-        return timeOfHearing;
     }
 
     public UUID getDefendantId() {
@@ -121,10 +76,6 @@ public class SjpCaseCreated {
 
     public UUID getId() {
         return id;
-    }
-
-    public LocalDate getDateOfHearing() {
-        return dateOfHearing;
     }
 
     public int getNumPreviousConvictions() {

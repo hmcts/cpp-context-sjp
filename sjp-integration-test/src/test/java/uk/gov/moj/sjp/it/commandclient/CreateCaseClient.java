@@ -36,32 +36,11 @@ public class CreateCaseClient {
     public String urn = UrnProvider.generate(ProsecutingAuthority.TFL);
 
     @Builder.Default
-    public String ptiUrn = UrnProvider.generate(ProsecutingAuthority.TFL);
-
-    @Builder.Default
     public String enterpriseId = RandomStringUtils.randomAlphanumeric(12).toUpperCase();
 
     @Builder.Default
     @NotNull(message = "Prosecuting authority is required")
     public ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.TFL;
-
-    @Builder.Default
-    public String initiationCode = "J";
-
-    @Builder.Default
-    public String summonsCode = "M";
-
-    @Builder.Default
-    public String libraOriginatingOrg = "GAFTL00";
-
-    @Builder.Default
-    public String libraHearingLocation = "B01CE03";
-
-    @Builder.Default
-    public String dateOfHearing = "2016-01-01";
-
-    @Builder.Default
-    public String timeOfHearing = "11:00";
 
     @Builder.Default
     public BigDecimal costs = BigDecimal.valueOf(1.23);

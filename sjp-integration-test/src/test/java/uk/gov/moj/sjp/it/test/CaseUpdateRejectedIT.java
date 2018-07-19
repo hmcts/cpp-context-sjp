@@ -107,6 +107,7 @@ public class CaseUpdateRejectedIT extends BaseIntegrationTest {
     private void completeCase(final UUID caseId) {
         final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
         completeCaseProducer.completeCase();
+        completeCaseProducer.assertCaseCompleted();
     }
 
 }

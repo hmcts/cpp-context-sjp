@@ -48,8 +48,8 @@ public class SjpCaseCreated {
             @JsonProperty("postingDate") final LocalDate postingDate,
             @JsonProperty("offences") final List<Offence> offences,
             @JsonProperty("createdOn") final ZonedDateTime createdOn) {
-        this.urn = urn;
         this.id = id;
+        this.urn = urn;
         this.prosecutingAuthority = prosecutingAuthority;
         this.defendantId = defendantId;
         this.numPreviousConvictions = numPreviousConvictions;

@@ -22,7 +22,8 @@ public class Address implements Serializable {
     public static final Address UNKNOWN = new Address(null, null,null, null, null, null);
 
     @JsonCreator
-    private Address(@JsonProperty("address1") final String address1,
+    private Address(
+            @JsonProperty("address1") final String address1,
             @JsonProperty("address2") final String address2,
             @JsonProperty("address3") final String address3,
             @JsonProperty("address4") final String address4,

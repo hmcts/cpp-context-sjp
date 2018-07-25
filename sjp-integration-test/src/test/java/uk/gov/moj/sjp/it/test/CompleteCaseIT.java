@@ -1,11 +1,16 @@
 package uk.gov.moj.sjp.it.test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -19,9 +24,14 @@ public class CompleteCaseIT extends BaseIntegrationTest {
     public void setUp() {
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseId);
 
-        new EventListener()
+        final EventListener eventListener = new EventListener();
+        eventListener
                 .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
                 .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder));
+
+        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent(CaseMarkedReadyForDecision.EVENT_NAME);
+
+        assertThat(jsonEnvelope.isPresent(), equalTo(true));//this is to ensure the subscriber didn't time out
     }
 
     @Test

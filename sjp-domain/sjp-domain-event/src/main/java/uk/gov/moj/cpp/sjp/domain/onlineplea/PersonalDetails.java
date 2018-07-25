@@ -8,6 +8,7 @@ import uk.gov.moj.cpp.sjp.domain.Person;
 import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -18,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * TODO: replace the usage with Defendant->personalDetails, major change what will affect events historical data.
  */
 @Deprecated
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PersonalDetails extends Person {
 
     @JsonCreator

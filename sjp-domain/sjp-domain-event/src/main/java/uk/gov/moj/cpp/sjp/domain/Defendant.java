@@ -28,30 +28,40 @@ public class Defendant extends Person {
     private final String languageNeeds;
 
     @SuppressWarnings("squid:S00107")
-    public Defendant(UUID id, String title, String firstName, String lastName, LocalDate dateOfBirth, String gender,
-                     String nationalInsuranceNumber, Address address, ContactDetails contactDetails, int numPreviousConvictions, List<Offence> offences) {
+    public Defendant(final UUID id,
+                     final String title,
+                     final String firstName,
+                     final String lastName,
+                     final LocalDate dateOfBirth,
+                     final String gender,
+                     final String nationalInsuranceNumber,
+                     final Address address,
+                     final ContactDetails contactDetails,
+                     final int numPreviousConvictions,
+                     final List<Offence> offences
+    ) {
         this(id, title, firstName, lastName, null, null, dateOfBirth, gender, nationalInsuranceNumber, null, address, contactDetails, numPreviousConvictions, offences,
                 null, null, null);
     }
 
     @JsonCreator
-    public Defendant(@JsonProperty("id") UUID id,
-                     @JsonProperty("title") String title,
-                     @JsonProperty("firstName") String firstName,
-                     @JsonProperty("lastName") String lastName,
-                     @JsonProperty("forename2") String forename2,
-                     @JsonProperty("forename3") String forename3,
-                     @JsonProperty("dateOfBirth") LocalDate dateOfBirth,
-                     @JsonProperty("gender") String gender,
-                     @JsonProperty("nationalInsuranceNumber") String nationalInsuranceNumber,
-                     @JsonProperty("driverNumber") String driverNumber,
-                     @JsonProperty("address") Address address,
-                     @JsonProperty("contactDetails") ContactDetails contactDetails,
-                     @JsonProperty("numPreviousConvictions") int numPreviousConvictions,
-                     @JsonProperty("offences") List<Offence> offences,
-                     @JsonProperty("documentationLanguage") Language documentationLanguage,
-                     @JsonProperty("hearingLanguageIndicator") Language hearingLanguageIndicator,
-                     @JsonProperty("languageNeeds") String languageNeeds) {
+    public Defendant(@JsonProperty("id") final UUID id,
+                     @JsonProperty("title") final String title,
+                     @JsonProperty("firstName") final String firstName,
+                     @JsonProperty("lastName") final String lastName,
+                     @JsonProperty("forename2") final String forename2,
+                     @JsonProperty("forename3") final String forename3,
+                     @JsonProperty("dateOfBirth") final LocalDate dateOfBirth,
+                     @JsonProperty("gender") final String gender,
+                     @JsonProperty("nationalInsuranceNumber") final String nationalInsuranceNumber,
+                     @JsonProperty("driverNumber") final String driverNumber,
+                     @JsonProperty("address") final Address address,
+                     @JsonProperty("contactDetails") final ContactDetails contactDetails,
+                     @JsonProperty("numPreviousConvictions") final int numPreviousConvictions,
+                     @JsonProperty("offences") final List<Offence> offences,
+                     @JsonProperty("documentationLanguage") final Language documentationLanguage,
+                     @JsonProperty("hearingLanguageIndicator") final Language hearingLanguageIndicator,
+                     @JsonProperty("languageNeeds") final String languageNeeds) {
         super(title, firstName, lastName, forename2, forename3, dateOfBirth, gender, nationalInsuranceNumber, driverNumber, address, contactDetails);
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
@@ -97,8 +107,8 @@ public class Defendant extends Person {
         final Defendant defendant = (Defendant) o;
         return new EqualsBuilder()
                 .appendSuper(super.equals(o))
-                .append(numPreviousConvictions, defendant.numPreviousConvictions)
                 .append(id, defendant.id)
+                .append(numPreviousConvictions, defendant.numPreviousConvictions)
                 .append(offences, defendant.offences)
                 .append(documentationLanguage, defendant.documentationLanguage)
                 .append(hearingLanguageIndicator, defendant.hearingLanguageIndicator)

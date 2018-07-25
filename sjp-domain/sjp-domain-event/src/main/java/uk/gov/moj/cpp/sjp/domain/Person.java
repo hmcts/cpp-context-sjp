@@ -21,30 +21,32 @@ public class Person {
     private final ContactDetails contactDetails;
 
     @SuppressWarnings("squid:S00107")
-    public Person(final String title,
-                  final String firstName,
-                  final String lastName,
-                  final LocalDate dateOfBirth,
-                  final String gender,
-                  final String nationalInsuranceNumber,
-                  final Address address,
-                  final ContactDetails contactDetails) {
+    public Person(
+            final String title,
+            final String firstName,
+            final String lastName,
+            final LocalDate dateOfBirth,
+            final String gender,
+            final String nationalInsuranceNumber,
+            final Address address,
+            final ContactDetails contactDetails) {
         this(title, firstName, lastName, null, null, dateOfBirth, gender,
                 nationalInsuranceNumber, null, address, contactDetails);
     }
 
     @JsonCreator
-    public Person(@JsonProperty("title") final String title,
-                  @JsonProperty("firstName") final String firstName,
-                  @JsonProperty("lastName") final String lastName,
-                  @JsonProperty("forename2") final String forename2,
-                  @JsonProperty("forename3") final String forename3,
-                  @JsonProperty("dateOfBirth") final LocalDate dateOfBirth,
-                  @JsonProperty("gender") final String gender,
-                  @JsonProperty("nationalInsuranceNumber") final String nationalInsuranceNumber,
-                  @JsonProperty("driverNumber") final String driverNumber,
-                  @JsonProperty("address") final Address address,
-                  @JsonProperty("contactDetails") final ContactDetails contactDetails
+    public Person(
+            @JsonProperty("title") final String title,
+            @JsonProperty("firstName") final String firstName,
+            @JsonProperty("lastName") final String lastName,
+            @JsonProperty("forename2") final String forename2,
+            @JsonProperty("forename3") final String forename3,
+            @JsonProperty("dateOfBirth") final LocalDate dateOfBirth,
+            @JsonProperty("gender") final String gender,
+            @JsonProperty("nationalInsuranceNumber") final String nationalInsuranceNumber,
+            @JsonProperty("driverNumber") final String driverNumber,
+            @JsonProperty("address") final Address address,
+            @JsonProperty("contactDetails") final ContactDetails contactDetails
     ) {
         this.title = title;
         this.firstName = firstName;

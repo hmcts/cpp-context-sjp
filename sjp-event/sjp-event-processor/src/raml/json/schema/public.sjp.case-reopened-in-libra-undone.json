@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/public/events/case-reopened-in-libra-undone.json",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp_public/events/case-reopened-in-libra-undone.json",
   "type": "object",
   "properties": {
     "caseId": {

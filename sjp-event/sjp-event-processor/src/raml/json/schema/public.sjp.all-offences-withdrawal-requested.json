@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/public/events/all-offences-withdrawal-requested.json",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp_public/events/all-offences-withdrawal-requested.json",
   "type": "object",
   "properties": {
     "caseId": {

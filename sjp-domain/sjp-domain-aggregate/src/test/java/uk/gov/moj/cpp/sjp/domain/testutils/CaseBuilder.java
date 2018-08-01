@@ -51,7 +51,7 @@ public class CaseBuilder {
         urn = URN;
         enterpriseId = ENTERPRISE_ID;
         prosecutingAuthority = ProsecutingAuthority.TFL;
-        defendant = new Defendant(DefaultTestData.DEFENDANT_ID, null, null, null, null, null,null,
+        defendant = new Defendant(DefaultTestData.DEFENDANT_ID, null, null, null,null,
                 null, null, NATIONAL_INSURANCE_NUMBER, ADDRESS, CONTACT_DETAILS,NUM_PREVIOUS_CONVICTIONS, OFFENCES,
                 DOCUMENTATION_LANGUAGE, HEARING_LANGUAGE_INDICATOR, LANGUAGE_NEEDS);
     }

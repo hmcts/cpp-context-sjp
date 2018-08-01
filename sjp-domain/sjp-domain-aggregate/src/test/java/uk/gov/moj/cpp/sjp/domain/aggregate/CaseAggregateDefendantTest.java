@@ -42,8 +42,6 @@ public class CaseAggregateDefendantTest {
     private static final String gender = "M";
     private static final String firstName = "Random";
     private static final String lastName = "Guy";
-    private static final String forename2 = "forename2_" + RandomStringUtils.randomAlphabetic(10);
-    private static final String forename3 = "forename3_" + RandomStringUtils.randomAlphabetic(10);
     private static final String nationalInsuranceNumber = "valid nino";
     private static final String driverNumber = "valid_driverNumber";
     private static final LocalDate dateOfBirth = LocalDates.from("2000-01-01");
@@ -269,8 +267,6 @@ public class CaseAggregateDefendantTest {
         String title = CaseAggregateDefendantTest.title;
         String firstName = CaseAggregateDefendantTest.firstName;
         String lastName = CaseAggregateDefendantTest.lastName;
-        String forename2 = CaseAggregateDefendantTest.forename2;
-        String forename3 = CaseAggregateDefendantTest.forename3;
         String nationalInsuranceNumber = CaseAggregateDefendantTest.nationalInsuranceNumber;
         String driverNumber = CaseAggregateDefendantTest.driverNumber;
         LocalDate dateOfBirth = CaseAggregateDefendantTest.dateOfBirth;
@@ -321,8 +317,6 @@ public class CaseAggregateDefendantTest {
                         defendantData.title,
                         defendantData.firstName,
                         defendantData.lastName,
-                        defendantData.forename2,
-                        defendantData.forename3,
                         defendantData.dateOfBirth,
                         defendantData.gender,
                         defendantData.nationalInsuranceNumber,
@@ -344,8 +338,6 @@ public class CaseAggregateDefendantTest {
                 updatedDefendantData.title,
                 updatedDefendantData.firstName,
                 updatedDefendantData.lastName,
-                updatedDefendantData.forename2,
-                updatedDefendantData.forename3,
                 updatedDefendantData.dateOfBirth,
                 updatedDefendantData.gender,
                 updatedDefendantData.nationalInsuranceNumber,

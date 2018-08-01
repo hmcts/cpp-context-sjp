@@ -11,8 +11,6 @@ public class Person {
     private final String title;
     private final String firstName;
     private final String lastName;
-    private final String forename2;
-    private final String forename3;
     private final LocalDate dateOfBirth;
     private final String gender;
     private final String nationalInsuranceNumber;
@@ -30,7 +28,7 @@ public class Person {
             final String nationalInsuranceNumber,
             final Address address,
             final ContactDetails contactDetails) {
-        this(title, firstName, lastName, null, null, dateOfBirth, gender,
+        this(title, firstName, lastName, dateOfBirth, gender,
                 nationalInsuranceNumber, null, address, contactDetails);
     }
 
@@ -39,8 +37,6 @@ public class Person {
             @JsonProperty("title") final String title,
             @JsonProperty("firstName") final String firstName,
             @JsonProperty("lastName") final String lastName,
-            @JsonProperty("forename2") final String forename2,
-            @JsonProperty("forename3") final String forename3,
             @JsonProperty("dateOfBirth") final LocalDate dateOfBirth,
             @JsonProperty("gender") final String gender,
             @JsonProperty("nationalInsuranceNumber") final String nationalInsuranceNumber,
@@ -51,8 +47,6 @@ public class Person {
         this.title = title;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.forename2 = forename2;
-        this.forename3 = forename3;
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
         this.nationalInsuranceNumber = nationalInsuranceNumber;
@@ -67,14 +61,6 @@ public class Person {
 
     public String getFirstName() {
         return firstName;
-    }
-
-    public String getForename2() {
-        return forename2;
-    }
-
-    public String getForename3() {
-        return forename3;
     }
 
     public String getLastName() {
@@ -117,8 +103,6 @@ public class Person {
         return Objects.equals(title, that.title) &&
                 Objects.equals(firstName, that.firstName) &&
                 Objects.equals(lastName, that.lastName) &&
-                Objects.equals(forename2, that.forename2) &&
-                Objects.equals(forename3, that.forename3) &&
                 Objects.equals(dateOfBirth, that.dateOfBirth) &&
                 Objects.equals(gender, that.gender) &&
                 Objects.equals(nationalInsuranceNumber, that.nationalInsuranceNumber) &&
@@ -129,8 +113,8 @@ public class Person {
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, firstName, lastName, forename2, forename3,
-                dateOfBirth, gender, nationalInsuranceNumber, driverNumber, address, contactDetails);
+        return Objects.hash(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber,
+                driverNumber, address, contactDetails);
     }
 
 }

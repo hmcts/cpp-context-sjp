@@ -40,7 +40,7 @@ public class Defendant extends Person {
                      final int numPreviousConvictions,
                      final List<Offence> offences
     ) {
-        this(id, title, firstName, lastName, null, null, dateOfBirth, gender, nationalInsuranceNumber, null, address, contactDetails, numPreviousConvictions, offences,
+        this(id, title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber, null, address, contactDetails, numPreviousConvictions, offences,
                 null, null, null);
     }
 
@@ -49,8 +49,6 @@ public class Defendant extends Person {
                      @JsonProperty("title") final String title,
                      @JsonProperty("firstName") final String firstName,
                      @JsonProperty("lastName") final String lastName,
-                     @JsonProperty("forename2") final String forename2,
-                     @JsonProperty("forename3") final String forename3,
                      @JsonProperty("dateOfBirth") final LocalDate dateOfBirth,
                      @JsonProperty("gender") final String gender,
                      @JsonProperty("nationalInsuranceNumber") final String nationalInsuranceNumber,
@@ -62,7 +60,7 @@ public class Defendant extends Person {
                      @JsonProperty("documentationLanguage") final Language documentationLanguage,
                      @JsonProperty("hearingLanguageIndicator") final Language hearingLanguageIndicator,
                      @JsonProperty("languageNeeds") final String languageNeeds) {
-        super(title, firstName, lastName, forename2, forename3, dateOfBirth, gender, nationalInsuranceNumber, driverNumber, address, contactDetails);
+        super(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber, driverNumber, address, contactDetails);
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
         this.offences = Optional.ofNullable(offences).map(Collections::unmodifiableList).orElseGet(Collections::emptyList);
@@ -140,8 +138,6 @@ public class Defendant extends Person {
                     defendant.getTitle(),
                     defendant.getFirstName(),
                     defendant.getLastName(),
-                    defendant.getForename2(),
-                    defendant.getForename3(),
                     defendant.getDateOfBirth(),
                     defendant.getGender(),
                     defendant.getNationalInsuranceNumber(),

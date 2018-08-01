@@ -40,7 +40,7 @@ public class DefendantToDefendantDetailsTest {
     @Test
     public void shouldConvertDefendantToDefendantDetails() {
         // GIVEN
-        Defendant inputDefendant = new Defendant(UUID.randomUUID(), "title", "firstName", "lastName", "forename2", "forename3",
+        Defendant inputDefendant = new Defendant(UUID.randomUUID(), "title", "firstName", "lastName",
                 LocalDate.of(1980, 1,1), "M", RandomStringUtils.random(10), RandomStringUtils.random(10),
                 new uk.gov.moj.cpp.sjp.domain.Address("l1", "l2", "l3", "l4", "l5", "p"),
                 new uk.gov.moj.cpp.sjp.domain.ContactDetails("home", "mobile", "business" , "email1@abc.com", "email2@abc.com"),

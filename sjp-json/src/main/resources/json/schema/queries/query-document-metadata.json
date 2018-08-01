@@ -10,8 +10,7 @@
       "type": "string"
     },
     "addedAt": {
-      "type": "string",
-      "format": "date-time"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#date-time"
     }
   },
   "required": ["fileName", "mimeType", "addedAt" ]

@@ -25,8 +25,7 @@
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/events/case-received.defendant.json"
     },
     "createdOn": {
-      "type": "string",
-      "format": "date-time"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#date-time"
     }
   },
   "additionalProperties": true,

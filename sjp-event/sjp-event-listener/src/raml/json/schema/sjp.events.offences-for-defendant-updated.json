@@ -31,12 +31,10 @@
             "type": "string"
           },
           "startDate": {
-            "type": "string",
-            "format": "date"
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#date"
           },
           "endDate": {
-            "type": "string",
-            "format": "date"
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#date"
           },
           "orderIndex": {
             "type": "integer"

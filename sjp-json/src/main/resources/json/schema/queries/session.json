@@ -19,12 +19,10 @@
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/session-type.json"
     },
     "startedAt": {
-      "type": "string",
-      "format": "date-time"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#date-time"
     },
     "endedAt": {
-      "type": "string",
-      "format": "date-time"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#date-time"
     },
     "magistrate": {
       "type": "string"

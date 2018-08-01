@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.sjp.command.schema;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assume.assumeThat;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
@@ -10,6 +12,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import javax.json.Json;
 import javax.json.JsonValue;
 
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,6 +24,32 @@ import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class CaseReopenedSchemaTest {
+
+    /**
+     *  Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648"
+     *  ============ TODO: delete this block of code once the framework gets updated: ==============
+     */
+    @BeforeClass
+    public static void init() {
+        // programmatically ignore all the below test if the framework fails to validate $ref schemas
+        assumeThat(haveTechpodFixedReferencesThatMatchesSchema(), is(true));
+    }
+
+    private static boolean haveTechpodFixedReferencesThatMatchesSchema() {
+        try {
+            assertThat(envelopeFrom(metadataWithRandomUUID("sjp.mark-case-reopened-in-libra"), JsonValue.NULL), jsonEnvelope().thatMatchesSchema());
+        } catch (Exception e) {
+            return ! e.getMessage().equals("java.net.UnknownHostException: justice.gov.uk");
+        }
+
+        return true;
+    }
+
+    // =============================================================================================
+
+
+
+
 
     @Parameters
     public static Object[] data() {

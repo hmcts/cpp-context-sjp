@@ -10,8 +10,7 @@
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/case-readiness-for-decision-reason.json"
     },
     "markedAt": {
-      "type": "string",
-      "format": "date-time"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#date-time"
     }
   },
   "required": [

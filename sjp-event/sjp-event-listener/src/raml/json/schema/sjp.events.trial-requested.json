@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/trial-requested.json",
   "type": "object",
   "properties": {
     "caseId": {
@@ -15,8 +16,7 @@
       "type": "string"
     },
     "updatedDate": {
-      "type": "string",
-      "format": "date-time"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#date-time"
     }
   },
   "required": [

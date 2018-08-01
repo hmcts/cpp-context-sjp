@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/api/sjp.update-case-reopened-in-libra.json",
   "type": "object",
   "properties": {
     "reopenedDate": {
-      "type": "string",
-      "format": "date"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#date"
     },
     "libraCaseNumber": {
       "type": "string",

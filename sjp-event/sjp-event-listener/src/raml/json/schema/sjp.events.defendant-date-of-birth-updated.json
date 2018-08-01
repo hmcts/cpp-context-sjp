@@ -7,12 +7,10 @@
       "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
     "oldDateOfBirth": {
-      "type": "string",
-      "format": "date"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#date"
     },
     "newDateOfBirth": {
-      "type": "string",
-      "format": "date"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#date"
     }
   },
   "additionalProperties": true,

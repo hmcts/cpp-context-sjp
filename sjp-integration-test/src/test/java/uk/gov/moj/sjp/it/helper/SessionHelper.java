@@ -137,7 +137,6 @@ public class SessionHelper {
                                       final String magistrate) {
 
         final JsonObjectBuilder sessionBuilder = createObjectBuilder()
-                .add("sessionId", sessionId.toString())
                 .add("userId", userId.toString())
                 .add("courtHouseName", courtHouseName)
                 .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)

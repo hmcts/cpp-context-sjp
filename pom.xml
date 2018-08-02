@@ -10,7 +10,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>1.0.71-ATCM-SNAPSHOT</version>
+    <version>1.0.72-ATCM-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -32,6 +32,7 @@
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>
         <lombok.version>1.18.0</lombok.version>
+        <activiti.library.version>1.3.0</activiti.library.version>
     </properties>
 
     <modules>

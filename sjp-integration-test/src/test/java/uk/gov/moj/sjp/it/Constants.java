@@ -36,6 +36,6 @@ public class Constants {
     public static final String EVENT_CASE_MARKED_READY_FOR_DECISION = CaseMarkedReadyForDecision.EVENT_NAME;
     public static final String PUBLIC_ACTIVE_MQ_TOPIC = "public.event";
     public static final String PRIVATE_ACTIVE_MQ_TOPIC = "sjp.event";
-    public static final Integer MESSAGE_QUEUE_TIMEOUT = 10000;
+    public static final Integer MESSAGE_QUEUE_TIMEOUT = 15000;
 
 }

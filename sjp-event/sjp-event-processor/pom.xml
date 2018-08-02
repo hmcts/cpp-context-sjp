@@ -67,6 +67,13 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.activiti</groupId>
             <artifactId>activiti-embedded-rest</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.tinyjee.jgraphx</groupId>
+                    <artifactId>jgraphx</artifactId>
+                    <!-- FIXME OWASP security issue with used dependency version. We probably don't need that, as we are not generating / using activiti diagrams -->
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Test Dependencies -->

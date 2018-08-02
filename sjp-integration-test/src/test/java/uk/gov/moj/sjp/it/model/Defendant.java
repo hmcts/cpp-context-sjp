@@ -17,12 +17,6 @@ public class Defendant {
     public String firstName = "David";
 
     @Builder.Default
-    public String forename2 = "Adam";
-
-    @Builder.Default
-    public String forename3 = "John";
-
-    @Builder.Default
     public String lastName = "LLOYD";
 
     @Builder.Default

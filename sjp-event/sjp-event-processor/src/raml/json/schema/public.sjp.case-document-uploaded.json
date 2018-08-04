@@ -5,9 +5,13 @@
   "properties": {
     "documentId": {
       "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     }
   },
   "required": [
-    "documentId"
+    "documentId",
+    "caseId"
   ]
 }

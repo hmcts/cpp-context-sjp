@@ -193,6 +193,8 @@ public class CaseDocumentHelper implements AutoCloseable {
 
         with(caseDocumentUploadedEvent)
                 .assertThat("$.documentId", isAUuid());
+        with(caseDocumentUploadedEvent)
+                .assertThat("$.caseId", isAUuid());
 
         return new JsonPath(caseDocumentUploadedEvent).getString("documentId");
     }

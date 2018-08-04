@@ -54,11 +54,13 @@ public class UploadFileTest {
     public void sendsMaterialAndRaisesPublicEvent() {
         final Metadata originalMetadata = metadataWithRandomUUIDAndName().build();
         final UUID documentReference = UUID.randomUUID();
+        final UUID caseId = UUID.randomUUID();
         final String originalMetadataString = metadataHelper.metadataToString(originalMetadata);
         final String executionId = "executionId";
 
         when(delegateExecution.getVariable("metadata", String.class)).thenReturn(originalMetadataString);
         when(delegateExecution.getVariable("documentReference", String.class)).thenReturn(documentReference.toString());
+        when(delegateExecution.getVariable("caseId", String.class)).thenReturn(caseId.toString());
         when(delegateExecution.getId()).thenReturn(executionId);
 
         uploadFileTask.execute(delegateExecution);
@@ -84,7 +86,8 @@ public class UploadFileTest {
                 metadata()
                         .withName("public.sjp.case-document-uploaded"),
                 payloadIsJson(allOf(
-                        withJsonPath("$.documentId", is(documentReference.toString()))
+                        withJsonPath("$.documentId", is(documentReference.toString())),
+                        withJsonPath("$.caseId", is(caseId.toString()))
                 ))
         ));
 

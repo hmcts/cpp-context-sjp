@@ -41,11 +41,13 @@ public class UploadFile implements JavaDelegate {
 
         final String documentReference = execution.getVariable("documentReference", String.class);
         final String metadataAsString = execution.getVariable("metadata", String.class);
+        final String caseIdAsString = execution.getVariable("caseId", String.class);
 
         final Metadata originalMetadata = metadataHelper.metadataFromString(metadataAsString);
 
         final JsonObject fileUploadedEventPayload = Json.createObjectBuilder()
                 .add("documentId", documentReference)
+                .add("caseId", caseIdAsString)
                 .build();
 
         final JsonObject uploadFileCommandPayload = Json.createObjectBuilder()

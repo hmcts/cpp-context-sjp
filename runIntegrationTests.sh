@@ -3,8 +3,8 @@
 ${VAGRANT_DIR:?"Please export VAGRANT_DIR environment variable to point at atcm-vagrant"}
 WILDFLY_DEPLOYMENT_DIR="${VAGRANT_DIR}/deployments"
 CONTEXT_NAME=sjp
-EVENT_LOG_VERSION=4.1.2
-EVENT_BUFFER_VERSION=4.1.2
+EVENT_LOG_VERSION=4.3.2
+EVENT_BUFFER_VERSION=4.3.2
 CPP_ACTIVITI_VERSION=5.22.0
 
 #fail script on error

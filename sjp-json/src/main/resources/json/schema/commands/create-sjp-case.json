@@ -3,10 +3,10 @@
   "id": "http://justice.gov.uk/json/schemas/domains/sjp/commands/sjp.create-sjp-case.json",
   "type": "object",
   "properties": {
-    "urn": {
-      "type": "string"
-    },
     "id": {
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+    },
+    "urn": {
       "type": "string"
     },
     "enterpriseId": {

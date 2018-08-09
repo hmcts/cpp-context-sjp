@@ -110,7 +110,7 @@ public class PersonInfoVerifier {
                 withJsonPath("$.defendant.personalDetails.title", equalTo(personalDetails.getTitle())),
                 withJsonPath("$.defendant.personalDetails.firstName", equalTo(personalDetails.getFirstName())),
                 withJsonPath("$.defendant.personalDetails.lastName", equalTo(personalDetails.getLastName())),
-                withJsonPath("$.defendant.personalDetails.gender", equalTo(personalDetails.getGender())),
+                withJsonPath("$.defendant.personalDetails.gender", equalTo(personalDetails.getGender().toString())),
                 withJsonPath("$.defendant.personalDetails.dateOfBirth", equalTo(LocalDates.to(personalDetails.getDateOfBirth()))),
                 withJsonPath("$.defendant.personalDetails.address.address1", equalTo(personalDetails.getAddress().getAddress1())),
                 withJsonPath("$.defendant.personalDetails.address.address2", equalTo(personalDetails.getAddress().getAddress2())),

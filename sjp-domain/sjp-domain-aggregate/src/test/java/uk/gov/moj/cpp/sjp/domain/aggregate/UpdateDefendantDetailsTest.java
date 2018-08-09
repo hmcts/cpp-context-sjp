@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
@@ -50,7 +51,7 @@ public class UpdateDefendantDetailsTest {
     private static final String lastName = "lastName";
     private static final String email = "email1@aaa.bbb";
     private static final String email2 = "email2@aaa.bbb";
-    private static final String gender = "gender";
+    private static final Gender gender = Gender.MALE;
     private static final String nationalInsuranceNumber = "nationalInsuranceNumber";
     private static final String homeNumber = "123123777";
     private static final String mobileNumber = "456456888";

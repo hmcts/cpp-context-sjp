@@ -2,6 +2,7 @@ package uk.gov.moj.sjp.it.command;
 
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 import uk.gov.moj.sjp.it.command.builder.ContactDetailsBuilder;
@@ -37,7 +38,7 @@ public class UpdateDefendantDetails {
                 .add("firstName", payloadBuilder.getFirstName())
                 .add("lastName", payloadBuilder.getLastName())
                 .add("dateOfBirth", LocalDates.to(payloadBuilder.getDateOfBirth()))
-                .add("gender", payloadBuilder.getGender())
+                .add("gender", payloadBuilder.getGender().toString())
                 .add("email", payloadBuilder.getContactDetailsBuilder().getEmail())
                 .add("address", Json.createObjectBuilder()
                         .add("address1", payloadBuilder.getAddressBuilder().getAddress1())
@@ -60,7 +61,7 @@ public class UpdateDefendantDetails {
         String firstName;
         String lastName;
         LocalDate dateOfBirth;
-        String gender;
+        Gender gender;
 
         AddressBuilder addressBuilder;
         // this is current abstraction of defendant details, the fact the number and email is handled differently
@@ -74,7 +75,7 @@ public class UpdateDefendantDetails {
             firstName = "David";
             lastName = "SMITH";
             dateOfBirth = LocalDates.from("1980-07-16");
-            gender = "Male";
+            gender = Gender.MALE;
 
             contactDetailsBuilder = ContactDetailsBuilder.withDefaults();
             addressBuilder = AddressBuilder.withDefaults()
@@ -108,7 +109,7 @@ public class UpdateDefendantDetails {
             return dateOfBirth;
         }
 
-        public String getGender() {
+        public Gender getGender() {
             return gender;
         }
 

@@ -4,7 +4,7 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 
-import uk.gov.moj.cpp.sjp.domain.Language;
+import uk.gov.justice.json.schemas.domains.sjp.Language;
 
 import java.util.Arrays;
 import java.util.Map;

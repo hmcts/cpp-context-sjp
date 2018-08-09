@@ -14,6 +14,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -68,7 +69,7 @@ public class UpdateDefendantDetailsHandlerTest {
     private static final String lastName = "lastName";
     private static final String email = "email";
     private static final String mobileNumber = "mobileNumber";
-    private static final String gender = "gender";
+    private static final Gender gender = Gender.MALE;
     private static final String nationalInsuranceNumber = "nationalInsuranceNumber";
     private static final String homeNumber = "homeNumber";
     private static final String dateOfBirth = LocalDate.parse("1980-07-15").toString();
@@ -109,7 +110,7 @@ public class UpdateDefendantDetailsHandlerTest {
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
                                         withJsonPath("$.firstName", equalTo(firstName)),
                                         withJsonPath("$.lastName", equalTo(lastName)),
-                                        withJsonPath("$.gender", equalTo(gender)),
+                                        withJsonPath("$.gender", equalTo(gender.toString())),
                                         withJsonPath("$.nationalInsuranceNumber", equalTo(nationalInsuranceNumber)),
                                         withJsonPath("$.contactDetails.email", equalTo(email)),
                                         withJsonPath("$.contactDetails.home", equalTo(homeNumber)),
@@ -119,7 +120,7 @@ public class UpdateDefendantDetailsHandlerTest {
     }
 
     private static JsonEnvelope createUpdateDefendantDetailsCommand(UUID caseId, UUID defendantId, String firstName,
-                                                                    String lastName, String email, String gender,
+                                                                    String lastName, String email, Gender gender,
                                                                     String nationalInsuranceNumber, String homeNumber,
                                                                     String mobileNumber, Address address,
                                                                     String dateOfBirth) {
@@ -135,7 +136,7 @@ public class UpdateDefendantDetailsHandlerTest {
                 .add("lastName", lastName)
                 .add("dateOfBirth", dateOfBirth)
                 .add("email", email)
-                .add("gender", gender)
+                .add("gender", gender.toString())
                 .add("nationalInsuranceNumber", nationalInsuranceNumber)
                 .add("contactNumber", contactNumber)
                 .add("address", toJsonObject(address));

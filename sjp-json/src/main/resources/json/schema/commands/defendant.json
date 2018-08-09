@@ -22,12 +22,10 @@
       "type": "integer"
     },
     "hearingLanguageIndicator": {
-      "type": "string",
-      "enum": ["E", "W"]
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/language.json"
     },
     "documentationLanguage": {
-      "type": "string",
-      "enum": ["E", "W"]
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/language.json"
     },
     "driverNumber": {
       "type": "string"

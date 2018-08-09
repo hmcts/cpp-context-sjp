@@ -4,6 +4,7 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
@@ -78,7 +79,7 @@ public class CreateCase {
                 .add("firstName", payloadBuilder.defendantBuilder.firstName)
                 .add("lastName", payloadBuilder.defendantBuilder.lastName)
 
-                .add("gender", payloadBuilder.defendantBuilder.gender)
+                .add("gender", payloadBuilder.defendantBuilder.gender.toString())
                 .add("numPreviousConvictions", payloadBuilder.defendantBuilder.numPreviousConvictions)
                 .add("address", createObjectBuilder()
                         .add("address1", payloadBuilder.defendantBuilder.addressBuilder.getAddress1())
@@ -198,7 +199,7 @@ public class CreateCase {
         String firstName;
         String lastName;
         LocalDate dateOfBirth;
-        String gender;
+        Gender gender;
         int numPreviousConvictions;
         String nationalInsuranceNumber;
 
@@ -216,7 +217,7 @@ public class CreateCase {
             builder.firstName = "David";
             builder.lastName = "LLOYD";
             builder.dateOfBirth = LocalDates.from("1980-07-15");
-            builder.gender = "Male";
+            builder.gender = Gender.MALE;
             builder.numPreviousConvictions = 2;
             builder.nationalInsuranceNumber = "NIN";
             builder.addressBuilder = AddressBuilder.withDefaults();
@@ -246,7 +247,7 @@ public class CreateCase {
             return dateOfBirth;
         }
 
-        public String getGender() {
+        public Gender getGender() {
             return gender;
         }
 

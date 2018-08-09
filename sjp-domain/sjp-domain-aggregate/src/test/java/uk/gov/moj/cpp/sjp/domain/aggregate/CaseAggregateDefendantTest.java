@@ -9,13 +9,14 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.StringContains.containsString;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateDefendantTest.DefendantData.defaultDefendantData;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
+import uk.gov.justice.json.schemas.domains.sjp.Language;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
-import uk.gov.moj.cpp.sjp.domain.Language;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
@@ -39,7 +40,7 @@ public class CaseAggregateDefendantTest {
     private static final UUID id = UUID.randomUUID();
     private static final UUID caseId = UUID.randomUUID();
     private static final UUID defendantId = UUID.randomUUID();
-    private static final String gender = "M";
+    private static final Gender gender = Gender.MALE;
     private static final String firstName = "Random";
     private static final String lastName = "Guy";
     private static final String nationalInsuranceNumber = "valid nino";
@@ -53,8 +54,8 @@ public class CaseAggregateDefendantTest {
     private static final String title = "Mr";
     private static final Address address = new Address("address1", "address2", "address3", "address4", "address5","CR02FW");
     private static final Clock clock = new UtcClock();
-    private static final Language documentationLanguage = Language.WELSH;
-    private static final Language hearingLanguageIndicator = Language.ENGLISH;
+    private static final Language documentationLanguage = Language.W;
+    private static final Language hearingLanguageIndicator = Language.E;
     private static final String languageNeeds = "languageNeeds_" + RandomStringUtils.randomAlphabetic(10);
     private static final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
 
@@ -263,7 +264,7 @@ public class CaseAggregateDefendantTest {
         UUID id = CaseAggregateDefendantTest.id;
         UUID caseId = CaseAggregateDefendantTest.caseId;
         UUID defendantId = CaseAggregateDefendantTest.defendantId;
-        String gender = CaseAggregateDefendantTest.gender;
+        Gender gender = CaseAggregateDefendantTest.gender;
         String title = CaseAggregateDefendantTest.title;
         String firstName = CaseAggregateDefendantTest.firstName;
         String lastName = CaseAggregateDefendantTest.lastName;

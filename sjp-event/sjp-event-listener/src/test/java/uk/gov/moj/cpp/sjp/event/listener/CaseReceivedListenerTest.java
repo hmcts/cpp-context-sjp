@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -106,7 +107,7 @@ public class CaseReceivedListenerTest {
     private static final String defendantFirstName = "John";
     private static final String defendantLastName = "Smith";
     private static final LocalDate defendantDateOfBirth = LocalDate.of(1960, 1, 1);
-    private static final String defendantGender = "Male";
+    private static final Gender defendantGender = Gender.MALE;
     private static final String nationalInsuranceNumber = RandomStringUtils.randomAlphanumeric(10);
     private static final int numPreviousConvictions = 2;
 
@@ -271,7 +272,7 @@ public class CaseReceivedListenerTest {
                         .add("firstName", defendantFirstName)
                         .add("lastName", defendantLastName)
                         .add("dateOfBirth", LocalDates.to(defendantDateOfBirth))
-                        .add("gender", defendantGender)
+                        .add("gender", defendantGender.toString())
                         .add("numPreviousConvictions", numPreviousConvictions)
                         .add("address", createObjectBuilder()
                                 .add("address1", address1)

@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.sjp.domain;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
+import uk.gov.justice.json.schemas.domains.sjp.Language;
+
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -33,7 +36,7 @@ public class Defendant extends Person {
                      final String firstName,
                      final String lastName,
                      final LocalDate dateOfBirth,
-                     final String gender,
+                     final Gender gender,
                      final String nationalInsuranceNumber,
                      final Address address,
                      final ContactDetails contactDetails,
@@ -50,7 +53,7 @@ public class Defendant extends Person {
                      @JsonProperty("firstName") final String firstName,
                      @JsonProperty("lastName") final String lastName,
                      @JsonProperty("dateOfBirth") final LocalDate dateOfBirth,
-                     @JsonProperty("gender") final String gender,
+                     @JsonProperty("gender") final Gender gender,
                      @JsonProperty("nationalInsuranceNumber") final String nationalInsuranceNumber,
                      @JsonProperty("driverNumber") final String driverNumber,
                      @JsonProperty("address") final Address address,

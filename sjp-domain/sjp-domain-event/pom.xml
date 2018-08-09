@@ -10,6 +10,10 @@
 
     <artifactId>sjp-domain-event</artifactId>
 
+    <properties>
+        <skip.schema.pojo.generation>false</skip.schema.pojo.generation>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -38,6 +42,64 @@
 
     <build>
         <plugins>
+            <plugin>
+                <artifactId>generator-plugin</artifactId>
+                <groupId>uk.gov.justice.maven.generator</groupId>
+                <executions>
+                    <execution>
+                        <id>pojo-generation</id>
+                        <configuration>
+                            <sourceDirectory>CLASSPATH</sourceDirectory>
+                            <includes>
+                                <include>json/schema/fragments/gender.json</include>
+                                <include>json/schema/fragments/language.json</include>
+                            </includes>
+                            <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
+                                <plugins>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddHashcodeAndEqualsPlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddToStringMethodToClassPlugin</plugin>
+                                    <!--
+                                     TODO this needs to be disabled because of pojo generation problems with the optional
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.SupportJavaOptionalsPlugin</plugin>
+                                    -->
+                                </plugins>
+                                <typeMappings>
+                                    <typeMapping>
+                                        <name>uuid</name>
+                                        <type>reference</type>
+                                        <implementation>java.util.UUID</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
+                                        <name>date</name>
+                                        <type>reference</type>
+                                        <implementation>java.time.LocalDate</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
+                                        <name>date</name>
+                                        <type>format</type>
+                                        <implementation>java.time.LocalDate</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
+                                        <name>date-time</name>
+                                        <type>format</type>
+                                        <implementation>java.time.ZonedDateTime</implementation>
+                                    </typeMapping>
+                                </typeMappings>
+                            </generatorProperties>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.sjp</groupId>
+                        <artifactId>sjp-json</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>

@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.sjp.domain.testutils;
 
 
+import uk.gov.justice.json.schemas.domains.sjp.Language;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
-import uk.gov.moj.cpp.sjp.domain.Language;
 import uk.gov.moj.cpp.sjp.domain.Offence;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.util.DefaultTestData;
@@ -36,8 +36,8 @@ public class CaseBuilder {
     private static final String NATIONAL_INSURANCE_NUMBER = RandomStringUtils.random(10);
     private static final ContactDetails CONTACT_DETAILS = new ContactDetails("020734777", "020734888", "020734999", "email1§@bbb.ccc", "email2@bbb.ccc");
 
-    private static final Language DOCUMENTATION_LANGUAGE = Language.WELSH;
-    private static final Language HEARING_LANGUAGE_INDICATOR = Language.ENGLISH;
+    private static final Language DOCUMENTATION_LANGUAGE = Language.W;
+    private static final Language HEARING_LANGUAGE_INDICATOR = Language.E;
     private static final String LANGUAGE_NEEDS = RandomStringUtils.random(10);
 
     private UUID id;

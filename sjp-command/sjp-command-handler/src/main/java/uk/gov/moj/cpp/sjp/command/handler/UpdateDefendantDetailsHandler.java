@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
@@ -52,7 +53,7 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
         final String firstName = getStringOrNull(payload, "firstName");
         final String lastName = getStringOrNull(payload, "lastName");
         final String driverNumber = getStringOrNull(payload, "driverNumber");
-        final String gender = getStringOrNull(payload, "gender");
+        final Gender gender = Gender.valueFor(getStringOrNull(payload, "gender")).orElse(null);
         final String nationalInsuranceNumber = getStringOrNull(payload, "nationalInsuranceNumber");
         final String dateOfBirth = getStringOrNull(payload, "dateOfBirth");
         final String email = getStringOrNull(payload, "email");

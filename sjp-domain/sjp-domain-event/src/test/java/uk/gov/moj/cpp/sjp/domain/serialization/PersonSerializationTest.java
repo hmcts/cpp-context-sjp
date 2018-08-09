@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.domain.serialization;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Person;
@@ -15,7 +16,7 @@ import org.hamcrest.Matcher;
 public class PersonSerializationTest extends AbstractSerializationTest<Person> {
 
     private static final Person FULL_PERSON = new Person(
-            "Mr", "Fred", "Smith", LocalDate.of(1965, 12, 27),"Male",
+            "Mr", "Fred", "Smith", LocalDate.of(1965, 12, 27), Gender.MALE,
             "nin", "driverNumber",
             new Address("Flat 1", "1 Old Road", "London",
                     "United Kingdom", "UK", "SW99 1AA"),

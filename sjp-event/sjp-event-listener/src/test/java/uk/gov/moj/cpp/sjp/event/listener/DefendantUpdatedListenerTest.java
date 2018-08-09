@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -101,7 +102,7 @@ public class DefendantUpdatedListenerTest {
     private final ZonedDateTime now = clock.now();
 
     private final String previousTitle = "previously set Title";
-    private final String previousGender = "previously set gender";
+    private final Gender previousGender = Gender.FEMALE;
     private final String previousNiNumber = "previously set NI-number";
 
     private DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder defendantDetailsUpdatedBuilder = defendantDetailsUpdated()
@@ -110,7 +111,7 @@ public class DefendantUpdatedListenerTest {
             .withTitle("Mr")
             .withFirstName("Mark")
             .withLastName("Smith")
-            .withGender("Male")
+            .withGender(Gender.MALE)
             .withUpdatedDate(clock.now())
             .withDateOfBirth(LocalDate.of(1960, 1, 1))
             .withAddress(new Address("address1", "address2", "address3", "address4", "address5", "postcode"));
@@ -288,7 +289,7 @@ public class DefendantUpdatedListenerTest {
 
     private PersonalDetails buildPersonalDetails(final DefendantDetailsUpdated defendantDetailsUpdated, final boolean updateByOnlinePlea, final boolean onlinePleaNiNumberSupplied) {
         String title = defendantDetailsUpdated.getTitle();
-        String gender = defendantDetailsUpdated.getGender();
+        Gender gender = defendantDetailsUpdated.getGender();
         String nationalInsuranceNumber = defendantDetailsUpdated.getNationalInsuranceNumber();
         if (updateByOnlinePlea) {
             title = previousTitle;

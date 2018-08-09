@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.time.LocalDate;
@@ -14,7 +15,7 @@ public class PersonalDetailsView {
 
     private LocalDate dateOfBirth;
 
-    private String gender;
+    private Gender gender;
 
     private String nationalInsuranceNumber;
 
@@ -60,7 +61,7 @@ public class PersonalDetailsView {
         return dateOfBirth;
     }
 
-    public String getGender() {
+    public Gender getGender() {
         return gender;
     }
 

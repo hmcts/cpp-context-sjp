@@ -1,6 +1,6 @@
 package uk.gov.moj.sjp.it.model;
 
-import uk.gov.moj.cpp.sjp.domain.Language;
+import uk.gov.justice.json.schemas.domains.sjp.Language;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
@@ -38,7 +38,7 @@ public class Defendant {
     public Offence[] offences = {Offence.builder().build()};
 
     @Builder.Default
-    public Language documentationLanguage = Language.WELSH;
+    public Language documentationLanguage = Language.W;
 
     @Builder.Default
     public String hearingLanguageIndicator = "E";

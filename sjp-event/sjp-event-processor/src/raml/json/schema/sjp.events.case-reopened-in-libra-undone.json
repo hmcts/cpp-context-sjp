@@ -7,7 +7,7 @@
       "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
     "oldReopenedDate": {
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#date"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
     }
   },
   "additionalProperties": false,

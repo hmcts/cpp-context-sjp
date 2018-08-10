@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "reopenedDate": {
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#date"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
     },
     "libraCaseNumber": {
       "type": "string",

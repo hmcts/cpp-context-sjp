@@ -11,7 +11,7 @@
     },
     "assignedAt": {
       "description": "Property is not present in old version of event thus it cannot be marked as required",
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#date-time"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
     },
     "sessionId": {
       "description": "For the purpose of backward compatibility only",

@@ -20,7 +20,7 @@
         <assignment.version>2.0.99</assignment.version>
         <material.version>2.0.108-ATCM-SNAPSHOT</material.version>
         <notification.notify.version>0.0.16</notification.notify.version>
-        <referencedata.version>2.0.161</referencedata.version>
+        <referencedata.version>2.0.163</referencedata.version>
         <scheduling.version>2.0.84</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>2.0.105</usersgroups.version>

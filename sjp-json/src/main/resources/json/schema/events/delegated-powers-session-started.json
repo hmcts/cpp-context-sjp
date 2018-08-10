@@ -16,7 +16,7 @@
       "type": "string"
     },
     "startedAt": {
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#date-time"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
     }
   },
   "required": [

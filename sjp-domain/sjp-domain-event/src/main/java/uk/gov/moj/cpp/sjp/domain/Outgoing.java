@@ -5,6 +5,9 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 public class Outgoing implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     private final String description;
     private final BigDecimal amount;
 

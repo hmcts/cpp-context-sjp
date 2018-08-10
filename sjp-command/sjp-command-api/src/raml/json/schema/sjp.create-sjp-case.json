@@ -19,7 +19,7 @@
       "type": "number"
     },
     "postingDate": {
-      "type": "string"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
     },
     "defendant": {
       "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/commands/defendant.json"

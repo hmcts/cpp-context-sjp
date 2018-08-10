@@ -56,7 +56,6 @@ public class DefendantDetailsMovedFromPeople {
         private String lastName;
         private LocalDate dateOfBirth;
         private String gender;
-        private String email;
         private String nationalInsuranceNumber;
         private Address address;
         private ContactDetails contactNumber;
@@ -97,11 +96,6 @@ public class DefendantDetailsMovedFromPeople {
 
         public DefendantDetailsMovedFromPeopleBuilder withGender(final String gender) {
             this.gender = gender;
-            return this;
-        }
-
-        public DefendantDetailsMovedFromPeopleBuilder withEmail(final String email) {
-            this.email = email;
             return this;
         }
 

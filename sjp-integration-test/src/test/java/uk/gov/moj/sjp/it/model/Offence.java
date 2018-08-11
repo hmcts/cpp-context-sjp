@@ -18,9 +18,6 @@ public class Offence {
     public String id = UUID.randomUUID().toString();
 
     @Builder.Default
-    public String prosecutorCaseId = "UNUSED";
-
-    @Builder.Default
     public Integer offenceSequenceNo = 1;
 
     @Builder.Default

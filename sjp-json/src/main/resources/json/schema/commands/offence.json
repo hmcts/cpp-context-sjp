@@ -6,9 +6,6 @@
     "id": {
       "type": "string"
     },
-    "prosecutorCaseId": {
-      "type": "string"
-    },
     "offenceSequenceNo": {
       "type": "integer"
     },
@@ -52,7 +49,6 @@
   "additionalProperties": false,
   "required": [
     "id",
-    "prosecutorCaseId",
     "offenceSequenceNo",
     "libraOffenceCode",
     "chargeDate",

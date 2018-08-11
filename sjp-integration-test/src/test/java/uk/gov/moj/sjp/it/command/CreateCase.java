@@ -91,7 +91,6 @@ public class CreateCase {
                 .add("offences", createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add("id", payloadBuilder.offenceBuilders.get(0).id.toString())
-                                .add("prosecutorCaseId", "UNUSED")
                                 .add("offenceSequenceNo", 1)
                                 .add("libraOffenceCode", payloadBuilder.offenceBuilders.get(0).libraOffenceCode)
                                 .add("chargeDate", LocalDates.to(payloadBuilder.offenceBuilders.get(0).chargeDate))

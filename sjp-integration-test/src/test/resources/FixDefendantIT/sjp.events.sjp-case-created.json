@@ -10,7 +10,6 @@
   "offences": [
     {
       "id": "{offenceId}",
-      "prosecutorCaseId": "TFL7772460",
       "offenceSequenceNo": 1,
       "libraOffenceCode": "PS90010",
       "chargeDate": "2016-01-01",

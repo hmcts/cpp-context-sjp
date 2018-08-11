@@ -44,9 +44,6 @@
           "id": {
             "type": "string"
           },
-          "prosecutorCaseId": {
-            "type": "string"
-          },
           "offenceSequenceNo": {
             "type": "integer"
           },
@@ -77,7 +74,6 @@
         },
         "required" : [
           "id",
-          "prosecutorCaseId",
           "offenceSequenceNo",
           "libraOffenceCode",
           "chargeDate",

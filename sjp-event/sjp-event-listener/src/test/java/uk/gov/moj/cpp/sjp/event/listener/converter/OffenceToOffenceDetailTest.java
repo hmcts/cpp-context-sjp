@@ -30,7 +30,7 @@ public class OffenceToOffenceDetailTest {
                 .setCode(inputOffence.getLibraOffenceCode())
                 .setSequenceNumber(inputOffence.getOffenceSequenceNo())
                 .setWording(inputOffence.getOffenceWording())
-                .setStartDate(inputOffence.getOffenceDate())
+                .setStartDate(inputOffence.getOffenceCommittedDate())
                 .setChargeDate(inputOffence.getChargeDate())
                 .withLibraOffenceDateCode(inputOffence.getLibraOffenceDateCode())
                 .withProsecutionFacts(inputOffence.getProsecutionFacts())

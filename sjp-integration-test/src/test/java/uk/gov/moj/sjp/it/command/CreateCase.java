@@ -60,7 +60,7 @@ public class CreateCase {
         Objects.requireNonNull(offenceBuilder.id, "ID is required for offence");
         Objects.requireNonNull(offenceBuilder.libraOffenceCode, "Libra offence code is required for offence");
         Objects.requireNonNull(offenceBuilder.chargeDate, "Charge date is required for offence");
-        Objects.requireNonNull(offenceBuilder.offenceDate, "Offence date is required for offence");
+        Objects.requireNonNull(offenceBuilder.offenceCommittedDate, "Offence committed date is required for offence");
         Objects.requireNonNull(offenceBuilder.offenceWording, "Offence wording is required for offence");
     }
 
@@ -95,7 +95,7 @@ public class CreateCase {
                                 .add("libraOffenceCode", payloadBuilder.offenceBuilders.get(0).libraOffenceCode)
                                 .add("chargeDate", LocalDates.to(payloadBuilder.offenceBuilders.get(0).chargeDate))
                                 .add("libraOffenceDateCode", payloadBuilder.offenceBuilders.get(0).libraOffenceDateCode)
-                                .add("offenceDate", LocalDates.to(payloadBuilder.offenceBuilders.get(0).offenceDate))
+                                .add("offenceCommittedDate", LocalDates.to(payloadBuilder.offenceBuilders.get(0).offenceCommittedDate))
                                 .add("offenceWording", payloadBuilder.offenceBuilders.get(0).offenceWording)
                                 .add("prosecutionFacts", payloadBuilder.offenceBuilders.get(0).prosecutionFacts)
                                 .add("witnessStatement", payloadBuilder.offenceBuilders.get(0).witnessStatement)
@@ -273,7 +273,7 @@ public class CreateCase {
         private String libraOffenceCode;
         private LocalDate chargeDate;
         private int libraOffenceDateCode;
-        private LocalDate offenceDate;
+        private LocalDate offenceCommittedDate;
         private String offenceWording;
         private String prosecutionFacts;
         private String witnessStatement;
@@ -289,7 +289,7 @@ public class CreateCase {
             builder.libraOffenceCode = "PS00001";
             builder.chargeDate = LocalDate.of(2016, 1, 1);
             builder.libraOffenceDateCode = 1;
-            builder.offenceDate = LocalDate.of(2016, 1, 1);
+            builder.offenceCommittedDate = LocalDate.of(2016, 1, 1);
             builder.offenceWording = "Committed some offence";
             builder.prosecutionFacts = "No ticket at the gates, forgery";
             builder.witnessStatement = "Jumped over the barriers";
@@ -319,8 +319,8 @@ public class CreateCase {
             return libraOffenceDateCode;
         }
 
-        public LocalDate getOffenceDate() {
-            return offenceDate;
+        public LocalDate getOffenceCommittedDate() {
+            return offenceCommittedDate;
         }
 
         public String getOffenceWording() {

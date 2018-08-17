@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -18,7 +20,7 @@ public class Offence {
     private final String libraOffenceCode;
     private final LocalDate chargeDate;
     private final int libraOffenceDateCode;
-    private final LocalDate offenceDate;
+    private final LocalDate offenceCommittedDate;
     private final String offenceWording;
     private final String prosecutionFacts;
     private final String witnessStatement;
@@ -32,7 +34,7 @@ public class Offence {
     public Offence(UUID id, int offenceSequenceNo, String libraOffenceCode, LocalDate chargeDate,
                    int libraOffenceDateCode, LocalDate offenceDate, String offenceWording,
                    String prosecutionFacts, String witnessStatement, BigDecimal compensation) {
-        this(id, offenceSequenceNo, libraOffenceCode, chargeDate, libraOffenceDateCode, offenceDate,
+        this(id, offenceSequenceNo, libraOffenceCode, chargeDate, libraOffenceDateCode, null, offenceDate,
                 offenceWording, prosecutionFacts, witnessStatement, compensation,
                 null, null, null, null);
     }
@@ -43,7 +45,8 @@ public class Offence {
                    @JsonProperty("libraOffenceCode") String libraOffenceCode,
                    @JsonProperty("chargeDate") LocalDate chargeDate,
                    @JsonProperty("libraOffenceDateCode") int libraOffenceDateCode,
-                   @JsonProperty("offenceDate") LocalDate offenceDate,
+                   @JsonProperty("offenceDate") LocalDate offenceDate, // Backward compatibility
+                   @JsonProperty("offenceCommittedDate") LocalDate offenceCommittedDate,
                    @JsonProperty("offenceWording") String offenceWording,
                    @JsonProperty("prosecutionFacts") String prosecutionFacts,
                    @JsonProperty("witnessStatement") String witnessStatement,
@@ -57,7 +60,7 @@ public class Offence {
         this.libraOffenceCode = libraOffenceCode;
         this.chargeDate = chargeDate;
         this.libraOffenceDateCode = libraOffenceDateCode;
-        this.offenceDate = offenceDate;
+        this.offenceCommittedDate = firstNonNull(offenceCommittedDate, offenceDate);
         this.offenceWording = offenceWording;
         this.prosecutionFacts = prosecutionFacts;
         this.witnessStatement = witnessStatement;
@@ -82,8 +85,8 @@ public class Offence {
         return chargeDate;
     }
 
-    public LocalDate getOffenceDate() {
-        return offenceDate;
+    public LocalDate getOffenceCommittedDate() {
+        return offenceCommittedDate;
     }
 
     public int getLibraOffenceDateCode() {
@@ -130,7 +133,7 @@ public class Offence {
                 Objects.equals(id, that.id) &&
                 Objects.equals(libraOffenceCode, that.libraOffenceCode) &&
                 Objects.equals(chargeDate, that.chargeDate) &&
-                Objects.equals(offenceDate, that.offenceDate) &&
+                Objects.equals(offenceCommittedDate, that.offenceCommittedDate) &&
                 Objects.equals(offenceWording, that.offenceWording) &&
                 Objects.equals(prosecutionFacts, that.prosecutionFacts) &&
                 Objects.equals(witnessStatement, that.witnessStatement) &&
@@ -142,7 +145,7 @@ public class Offence {
     @Override
     public int hashCode() {
         return Objects.hash(id, offenceSequenceNo, libraOffenceCode, chargeDate,
-                libraOffenceDateCode, offenceDate, offenceWording, prosecutionFacts,
+                libraOffenceDateCode, offenceCommittedDate, offenceWording, prosecutionFacts,
                 witnessStatement, compensation, prosecutionChargeWordingWelsh, backDuty);
     }
 }

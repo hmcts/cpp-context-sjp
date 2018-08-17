@@ -54,7 +54,7 @@ public class SjpCaseCreatedToCaseTest {
     private String libraOffenceCode = "PS00001";
     private LocalDate chargeDate = LocalDate.parse("2016-01-01", formatter);
     private final int libraOffenceDateCode = 6;
-    private LocalDate offenceDate = LocalDate.parse("2016-01-01", formatter);
+    private LocalDate offenceCommittedDate = LocalDate.parse("2016-01-01", formatter);
     private String offenceWording = "Committed some offence";
     private BigDecimal compensation = BigDecimal.ONE;
 
@@ -64,7 +64,7 @@ public class SjpCaseCreatedToCaseTest {
     @SuppressWarnings("deprecation")
     public void setup() {
         Offence offence = new Offence(offenceId, offenceSequenceNo, libraOffenceCode, chargeDate,
-                libraOffenceDateCode, offenceDate, offenceWording, "Prosecution facts", "Witness statement", compensation);
+                libraOffenceDateCode, offenceCommittedDate, offenceWording, "Prosecution facts", "Witness statement", compensation);
 
         offences.clear();
         offences.add(offence);
@@ -116,7 +116,7 @@ public class SjpCaseCreatedToCaseTest {
         assertThat(offenceDetail.getCode(), is(libraOffenceCode));
         assertThat(offenceDetail.getSequenceNumber(), is(offenceSequenceNo));
         assertThat(offenceDetail.getWording(), is(offenceWording));
-        assertThat(offenceDetail.getStartDate(), is(offenceDate));
+        assertThat(offenceDetail.getStartDate(), is(offenceCommittedDate));
         assertThat(offenceDetail.getWitnessStatement(), is("Witness statement"));
         assertThat(offenceDetail.getProsecutionFacts(), is("Prosecution facts"));
         assertThat(offenceDetail.getLibraOffenceDateCode(), is(libraOffenceDateCode));

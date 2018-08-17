@@ -15,7 +15,7 @@
       "libraOffenceCode": "PS00001",
       "chargeDate": "2016-01-01",
       "libraOffenceDateCode": 1,
-      "offenceDate": "2016-01-01",
+      "offenceCommittedDate": "2016-01-01",
       "offenceWording": "Committed some offence",
       "prosecutionFacts": "No ticket at the gates, forgery",
       "witnessStatement": "Jumped over the barriers",

@@ -32,8 +32,8 @@ public class Offence {
     public Integer libraOffenceDateCode = 1;
 
     @Builder.Default
-    @NotNull(message = "Offence date is required for offence")
-    public String offenceDate = LocalDates.to(LocalDate.of(2016, 1, 1));
+    @NotNull(message = "Offence committed date is required for offence")
+    public String offenceCommittedDate = LocalDates.to(LocalDate.of(2016, 1, 1));
 
     @Builder.Default
     @NotNull(message = "Offence wording is required for offence")

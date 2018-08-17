@@ -121,7 +121,7 @@ public class CaseReceivedListenerTest {
     private static final int offenceSequenceNo = 1;
     private static final String offenceCode = "PS00001";
     private static final LocalDate chargeDate = LocalDate.of(2017, 1, 1);
-    private static final LocalDate offenceDate = LocalDate.of(2017, 1, 5);
+    private static final LocalDate offenceCommittedDate = LocalDate.of(2017, 1, 5);
     private static final String offenceWording = "this is offence wording";
     private static final String prosecutionFacts = "this is prosecution facts";
     private static final String witnessStatement = "this is witness statement";
@@ -191,7 +191,7 @@ public class CaseReceivedListenerTest {
                                         .setChargeDate(chargeDate)
                                         .setCode(offenceCode)
                                         .setSequenceNumber(offenceSequenceNo)
-                                        .setStartDate(offenceDate)
+                                        .setStartDate(offenceCommittedDate)
                                         .setWording(offenceWording)
                                         .withCompensation(compensation)
                                         .withLibraOffenceDateCode(1)
@@ -287,7 +287,7 @@ public class CaseReceivedListenerTest {
                                         .add("offenceSequenceNo", offenceSequenceNo)
                                         .add("libraOffenceCode", offenceCode)
                                         .add("chargeDate", LocalDates.to(chargeDate))
-                                        .add("offenceDate", LocalDates.to(offenceDate))
+                                        .add("offenceCommittedDate", LocalDates.to(offenceCommittedDate))
                                         .add("libraOffenceDateCode", 1)
                                         .add("offenceWording", offenceWording)
                                         .add("prosecutionFacts", prosecutionFacts)

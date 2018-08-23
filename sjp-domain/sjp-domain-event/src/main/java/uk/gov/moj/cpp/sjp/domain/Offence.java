@@ -20,7 +20,7 @@ public class Offence {
     private final String libraOffenceCode;
     private final LocalDate chargeDate;
     private final int libraOffenceDateCode;
-    private final LocalDate offenceCommittedDate;
+    private final LocalDate offenceDate;
     private final String offenceWording;
     private final String prosecutionFacts;
     private final String witnessStatement;
@@ -60,7 +60,7 @@ public class Offence {
         this.libraOffenceCode = libraOffenceCode;
         this.chargeDate = chargeDate;
         this.libraOffenceDateCode = libraOffenceDateCode;
-        this.offenceCommittedDate = firstNonNull(offenceCommittedDate, offenceDate);
+        this.offenceDate = firstNonNull(offenceCommittedDate, offenceDate);
         this.offenceWording = offenceWording;
         this.prosecutionFacts = prosecutionFacts;
         this.witnessStatement = witnessStatement;
@@ -85,8 +85,8 @@ public class Offence {
         return chargeDate;
     }
 
-    public LocalDate getOffenceCommittedDate() {
-        return offenceCommittedDate;
+    public LocalDate getOffenceDate() {
+        return offenceDate;
     }
 
     public int getLibraOffenceDateCode() {
@@ -133,7 +133,7 @@ public class Offence {
                 Objects.equals(id, that.id) &&
                 Objects.equals(libraOffenceCode, that.libraOffenceCode) &&
                 Objects.equals(chargeDate, that.chargeDate) &&
-                Objects.equals(offenceCommittedDate, that.offenceCommittedDate) &&
+                Objects.equals(offenceDate, that.offenceDate) &&
                 Objects.equals(offenceWording, that.offenceWording) &&
                 Objects.equals(prosecutionFacts, that.prosecutionFacts) &&
                 Objects.equals(witnessStatement, that.witnessStatement) &&
@@ -145,7 +145,7 @@ public class Offence {
     @Override
     public int hashCode() {
         return Objects.hash(id, offenceSequenceNo, libraOffenceCode, chargeDate,
-                libraOffenceDateCode, offenceCommittedDate, offenceWording, prosecutionFacts,
+                libraOffenceDateCode, offenceDate, offenceWording, prosecutionFacts,
                 witnessStatement, compensation, prosecutionChargeWordingWelsh, backDuty);
     }
 }

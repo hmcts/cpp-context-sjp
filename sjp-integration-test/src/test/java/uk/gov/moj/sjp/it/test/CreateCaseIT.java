@@ -1,12 +1,18 @@
 package uk.gov.moj.sjp.it.test;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.helper.CaseProsecutingAuthorityHelper.getProsecutingAuthority;
 
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.sjp.it.commandclient.CreateCaseClient;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.verifier.CaseReceivedMQVerifier;
@@ -36,7 +42,13 @@ public class CreateCaseIT extends BaseIntegrationTest {
             createCase.caseReceivedHandler = envelope -> Log.info("Case is created");
             createCase.getExecutor().executeSync();
 
-            caseReceivedMQVerifier.verifyInPrivateActiveMQ(caseId, createCase.urn);
+            final JsonEnvelope caseReceivePrivateEvent = caseReceivedMQVerifier.verifyInPrivateActiveMQ(caseId, createCase.urn);
+
+            assertThat(caseReceivePrivateEvent, jsonEnvelope(
+                    metadata().withName(CaseReceived.EVENT_NAME),
+                    payloadIsJson(
+                            withJsonPath("defendant.offences[0].offenceDate", equalTo(createCase.defendant.offences[0].offenceCommittedDate))
+                    )));
         }
 
         final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId);
@@ -58,6 +70,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("defendant.offences[0].offenceSequenceNumber"), equalTo(1)); //supporting only one - 1st 
         assertThat(jsonResponse.get("defendant.offences[0].wording"), equalTo(createCase.defendant.offences[0].offenceWording));
         assertThat(jsonResponse.get("defendant.offences[0].chargeDate"), equalTo(createCase.defendant.offences[0].chargeDate));
+        assertThat(jsonResponse.get("defendant.offences[0].startDate"), equalTo(createCase.defendant.offences[0].offenceCommittedDate));
         assertThat(getProsecutingAuthority(caseId), is(prosecutingAuthority.name()));
     }
 }

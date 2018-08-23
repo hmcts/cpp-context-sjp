@@ -109,7 +109,7 @@ public class SjpQueryView {
                 Optional.of(LocalDate.now().minusDays(payload.getInt(FIELD_DAYS_SINCE_POSTING))) : empty();
 
         return enveloper.withMetadataFrom(envelope, "sjp.query.cases-missing-sjpn")
-                .apply(caseService.findCasesMissingSjpn(limit, postedBefore));
+                .apply(caseService.findCasesMissingSjpn(envelope, limit, postedBefore));
     }
 
     @Handles("sjp.query.cases-missing-sjpn-with-details")

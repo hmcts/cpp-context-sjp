@@ -7,23 +7,21 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.moj.sjp.it.helper.CasesMissingSjpnHelper.getCasesMissingSjpn;
+import static uk.gov.moj.sjp.it.helper.CasesMissingSjpnHelper.getCasesMissingSjpnPostedDaysAgo;
 import static uk.gov.moj.sjp.it.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
-import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
 
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
 
-import java.io.StringReader;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonString;
-import javax.ws.rs.core.Response;
 
 import org.junit.After;
 import org.junit.Before;
@@ -74,17 +72,17 @@ public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
 
     @Test
     public void findCasesMissingSjpn() {
-        int casesMissingSjpnCount = getCasesMissingSjpn().getInt("count");
-        int casesOlderThan3DaysMissingSjpnCount = getCasesMissingSjpnPostedDaysAgo(3).getInt("count");
+        int casesMissingSjpnCount = getCasesMissingSjpn(USER_ID).getInt("count");
+        int casesOlderThan3DaysMissingSjpnCount = getCasesMissingSjpnPostedDaysAgo(USER_ID, 3).getInt("count");
         int expectedCasesMissingSjpnCount = casesMissingSjpnCount + sjpCasesWithoutSjpn.size();
         int expectedCasesOlderThan3DaysMissingSjpnCount = casesOlderThan3DaysMissingSjpnCount + sjpCasesOlderThan3Days.size();
 
         createCasesAndDocuments();
 
-        final JsonObject casesWithIds = getCasesMissingSjpn();
-        final JsonObject casesWithoutIds = getCasesMissingSjpn(0);
-        final JsonObject casesOlderThan3DaysWithId = getCasesMissingSjpnPostedDaysAgo(3);
-        final JsonObject casesOlderThan3DaysWithoutId = getCasesMissingSjpnPostedDaysAgo(3, 0);
+        final JsonObject casesWithIds = getCasesMissingSjpn(USER_ID);
+        final JsonObject casesWithoutIds = getCasesMissingSjpn(USER_ID, 0);
+        final JsonObject casesOlderThan3DaysWithId = getCasesMissingSjpnPostedDaysAgo(USER_ID, 3);
+        final JsonObject casesOlderThan3DaysWithoutId = getCasesMissingSjpnPostedDaysAgo(USER_ID, 3, 0);
         final List<UUID> actualCaseIds = extractCaseIds(casesWithIds);
         final List<UUID> actualCasesOlderThan3DaysIds = extractCaseIds(casesOlderThan3DaysWithId);
 
@@ -107,30 +105,6 @@ public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
         sjpnDocuments.forEach(CaseDocumentHelper::addDocumentAndVerifyAdded);
     }
 
-    private JsonObject getCasesMissingSjpn() {
-        return getCasesMissingSjpnHelper("/cases-missing-sjpn");
-    }
-
-    private JsonObject getCasesMissingSjpn(int limit) {
-        String url = "/cases-missing-sjpn" + String.format("/?limit=%d", limit);
-        return getCasesMissingSjpnHelper(url);
-    }
-
-    private JsonObject getCasesMissingSjpnPostedDaysAgo(int postedDaysAgo) {
-        String url = "/cases-missing-sjpn" + String.format("/?daysSincePosting=%d", postedDaysAgo);
-        return getCasesMissingSjpnHelper(url);
-    }
-
-    private JsonObject getCasesMissingSjpnPostedDaysAgo(int postedDaysAgo, int limit) {
-        String url = "/cases-missing-sjpn" + String.format("/?daysSincePosting=%d&limit=%d", postedDaysAgo, limit);
-        return getCasesMissingSjpnHelper(url);
-    }
-
-    private JsonObject getCasesMissingSjpnHelper(String url) {
-        Response response = makeGetCall(url, "application/vnd.sjp.query.cases-missing-sjpn+json");
-        assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
-        return Json.createReader(new StringReader(response.readEntity(String.class))).readObject();
-    }
 
     private List<UUID> extractCaseIds(List<CreateCase.CreateCasePayloadBuilder> cases) {
         return cases.stream()

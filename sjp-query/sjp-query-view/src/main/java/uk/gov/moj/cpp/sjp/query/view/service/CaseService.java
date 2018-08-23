@@ -114,21 +114,28 @@ public class CaseService {
     /**
      * Find cases missing the SJP notice document.
      *
+     * @param envelope
      * @param limit limit the number of IDs returned
      * @return CasesMissingSjpnView
      */
-    public CasesMissingSjpnView findCasesMissingSjpn(final Optional<Integer> limit, final Optional<LocalDate> postedBefore) {
+    public CasesMissingSjpnView findCasesMissingSjpn(final JsonEnvelope envelope,
+                                                     final Optional<Integer> limit,
+                                                     final Optional<LocalDate> postedBefore) {
 
         final List<CaseDetail> casesDetails;
+
+        final String prosecutingAuthorityFilterValue = prosecutingAuthorityAccessFilterConverter
+                .convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityProvider
+                        .getCurrentUsersProsecutingAuthorityAccess(envelope));
 
         if (limit.isPresent() && limit.get() < 1) {
             casesDetails = Collections.emptyList();
         } else {
             QueryResult<CaseDetail> caseDetailsResult;
             if (postedBefore.isPresent()) {
-                caseDetailsResult = caseRepository.findCasesMissingSjpn(postedBefore.get());
+                caseDetailsResult = caseRepository.findCasesMissingSjpn(prosecutingAuthorityFilterValue, postedBefore.get());
             } else {
-                caseDetailsResult = caseRepository.findCasesMissingSjpn();
+                caseDetailsResult = caseRepository.findCasesMissingSjpn(prosecutingAuthorityFilterValue);
             }
 
             if (limit.isPresent()) {
@@ -138,8 +145,11 @@ public class CaseService {
             }
         }
 
-        final List<String> casesIds = casesDetails.stream().map(caseDetails -> caseDetails.getId().toString()).collect(toList());
-        final int casesCount = postedBefore.map(caseRepository::countCasesMissingSjpn).orElseGet(caseRepository::countCasesMissingSjpn);
+        final List<String> casesIds = casesDetails.stream()
+                .map(caseDetails -> caseDetails.getId().toString()).collect(toList());
+        final int casesCount = postedBefore
+                .map(localDate -> caseRepository.countCasesMissingSjpn(prosecutingAuthorityFilterValue, localDate))
+                .orElseGet(() -> caseRepository.countCasesMissingSjpn(prosecutingAuthorityFilterValue));
 
         return new CasesMissingSjpnView(casesIds, casesCount);
     }

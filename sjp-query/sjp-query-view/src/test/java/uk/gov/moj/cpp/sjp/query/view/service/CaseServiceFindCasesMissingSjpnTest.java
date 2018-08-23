@@ -13,8 +13,12 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
+import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnView;
 
 import java.time.LocalDate;
@@ -34,14 +38,20 @@ public class CaseServiceFindCasesMissingSjpnTest {
 
     private static final LocalDate NOW = LocalDate.now();
     private static final int COUNT = 10;
+    private static final String TVL_FILTER_VALUE = "TVL";
     private List<CaseDetail> caseDetails;
-
     @Mock
     private QueryResult queryResult;
-
     @Mock
     private CaseRepository caseRepository;
-
+    @Mock
+    private ProsecutingAuthorityProvider prosecutingAuthorityProvider;
+    @Mock
+    private ProsecutingAuthorityAccessFilterConverter prosecutingAuthorityAccessFilterConverter;
+    @Mock
+    private ProsecutingAuthorityAccess prosecutingAuthorityAccess;
+    @Mock
+    private JsonEnvelope envelope;
     @InjectMocks
     private CaseService service;
 
@@ -49,14 +59,17 @@ public class CaseServiceFindCasesMissingSjpnTest {
     public void init() {
         caseDetails = asList(createCaseDetails(), createCaseDetails(), createCaseDetails());
         when(queryResult.getResultList()).thenReturn(caseDetails);
+
+        mockProsecutingAuthorityAccess();
     }
 
     @Test
     public void shouldFindAllCasesMissingSjpn() {
-        when(caseRepository.findCasesMissingSjpn()).thenReturn(queryResult);
-        when(caseRepository.countCasesMissingSjpn()).thenReturn(COUNT);
 
-        final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(empty(), empty());
+        when(caseRepository.findCasesMissingSjpn(TVL_FILTER_VALUE)).thenReturn(queryResult);
+        when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE)).thenReturn(COUNT);
+
+        final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(envelope, empty(), empty());
 
         verify(queryResult, never()).maxResults(anyInt());
 
@@ -66,10 +79,11 @@ public class CaseServiceFindCasesMissingSjpnTest {
 
     @Test
     public void shouldFindCasesMissingSjpnLimitedByPostingDate() {
-        when(caseRepository.findCasesMissingSjpn(NOW)).thenReturn(queryResult);
-        when(caseRepository.countCasesMissingSjpn(NOW)).thenReturn(COUNT);
 
-        final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(empty(), Optional.of(NOW));
+        when(caseRepository.findCasesMissingSjpn(TVL_FILTER_VALUE, NOW)).thenReturn(queryResult);
+        when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE, NOW)).thenReturn(COUNT);
+
+        final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(envelope, empty(), Optional.of(NOW));
 
         verify(queryResult, never()).maxResults(anyInt());
 
@@ -81,30 +95,29 @@ public class CaseServiceFindCasesMissingSjpnTest {
     public void shouldReturnEmptyListWhenLimitIsZero() {
         final int limit = 0;
 
-        when(caseRepository.countCasesMissingSjpn()).thenReturn(COUNT);
+        when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE)).thenReturn(COUNT);
 
-        final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(Optional.of(limit), empty());
+        final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(envelope, Optional.of(limit), empty());
 
-        verify(caseRepository, never()).findCasesMissingSjpn();
-        verify(caseRepository, never()).findCasesMissingSjpn(any(LocalDate.class));
+        verify(caseRepository, never()).findCasesMissingSjpn(any(String.class));
+        verify(caseRepository, never()).findCasesMissingSjpn(any(String.class), any(LocalDate.class));
         verify(queryResult, never()).maxResults(anyInt());
 
         assertThat(casesMissingSjpnView.ids, hasSize(0));
         assertThat(casesMissingSjpnView.count, equalTo(COUNT));
     }
 
-
     @Test
     public void shouldFindCasesMissingSjpnWhenLimitIsPositive() {
         final int limit = 2;
 
         when(queryResult.maxResults(anyInt())).thenReturn(queryResult);
-        when(caseRepository.findCasesMissingSjpn()).thenReturn(queryResult);
-        when(caseRepository.countCasesMissingSjpn()).thenReturn(COUNT);
+        when(caseRepository.findCasesMissingSjpn(TVL_FILTER_VALUE)).thenReturn(queryResult);
+        when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE)).thenReturn(COUNT);
 
-        final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(Optional.of(limit), empty());
+        final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(envelope, Optional.of(limit), empty());
 
-        verify(caseRepository).findCasesMissingSjpn();
+        verify(caseRepository).findCasesMissingSjpn(TVL_FILTER_VALUE);
         verify(queryResult).maxResults(limit);
 
         assertThat(casesMissingSjpnView.ids, equalTo(extractCaseIds(caseDetails)));
@@ -116,16 +129,24 @@ public class CaseServiceFindCasesMissingSjpnTest {
         final int limit = 2;
 
         when(queryResult.maxResults(anyInt())).thenReturn(queryResult);
-        when(caseRepository.findCasesMissingSjpn(NOW)).thenReturn(queryResult);
-        when(caseRepository.countCasesMissingSjpn(NOW)).thenReturn(COUNT);
+        when(caseRepository.findCasesMissingSjpn(TVL_FILTER_VALUE, NOW)).thenReturn(queryResult);
+        when(caseRepository.countCasesMissingSjpn(TVL_FILTER_VALUE, NOW)).thenReturn(COUNT);
 
-        final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(Optional.of(limit), Optional.of(NOW));
+        final CasesMissingSjpnView casesMissingSjpnView = service.findCasesMissingSjpn(envelope, Optional.of(limit), Optional.of(NOW));
 
-        verify(caseRepository).findCasesMissingSjpn(NOW);
+        verify(caseRepository).findCasesMissingSjpn(TVL_FILTER_VALUE, NOW);
         verify(queryResult).maxResults(limit);
 
         assertThat(casesMissingSjpnView.ids, equalTo(extractCaseIds(caseDetails)));
         assertThat(casesMissingSjpnView.count, equalTo(COUNT));
+    }
+
+    private void mockProsecutingAuthorityAccess() {
+
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope))
+                .thenReturn(prosecutingAuthorityAccess);
+        when(prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityAccess))
+                .thenReturn(TVL_FILTER_VALUE);
     }
 
     private CaseDetail createCaseDetails() {

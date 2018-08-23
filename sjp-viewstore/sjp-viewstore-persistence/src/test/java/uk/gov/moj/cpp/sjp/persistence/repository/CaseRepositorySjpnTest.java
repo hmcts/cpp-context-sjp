@@ -1,16 +1,20 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.time.LocalDate.now;
+import static org.apache.commons.collections.ListUtils.union;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.everyItem;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isIn;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
@@ -32,44 +36,51 @@ import org.junit.runner.RunWith;
 @RunWith(CdiTestRunner.class)
 public class CaseRepositorySjpnTest extends BaseTransactionalTest {
 
+    private static final String TFL_PROSECUTOR_FILTER_VALUE = "TFL";
+    private static final String COURT_ADMIN_FILTER_VALUE = "%";
+    private static final int NUMBER_OF_PROSECUTING_AUTHORITIES = 2;
+
     @Inject
     private CaseRepository caseRepository;
 
     @Inject
     private Clock clock;
 
-    private List<CaseDetail> sjpCasesWithSjpn;
-    private List<CaseDetail> uncompletedSjpCasesWithSjpn;
-    private List<CaseDetail> uncompletedSjpCasesWithoutSjpn;
-    private List<CaseDetail> completedSjpCasesWithoutSjpn;
+    private SjpCases tflCases, tvlCases, allCases = new SjpCases();
+
 
     @Before
     public void addCasesAndDocuments() {
 
-        final List<CaseDetail> sjpCases = createCases(8);
+        tflCases = createCasesAndDocuments(TFL);
+        tvlCases = createCasesAndDocuments(TVL);
 
-        sjpCasesWithSjpn = sjpCases.subList(0, 3);
-        createSjpNotices(sjpCasesWithSjpn);
-        final List<CaseDetail> completedCasesWithSjpn = sjpCasesWithSjpn.subList(0, 1);
-        completeCases(completedCasesWithSjpn);
+        allCases.sjpCasesWithSjpn = union(tflCases.sjpCasesWithSjpn, tvlCases.sjpCasesWithSjpn);
 
-        uncompletedSjpCasesWithSjpn = sjpCasesWithSjpn.subList(completedCasesWithSjpn.size(), sjpCasesWithSjpn.size());
+        allCases.uncompletedSjpCasesWithSjpn = union(tflCases.uncompletedSjpCasesWithSjpn,
+                tvlCases.uncompletedSjpCasesWithSjpn);
 
-        final List<CaseDetail> sjpCasesWithoutSjpn = sjpCases.subList(sjpCasesWithSjpn.size(), sjpCases.size());
-        createOtherDocuments(sjpCasesWithoutSjpn);
+        allCases.uncompletedSjpCasesWithoutSjpn = union(tflCases.uncompletedSjpCasesWithoutSjpn,
+                tvlCases.uncompletedSjpCasesWithoutSjpn);
 
-        completedSjpCasesWithoutSjpn = sjpCasesWithoutSjpn.subList(0, 1);
-        completeCases(completedSjpCasesWithoutSjpn);
-
-        uncompletedSjpCasesWithoutSjpn = sjpCasesWithoutSjpn.subList(1, sjpCasesWithoutSjpn.size());
+        allCases.completedSjpCasesWithoutSjpn = union(tflCases.completedSjpCasesWithoutSjpn,
+                tvlCases.completedSjpCasesWithoutSjpn);
     }
 
     @Test
-    public void findCasesMissingSjpn() {
-        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn().getResultList();
+    public void findCasesMissingSjpnForTflProsecutors() {
+        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(TFL_PROSECUTOR_FILTER_VALUE).getResultList();
         final List<UUID> actualCaseIds = extractCaseIds(actualCases);
 
-        assertThat(actualCaseIds, equalTo(extractCaseIds(uncompletedSjpCasesWithoutSjpn)));
+        assertThat(actualCaseIds, equalTo(extractCaseIds(tflCases.uncompletedSjpCasesWithoutSjpn)));
+    }
+
+    @Test
+    public void findCasesMissingSjpnForCourtAdmin() {
+        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(COURT_ADMIN_FILTER_VALUE).getResultList();
+        final List<UUID> actualCaseIds = extractCaseIds(actualCases);
+
+        assertThat(actualCaseIds, equalTo(extractCaseIds(allCases.uncompletedSjpCasesWithoutSjpn)));
     }
 
     @Test
@@ -77,51 +88,104 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
         final List<CaseDetailMissingSjpn> actualCases = caseRepository.findCasesMissingSjpnWithDetails();
         final List<UUID> actualCaseIds = extractCaseIdsFromCaseDetailMissingSjpn(actualCases);
 
-        assertThat(actualCaseIds, equalTo(extractCaseIds(uncompletedSjpCasesWithoutSjpn)));
+        assertThat(actualCaseIds, equalTo(extractCaseIds(allCases.uncompletedSjpCasesWithoutSjpn)));
     }
 
     @Test
-    public void findCasesMissingSjpnWithLimit() {
+    public void findCasesMissingSjpnWithLimitForTflProsecutors() {
         int limit = 3;
 
-        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn().maxResults(limit).getResultList();
+        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(TFL_PROSECUTOR_FILTER_VALUE).maxResults(limit).getResultList();
         final List<UUID> actualCaseIds = extractCaseIds(actualCases);
 
         assertThat(actualCaseIds, hasSize(limit));
-        assertThat(actualCaseIds, everyItem(isIn(extractCaseIds(uncompletedSjpCasesWithoutSjpn))));
-        assertThat(Collections.disjoint(actualCaseIds, extractCaseIds(sjpCasesWithSjpn)), is(true));
-        assertThat(Collections.disjoint(actualCaseIds, extractCaseIds(completedSjpCasesWithoutSjpn)), is(true));
+        assertThat(actualCaseIds, everyItem(isIn(extractCaseIds(tflCases.uncompletedSjpCasesWithoutSjpn))));
+        assertThat(Collections.disjoint(actualCaseIds, extractCaseIds(tflCases.sjpCasesWithSjpn)), is(true));
+        assertThat(Collections.disjoint(actualCaseIds, extractCaseIds(tflCases.completedSjpCasesWithoutSjpn)), is(true));
     }
 
     @Test
-    public void countCasesMissingSjpn() {
-        final int actualCaseCount = caseRepository.countCasesMissingSjpn();
+    public void findCasesMissingSjpnWithLimitForCourtAdmin() {
+        int limit = 3;
 
-        assertThat(actualCaseCount, equalTo(uncompletedSjpCasesWithoutSjpn.size()));
+        final List<CaseDetail> actualCases = caseRepository.findCasesMissingSjpn(COURT_ADMIN_FILTER_VALUE).maxResults(limit).getResultList();
+        final List<UUID> actualCaseIds = extractCaseIds(actualCases);
+
+        assertThat(actualCaseIds, hasSize(limit));
+        assertThat(actualCaseIds, everyItem(isIn(extractCaseIds(allCases.uncompletedSjpCasesWithoutSjpn))));
+        assertThat(Collections.disjoint(actualCaseIds, extractCaseIds(allCases.sjpCasesWithSjpn)), is(true));
+        assertThat(Collections.disjoint(actualCaseIds, extractCaseIds(allCases.completedSjpCasesWithoutSjpn)), is(true));
     }
 
     @Test
-    public void countCasesMissingSjpnWithPostingDateOlderThanSpecified() {
-        int sjpCasesMissingSjpnCount = uncompletedSjpCasesWithoutSjpn.size();
+    public void countCasesMissingSjpnForTflProsecutors() {
+        final int actualCaseCount = caseRepository.countCasesMissingSjpn(TFL_PROSECUTOR_FILTER_VALUE);
+
+        assertThat(actualCaseCount, equalTo(tflCases.uncompletedSjpCasesWithoutSjpn.size()));
+    }
+
+    @Test
+    public void countCasesMissingSjpnForCourAdmin() {
+        final int actualCaseCount = caseRepository.countCasesMissingSjpn(COURT_ADMIN_FILTER_VALUE);
+
+        assertThat(actualCaseCount, equalTo(allCases.uncompletedSjpCasesWithoutSjpn.size()));
+    }
+
+    @Test
+    public void countCasesMissingSjpnWithPostingDateOlderThanSpecifiedForTflProsecutors() {
+        int sjpCasesMissingSjpnCount = tflCases.uncompletedSjpCasesWithoutSjpn.size();
         for (int i = 0; i < sjpCasesMissingSjpnCount; i++) {
             final LocalDate postingDate = LocalDate.now().minusDays(i);
-            final int actualCaseCount = caseRepository.countCasesMissingSjpn(postingDate);
+            final int actualCaseCount = caseRepository.countCasesMissingSjpn(TFL_PROSECUTOR_FILTER_VALUE, postingDate);
             assertThat(actualCaseCount, equalTo(sjpCasesMissingSjpnCount - i));
+        }
+    }
+
+    @Test
+    public void countCasesMissingSjpnWithPostingDateOlderThanSpecifiedForCourtAdmin() {
+        int sjpCasesMissingSjpnCount = allCases.uncompletedSjpCasesWithoutSjpn.size();
+        for (int i = 0; i < sjpCasesMissingSjpnCount / NUMBER_OF_PROSECUTING_AUTHORITIES; i++) {
+            final LocalDate postingDate = LocalDate.now().minusDays(i);
+            final int actualCaseCount = caseRepository.countCasesMissingSjpn(COURT_ADMIN_FILTER_VALUE, postingDate);
+            assertThat(actualCaseCount, equalTo(sjpCasesMissingSjpnCount - (i * NUMBER_OF_PROSECUTING_AUTHORITIES)));
         }
     }
 
     @Test
     public void findAwaitingSjpCases() {
 
-        final int limit = 1;
+        final int limit = NUMBER_OF_PROSECUTING_AUTHORITIES * 2;
         final List<CaseDetail> readySjpCases = caseRepository.findAwaitingSjpCases(limit);
 
         assertThat(readySjpCases, hasSize(limit));
-        assertThat(readySjpCases, equalTo(uncompletedSjpCasesWithSjpn.subList(0, 1)));
-
+        assertThat(readySjpCases, containsInAnyOrder(allCases.uncompletedSjpCasesWithSjpn.toArray()));
     }
 
-    private List<CaseDetail> createCases(final int count) {
+    private SjpCases createCasesAndDocuments(ProsecutingAuthority prosecutingAuthority) {
+
+        SjpCases cases = new SjpCases();
+
+        final List<CaseDetail> sjpCases = createCases(8, prosecutingAuthority);
+
+        cases.sjpCasesWithSjpn = sjpCases.subList(0, 3);
+        createSjpNotices(cases.sjpCasesWithSjpn);
+        final List<CaseDetail> completedCasesWithSjpn = cases.sjpCasesWithSjpn.subList(0, 1);
+        completeCases(completedCasesWithSjpn);
+
+        cases.uncompletedSjpCasesWithSjpn = cases.sjpCasesWithSjpn.subList(completedCasesWithSjpn.size(), cases.sjpCasesWithSjpn.size());
+
+        final List<CaseDetail> sjpCasesWithoutSjpn = sjpCases.subList(cases.sjpCasesWithSjpn.size(), sjpCases.size());
+        createOtherDocuments(sjpCasesWithoutSjpn);
+
+        cases.completedSjpCasesWithoutSjpn = sjpCasesWithoutSjpn.subList(0, 1);
+        completeCases(cases.completedSjpCasesWithoutSjpn);
+
+        cases.uncompletedSjpCasesWithoutSjpn = sjpCasesWithoutSjpn.subList(1, sjpCasesWithoutSjpn.size());
+
+        return cases;
+    }
+
+    private List<CaseDetail> createCases(final int count, final ProsecutingAuthority prosecutingAuthority) {
 
         final List<CaseDetail> cases = Stream.generate(CaseDetail::new)
                 .limit(count).collect(Collectors.toList());
@@ -129,7 +193,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
         int i = cases.size();
         for (CaseDetail caseDetail : cases) {
             caseDetail.setId(UUID.randomUUID());
-            caseDetail.setProsecutingAuthority(TFL);
+            caseDetail.setProsecutingAuthority(prosecutingAuthority);
             caseDetail.setPostingDate(now().minusDays(i--));
             caseRepository.save(caseDetail);
         }
@@ -174,4 +238,10 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
                 .collect(Collectors.toList());
     }
 
+    private class SjpCases {
+        List<CaseDetail> sjpCasesWithSjpn;
+        List<CaseDetail> uncompletedSjpCasesWithSjpn;
+        List<CaseDetail> uncompletedSjpCasesWithoutSjpn;
+        List<CaseDetail> completedSjpCasesWithoutSjpn;
+    }
 }

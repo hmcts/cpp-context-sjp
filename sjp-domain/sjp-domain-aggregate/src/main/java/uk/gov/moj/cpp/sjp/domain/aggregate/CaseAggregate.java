@@ -84,6 +84,7 @@ import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
 import uk.gov.moj.cpp.sjp.event.TrialRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
+import uk.gov.moj.cpp.sjp.event.decommissioned.CaseAssignmentDeleted;
 import uk.gov.moj.cpp.sjp.event.session.CaseAlreadyAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
@@ -877,7 +878,7 @@ public class CaseAggregate implements Aggregate {
                 }),
                 when(CaseAssigned.class).apply(e -> assigneeId = e.getAssigneeId()),
                 when(CaseUnassigned.class).apply(e -> assigneeId = null),
-
+                when(CaseAssignmentDeleted.class).apply(e -> assigneeId = null),
                 when(DefendantDetailsUpdated.class).apply(e -> {
                     defendantTitle = e.getTitle();
                     defendantFirstName = e.getFirstName();

@@ -12,10 +12,11 @@
   "reopenedInLibraReason": "REASON",
   "caseDocuments": [
     {
-      "id": "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95",
-      "materialId": "670490ee-95be-4e3e-af8b-9bef865e26ba",
-      "documentType": "PLEA",
-      "documentName": "document name"
+      "id": "7bde207f-ce57-49e5-b961-7577831171fb",
+      "materialId": "7bde207f-ce57-49e5-b961-7577831171fb",
+      "documentType": "SJPN",
+      "documentNumber": 1,
+      "addedAt": "2018-08-26T14:55:47.631Z"
     }
   ],
   "defendant": {

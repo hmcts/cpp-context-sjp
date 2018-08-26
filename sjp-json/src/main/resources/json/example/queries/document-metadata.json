@@ -1,6 +1,5 @@
 {
-  "id": "7bde207f-ce57-49e5-b961-7577831171fb",
-  "materialId": "7bde207f-ce57-49e5-b961-7577831171fb",
-  "documentType": "SJPN",
-  "documentNumber": 1
+  "fileName": "abc.txt",
+  "mimeType": "application/pdf",
+  "addedAt": "2018-08-26T16:39:15.417Z"
 }

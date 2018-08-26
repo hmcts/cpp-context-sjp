@@ -19,6 +19,7 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,7 +47,7 @@ public class SjpDocumentViewTest {
     private final UUID caseId = randomUUID();
     private final UUID documentId = randomUUID();
 
-    final JsonEnvelope queryEnvelope = envelope()
+    private final JsonEnvelope queryEnvelope = envelope()
             .with(metadataWithRandomUUID(CASE_DOCUMENT_QUERY_NAME))
             .withPayloadOf(caseId.toString(), "caseId")
             .withPayloadOf(documentId.toString(), "documentId")
@@ -54,7 +55,7 @@ public class SjpDocumentViewTest {
 
     @Test
     public void shouldGetCaseDocument() {
-        final CaseDocumentView caseDocumentView = new CaseDocumentView(randomUUID(), randomUUID(), "TEST", 1);
+        final CaseDocumentView caseDocumentView = new CaseDocumentView(randomUUID(), randomUUID(), "TEST", 1, ZonedDateTime.now());
 
         when(caseService.findCaseDocument(caseId, documentId)).thenReturn(Optional.of(caseDocumentView));
 

@@ -8,8 +8,11 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.BeforeClass;
@@ -46,29 +49,28 @@ public class FindCasesMissingSjpnAccessControlIT extends BaseIntegrationTest {
 
         final LocalDate now = LocalDate.now();
 
-        CreateCase.createCaseForPayloadBuilder(CreateCase.CreateCasePayloadBuilder
-                .withDefaults()
-                .withProsecutingAuthority(ProsecutingAuthority.TFL)
-                .withPostingDate(now)
+        final List<CreateCase.CreateCasePayloadBuilder> allNewCases = Arrays.asList(
+                CreateCase.CreateCasePayloadBuilder
+                        .withDefaults()
+                        .withProsecutingAuthority(ProsecutingAuthority.TFL)
+                        .withPostingDate(now),
+                CreateCase.CreateCasePayloadBuilder
+                        .withDefaults()
+                        .withProsecutingAuthority(ProsecutingAuthority.TFL)
+                        .withPostingDate(now.minusDays(4)),
+                CreateCase.CreateCasePayloadBuilder
+                        .withDefaults()
+                        .withProsecutingAuthority(ProsecutingAuthority.DVLA)
+                        .withPostingDate(now),
+                CreateCase.CreateCasePayloadBuilder
+                        .withDefaults()
+                        .withProsecutingAuthority(ProsecutingAuthority.DVLA)
+                        .withPostingDate(now.minusDays(4))
         );
 
-        CreateCase.createCaseForPayloadBuilder(CreateCase.CreateCasePayloadBuilder
-                .withDefaults()
-                .withProsecutingAuthority(ProsecutingAuthority.TFL)
-                .withPostingDate(now.minusDays(4))
-        );
+        allNewCases.forEach(CreateCase::createCaseForPayloadBuilder);
 
-        CreateCase.createCaseForPayloadBuilder(CreateCase.CreateCasePayloadBuilder
-                .withDefaults()
-                .withProsecutingAuthority(ProsecutingAuthority.DVLA)
-                .withPostingDate(now.minusDays(0))
-        );
-
-        CreateCase.createCaseForPayloadBuilder(CreateCase.CreateCasePayloadBuilder
-                .withDefaults()
-                .withProsecutingAuthority(ProsecutingAuthority.DVLA)
-                .withPostingDate(now.minusDays(4))
-        );
+        allNewCases.forEach(c -> CasePoller.pollUntilCaseByIdIsOk(c.getId()));
     }
 
     private static CasesMissingSjpnMetrics collectMetrics(UUID userId) {

@@ -17,6 +17,7 @@
       "libraOffenceDateCode": 1,
       "offenceCommittedDate": "2016-01-01",
       "offenceWording": "Committed some offence",
+      "offenceWordingWelsh": "Welsh wording: Committed some offence",
       "prosecutionFacts": "No ticket at the gates, forgery",
       "witnessStatement": "Jumped over the barriers",
       "compensation": 2.34

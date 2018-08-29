@@ -29,7 +29,7 @@ public class CreateCase {
     private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.create-sjp-case+json";
     private final CreateCasePayloadBuilder payloadBuilder;
 
-    public CreateCase(CreateCasePayloadBuilder payloadBuilder) {
+    private CreateCase(CreateCasePayloadBuilder payloadBuilder) {
         this.payloadBuilder = payloadBuilder;
     }
 
@@ -74,6 +74,21 @@ public class CreateCase {
         payload.add("costs", payloadBuilder.costs.doubleValue());
         payload.add("postingDate", LocalDates.to(payloadBuilder.postingDate));
 
+        final JsonObjectBuilder offence = createObjectBuilder()
+                .add("id", payloadBuilder.offenceBuilders.get(0).id.toString())
+                .add("offenceSequenceNo", 1)
+                .add("libraOffenceCode", payloadBuilder.offenceBuilders.get(0).libraOffenceCode)
+                .add("chargeDate", LocalDates.to(payloadBuilder.offenceBuilders.get(0).chargeDate))
+                .add("libraOffenceDateCode", payloadBuilder.offenceBuilders.get(0).libraOffenceDateCode)
+                .add("offenceCommittedDate", LocalDates.to(payloadBuilder.offenceBuilders.get(0).offenceCommittedDate))
+                .add("offenceWording", payloadBuilder.offenceBuilders.get(0).offenceWording)
+                .add("prosecutionFacts", payloadBuilder.offenceBuilders.get(0).prosecutionFacts)
+                .add("witnessStatement", payloadBuilder.offenceBuilders.get(0).witnessStatement)
+                .add("compensation", payloadBuilder.offenceBuilders.get(0).compensation.doubleValue());
+
+        Optional.ofNullable(payloadBuilder.offenceBuilders.get(0).offenceWordingWelsh)
+                .ifPresent(offenceWordingWelsh -> offence.add("offenceWordingWelsh", offenceWordingWelsh));
+
         final JsonObjectBuilder defendantBuilder = createObjectBuilder()
                 .add("title", payloadBuilder.defendantBuilder.title)
                 .add("firstName", payloadBuilder.defendantBuilder.firstName)
@@ -88,20 +103,7 @@ public class CreateCase {
                         .add("address4", payloadBuilder.defendantBuilder.addressBuilder.getAddress4())
                         .add("postcode", payloadBuilder.defendantBuilder.addressBuilder.getPostcode())
                 )
-                .add("offences", createArrayBuilder()
-                        .add(createObjectBuilder()
-                                .add("id", payloadBuilder.offenceBuilders.get(0).id.toString())
-                                .add("offenceSequenceNo", 1)
-                                .add("libraOffenceCode", payloadBuilder.offenceBuilders.get(0).libraOffenceCode)
-                                .add("chargeDate", LocalDates.to(payloadBuilder.offenceBuilders.get(0).chargeDate))
-                                .add("libraOffenceDateCode", payloadBuilder.offenceBuilders.get(0).libraOffenceDateCode)
-                                .add("offenceCommittedDate", LocalDates.to(payloadBuilder.offenceBuilders.get(0).offenceCommittedDate))
-                                .add("offenceWording", payloadBuilder.offenceBuilders.get(0).offenceWording)
-                                .add("prosecutionFacts", payloadBuilder.offenceBuilders.get(0).prosecutionFacts)
-                                .add("witnessStatement", payloadBuilder.offenceBuilders.get(0).witnessStatement)
-                                .add("compensation", payloadBuilder.offenceBuilders.get(0).compensation.doubleValue())
-                        )
-                );
+                .add("offences", createArrayBuilder().add(offence));
 
         Optional.ofNullable(payloadBuilder.defendantBuilder.dateOfBirth).map(LocalDates::to)
                 .ifPresent(dateOfBirth -> defendantBuilder.add("dateOfBirth", dateOfBirth));
@@ -275,6 +277,7 @@ public class CreateCase {
         private int libraOffenceDateCode;
         private LocalDate offenceCommittedDate;
         private String offenceWording;
+        private String offenceWordingWelsh;
         private String prosecutionFacts;
         private String witnessStatement;
         private BigDecimal compensation;
@@ -325,6 +328,15 @@ public class CreateCase {
 
         public String getOffenceWording() {
             return offenceWording;
+        }
+
+        public String getOffenceWordingWelsh() {
+            return offenceWordingWelsh;
+        }
+
+        public OffenceBuilder setOffenceWordingWelsh() {
+            this.offenceWordingWelsh = offenceWordingWelsh;
+            return this;
         }
 
         public String getProsecutionFacts() {

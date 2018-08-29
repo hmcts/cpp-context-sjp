@@ -23,6 +23,9 @@
           "wording": {
             "type": "string"
           },
+          "wordingWelsh": {
+            "type": "string"
+          },
           "indicatedPlea": {
             "type": "string",
             "enum": ["NOT_GUILTY", "GUILTY", "NO_PLEA", "ACTUAL_GUILTY"]

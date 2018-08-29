@@ -20,6 +20,7 @@ public class OffenceView {
     private final PleaMethod pleaMethod;
     private final Integer offenceSequenceNumber;
     private final String wording;
+    private final String wordingWelsh;
     private final String cjsCode;
     private final Integer sequenceNumber;
     private final LocalDate startDate;
@@ -41,6 +42,7 @@ public class OffenceView {
         this.plea = offence.getPlea();
         this.pleaMethod = offence.getPleaMethod();
         this.wording = offence.getWording();
+        this.wordingWelsh = offence.getWordingWelsh();
         this.startDate = offence.getStartDate();
         this.chargeDate = offence.getChargeDate();
         this.pendingWithdrawal = offence.getPendingWithdrawal();
@@ -72,6 +74,9 @@ public class OffenceView {
         return wording;
     }
 
+    public String getWordingWelsh() {
+        return wordingWelsh;
+    }
 
     public String getCjsCode() {
         return cjsCode;

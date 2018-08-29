@@ -123,6 +123,7 @@ public class CaseReceivedListenerTest {
     private static final LocalDate chargeDate = LocalDate.of(2017, 1, 1);
     private static final LocalDate offenceCommittedDate = LocalDate.of(2017, 1, 5);
     private static final String offenceWording = "this is offence wording";
+    private static final String offenceWordingWelsh = "this is offence wording in Welsh";
     private static final String prosecutionFacts = "this is prosecution facts";
     private static final String witnessStatement = "this is witness statement";
     private static final BigDecimal compensation = BigDecimal.valueOf(2.34);
@@ -193,6 +194,7 @@ public class CaseReceivedListenerTest {
                                         .setSequenceNumber(offenceSequenceNo)
                                         .setStartDate(offenceCommittedDate)
                                         .setWording(offenceWording)
+                                        .setWordingWelsh(offenceWordingWelsh)
                                         .withCompensation(compensation)
                                         .withLibraOffenceDateCode(1)
                                         .withProsecutionFacts(prosecutionFacts)
@@ -290,6 +292,7 @@ public class CaseReceivedListenerTest {
                                         .add("offenceCommittedDate", LocalDates.to(offenceCommittedDate))
                                         .add("libraOffenceDateCode", 1)
                                         .add("offenceWording", offenceWording)
+                                        .add("offenceWordingWelsh", offenceWordingWelsh)
                                         .add("prosecutionFacts", prosecutionFacts)
                                         .add("witnessStatement", witnessStatement)
                                         .add("compensation", compensation)

@@ -20,8 +20,13 @@ public class OffenceToOffenceDetailTest {
     public void shouldConvertOffenceToOffenceDetail() {
         Offence inputOffence = new Offence(UUID.randomUUID(), 1, "PS00001",
                 LocalDate.of(2016, 1, 1), 6,
-                LocalDate.of(2016, 1, 2), "Committed some offence",
-                "Prosecution facts", "Witness statement", BigDecimal.ONE);
+                LocalDate.of(2016, 1, 2),
+                LocalDate.of(2016, 1, 3),
+                "Committed some offence",
+                "Prosecution facts", "Witness statement", BigDecimal.ONE,
+                "Witness statement Welsh", 123,
+                LocalDate.of(2016, 1, 4),
+                LocalDate.of(2016, 1, 5));
 
         OffenceDetail outputOffence = offenceToOffenceDetail.convert(inputOffence);
 
@@ -30,6 +35,7 @@ public class OffenceToOffenceDetailTest {
                 .setCode(inputOffence.getLibraOffenceCode())
                 .setSequenceNumber(inputOffence.getOffenceSequenceNo())
                 .setWording(inputOffence.getOffenceWording())
+                .setWordingWelsh(inputOffence.getOffenceWordingWelsh())
                 .setStartDate(inputOffence.getOffenceDate())
                 .setChargeDate(inputOffence.getChargeDate())
                 .withLibraOffenceDateCode(inputOffence.getLibraOffenceDateCode())

@@ -58,6 +58,7 @@ public class CaseConverterTest {
         final boolean pendingWithdrawal = true;
 
         final String wording = "this is offence wording";
+        final String wordingWelsh = "Welsh wording: this is offence wording in Welsh";
         final String legislation = "legislation";
 
         final String offenceTitle = "this is offence title";
@@ -89,6 +90,7 @@ public class CaseConverterTest {
                                         .add("plea", plea)
                                         .add("pendingWithdrawal", pendingWithdrawal)
                                         .add("wording", wording)
+                                        .add("wordingWelsh", wordingWelsh)
                                 )
                         )
                 ).build();
@@ -126,6 +128,7 @@ public class CaseConverterTest {
                                         .add("title", offenceTitle)
                                         .add("legislation", legislation)
                                         .add("wording", wording)
+                                        .add("wordingWelsh", wordingWelsh)
                                         .add("pendingWithdrawal", pendingWithdrawal)
                                         .add("plea", plea)
                                 )

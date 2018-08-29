@@ -25,7 +25,7 @@ public class Offence {
     private final String prosecutionFacts;
     private final String witnessStatement;
     private final BigDecimal compensation;
-    private final String prosecutionChargeWordingWelsh;
+    private final String offenceWordingWelsh;
 
     @JsonUnwrapped
     private final BackDuty backDuty;
@@ -51,7 +51,7 @@ public class Offence {
                    @JsonProperty("prosecutionFacts") String prosecutionFacts,
                    @JsonProperty("witnessStatement") String witnessStatement,
                    @JsonProperty("compensation") BigDecimal compensation,
-                   @JsonProperty("prosecutionChargeWordingWelsh") String prosecutionChargeWordingWelsh,
+                   @JsonProperty("offenceWordingWelsh") String offenceWordingWelsh,
                    @JsonProperty("backDuty") Integer backDuty,
                    @JsonProperty("backDutyDateFrom") LocalDate backDutyDateFrom,
                    @JsonProperty("backDutyDateTo") LocalDate backDutyDateTo) {
@@ -65,7 +65,7 @@ public class Offence {
         this.prosecutionFacts = prosecutionFacts;
         this.witnessStatement = witnessStatement;
         this.compensation = compensation;
-        this.prosecutionChargeWordingWelsh = prosecutionChargeWordingWelsh;
+        this.offenceWordingWelsh = offenceWordingWelsh;
         this.backDuty = new BackDuty(backDuty, backDutyDateFrom, backDutyDateTo);
     }
 
@@ -109,8 +109,8 @@ public class Offence {
         return compensation;
     }
 
-    public String getProsecutionChargeWordingWelsh() {
-        return prosecutionChargeWordingWelsh;
+    public String getOffenceWordingWelsh() {
+        return offenceWordingWelsh;
     }
 
     public BackDuty getBackDuty() {
@@ -138,7 +138,7 @@ public class Offence {
                 Objects.equals(prosecutionFacts, that.prosecutionFacts) &&
                 Objects.equals(witnessStatement, that.witnessStatement) &&
                 Objects.equals(compensation, that.compensation) &&
-                Objects.equals(prosecutionChargeWordingWelsh, that.prosecutionChargeWordingWelsh) &&
+                Objects.equals(offenceWordingWelsh, that.offenceWordingWelsh) &&
                 Objects.equals(backDuty, that.backDuty);
     }
 
@@ -146,6 +146,6 @@ public class Offence {
     public int hashCode() {
         return Objects.hash(id, offenceSequenceNo, libraOffenceCode, chargeDate,
                 libraOffenceDateCode, offenceDate, offenceWording, prosecutionFacts,
-                witnessStatement, compensation, prosecutionChargeWordingWelsh, backDuty);
+                witnessStatement, compensation, offenceWordingWelsh, backDuty);
     }
 }

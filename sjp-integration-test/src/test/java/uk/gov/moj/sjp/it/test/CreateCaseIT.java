@@ -67,8 +67,9 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("defendant.personalDetails.address.address3"), equalTo(createCase.defendant.address.address3));
         assertThat(jsonResponse.get("defendant.personalDetails.address.address4"), equalTo(createCase.defendant.address.address4));
         assertThat(jsonResponse.get("defendant.personalDetails.address.postcode"), equalTo(createCase.defendant.address.postcode));
-        assertThat(jsonResponse.get("defendant.offences[0].offenceSequenceNumber"), equalTo(1)); //supporting only one - 1st 
+        assertThat(jsonResponse.get("defendant.offences[0].offenceSequenceNumber"), equalTo(1)); //supporting only one - 1st
         assertThat(jsonResponse.get("defendant.offences[0].wording"), equalTo(createCase.defendant.offences[0].offenceWording));
+        assertThat(jsonResponse.get("defendant.offences[0].wordingWelsh"), equalTo(createCase.defendant.offences[0].offenceWordingWelsh));
         assertThat(jsonResponse.get("defendant.offences[0].chargeDate"), equalTo(createCase.defendant.offences[0].chargeDate));
         assertThat(jsonResponse.get("defendant.offences[0].startDate"), equalTo(createCase.defendant.offences[0].offenceCommittedDate));
         assertThat(getProsecutingAuthority(caseId), is(prosecutingAuthority.name()));

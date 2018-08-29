@@ -17,6 +17,9 @@
         "wording": {
           "type": "string"
         },
+        "wordingWelsh": {
+          "type": "string"
+        },
         "pendingWithdrawal": {
           "type": "boolean"
         },

@@ -7,6 +7,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.query.controller.service.ReferenceDataService;
 
+import java.util.Optional;
+
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -51,24 +53,26 @@ public class CaseConverter {
     }
 
     private JsonObject buildOffenceObject(final JsonEnvelope query, final JsonObject offence) {
-        JsonObjectBuilder builder = Json.createObjectBuilder()
-                .add("id", offence.getString("id"))
-                .add("wording", offence.getString("wording"))
-                .add("pendingWithdrawal", offence.getBoolean("pendingWithdrawal", false));
-
         final JsonObject offenceReferenceData = referenceDataService
                 .getOffenceReferenceData(query, offence.getString("offenceCode"), offence.getString("startDate"));
 
-        builder.add("title", offenceReferenceData.getString("title"));
-        builder.add("legislation", offenceReferenceData.getString("legislation"));
+        final JsonObjectBuilder builder = Json.createObjectBuilder()
+                .add("id", offence.getString("id"))
+                .add("wording", offence.getString("wording"))
+                .add("pendingWithdrawal", offence.getBoolean("pendingWithdrawal", false))
+                .add("title", offenceReferenceData.getString("title"))
+                .add("legislation", offenceReferenceData.getString("legislation"));
 
-        if (offence.containsKey("plea")) {
-            builder.add("plea", offence.getString("plea"));
-        }
+        Optional.ofNullable(offence.getString("wordingWelsh", null))
+                .ifPresent(wordingWelsh -> builder.add("wordingWelsh", wordingWelsh));
+
+        Optional.ofNullable(offence.getString("plea", null))
+                .ifPresent(plea -> builder.add("plea", plea));
+
         return builder.build();
     }
 
-    private JsonObject buildCaseObject(JsonObject caseDetails, JsonObject defendant) {
+    private static JsonObject buildCaseObject(JsonObject caseDetails, JsonObject defendant) {
         return createObjectBuilder()
                 .add("id", caseDetails.getString("id"))
                 .add("urn", caseDetails.getString("urn"))

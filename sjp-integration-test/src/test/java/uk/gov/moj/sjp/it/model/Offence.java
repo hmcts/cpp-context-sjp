@@ -40,7 +40,7 @@ public class Offence {
     public String offenceWording = "Committed some offence";
 
     @Builder.Default
-    public String offenceWordingWelsh = "Wedi ymrwymo rhywfaint o drosedd";
+    public String offenceWordingWelsh;
 
     @Builder.Default
     public String prosecutionFacts = "No ticket at the gates, forgery";

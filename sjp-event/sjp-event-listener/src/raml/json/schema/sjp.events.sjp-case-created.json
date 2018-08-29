@@ -62,6 +62,9 @@
           "offenceWording": {
             "type": "string"
           },
+          "offenceWordingWelsh": {
+            "type": "string"
+          },
           "prosecutionFacts": {
             "type": "string"
           },

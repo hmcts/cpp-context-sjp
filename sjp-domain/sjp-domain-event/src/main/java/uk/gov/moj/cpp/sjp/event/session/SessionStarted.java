@@ -8,6 +8,7 @@ public abstract class SessionStarted {
 
     private final UUID sessionId;
     private final UUID userId;
+    private final String courtHouseCode;
     private final String courtHouseName;
     private final String localJusticeAreaNationalCourtCode;
     private final ZonedDateTime startedAt;
@@ -15,12 +16,14 @@ public abstract class SessionStarted {
     public SessionStarted(
             final UUID sessionId,
             final UUID userId,
+            final String courtHouseCode,
             final String courtHouseName,
             final String localJusticeAreaNationalCourtCode,
             final ZonedDateTime startedAt
     ) {
         this.sessionId = sessionId;
         this.userId = userId;
+        this.courtHouseCode = courtHouseCode;
         this.courtHouseName = courtHouseName;
         this.localJusticeAreaNationalCourtCode = localJusticeAreaNationalCourtCode;
         this.startedAt = startedAt;
@@ -32,6 +35,10 @@ public abstract class SessionStarted {
 
     public UUID getUserId() {
         return userId;
+    }
+
+    public String getCourtHouseCode() {
+        return courtHouseCode;
     }
 
     public String getCourtHouseName() {
@@ -57,6 +64,7 @@ public abstract class SessionStarted {
         final SessionStarted that = (SessionStarted) o;
         return Objects.equals(sessionId, that.sessionId) &&
                 Objects.equals(userId, that.userId) &&
+                Objects.equals(courtHouseCode, that.courtHouseCode) &&
                 Objects.equals(courtHouseName, that.courtHouseName) &&
                 Objects.equals(localJusticeAreaNationalCourtCode, that.localJusticeAreaNationalCourtCode) &&
                 Objects.equals(startedAt, that.startedAt);
@@ -64,6 +72,6 @@ public abstract class SessionStarted {
 
     @Override
     public int hashCode() {
-        return Objects.hash(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
+        return Objects.hash(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
     }
 }

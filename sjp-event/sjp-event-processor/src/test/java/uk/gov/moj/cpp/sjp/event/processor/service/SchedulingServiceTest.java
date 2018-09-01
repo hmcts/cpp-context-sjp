@@ -40,6 +40,7 @@ public class SchedulingServiceTest {
     private SchedulingService schedulingService;
 
     private final UUID sessionId = UUID.randomUUID();
+    private final String courtHouseCode = "B01LY";
     private final String courtHouseName = "Wimbledon Magistrates' Court";
     private final String localJusticeAreaNationalCourtCode = "2577";
     private final String magistrate = "John Smith";
@@ -48,12 +49,14 @@ public class SchedulingServiceTest {
     @Test
     public void shouldSendCommandToStartMagistrateSession() {
 
-        schedulingService.startMagistrateSession(magistrate, sessionId, courtHouseName, localJusticeAreaNationalCourtCode, queryEnvelope);
+        schedulingService.startMagistrateSession(magistrate, sessionId, courtHouseCode,
+                courtHouseName, localJusticeAreaNationalCourtCode, queryEnvelope);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(queryEnvelope).withName("scheduling.command.start-sjp-session"),
                 payloadIsJson(allOf(
                         withJsonPath("$.id", equalTo(sessionId.toString())),
+                        withJsonPath("$.courtHouseCode", equalTo(courtHouseCode)),
                         withJsonPath("$.courtLocation", equalTo(courtHouseName)),
                         withJsonPath("$.nationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                         withJsonPath("$.magistrate", equalTo(magistrate))
@@ -63,12 +66,14 @@ public class SchedulingServiceTest {
     @Test
     public void shouldSendCommandToStartDelegatedPowersSession() {
 
-        schedulingService.startDelegatedPowersSession(sessionId, courtHouseName, localJusticeAreaNationalCourtCode, queryEnvelope);
+        schedulingService.startDelegatedPowersSession(sessionId, courtHouseCode,
+                courtHouseName, localJusticeAreaNationalCourtCode, queryEnvelope);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(queryEnvelope).withName("scheduling.command.start-sjp-session"),
                 payloadIsJson(allOf(
                         withJsonPath("$.id", equalTo(sessionId.toString())),
+                        withJsonPath("$.courtHouseCode", equalTo(courtHouseCode)),
                         withJsonPath("$.courtLocation", equalTo(courtHouseName)),
                         withJsonPath("$.nationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                         withoutJsonPath("$.magistrate")

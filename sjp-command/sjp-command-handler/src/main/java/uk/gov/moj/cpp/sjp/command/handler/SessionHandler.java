@@ -10,7 +10,6 @@ import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
 
 import java.time.ZonedDateTime;
@@ -43,13 +42,14 @@ public class SessionHandler {
 
         final UUID userId = UUID.fromString(startSessionCommand.metadata().userId().get());
         final UUID sessionId = UUID.fromString(startSession.getString("sessionId"));
+        final String courtHouseCode = startSession.getString("courtHouseCode");
         final String courtHouseName = startSession.getString("courtHouseName");
         final String localJusticeAreaNationalCourtCode = startSession.getString("localJusticeAreaNationalCourtCode");
         final Optional<String> magistrate = Optional.ofNullable(startSession.getString("magistrate", null));
 
         applyToSessionAggregate(startSessionCommand, (session) -> magistrate
-                .map(providedMagistrate -> session.startMagistrateSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, clock.now(), providedMagistrate))
-                .orElseGet(() -> session.startDelegatedPowersSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, clock.now())));
+                .map(providedMagistrate -> session.startMagistrateSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, clock.now(), providedMagistrate))
+                .orElseGet(() -> session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, clock.now())));
     }
 
     @Handles("sjp.command.end-session")
@@ -65,13 +65,14 @@ public class SessionHandler {
         final UUID userId = UUID.fromString(migrateSession.getString("userId"));
         final UUID sessionId = UUID.fromString(migrateSession.getString("sessionId"));
         final ZonedDateTime startedAt = ZonedDateTime.parse(migrateSession.getString("startedAt"));
+        final String courtHouseCode = null;   // No value required - Property created after migration run in production
         final String courtHouseName = migrateSession.getString("courtHouseName");
         final String localJusticeAreaNationalCourtCode = migrateSession.getString("localJusticeAreaNationalCourtCode");
         final Optional<String> magistrate = Optional.ofNullable(migrateSession.getString("magistrate", null));
 
         applyToSessionAggregate(migrateSessionCommand, (session) -> magistrate
-                .map(providedMagistrate -> session.startMagistrateSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, providedMagistrate))
-                .orElseGet(() -> session.startDelegatedPowersSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt)));
+                .map(providedMagistrate -> session.startMagistrateSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, providedMagistrate))
+                .orElseGet(() -> session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt)));
     }
 
     private void applyToSessionAggregate(JsonEnvelope sessionCommand, final Function<Session, Stream<Object>> function) throws EventStreamException {

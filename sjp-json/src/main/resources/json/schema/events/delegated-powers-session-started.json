@@ -9,6 +9,9 @@
     "userId": {
       "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
+    "courtHouseCode": {
+      "type": "string"
+    },
     "courtHouseName": {
       "type": "string"
     },

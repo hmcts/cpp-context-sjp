@@ -87,6 +87,7 @@ public class SessionApiTest {
         verify(sender).send(argThat(jsonEnvelope(withMetadataEnvelopedFrom(startSessionCommand).withName("sjp.command.start-session"),
                 payloadIsJson(allOf(
                         withJsonPath("$.sessionId", equalTo(sessionId.toString())),
+                        withJsonPath("$.courtHouseCode", equalTo(courtHouseOUCode)),
                         withJsonPath("$.courtHouseName", equalTo(sessionCourt.getCourtHouseName())),
                         withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(sessionCourt.getLocalJusticeAreaNationalCourtCode()))
                 )))));

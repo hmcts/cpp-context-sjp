@@ -81,8 +81,9 @@ public class SchedulingStub {
                         .withBody(session.toString())));
     }
 
-    public static void verifyDelegatedPowersSessionStarted(final UUID sessionId, final String courtHouseName, final String localJusticeAreaNationalCourtCode) {
+    public static void verifyDelegatedPowersSessionStarted(final UUID sessionId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode) {
         final Predicate<JSONObject> commandPayloadPredicate = commandPayload -> commandPayload.getString("id").equals(sessionId.toString())
+                && commandPayload.getString("courtHouseCode").equals(courtHouseCode)
                 && commandPayload.getString("courtLocation").equals(courtHouseName)
                 && commandPayload.getString("nationalCourtCode").equals(localJusticeAreaNationalCourtCode)
                 && !commandPayload.has("magistrate");
@@ -90,8 +91,9 @@ public class SchedulingStub {
         verifySessionStarted(commandPayloadPredicate);
     }
 
-    public static void verifyMagistrateSessionStarted(final UUID sessionId, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final String magistrate) {
+    public static void verifyMagistrateSessionStarted(final UUID sessionId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final String magistrate) {
         final Predicate<JSONObject> commandPayloadPredicate = commandPayload -> commandPayload.getString("id").equals(sessionId.toString())
+                && commandPayload.getString("courtHouseCode").equals(courtHouseCode)
                 && commandPayload.getString("courtLocation").equals(courtHouseName)
                 && commandPayload.getString("nationalCourtCode").equals(localJusticeAreaNationalCourtCode)
                 && commandPayload.getString("magistrate").equals(magistrate);

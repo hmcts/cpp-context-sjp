@@ -60,6 +60,7 @@ public class SessionIT extends BaseIntegrationTest {
         assertThat(sessionStartedEvent.get(), jsonEnvelope(metadata().withName(SessionProcessor.PUBLIC_SJP_SESSION_STARTED),
                 payloadIsJson(allOf(
                         withJsonPath("$.sessionId", equalTo(sessionId.toString())),
+                        withJsonPath("$.courtHouseCode", equalTo(courtHouseOUCode)),
                         withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                         withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                         withJsonPath("$.type", equalTo(DELEGATED_POWERS.name())))
@@ -75,7 +76,7 @@ public class SessionIT extends BaseIntegrationTest {
                 withoutJsonPath("$.magistrate")
         )));
 
-        SchedulingStub.verifyDelegatedPowersSessionStarted(sessionId, courtHouseName, localJusticeAreaNationalCourtCode);
+        SchedulingStub.verifyDelegatedPowersSessionStarted(sessionId, courtHouseOUCode, courtHouseName, localJusticeAreaNationalCourtCode);
 
         SessionHelper.endSession(sessionId, userId);
         SessionHelper.getSession(sessionId, userId, withJsonPath("$.endedAt", notNullValue()));
@@ -92,6 +93,7 @@ public class SessionIT extends BaseIntegrationTest {
         assertThat(sessionStartedEvent.get(), jsonEnvelope(metadata().withName(SessionProcessor.PUBLIC_SJP_SESSION_STARTED),
                 payloadIsJson(allOf(
                         withJsonPath("$.sessionId", equalTo(sessionId.toString())),
+                        withJsonPath("$.courtHouseCode", equalTo(courtHouseOUCode)),
                         withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                         withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                         withJsonPath("$.type", equalTo(MAGISTRATE.name())))
@@ -106,7 +108,7 @@ public class SessionIT extends BaseIntegrationTest {
                 withJsonPath("$.magistrate", equalTo(magistrate))
         )));
 
-        SchedulingStub.verifyMagistrateSessionStarted(sessionId, courtHouseName, localJusticeAreaNationalCourtCode, magistrate);
+        SchedulingStub.verifyMagistrateSessionStarted(sessionId, courtHouseOUCode, courtHouseName, localJusticeAreaNationalCourtCode, magistrate);
 
         SessionHelper.endSession(sessionId, userId);
         SessionHelper.getSession(sessionId, userId, withJsonPath("$.endedAt", notNullValue()));

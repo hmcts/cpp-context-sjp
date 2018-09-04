@@ -27,7 +27,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.ReadyCasesReasonCount;
-import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCasesRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
 import java.util.Collections;
 import java.util.UUID;
@@ -46,7 +46,7 @@ public class SjpReadyCasesQueryViewTest {
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
     @Mock
-    private ReadyCasesRepository readyCasesRepository;
+    private ReadyCaseRepository readyCaseRepository;
 
     @InjectMocks
     private SjpReadyCasesQueryView sjpReadyCasesQueryView;
@@ -60,7 +60,7 @@ public class SjpReadyCasesQueryViewTest {
         final ReadyCasesReasonCount readyCasesReasonCount1 = new ReadyCasesReasonCount(PIA.name(), 2);
         final ReadyCasesReasonCount readyCasesReasonCount2 = new ReadyCasesReasonCount(PLEADED_GUILTY.name(), 3);
 
-        when(readyCasesRepository.getReadyCasesReasonCount()).thenReturn(asList(readyCasesReasonCount1, readyCasesReasonCount2));
+        when(readyCaseRepository.getReadyCasesReasonCount()).thenReturn(asList(readyCasesReasonCount1, readyCasesReasonCount2));
 
         final JsonEnvelope readyCasesReasonsCounts = sjpReadyCasesQueryView.getReadyCasesReasonsCounts(queryEnvelope);
 
@@ -86,7 +86,7 @@ public class SjpReadyCasesQueryViewTest {
         final ReadyCase readyCase1 = new ReadyCase(randomUUID(), PIA);
         final ReadyCase readyCase2 = new ReadyCase(randomUUID(), PLEADED_GUILTY, randomUUID());
 
-        when(readyCasesRepository.findAll()).thenReturn(asList(readyCase1, readyCase2));
+        when(readyCaseRepository.findAll()).thenReturn(asList(readyCase1, readyCase2));
 
         final JsonEnvelope readyCases = sjpReadyCasesQueryView.getReadyCases(queryEnvelope);
 
@@ -104,7 +104,7 @@ public class SjpReadyCasesQueryViewTest {
                         )))
                 ))))));
 
-        verify(readyCasesRepository, never()).findByAssigneeId(any());
+        verify(readyCaseRepository, never()).findByAssigneeId(any());
     }
 
     @Test
@@ -117,7 +117,7 @@ public class SjpReadyCasesQueryViewTest {
         final ReadyCase readyCase1 = new ReadyCase(randomUUID(), PIA, assigneeId);
         final ReadyCase readyCase2 = new ReadyCase(randomUUID(), PLEADED_GUILTY, assigneeId);
 
-        when(readyCasesRepository.findByAssigneeId(assigneeId)).thenReturn(asList(readyCase1, readyCase2));
+        when(readyCaseRepository.findByAssigneeId(assigneeId)).thenReturn(asList(readyCase1, readyCase2));
 
         final JsonEnvelope readyCases = sjpReadyCasesQueryView.getReadyCases(queryEnvelope);
 
@@ -135,7 +135,7 @@ public class SjpReadyCasesQueryViewTest {
                         )))
                 ))))));
 
-        verify(readyCasesRepository, never()).findAll();
+        verify(readyCaseRepository, never()).findAll();
     }
 
     @Test
@@ -144,7 +144,7 @@ public class SjpReadyCasesQueryViewTest {
                 .with(metadataWithRandomUUID("sjp.query.ready-cases"))
                 .build();
 
-        when(readyCasesRepository.findAll()).thenReturn(Collections.emptyList());
+        when(readyCaseRepository.findAll()).thenReturn(Collections.emptyList());
 
         final JsonEnvelope readyCases = sjpReadyCasesQueryView.getReadyCases(queryEnvelope);
 

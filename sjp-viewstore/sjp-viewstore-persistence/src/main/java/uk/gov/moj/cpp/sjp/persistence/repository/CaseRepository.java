@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
+import uk.gov.moj.cpp.sjp.persistence.entity.AwaitingCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
@@ -110,9 +111,14 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
             "WHERE cdocs.materialId = :materialId")
     public abstract CaseDetail findByMaterialId(@QueryParam("materialId") final UUID materialId);
 
-    @Query(value = "SELECT DISTINCT cd FROM CaseDetail cd JOIN cd.caseDocuments doc ON doc.documentType = 'SJPN' " +
-            "WHERE cd.completed IS NOT true ORDER BY cd.postingDate")
-    public abstract List<CaseDetail> findAwaitingSjpCases(@MaxResults final int limit);
+    @Query(value = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.AwaitingCase" +
+            "(d.personalDetails.firstName, d.personalDetails.lastName, o.code) " +
+            "FROM CaseDetail cd " +
+            "LEFT OUTER JOIN cd.defendant d " +
+            "LEFT OUTER JOIN d.offences o " +
+            "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc) " +
+            "ORDER BY cd.postingDate")
+    public abstract List<AwaitingCase> findAwaitingSjpCases(@MaxResults final int limit);
 
     @Query(value = "SELECT min(cd.postingDate) FROM CaseDetail cd " +
             "WHERE cd.completed IS NOT true")

@@ -23,8 +23,6 @@ import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.CPS;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
-import static uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder.aCase;
-import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.util.Clock;
@@ -35,12 +33,12 @@ import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDocumentBuilder;
+import uk.gov.moj.cpp.sjp.persistence.entity.AwaitingCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
@@ -339,7 +337,7 @@ public class CaseServiceTest {
     public void shouldFindCaseDocument() {
         final CaseDocument caseDocument = new CaseDocument(randomUUID(), randomUUID(), "SJPN", clock.now(), CASE_ID, 2);
 
-        when(caseRepository.findCaseDocuments(CASE_ID)).thenReturn(Arrays.asList(caseDocument));
+        when(caseRepository.findCaseDocuments(CASE_ID)).thenReturn(singletonList(caseDocument));
 
         final Optional<CaseDocumentView> caseDocumentView = service.findCaseDocument(CASE_ID, caseDocument.getId());
 
@@ -392,18 +390,16 @@ public class CaseServiceTest {
     @Test
     public void shouldFindAwaitingCases() {
 
-        final CaseDetail caseDetail =
-                aCase().addDefendantDetail(aDefendantDetail().build()).build();
-        when(caseRepository.findAwaitingSjpCases(600)).thenReturn(singletonList(caseDetail));
+        final AwaitingCase awaitingCase = new AwaitingCase("Andrew", "Baker", "PS0001");
+        when(caseRepository.findAwaitingSjpCases(600)).thenReturn(singletonList(awaitingCase));
 
         final JsonObject awaitingCases = service.findAwaitingCases();
 
         final JsonObject awaitingCase1 = awaitingCases.getJsonArray("awaitingCases")
                 .getValuesAs(JsonObject.class).get(0);
-        final DefendantDetail defendantDetail = caseDetail.getDefendant();
-        final OffenceDetail offenceDetail = defendantDetail.getOffences().iterator().next();
-        assertThat(awaitingCase1.getString("offenceCode"), is(offenceDetail.getCode()));
-
+        assertEquals(awaitingCase1.getString("firstName"), awaitingCase.getDefendantFirstName());
+        assertEquals(awaitingCase1.getString("lastName"), awaitingCase.getDefendantLastName());
+        assertEquals(awaitingCase1.getString("offenceCode"), awaitingCase.getOffenceCode());
     }
 
     @Test

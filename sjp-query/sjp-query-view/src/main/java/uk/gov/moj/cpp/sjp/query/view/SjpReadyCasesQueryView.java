@@ -10,7 +10,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.ReadyCasesReasonCount;
-import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCasesRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +26,7 @@ import javax.json.JsonObjectBuilder;
 public class SjpReadyCasesQueryView {
 
     @Inject
-    private ReadyCasesRepository readyCasesRepository;
+    private ReadyCaseRepository readyCaseRepository;
 
     @Inject
     private Enveloper enveloper;
@@ -34,7 +34,7 @@ public class SjpReadyCasesQueryView {
     @Handles("sjp.query.ready-cases-reasons-counts")
     public JsonEnvelope getReadyCasesReasonsCounts(final JsonEnvelope envelope) {
 
-        final List<ReadyCasesReasonCount> readyCasesReasonsCounts = readyCasesRepository.getReadyCasesReasonCount();
+        final List<ReadyCasesReasonCount> readyCasesReasonsCounts = readyCaseRepository.getReadyCasesReasonCount();
 
         final JsonArray readyCasesReasonsCountsArray = toJsonArray(readyCasesReasonsCounts,
                 readyCasesCounts -> createObjectBuilder()
@@ -54,7 +54,7 @@ public class SjpReadyCasesQueryView {
 
         final Optional<UUID> assigneeId = Optional.ofNullable(queryOptions.getString("assigneeId", null)).map(UUID::fromString);
 
-        final List<ReadyCase> readyCases = assigneeId.isPresent() ? readyCasesRepository.findByAssigneeId(assigneeId.get()) : readyCasesRepository.findAll();
+        final List<ReadyCase> readyCases = assigneeId.isPresent() ? readyCaseRepository.findByAssigneeId(assigneeId.get()) : readyCaseRepository.findAll();
 
         final JsonArray readyCasesArray = toJsonArray(readyCases,
                 readyCase -> {

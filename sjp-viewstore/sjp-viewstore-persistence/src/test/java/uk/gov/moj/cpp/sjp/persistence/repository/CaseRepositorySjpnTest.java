@@ -5,7 +5,6 @@ import static org.apache.commons.collections.ListUtils.union;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.everyItem;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isIn;
@@ -47,7 +46,6 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
     private Clock clock;
 
     private SjpCases tflCases, tvlCases, allCases = new SjpCases();
-
 
     @Before
     public void addCasesAndDocuments() {
@@ -151,19 +149,9 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
         }
     }
 
-    @Test
-    public void findAwaitingSjpCases() {
+    private SjpCases createCasesAndDocuments(final ProsecutingAuthority prosecutingAuthority) {
 
-        final int limit = NUMBER_OF_PROSECUTING_AUTHORITIES * 2;
-        final List<CaseDetail> readySjpCases = caseRepository.findAwaitingSjpCases(limit);
-
-        assertThat(readySjpCases, hasSize(limit));
-        assertThat(readySjpCases, containsInAnyOrder(allCases.uncompletedSjpCasesWithSjpn.toArray()));
-    }
-
-    private SjpCases createCasesAndDocuments(ProsecutingAuthority prosecutingAuthority) {
-
-        SjpCases cases = new SjpCases();
+        final SjpCases cases = new SjpCases();
 
         final List<CaseDetail> sjpCases = createCases(8, prosecutingAuthority);
 

@@ -13,7 +13,7 @@ import org.apache.deltaspike.data.api.EntityRepository;
 import org.apache.deltaspike.data.api.Repository;
 
 @Repository
-public abstract class ReadyCasesRepository implements EntityRepository<ReadyCase, UUID> {
+public abstract class ReadyCaseRepository implements EntityRepository<ReadyCase, UUID> {
 
     @Inject
     private EntityManager em;

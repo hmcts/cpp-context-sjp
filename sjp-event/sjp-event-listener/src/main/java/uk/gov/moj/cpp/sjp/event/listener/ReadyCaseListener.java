@@ -9,7 +9,7 @@ import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
-import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCasesRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
 import java.util.UUID;
 
@@ -21,7 +21,7 @@ import javax.transaction.Transactional;
 public class ReadyCaseListener {
 
     @Inject
-    private ReadyCasesRepository readyCasesRepository;
+    private ReadyCaseRepository readyCaseRepository;
 
     @Transactional
     @Handles(CaseMarkedReadyForDecision.EVENT_NAME)
@@ -31,15 +31,15 @@ public class ReadyCaseListener {
                 UUID.fromString(caseMarkedReadyForDecision.getString("caseId")),
                 CaseReadinessReason.valueOf(caseMarkedReadyForDecision.getString("reason"))
         );
-        readyCasesRepository.save(readyCase);
+        readyCaseRepository.save(readyCase);
     }
 
     @Transactional
     @Handles(CaseUnmarkedReadyForDecision.EVENT_NAME)
     public void handleCaseUnmarkedReadyForDecision(final JsonEnvelope caseUnmarkedReadyForDecisionEvent) {
         final JsonObject caseUnmarkedReadyForDecision = caseUnmarkedReadyForDecisionEvent.payloadAsJsonObject();
-        final ReadyCase readyCase = readyCasesRepository.findBy(UUID.fromString(caseUnmarkedReadyForDecision.getString("caseId")));
-        readyCasesRepository.remove(readyCase);
+        final ReadyCase readyCase = readyCaseRepository.findBy(UUID.fromString(caseUnmarkedReadyForDecision.getString("caseId")));
+        readyCaseRepository.remove(readyCase);
     }
 
 }

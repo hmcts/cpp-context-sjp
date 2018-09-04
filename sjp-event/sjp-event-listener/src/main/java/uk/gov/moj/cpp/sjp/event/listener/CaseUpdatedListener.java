@@ -19,7 +19,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCasesRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -49,7 +49,7 @@ public class CaseUpdatedListener {
     private CaseSearchResultRepository searchResultRepository;
 
     @Inject
-    private ReadyCasesRepository readyCasesRepository;
+    private ReadyCaseRepository readyCaseRepository;
 
     @Handles(CaseCompleted.EVENT_NAME)
     @Transactional
@@ -58,8 +58,8 @@ public class CaseUpdatedListener {
         caseRepository.completeCase(caseCompletedEvent.getCaseId());
 
         //Conditional removal needed in case of event replay of old cases which have CaseCompleted but not CaseMarkedReadyEvent
-        Optional.ofNullable(readyCasesRepository.findBy(caseCompletedEvent.getCaseId()))
-                .ifPresent(readyCasesRepository::remove);
+        Optional.ofNullable(readyCaseRepository.findBy(caseCompletedEvent.getCaseId()))
+                .ifPresent(readyCaseRepository::remove);
     }
 
     @Handles(AllOffencesWithdrawalRequested.EVENT_NAME)

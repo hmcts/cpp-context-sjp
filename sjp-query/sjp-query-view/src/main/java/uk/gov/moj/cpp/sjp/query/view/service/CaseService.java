@@ -15,11 +15,11 @@ import static javax.json.Json.createObjectBuilder;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.persistence.entity.AwaitingCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseReferredToCourt;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
@@ -111,13 +111,6 @@ public class CaseService {
         return caseView;
     }
 
-    /**
-     * Find cases missing the SJP notice document.
-     *
-     * @param envelope
-     * @param limit limit the number of IDs returned
-     * @return CasesMissingSjpnView
-     */
     public CasesMissingSjpnView findCasesMissingSjpn(final JsonEnvelope envelope,
                                                      final Optional<Integer> limit,
                                                      final Optional<LocalDate> postedBefore) {
@@ -263,16 +256,14 @@ public class CaseService {
 
     public JsonObject findAwaitingCases() {
 
-        final List<CaseDetail> awaitingSjpCases = caseRepository.findAwaitingSjpCases(600);
+        final List<AwaitingCase> awaitingSjpCases = caseRepository.findAwaitingSjpCases(600);
 
         final JsonArrayBuilder arrayBuilder = createArrayBuilder();
-        awaitingSjpCases.forEach(sjpCase -> {
-            final DefendantDetail defendant = sjpCase.getDefendant();
+        awaitingSjpCases.forEach(awaitingCase ->
             arrayBuilder.add(createObjectBuilder()
-                    .add("firstName", defendant.getPersonalDetails().getFirstName())
-                    .add("lastName", defendant.getPersonalDetails().getLastName())
-                    .add("offenceCode", defendant.getOffences().iterator().next().getCode()));
-        });
+                    .add("firstName", awaitingCase.getDefendantFirstName())
+                    .add("lastName", awaitingCase.getDefendantLastName())
+                    .add("offenceCode", awaitingCase.getOffenceCode())));
         return createObjectBuilder().add("awaitingCases", arrayBuilder).build();
     }
 

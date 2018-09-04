@@ -20,7 +20,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCasesRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
 import java.util.UUID;
 
@@ -46,7 +46,7 @@ public class CaseUpdatedListenerTest {
     private CaseRepository caseRepository;
 
     @Mock
-    private ReadyCasesRepository readyCasesRepository;
+    private ReadyCaseRepository readyCaseRepository;
 
     @Mock
     private JsonEnvelope envelope;
@@ -79,12 +79,12 @@ public class CaseUpdatedListenerTest {
         final ReadyCase readyCase = new ReadyCase(caseId, PIA);
 
         when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId));
-        when(readyCasesRepository.findBy(caseId)).thenReturn(readyCase);
+        when(readyCaseRepository.findBy(caseId)).thenReturn(readyCase);
 
         listener.caseCompleted(envelopeIn);
 
         verify(caseRepository).completeCase(caseId);
-        verify(readyCasesRepository).remove(readyCase);
+        verify(readyCaseRepository).remove(readyCase);
     }
 
     @Test
@@ -93,12 +93,12 @@ public class CaseUpdatedListenerTest {
         final JsonEnvelope envelopeIn = envelopeFrom(metadataWithRandomUUID(CaseCompleted.EVENT_NAME), caseCompletedEventPayload);
 
         when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId));
-        when(readyCasesRepository.findBy(caseId)).thenReturn(null);
+        when(readyCaseRepository.findBy(caseId)).thenReturn(null);
 
         listener.caseCompleted(envelopeIn);
 
         verify(caseRepository).completeCase(caseId);
-        verify(readyCasesRepository, never()).remove(any());
+        verify(readyCaseRepository, never()).remove(any());
     }
 
     @Test

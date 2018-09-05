@@ -3,6 +3,7 @@ package uk.gov.moj.sjp.it.model;
 import uk.gov.justice.json.schemas.domains.sjp.Language;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import lombok.Builder;
@@ -47,9 +48,14 @@ public class Defendant {
     public String languageNeeds = "No special needs";
 
     @Builder.Default
-    public String nationalInsuranceNumber = "QQ123456C";
+    public String nationalInsuranceNumber = "AB123456C";
 
     @Builder.Default
     public String driverNumber = "Driver number";
+
+    @Valid
+    @NotNull(message = "ContactDetails is required")
+    @Builder.Default
+    public ContactDetails contactDetails = ContactDetails.builder().build();
 
 }

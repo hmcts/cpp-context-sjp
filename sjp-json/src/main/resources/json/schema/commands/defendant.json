@@ -34,10 +34,13 @@
       "type": "string"
     },
     "nationalInsuranceNumber": {
-      "type": "string"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/national-insurance-number.json"
     },
     "address": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+    },
+    "contactDetails": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json"
     },
     "offences": {
       "type": "array",

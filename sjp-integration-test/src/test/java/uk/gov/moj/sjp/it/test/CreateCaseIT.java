@@ -52,7 +52,6 @@ public class CreateCaseIT extends BaseIntegrationTest {
         }
 
         final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId);
-
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCase.urn));
         assertThat(jsonResponse.get("enterpriseId"), equalTo(createCase.enterpriseId));
@@ -72,6 +71,12 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("defendant.offences[0].wordingWelsh"), equalTo(createCase.defendant.offences[0].offenceWordingWelsh));
         assertThat(jsonResponse.get("defendant.offences[0].chargeDate"), equalTo(createCase.defendant.offences[0].chargeDate));
         assertThat(jsonResponse.get("defendant.offences[0].startDate"), equalTo(createCase.defendant.offences[0].offenceCommittedDate));
+        assertThat(jsonResponse.get("defendant.personalDetails.contactDetails.home"), equalTo(createCase.defendant.contactDetails.home));
+        assertThat(jsonResponse.get("defendant.personalDetails.contactDetails.mobile"), equalTo(createCase.defendant.contactDetails.mobile));
+        assertThat(jsonResponse.get("defendant.personalDetails.contactDetails.email"), equalTo(createCase.defendant.contactDetails.email));
+        assertThat(jsonResponse.get("defendant.personalDetails.nationalInsuranceNumber"), equalTo(createCase.defendant.nationalInsuranceNumber));
+
         assertThat(getProsecutingAuthority(caseId), is(prosecutingAuthority.name()));
+
     }
 }

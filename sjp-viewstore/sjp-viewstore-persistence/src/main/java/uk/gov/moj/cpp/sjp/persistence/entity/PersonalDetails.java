@@ -4,6 +4,7 @@ import uk.gov.justice.json.schemas.domains.sjp.Gender;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -156,4 +157,33 @@ public class PersonalDetails implements Serializable {
 
     public void setNameChanged(Boolean nameChanged) { this.nameChanged = nameChanged; }
 
+    @Override
+    @SuppressWarnings("squid:S1067")
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof PersonalDetails)) {
+            return false;
+        }
+
+        final PersonalDetails that = (PersonalDetails) o;
+        return Objects.equals(title, that.title) &&
+                Objects.equals(firstName, that.firstName) &&
+                Objects.equals(lastName, that.lastName) &&
+                Objects.equals(dateOfBirth, that.dateOfBirth) &&
+                gender == that.gender &&
+                Objects.equals(nationalInsuranceNumber, that.nationalInsuranceNumber) &&
+                Objects.equals(address, that.address) &&
+                Objects.equals(contactDetails, that.contactDetails) &&
+                Objects.equals(addressChanged, that.addressChanged) &&
+                Objects.equals(dobChanged, that.dobChanged) &&
+                Objects.equals(nameChanged, that.nameChanged);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber,
+                address, contactDetails, addressChanged, dobChanged, nameChanged);
+    }
 }

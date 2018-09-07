@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.accesscontrol;
 
+import static java.util.Collections.singletonList;
 import static org.mockito.BDDMockito.given;
 import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getUpdateInterpreterGroups;
 
@@ -7,7 +8,6 @@ import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
-import java.util.Arrays;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
@@ -32,7 +32,7 @@ public class UpdateInterpreterTest extends BaseDroolsAccessControlTest {
     @Test
     public void shouldNotAllowUserNotInAuthorisedGroup() {
         final Action action = createActionFor(UPDATE_COURT_INTERPRETER_COMMAND_NAME);
-        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, Arrays.asList("random group"))).willReturn(false);
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, singletonList("random group"))).willReturn(false);
 
         assertFailureOutcome(executeRulesWith(action));
     }

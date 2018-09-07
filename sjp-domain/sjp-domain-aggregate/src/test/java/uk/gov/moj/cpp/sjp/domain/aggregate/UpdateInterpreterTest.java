@@ -1,19 +1,15 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
-import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 
-import uk.gov.justice.services.common.util.Clock;
-import uk.gov.justice.services.common.util.UtcClock;
-import uk.gov.moj.cpp.sjp.domain.Case;
-import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
-import uk.gov.moj.cpp.sjp.event.CaseReceived;
+import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
@@ -24,88 +20,87 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
-public class UpdateInterpreterTest {
+/**
+ * Test for {@link CaseAggregate#updateInterpreter}
+ */
+public class UpdateInterpreterTest extends CaseAggregateBaseTest {
 
-    private static final String LANGUAGE = "French";
+    private static final String INITIAL_LANGUAGE = "French";
 
-    private Clock clock;
-    private CaseAggregate caseAggregate;
-    private UUID caseId;
-    private UUID defendantId;
     private UUID userId;
 
     @Before
-    public void initialiseCase() {
-        clock = new UtcClock();
-        caseAggregate = new CaseAggregate();
-
-        CaseReceived caseReceived = receiveCase();
-        caseId = caseReceived.getCaseId();
-        defendantId = caseReceived.getDefendant().getId();
+    public void init() {
         userId = randomUUID();
     }
 
+    private List<Object> updateInterpreterLanguage(final String interpreterLanguage) {
+        return caseAggregate.updateInterpreter(userId, defendantId, interpreterLanguage)
+                .collect(toList());
+    }
+
     @Test
-    public void shouldCreateInterpreterUpdatedForDefendantEvent() {
-        List<Object> events = caseAggregate.updateInterpreter(userId, defendantId, LANGUAGE).collect(toList());
+    public void shouldRejectCaseWhenDefendantNotFound() {
+        final UUID nonExistingDefendantId = randomUUID();
+        final List<Object> events = caseAggregate.updateInterpreter(userId, nonExistingDefendantId, INITIAL_LANGUAGE)
+                .collect(toList());
 
-        assertThat(events, hasSize(1));
+        assertThat(events, contains(instanceOf(DefendantNotFound.class)));
 
-        InterpreterUpdatedForDefendant interpreterUpdated = (InterpreterUpdatedForDefendant) events.get(0);
+        final DefendantNotFound defendantNotFound = (DefendantNotFound) events.get(0);
+        assertThat(defendantNotFound.getDefendantId(), equalTo(nonExistingDefendantId));
+        assertThat(defendantNotFound.getDescription(), equalTo("Update interpreter"));
+    }
 
-        assertThat(interpreterUpdated.getCaseId(), equalTo(caseId));
-        assertThat(interpreterUpdated.getDefendantId(), equalTo(defendantId));
-        assertThat(interpreterUpdated.getInterpreter().getNeeded(), is(true));
-        assertThat(interpreterUpdated.getInterpreter().getLanguage(), equalTo(LANGUAGE));
+    @Test
+    public void shouldUpdateInterpreter() {
+        final List<Object> events = updateInterpreterLanguage(INITIAL_LANGUAGE);
+
+        assertThat(events, contains(
+                instanceOf(InterpreterUpdatedForDefendant.class)));
+
+        final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant = (InterpreterUpdatedForDefendant) events.get(0);
+        assertThat(interpreterUpdatedForDefendant.getCaseId(), equalTo(caseId));
+        assertThat(interpreterUpdatedForDefendant.getDefendantId(), equalTo(defendantId));
+        assertThat(interpreterUpdatedForDefendant.getInterpreter(), equalTo(Interpreter.of(INITIAL_LANGUAGE)));
+    }
+
+    @Test
+    public void shouldUpdateJustInterpreterLanguage() {
+        final String INTERPRETER_LANGUAGE_UPDATED = "Spanish";
+
+        final List<Object> events = updateInterpreterLanguage(INTERPRETER_LANGUAGE_UPDATED);
+
+        assertThat(events, contains(instanceOf(InterpreterUpdatedForDefendant.class)));
+        final InterpreterUpdatedForDefendant interpreterUpdatedForDefendantSpanish = (InterpreterUpdatedForDefendant) events.get(0);
+        assertThat(interpreterUpdatedForDefendantSpanish.getCaseId(), equalTo(caseId));
+        assertThat(interpreterUpdatedForDefendantSpanish.getDefendantId(), equalTo(defendantId));
+        assertThat(interpreterUpdatedForDefendantSpanish.getInterpreter(), equalTo(Interpreter.of(INTERPRETER_LANGUAGE_UPDATED)));
     }
 
     @Test
     public void shouldNotCreateInterpreterUpdatedForDefendantEventIfInterpreterLanguageAlreadyExist() {
-        caseAggregate.updateInterpreter(userId, defendantId, LANGUAGE);
-
-        assertThat(caseAggregate.updateInterpreter(userId, defendantId, LANGUAGE).count(), is(0L));
+        assertThat(updateInterpreterLanguage(INITIAL_LANGUAGE), not(empty()));
+        assertThat(updateInterpreterLanguage(INITIAL_LANGUAGE), empty());
     }
 
     @Test
     public void shouldCreateInterpreterCancelledForDefendantEvent() {
-        caseAggregate.updateInterpreter(userId, defendantId, LANGUAGE);
+        updateInterpreterLanguage(INITIAL_LANGUAGE);
 
-        List<Object> events = caseAggregate.updateInterpreter(userId, defendantId, null).collect(toList());
+        final List<Object> events = updateInterpreterLanguage(null);
 
-        assertThat(events, hasSize(1));
+        assertThat(events, contains(
+                instanceOf(InterpreterCancelledForDefendant.class)));
 
-        InterpreterCancelledForDefendant interpreterUpdated = (InterpreterCancelledForDefendant) events.get(0);
-
-        assertThat(interpreterUpdated.getCaseId(), equalTo(caseId));
-        assertThat(interpreterUpdated.getDefendantId(), equalTo(defendantId));
+        final InterpreterCancelledForDefendant interpreterCancelledForDefendant = (InterpreterCancelledForDefendant) events.get(0);
+        assertThat(interpreterCancelledForDefendant.getCaseId(), equalTo(caseId));
+        assertThat(interpreterCancelledForDefendant.getDefendantId(), equalTo(defendantId));
     }
 
     @Test
-    public void shouldNotCreateInterpreterCancelledForDefendantEventIfInterpreterDoestNotExist() {
-        long countedEvents = caseAggregate.updateInterpreter(userId, defendantId, null).count();
-
-        assertThat(countedEvents, is(0L));
+    public void shouldNotCreateCancelledEventsIfInterpreterIsNotSpecified() {
+        assertThat(updateInterpreterLanguage(null), empty());
     }
 
-    @Test
-    public void shouldCreateDefendantNotFoundEventIfDefendantDoesNotExist() {
-        final UUID defendantId = randomUUID();
-        List<Object> events = caseAggregate.updateInterpreter(userId, defendantId, LANGUAGE).collect(toList());
-
-        assertThat(events, hasSize(1));
-        assertThat(reflectionEquals(
-                events.get(0),
-                new DefendantNotFound(defendantId, "Update interpreter")),
-                is(true));
-    }
-
-    private CaseReceived receiveCase() {
-        Case sjpCase = CaseBuilder.aDefaultSjpCase().build();
-
-        return caseAggregate.receiveCase(sjpCase, clock.now())
-                .filter(CaseReceived.class::isInstance)
-                .map(CaseReceived.class::cast)
-                .findFirst()
-                .orElseThrow(() -> new AssertionError(format("No event of type %s found.", CaseReceived.class.getSimpleName())));
-    }
 }

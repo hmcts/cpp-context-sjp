@@ -34,12 +34,12 @@ public class InterpreterUpdatedForDefendant {
         this.updatedDate = updatedDate;
     }
 
-    public static InterpreterUpdatedForDefendant createEvent(final UUID caseId, UUID defendantId, Interpreter interpreter) {
-        return new InterpreterUpdatedForDefendant(caseId, defendantId, interpreter, false, null);
+    public static InterpreterUpdatedForDefendant createEvent(final UUID caseId, final UUID defendantId, final String interpreterLanguage) {
+        return new InterpreterUpdatedForDefendant(caseId, defendantId, Interpreter.of(interpreterLanguage), false, null);
     }
 
-    public static InterpreterUpdatedForDefendant createEventForOnlinePlea(final UUID caseId, UUID defendantId, Interpreter interpreter, final ZonedDateTime updatedDate) {
-        return new InterpreterUpdatedForDefendant(caseId, defendantId, interpreter, true, updatedDate);
+    public static InterpreterUpdatedForDefendant createEventForOnlinePlea(final UUID caseId, final UUID defendantId, final String interpreterLanguage, final ZonedDateTime updatedDate) {
+        return new InterpreterUpdatedForDefendant(caseId, defendantId, Interpreter.of(interpreterLanguage), true, updatedDate);
     }
 
     public UUID getDefendantId() {
@@ -61,6 +61,5 @@ public class InterpreterUpdatedForDefendant {
     public ZonedDateTime getUpdatedDate() {
         return updatedDate;
     }
-
 
 }

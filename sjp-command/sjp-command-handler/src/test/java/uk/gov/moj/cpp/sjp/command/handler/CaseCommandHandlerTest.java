@@ -5,6 +5,7 @@ import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -79,6 +80,7 @@ public abstract class CaseCommandHandlerTest {
     @Before
     @SuppressWarnings("unchecked")
     public void setupMocks() {
+        initMocks(this);
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(jsonEnvelope.metadata()).thenReturn(metadata);
         when(metadata.userId()).thenReturn(Optional.of(userId.toString()));

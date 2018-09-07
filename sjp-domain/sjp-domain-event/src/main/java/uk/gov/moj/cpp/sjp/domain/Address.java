@@ -7,6 +7,8 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 public class Address implements Serializable {
 
@@ -89,4 +91,10 @@ public class Address implements Serializable {
     public int hashCode() {
         return Objects.hash(address1, address2, address3, address4, address5, postcode);
     }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
 }

@@ -1,14 +1,15 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
 
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toList;
+
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.InterpreterDetail;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import java.util.UUID;
 
 public class DefendantView {
@@ -25,13 +26,11 @@ public class DefendantView {
         this.personalDetails = new PersonalDetailsView(defendant.getPersonalDetails());
         this.offences = constructDefendantChargeView(defendant);
         this.caseId = defendant.getCaseDetail().getId();
+        this.interpreter = Interpreter.of(
+                Optional.ofNullable(defendant.getInterpreter())
+                        .map(InterpreterDetail::getLanguage)
+                        .orElse(null));
 
-        if (defendant.getInterpreter() == null) {
-            this.interpreter = new Interpreter();
-        } else {
-            this.interpreter = new Interpreter(
-                    defendant.getInterpreter().getLanguage());
-        }
         this.numPreviousConvictions = defendant.getNumPreviousConvictions();
     }
 
@@ -55,16 +54,11 @@ public class DefendantView {
         return interpreter;
     }
 
-    private static List<OffenceView> constructDefendantChargeView(DefendantDetail defendant) {
-        final Set<OffenceDetail> offences = defendant.getOffences();
-        if (offences == null) {
-            return new ArrayList<>();
-        } else {
-            List<OffenceView> offenceViewList = new ArrayList<>();
-            offences.forEach(offence -> offenceViewList.add(new OffenceView(offence)));
-            offenceViewList.sort(Comparator.comparing(OffenceView::getOffenceSequenceNumber));
-            return offenceViewList;
-        }
+    private static List<OffenceView> constructDefendantChargeView(final DefendantDetail defendant) {
+        return defendant.getOffences().stream()
+                .map(OffenceView::new)
+                .sorted(comparing(OffenceView::getOffenceSequenceNumber))
+                .collect(toList());
     }
 
     public Integer getNumPreviousConvictions() {

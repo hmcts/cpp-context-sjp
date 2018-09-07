@@ -58,10 +58,6 @@ public class UpdatePleaHelper implements AutoCloseable {
         makePostCall(writeUrl(caseId, offenceId), "application/vnd.sjp.update-plea+json", payload, expectedStatus);
     }
 
-    public void updatePleaAndExpectBadRequest(final UUID caseId, final UUID offenceId, final JsonObject payload) {
-        requestHttpCallWithPayloadAndStatus(caseId, offenceId, payload.toString(), Response.Status.BAD_REQUEST);
-    }
-
     public void updatePlea(final UUID caseId, final UUID offenceId, final JsonObject payload) {
         requestHttpCallWithPayloadAndStatus(caseId, offenceId, payload.toString(), Response.Status.ACCEPTED);
     }
@@ -91,13 +87,6 @@ public class UpdatePleaHelper implements AutoCloseable {
         );
     }
 
-    public void verifyInterpreterLanguage(final UUID caseId, final String interpreterLanguage) {
-        CasePoller.pollUntilCaseByIdIsOk(caseId,
-                withJsonPath("defendant.interpreter.language",
-                        is(interpreterLanguage))
-        );
-    }
-
     @Override
     public void close() {
         try {
@@ -114,9 +103,19 @@ public class UpdatePleaHelper implements AutoCloseable {
     }
 
     public static JsonObject getPleaPayload(final PleaType pleaType) {
-        final JsonObjectBuilder builder = createObjectBuilder().add("plea", pleaType.name());
-        if (PleaType.NOT_GUILTY.equals(pleaType) || PleaType.GUILTY_REQUEST_HEARING.equals(pleaType)) {
-            builder.add("interpreterRequired", false);
+        final Boolean interpreterRequiredValueWhenNonGuilty = (PleaType.NOT_GUILTY.equals(pleaType) || PleaType.GUILTY_REQUEST_HEARING.equals(pleaType)) ? false : null;
+
+        return getPleaPayload(pleaType, interpreterRequiredValueWhenNonGuilty, null);
+    }
+
+    public static JsonObject getPleaPayload(final PleaType pleaType, final Boolean interpreterRequired, final String interpreterLanguage) {
+        final JsonObjectBuilder builder = createObjectBuilder()
+                .add("plea", pleaType.name());
+        if (interpreterRequired != null) {
+            builder.add("interpreterRequired", interpreterRequired);
+        }
+        if (interpreterLanguage != null) {
+            builder.add("interpreterLanguage", interpreterLanguage);
         }
         return builder.build();
     }

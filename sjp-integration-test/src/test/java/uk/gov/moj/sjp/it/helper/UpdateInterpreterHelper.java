@@ -5,10 +5,13 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 
+import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
@@ -17,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.core.Response;
 
 import com.jayway.jsonpath.ReadContext;
@@ -42,29 +46,33 @@ public class UpdateInterpreterHelper implements AutoCloseable {
         return HttpClientUtil.makeGetCall(resource, contentType);
     }
 
-    public String pollForInterpreter(final UUID caseId, final String defendantId, final String expectedInterpreterLanguage) {
-        final Matcher<? super ReadContext> interpreterMatcher = allOf(
-                withJsonPath("language", equalTo(expectedInterpreterLanguage)),
-                withJsonPath("needed", equalTo(true))
-        );
-        return pollForInterpreter(caseId, defendantId, interpreterMatcher);
-    }
-
     public String pollForEmptyInterpreter(final UUID caseId, final String defendantId) {
-        final Matcher<? super ReadContext> interpreterMatcher = allOf(
-                withoutJsonPath("language"),
-                withJsonPath("needed", equalTo(false))
-        );
-        return pollForInterpreter(caseId, defendantId, interpreterMatcher);
+        return pollForInterpreter(caseId, defendantId, null);
     }
 
-    private String pollForInterpreter(final UUID caseId, final String defendantId, final Matcher<? super ReadContext> interpreterMatcher) {
+    public String pollForInterpreter(final UUID caseId, final String defendantId, final String expectedInterpreterLanguage) {
+        final Interpreter interpreter = Interpreter.of(expectedInterpreterLanguage);
+
+        final Matcher<? super ReadContext> languageMatcher =
+                interpreter.isNeeded() ?
+                        withJsonPath("language", equalTo(interpreter.getLanguage())) :
+                        withoutJsonPath("language");
+
+        final Matcher<? super ReadContext> neededMatcher = withJsonPath("needed", equalTo(interpreter.isNeeded()));
+
         return await().atMost(20, TimeUnit.SECONDS).until(() -> getCase(caseId.toString()).readEntity(String.class),
                 isJson(withJsonPath("$.defendant",
                         isJson(allOf(
                                 withJsonPath("id", is(defendantId)),
-                                withJsonPath("interpreter", isJson(interpreterMatcher)))
-                        ))));
+                                withJsonPath("interpreter", isJson(allOf(languageMatcher, neededMatcher)))
+                        )))));
+    }
+
+    public static JsonObject buildUpdateInterpreterPayload(final String interpreterLanguage) {
+        final JsonObjectBuilder payloadBuilder = createObjectBuilder();
+        ofNullable(interpreterLanguage).ifPresent(language -> payloadBuilder.add("language", language));
+
+        return payloadBuilder.build();
     }
 
     @Override

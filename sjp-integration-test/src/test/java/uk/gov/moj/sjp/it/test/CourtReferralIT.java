@@ -1,7 +1,7 @@
 package uk.gov.moj.sjp.it.test;
 
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
-import static uk.gov.moj.sjp.it.test.UpdatePleaInterpreterIT.getPleaPayload;
+import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseCourtReferralHelper;

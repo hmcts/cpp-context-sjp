@@ -51,6 +51,10 @@ public class UpdateInterpreterIT extends BaseIntegrationTest {
         updateInterpreterHelper.updateInterpreter(caseId, defendantId, updateInterpreterPayload(null));
 
         updateInterpreterHelper.pollForEmptyInterpreter(caseId, defendantId);
+
+        updateInterpreterHelper.updateInterpreter(caseId, defendantId, updateInterpreterPayload(""));
+
+        updateInterpreterHelper.pollForEmptyInterpreter(caseId, defendantId);
     }
 
     private JsonObject updateInterpreterPayload(final String language) {

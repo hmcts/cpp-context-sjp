@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Outgoing implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -11,7 +14,9 @@ public class Outgoing implements Serializable {
     private final String description;
     private final BigDecimal amount;
 
-    public Outgoing(final String description, final BigDecimal amount) {
+    @JsonCreator
+    public Outgoing(@JsonProperty("description") final String description,
+                    @JsonProperty("amount") final BigDecimal amount) {
         this.description = description;
         this.amount = amount;
     }

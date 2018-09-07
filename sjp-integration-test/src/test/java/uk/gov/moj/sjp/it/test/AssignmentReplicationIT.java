@@ -13,8 +13,8 @@ import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDec
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
-import uk.gov.moj.sjp.it.commandclient.AssignCaseClient;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.commandclient.AssignCaseClient;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;

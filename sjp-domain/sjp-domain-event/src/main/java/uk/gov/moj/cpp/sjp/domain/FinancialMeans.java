@@ -4,7 +4,9 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties("caseId")
 public class FinancialMeans implements Serializable {
@@ -16,8 +18,11 @@ public class FinancialMeans implements Serializable {
     private final Benefits benefits;
     private final String employmentStatus;
 
-    public FinancialMeans(final UUID defendantId, final Income income, final Benefits benefits,
-                          final String employmentStatus) {
+    @JsonCreator
+    public FinancialMeans(@JsonProperty("defendantId") final UUID defendantId,
+                          @JsonProperty("income") final Income income,
+                          @JsonProperty("benefits") final Benefits benefits,
+                          @JsonProperty("employmentStatus") final String employmentStatus) {
         this.defendantId = defendantId;
         this.income = income;
         this.benefits = benefits;

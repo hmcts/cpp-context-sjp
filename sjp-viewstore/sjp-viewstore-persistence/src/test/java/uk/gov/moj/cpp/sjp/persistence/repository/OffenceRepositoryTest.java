@@ -45,16 +45,13 @@ public class OffenceRepositoryTest extends BaseTransactionalTest {
     }
 
     private static CaseDetail getCaseWithDefendantOffences() {
-        CaseDetail caseDetail = new CaseDetail();
-        caseDetail.setId(UUID.randomUUID());
+        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID());
         caseDetail.setDefendant(new DefendantDetail(
-                        UUID.randomUUID(),
-                        new PersonalDetails(),
-                        singleton(getOffenceDetail(VALID_OFFENCE_DETAIL_ID)),
-                        1
-                )
-
-        );
+                UUID.randomUUID(),
+                new PersonalDetails(),
+                singleton(getOffenceDetail(VALID_OFFENCE_DETAIL_ID)),
+                1
+        ));
 
         return caseDetail;
     }

@@ -19,7 +19,6 @@ public class UpdateInterpreterApi {
     @Inject
     private Enveloper enveloper;
 
-
     @Handles("sjp.update-interpreter")
     public void updateInterpreter(final JsonEnvelope envelope) {
         sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.update-interpreter").apply(envelope.payloadAsJsonObject()));

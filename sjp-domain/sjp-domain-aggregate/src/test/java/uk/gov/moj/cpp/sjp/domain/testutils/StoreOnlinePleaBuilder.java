@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.testutils;
 
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
@@ -21,7 +22,6 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class StoreOnlinePleaBuilder {
 
@@ -147,7 +147,7 @@ public class StoreOnlinePleaBuilder {
                     }
                     return null;
                 })
-                .collect(Collectors.toList());
+                .collect(toList());
 
         final PersonalDetails person = new PersonalDetails(PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_ADDRESS,
                 PERSON_CONTACT_DETAILS, PERSON_DOB, PERSON_NI_NUMBER);

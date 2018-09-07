@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.persistence.builder;
 
 
-import static com.google.common.collect.Sets.newHashSet;
+import static java.util.Collections.singleton;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -81,7 +81,7 @@ public class DefendantDetailBuilder {
     }
 
     public DefendantDetail build() {
-        defendantDetail.setOffences(newHashSet(offenceBuilder.build()));
+        defendantDetail.setOffences(singleton(offenceBuilder.build()));
         return defendantDetail;
     }
 

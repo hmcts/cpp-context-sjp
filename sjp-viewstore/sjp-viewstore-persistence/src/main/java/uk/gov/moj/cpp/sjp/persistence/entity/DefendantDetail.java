@@ -1,6 +1,10 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import static java.util.Collections.emptySet;
+import static org.apache.deltaspike.core.util.CollectionUtils.isEmpty;
+
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
@@ -19,6 +23,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 @Entity
 @Table(name = "defendant", uniqueConstraints = @UniqueConstraint(columnNames = "id"))
@@ -55,7 +62,10 @@ public class DefendantDetail implements Serializable {
         this(id, null, null, 0);
     }
 
-    public DefendantDetail(final UUID id, final PersonalDetails personalDetails, final Set<OffenceDetail> offences, final Integer numPreviousConvictions) {
+    public DefendantDetail(final UUID id,
+                           final PersonalDetails personalDetails,
+                           final Collection<OffenceDetail> offences,
+                           final Integer numPreviousConvictions) {
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
         setOffences(offences);
@@ -79,6 +89,11 @@ public class DefendantDetail implements Serializable {
         return Objects.hash(id, personalDetails);
     }
 
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
     public UUID getId() {
         return id;
     }
@@ -99,8 +114,8 @@ public class DefendantDetail implements Serializable {
         return offences;
     }
 
-    public void setOffences(Set<OffenceDetail> offences) {
-        this.offences = Optional.ofNullable(offences).orElseGet(HashSet::new);
+    public void setOffences(final Collection<OffenceDetail> offences) {
+        this.offences = isEmpty(offences) ? emptySet() : new HashSet<>(offences);
         this.offences.forEach(offence -> offence.setDefendantDetail(this));
     }
 

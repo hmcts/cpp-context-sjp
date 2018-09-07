@@ -19,7 +19,7 @@ public class SjpCaseCreatedToCase implements Converter<SjpCaseCreated, CaseDetai
     private OffenceToOffenceDetail offenceToOffenceDetailConverter;
 
     @Override
-    public CaseDetail convert(SjpCaseCreated event) {
+    public CaseDetail convert(final SjpCaseCreated event) {
         return new CaseDetail(event.getId(),
                 event.getUrn(),
                 null,
@@ -29,7 +29,7 @@ public class SjpCaseCreatedToCase implements Converter<SjpCaseCreated, CaseDetai
                 event.getCreatedOn(), createDefendantDetail(event), event.getCosts(), event.getPostingDate());
     }
 
-    private DefendantDetail createDefendantDetail(SjpCaseCreated sjpCaseCreated) {
+    private DefendantDetail createDefendantDetail(final SjpCaseCreated sjpCaseCreated) {
         return new DefendantDetail(
                 sjpCaseCreated.getDefendantId(),
                 new PersonalDetails(),

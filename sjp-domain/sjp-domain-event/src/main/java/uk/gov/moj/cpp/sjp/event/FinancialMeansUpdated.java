@@ -1,12 +1,13 @@
 package uk.gov.moj.cpp.sjp.event;
 
+import static java.util.Collections.emptyList;
+
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.Outgoing;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,7 +46,7 @@ public class FinancialMeansUpdated {
 
     public static FinancialMeansUpdated createEvent(final UUID defendantId, final Income income, final Benefits benefits,
                                                                    final String employmentStatus) {
-        return new FinancialMeansUpdated(defendantId, income, benefits, employmentStatus, new ArrayList<>(), false, null);
+        return new FinancialMeansUpdated(defendantId, income, benefits, employmentStatus, emptyList(), false, null);
     }
 
     public static FinancialMeansUpdated createEventForOnlinePlea(final UUID defendantId, final Income income, final Benefits benefits,

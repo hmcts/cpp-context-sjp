@@ -30,23 +30,6 @@ public class Defendant extends Person {
 
     private final String languageNeeds;
 
-    @SuppressWarnings("squid:S00107")
-    public Defendant(final UUID id,
-                     final String title,
-                     final String firstName,
-                     final String lastName,
-                     final LocalDate dateOfBirth,
-                     final Gender gender,
-                     final String nationalInsuranceNumber,
-                     final Address address,
-                     final ContactDetails contactDetails,
-                     final int numPreviousConvictions,
-                     final List<Offence> offences
-    ) {
-        this(id, title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber, null, address, contactDetails, numPreviousConvictions, offences,
-                null, null, null);
-    }
-
     @JsonCreator
     public Defendant(@JsonProperty("id") final UUID id,
                      @JsonProperty("title") final String title,

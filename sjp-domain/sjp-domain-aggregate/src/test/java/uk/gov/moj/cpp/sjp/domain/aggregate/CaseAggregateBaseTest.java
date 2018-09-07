@@ -7,6 +7,7 @@ import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.junit.Before;
@@ -18,14 +19,28 @@ public abstract class CaseAggregateBaseTest {
     protected Case aCase;
     protected CaseReceived caseReceivedEvent;
 
+    protected UUID caseId;
+    protected UUID defendantId;
+
     @Before
     public void setUp() {
         caseAggregate = new CaseAggregate();
-        aCase = CaseBuilder.aDefaultSjpCase().build();
-        caseReceivedEvent = collectSingleEvent(caseAggregate.receiveCase(aCase, clock.now()), CaseReceived.class);
+        aCase = buildCaseReceived();
+        caseReceivedEvent = collectSingleEvent(caseAggregate.receiveCase(buildCaseReceived(), clock.now()), CaseReceived.class);
+
+        caseId = caseReceivedEvent.getCaseId();
+        defendantId = caseReceivedEvent.getDefendant().getId();
+        // FIXME: NOTE that as the defendantId is generated during case-receive so it will be different than aCase.getDefendant().getId()
     }
 
-    final CaseReceived buildCaseReceived(Case aCase) {
+    /**
+     * Override to customise the received case
+     */
+    Case buildCaseReceived() {
+        return CaseBuilder.aDefaultSjpCase().build();
+    }
+
+    final CaseReceived buildCaseReceived(final Case aCase) {
         return new CaseReceived(
                 aCase.getId(),
                 aCase.getUrn(),

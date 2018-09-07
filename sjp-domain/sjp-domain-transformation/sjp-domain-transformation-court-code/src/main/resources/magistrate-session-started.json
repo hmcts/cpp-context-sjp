@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/magistrate-session-started.json",
+  "type": "object",
+  "properties": {
+    "magistrate": {
+      "type": "string"
+    },
+    "sessionId": {
+      "type": "string"
+    },
+    "userId": {
+      "type": "string"
+    },
+    "courtHouseCode": {
+      "type": "string"
+    },
+    "courtHouseName": {
+      "type": "string"
+    },
+    "localJusticeAreaNationalCourtCode": {
+      "type": "string"
+    },
+    "startedAt": {
+      "type": "string",
+    }
+  },
+  "required": [
+    "magistrate",
+    "sessionId",
+    "userId",
+    "courtHouseName",
+    "courtHouseCode",
+    "localJusticeAreaNationalCourtCode",
+    "startedAt"
+  ],
+  "additionalProperties": false
+}

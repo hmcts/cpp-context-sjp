@@ -2,21 +2,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
     <parent>
+        <artifactId>sjp-domain</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <artifactId>sjp-parent</artifactId>
         <version>1.0.75-ATCM-SNAPSHOT</version>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>sjp-domain</artifactId>
+    <artifactId>sjp-domain-transformations</artifactId>
+
     <packaging>pom</packaging>
 
     <modules>
-        <module>sjp-domain-event</module>
-        <module>sjp-domain-aggregate</module>
-        <module>sjp-domain-transformation</module>
+        <module>sjp-domain-transformation-court-code</module>
     </modules>
 
 </project>

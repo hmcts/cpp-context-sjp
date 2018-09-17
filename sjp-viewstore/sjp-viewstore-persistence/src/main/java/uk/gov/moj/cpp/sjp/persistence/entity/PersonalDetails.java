@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 
 @Embeddable
 public class PersonalDetails implements Serializable {
@@ -27,6 +29,7 @@ public class PersonalDetails implements Serializable {
     private LocalDate dateOfBirth;
 
     @Column(name = "gender")
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     @Column(name = "national_insurance_number")

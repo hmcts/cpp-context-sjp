@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="21" author="borislav.shekerov" logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <dropColumn tableName="defendant">
+            <column name="address_changed" />
+            <column name="dob_changed" />
+            <column name="personal_name_changed" />
+        </dropColumn>
+
+        <addColumn tableName="defendant">
+            <column name="address_updated_at" type="timestamp with time zone"/>
+        </addColumn>
+
+        <addColumn tableName="defendant">
+            <column name="dob_updated_at" type="timestamp with time zone" />
+        </addColumn>
+
+        <addColumn tableName="defendant">
+            <column name="name_updated_at" type="timestamp with time zone"/>
+        </addColumn>
+
+        <addColumn tableName="defendant">
+            <column name="updates_acknowledged_at" type="timestamp with time zone" />
+        </addColumn>
+
+        <rollback>
+            <addColumn tableName="defendant">
+                <column name="address_changed" type="boolean" />
+                <column name="dob_changed" type="boolean" />
+                <column name="personal_name_changed" type="boolean" />
+            </addColumn>
+            <dropColumn tableName="defendant">
+                <column name="address_updated_at" />
+                <column name="dob_updated_at" />
+                <column name="name_updated_at" />
+                <column name="updates_acknowledged_at" />
+            </dropColumn>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

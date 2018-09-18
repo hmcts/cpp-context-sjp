@@ -182,10 +182,8 @@ public class CaseReceivedListenerTest {
                                         address2,
                                         address3,
                                         address4,
-                                        postcode
-                                ),
-                                null
-                        ),
+                                        postcode),
+                                null),
                         singleton(
                                 new OffenceDetail.OffenceDetailBuilder()
                                         .setId(offenceId)

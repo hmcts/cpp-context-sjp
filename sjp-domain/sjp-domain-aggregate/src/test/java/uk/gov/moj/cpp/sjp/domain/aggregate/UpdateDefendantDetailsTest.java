@@ -19,6 +19,7 @@ import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.junit.Before;
@@ -47,7 +48,9 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
 
     @Test
     public void shouldCreateUpdateEvents() {
-        List<Object> events = caseAggregate.updateDefendantDetails(caseId, defendantId, person, clock.now())
+        ZonedDateTime updateDate = clock.now();
+
+        List<Object> events = caseAggregate.updateDefendantDetails(caseId, defendantId, person, updateDate)
                 .collect(toList());
 
         assertThat(events, contains(instanceOf(DefendantDetailsUpdated.class)));
@@ -92,18 +95,20 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
                 instanceOf(DefendantPersonalNameUpdated.class),
                 instanceOf(DefendantDetailsUpdated.class)));
 
-
         final DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = (DefendantDateOfBirthUpdated) events.get(0);
         assertThat(defendantDateOfBirthUpdated.getOldDateOfBirth(), is(person.getDateOfBirth()));
         assertThat(defendantDateOfBirthUpdated.getNewDateOfBirth(), is(DATE_OF_BIRTH_UPDATED));
+        assertThat(defendantDateOfBirthUpdated.getUpdatedAt(), is(updateDate));
 
         final DefendantAddressUpdated defendantAddressUpdated = (DefendantAddressUpdated) events.get(1);
         assertThat(defendantAddressUpdated.getOldAddress().getAddress1(), is(person.getAddress().getAddress1()));
         assertThat(defendantAddressUpdated.getNewAddress().getAddress1(), is(ADDRESS_1_UPDATED));
+        assertThat(defendantAddressUpdated.getUpdatedAt(), is(updateDate));
 
         final DefendantPersonalNameUpdated defendantPersonalNameUpdated = (DefendantPersonalNameUpdated) events.get(2);
         assertThat(defendantPersonalNameUpdated.getOldPersonalName().getFirstName(), is(person.getFirstName()));
         assertThat(defendantPersonalNameUpdated.getNewPersonalName().getFirstName(), is(FIRST_NAME_UPDATED));
+        assertThat(defendantPersonalNameUpdated.getUpdatedAt(), is(updateDate));
     }
 
     @Test

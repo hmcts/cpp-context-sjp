@@ -161,4 +161,9 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.defendant-details-updates")
+    public JsonEnvelope getDefendantDetailsUpdates(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
 }

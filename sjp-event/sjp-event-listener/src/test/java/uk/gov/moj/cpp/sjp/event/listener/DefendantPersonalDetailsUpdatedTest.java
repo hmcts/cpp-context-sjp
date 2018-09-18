@@ -1,7 +1,10 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
+import static java.time.ZoneOffset.UTC;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -12,6 +15,8 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
+
+import java.time.ZonedDateTime;
 
 import javax.json.JsonObject;
 
@@ -32,9 +37,6 @@ public class DefendantPersonalDetailsUpdatedTest {
 
     @Mock
     private CaseRepository caseRepository;
-
-    @Mock
-    private JsonEnvelope envelope;
 
     @Mock
     private JsonObject payload;
@@ -58,8 +60,14 @@ public class DefendantPersonalDetailsUpdatedTest {
     private CaseDetail caseDetail;
 
     @Test
-    public void shouldUpdateDefendantNameChangedFlag() {
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+    public void shouldUseEventCreatedAtWhenUpdatedAtNotPresentInEvent() {
+        ZonedDateTime eventCreationTime = ZonedDateTime.now(UTC);
+
+        final JsonEnvelope envelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.events.defendant-personal-name-updated")
+                        .createdAt(eventCreationTime),
+                payload);
+
         when(jsonObjectToObjectConverter.convert(payload, DefendantPersonalNameUpdated.class)).thenReturn(defendantPersonalNameUpdated);
         when(caseRepository.findBy(defendantPersonalNameUpdated.getCaseId())).thenReturn(caseDetail);
         when(caseDetail.getDefendant()).thenReturn(defendantDetail);
@@ -67,37 +75,71 @@ public class DefendantPersonalDetailsUpdatedTest {
 
         defendantPersonalDetailsChangesListener.defendantPersonalNameUpdated(envelope);
 
-        verify(personalDetails).setNameChanged(Boolean.TRUE);
+        verify(caseDetail).markDefendantNameUpdated(eventCreationTime);
         verify(caseRepository).save(caseDetail);
     }
 
     @Test
-    public void shouldUpdateDefendantDobChangedFlag() {
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+    public void shouldUpdateDefendantNameChangedTimestamp() {
+        final JsonEnvelope envelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.events.defendant-personal-name-updated"),
+                payload);
+
+        when(jsonObjectToObjectConverter.convert(payload, DefendantPersonalNameUpdated.class)).thenReturn(defendantPersonalNameUpdated);
+        when(caseRepository.findBy(defendantPersonalNameUpdated.getCaseId())).thenReturn(caseDetail);
+
+        ZonedDateTime updatedAt = ZonedDateTime.now(UTC);
+        when(defendantPersonalNameUpdated.getUpdatedAt()).thenReturn(updatedAt);
+
+        when(caseDetail.getDefendant()).thenReturn(defendantDetail);
+        when(defendantDetail.getPersonalDetails()).thenReturn(personalDetails);
+
+        defendantPersonalDetailsChangesListener.defendantPersonalNameUpdated(envelope);
+
+        verify(caseDetail).markDefendantNameUpdated(updatedAt);
+        verify(caseRepository).save(caseDetail);
+    }
+
+    @Test
+    public void shouldUpdateDefendantDobChangedTimestamp() {
+        final JsonEnvelope envelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.events.defendant-date-of-birth-updated"),
+                payload);
+
         when(jsonObjectToObjectConverter.convert(payload, DefendantDateOfBirthUpdated.class)).thenReturn(defendantDateOfBirthUpdated);
         when(caseRepository.findBy(defendantDateOfBirthUpdated.getCaseId())).thenReturn(caseDetail);
+
+        ZonedDateTime updatedAt = ZonedDateTime.now(UTC);
+        when(defendantDateOfBirthUpdated.getUpdatedAt()).thenReturn(updatedAt);
+
         when(caseDetail.getDefendant()).thenReturn(defendantDetail);
         when(defendantDetail.getPersonalDetails()).thenReturn(personalDetails);
 
         defendantPersonalDetailsChangesListener.defendantDateOfBirthUpdated(envelope);
 
-        verify(personalDetails).setDobChanged(Boolean.TRUE);
+        verify(caseDetail).markDefendantDateOfBirthUpdated(updatedAt);
         verify(caseRepository).save(caseDetail);
     }
 
     @Test
-    public void shouldUpdateDefendantAddressChangedFlag() {
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+    public void shouldUpdateDefendantAddressChangedTimestamp() {
+        final JsonEnvelope envelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.events.defendant-address-updated"),
+                payload);
+
         when(jsonObjectToObjectConverter.convert(payload, DefendantAddressUpdated.class)).thenReturn(defendantAddressUpdated);
         when(caseRepository.findBy(defendantAddressUpdated.getCaseId())).thenReturn(caseDetail);
+
+        ZonedDateTime updatedAt = ZonedDateTime.now(UTC);
+        when(defendantAddressUpdated.getUpdatedAt()).thenReturn(updatedAt);
+
         when(caseDetail.getDefendant()).thenReturn(defendantDetail);
         when(defendantDetail.getPersonalDetails()).thenReturn(personalDetails);
 
         defendantPersonalDetailsChangesListener.defendantAddressUpdated(envelope);
 
-        verify(personalDetails).setAddressChanged(Boolean.TRUE);
+        verify(caseDetail).markDefendantAddressUpdated(updatedAt);
         verify(caseRepository).save(caseDetail);
     }
-
 
 }

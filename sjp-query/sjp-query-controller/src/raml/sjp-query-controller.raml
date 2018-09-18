@@ -125,6 +125,30 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
             schema: !include json/schema/sjp.query.cases-missing-sjpn-with-details.json
             example: !include json/sjp.query.cases-missing-sjpn-with-details.json
 
+/defendant-details-updates:
+  get:
+    description: |
+      Retrieves the unacknowledged defendant detail updates
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.defendant-details-updates+json
+          name: sjp.query.defendant-details-updates
+      ...
+    queryParameters:
+      limit:
+        description: |
+          Defines the number of updates to be returned.
+        type: integer
+        required: true
+
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.defendant-details-updates+json:
+                  schema: !include json/schema/sjp.query.defendant-details-updates.json
+                  example: !include json/sjp.query.defendant-details-updates.json
+
 /defendant/{defendantId}/financial-means:
   uriParameters:
     defendantId:

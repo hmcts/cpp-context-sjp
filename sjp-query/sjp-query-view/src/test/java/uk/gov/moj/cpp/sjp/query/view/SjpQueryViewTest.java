@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.emptyList;
@@ -56,19 +57,25 @@ import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
+import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesPendingDatesToAvoidView;
+import uk.gov.moj.cpp.sjp.query.view.response.DefendantDetailsUpdatesView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
+import uk.gov.moj.cpp.sjp.query.view.service.DefendantService;
 import uk.gov.moj.cpp.sjp.query.view.service.EmployerService;
 import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
 import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -105,6 +112,9 @@ public class SjpQueryViewTest {
 
     @Mock
     private CaseService caseService;
+
+    @Mock
+    private DefendantService defendantService;
 
     @Mock
     private UserAndGroupsService userAndGroupsService;
@@ -264,7 +274,7 @@ public class SjpQueryViewTest {
                         withJsonPath("$.benefits.type", is(benefit.getType())),
                         withJsonPath("$.employmentStatus", is(financialMeans.getEmploymentStatus()))
                 ))
-        )
+                )
 //                .thatMatchesSchema() Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648
         );
     }
@@ -316,7 +326,7 @@ public class SjpQueryViewTest {
                         withJsonPath("$.address.address4", is(address.getAddress4())),
                         withJsonPath("$.address.postcode", is(address.getPostcode()))
                 ))
-        )
+                )
 //                .thatMatchesSchema() Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648
         );
     }
@@ -496,6 +506,58 @@ public class SjpQueryViewTest {
 
         verify(onlinePleaRepository, never()).findBy(any());
         verify(onlinePleaRepository).findOnlinePleaWithoutFinances(caseId);
+    }
+
+    @Test
+    public void shouldFindDetailDetailUpdates() {
+
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataWithRandomUUID("sjp.query.defendant-details-updates"))
+                .build();
+
+        LocalDate dateOfBirth = LocalDate.now().minusYears(30);
+
+        PersonalDetails personalDetails = new PersonalDetails();
+        personalDetails.setFirstName("firstName");
+        personalDetails.setLastName("lastName");
+        personalDetails.setDateOfBirth(dateOfBirth);
+        personalDetails.markNameUpdated(ZonedDateTime.now());
+        personalDetails.markDateOfBirthUpdated(ZonedDateTime.now());
+        personalDetails.markAddressUpdated(ZonedDateTime.now());
+
+        String updatedOn = ZonedDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        DefendantDetailsUpdatesView.DefendantDetailsUpdate defendantDetailsUpdate = new DefendantDetailsUpdatesView.DefendantDetailsUpdate(
+                "firstName",
+                "lastName",
+                "caseId",
+                "caseUrn",
+                dateOfBirth.format(DateTimeFormatter.ISO_LOCAL_DATE),
+                true,
+                true,
+                true,
+                updatedOn);
+
+        when(defendantService.findDefendantDetailUpdates(queryEnvelope)).thenReturn(new DefendantDetailsUpdatesView(
+                1,
+                newArrayList(defendantDetailsUpdate)));
+
+        final JsonEnvelope response = sjpQueryView.findDefendantDetailUpdates(queryEnvelope);
+
+        assertThat(response,
+                jsonEnvelope(
+                        metadata().withName("sjp.query.defendant-details-updates"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.total", equalTo(1)),
+                                withJsonPath("$.defendantDetailsUpdates[0].firstName", equalTo("firstName")),
+                                withJsonPath("$.defendantDetailsUpdates[0].lastName", equalTo("lastName")),
+                                withJsonPath("$.defendantDetailsUpdates[0].caseUrn", equalTo("caseUrn")),
+                                withJsonPath("$.defendantDetailsUpdates[0].caseId", equalTo("caseId")),
+                                withJsonPath("$.defendantDetailsUpdates[0].dateOfBirth", equalTo(dateOfBirth.format(DateTimeFormatter.ISO_LOCAL_DATE))),
+                                withJsonPath("$.defendantDetailsUpdates[0].nameUpdated", equalTo(true)),
+                                withJsonPath("$.defendantDetailsUpdates[0].dateOfBirthUpdated", equalTo(true)),
+                                withJsonPath("$.defendantDetailsUpdates[0].addressUpdated", equalTo(true)),
+                                withJsonPath("$.defendantDetailsUpdates[0].updatedOn", equalTo(updatedOn))
+                        ))));
     }
 
     private OnlinePlea stubOnlinePlea(final UUID caseId, final UUID defendantId, final UUID offenceId) {

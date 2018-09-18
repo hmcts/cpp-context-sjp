@@ -186,3 +186,11 @@ rule "sjp.query.case-prosecuting-authority"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp.query.defendant-details-updates"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.defendant-details-updates");
+  then
+    $outcome.setSuccess(true);
+end

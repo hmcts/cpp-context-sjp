@@ -105,4 +105,8 @@ public final class RuleConstants {
         return asList(GROUP_SYSTEM_USERS);
     }
 
+    public static List<String> getQueryDefendantDetailsUpdates() {
+        return asList(GROUP_SJP_PROSECUTORS);
+    }
+
 }

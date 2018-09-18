@@ -236,3 +236,12 @@ rule "sjp - Query - API - Get case prosecuting authority"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp - Query - API - Get defendant details updates"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.defendant-details-updates");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryDefendantDetailsUpdates()))
+  then
+    $outcome.setSuccess(true);
+end

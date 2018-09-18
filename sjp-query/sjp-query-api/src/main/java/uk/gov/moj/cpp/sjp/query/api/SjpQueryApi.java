@@ -115,4 +115,9 @@ public class SjpQueryApi {
     public JsonEnvelope getProsecutingAuthority(final JsonEnvelope query) {
         return requester.request(query);
     }
+
+    @Handles("sjp.query.defendant-details-updates")
+    public JsonEnvelope getDefendantDetailsUpdates(final JsonEnvelope query) {
+        return requester.request(query);
+    }
 }

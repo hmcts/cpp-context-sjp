@@ -16,6 +16,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
+import uk.gov.moj.cpp.sjp.query.view.service.DefendantService;
 import uk.gov.moj.cpp.sjp.query.view.service.EmployerService;
 import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
 import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
@@ -47,6 +48,9 @@ public class SjpQueryView {
 
     @Inject
     private CaseService caseService;
+
+    @Inject
+    private DefendantService defendantService;
 
     @Inject
     private CaseRepository caseRepository;
@@ -221,6 +225,12 @@ public class SjpQueryView {
                 .orElse(null);
 
         return enveloper.withMetadataFrom(query, "sjp.query.case-prosecuting-authority").apply(prosecutingAuthorityPayload);
+    }
+
+    @Handles("sjp.query.defendant-details-updates")
+    public JsonEnvelope findDefendantDetailUpdates(JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, "sjp.query.defendant-details-updates")
+                .apply(defendantService.findDefendantDetailUpdates(envelope));
     }
 
     private static String extract(JsonEnvelope envelope, String fieldName) {

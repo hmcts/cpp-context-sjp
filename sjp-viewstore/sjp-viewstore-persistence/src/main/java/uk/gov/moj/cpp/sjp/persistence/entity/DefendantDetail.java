@@ -4,6 +4,7 @@ import static java.util.Collections.emptySet;
 import static org.apache.deltaspike.core.util.CollectionUtils.isEmpty;
 
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -141,6 +142,18 @@ public class DefendantDetail implements Serializable {
 
     public void setInterpreter(InterpreterDetail interpreter) {
         this.interpreter = interpreter;
+    }
+
+    public void markNameUpdated(ZonedDateTime updateDate) {
+        personalDetails.markNameUpdated(updateDate);
+    }
+
+    public void markAddressUpdated(ZonedDateTime updateDate) {
+        personalDetails.markAddressUpdated(updateDate);
+    }
+
+    public void markDateOfBirthUpdated(ZonedDateTime updateDate) {
+        personalDetails.markDateOfBirthUpdated(updateDate);
     }
 
 }

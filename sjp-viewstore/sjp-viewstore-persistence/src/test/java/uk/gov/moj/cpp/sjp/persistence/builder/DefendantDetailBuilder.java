@@ -6,6 +6,7 @@ import static java.util.Collections.singleton;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.InterpreterDetail;
@@ -72,6 +73,16 @@ public class DefendantDetailBuilder {
 
     public DefendantDetailBuilder withPostcode(final String postcode) {
         defendantDetail.getPersonalDetails().setAddress(new Address("addr1", "addr2", "addr3", "addr4", postcode));
+        return this;
+    }
+
+    public DefendantDetailBuilder withCaseDetail(final CaseDetail caseDetail) {
+        defendantDetail.setCaseDetail(caseDetail);
+        return this;
+    }
+
+    public DefendantDetailBuilder withPersonalDetails(final PersonalDetails personalDetails) {
+        defendantDetail.setPersonalDetails(personalDetails);
         return this;
     }
 

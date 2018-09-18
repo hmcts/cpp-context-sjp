@@ -46,10 +46,10 @@ public class AssignmentService {
 
         final int assignmentCandidatesLimit = caseAssignmentConfiguration.getAssignmentCandidatesLimit();
 
-        final String excludedProsecutingAuthorities = caseAssignmentConfiguration.getProsecutingAuthoritiesAssignmentRules()
-                .getCourtExcludedProsecutingAuthorities(courtCode)
-                .stream()
-                .collect(joining(","));
+        final String excludedProsecutingAuthorities = String.join(
+                ",",
+                caseAssignmentConfiguration.getProsecutingAuthoritiesAssignmentRules()
+                        .getCourtExcludedProsecutingAuthorities(courtCode));
 
         final JsonObject queryOptions = createObjectBuilder()
                 .add("sessionType", sessionType.name())

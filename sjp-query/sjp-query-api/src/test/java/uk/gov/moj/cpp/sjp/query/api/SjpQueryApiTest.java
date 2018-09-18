@@ -35,7 +35,8 @@ public class SjpQueryApiTest {
                         method("getReadyCasesReasonsCounts").thatHandles("sjp.query.ready-cases-reasons-counts").withRequesterPassThrough(),
                         method("getReadyCases").thatHandles("sjp.query.ready-cases").withRequesterPassThrough(),
                         method("getCaseAssignment").thatHandles("sjp.query.case-assignment").withRequesterPassThrough(),
-                        method("getProsecutingAuthority").thatHandles("sjp.query.case-prosecuting-authority").withRequesterPassThrough()
+                        method("getProsecutingAuthority").thatHandles("sjp.query.case-prosecuting-authority").withRequesterPassThrough(),
+                        method("getDefendantDetailsUpdates").thatHandles("sjp.query.defendant-details-updates").withRequesterPassThrough()
                 )));
     }
 }

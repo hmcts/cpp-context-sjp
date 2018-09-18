@@ -297,8 +297,21 @@ public class CaseDetail implements Serializable {
         this.datesToAvoid = datesToAvoid;
     }
 
+    public void markDefendantNameUpdated(ZonedDateTime updateDate) {
+        defendant.markNameUpdated(updateDate);
+    }
+
+    public void markDefendantAddressUpdated(ZonedDateTime updateDate) {
+        defendant.markAddressUpdated(updateDate);
+    }
+
+    public void markDefendantDateOfBirthUpdated(ZonedDateTime updateDate) {
+        defendant.markDateOfBirthUpdated(updateDate);
+    }
+
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, SHORT_PREFIX_STYLE);
     }
+
 }

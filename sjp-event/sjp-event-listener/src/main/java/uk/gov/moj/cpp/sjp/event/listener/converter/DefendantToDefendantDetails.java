@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.listener.converter;
 
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toList;
 
 import uk.gov.justice.services.common.converter.Converter;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
@@ -24,7 +24,7 @@ public class DefendantToDefendantDetails implements Converter<Defendant, Defenda
         return new DefendantDetail(
                 defendant.getId(),
                 personalDetails,
-                defendant.getOffences().stream().map(offenceToOffenceDetailConverter::convert).collect(toSet()),
+                defendant.getOffences().stream().map(offenceToOffenceDetailConverter::convert).collect(toList()),
                 defendant.getNumPreviousConvictions());
     }
 

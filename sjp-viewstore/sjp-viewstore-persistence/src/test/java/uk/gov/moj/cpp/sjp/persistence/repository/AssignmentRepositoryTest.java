@@ -4,7 +4,7 @@ import static java.time.ZoneOffset.UTC;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -379,7 +379,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
                     .setPlea(plea)
                     .build();
 
-            final DefendantDetail defendant = new DefendantDetail(defendantId, new PersonalDetails(), singleton(offence), 2);
+            final DefendantDetail defendant = new DefendantDetail(defendantId, new PersonalDetails(), singletonList(offence), 2);
 
             final CaseDetail caseDetail = CaseDetailBuilder.aCase()
                     .withCaseId(caseId)

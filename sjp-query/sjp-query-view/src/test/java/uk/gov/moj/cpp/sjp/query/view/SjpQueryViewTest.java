@@ -4,7 +4,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
@@ -566,7 +566,7 @@ public class SjpQueryViewTest {
         offence.setPlea(PleaType.NOT_GUILTY);
         offence.setPleaMethod(PleaMethod.ONLINE);
 
-        final DefendantDetail defendant = new DefendantDetail(defendantId, null, singleton(offence), null);
+        final DefendantDetail defendant = new DefendantDetail(defendantId, null, singletonList(offence), null);
         final OnlinePlea onlinePlea = new OnlinePlea(
                 new PleaUpdated(caseId, offence.getId(), offence.getPlea(),
                         null, "I was not there, they are lying", offence.getPleaMethod(), clock.now())

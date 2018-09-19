@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.listener.converter;
 
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -16,7 +16,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.time.LocalDate;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -50,14 +50,14 @@ public class DefendantToDefendantDetailsTest {
         final PersonalDetails mockedPersonalDetails = mock(PersonalDetails.class);
         when(personToPersonalDetailsEntity.convert(inputDefendant)).thenReturn(mockedPersonalDetails);
 
-        final Set<OffenceDetail> mockedOffenceDetails = inputDefendant.getOffences().stream()
+        final List<OffenceDetail> mockedOffenceDetails = inputDefendant.getOffences().stream()
                 .map(offence -> {
                     OffenceDetail mockedOffenceDetail = mock(OffenceDetail.class);
                     when(offenceToOffenceDetailConverter.convert(offence)).thenReturn(mockedOffenceDetail);
 
                     return mockedOffenceDetail;
                 })
-                .collect(toSet());
+                .collect(toList());
 
         // WHEN
         final DefendantDetail outputDefendant = converterUnderTest.convert(inputDefendant);

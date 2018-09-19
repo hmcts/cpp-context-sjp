@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.persistence.builder;
 
 
-import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -92,7 +92,7 @@ public class DefendantDetailBuilder {
     }
 
     public DefendantDetail build() {
-        defendantDetail.setOffences(singleton(offenceBuilder.build()));
+        defendantDetail.setOffences(singletonList(offenceBuilder.build()));
         return defendantDetail;
     }
 

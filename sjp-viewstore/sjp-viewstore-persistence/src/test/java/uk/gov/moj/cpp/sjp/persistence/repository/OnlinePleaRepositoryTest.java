@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptySet;
+import static java.util.Collections.emptyList;
 import static org.apache.commons.lang.builder.EqualsBuilder.reflectionEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
@@ -88,7 +88,7 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
         caseDetail.setId(caseId);
         caseDetail.setOnlinePleaReceived(true);
         caseDetail.setDefendant(
-                new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), emptySet(), 1));
+                new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), emptyList(), 1));
 
         return caseDetail;
     }

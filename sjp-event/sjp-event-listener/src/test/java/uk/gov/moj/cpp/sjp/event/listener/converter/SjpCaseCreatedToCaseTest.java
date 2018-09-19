@@ -20,7 +20,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -101,7 +101,7 @@ public class SjpCaseCreatedToCaseTest {
         assertThat(defendant.getPersonalDetails().getFirstName(), nullValue());
 
         // offences
-        final Set<OffenceDetail> offences = defendant.getOffences();
+        final List<OffenceDetail> offences = defendant.getOffences();
         assertThat(offences, hasSize(1));
 
         final OffenceDetail offenceDetail = offences.iterator().next();

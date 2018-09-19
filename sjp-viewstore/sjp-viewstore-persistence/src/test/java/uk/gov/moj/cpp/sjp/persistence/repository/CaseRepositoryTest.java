@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -383,7 +382,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     }
 
     private void checkAllOffencesForACase(CaseDetail caseDetail, boolean withdrawn) {
-        final Set<OffenceDetail> offences = caseDetail.getDefendant().getOffences();
+        final List<OffenceDetail> offences = caseDetail.getDefendant().getOffences();
 
         assertThat(offences, not(empty()));
         offences.forEach(offence -> assertEquals(withdrawn, offence.getPendingWithdrawal()));

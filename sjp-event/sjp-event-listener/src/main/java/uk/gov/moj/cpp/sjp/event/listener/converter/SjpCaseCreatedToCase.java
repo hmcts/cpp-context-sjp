@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.listener.converter;
 
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toList;
 
 import uk.gov.justice.services.common.converter.Converter;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
@@ -33,7 +33,7 @@ public class SjpCaseCreatedToCase implements Converter<SjpCaseCreated, CaseDetai
         return new DefendantDetail(
                 sjpCaseCreated.getDefendantId(),
                 new PersonalDetails(),
-                sjpCaseCreated.getOffences().stream().map(offenceToOffenceDetailConverter::convert).collect(toSet()),
+                sjpCaseCreated.getOffences().stream().map(offenceToOffenceDetailConverter::convert).collect(toList()),
                 sjpCaseCreated.getNumPreviousConvictions());
     }
 

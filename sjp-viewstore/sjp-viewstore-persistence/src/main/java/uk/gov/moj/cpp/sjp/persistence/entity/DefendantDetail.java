@@ -1,15 +1,13 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
-import static java.util.Collections.emptySet;
-import static org.apache.deltaspike.core.util.CollectionUtils.isEmpty;
+import static java.util.Collections.emptyList;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -40,7 +38,7 @@ public class DefendantDetail implements Serializable {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "defendantDetail", orphanRemoval = true)
     @OrderBy("orderIndex ASC")
-    private Set<OffenceDetail> offences;
+    private List<OffenceDetail> offences;
 
     @Embedded
     private PersonalDetails personalDetails;
@@ -63,10 +61,7 @@ public class DefendantDetail implements Serializable {
         this(id, null, null, 0);
     }
 
-    public DefendantDetail(final UUID id,
-                           final PersonalDetails personalDetails,
-                           final Collection<OffenceDetail> offences,
-                           final Integer numPreviousConvictions) {
+    public DefendantDetail(final UUID id, final PersonalDetails personalDetails, final List<OffenceDetail> offences, final Integer numPreviousConvictions) {
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
         setOffences(offences);
@@ -111,12 +106,12 @@ public class DefendantDetail implements Serializable {
         this.personalDetails = Optional.ofNullable(personalDetails).orElseGet(PersonalDetails::new);
     }
 
-    public Set<OffenceDetail> getOffences() {
+    public List<OffenceDetail> getOffences() {
         return offences;
     }
 
-    public void setOffences(final Collection<OffenceDetail> offences) {
-        this.offences = isEmpty(offences) ? emptySet() : new HashSet<>(offences);
+    public void setOffences(final List<OffenceDetail> offences) {
+        this.offences = offences == null ? emptyList() : new ArrayList<>(offences);
         this.offences.forEach(offence -> offence.setDefendantDetail(this));
     }
 

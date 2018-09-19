@@ -12,8 +12,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus.EMPLOYED;
-import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_CONTACT_DETAILS;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_ADDRESS;
+import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_CONTACT_DETAILS;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_DOB;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_FIRST_NAME;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_LAST_NAME;
@@ -72,7 +72,7 @@ public class PleadOnlineTest {
     @Before
     public void setup() {
         // single offence case
-        setup(createTestCase());
+        setup(createTestCase(null));
     }
 
     private void setup(final Case testCase) {
@@ -268,7 +268,7 @@ public class PleadOnlineTest {
     }
 
     @Test
-    public void shouldPleaOnlineSuccessfullyForMultipleOffences() {
+    public void shouldPleaOnlineSuccessfullyForDefendantWithTitleAndMultipleOffences() {
         //given
         final Object[][] pleaInformationArray = {
                 {UUID.randomUUID(), PleaType.NOT_GUILTY, true, PleaType.NOT_GUILTY},
@@ -279,8 +279,8 @@ public class PleadOnlineTest {
         final UUID[] extraOffenceIds = Arrays.stream(pleaInformationArray).map(pleaInformation ->
                 (UUID) pleaInformation[0]).toArray(UUID[]::new);
 
-        final Case caseWithMultipleOffences = createTestCase(extraOffenceIds);
-        setup(caseWithMultipleOffences); // Override the @Before
+        final Case testCase = createTestCase("Mr", extraOffenceIds);
+        setup(testCase); // Override the @Before
 
         final String interpreterLanguage = "French";
 
@@ -488,7 +488,7 @@ public class PleadOnlineTest {
         assertThat(events, hasItem(instanceOf(DefendantDateOfBirthUpdated.class)));
     }
 
-    private static Case createTestCase(UUID... extraOffenceIds) {
+    private static Case createTestCase(final String title, final UUID... extraOffenceIds) {
         final List<Offence> offences = Stream.concat(Stream.of(UUID.randomUUID()), Arrays.stream(extraOffenceIds))
                 .map(id -> new Offence(id, 1, null, null,
                         1, null, null, null, null, null))
@@ -496,7 +496,7 @@ public class PleadOnlineTest {
 
         return new Case(UUID.randomUUID(), "TFL123456", RandomStringUtils.randomAlphanumeric(12).toUpperCase(),
                 ProsecutingAuthority.TFL,  null, null,
-                new Defendant(UUID.randomUUID(), null, PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_DOB,
+                new Defendant(UUID.randomUUID(), title, PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_DOB,
                         null, PERSON_NI_NUMBER, PERSON_ADDRESS, PERSON_CONTACT_DETAILS, 1, offences));
     }
 

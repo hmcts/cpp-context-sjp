@@ -498,7 +498,7 @@ public class CaseAggregate implements Aggregate {
                 .withUpdateByOnlinePlea(true)
                 .withUpdatedDate(createdOn)
                 .build());
-        getDefendantWarningEvents(personalDetails)
+        getDefendantWarningEvents(personalDetails, true)
                 .forEach(streamBuilder::add);
         streamBuilder.add(FinancialMeansUpdated.createEventForOnlinePlea(defendantId, pleadOnline.getFinancialMeans().getIncome(),
                 pleadOnline.getFinancialMeans().getBenefits(), pleadOnline.getFinancialMeans().getEmploymentStatus(),
@@ -658,7 +658,7 @@ public class CaseAggregate implements Aggregate {
             return apply(Stream.of(new DefendantDetailsUpdateFailed(caseId, defendantId, e.getMessage())));
         }
 
-        getDefendantWarningEvents(person).forEach(events::add);
+        getDefendantWarningEvents(person, false).forEach(events::add);
 
         final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdated()
                 .withCaseId(caseId)
@@ -678,7 +678,8 @@ public class CaseAggregate implements Aggregate {
         return apply(events.build());
     }
 
-    private <P extends Person> Stream<Object> getDefendantWarningEvents(final P person) {
+    // Raise warnings when information is changed or removed (but not added)
+    private Stream<Object> getDefendantWarningEvents(final Person person, final boolean isOnlinePlea) {
         final Stream.Builder<Object> events = Stream.builder();
 
         if (defendantDateOfBirth != null && !defendantDateOfBirth.equals(person.getDateOfBirth())) {
@@ -691,7 +692,8 @@ public class CaseAggregate implements Aggregate {
             events.add(defendantAddressUpdated);
         }
 
-        if ((defendantTitle != null && !defendantTitle.equalsIgnoreCase(person.getTitle())) ||
+        // Online plea doesn't update title
+        if (isTitleChanged(isOnlinePlea, person.getTitle()) ||
                 !StringUtils.equalsIgnoreCase(defendantFirstName, person.getFirstName()) ||
                 !StringUtils.equalsIgnoreCase(defendantLastName, person.getLastName())) {
             final DefendantPersonalNameUpdated defendantPersonalNameUpdated = new DefendantPersonalNameUpdated(caseId,
@@ -699,7 +701,12 @@ public class CaseAggregate implements Aggregate {
                     new PersonalName(person.getTitle(), person.getFirstName(), person.getLastName()));
             events.add(defendantPersonalNameUpdated);
         }
+
         return events.build();
+    }
+
+    private boolean isTitleChanged(final boolean isOnlinePlea, final String title) {
+        return !isOnlinePlea && defendantTitle != null && !defendantTitle.equalsIgnoreCase(title);
     }
 
     public Stream<Object> markCaseReadyForDecision(final CaseReadinessReason readinessReason, final ZonedDateTime markedAt) {

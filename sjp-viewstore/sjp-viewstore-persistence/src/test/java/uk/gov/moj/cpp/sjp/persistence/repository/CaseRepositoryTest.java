@@ -17,18 +17,21 @@ import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
+import uk.gov.moj.cpp.sjp.persistence.entity.AwaitingCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,9 +49,7 @@ import org.junit.runner.RunWith;
 @RunWith(CdiTestRunner.class)
 public class CaseRepositoryTest extends BaseTransactionalTest {
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-    private static final Map<UUID, CaseDetail> CASE_HOLDER = new HashMap<>();
+    private static final Map<UUID, CaseDetail> CASES = new HashMap<>();
 
     private static final ProsecutingAuthority PROSECUTING_AUTHORITY = TFL;
     private static final String PROSECUTING_AUTHORITY_PREFIX = PROSECUTING_AUTHORITY.name();
@@ -70,12 +71,18 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     private static final int NUM_PREVIOUS_CONVICTIONS = 3;
     private static final BigDecimal COSTS = BigDecimal.valueOf(10.33);
-    private static final LocalDate POSTING_DATE = LocalDate.parse("2015-12-02", FORMATTER);
     private static final String ENTERPRISE_ID = "2K2SLYFC743H";
     private static final String POSTCODE = "CR0 1AB";
+    private static final String OFFENCE_CODE = "PS0001";
+    private static LocalDate postingDate = LocalDate.of(2015, 12, 31);
+
+    private static final List<ReadyCase> READY_CASES = new ArrayList<>();
 
     @Inject
     private CaseRepository caseRepository;
+
+    @Inject
+    private ReadyCaseRepository readyCaseRepository;
 
     @Inject
     private Clock clock;
@@ -85,44 +92,42 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     @Override
     public void setUpBefore() {
         caseCreatedOn = clock.now();
-        // given 3 cases exist in database
-        CaseDetail case1 = getCase(VALID_CASE_ID_1, VALID_URN_1, VALID_DEFENDANT_ID_1);
-        case1.setInitiationCode("J");
+        // given 4 cases exist in database
+        final CaseDetail case1 = getCase(VALID_CASE_ID_1, VALID_URN_1, VALID_DEFENDANT_ID_1);
         case1.setEnterpriseId(ENTERPRISE_ID);
         // case 2 is withdrawn
-        CaseDetail case2 = getCase(VALID_CASE_ID_2, VALID_URN_2, VALID_DEFENDANT_ID_2, VALID_MATERIAL_ID, true, POSTCODE);
-        CaseDetail case3 = getCase(VALID_CASE_ID_3, VALID_URN_3);
-        CaseDetail case4 = getCase(VALID_CASE_ID_4, VALID_URN_4, VALID_DEFENDANT_ID_4);
+        final CaseDetail case2 = getCase(VALID_CASE_ID_2, VALID_URN_2, VALID_DEFENDANT_ID_2, VALID_MATERIAL_ID, true, POSTCODE);
+        final CaseDetail case3 = getCase(VALID_CASE_ID_3, VALID_URN_3);
+        final CaseDetail case4 = getCase(VALID_CASE_ID_4, VALID_URN_4, VALID_DEFENDANT_ID_4);
 
-        CaseDocument caseDocument = case2.getCaseDocuments().iterator().next();
+        CASES.put(VALID_CASE_ID_1, case1);
+        CASES.put(VALID_CASE_ID_2, case2);
+        CASES.put(VALID_CASE_ID_3, case3);
+        CASES.put(VALID_CASE_ID_4, case4);
 
+        CASES.values().forEach(caseRepository::save);
+
+        // test duplicate cases aren't possible
         caseRepository.save(case1);
-        caseRepository.save(case2);
-        caseRepository.save(case3);
-        caseRepository.save(case4);
 
-        caseRepository.save(case2);
+        READY_CASES.add(new ReadyCase(case1.getId(), CaseReadinessReason.PIA));
+        READY_CASES.add(new ReadyCase(case2.getId(), CaseReadinessReason.WITHDRAWAL_REQUESTED));
+        READY_CASES.add(new ReadyCase(case3.getId(), CaseReadinessReason.PLEADED_GUILTY));
+        // leave case 4 as not ready
 
-        caseRepository.save(case3);
-        caseRepository.save(case3);
-
-        // putting it in a holder for easy retrieval and subsequent deletion during teardown
-        CASE_HOLDER.put(VALID_CASE_ID_1, case1);
-        CASE_HOLDER.put(VALID_CASE_ID_2, case2);
-        CASE_HOLDER.put(VALID_CASE_ID_3, case3);
-        CASE_HOLDER.put(VALID_CASE_ID_4, case4);
+        READY_CASES.forEach(readyCaseRepository::save);
     }
 
-    //    @Override
     @After
     public void tearDownAfterTemporary() {
         // cleaning up database after each test to avoid data collision
-        CASE_HOLDER.values().forEach(caseRepository::attachAndRemove);
+        CASES.values().forEach(caseRepository::attachAndRemove);
+        READY_CASES.forEach(readyCaseRepository::attachAndRemove);
     }
 
     @Test
     public void shouldFindCaseMatchingUrn() {
-        CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_1);
+        final CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_1);
         assertNotNull(actualCase);
         assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
         assertThat(caseCreatedOn, is(actualCase.getDateTimeCreated()));
@@ -131,14 +136,14 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldFindCaseMatchingUrnIgnoringCase() {
-        CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_1.toLowerCase());
+        final CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_1.toLowerCase());
         assertNotNull(actualCase);
         assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());
     }
 
     @Test
     public void shouldFindCaseByPersonId() {
-        List<CaseDetail> caseDetails = caseRepository.findByDefendantId(VALID_DEFENDANT_ID_1);
+        final List<CaseDetail> caseDetails = caseRepository.findByDefendantId(VALID_DEFENDANT_ID_1);
         assertNotNull(caseDetails);
         assertThat("Should have 1 entry", caseDetails, hasSize(1));
         assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, caseDetails.get(0).getId());
@@ -153,7 +158,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldFindCaseDocuments() {
-        List<CaseDocument> caseDocuments = caseRepository.findCaseDocuments(VALID_CASE_ID_2);
+        final List<CaseDocument> caseDocuments = caseRepository.findCaseDocuments(VALID_CASE_ID_2);
         assertNotNull(caseDocuments);
         assertThat("Should have 1 entry", caseDocuments, hasSize(1));
         assertEquals("ID should match valid material ID", VALID_MATERIAL_ID,
@@ -162,7 +167,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldFindCaseDefendants_Success() {
-        DefendantDetail defendant = caseRepository.findCaseDefendant(VALID_CASE_ID_3);
+        final DefendantDetail defendant = caseRepository.findCaseDefendant(VALID_CASE_ID_3);
         assertNotNull(defendant);
         assertEquals(VALID_CASE_ID_3, defendant.getCaseDetail().getId());
     }
@@ -170,7 +175,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     @Test
     public void shouldCompleteCaseSuccessfully() {
         assertNull("CaseAggregate should not be completed",
-                CASE_HOLDER.get(VALID_CASE_ID_1).getCompleted());
+                CASES.get(VALID_CASE_ID_1).getCompleted());
 
         caseRepository.completeCase(VALID_CASE_ID_1);
         CaseDetail actualCase = caseRepository.findBy(VALID_CASE_ID_1);
@@ -179,14 +184,14 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldUpdateLibraCaseReopenedDetails() {
-        LocalDate reopenedDate = LocalDate.now();
+        final LocalDate reopenedDate = LocalDate.now();
         final String reason = "REASON";
-        CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_1);
+        final CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_1);
         actualCase.setLibraCaseNumber("LIBRA12345");
         actualCase.setReopenedDate(reopenedDate);
         actualCase.setReopenedInLibraReason(reason);
         caseRepository.save(actualCase);
-        CaseDetail expectedCaseDetails = caseRepository.findBy(VALID_CASE_ID_1);
+        final CaseDetail expectedCaseDetails = caseRepository.findBy(VALID_CASE_ID_1);
         assertEquals("LIBRA12345", expectedCaseDetails.getLibraCaseNumber());
         assertEquals(reopenedDate, expectedCaseDetails.getReopenedDate());
         assertEquals(reason, expectedCaseDetails.getReopenedInLibraReason());
@@ -201,7 +206,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         // all offence are withdrawn
         isCasePendingWithdrawal(caseDetailForWithdrawnCase);
 
-        CaseDetail caseDetailForNotWithdrawnCase = caseRepository.findBy(VALID_CASE_ID_1);
+        final CaseDetail caseDetailForNotWithdrawnCase = caseRepository.findBy(VALID_CASE_ID_1);
         isCaseNotPendingWithdrawal(caseDetailForNotWithdrawnCase);
 
         caseRepository.requestWithdrawalAllOffences(VALID_CASE_ID_1);
@@ -225,9 +230,9 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     @Test
     public void shouldFindCaseByMaterialIdWhenMaterialIsDocument() {
 
-        CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_2);
+        final CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_2);
 
-        CaseDetail caseReturned = caseRepository.findByMaterialId(VALID_MATERIAL_ID);
+        final CaseDetail caseReturned = caseRepository.findByMaterialId(VALID_MATERIAL_ID);
 
         assertThat(caseReturned.getId(), is(actualCase.getId()));
     }
@@ -235,14 +240,14 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldPersistCurrencyAndOtherSupportingInformation() {
-        CaseDetail caseDetail = caseRepository.findBy(VALID_CASE_ID_1);
+        final CaseDetail caseDetail = caseRepository.findBy(VALID_CASE_ID_1);
 
         assertThat(caseDetail.getDefendant().getNumPreviousConvictions(), is(NUM_PREVIOUS_CONVICTIONS));
         assertThat(caseDetail.getCosts(), is(COSTS));
-        assertThat(caseDetail.getPostingDate(), is(POSTING_DATE));
+        assertThat(caseDetail.getPostingDate(), is(CASES.get(VALID_CASE_ID_1).getPostingDate()));
 
-        DefendantDetail defendantDetail = caseDetail.getDefendant();
-        OffenceDetail offenceDetail = defendantDetail.getOffences().iterator().next();
+        final DefendantDetail defendantDetail = caseDetail.getDefendant();
+        final OffenceDetail offenceDetail = defendantDetail.getOffences().iterator().next();
 
         assertThat(offenceDetail.getWitnessStatement(), is("witness statement"));
         assertThat(offenceDetail.getProsecutionFacts(), is("prosecution facts"));
@@ -260,23 +265,21 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     @Test
     public void shouldFindOldestUncompletedPostingDate() {
 
-        final LocalDate oldestPostingDate = POSTING_DATE.minusDays(1);
+        final LocalDate oldestPostingDate = postingDate.minusDays(1);
 
         final CaseDetail oldestUncompletedCase = getCase(randomUUID(), randomUrn());
-        oldestUncompletedCase.setInitiationCode("J");
         oldestUncompletedCase.setCompleted(false);
         oldestUncompletedCase.setPostingDate(oldestPostingDate);
         caseRepository.save(oldestUncompletedCase);
 
         final CaseDetail completedCase = getCase(randomUUID(), randomUrn());
-        completedCase.setInitiationCode("J");
         completedCase.setCompleted(true);
-        completedCase.setPostingDate(POSTING_DATE.minusDays(2));
+        completedCase.setPostingDate(postingDate.minusDays(2));
         caseRepository.save(completedCase);
 
         // for deletion after the test has run
-        CASE_HOLDER.put(completedCase.getId(), completedCase);
-        CASE_HOLDER.put(oldestUncompletedCase.getId(), oldestUncompletedCase);
+        CASES.put(completedCase.getId(), completedCase);
+        CASES.put(oldestUncompletedCase.getId(), oldestUncompletedCase);
 
         assertThat(caseRepository.findOldestUncompletedPostingDate(), equalTo(oldestPostingDate));
     }
@@ -326,8 +329,8 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
         caseRepository.save(caseDetail1);
         caseRepository.save(caseDetail2);
-        CASE_HOLDER.put(caseDetail1.getId(), caseDetail1);
-        CASE_HOLDER.put(caseDetail2.getId(), caseDetail2);
+        CASES.put(caseDetail1.getId(), caseDetail1);
+        CASES.put(caseDetail2.getId(), caseDetail2);
 
         //when
         final CaseDetail actualCase = caseRepository.findByUrnPostcode("12345678A", postcode1);
@@ -351,8 +354,8 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
         caseRepository.save(caseDetail1);
         caseRepository.save(caseDetail2);
-        CASE_HOLDER.put(caseDetail1.getId(), caseDetail1);
-        CASE_HOLDER.put(caseDetail2.getId(), caseDetail2);
+        CASES.put(caseDetail1.getId(), caseDetail1);
+        CASES.put(caseDetail2.getId(), caseDetail2);
 
         //when
         final CaseDetail actualCase = caseRepository.findByUrnPostcode("12345678A", postcode1);
@@ -360,12 +363,27 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         //then throws exception
     }
 
+    @Test
+    public void shouldGetAwaitingSjpCases() {
+        final int limit = 2;
+
+        final List<AwaitingCase> awaitingSjpCases = caseRepository.findAwaitingSjpCases(limit);
+
+        assertThat(awaitingSjpCases, hasSize(limit));
+        assertThat(awaitingSjpCases.get(0).getDefendantLastName(), equalTo(
+                CASES.get(VALID_CASE_ID_3).getDefendant().getPersonalDetails().getLastName()));
+        assertThat(awaitingSjpCases.get(1).getDefendantLastName(), equalTo(
+                CASES.get(VALID_CASE_ID_2).getDefendant().getPersonalDetails().getLastName()));
+        assertThat(awaitingSjpCases.get(1).getOffenceCode(), equalTo(OFFENCE_CODE));
+    }
+
+
     private void isCaseNotPendingWithdrawal(CaseDetail caseDetail) {
         checkAllOffencesForACase(caseDetail, false);
     }
 
     private void checkAllOffencesForACase(CaseDetail caseDetail, boolean withdrawn) {
-        Set<OffenceDetail> offences = caseDetail.getDefendant().getOffences();
+        final Set<OffenceDetail> offences = caseDetail.getDefendant().getOffences();
 
         assertThat(offences, not(empty()));
         offences.forEach(offence -> assertEquals(withdrawn, offence.getPendingWithdrawal()));
@@ -393,15 +411,18 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
                 .withId(defendantId)
                 .withOffencePendingWithdrawal(withdrawn)
                 .withPostcode(postcode)
+                .withLastName(RandomGenerator.string(10).next())
+                .withOffenceCode(OFFENCE_CODE)
                 .build();
 
+        postingDate = postingDate.minusDays(1);
 
         final CaseDetail caseDetail = CaseDetailBuilder.aCase()
                 .withCaseId(caseId)
                 .withUrn(urn)
                 .withProsecutingAuthority(PROSECUTING_AUTHORITY)
                 .withCosts(COSTS)
-                .withPostingDate(POSTING_DATE)
+                .withPostingDate(postingDate)
                 .addDefendantDetail(defendantDetail)
                 .addCaseDocument(getCaseDocument(caseId, materialId))
                 .withCreatedOn(caseCreatedOn)

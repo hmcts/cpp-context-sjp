@@ -1,0 +1,24 @@
+{
+  "_metadata": {
+    "name": "sjp.events.defendant-details-updated"
+  },
+  "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "firstName": "Testy",
+  "lastName": "Testerson",
+  "dateOfBirth": "1990-09-09",
+  "nationalInsuranceNumber": "AB123456A",
+  "contactDetails": {
+    "home": "0208000888",
+    "mobile": "07890123123",
+    "email": "criminal@gmail.com"
+  },
+  "address": {
+    "address1": "14 Tottenham Court Road",
+    "address2": "London",
+    "address3": "England",
+    "address4": "UK",
+    "postcode": "W1T 1JY"
+  },
+  "updateByOnlinePlea": true,
+  "updatedDate": "2012-02-22T02:06:58.147Z"
+}

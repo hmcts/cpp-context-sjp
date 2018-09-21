@@ -6,7 +6,8 @@
       "id": "72289b9e-5403-4e5b-8219-1d6ab004bbda",
       "offenceCode": "PS90010",
       "offenceSequenceNumber": 1,
-      "wording": "On 02/07/2015 At threadneedle street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction ",
+      "wording": "On 02/07/2015 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction ",
+      "wordingWelsh": "Welsh wording: On 02/07/2015 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction ",
       "cjsCode": "PS90010",
       "sequenceNumber": 1,
       "startDate": "2017-12-29",
@@ -34,7 +35,8 @@
     },
     "contactDetails": {
       "home": "020 7219 5206",
-      "mobile": "020 7219 5207"
+      "mobile": "020 7219 5207",
+      "email": "email@email.com"
     }
   }
 }

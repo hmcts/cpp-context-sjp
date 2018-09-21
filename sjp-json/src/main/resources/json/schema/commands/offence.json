@@ -6,9 +6,6 @@
     "id": {
       "type": "string"
     },
-    "prosecutorCaseId": {
-      "type": "string"
-    },
     "offenceSequenceNo": {
       "type": "integer"
     },
@@ -21,10 +18,13 @@
     "libraOffenceDateCode": {
       "type": "integer"
     },
-    "offenceDate": {
+    "offenceCommittedDate": {
       "type": "string"
     },
     "offenceWording": {
+      "type": "string"
+    },
+    "offenceWordingWelsh": {
       "type": "string"
     },
     "prosecutionFacts": {
@@ -35,17 +35,25 @@
     },
     "compensation": {
       "type": "number"
+    },
+    "backDuty": {
+      "type": "number"
+    },
+    "backDutyDateFrom": {
+      "type": "string"
+    },
+    "backDutyDateTo": {
+      "type": "string"
     }
   },
   "additionalProperties": false,
   "required": [
     "id",
-    "prosecutorCaseId",
     "offenceSequenceNo",
     "libraOffenceCode",
     "chargeDate",
     "libraOffenceDateCode",
-    "offenceDate",
+    "offenceCommittedDate",
     "offenceWording"
   ]
 }

@@ -1,11 +1,15 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 
 @Embeddable
 public class PersonalDetails implements Serializable {
@@ -25,7 +29,8 @@ public class PersonalDetails implements Serializable {
     private LocalDate dateOfBirth;
 
     @Column(name = "gender")
-    private String gender;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     @Column(name = "national_insurance_number")
     private String nationalInsuranceNumber;
@@ -55,7 +60,7 @@ public class PersonalDetails implements Serializable {
                            final String firstName,
                            final String lastName,
                            final LocalDate dateOfBirth,
-                           final String gender,
+                           final Gender gender,
                            final String nationalInsuranceNumber,
                            final Address address,
                            final ContactDetails contactDetails) {
@@ -101,11 +106,11 @@ public class PersonalDetails implements Serializable {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public String getGender() {
+    public Gender getGender() {
         return gender;
     }
 
-    public void setGender(String gender) {
+    public void setGender(Gender gender) {
         this.gender = gender;
     }
 

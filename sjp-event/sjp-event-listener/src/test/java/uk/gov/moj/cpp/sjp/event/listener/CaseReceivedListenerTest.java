@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -17,7 +18,12 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
+import uk.gov.moj.cpp.sjp.event.listener.converter.AddressToAddressEntity;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseReceivedToCase;
+import uk.gov.moj.cpp.sjp.event.listener.converter.ContactDetailsToContactDetailsEntity;
+import uk.gov.moj.cpp.sjp.event.listener.converter.DefendantToDefendantDetails;
+import uk.gov.moj.cpp.sjp.event.listener.converter.OffenceToOffenceDetail;
+import uk.gov.moj.cpp.sjp.event.listener.converter.PersonToPersonalDetailsEntity;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -35,8 +41,10 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -55,7 +63,25 @@ public class CaseReceivedListenerTest {
     @Mock
     private CaseSearchResultRepository searchResultRepository;
 
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private AddressToAddressEntity addressToAddressEntityConverter;
+
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private ContactDetailsToContactDetailsEntity contactDetailsToContactDetailsEntityConverter;
+
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private OffenceToOffenceDetail offenceToOffenceDetailConverter;
+
     @Spy
+    @InjectMocks
+    private PersonToPersonalDetailsEntity personToPersonalDetailsEntity = new PersonToPersonalDetailsEntity();
+
+    @Spy
+    @InjectMocks
+    private DefendantToDefendantDetails defendantToDefendantDetailsConverter = new DefendantToDefendantDetails();
+
+    @Spy
+    @InjectMocks
     private CaseReceivedToCase caseReceivedToCaseConverter = new CaseReceivedToCase();
 
     @Spy
@@ -72,6 +98,7 @@ public class CaseReceivedListenerTest {
     private static final UUID caseId = UUID.randomUUID();
     private static final ProsecutingAuthority prosecutingAuthority = TFL;
     private static final String urn = prosecutingAuthority.name() + "1234";
+    private static final String enterpriseId = RandomStringUtils.randomAlphanumeric(12).toUpperCase();
     private static final BigDecimal costs = BigDecimal.valueOf(12.23);
     private static final LocalDate postingDate = LocalDate.of(2017, 1, 1);
     private static final UUID defendantId = UUID.randomUUID();
@@ -80,7 +107,8 @@ public class CaseReceivedListenerTest {
     private static final String defendantFirstName = "John";
     private static final String defendantLastName = "Smith";
     private static final LocalDate defendantDateOfBirth = LocalDate.of(1960, 1, 1);
-    private static final String defendantGender = "Male";
+    private static final Gender defendantGender = Gender.MALE;
+    private static final String nationalInsuranceNumber = RandomStringUtils.randomAlphanumeric(10);
     private static final int numPreviousConvictions = 2;
 
     private static final String address1 = "Flat 1, Apple Building";
@@ -93,8 +121,9 @@ public class CaseReceivedListenerTest {
     private static final int offenceSequenceNo = 1;
     private static final String offenceCode = "PS00001";
     private static final LocalDate chargeDate = LocalDate.of(2017, 1, 1);
-    private static final LocalDate offenceDate = LocalDate.of(2017, 1, 5);
+    private static final LocalDate offenceCommittedDate = LocalDate.of(2017, 1, 5);
     private static final String offenceWording = "this is offence wording";
+    private static final String offenceWordingWelsh = "this is offence wording in Welsh";
     private static final String prosecutionFacts = "this is prosecution facts";
     private static final String witnessStatement = "this is witness statement";
     private static final BigDecimal compensation = BigDecimal.valueOf(2.34);
@@ -134,8 +163,8 @@ public class CaseReceivedListenerTest {
         final CaseDetail expectedCaseDetail = new CaseDetail(
                 caseId,
                 urn,
+                enterpriseId,
                 prosecutingAuthority,
-                null,
                 false,
                 null,
                 ZonedDateTimes.fromString(caseCreatedOn),
@@ -147,7 +176,7 @@ public class CaseReceivedListenerTest {
                                 defendantLastName,
                                 defendantDateOfBirth,
                                 defendantGender,
-                                null,
+                                nationalInsuranceNumber,
                                 new Address(
                                         address1,
                                         address2,
@@ -163,8 +192,9 @@ public class CaseReceivedListenerTest {
                                         .setChargeDate(chargeDate)
                                         .setCode(offenceCode)
                                         .setSequenceNumber(offenceSequenceNo)
-                                        .setStartDate(offenceDate)
+                                        .setStartDate(offenceCommittedDate)
                                         .setWording(offenceWording)
+                                        .setWordingWelsh(offenceWordingWelsh)
                                         .withCompensation(compensation)
                                         .withLibraOffenceDateCode(1)
                                         .withProsecutionFacts(prosecutionFacts)
@@ -244,7 +274,7 @@ public class CaseReceivedListenerTest {
                         .add("firstName", defendantFirstName)
                         .add("lastName", defendantLastName)
                         .add("dateOfBirth", LocalDates.to(defendantDateOfBirth))
-                        .add("gender", defendantGender)
+                        .add("gender", defendantGender.toString())
                         .add("numPreviousConvictions", numPreviousConvictions)
                         .add("address", createObjectBuilder()
                                 .add("address1", address1)
@@ -259,9 +289,10 @@ public class CaseReceivedListenerTest {
                                         .add("offenceSequenceNo", offenceSequenceNo)
                                         .add("libraOffenceCode", offenceCode)
                                         .add("chargeDate", LocalDates.to(chargeDate))
-                                        .add("offenceDate", LocalDates.to(offenceDate))
+                                        .add("offenceCommittedDate", LocalDates.to(offenceCommittedDate))
                                         .add("libraOffenceDateCode", 1)
                                         .add("offenceWording", offenceWording)
+                                        .add("offenceWordingWelsh", offenceWordingWelsh)
                                         .add("prosecutionFacts", prosecutionFacts)
                                         .add("witnessStatement", witnessStatement)
                                         .add("compensation", compensation)

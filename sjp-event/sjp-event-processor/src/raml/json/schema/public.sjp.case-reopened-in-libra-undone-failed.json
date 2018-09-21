@@ -1,15 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "definitions": {
-    "uuid": {
-      "type": "string",
-      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-    }
-  },
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp_public/events/case-reopened-in-libra-undone-failed.json",
   "type": "object",
   "properties": {
     "caseId": {
-      "$ref": "#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
     "description": {
       "type": "string"

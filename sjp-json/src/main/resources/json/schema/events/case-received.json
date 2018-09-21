@@ -6,6 +6,9 @@
     "caseId": {
       "type": "string"
     },
+    "enterpriseId": {
+      "type": "string"
+    },
     "urn": {
       "type": "string"
     },
@@ -16,14 +19,13 @@
       "type": "number"
     },
     "postingDate": {
-      "type": "string"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
     },
     "defendant": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/events/case-received.defendant.json"
     },
     "createdOn": {
-      "type": "string",
-      "format": "date-time"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
     }
   },
   "additionalProperties": true,

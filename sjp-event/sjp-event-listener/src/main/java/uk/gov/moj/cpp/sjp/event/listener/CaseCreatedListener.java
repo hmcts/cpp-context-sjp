@@ -45,7 +45,7 @@ public class CaseCreatedListener {
     @Transactional
     @Handles("sjp.events.sjp-case-created")
     public void sjpCaseCreated(final JsonEnvelope envelope) {
-        CaseDetail caseDetail = sjpConverter.convert(
+        final CaseDetail caseDetail = sjpConverter.convert(
                 jsonObjectToObjectConverter.convert(
                         envelope.payloadAsJsonObject(), SjpCaseCreated.class
                 )
@@ -56,7 +56,7 @@ public class CaseCreatedListener {
     @Handles(CaseReceived.EVENT_NAME)
     @Transactional
     public void caseReceived(final JsonEnvelope envelope) {
-        CaseDetail caseDetail = caseReceivedToCaseConverter.convert(
+        final CaseDetail caseDetail = caseReceivedToCaseConverter.convert(
                 jsonObjectToObjectConverter.convert(
                         envelope.payloadAsJsonObject(), CaseReceived.class
                 )

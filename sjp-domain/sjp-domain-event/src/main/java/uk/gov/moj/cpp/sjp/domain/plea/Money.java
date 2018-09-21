@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public class Money implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private String amount;
 
     public Money() {

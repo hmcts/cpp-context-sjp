@@ -1,11 +1,11 @@
 package uk.gov.moj.sjp.it.helper;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseByUrnAndPostcode;
@@ -36,8 +36,11 @@ public class CitizenHelper {
                                 withJsonPath("$.defendant.personalDetails.address.postcode", equalTo(postcode)),
                                 withJsonPath("$.defendant.offences[0].title", equalTo(offence(expected).getString("title"))),
                                 withJsonPath("$.defendant.offences[0].legislation", equalTo(offence(expected).getString("legislation"))),
+                                withJsonPath("$.defendant.offences[0].pendingWithdrawal", equalTo(offence(expected).getBoolean("pendingWithdrawal"))),
                                 withJsonPath("$.defendant.offences[0].wording", equalTo(offence(expected).getString("wording"))),
-                                withJsonPath("$.defendant.offences[0].pendingWithdrawal", equalTo(offence(expected).getBoolean("pendingWithdrawal")))
+                                offence(expected).containsKey("wordingWelsh") ?
+                                        withJsonPath("$.defendant.offences[0].wordingWelsh", equalTo(offence(expected).getString("wordingWelsh")))
+                                        : withoutJsonPath("$.defendant.offences[0].wordingWelsh")
                         )));
     }
 

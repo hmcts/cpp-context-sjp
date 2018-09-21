@@ -24,6 +24,21 @@
     "numPreviousConvictions": {
       "type": "integer"
     },
+    "hearingLanguageIndicator": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/language.json"
+    },
+    "documentationLanguage": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/language.json"
+    },
+    "driverNumber": {
+      "type": "string"
+    },
+    "languageNeeds": {
+      "type": "string"
+    },
+    "nationalInsuranceNumber": {
+      "type": "string"
+    },
     "address": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
     },

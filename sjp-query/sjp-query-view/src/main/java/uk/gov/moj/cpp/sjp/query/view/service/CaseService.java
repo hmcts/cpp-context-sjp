@@ -15,11 +15,11 @@ import static javax.json.Json.createObjectBuilder;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.persistence.entity.AwaitingCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseReferredToCourt;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
@@ -111,24 +111,24 @@ public class CaseService {
         return caseView;
     }
 
-    /**
-     * Find cases missing the SJP notice document.
-     *
-     * @param limit limit the number of IDs returned
-     * @return CasesMissingSjpnView
-     */
-    public CasesMissingSjpnView findCasesMissingSjpn(final Optional<Integer> limit, final Optional<LocalDate> postedBefore) {
+    public CasesMissingSjpnView findCasesMissingSjpn(final JsonEnvelope envelope,
+                                                     final Optional<Integer> limit,
+                                                     final Optional<LocalDate> postedBefore) {
 
         final List<CaseDetail> casesDetails;
+
+        final String prosecutingAuthorityFilterValue = prosecutingAuthorityAccessFilterConverter
+                .convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityProvider
+                        .getCurrentUsersProsecutingAuthorityAccess(envelope));
 
         if (limit.isPresent() && limit.get() < 1) {
             casesDetails = Collections.emptyList();
         } else {
             QueryResult<CaseDetail> caseDetailsResult;
             if (postedBefore.isPresent()) {
-                caseDetailsResult = caseRepository.findCasesMissingSjpn(postedBefore.get());
+                caseDetailsResult = caseRepository.findCasesMissingSjpn(prosecutingAuthorityFilterValue, postedBefore.get());
             } else {
-                caseDetailsResult = caseRepository.findCasesMissingSjpn();
+                caseDetailsResult = caseRepository.findCasesMissingSjpn(prosecutingAuthorityFilterValue);
             }
 
             if (limit.isPresent()) {
@@ -138,8 +138,11 @@ public class CaseService {
             }
         }
 
-        final List<String> casesIds = casesDetails.stream().map(caseDetails -> caseDetails.getId().toString()).collect(toList());
-        final int casesCount = postedBefore.map(caseRepository::countCasesMissingSjpn).orElseGet(caseRepository::countCasesMissingSjpn);
+        final List<String> casesIds = casesDetails.stream()
+                .map(caseDetails -> caseDetails.getId().toString()).collect(toList());
+        final int casesCount = postedBefore
+                .map(localDate -> caseRepository.countCasesMissingSjpn(prosecutingAuthorityFilterValue, localDate))
+                .orElseGet(() -> caseRepository.countCasesMissingSjpn(prosecutingAuthorityFilterValue));
 
         return new CasesMissingSjpnView(casesIds, casesCount);
     }
@@ -203,7 +206,6 @@ public class CaseService {
         return searchCaseByMaterialIdView;
     }
 
-
     /**
      * Find case documents
      *
@@ -212,6 +214,11 @@ public class CaseService {
      */
     public CaseDocumentsView findCaseDocuments(final UUID caseId) {
         return findCaseDocuments(caseId, d -> true);
+    }
+
+    public Optional<CaseDocumentView> findCaseDocument(final UUID caseId, final UUID documentId) {
+        return findCaseDocuments(caseId, document -> document.getId().equals(documentId))
+                .getCaseDocuments().stream().findFirst();
     }
 
     private CaseDocumentsView findCaseDocuments(final UUID caseId, final Predicate<CaseDocument> filter) {
@@ -249,16 +256,14 @@ public class CaseService {
 
     public JsonObject findAwaitingCases() {
 
-        final List<CaseDetail> awaitingSjpCases = caseRepository.findAwaitingSjpCases(600);
+        final List<AwaitingCase> awaitingSjpCases = caseRepository.findAwaitingSjpCases(600);
 
         final JsonArrayBuilder arrayBuilder = createArrayBuilder();
-        awaitingSjpCases.forEach(sjpCase -> {
-            final DefendantDetail defendant = sjpCase.getDefendant();
+        awaitingSjpCases.forEach(awaitingCase ->
             arrayBuilder.add(createObjectBuilder()
-                    .add("firstName", defendant.getPersonalDetails().getFirstName())
-                    .add("lastName", defendant.getPersonalDetails().getLastName())
-                    .add("offenceCode", defendant.getOffences().iterator().next().getCode()));
-        });
+                    .add("firstName", awaitingCase.getDefendantFirstName())
+                    .add("lastName", awaitingCase.getDefendantLastName())
+                    .add("offenceCode", awaitingCase.getOffenceCode())));
         return createObjectBuilder().add("awaitingCases", arrayBuilder).build();
     }
 
@@ -297,10 +302,9 @@ public class CaseService {
                             .setCaseId(caseDocument.getCaseId())
                             .setUrn(caseDetail.getUrn())
                             .setDefendant(caseDetail.getDefendant().getPersonalDetails())
-                            .setOrder(caseDocument.getMaterialId(), caseDocument.getAddedAt())
+                            .setOrder(caseDocument.getId(), caseDocument.getAddedAt())
                             .build());
         };
-
 
         resultOrders.stream().filter(e -> caseRepository.findBy(e.getCaseId()) != null).forEach(caseDocumentConsumer);
 

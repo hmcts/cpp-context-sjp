@@ -4,7 +4,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
@@ -46,7 +45,7 @@ public class PersonInfoVerifier {
                 defendantBuilder.getLastName(),
                 defendantBuilder.getDateOfBirth(),
                 defendantBuilder.getGender(),
-                null,
+                defendantBuilder.getNationalInsuranceNumber(),
                 new Address(
                         defendantBuilder.getAddressBuilder().getAddress1(),
                         defendantBuilder.getAddressBuilder().getAddress2(),
@@ -54,7 +53,11 @@ public class PersonInfoVerifier {
                         defendantBuilder.getAddressBuilder().getAddress4(),
                         defendantBuilder.getAddressBuilder().getPostcode()
                 ),
-                new ContactDetails(null, null, null)
+                new ContactDetails(
+                        defendantBuilder.getContactDetailsBuilder().getEmail(),
+                        defendantBuilder.getContactDetailsBuilder().getHome(),
+                        defendantBuilder.getContactDetailsBuilder().getMobile()
+                )
         );
 
         return new PersonInfoVerifier(createCasePayloadBuilder.getId(), personalDetails);
@@ -77,7 +80,7 @@ public class PersonInfoVerifier {
                 ),
                 new ContactDetails(
                         payloadBuilder.getContactDetailsBuilder().getEmail(),
-                        payloadBuilder.getContactDetailsBuilder().getHomeNumber(),
+                        payloadBuilder.getContactDetailsBuilder().getHome(),
                         payloadBuilder.getContactDetailsBuilder().getMobile()
                 )
         );
@@ -107,7 +110,7 @@ public class PersonInfoVerifier {
                 withJsonPath("$.defendant.personalDetails.title", equalTo(personalDetails.getTitle())),
                 withJsonPath("$.defendant.personalDetails.firstName", equalTo(personalDetails.getFirstName())),
                 withJsonPath("$.defendant.personalDetails.lastName", equalTo(personalDetails.getLastName())),
-                withJsonPath("$.defendant.personalDetails.gender", equalTo(personalDetails.getGender())),
+                withJsonPath("$.defendant.personalDetails.gender", equalTo(personalDetails.getGender().toString())),
                 withJsonPath("$.defendant.personalDetails.dateOfBirth", equalTo(LocalDates.to(personalDetails.getDateOfBirth()))),
                 withJsonPath("$.defendant.personalDetails.address.address1", equalTo(personalDetails.getAddress().getAddress1())),
                 withJsonPath("$.defendant.personalDetails.address.address2", equalTo(personalDetails.getAddress().getAddress2())),

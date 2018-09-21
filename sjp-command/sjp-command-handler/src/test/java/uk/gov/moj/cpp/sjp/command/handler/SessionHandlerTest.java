@@ -82,7 +82,7 @@ public class SessionHandlerTest {
     private SessionHandler sessionHandler;
 
     private UUID sessionId, userId;
-    private String courtHouseName, localJusticeAreaNationalCourtCode;
+    private String courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode;
     private ZonedDateTime startedAt;
     private ZonedDateTime endedAt;
 
@@ -90,6 +90,7 @@ public class SessionHandlerTest {
     public void init() {
         sessionId = randomUUID();
         userId = randomUUID();
+        courtHouseCode = "B01LY";
         courtHouseName = "Coventry Magistrates' Court";
         localJusticeAreaNationalCourtCode = "2924";
         startedAt = clock.now();
@@ -114,15 +115,16 @@ public class SessionHandlerTest {
                 createObjectBuilder()
                         .add("sessionId", sessionId.toString())
                         .add("magistrate", magistrate)
+                        .add("courtHouseCode", courtHouseCode)
                         .add("courtHouseName", courtHouseName)
                         .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
                         .build());
 
-        final MagistrateSessionStarted sessionStartedEvent = new MagistrateSessionStarted(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate);
+        final MagistrateSessionStarted sessionStartedEvent = new MagistrateSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate);
 
         when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
         when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);
-        when(session.startMagistrateSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate)).thenReturn(Stream.of(sessionStartedEvent));
+        when(session.startMagistrateSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate)).thenReturn(Stream.of(sessionStartedEvent));
 
         sessionHandler.startSession(startSessionCommand);
 
@@ -134,6 +136,7 @@ public class SessionHandlerTest {
                                 payloadIsJson(allOf(
                                         withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                                         withJsonPath("$.userId", equalTo(userId.toString())),
+                                        withJsonPath("$.courtHouseCode", equalTo(courtHouseCode)),
                                         withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                                         withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                                         withJsonPath("$.magistrate", equalTo(magistrate)),
@@ -147,15 +150,16 @@ public class SessionHandlerTest {
         final JsonEnvelope startSessionCommand = envelopeFrom(metadataWithRandomUUID(START_SESSION_COMMAND).withUserId(userId.toString()),
                 createObjectBuilder()
                         .add("sessionId", sessionId.toString())
+                        .add("courtHouseCode", courtHouseCode)
                         .add("courtHouseName", courtHouseName)
                         .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
                         .build());
 
-        final DelegatedPowersSessionStarted sessionStartedEvent = new DelegatedPowersSessionStarted(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
+        final DelegatedPowersSessionStarted sessionStartedEvent = new DelegatedPowersSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
 
         when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
         when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);
-        when(session.startDelegatedPowersSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt)).thenReturn(Stream.of(sessionStartedEvent));
+        when(session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt)).thenReturn(Stream.of(sessionStartedEvent));
 
         sessionHandler.startSession(startSessionCommand);
 
@@ -167,6 +171,7 @@ public class SessionHandlerTest {
                                 payloadIsJson(allOf(
                                         withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                                         withJsonPath("$.userId", equalTo(userId.toString())),
+                                        withJsonPath("$.courtHouseCode", equalTo(courtHouseCode)),
                                         withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                                         withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                                         withJsonPath("$.startedAt", equalTo(startedAt.toString())),
@@ -198,11 +203,11 @@ public class SessionHandlerTest {
                         .add("startedAt", startedAt.toString())
                         .build());
 
-        final MagistrateSessionStarted sessionStartedEvent = new MagistrateSessionStarted(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate);
+        final MagistrateSessionStarted sessionStartedEvent = new MagistrateSessionStarted(sessionId, userId, null, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate);
 
         when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
         when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);
-        when(session.startMagistrateSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate)).thenReturn(Stream.of(sessionStartedEvent));
+        when(session.startMagistrateSession(sessionId, userId, null, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate)).thenReturn(Stream.of(sessionStartedEvent));
 
         sessionHandler.migrateSession(startSessionCommand);
 
@@ -232,11 +237,11 @@ public class SessionHandlerTest {
                         .add("startedAt", startedAt.toString())
                         .build());
 
-        final DelegatedPowersSessionStarted sessionStartedEvent = new DelegatedPowersSessionStarted(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
+        final DelegatedPowersSessionStarted sessionStartedEvent = new DelegatedPowersSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
 
         when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
         when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);
-        when(session.startDelegatedPowersSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt)).thenReturn(Stream.of(sessionStartedEvent));
+        when(session.startDelegatedPowersSession(sessionId, userId, null, courtHouseName, localJusticeAreaNationalCourtCode, startedAt)).thenReturn(Stream.of(sessionStartedEvent));
 
         sessionHandler.migrateSession(startSessionCommand);
 

@@ -24,6 +24,7 @@ public class CaseReceived {
 
     private final UUID caseId;
     private final String urn;
+    private final String enterpriseId;
     private final ProsecutingAuthority prosecutingAuthority;
     private final BigDecimal costs;
     private final LocalDate postingDate;
@@ -33,6 +34,7 @@ public class CaseReceived {
     @JsonCreator
     public CaseReceived(@JsonProperty("caseId") UUID caseId,
                         @JsonProperty("urn") String urn,
+                        @JsonProperty("enterpriseId") String enterpriseId,
                         @JsonProperty("prosecutingAuthority") ProsecutingAuthority prosecutingAuthority,
                         @JsonProperty("costs") BigDecimal costs,
                         @JsonProperty("postingDate") LocalDate postingDate,
@@ -40,6 +42,7 @@ public class CaseReceived {
                         @JsonProperty("createdOn") ZonedDateTime createdOn) {
         this.caseId = caseId;
         this.urn = urn;
+        this.enterpriseId = enterpriseId;
         this.prosecutingAuthority = prosecutingAuthority;
         this.costs = costs;
         this.postingDate = postingDate;
@@ -53,6 +56,10 @@ public class CaseReceived {
 
     public String getUrn() {
         return urn;
+    }
+
+    public String getEnterpriseId() {
+        return enterpriseId;
     }
 
     public ProsecutingAuthority getProsecutingAuthority() {

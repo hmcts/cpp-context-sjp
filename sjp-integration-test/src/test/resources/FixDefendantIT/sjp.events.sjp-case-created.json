@@ -1,14 +1,7 @@
 {
   "id": "{caseId}",
   "urn": "{caseUrn}",
-  "ptiUrn": "7772460",
-  "initiationCode": "J",
-  "summonsCode": "M",
   "prosecutingAuthority": "TFL",
-  "libraOriginatingOrg": "GAFTL00",
-  "libraHearingLocation": "B01LY75",
-  "dateOfHearing": "2020-12-31",
-  "timeOfHearing": "11:00:00",
   "personId": "{personId}",
   "defendantId": "{defendantId}",
   "costs": 100,
@@ -17,13 +10,13 @@
   "offences": [
     {
       "id": "{offenceId}",
-      "prosecutorCaseId": "TFL7772460",
       "offenceSequenceNo": 1,
       "libraOffenceCode": "PS90010",
       "chargeDate": "2016-01-01",
       "libraOffenceDateCode": 1,
-      "offenceDate": "2015-07-02",
-      "offenceWording": "On 02/07/2015 At threadneedle street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction  ",
+      "offenceCommittedDate": "2015-07-02",
+      "offenceWording": "On 02/07/2015 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction  ",
+      "offenceWordingWelsh": "Welsh wording: On 02/07/2015 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction  ",
       "prosecutionFacts": "Prosecution Facts",
       "witnessStatement": "It is a fact - you are a crook",
       "compensation": 101

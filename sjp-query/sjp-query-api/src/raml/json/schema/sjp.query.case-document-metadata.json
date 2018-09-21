@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/document-metadata.json",
+  "type": "object",
+  "properties": {
+    "caseDocumentMetadata": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/queries/document-metadata.json"
+    }
+  },
+  "required": [
+    "caseDocumentMetadata"
+  ]
+}

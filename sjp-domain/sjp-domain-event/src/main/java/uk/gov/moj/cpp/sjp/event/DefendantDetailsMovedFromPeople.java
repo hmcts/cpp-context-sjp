@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 
@@ -19,12 +20,12 @@ public class DefendantDetailsMovedFromPeople {
     private final String firstName;
     private final String lastName;
     private final LocalDate dateOfBirth;
-    private final String gender;
+    private final Gender gender;
     private final String nationalInsuranceNumber;
     private final Address address;
     private final ContactDetails contactNumber;
 
-    @SuppressWarnings("squid:S00107") //Created builder
+    //Created builder
     @JsonCreator
     private DefendantDetailsMovedFromPeople(@JsonProperty("caseId") UUID caseId,
                                             @JsonProperty("personId") UUID personId,
@@ -32,7 +33,7 @@ public class DefendantDetailsMovedFromPeople {
                                             @JsonProperty("firstName") String firstName,
                                             @JsonProperty("lastName") String lastName,
                                             @JsonProperty("dateOfBirth") LocalDate dateOfBirth,
-                                            @JsonProperty("gender") String gender,
+                                            @JsonProperty("gender") Gender gender,
                                             @JsonProperty("nationalInsuranceNumber") String nationalInsuranceNumber,
                                             @JsonProperty("contactNumber") ContactDetails contactNumber,
                                             @JsonProperty("address") Address address) {
@@ -55,8 +56,7 @@ public class DefendantDetailsMovedFromPeople {
         private String firstName;
         private String lastName;
         private LocalDate dateOfBirth;
-        private String gender;
-        private String email;
+        private Gender gender;
         private String nationalInsuranceNumber;
         private Address address;
         private ContactDetails contactNumber;
@@ -95,13 +95,8 @@ public class DefendantDetailsMovedFromPeople {
             return this;
         }
 
-        public DefendantDetailsMovedFromPeopleBuilder withGender(final String gender) {
+        public DefendantDetailsMovedFromPeopleBuilder withGender(final Gender gender) {
             this.gender = gender;
-            return this;
-        }
-
-        public DefendantDetailsMovedFromPeopleBuilder withEmail(final String email) {
-            this.email = email;
             return this;
         }
 
@@ -151,7 +146,7 @@ public class DefendantDetailsMovedFromPeople {
         return dateOfBirth;
     }
 
-    public String getGender() {
+    public Gender getGender() {
         return gender;
     }
 

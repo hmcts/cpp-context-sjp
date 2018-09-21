@@ -3,52 +3,23 @@
   "id": "http://justice.gov.uk/json/schemas/domains/sjp/commands/sjp.create-sjp-case.json",
   "type": "object",
   "properties": {
-    "urn": {
-      "id": "/urn",
-      "type": "string"
-    },
     "id": {
-      "id": "/id",
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+    },
+    "urn": {
       "type": "string"
     },
-    "ptiUrn": {
-      "id": "/ptiUrn",
+    "enterpriseId": {
       "type": "string"
     },
     "prosecutingAuthority": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/prosecuting-authority.json"
     },
-    "initiationCode": {
-      "id": "/initiationCode",
-      "type": "string"
-    },
-    "summonsCode": {
-      "id": "/summonsCode",
-      "type": "string"
-    },
-    "libraOriginatingOrg": {
-      "id": "/libraOriginatingOrg",
-      "type": "string"
-    },
-    "libraHearingLocation": {
-      "id": "/libraHearingLocation",
-      "type": "string"
-    },
-    "dateOfHearing": {
-      "id": "/dateOfHearing",
-      "type": "string"
-    },
-    "timeOfHearing": {
-      "id": "/timeOfHearing",
-      "type": "string"
-    },
     "costs": {
-      "id": "/costs",
       "type": "number"
     },
     "postingDate": {
-      "id": "/postingDate",
-      "type": "string"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
     },
     "defendant": {
       "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/commands/defendant.json"
@@ -57,6 +28,7 @@
   "required": [
     "urn",
     "id",
+    "enterpriseId",
     "prosecutingAuthority",
     "postingDate",
     "defendant"

@@ -18,18 +18,20 @@
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
         <assignment.version>2.0.99</assignment.version>
-        <material.version>2.0.101</material.version>
-        <notification.notify.version>0.0.16</notification.notify.version>
-        <referencedata.version>2.0.151</referencedata.version>
-        <scheduling.version>2.0.84</scheduling.version>
+        <material.version>2.0.112-ATCM-SNAPSHOT</material.version>
+        <notification.notify.version>0.0.25</notification.notify.version>
+        <referencedata.version>2.0.164</referencedata.version>
+        <scheduling.version>2.0.88</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>2.0.105</usersgroups.version>
-        <access-control-sjp-providers.version>3.2.9</access-control-sjp-providers.version>
+        <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
         <support.json.version>1.1.3</support.json.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
+        <joda-time.version>2.10</joda-time.version>
+        <lombok.version>1.18.0</lombok.version>
         <activiti.library.version>1.3.0</activiti.library.version>
     </properties>
 
@@ -94,4 +96,15 @@
             <url>${mvn.site.url}</url>
         </site>
     </distributionManagement>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>uk.gov.moj.cpp.sjp</groupId>
+                <artifactId>sjp-json</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
 </project>

@@ -1,31 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/case-by-urn-postcode.json",
   "definitions": {
-    "address": {
-      "type": "object",
-      "properties": {
-        "address1": {
-          "type": "string"
-        },
-        "address2": {
-          "type": "string"
-        },
-        "address3": {
-          "type": "string"
-        },
-        "address4": {
-          "type": "string"
-        },
-        "postcode": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": true,
-      "required": [
-        "address1",
-        "postcode"
-      ]
-    },
     "offence": {
       "type": "object",
       "properties": {
@@ -39,6 +15,9 @@
           "type": "string"
         },
         "wording": {
+          "type": "string"
+        },
+        "wordingWelsh": {
           "type": "string"
         },
         "pendingWithdrawal": {
@@ -57,24 +36,12 @@
         "pendingWithdrawal"
       ]
     },
-    "contactDetails": {
-      "type": "object",
-      "properties": {
-        "home": {
-          "type": "string"
-        },
-        "mobile": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": true
-    },
     "personalDetails": {
       "type": "object",
       "properties": {
+        "title": {
+          "type": "string"
+        },
         "firstName": {
           "type": "string"
         },
@@ -82,10 +49,7 @@
           "type": "string"
         },
         "gender": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/gender.json"
         },
         "dateOfBirth": {
           "type": "string"
@@ -94,10 +58,10 @@
           "type": "string"
         },
         "contactDetails": {
-          "$ref": "#/definitions/contactDetails"
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json"
         },
         "address": {
-          "$ref": "#/definitions/address"
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
         }
       },
       "additionalProperties": true,

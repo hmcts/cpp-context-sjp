@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -8,6 +10,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Offence {
@@ -22,6 +25,19 @@ public class Offence {
     private final String prosecutionFacts;
     private final String witnessStatement;
     private final BigDecimal compensation;
+    private final String offenceWordingWelsh;
+
+    @JsonUnwrapped
+    private final BackDuty backDuty;
+
+    @SuppressWarnings("squid:S00107")
+    public Offence(UUID id, int offenceSequenceNo, String libraOffenceCode, LocalDate chargeDate,
+                   int libraOffenceDateCode, LocalDate offenceDate, String offenceWording,
+                   String prosecutionFacts, String witnessStatement, BigDecimal compensation) {
+        this(id, offenceSequenceNo, libraOffenceCode, chargeDate, libraOffenceDateCode, null, offenceDate,
+                offenceWording, prosecutionFacts, witnessStatement, compensation,
+                null, null, null, null);
+    }
 
     @JsonCreator
     public Offence(@JsonProperty("id") UUID id,
@@ -29,21 +45,28 @@ public class Offence {
                    @JsonProperty("libraOffenceCode") String libraOffenceCode,
                    @JsonProperty("chargeDate") LocalDate chargeDate,
                    @JsonProperty("libraOffenceDateCode") int libraOffenceDateCode,
-                   @JsonProperty("offenceDate") LocalDate offenceDate,
+                   @JsonProperty("offenceDate") LocalDate offenceDate, // Backward compatibility
+                   @JsonProperty("offenceCommittedDate") LocalDate offenceCommittedDate,
                    @JsonProperty("offenceWording") String offenceWording,
                    @JsonProperty("prosecutionFacts") String prosecutionFacts,
                    @JsonProperty("witnessStatement") String witnessStatement,
-                   @JsonProperty("compensation") BigDecimal compensation) {
+                   @JsonProperty("compensation") BigDecimal compensation,
+                   @JsonProperty("offenceWordingWelsh") String offenceWordingWelsh,
+                   @JsonProperty("backDuty") Integer backDuty,
+                   @JsonProperty("backDutyDateFrom") LocalDate backDutyDateFrom,
+                   @JsonProperty("backDutyDateTo") LocalDate backDutyDateTo) {
         this.id = id;
         this.offenceSequenceNo = offenceSequenceNo;
         this.libraOffenceCode = libraOffenceCode;
         this.chargeDate = chargeDate;
         this.libraOffenceDateCode = libraOffenceDateCode;
-        this.offenceDate = offenceDate;
+        this.offenceDate = firstNonNull(offenceCommittedDate, offenceDate);
         this.offenceWording = offenceWording;
         this.prosecutionFacts = prosecutionFacts;
         this.witnessStatement = witnessStatement;
         this.compensation = compensation;
+        this.offenceWordingWelsh = offenceWordingWelsh;
+        this.backDuty = new BackDuty(backDuty, backDutyDateFrom, backDutyDateTo);
     }
 
     public UUID getId() {
@@ -86,6 +109,14 @@ public class Offence {
         return compensation;
     }
 
+    public String getOffenceWordingWelsh() {
+        return offenceWordingWelsh;
+    }
+
+    public BackDuty getBackDuty() {
+        return backDuty;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -94,7 +125,7 @@ public class Offence {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        
+
         Offence that = (Offence) o;
 
         return offenceSequenceNo == that.offenceSequenceNo &&
@@ -106,11 +137,15 @@ public class Offence {
                 Objects.equals(offenceWording, that.offenceWording) &&
                 Objects.equals(prosecutionFacts, that.prosecutionFacts) &&
                 Objects.equals(witnessStatement, that.witnessStatement) &&
-                Objects.equals(compensation, that.compensation);
+                Objects.equals(compensation, that.compensation) &&
+                Objects.equals(offenceWordingWelsh, that.offenceWordingWelsh) &&
+                Objects.equals(backDuty, that.backDuty);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, offenceSequenceNo, libraOffenceCode, chargeDate, libraOffenceDateCode, offenceDate, offenceWording, prosecutionFacts, witnessStatement, compensation);
+        return Objects.hash(id, offenceSequenceNo, libraOffenceCode, chargeDate,
+                libraOffenceDateCode, offenceDate, offenceWording, prosecutionFacts,
+                witnessStatement, compensation, offenceWordingWelsh, backDuty);
     }
 }

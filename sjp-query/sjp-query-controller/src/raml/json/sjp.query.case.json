@@ -12,10 +12,11 @@
   "reopenedInLibraReason": "REASON",
   "caseDocuments": [
     {
-      "id": "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95",
-      "materialId": "670490ee-95be-4e3e-af8b-9bef865e26ba",
-      "documentType": "PLEA",
-      "documentName": "document name"
+      "id": "7bde207f-ce57-49e5-b961-7577831171fb",
+      "materialId": "7bde207f-ce57-49e5-b961-7577831171fb",
+      "documentType": "SJPN",
+      "documentNumber": 1,
+      "addedAt": "2018-08-26T14:55:47.631Z"
     }
   ],
   "defendant": {
@@ -36,6 +37,7 @@
         "pleaMitigation": "The dog ate my ticket",
         "chargeDate": "2016-02-18",
         "wording": "On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable",
+        "wordingWelsh": "Welsh wording: On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable",
         "pendingWithdrawal": false,
         "compensation": 1.23,
         "prosecutionFacts": "No ticket at the gates, forgery"

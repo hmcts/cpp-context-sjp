@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 public class ReadyCaseRepositoryTest extends BaseTransactionalTest {
 
     @Inject
-    private ReadyCasesRepository readyCasesRepository;
+    private ReadyCaseRepository readyCaseRepository;
 
     @Test
     public void shouldGetReadyCasesByAssigneeId() {
@@ -34,13 +34,13 @@ public class ReadyCaseRepositoryTest extends BaseTransactionalTest {
         final ReadyCase readyCase3 = new ReadyCase(UUID.randomUUID(), PLEADED_GUILTY, assigneeId1);
         final ReadyCase readyCase4 = new ReadyCase(UUID.randomUUID(), PIA, assigneeId2);
 
-        readyCasesRepository.save(readyCase1);
-        readyCasesRepository.save(readyCase2);
-        readyCasesRepository.save(readyCase3);
-        readyCasesRepository.save(readyCase4);
+        readyCaseRepository.save(readyCase1);
+        readyCaseRepository.save(readyCase2);
+        readyCaseRepository.save(readyCase3);
+        readyCaseRepository.save(readyCase4);
 
-        assertThat(readyCasesRepository.findByAssigneeId(assigneeId1), containsInAnyOrder(readyCase2, readyCase3));
-        assertThat(readyCasesRepository.findByAssigneeId(assigneeId2), containsInAnyOrder(readyCase4));
-        assertThat(readyCasesRepository.findByAssigneeId(assigneeId3), hasSize(0));
+        assertThat(readyCaseRepository.findByAssigneeId(assigneeId1), containsInAnyOrder(readyCase2, readyCase3));
+        assertThat(readyCaseRepository.findByAssigneeId(assigneeId2), containsInAnyOrder(readyCase4));
+        assertThat(readyCaseRepository.findByAssigneeId(assigneeId3), hasSize(0));
     }
 }

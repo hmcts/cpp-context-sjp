@@ -15,4 +15,12 @@
         <module>sjp-event-listener</module>
         <module>sjp-event-processor</module>
     </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.sjp</groupId>
+            <artifactId>sjp-json</artifactId>
+        </dependency>
+    </dependencies>
+
 </project>

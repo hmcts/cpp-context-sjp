@@ -12,7 +12,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
-import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCasesRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -29,7 +29,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ReadyCaseListenerTest {
 
     @Mock
-    private ReadyCasesRepository readyCasesRepository;
+    private ReadyCaseRepository readyCaseRepository;
 
     @InjectMocks
     private ReadyCaseListener readyCaseListener;
@@ -52,7 +52,7 @@ public class ReadyCaseListenerTest {
 
         readyCaseListener.handleCaseMarkedReadyForDecision(caseMarkedReadyForDecisionEvent);
 
-        verify(readyCasesRepository).save(readyCasesCaptor.capture());
+        verify(readyCaseRepository).save(readyCasesCaptor.capture());
 
         final ReadyCase readyCase = readyCasesCaptor.getValue();
 
@@ -70,7 +70,7 @@ public class ReadyCaseListenerTest {
 
         readyCaseListener.handleCaseUnmarkedReadyForDecision(caseUnmarkedReadyForDecisionEvent);
 
-        verify(readyCasesRepository).remove(readyCasesCaptor.capture());
+        verify(readyCaseRepository).remove(readyCasesCaptor.capture());
     }
 
 }

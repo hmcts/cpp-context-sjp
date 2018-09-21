@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 public class HouseholdExpenses implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private final Money accommodation;
     private final Money utilityBills;
     private final Money insurance;

@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.Transient;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -13,6 +14,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 public class ContactDetails implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    @Transient
+    public static final ContactDetails EMPTY = new ContactDetails(null, null, null);
 
     @Column(name = "email")
     private String email;

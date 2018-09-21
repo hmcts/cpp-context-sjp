@@ -57,7 +57,7 @@ public class CaseCommandHandler {
         return UUID.fromString(payload.getString(STREAM_ID));
     }
 
-    protected UUID getUserId(final Envelope command) {
+    protected UUID getUserId(final Envelope<?> command) {
         return command.metadata().userId().map(UUID::fromString).orElse(null);
     }
 }

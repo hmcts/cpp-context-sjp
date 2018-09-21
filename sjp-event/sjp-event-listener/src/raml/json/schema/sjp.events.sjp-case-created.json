@@ -1,31 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "definitions": {
-    "uuid": {
-      "type": "string",
-      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-    }
-  },
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/sjp-case-created.json",
   "type": "object",
   "properties": {
     "id": {
-      "$ref": "#/definitions/uuid",
-      "type": "string"
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
     "urn": {
       "id": "/urn",
-      "type": "string"
-    },
-    "ptiUrn": {
-      "id": "/ptiUrn",
-      "type": "string"
-    },
-    "initiationCode": {
-      "id": "/initiationCode",
-      "type": "string"
-    },
-    "summonsCode": {
-      "id": "/summonsCode",
       "type": "string"
     },
     "prosecutingAuthority": {
@@ -37,29 +19,11 @@
         "DVLA"
       ]
     },
-    "libraOriginatingOrg": {
-      "id": "/libraOriginatingOrg",
-      "type": "string"
-    },
-    "libraHearingLocation": {
-      "id": "/libraHearingLocation",
-      "type": "string"
-    },
-    "dateOfHearing": {
-      "id": "/dateOfHearing",
-      "type": "string"
-    },
-    "timeOfHearing": {
-      "id": "/timeOfHearing",
-      "type": "string"
-    },
     "personId": {
-      "id": "/personId",
-      "type": "string"
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
     "defendantId": {
-      "id": "/defendantId",
-      "type": "string"
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
     "numPreviousConvictions": {
       "id": "/numPreviousConvictions",
@@ -70,8 +34,7 @@
       "type": "number"
     },
     "postingDate": {
-      "id": "/postingDate",
-      "type": "string"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
     },
     "offences": {
       "type": "array",
@@ -79,9 +42,6 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
-          },
-          "prosecutorCaseId": {
             "type": "string"
           },
           "offenceSequenceNo": {
@@ -96,10 +56,13 @@
           "libraOffenceDateCode": {
             "type": "integer"
           },
-          "offenceDate": {
+          "offenceCommittedDate": {
             "type": "string"
           },
           "offenceWording": {
+            "type": "string"
+          },
+          "offenceWordingWelsh": {
             "type": "string"
           },
           "prosecutionFacts": {
@@ -114,12 +77,11 @@
         },
         "required" : [
           "id",
-          "prosecutorCaseId",
           "offenceSequenceNo",
           "libraOffenceCode",
           "chargeDate",
           "libraOffenceDateCode",
-          "offenceDate",
+          "offenceCommittedDate",
           "offenceWording"
         ]
       }
@@ -128,14 +90,7 @@
   "required": [
     "id",
     "urn",
-    "ptiUrn",
-    "initiationCode",
-    "summonsCode",
     "prosecutingAuthority",
-    "libraOriginatingOrg",
-    "libraHearingLocation",
-    "dateOfHearing",
-    "timeOfHearing",
     "personId",
     "defendantId",
     "offences",

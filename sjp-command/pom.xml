@@ -16,4 +16,12 @@
         <module>sjp-command-controller</module>
         <module>sjp-command-api</module>
     </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.sjp</groupId>
+            <artifactId>sjp-json</artifactId>
+        </dependency>
+    </dependencies>
+
 </project>

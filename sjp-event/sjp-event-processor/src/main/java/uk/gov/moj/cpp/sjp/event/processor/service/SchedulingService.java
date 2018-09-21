@@ -30,9 +30,10 @@ public class SchedulingService {
     @FrameworkComponent(EVENT_PROCESSOR)
     private Requester requester;
 
-    public void startMagistrateSession(final String magistrate, final UUID sessionId, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final JsonEnvelope envelope) {
+    public void startMagistrateSession(final String magistrate, final UUID sessionId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final JsonEnvelope envelope) {
         final JsonObject startMagistrateSessionPayload = createObjectBuilder()
                 .add("id", sessionId.toString())
+                .add("courtHouseCode", courtHouseCode)
                 .add("courtLocation", courtHouseName)
                 .add("nationalCourtCode", localJusticeAreaNationalCourtCode)
                 .add("magistrate", magistrate)
@@ -41,9 +42,10 @@ public class SchedulingService {
         sender.send(enveloper.withMetadataFrom(envelope, "scheduling.command.start-sjp-session").apply(startMagistrateSessionPayload));
     }
 
-    public void startDelegatedPowersSession(final UUID sessionId, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final JsonEnvelope envelope) {
+    public void startDelegatedPowersSession(final UUID sessionId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final JsonEnvelope envelope) {
         final JsonObject startDelegatedPowersSessionPayload = createObjectBuilder()
                 .add("id", sessionId.toString())
+                .add("courtHouseCode", courtHouseCode)
                 .add("courtLocation", courtHouseName)
                 .add("nationalCourtCode", localJusticeAreaNationalCourtCode)
                 .build();

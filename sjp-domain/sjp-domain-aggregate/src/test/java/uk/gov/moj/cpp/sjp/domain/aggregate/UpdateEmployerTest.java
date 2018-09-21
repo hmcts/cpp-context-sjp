@@ -105,7 +105,7 @@ public class UpdateEmployerTest {
 
     private static Employer getEmployer(final UUID defendantId) {
         return new Employer(defendantId, "Burger King", "12345", "023402340234",
-                new Address("street", "suburb", "town", "county", "ZY9 8 XW"));
+                new Address("street", "suburb", "town", "county", "UK", "ZY9 8 XW"));
     }
 
     private static FinancialMeans getFinancialMeans(final UUID defendantId, final EmploymentStatus employmentStatus) {

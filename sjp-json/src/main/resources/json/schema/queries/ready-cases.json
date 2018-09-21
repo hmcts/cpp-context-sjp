@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/ready-cases-reasons-counts.json",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/ready-cases.json",
   "type": "object",
   "properties": {
     "readyCases": {

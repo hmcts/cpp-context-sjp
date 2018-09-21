@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.persistence.builder;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
@@ -31,7 +32,7 @@ public class DefendantDetailBuilder {
                         "Theresa",
                         "May",
                         LocalDate.of(1960, 10, 8),
-                        "Female",
+                        Gender.FEMALE,
                         null,
                         new Address("10 Downing St", "Westminster", "London", "England", DEFAULT_POSTCODE),
                         new ContactDetails()
@@ -59,6 +60,11 @@ public class DefendantDetailBuilder {
         return this;
     }
 
+    public DefendantDetailBuilder withOffenceCode(final String offenceCode) {
+        offenceBuilder.setCode(offenceCode);
+        return this;
+    }
+
     public DefendantDetailBuilder withInterpreterLanguage(final String interpreterLanguage) {
         defendantDetail.setInterpreter(new InterpreterDetail(interpreterLanguage));
         return this;
@@ -66,6 +72,11 @@ public class DefendantDetailBuilder {
 
     public DefendantDetailBuilder withPostcode(final String postcode) {
         defendantDetail.getPersonalDetails().setAddress(new Address("addr1", "addr2", "addr3", "addr4", postcode));
+        return this;
+    }
+
+    public DefendantDetailBuilder withLastName(final String lastName) {
+        defendantDetail.getPersonalDetails().setLastName(lastName);
         return this;
     }
 

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
@@ -11,6 +12,7 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.Address;
+import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 
@@ -40,7 +42,7 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
     @Handles("sjp.command.update-defendant-details")
     public void updateDefendantDetails(final JsonEnvelope command) throws EventStreamException {
 
-        final ZonedDateTime createdAt = command.metadata().createdAt().orElse(clock.now());
+        final ZonedDateTime createdAt = command.metadata().createdAt().orElseGet(clock::now);
 
         final JsonObject payload = command.payloadAsJsonObject();
 
@@ -50,14 +52,17 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
         final String title = getStringOrNull(payload, "title");
         final String firstName = getStringOrNull(payload, "firstName");
         final String lastName = getStringOrNull(payload, "lastName");
-        final String gender = getStringOrNull(payload, "gender");
+        final String driverNumber = getStringOrNull(payload, "driverNumber");
+        final Gender gender = Gender.valueFor(getStringOrNull(payload, "gender")).orElse(null);
         final String nationalInsuranceNumber = getStringOrNull(payload, "nationalInsuranceNumber");
         final String dateOfBirth = getStringOrNull(payload, "dateOfBirth");
         final String email = getStringOrNull(payload, "email");
+        final String email2 = getStringOrNull(payload, "email2");
 
         final JsonObject contactNumberPayload = payload.getJsonObject("contactNumber");
         final String homeNumber = getStringOrNull(contactNumberPayload, "home");
         final String mobileNumber = getStringOrNull(contactNumberPayload, "mobile");
+        final String businessNumber = getStringOrNull(contactNumberPayload, "business");
         final Address address = createAddressFrom(payload);
         final LocalDate birthDate = dateOfBirth == null ? null : LocalDate.parse(dateOfBirth);
 
@@ -65,9 +70,10 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
 
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
 
-        final Person personInfoDetails = new Person(title, firstName, lastName, birthDate, gender, address);
-        final Stream<Object> events = caseAggregate.updateDefendantDetails(caseId, defendantId, gender,
-                nationalInsuranceNumber, email, homeNumber, mobileNumber, personInfoDetails, createdAt);
+        final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
+        final Person person = new Person(title, firstName, lastName, birthDate, gender, nationalInsuranceNumber, driverNumber, address, contactDetails);
+
+        final Stream<Object> events = caseAggregate.updateDefendantDetails(caseId, defendantId, person, createdAt);
 
         eventStream.append(events.map(enveloper.withMetadataFrom(command)));
     }

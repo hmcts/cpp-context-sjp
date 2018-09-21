@@ -5,6 +5,7 @@ import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.sjp.query.api.RuleConstants;
 
 global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+global uk.gov.moj.cpp.accesscontrol.sjp.providers.SjpProvider sjpProvider;
 
 rule "sjp.query.case"
   when
@@ -24,11 +25,42 @@ rule "sjp.query.case-by-urn"
     $outcome.setSuccess(true);
 end
 
+rule "sjp.query.case-document"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-document");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCaseDocumentsActionGroups()))
+    eval(sjpProvider.hasProsecutingAuthorityToCase($action));
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "sjp.query.case-documents"
   when
     $outcome: Outcome();
     $action: Action(name == "sjp.query.case-documents");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCaseDocumentsActionGroups()))
+    eval(sjpProvider.hasProsecutingAuthorityToCase($action));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-document-metadata"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-document-metadata");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCaseDocumentsActionGroups()))
+    eval(sjpProvider.hasProsecutingAuthorityToCase($action));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-document-content"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-document-content");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCaseDocumentsActionGroups()))
+    eval(sjpProvider.hasProsecutingAuthorityToCase($action));
   then
     $outcome.setSuccess(true);
 end
@@ -192,6 +224,15 @@ rule "sjp - Query - API - Get ready cases"
     $outcome: Outcome();
     $action: Action(name == "sjp.query.ready-cases");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getReadyCasesGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get case prosecuting authority"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-prosecuting-authority");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getProsecutingAuthorityGroups()))
   then
     $outcome.setSuccess(true);
 end

@@ -71,8 +71,8 @@ public class ResultOrdersView {
                 return this;
             }
 
-            public Builder setOrder(final UUID materialId, final ZonedDateTime dateMaterialAdded) {
-                casesWithOrderView.order = new OrderView(materialId, dateMaterialAdded);
+            public Builder setOrder(final UUID documentId, final ZonedDateTime dateMaterialAdded) {
+                casesWithOrderView.order = new OrderView(documentId, dateMaterialAdded);
                 return this;
             }
 
@@ -158,17 +158,17 @@ public class ResultOrdersView {
         }
 
         public static class OrderView {
-            private UUID materialId;
+            private UUID documentId;
 
             private ZonedDateTime addedAt;
 
-            public OrderView(UUID materialId, ZonedDateTime addedAt) {
-                this.materialId = materialId;
+            public OrderView(final UUID documentId, final ZonedDateTime addedAt) {
+                this.documentId = documentId;
                 this.addedAt = addedAt;
             }
 
-            public UUID getMaterialId() {
-                return materialId;
+            public UUID getDocumentId() {
+                return documentId;
             }
 
             public ZonedDateTime getAddedAt() {

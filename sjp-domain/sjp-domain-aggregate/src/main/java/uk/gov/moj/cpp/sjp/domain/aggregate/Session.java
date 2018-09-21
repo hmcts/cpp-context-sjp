@@ -26,11 +26,12 @@ import org.slf4j.LoggerFactory;
 
 public class Session implements Aggregate {
 
-    private static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 4L;
     private static final Logger LOGGER = LoggerFactory.getLogger(Session.class);
 
     private UUID id;
     private UUID userId;
+    private String courtHouseCode;
     private String courtHouseName;
     private String localJusticeAreaNationalCourtCode;
     private SessionType sessionType;
@@ -40,6 +41,7 @@ public class Session implements Aggregate {
     public Stream<Object> startDelegatedPowersSession(
             final UUID sessionId,
             final UUID userId,
+            final String courtHouseCode,
             final String courtHouseName,
             final String localJusticeAreaNationalCourtCode,
             final ZonedDateTime startedAt) {
@@ -47,7 +49,7 @@ public class Session implements Aggregate {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
         if (sessionState == SessionState.NOT_EXISTING) {
-            streamBuilder.add(new DelegatedPowersSessionStarted(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt));
+            streamBuilder.add(new DelegatedPowersSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt));
         } else {
             LOGGER.warn("Delegated powers session can not be started - session {} already exists", sessionId);
         }
@@ -58,6 +60,7 @@ public class Session implements Aggregate {
     public Stream<Object> startMagistrateSession(
             final UUID sessionId,
             final UUID userId,
+            final String courtHouseCode,
             final String courtHouseName,
             final String localJusticeAreaNationalCourtCode,
             final ZonedDateTime startedAt,
@@ -66,7 +69,7 @@ public class Session implements Aggregate {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
         if (sessionState == SessionState.NOT_EXISTING) {
-            streamBuilder.add(new MagistrateSessionStarted(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate));
+            streamBuilder.add(new MagistrateSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate));
         } else {
             LOGGER.warn("Magistrate session can not be started - session {} already exists", sessionId);
         }
@@ -130,6 +133,7 @@ public class Session implements Aggregate {
 
     private void applySessionStartedEvent(final SessionStarted sessionStarted) {
         id = sessionStarted.getSessionId();
+        courtHouseCode = sessionStarted.getCourtHouseCode();
         courtHouseName = sessionStarted.getCourtHouseName();
         localJusticeAreaNationalCourtCode = sessionStarted.getLocalJusticeAreaNationalCourtCode();
         userId = sessionStarted.getUserId();
@@ -148,6 +152,10 @@ public class Session implements Aggregate {
         return Optional.ofNullable(magistrate);
     }
 
+    public String getCourtHouseCode() {
+        return courtHouseCode;
+    }
+
     public String getCourtHouseName() {
         return courtHouseName;
     }
@@ -158,6 +166,10 @@ public class Session implements Aggregate {
 
     public SessionType getSessionType() {
         return sessionType;
+    }
+
+    public void setCourtHouseCode(String courtHouseCode) {
+        this.courtHouseCode = courtHouseCode;
     }
 
     private enum SessionState {

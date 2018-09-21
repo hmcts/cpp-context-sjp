@@ -40,6 +40,7 @@ public class SessionApi {
 
         final JsonObjectBuilder startSessionBuilder = Json.createObjectBuilder()
                 .add("sessionId", commandPayload.getString("sessionId"))
+                .add("courtHouseCode", courtHouseOUCode)
                 .add("courtHouseName", sessionCourt.getCourtHouseName())
                 .add("localJusticeAreaNationalCourtCode", sessionCourt.getLocalJusticeAreaNationalCourtCode());
 

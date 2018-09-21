@@ -20,12 +20,13 @@ public class MagistrateSessionStarted extends SessionStarted {
     public MagistrateSessionStarted(
             @JsonProperty("sessionId") UUID sessionId,
             @JsonProperty("userId") UUID userId,
+            @JsonProperty("courtHouseCode") String courtHouseCode,
             @JsonProperty("courtHouseName") String courtHouseName,
             @JsonProperty("localJusticeAreaNationalCourtCode") String localJusticeAreaNationalCourtCode,
             @JsonProperty("startedAt") ZonedDateTime startedAt,
             @JsonProperty("magistrate") String magistrate
     ) {
-        super(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
+        super(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
         this.magistrate = magistrate;
     }
 

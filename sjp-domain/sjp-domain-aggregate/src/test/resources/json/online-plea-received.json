@@ -1,0 +1,75 @@
+{
+  "_metadata": {
+    "name": "sjp.events.online-plea-received"
+  },
+  "urn": "TFL34652354",
+  "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "personalDetails": {
+    "firstName": "Testy",
+    "lastName": "Testerson",
+    "address": {
+      "address1": "14 Tottenham Court Road",
+      "address2": "London",
+      "address3": "England",
+      "address4": "UK",
+      "postcode": "W1T 1JY"
+    },
+    "contactDetails": {
+      "home": "0208000888",
+      "mobile": "07890123123",
+      "email": "criminal@gmail.com"
+    },
+    "dateOfBirth": "1990-09-09",
+    "nationalInsuranceNumber": "AB123456A"
+  },
+  "financialMeans": {
+    "income": {
+      "frequency": "MONTHLY",
+      "amount": 200.25
+    },
+    "benefits": {
+      "type": "jobseekers allowance",
+      "claimed": true,
+      "deductPenaltyPreference": false
+    },
+    "employmentStatus": "EMPLOYED"
+  },
+  "employer": {
+    "name": "Pret a manger",
+    "employeeReference": "12345",
+    "phone": "020 7998 0007",
+    "address": {
+      "address1": "18 Tottenham Court Road",
+      "address2": "London",
+      "address3": "England",
+      "address4": "UK",
+      "postcode": "W1T 1JY"
+    }
+  },
+  "outgoings": [
+    {
+      "description": "Accommodation",
+      "amount": 500.3
+    },
+    {
+      "description": "Council Tax",
+      "amount": 120.5
+    },
+    {
+      "description": "Household bills",
+      "amount": 50.8
+    },
+    {
+      "description": "Travel expenses",
+      "amount": 100.1
+    },
+    {
+      "description": "Child maintenance",
+      "amount": 500.2
+    },
+    {
+      "description": "Other",
+      "amount": 500.4
+    }
+  ]
+}

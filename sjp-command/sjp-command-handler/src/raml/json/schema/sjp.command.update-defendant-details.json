@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.update-defendant-details.json",
   "type": "object",
   "properties": {
     "title": {
@@ -15,45 +16,16 @@
       "type": "string"
     },
     "gender": {
-      "enum": [
-        "Male",
-        "Female",
-        "Not Specified"
-      ]
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/gender.json"
     },
     "email": {
       "type": "string"
     },
     "address": {
-      "type": "object",
-      "properties": {
-        "address1": {
-          "type": "string"
-        },
-        "address2": {
-          "type": "string"
-        },
-        "address3": {
-          "type": "string"
-        },
-        "address4": {
-          "type": "string"
-        },
-        "postcode": {
-          "type": "string"
-        }
-      }
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
     },
     "contactNumber": {
-      "type": "object",
-      "properties": {
-        "home": {
-          "type": "string"
-        },
-        "mobile": {
-          "type": "string"
-        }
-      }
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json"
     },
     "nationalInsuranceNumber": {
       "type": "string"

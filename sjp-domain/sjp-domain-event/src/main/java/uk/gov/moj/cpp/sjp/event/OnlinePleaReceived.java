@@ -27,17 +27,17 @@ public class OnlinePleaReceived {
     private List<Outgoing> outgoings;
 
     @JsonCreator
-    public OnlinePleaReceived(@JsonProperty(value = "urn") final String urn,
-                              @JsonProperty(value = "caseId") final UUID caseId,
-                              @JsonProperty(value = "defendantId") final UUID defendantId,
-                              @JsonProperty(value = "unavailability") final String unavailability,
-                              @JsonProperty(value = "interpreterLanguage") final String interpreterLanguage,
-                              @JsonProperty(value = "witnessDetails") final String witnessDetails,
-                              @JsonProperty(value = "witnessDispute") final String witnessDispute,
-                              @JsonProperty(value = "personalDetails") final PersonalDetails personalDetails,
-                              @JsonProperty(value = "financialMeans") final FinancialMeans financialMeans,
-                              @JsonProperty(value = "employer") final Employer employer,
-                              @JsonProperty(value = "outgoings") final List<Outgoing> outgoings) {
+    public OnlinePleaReceived(@JsonProperty("urn") final String urn,
+                              @JsonProperty("caseId") final UUID caseId,
+                              @JsonProperty("defendantId") final UUID defendantId,
+                              @JsonProperty("unavailability") final String unavailability,
+                              @JsonProperty("interpreterLanguage") final String interpreterLanguage,
+                              @JsonProperty("witnessDetails") final String witnessDetails,
+                              @JsonProperty("witnessDispute") final String witnessDispute,
+                              @JsonProperty("personalDetails") final PersonalDetails personalDetails,
+                              @JsonProperty("financialMeans") final FinancialMeans financialMeans,
+                              @JsonProperty("employer") final Employer employer,
+                              @JsonProperty("outgoings") final List<Outgoing> outgoings) {
         this.urn = urn;
         this.caseId = caseId;
         this.defendantId = defendantId;

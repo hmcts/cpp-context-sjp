@@ -10,7 +10,9 @@
       "lastName": "LLOYD",
       "dateOfBirth": "1980-07-15",
       "contactDetails": {
-
+        "mobile": "07890123123",
+        "email": "criminal@gmail.com",
+        "home": "0208000888"
       },
       "address": {
         "address1": "14 Tottenham Court Road",

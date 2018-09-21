@@ -1,4 +1,15 @@
 {
-  "defendantId": "50770ba9-37ea-4713-8cab-fe5bf1202716",
-  "employmentStatus": "EMPLOYED"
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/employment-status-updated.json",
+  "type": "object",
+  "properties": {
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+    },
+    "employmentStatus": {
+      "type": "string"
+    }
+  },
+  "required": [ "defendantId" ],
+  "additionalProperties": false
 }

@@ -1,32 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "definitions": {
-    "address": {
-      "type": "object",
-      "properties": {
-        "address1": {
-          "type": "string"
-        },
-        "address2": {
-          "type": "string"
-        },
-        "address3": {
-          "type": "string"
-        },
-        "address4": {
-          "type": "string"
-        },
-        "postcode": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "address1",
-        "postcode"
-      ],
-      "additionalProperties": false
-    }
-  },
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.plead-online-api.json",
   "type": "object",
   "properties": {
     "personalDetails": {
@@ -39,25 +13,13 @@
           "type": "string"
         },
         "address": {
-          "$ref": "#/definitions/address"
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
         },
         "contactDetails": {
-          "type": "object",
-          "properties": {
-            "home": {
-              "type": "string"
-            },
-            "mobile": {
-              "type": "string"
-            },
-            "email": {
-              "type": "string"
-            }
-          },
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json",
           "required": [
             "email"
-          ],
-          "additionalProperties": false
+          ]
         },
         "dateOfBirth": {
           "type": "string"
@@ -178,7 +140,7 @@
           "type": "string"
         },
         "address": {
-          "$ref": "#/definitions/address"
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
         }
       },
       "required": [

@@ -62,12 +62,12 @@ public class ResultOrdersTest {
 
         final UUID CASE_ID = UUID.randomUUID();
         final String URN = "urn";
-        final UUID MATERIAL_ID = UUID.randomUUID();
+        final UUID DOCUMENT_ID = UUID.randomUUID();
         final ZonedDateTime ADDED_AT = clock.now();
         final ResultOrdersView resultOrdersView = new ResultOrdersView();
         resultOrdersView.addResultOrder(
                         ResultOrdersView.createResultOrderBuilder().setCaseId(CASE_ID).setUrn(URN)
-                                        .setDefendant(new PersonalDetails()).setOrder(MATERIAL_ID, ADDED_AT)
+                                        .setDefendant(new PersonalDetails()).setOrder(DOCUMENT_ID, ADDED_AT)
                                         .build());
         when(caseService.findResultOrders(LocalDates.from(FROM_DATE), LocalDates.from(TO_DATE)))
                         .thenReturn(resultOrdersView);
@@ -86,8 +86,8 @@ public class ResultOrdersTest {
                                                         is(CASE_ID.toString())),
                                         JsonPathMatchers.withJsonPath("$.resultOrders[0].urn",
                                                         is(URN)),
-                                        JsonPathMatchers.withJsonPath("$.resultOrders[0].order.materialId",
-                                                        is(MATERIAL_ID.toString())),
+                                        JsonPathMatchers.withJsonPath("$.resultOrders[0].order.documentId",
+                                                        is(DOCUMENT_ID.toString())),
                                         JsonPathMatchers.withJsonPath("$.resultOrders[0].order.addedAt",
                                                         startsWith(ADDED_AT.toString().substring(0, ADDED_AT.toString().indexOf("."))))))));
     }

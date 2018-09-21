@@ -46,6 +46,9 @@ public class OffenceDetail implements Serializable {
     @Column(name = "wording")
     private String wording;
 
+    @Column(name = "wording_welsh")
+    private String wordingWelsh;
+
     @Convert(converter = LocalDatePersistenceConverter.class)
     @Column(name = "start_date")
     private LocalDate startDate;
@@ -93,6 +96,7 @@ public class OffenceDetail implements Serializable {
         this.pleaMethod = builder.pleaMethod;
         this.sequenceNumber = builder.sequenceNumber;
         this.wording = builder.wording;
+        this.wordingWelsh = builder.wordingWelsh;
         this.startDate = builder.startDate;
         this.chargeDate = builder.chargeDate;
         this.pendingWithdrawal = builder.pendingWithdrawal;
@@ -157,6 +161,14 @@ public class OffenceDetail implements Serializable {
 
     public void setWording(String wording) {
         this.wording = wording;
+    }
+
+    public String getWordingWelsh() {
+        return wordingWelsh;
+    }
+
+    public void setWordingWelsh(String wordingWelsh) {
+        this.wordingWelsh = wordingWelsh;
     }
 
     public LocalDate getStartDate() {
@@ -275,6 +287,7 @@ public class OffenceDetail implements Serializable {
         private PleaMethod pleaMethod;
         private Integer sequenceNumber;
         private String wording;
+        private String wordingWelsh;
         private LocalDate startDate;
         private LocalDate chargeDate;
         private Boolean pendingWithdrawal;
@@ -320,6 +333,11 @@ public class OffenceDetail implements Serializable {
 
         public OffenceDetailBuilder setWording(String wording) {
             this.wording = wording;
+            return this;
+        }
+
+        public OffenceDetailBuilder setWordingWelsh(String wordingWelsh) {
+            this.wordingWelsh = wordingWelsh;
             return this;
         }
 

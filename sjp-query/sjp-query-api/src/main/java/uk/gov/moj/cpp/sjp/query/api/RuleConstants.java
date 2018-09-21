@@ -45,7 +45,6 @@ public final class RuleConstants {
         return asList(GROUP_SJP_PROSECUTORS, GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
-
     public static List<String> getQueryCaseDocumentsActionGroups() {
         return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SJP_PROSECUTORS);
     }
@@ -87,7 +86,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getQuerySessionGroups() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SJP_PROSECUTORS, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getQueryCaseAssignmentGroups() {
@@ -100,6 +99,10 @@ public final class RuleConstants {
 
     public static List<String> getReadyCasesGroups() {
         return asList(GROUP_SYSTEM_USERS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
+    }
+
+    public static List<String> getProsecutingAuthorityGroups() {
+        return asList(GROUP_SYSTEM_USERS);
     }
 
 }

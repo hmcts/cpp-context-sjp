@@ -9,6 +9,9 @@
     "sessionType": {
      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/session-type.json"
     },
+    "courtHouseCode": {
+      "type": "string"
+    },
     "courtHouseName": {
       "type": "string"
     },

@@ -21,6 +21,7 @@ public class CancelWithdrawAllOffencesTest extends CaseAggregateBaseTest {
 
     @Test
     public void shouldCancelWithdrawAllOffences() {
+        caseAggregate.requestWithdrawalAllOffences();
         final List<Object> events = caseAggregate.cancelRequestWithdrawalAllOffences().collect(toList());
 
         assertThat(events.size(), is(1));

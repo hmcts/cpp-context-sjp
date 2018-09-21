@@ -1,23 +1,18 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.update-defendant-national-insurance-number.json",
   "type": "object",
   "properties": {
     "caseId": {
-      "$ref": "#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
     "defendantId": {
-      "$ref": "#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
     "nationalInsuranceNumber": {
       "type": "string"
     }
   },
   "required": [ "caseId", "defendantId" ],
-  "additionalProperties": false,
-  "definitions": {
-    "uuid": {
-      "type": "string",
-      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-    }
-  }
+  "additionalProperties": false
 }

@@ -32,15 +32,19 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
+import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.moj.sjp.it.Constants;
 import uk.gov.moj.sjp.it.stub.MaterialStub;
+import uk.gov.moj.sjp.it.util.HttpClientUtil;
+import uk.gov.moj.sjp.it.util.JsonHelper;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
 import java.util.Map;
 import java.util.UUID;
 
 import javax.jms.MessageConsumer;
+import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
@@ -119,7 +123,13 @@ public class CaseDocumentHelper implements AutoCloseable {
         addCaseDocument(getPayload(TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD));
     }
 
-    public void addCaseDocumentWithDocumentType(UUID userId, String documentType) {
+    public void addCaseDocument(final UUID userId, final UUID documentId, final UUID materialId, final String documentType) {
+        this.id = documentId.toString();
+        this.materialId = materialId.toString();
+        addCaseDocument(userId, getPayload(TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD), documentType);
+    }
+
+    public void addCaseDocumentWithDocumentType(final UUID userId, final String documentType) {
         id = UUID.randomUUID().toString();
         addCaseDocument(userId, getPayload(TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD), documentType);
     }
@@ -166,11 +176,11 @@ public class CaseDocumentHelper implements AutoCloseable {
 
     public void assertCaseMaterialAdded(final String documentReference) {
         UrlMatchingStrategy url = new UrlMatchingStrategy();
-        url.setUrlPath(MaterialStub.QUERY_URL);
+        url.setUrlPath(MaterialStub.COMMAND_URL);
 
         System.out.println("documentReference: " + documentReference);
         await().atMost(TEN_SECONDS).until(() -> WireMock.findAll(new RequestPatternBuilder(RequestMethod.POST, url)
-                        .withHeader("Content-Type", equalTo(MaterialStub.QUERY_MEDIA_TYPE))
+                        .withHeader("Content-Type", equalTo(MaterialStub.COMMAND_MEDIA_TYPE))
                         .withRequestBody(containing("\"fileServiceId\":\"" + documentReference + "\""))
                 ).size() > 0
         );
@@ -183,6 +193,8 @@ public class CaseDocumentHelper implements AutoCloseable {
 
         with(caseDocumentUploadedEvent)
                 .assertThat("$.documentId", isAUuid());
+        with(caseDocumentUploadedEvent)
+                .assertThat("$.caseId", isAUuid());
 
         return new JsonPath(caseDocumentUploadedEvent).getString("documentId");
     }
@@ -206,8 +218,8 @@ public class CaseDocumentHelper implements AutoCloseable {
                 );
     }
 
-    public void assertDocumentNumber(final UUID userId, final int index, final String documentType, final int documentNumber) {
-        pollWithDefaults(getCaseDocumentsByCaseId(caseId, userId))
+    public JsonObject findDocument(final UUID userId, final int index, final String documentType, final int documentNumber) {
+        final ResponseData documents = pollWithDefaults(getCaseDocumentsByCaseId(caseId, userId))
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(
@@ -216,6 +228,8 @@ public class CaseDocumentHelper implements AutoCloseable {
                                 withJsonPath("$.caseDocuments[" + index + "].materialId", Matchers.notNullValue())
                         ))
                 );
+
+        return JsonHelper.getJsonObject(documents.getPayload()).getJsonArray("caseDocuments").getJsonObject(0);
     }
 
     public void verifyDocumentNotVisibleForProsecutorWhenQueryingForCaseDocuments(final UUID tflUserId) {
@@ -246,8 +260,8 @@ public class CaseDocumentHelper implements AutoCloseable {
         assertThat(caseDocument.get(DOCUMENT_TYPE_PROPERTY), is(jsonRequest.getString(DOCUMENT_TYPE_PROPERTY)));
     }
 
-    public String getMaterialId() {
-        return materialId;
+    public String getDocumentId() {
+        return id;
     }
 
     @Override
@@ -255,6 +269,18 @@ public class CaseDocumentHelper implements AutoCloseable {
         publicConsumer.close();
         publicCaseDocumentAlreadyExistsConsumer.close();
         publicCaseDocumentUploaded.close();
+    }
+
+    public static Response getCaseDocumentMetadata(final UUID caseId, final UUID documentId, final UUID userId) {
+        final String contentType = "application/vnd.sjp.query.case-document-metadata+json";
+        final String url = String.format("/cases/%s/documents/%s/metadata", caseId, documentId);
+        return HttpClientUtil.makeGetCall(url, contentType, userId);
+    }
+
+    public static Response getCaseDocumentContent(final UUID caseId, final UUID documentId, final UUID userId) {
+        final String contentType = "application/vnd.sjp.query.case-document-content+json";
+        final String url = String.format("/cases/%s/documents/%s/content", caseId, documentId);
+        return HttpClientUtil.makeGetCall(url, contentType, userId);
     }
 
 }

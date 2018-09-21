@@ -1,9 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp_public/events/employer-updated.json",
   "type": "object",
   "properties": {
     "defendantId": {
-      "type": "string"
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
     "employeeReference": {
       "type": "string",
@@ -18,45 +19,15 @@
       "maxLength": 20
     },
     "address": {
-      "type": "object",
-      "properties": {
-        "address1": {
-          "type": "string",
-          "maxLength": 32
-        },
-        "address2": {
-          "type": "string",
-          "maxLength": 32
-        },
-        "address3": {
-          "type": "string",
-          "maxLength": 32
-        },
-        "address4": {
-          "type": "string",
-          "maxLength": 32
-        },
-        "postcode": {
-          "type": "string",
-          "maxLength": 10
-        }
-      },
-      "additionalProperties": false
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
     },
     "updatedByOnlinePlea": {
       "type": "boolean"
     },
     "updatedDate": {
-      "type": "string",
-      "format": "date-time"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
     }
   },
   "required": [ "defendantId" ],
-  "additionalProperties": false,
-  "definitions": {
-    "uuid": {
-      "type": "string",
-      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-    }
-  }
+  "additionalProperties": false
 }

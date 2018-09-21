@@ -24,7 +24,19 @@
     "offenceWording": {
       "type": "string"
     },
+    "offenceWordingWelsh": {
+      "type": "string"
+    },
     "prosecutionFacts": {
+      "type": "string"
+    },
+    "backDuty": {
+      "type": "number"
+    },
+    "backDutyDateFrom": {
+      "type": "string"
+    },
+    "backDutyDateTo": {
       "type": "string"
     },
     "witnessStatement": {
@@ -34,7 +46,7 @@
       "type": "number"
     }
   },
-  "required" : [
+  "required": [
     "id",
     "offenceSequenceNo",
     "libraOffenceCode",

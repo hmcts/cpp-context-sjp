@@ -15,15 +15,16 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.commons.lang3.RandomStringUtils;
+
 public class CaseDetailBuilder {
 
     private UUID id = UUID.randomUUID();
     private String urn = id.toString().toUpperCase();
+    private String enterpriseId = RandomStringUtils.randomAlphanumeric(12).toUpperCase();
     private ProsecutingAuthority prosecutingAuthority;
     private Set<CaseDocument> caseDocuments = new LinkedHashSet<>();
     private DefendantDetail defendant;
-    //TODO no longer used
-    private String initiationCode;
     private Boolean completed;
     private UUID assigneeId;
     private BigDecimal costs;
@@ -62,11 +63,6 @@ public class CaseDetailBuilder {
 
     public CaseDetailBuilder withAssigneeId(UUID assigneeId) {
         this.assigneeId = assigneeId;
-        return this;
-    }
-
-    public CaseDetailBuilder withInitiationCode(String initiationCode) {
-        this.initiationCode = initiationCode;
         return this;
     }
 
@@ -110,8 +106,8 @@ public class CaseDetailBuilder {
         CaseDetail caseDetail = new CaseDetail(
                 id,
                 urn,
+                enterpriseId,
                 prosecutingAuthority,
-                initiationCode,
                 completed,
                 assigneeId,
                 createdOn, defendant, costs, postingDate);

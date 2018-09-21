@@ -24,6 +24,7 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.LEGAL_ADVISERS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -107,7 +108,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
         //fields that we do not override
         final String title = personInfoVerifier.getPersonalDetails().getTitle();
-        final String gender = personInfoVerifier.getPersonalDetails().getGender();
+        final Gender gender = personInfoVerifier.getPersonalDetails().getGender();
 
         return new PersonalDetails(title, firstName, lastName, LocalDate.parse(dateOfBirth), gender, nationalInsuranceNumber,
                 new Address(address1, address2, address3, address4, postcode),

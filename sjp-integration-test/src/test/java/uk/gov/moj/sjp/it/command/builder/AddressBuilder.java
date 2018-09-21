@@ -1,11 +1,12 @@
 package uk.gov.moj.sjp.it.command.builder;
 
 public class AddressBuilder {
-    String address1;
-    String address2;
-    String address3;
-    String address4;
-    String postcode;
+    private String address1;
+    private String address2;
+    private String address3;
+    private String address4;
+    private String address5;
+    private String postcode;
 
     private AddressBuilder() {
 
@@ -18,6 +19,7 @@ public class AddressBuilder {
         addressBuilder.address2 = "London";
         addressBuilder.address3 = "England";
         addressBuilder.address4 = "UK";
+        addressBuilder.address5 = "United Kingdom";
         addressBuilder.postcode = "W1T 1JY";
 
         return addressBuilder;
@@ -43,6 +45,11 @@ public class AddressBuilder {
         return this;
     }
 
+    public AddressBuilder setAddress5(final String address5) {
+        this.address5 = address5;
+        return this;
+    }
+
     public AddressBuilder withPostcode(final String postcode) {
         this.postcode = postcode;
         return this;
@@ -64,7 +71,12 @@ public class AddressBuilder {
         return address4;
     }
 
+    public String getAddress5() {
+        return address5;
+    }
+
     public String getPostcode() {
         return postcode;
     }
+
 }

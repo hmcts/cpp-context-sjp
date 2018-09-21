@@ -7,7 +7,7 @@
         "personId": "772fc33d-cdeb-4c5b-90df-f2abd985746b"
       },
       "order": {
-        "materialId": "670490ee-95be-4e3e-af8b-9bef865e26ba",
+        "documentId": "670490ee-95be-4e3e-af8b-9bef865e26ba",
         "addedAt": "2016-11-17T10:00:00.000Z"
       }
     },
@@ -18,7 +18,7 @@
         "personId": "23adf63e-7b89-4b2e-bf06-47d035d13853"
       },
       "order": {
-        "materialId": "670490ee-95be-4e3e-af8b-9bef865e26ba",
+        "documentId": "670490ee-95be-4e3e-af8b-9bef865e26ba",
         "addedAt": "2016-11-18T15:00:00.000Z"
       }
     }

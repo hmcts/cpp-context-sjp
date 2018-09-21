@@ -4,7 +4,6 @@ import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
-import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAddAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
@@ -14,6 +13,7 @@ import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDec
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
+import uk.gov.moj.sjp.it.commandclient.AssignCaseClient;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
@@ -54,7 +54,8 @@ public class AssignmentReplicationIT extends BaseIntegrationTest {
 
         startSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
 
-        requestCaseAssignment(sessionId, userId);
+        AssignCaseClient.builder().sessionId(sessionId).build().getExecutor().setExecutingUserId(userId).execute();
+
         AssignmentStub.verifyAddAssignmentCommandSent(caseId, userId, MAGISTRATE_DECISION);
 
         saveDecision(caseId);

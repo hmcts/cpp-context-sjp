@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -24,6 +25,8 @@ import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantsNationalInsuranceNumberUpdated;
+import uk.gov.moj.cpp.sjp.event.listener.converter.AddressToAddressEntity;
+import uk.gov.moj.cpp.sjp.event.listener.converter.ContactDetailsToContactDetailsEntity;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
@@ -45,6 +48,7 @@ import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -83,6 +87,12 @@ public class DefendantUpdatedListenerTest {
     @Mock
     private OnlinePleaRepository.PersonDetailsOnlinePleaRepository onlinePleaRepository;
 
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private ContactDetailsToContactDetailsEntity contactDetailsToContactDetailsEntity;
+
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private AddressToAddressEntity addressToAddressEntity;
+
     @Captor
     private ArgumentCaptor<OnlinePlea> onlinePleaCaptor;
 
@@ -92,19 +102,19 @@ public class DefendantUpdatedListenerTest {
     private final ZonedDateTime now = clock.now();
 
     private final String previousTitle = "previously set Title";
-    private final String previousGender = "previously set gender";
+    private final Gender previousGender = Gender.FEMALE;
     private final String previousNiNumber = "previously set NI-number";
 
     private DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder defendantDetailsUpdatedBuilder = defendantDetailsUpdated()
             .withCaseId(caseDetail.getId())
-            .withContactDetails(new ContactDetails("123", "456", "test@test.com"))
+            .withContactDetails(new ContactDetails("123", "456", "789", "test@test.com", "test_email2@test.com"))
             .withTitle("Mr")
             .withFirstName("Mark")
             .withLastName("Smith")
-            .withGender("Male")
+            .withGender(Gender.MALE)
             .withUpdatedDate(clock.now())
             .withDateOfBirth(LocalDate.of(1960, 1, 1))
-            .withAddress(new Address("address1", "address2", "address3", "address4", "postcode"));
+            .withAddress(new Address("address1", "address2", "address3", "address4", "address5", "postcode"));
 
     @Captor
     private ArgumentCaptor<CaseDetail> actualPersonalDetailsCaptor;
@@ -279,7 +289,7 @@ public class DefendantUpdatedListenerTest {
 
     private PersonalDetails buildPersonalDetails(final DefendantDetailsUpdated defendantDetailsUpdated, final boolean updateByOnlinePlea, final boolean onlinePleaNiNumberSupplied) {
         String title = defendantDetailsUpdated.getTitle();
-        String gender = defendantDetailsUpdated.getGender();
+        Gender gender = defendantDetailsUpdated.getGender();
         String nationalInsuranceNumber = defendantDetailsUpdated.getNationalInsuranceNumber();
         if (updateByOnlinePlea) {
             title = previousTitle;

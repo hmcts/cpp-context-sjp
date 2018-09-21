@@ -25,10 +25,11 @@ public abstract class CaseAggregateBaseTest {
         caseReceivedEvent = collectSingleEvent(caseAggregate.receiveCase(aCase, clock.now()), CaseReceived.class);
     }
 
-    CaseReceived buildCaseReceived(Case aCase) {
+    final CaseReceived buildCaseReceived(Case aCase) {
         return new CaseReceived(
                 aCase.getId(),
                 aCase.getUrn(),
+                aCase.getEnterpriseId(),
                 aCase.getProsecutingAuthority(),
                 aCase.getCosts(),
                 aCase.getPostingDate(),

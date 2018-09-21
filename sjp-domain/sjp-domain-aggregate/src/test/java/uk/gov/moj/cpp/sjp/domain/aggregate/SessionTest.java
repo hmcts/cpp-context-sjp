@@ -25,7 +25,7 @@ import org.junit.Test;
 public class SessionTest {
 
     private UUID sessionId, userId;
-    private String courtHouseName, localJusticeAreaNationalCourtCode;
+    private String courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode;
     private ZonedDateTime startedAt, endedAt;
     private Session session;
     private Clock clock;
@@ -35,6 +35,7 @@ public class SessionTest {
         clock = new UtcClock();
         sessionId = randomUUID();
         userId = randomUUID();
+        courtHouseCode = "B01LY";
         localJusticeAreaNationalCourtCode = "2924";
         courtHouseName = "Coventry Magistrates' Court";
         startedAt = clock.now();
@@ -44,10 +45,10 @@ public class SessionTest {
 
     @Test
     public void shouldStartAndEndDelegatedPowersSession() {
-        final SessionStarted expectedSessionStartedEvent = new DelegatedPowersSessionStarted(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
+        final SessionStarted expectedSessionStartedEvent = new DelegatedPowersSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
         final SessionEnded expectedSessionEndedEvent = new DelegatedPowersSessionEnded(sessionId, endedAt);
 
-        final Stream<Object> startSessionEvents = session.startDelegatedPowersSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
+        final Stream<Object> startSessionEvents = session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
         assertThat(startSessionEvents.collect(toList()), containsInAnyOrder(expectedSessionStartedEvent));
 
         final Stream<Object> endSessionEvents = session.endSession(sessionId, endedAt);
@@ -58,10 +59,10 @@ public class SessionTest {
     public void shouldStartAndEndMagistrateSession() {
         final String magistrate = "magistrate";
 
-        final SessionStarted expectedSessionStartedEvent = new MagistrateSessionStarted(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate);
+        final SessionStarted expectedSessionStartedEvent = new MagistrateSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate);
         final SessionEnded expectedSessionEndedEvent = new MagistrateSessionEnded(sessionId, endedAt);
 
-        final Stream<Object> startSessionEvents = session.startMagistrateSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate);
+        final Stream<Object> startSessionEvents = session.startMagistrateSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate);
         assertThat(startSessionEvents.collect(toList()), containsInAnyOrder(expectedSessionStartedEvent));
 
         final Stream<Object> endSessionEvents = session.endSession(sessionId, endedAt);
@@ -70,9 +71,9 @@ public class SessionTest {
 
     @Test
     public void shouldNotStartAlreadyStartedSession() {
-        final Stream<Object> startSessionEvents1 = session.startDelegatedPowersSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
-        final Stream<Object> startSessionEvents2 = session.startDelegatedPowersSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt.plusMinutes(1));
-        final Stream<Object> startSessionEvents3 = session.startMagistrateSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt.plusMinutes(1), "Alan");
+        final Stream<Object> startSessionEvents1 = session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
+        final Stream<Object> startSessionEvents2 = session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt.plusMinutes(1));
+        final Stream<Object> startSessionEvents3 = session.startMagistrateSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt.plusMinutes(1), "Alan");
 
         assertThat(startSessionEvents1.collect(toList()), hasSize(1));
         assertThat(startSessionEvents2.collect(toList()), hasSize(0));
@@ -81,7 +82,7 @@ public class SessionTest {
 
     @Test
     public void shouldNotEndAlreadyEndedSession() {
-        session.startDelegatedPowersSession(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
+        session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
         session.endSession(sessionId, endedAt);
 
         assertThat(session.endSession(sessionId, endedAt).collect(toList()), hasSize(0));

@@ -8,21 +8,22 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
-import java.util.UUID;
+import javax.inject.Inject;
 
 /**
  * @deprecated Replaced by {@link CaseReceivedToCase}
  */
 public class SjpCaseCreatedToCase implements Converter<SjpCaseCreated, CaseDetail> {
 
-    private OffenceToOffenceDetail offenceToOffenceDetailConverter = new OffenceToOffenceDetail();
+    @Inject
+    private OffenceToOffenceDetail offenceToOffenceDetailConverter;
 
     @Override
     public CaseDetail convert(SjpCaseCreated event) {
-        return new CaseDetail(UUID.fromString(event.getId()),
+        return new CaseDetail(event.getId(),
                 event.getUrn(),
+                null,
                 event.getProsecutingAuthority(),
-                event.getInitiationCode(),
                 false,
                 null,
                 event.getCreatedOn(), createDefendantDetail(event), event.getCosts(), event.getPostingDate());

@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties("caseId")
 public class FinancialMeans implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private final UUID defendantId;
     private final Income income;
     private final Benefits benefits;

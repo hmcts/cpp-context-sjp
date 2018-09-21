@@ -14,6 +14,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -68,17 +69,18 @@ public class UpdateDefendantDetailsHandlerTest {
     private static final String lastName = "lastName";
     private static final String email = "email";
     private static final String mobileNumber = "mobileNumber";
-    private static final String gender = "gender";
+    private static final Gender gender = Gender.MALE;
     private static final String nationalInsuranceNumber = "nationalInsuranceNumber";
     private static final String homeNumber = "homeNumber";
     private static final String dateOfBirth = LocalDate.parse("1980-07-15").toString();
 
     private static final String ADDRESS_1 = "14 Tottenham Court Road";
     private static final String ADDRESS_2 = "London";
-    private static final String ADDRESS_3 = "England";
-    private static final String ADDRESS_4 = "UK";
+    private static final String ADDRESS_3 = "Surrey";
+    private static final String ADDRESS_4 = "England";
+    private static final String ADDRESS_5 = "United Kingdom";
     private static final String POSTCODE = "W1T 1JY";
-    private static final Address address = new Address(ADDRESS_1,ADDRESS_2,ADDRESS_3,ADDRESS_4,POSTCODE);
+    private static final Address ADDRESS = new Address(ADDRESS_1, ADDRESS_2, ADDRESS_3, ADDRESS_4, ADDRESS_5, POSTCODE);
 
     @Test
     public void shouldUpdateDefendantDetails() throws EventStreamException {
@@ -86,7 +88,7 @@ public class UpdateDefendantDetailsHandlerTest {
         final CaseAggregate caseAggregate = new CaseAggregate();
 
         final JsonEnvelope command = createUpdateDefendantDetailsCommand(caseId, defendantId, firstName,
-                lastName, email, gender, nationalInsuranceNumber, homeNumber, mobileNumber, address, dateOfBirth);
+                lastName, email, gender, nationalInsuranceNumber, homeNumber, mobileNumber, ADDRESS, dateOfBirth);
 
         final EventStream eventStream = Mockito.mock(EventStream.class);
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
@@ -108,7 +110,7 @@ public class UpdateDefendantDetailsHandlerTest {
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
                                         withJsonPath("$.firstName", equalTo(firstName)),
                                         withJsonPath("$.lastName", equalTo(lastName)),
-                                        withJsonPath("$.gender", equalTo(gender)),
+                                        withJsonPath("$.gender", equalTo(gender.toString())),
                                         withJsonPath("$.nationalInsuranceNumber", equalTo(nationalInsuranceNumber)),
                                         withJsonPath("$.contactDetails.email", equalTo(email)),
                                         withJsonPath("$.contactDetails.home", equalTo(homeNumber)),
@@ -118,7 +120,7 @@ public class UpdateDefendantDetailsHandlerTest {
     }
 
     private static JsonEnvelope createUpdateDefendantDetailsCommand(UUID caseId, UUID defendantId, String firstName,
-                                                                    String lastName, String email, String gender,
+                                                                    String lastName, String email, Gender gender,
                                                                     String nationalInsuranceNumber, String homeNumber,
                                                                     String mobileNumber, Address address,
                                                                     String dateOfBirth) {
@@ -134,7 +136,7 @@ public class UpdateDefendantDetailsHandlerTest {
                 .add("lastName", lastName)
                 .add("dateOfBirth", dateOfBirth)
                 .add("email", email)
-                .add("gender", gender)
+                .add("gender", gender.toString())
                 .add("nationalInsuranceNumber", nationalInsuranceNumber)
                 .add("contactNumber", contactNumber)
                 .add("address", toJsonObject(address));
@@ -150,6 +152,7 @@ public class UpdateDefendantDetailsHandlerTest {
                 .add("address2", address.getAddress2())
                 .add("address3", address.getAddress3())
                 .add("address4", address.getAddress4())
+                .add("address5", address.getAddress5())
                 .add("postcode", address.getPostcode())
                 .build();
     }

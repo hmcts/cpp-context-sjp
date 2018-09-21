@@ -12,6 +12,9 @@
     "userId": {
       "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
+    "courtHouseCode": {
+      "type": "string"
+    },
     "courtHouseName": {
       "type": "string"
     },
@@ -19,8 +22,7 @@
       "type": "string"
     },
     "startedAt": {
-      "type": "string",
-      "format": "date-time"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
     }
   },
   "required": [

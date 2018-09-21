@@ -1,9 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/financial-means-updated.json",
   "type": "object",
   "properties": {
     "defendantId": {
-      "$ref": "#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
     },
     "income": {
       "type": "object",
@@ -60,8 +61,7 @@
       "type": "boolean"
     },
     "updatedDate": {
-      "type": "string",
-      "format": "date-time"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
     }
   },
   "required": [
@@ -69,11 +69,5 @@
     "income",
     "benefits"
   ],
-  "additionalProperties": false,
-  "definitions": {
-    "uuid": {
-      "type": "string",
-      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-    }
-  }
+  "additionalProperties": false
 }

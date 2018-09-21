@@ -23,8 +23,6 @@ import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.CPS;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
-import static uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder.aCase;
-import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.util.Clock;
@@ -35,12 +33,12 @@ import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDocumentBuilder;
+import uk.gov.moj.cpp.sjp.persistence.entity.AwaitingCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
@@ -132,11 +130,11 @@ public class CaseServiceTest {
         assertExpectationsForFindCaseViewWithDocuments(true);
     }
 
-    private void assertExpectationsForFindCaseViewWithDocuments(boolean onlinePleaReceived) {
+    private void assertExpectationsForFindCaseViewWithDocuments(final boolean onlinePleaReceived) {
         final CaseDetail caseDetail = createCaseDetailWithDocumentTypes(onlinePleaReceived, "FINANCIAL_MEANS", "OTHER", "Travelcard");
 
         given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
-        CaseView caseView = service.findCase(CASE_ID);
+        final CaseView caseView = service.findCase(CASE_ID);
         assertThat(caseView, notNullValue());
         assertThat(caseView.getId(), is(CASE_ID.toString()));
         assertThat(caseView.getUrn(), is(URN));
@@ -176,10 +174,10 @@ public class CaseServiceTest {
 
     @Test
     public void shouldFindCaseByUrn() {
-        CaseDetail caseDetail = createCaseDetail(true);
+        final CaseDetail caseDetail = createCaseDetail(true);
 
         given(caseRepository.findByUrn(URN)).willReturn(caseDetail);
-        CaseView caseView = service.findCaseByUrn(URN);
+        final CaseView caseView = service.findCaseByUrn(URN);
 
         assertThat(caseView, notNullValue());
         assertThat(caseView.getId(), is(CASE_ID.toString()));
@@ -224,7 +222,7 @@ public class CaseServiceTest {
         CaseDetail caseDetail = createCaseDetail();
 
         given(caseRepository.findByUrnPostcode(URN, POSTCODE)).willReturn(caseDetail);
-        CaseView caseView = service.findCaseByUrnPostcode(URN, POSTCODE);
+        final CaseView caseView = service.findCaseByUrnPostcode(URN, POSTCODE);
 
         assertThat(caseView.getId(), is(CASE_ID.toString()));
     }
@@ -244,13 +242,13 @@ public class CaseServiceTest {
     @Test
     public void shouldSearchCaseByMaterialId_whenTVL() {
         final UUID materialId = UUID.randomUUID();
-        CaseDetail caseDetail = new CaseDetail();
+        final CaseDetail caseDetail = new CaseDetail();
         caseDetail.setId(CASE_ID);
         caseDetail.setProsecutingAuthority(TVL);
 
         when(caseRepository.findByMaterialId(materialId)).thenReturn(caseDetail);
 
-        SearchCaseByMaterialIdView searchCaseByMaterialIdView =
+        final SearchCaseByMaterialIdView searchCaseByMaterialIdView =
                 service.searchCaseByMaterialId(materialId);
 
         assertThat(searchCaseByMaterialIdView.getCaseId(), is(CASE_ID));
@@ -261,13 +259,13 @@ public class CaseServiceTest {
     @Test
     public void shouldSearchCaseByMaterialId_whenDVLA() {
         final UUID materialId = UUID.randomUUID();
-        CaseDetail caseDetail = new CaseDetail();
+        final CaseDetail caseDetail = new CaseDetail();
         caseDetail.setId(CASE_ID);
         caseDetail.setProsecutingAuthority(DVLA);
 
         when(caseRepository.findByMaterialId(materialId)).thenReturn(caseDetail);
 
-        SearchCaseByMaterialIdView searchCaseByMaterialIdView =
+        final SearchCaseByMaterialIdView searchCaseByMaterialIdView =
                 service.searchCaseByMaterialId(materialId);
 
         assertThat(searchCaseByMaterialIdView.getCaseId(), is(CASE_ID));
@@ -278,13 +276,13 @@ public class CaseServiceTest {
     @Test
     public void shouldSearchCaseByMaterialId_whenTFL() {
         final UUID materialId = UUID.randomUUID();
-        CaseDetail caseDetail = new CaseDetail();
+        final CaseDetail caseDetail = new CaseDetail();
         caseDetail.setId(CASE_ID);
         caseDetail.setProsecutingAuthority(TFL);
 
         when(caseRepository.findByMaterialId(materialId)).thenReturn(caseDetail);
 
-        SearchCaseByMaterialIdView searchCaseByMaterialIdView =
+        final SearchCaseByMaterialIdView searchCaseByMaterialIdView =
                 service.searchCaseByMaterialId(materialId);
 
         assertThat(searchCaseByMaterialIdView.getCaseId(), is(CASE_ID));
@@ -298,7 +296,7 @@ public class CaseServiceTest {
 
         when(caseRepository.findByMaterialId(materialId)).thenReturn(null);
 
-        SearchCaseByMaterialIdView searchCaseByMaterialIdView =
+        final SearchCaseByMaterialIdView searchCaseByMaterialIdView =
                 service.searchCaseByMaterialId(materialId);
 
         assertThat(searchCaseByMaterialIdView.getCaseId(), nullValue());
@@ -322,17 +320,41 @@ public class CaseServiceTest {
 
     @Test
     public void shouldFindCaseDocuments() {
-        List<CaseDocument> caseDocumentList = new ArrayList<>();
-        UUID documentId = randomUUID();
-        CaseDocument caseDocument = new CaseDocument(documentId, randomUUID(), "SJPN", clock.now(), CASE_ID, 2);
+        final List<CaseDocument> caseDocumentList = new ArrayList<>();
+        final UUID documentId = randomUUID();
+        final CaseDocument caseDocument = new CaseDocument(documentId, randomUUID(), "SJPN", clock.now(), CASE_ID, 2);
         caseDocumentList.add(caseDocument);
         when(caseRepository.findCaseDocuments(CASE_ID)).thenReturn(caseDocumentList);
 
-        CaseDocumentsView caseDocumentsView = service.findCaseDocuments(CASE_ID);
+        final CaseDocumentsView caseDocumentsView = service.findCaseDocuments(CASE_ID);
         assertThat(caseDocumentsView, notNullValue());
-        CaseDocumentView firstCaseDocument = caseDocumentsView.getCaseDocuments().get(0);
+        final CaseDocumentView firstCaseDocument = caseDocumentsView.getCaseDocuments().get(0);
         assertThat(firstCaseDocument.getId().toString(), is(documentId.toString()));
         assertThat(firstCaseDocument.getDocumentNumber(), is(2));
+    }
+
+    @Test
+    public void shouldFindCaseDocument() {
+        final CaseDocument caseDocument = new CaseDocument(randomUUID(), randomUUID(), "SJPN", clock.now(), CASE_ID, 2);
+
+        when(caseRepository.findCaseDocuments(CASE_ID)).thenReturn(singletonList(caseDocument));
+
+        final Optional<CaseDocumentView> caseDocumentView = service.findCaseDocument(CASE_ID, caseDocument.getId());
+
+        assertThat(caseDocumentView.isPresent(), is(true));
+        assertThat(caseDocumentView.get().getId(), is(caseDocument.getId()));
+        assertThat(caseDocumentView.get().getMaterialId(), is(caseDocument.getMaterialId()));
+        assertThat(caseDocumentView.get().getDocumentType(), is(caseDocument.getDocumentType()));
+        assertThat(caseDocumentView.get().getDocumentNumber(), is(caseDocument.getDocumentNumber()));
+    }
+
+    @Test
+    public void shouldReturnEmptyCaseDocumentIfDocumentDoesNotExist() {
+        when(caseRepository.findCaseDocuments(CASE_ID)).thenReturn(emptyList());
+
+        final Optional<CaseDocumentView> caseDocumentView = service.findCaseDocument(CASE_ID, randomUUID());
+
+        assertThat(caseDocumentView.isPresent(), is(false));
     }
 
     @Test
@@ -368,18 +390,16 @@ public class CaseServiceTest {
     @Test
     public void shouldFindAwaitingCases() {
 
-        final CaseDetail caseDetail =
-                aCase().addDefendantDetail(aDefendantDetail().build()).build();
-        when(caseRepository.findAwaitingSjpCases(600)).thenReturn(singletonList(caseDetail));
+        final AwaitingCase awaitingCase = new AwaitingCase("Andrew", "Baker", "PS0001");
+        when(caseRepository.findAwaitingSjpCases(600)).thenReturn(singletonList(awaitingCase));
 
         final JsonObject awaitingCases = service.findAwaitingCases();
 
         final JsonObject awaitingCase1 = awaitingCases.getJsonArray("awaitingCases")
                 .getValuesAs(JsonObject.class).get(0);
-        final DefendantDetail defendantDetail = caseDetail.getDefendant();
-        final OffenceDetail offenceDetail = defendantDetail.getOffences().iterator().next();
-        assertThat(awaitingCase1.getString("offenceCode"), is(offenceDetail.getCode()));
-
+        assertEquals(awaitingCase1.getString("firstName"), awaitingCase.getDefendantFirstName());
+        assertEquals(awaitingCase1.getString("lastName"), awaitingCase.getDefendantLastName());
+        assertEquals(awaitingCase1.getString("offenceCode"), awaitingCase.getOffenceCode());
     }
 
     @Test
@@ -388,10 +408,10 @@ public class CaseServiceTest {
         final LocalDate FROM_DATE = LocalDates.from("2017-01-01");
         final LocalDate TO_DATE = LocalDates.from("2017-01-10");
 
-        DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null, 0);
-        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", null, null, null, null, null, defendantDetail, null, null);
+        final DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null, 0);
+        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", "2K2SLYFC743H", null, null, null, null, defendantDetail, null, null);
 
-        CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
+        final CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
                 clock.now(), caseDetail.getId(), null);
 
@@ -407,8 +427,8 @@ public class CaseServiceTest {
                 resultOrdersView.getResultOrders().get(0).getCaseId());
         assertEquals(caseDetail.getUrn(),
                 resultOrdersView.getResultOrders().get(0).getUrn());
-        assertEquals(caseDocument.getMaterialId(),
-                resultOrdersView.getResultOrders().get(0).getOrder().getMaterialId());
+        assertEquals(caseDocument.getId(),
+                resultOrdersView.getResultOrders().get(0).getOrder().getDocumentId());
         assertEquals(caseDocument.getAddedAt(),
                 resultOrdersView.getResultOrders().get(0).getOrder().getAddedAt());
     }
@@ -419,9 +439,9 @@ public class CaseServiceTest {
         final LocalDate FROM_DATE = LocalDates.from("2017-01-01");
         final LocalDate TO_DATE = LocalDates.from("2017-01-10");
 
-        DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null, 0);
-        CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", null, null, null, null, null, defendantDetail, null, null);
-        CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
+        final DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null, 0);
+        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", "2K2SLYFC743H", null, null, null, null, defendantDetail, null, null);
+        final CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
                 clock.now(), caseDetail.getId(), null);
 
@@ -527,7 +547,7 @@ public class CaseServiceTest {
         when(caseReferredToCourtRepository.findUnactionedCases()).thenReturn(Lists.newArrayList());
 
         // when
-        JsonObject result = service.findCasesReferredToCourt();
+        final JsonObject result = service.findCasesReferredToCourt();
 
         // then
         assertThat(result.getJsonArray("cases"), hasSize(0));
@@ -539,7 +559,7 @@ public class CaseServiceTest {
         when(caseRepository.findCasesMissingSjpnWithDetails()).thenReturn(Lists.newArrayList());
 
         // when
-        CasesMissingSjpnWithDetailsView result = service.findCasesMissingSjpnWithDetails(Optional.empty());
+        final CasesMissingSjpnWithDetailsView result = service.findCasesMissingSjpnWithDetails(Optional.empty());
 
         // then
         assertThat(result.getCaseMissingSjpnWithDetailsView(), hasSize(0));
@@ -565,24 +585,24 @@ public class CaseServiceTest {
         return createCaseDetail(false);
     }
 
-    private CaseDetail createCaseDetail(boolean onlinePleaReceived) {
-        CaseDetail caseDetail = new CaseDetail(CASE_ID, URN, CPS,
-                null, COMPLETED, null, clock.now(), new DefendantDetail(), null, null);
+    private CaseDetail createCaseDetail(final boolean onlinePleaReceived) {
+        final CaseDetail caseDetail = new CaseDetail(CASE_ID, URN, ENTERPRISE_ID, CPS, COMPLETED,
+                null, clock.now(), new DefendantDetail(), null, null);
         caseDetail.setOnlinePleaReceived(onlinePleaReceived);
         return caseDetail;
     }
 
-    private CaseDetail createCaseDetailWithDocumentTypes(String... documentTypes) {
+    private CaseDetail createCaseDetailWithDocumentTypes(final String... documentTypes) {
         return createCaseDetailWithDocumentTypes(false, documentTypes);
     }
 
-    private CaseDetail createCaseDetailWithDocumentTypes(boolean onlinePlea, String... documentTypes) {
+    private CaseDetail createCaseDetailWithDocumentTypes(final boolean onlinePlea, final String... documentTypes) {
         final CaseDetail caseDetail = createCaseDetail(onlinePlea);
         createCaseDocuments(documentTypes).forEach(caseDetail::addCaseDocuments);
         return caseDetail;
     }
 
-    private List<CaseDocument> createCaseDocuments(String... documentTypes) {
+    private List<CaseDocument> createCaseDocuments(final String... documentTypes) {
         return Arrays.stream(documentTypes)
                 .map(this::createCaseDocument)
                 .collect(Collectors.toList());

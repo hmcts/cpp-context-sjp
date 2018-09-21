@@ -97,8 +97,9 @@ public class PleaNotificationProcessorTest {
 
     private static OnlinePleaReceived generateOnlinePleaReceived(final String email, final String urn) {
         final PersonalDetails personalDetails = new PersonalDetails(
-                "Bobby", "Davro", new Address("82 Old Rd, Leicester, LH42 1765"),
-                new ContactDetails("07429 567901", "07429 567901", email),
+                "Bobby", "Davro",
+                new Address("82 Old Rd", "Leicester", "London", "UK", "United Kingdom", "W1 1AA"),
+                new ContactDetails("07429 567901", "07429 567901", "07429 567999", email, null),
                 LocalDate.of(1981, 1, 1),
                 "JH41 1269B");
         return new OnlinePleaReceived(urn, UUID.randomUUID(), UUID.randomUUID(),

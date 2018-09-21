@@ -23,12 +23,6 @@ import com.jayway.restassured.path.json.JsonPath;
 
 public class AssignmentHelper {
 
-    public static final String CASE_ASSIGNMENT_REJECTED_PUBLIC_EVENT = "public.sjp.case-assignment-rejected";
-    public static final String CASE_ASSIGNED_PUBLIC_EVENT = "public.sjp.case-assigned";
-    public static final String CASE_ASSIGNED_PRIVATE_EVENT = CaseAssigned.EVENT_NAME;
-    public static final String CASE_NOT_ASSIGNED_EVENT = "public.sjp.case-not-assigned";
-    public static final String CASE_UNASSIGNED_EVENT = CaseUnassigned.EVENT_NAME;
-
     public static UUID requestCaseAssignmentAsync(final UUID sessionId, final UUID userId) {
         final String contentType = "application/vnd.sjp.assign-case+json";
         final String url = String.format("/sessions/%s", sessionId);

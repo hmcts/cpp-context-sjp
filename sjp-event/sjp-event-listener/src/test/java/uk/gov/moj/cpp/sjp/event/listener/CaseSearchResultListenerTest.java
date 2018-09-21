@@ -14,7 +14,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCasesRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,7 +46,7 @@ public class CaseSearchResultListenerTest {
     private CaseRepository caseRepository;
 
     @Mock
-    private ReadyCasesRepository readyCasesRepository;
+    private ReadyCaseRepository readyCaseRepository;
 
     @InjectMocks
     private CaseSearchResultListener caseSearchResultListener;
@@ -67,7 +67,7 @@ public class CaseSearchResultListenerTest {
 
         final CaseDetail caseDetail = new CaseDetail();
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
-        when(readyCasesRepository.findBy(caseId)).thenReturn(readyCase);
+        when(readyCaseRepository.findBy(caseId)).thenReturn(readyCase);
 
         //given
         searchResults.forEach(searchResult ->
@@ -104,7 +104,7 @@ public class CaseSearchResultListenerTest {
         final CaseDetail caseDetail = new CaseDetail();
         caseDetail.setAssigneeId(assigneeId);
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
-        when(readyCasesRepository.findBy(caseId)).thenReturn(readyCase);
+        when(readyCaseRepository.findBy(caseId)).thenReturn(readyCase);
 
         //given
         searchResults.forEach(searchResult ->

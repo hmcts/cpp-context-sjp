@@ -11,6 +11,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 // Old event. Replaced by case-update-rejected
 @Event("sjp.events.plea-update-denied")
 public class PleaUpdateDenied implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     private UUID caseId;
     private UUID offenceId;
     private String plea;

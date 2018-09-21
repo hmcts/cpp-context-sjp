@@ -55,11 +55,6 @@ public class SjpQueryApi {
         return requester.request(query);
     }
 
-    @Handles("sjp.query.case-documents")
-    public JsonEnvelope findCaseDocuments(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
     //TODO CRC-3502 - Tech debt has been created to change the output format.
     @Handles("sjp.query.cases-search-by-material-id")
     public JsonEnvelope searchCaseByMaterialId(final JsonEnvelope query) {
@@ -113,6 +108,11 @@ public class SjpQueryApi {
 
     @Handles("sjp.query.case-assignment")
     public JsonEnvelope getCaseAssignment(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
+    @Handles("sjp.query.case-prosecuting-authority")
+    public JsonEnvelope getProsecutingAuthority(final JsonEnvelope query) {
         return requester.request(query);
     }
 }

@@ -79,9 +79,6 @@ public class CaseDetail implements Serializable {
     @Column(name = "urn")
     private String urn;
 
-    @Column(name = "pti_urn")
-    private String ptiUrn;
-
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "caseId")
     private Set<CaseDocument> caseDocuments = new LinkedHashSet<>();
 
@@ -94,9 +91,6 @@ public class CaseDetail implements Serializable {
     @Column(name = "date_time_created")
     private ZonedDateTime dateTimeCreated;
 
-    @Column(name = "initiation_code")
-    private String initiationCode;
-
     @Column(name = "prosecuting_authority")
     private String prosecutingAuthority;
 
@@ -105,12 +99,6 @@ public class CaseDetail implements Serializable {
 
     @Column(name = "assignee_id")
     private UUID assigneeId;
-
-    @Column(name = "summons_code")
-    private String summonsCode;
-
-    @Column(name = "libra_originating_org")
-    private String libraOriginatingOrg;
 
     @Column(name = "costs")
     private BigDecimal costs;
@@ -145,15 +133,15 @@ public class CaseDetail implements Serializable {
 
     public CaseDetail(final UUID id,
                       final String urn,
+                      final String enterpriseId,
                       final ProsecutingAuthority prosecutingAuthority,
-                      final String initiationCode,
                       final Boolean completed,
                       final UUID assigneeId,
                       final ZonedDateTime createdOn, final DefendantDetail defendantDetail, final BigDecimal costs, final LocalDate postingDate) {
         this(id);
         this.urn = urn;
+        this.enterpriseId = enterpriseId;
         this.prosecutingAuthority = prosecutingAuthority == null ? null : prosecutingAuthority.name();
-        this.initiationCode = initiationCode;
         this.completed = completed;
         this.assigneeId = assigneeId;
         this.dateTimeCreated = createdOn;
@@ -205,14 +193,6 @@ public class CaseDetail implements Serializable {
         this.dateTimeCreated = dateTimeCreated;
     }
 
-    public String getInitiationCode() {
-        return initiationCode;
-    }
-
-    public void setInitiationCode(String initiationCode) {
-        this.initiationCode = initiationCode;
-    }
-
     public ProsecutingAuthority getProsecutingAuthority() {
         return this.prosecutingAuthority == null ? null : ProsecutingAuthority.valueOf(prosecutingAuthority);
     }
@@ -235,30 +215,6 @@ public class CaseDetail implements Serializable {
 
     public void setAssigneeId(final UUID assigneeId) {
         this.assigneeId = assigneeId;
-    }
-
-    public String getSummonsCode() {
-        return summonsCode;
-    }
-
-    public void setSummonsCode(String summonsCode) {
-        this.summonsCode = summonsCode;
-    }
-
-    public String getLibraOriginatingOrg() {
-        return libraOriginatingOrg;
-    }
-
-    public void setLibraOriginatingOrg(String libraOriginatingOrg) {
-        this.libraOriginatingOrg = libraOriginatingOrg;
-    }
-
-    public String getPtiUrn() {
-        return ptiUrn;
-    }
-
-    public void setPtiUrn(String ptiUrn) {
-        this.ptiUrn = ptiUrn;
     }
 
     public BigDecimal getCosts() {

@@ -21,6 +21,9 @@
     "wording": {
       "type": "string"
     },
+    "wordingWelsh": {
+      "type": "string"
+    },
     "cjsCode": {
       "type": [
         "string",

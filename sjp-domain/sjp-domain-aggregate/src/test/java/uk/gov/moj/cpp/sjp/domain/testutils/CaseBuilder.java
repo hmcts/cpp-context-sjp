@@ -1,7 +1,10 @@
 package uk.gov.moj.cpp.sjp.domain.testutils;
 
 
+import uk.gov.justice.json.schemas.domains.sjp.Language;
+import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
+import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Offence;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
@@ -13,52 +16,47 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang3.RandomStringUtils;
+
 public class CaseBuilder {
 
-    public static final String URN = "urnValue";
-    public static final String PTI_URN = "ptiUrnValue";
-    public static final String INITIATION_CODE = "J";
-    public static final String SUMMONS_CODE = "M";
-    public static final String LIBRA_ORIGINATING_ORG = "GAFTL00";
-    public static final String LIBRA_HEARING_LOCATION = "B01CE03";
-    public static final LocalDate DATE_OF_HEARING = LocalDate.of(2016, 1, 1);
-    public static final String TIME_OF_HEARING = "11:00";
+    private static final String URN = "urnValue";
+    private static final String ENTERPRISE_ID = "enterpriseIdValue";
     private static BigDecimal COMPENSATION = BigDecimal.valueOf(11.11);
-    public static final List<Offence> OFFENCES = Collections.singletonList(
-            new Offence(UUID.randomUUID(), 0, null, null, 0, null, null, null, null, COMPENSATION)
+    private static final List<Offence> OFFENCES = Collections.singletonList(
+            new Offence(UUID.randomUUID(), 0, null, null,
+                    0, null, null, null, null, COMPENSATION)
     );
-    public static final int NUM_PREVIOUS_CONVICTIONS = 3;
-    public static BigDecimal COSTS = BigDecimal.valueOf(33.33);
-    public static LocalDate POSTING_DATE = LocalDate.of(2015, 12, 3);
+    private static final int NUM_PREVIOUS_CONVICTIONS = 3;
+    private static final Address ADDRESS = new Address("street", "suburb", "town", "county", "address5", "AA1 2BB");
+
+    private static BigDecimal COSTS = BigDecimal.valueOf(33.33);
+    private static LocalDate POSTING_DATE = LocalDate.of(2015, 12, 3);
+
+    private static final String NATIONAL_INSURANCE_NUMBER = RandomStringUtils.random(10);
+    private static final ContactDetails CONTACT_DETAILS = new ContactDetails("020734777", "020734888", "020734999", "email1§@bbb.ccc", "email2@bbb.ccc");
+
+    private static final Language DOCUMENTATION_LANGUAGE = Language.W;
+    private static final Language HEARING_LANGUAGE_INDICATOR = Language.E;
+    private static final String LANGUAGE_NEEDS = RandomStringUtils.random(10);
 
     private UUID id;
     private String urn;
-    private String ptiUrn;
-    private String initiationCode;
-    private String summonsCode;
+    private String enterpriseId;
     private ProsecutingAuthority prosecutingAuthority;
-    private String libraOriginatingOrg;
-    private String libraHearingLocation;
-    private LocalDate dateOfHearing;
-    private String timeOfHearing;
     private Defendant defendant;
 
     private CaseBuilder() {
         id = DefaultTestData.CASE_ID;
         urn = URN;
-        ptiUrn = PTI_URN;
-        initiationCode = INITIATION_CODE;
-        summonsCode = SUMMONS_CODE;
+        enterpriseId = ENTERPRISE_ID;
         prosecutingAuthority = ProsecutingAuthority.TFL;
-        libraOriginatingOrg = LIBRA_ORIGINATING_ORG;
-        libraHearingLocation = LIBRA_HEARING_LOCATION;
-        dateOfHearing = DATE_OF_HEARING;
-        timeOfHearing = TIME_OF_HEARING;
-        defendant = new Defendant(DefaultTestData.DEFENDANT_ID, null, null, null,
-                null, null, null, NUM_PREVIOUS_CONVICTIONS, OFFENCES);
+        defendant = new Defendant(DefaultTestData.DEFENDANT_ID, null, null, null,null,
+                null, null, NATIONAL_INSURANCE_NUMBER, ADDRESS, CONTACT_DETAILS,NUM_PREVIOUS_CONVICTIONS, OFFENCES,
+                DOCUMENTATION_LANGUAGE, HEARING_LANGUAGE_INDICATOR, LANGUAGE_NEEDS);
     }
 
-    public static CaseBuilder aDefaultSjpCase() {
+        public static CaseBuilder aDefaultSjpCase() {
         return new CaseBuilder();
     }
 
@@ -70,14 +68,8 @@ public class CaseBuilder {
     public Case build() {
         return new Case(id,
                 urn,
-                ptiUrn,
+                enterpriseId,
                 prosecutingAuthority,
-                initiationCode,
-                summonsCode,
-                libraOriginatingOrg,
-                libraHearingLocation,
-                dateOfHearing,
-                timeOfHearing,
                 COSTS,
                 POSTING_DATE,
                 defendant);

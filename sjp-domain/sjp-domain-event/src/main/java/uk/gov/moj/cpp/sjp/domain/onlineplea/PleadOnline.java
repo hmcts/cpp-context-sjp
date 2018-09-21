@@ -26,16 +26,16 @@ public class PleadOnline {
     private final List<Outgoing> outgoings;
 
     @JsonCreator
-    public PleadOnline(@JsonProperty(value = "defendantId") final UUID defendantId,
-                       @JsonProperty(value = "offences") final List<Offence> offences,
-                       @JsonProperty(value = "unavailability") final String unavailability,
-                       @JsonProperty(value = "interpreterLanguage") final String interpreterLanguage,
-                       @JsonProperty(value = "witnessDetails") final String witnessDetails,
-                       @JsonProperty(value = "witnessDispute") final String witnessDispute,
-                       @JsonProperty(value = "personalDetails") final PersonalDetails personalDetails,
-                       @JsonProperty(value = "financialMeans") final FinancialMeans financialMeans,
-                       @JsonProperty(value = "employer") final Employer employer,
-                       @JsonProperty(value = "outgoings") final List<Outgoing> outgoings) {
+    public PleadOnline(@JsonProperty("defendantId") final UUID defendantId,
+                       @JsonProperty("offences") final List<Offence> offences,
+                       @JsonProperty("unavailability") final String unavailability,
+                       @JsonProperty("interpreterLanguage") final String interpreterLanguage,
+                       @JsonProperty("witnessDetails") final String witnessDetails,
+                       @JsonProperty("witnessDispute") final String witnessDispute,
+                       @JsonProperty("personalDetails") final PersonalDetails personalDetails,
+                       @JsonProperty("financialMeans") final FinancialMeans financialMeans,
+                       @JsonProperty("employer") final Employer employer,
+                       @JsonProperty("outgoings") final List<Outgoing> outgoings) {
         this.defendantId = defendantId;
         this.offences = offences;
         this.unavailability = unavailability;

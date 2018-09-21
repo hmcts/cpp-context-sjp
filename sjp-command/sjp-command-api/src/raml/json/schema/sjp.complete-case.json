@@ -1,4 +1,6 @@
 {
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/commands/sjp.complete-case.json",
   "type": "object",
   "description": "Empty object only required because the CPP framework doesn't handle POST request without a payload"
 }

@@ -24,6 +24,9 @@ import javax.json.JsonObject;
 @ServiceComponent(EVENT_PROCESSOR)
 public class SessionProcessor {
 
+    public static final String PUBLIC_SJP_SESSION_STARTED = "public.sjp.session-started";
+    public static final String COURT_HOUSE_CODE = "courtHouseCode";
+
     @Inject
     private Sender sender;
 
@@ -43,27 +46,29 @@ public class SessionProcessor {
         }
 
         final String magistrate = magistrateSessionStarted.getString("magistrate");
+        final String courtHouseCode = magistrateSessionStarted.getString(COURT_HOUSE_CODE);
         final String courtHouseName = magistrateSessionStarted.getString("courtHouseName");
         final String localJusticeAreaNationalCourtCode = magistrateSessionStarted.getString("localJusticeAreaNationalCourtCode");
 
-        schedulingService.startMagistrateSession(magistrate, sessionId, courtHouseName, localJusticeAreaNationalCourtCode, magistrateSessionStartedEvent);
-        emitPublicSessionStartedEvent(sessionId, courtHouseName, localJusticeAreaNationalCourtCode, SessionType.MAGISTRATE, magistrateSessionStartedEvent);
+        schedulingService.startMagistrateSession(magistrate, sessionId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, magistrateSessionStartedEvent);
+        emitPublicSessionStartedEvent(sessionId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, SessionType.MAGISTRATE, magistrateSessionStartedEvent);
     }
 
     @Handles(DelegatedPowersSessionStarted.EVENT_NAME)
     public void delegatedPowersSessionStarted(final JsonEnvelope delegatedPowersSessionStartedEvent) {
-        final JsonObject magistrateSessionStarted = delegatedPowersSessionStartedEvent.payloadAsJsonObject();
-        final UUID sessionId = UUID.fromString(magistrateSessionStarted.getString("sessionId"));
+        final JsonObject delegatedPowersSessionStarted = delegatedPowersSessionStartedEvent.payloadAsJsonObject();
+        final UUID sessionId = UUID.fromString(delegatedPowersSessionStarted.getString("sessionId"));
         final Optional<JsonObject> schedulingSession = schedulingService.getSession(sessionId, delegatedPowersSessionStartedEvent);
         if (schedulingSession.isPresent()) {
             return;
         }
 
-        final String courtHouseName = magistrateSessionStarted.getString("courtHouseName");
-        final String localJusticeAreaNationalCourtCode = magistrateSessionStarted.getString("localJusticeAreaNationalCourtCode");
+        final String courtHouseCode = delegatedPowersSessionStarted.getString(COURT_HOUSE_CODE);
+        final String courtHouseName = delegatedPowersSessionStarted.getString("courtHouseName");
+        final String localJusticeAreaNationalCourtCode = delegatedPowersSessionStarted.getString("localJusticeAreaNationalCourtCode");
 
-        schedulingService.startDelegatedPowersSession(sessionId, courtHouseName, localJusticeAreaNationalCourtCode, delegatedPowersSessionStartedEvent);
-        emitPublicSessionStartedEvent(sessionId, courtHouseName, localJusticeAreaNationalCourtCode, SessionType.DELEGATED_POWERS, delegatedPowersSessionStartedEvent);
+        schedulingService.startDelegatedPowersSession(sessionId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, delegatedPowersSessionStartedEvent);
+        emitPublicSessionStartedEvent(sessionId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, SessionType.DELEGATED_POWERS, delegatedPowersSessionStartedEvent);
     }
 
     @Handles(DelegatedPowersSessionEnded.EVENT_NAME)
@@ -78,14 +83,15 @@ public class SessionProcessor {
         schedulingService.endSession(sessionId, magistrateSessionEnded);
     }
 
-    private void emitPublicSessionStartedEvent(final UUID sessionId, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final SessionType sessionType, final JsonEnvelope event) {
+    private void emitPublicSessionStartedEvent(final UUID sessionId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final SessionType sessionType, final JsonEnvelope event) {
         final JsonObject payload = Json.createObjectBuilder()
                 .add("sessionId", sessionId.toString())
+                .add(COURT_HOUSE_CODE, courtHouseCode)
                 .add("courtHouseName", courtHouseName)
                 .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
                 .add("type", sessionType.name())
                 .build();
 
-        sender.send(enveloper.withMetadataFrom(event, "public.sjp.session-started").apply(payload));
+        sender.send(enveloper.withMetadataFrom(event, PUBLIC_SJP_SESSION_STARTED).apply(payload));
     }
 }

@@ -16,9 +16,9 @@ public class DefendantsNationalInsuranceNumberUpdated {
 
     @JsonCreator
     public DefendantsNationalInsuranceNumberUpdated(
-            @JsonProperty(value = "caseId") UUID caseId,
-            @JsonProperty(value = "defendantId") UUID defendantId,
-            @JsonProperty(value = "nationalInsuranceNumber") String nationalInsuranceNumber) {
+            @JsonProperty("caseId") UUID caseId,
+            @JsonProperty("defendantId") UUID defendantId,
+            @JsonProperty("nationalInsuranceNumber") String nationalInsuranceNumber) {
         this.caseId = caseId;
         this.defendantId = defendantId;
         this.nationalInsuranceNumber = nationalInsuranceNumber;

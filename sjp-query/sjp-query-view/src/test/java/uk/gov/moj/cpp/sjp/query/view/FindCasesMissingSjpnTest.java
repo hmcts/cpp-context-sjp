@@ -50,7 +50,7 @@ public class FindCasesMissingSjpnTest {
     public void shouldFindAllCasesMissingSjpn() {
         final JsonEnvelope query = envelope().with(metadataWithRandomUUID(QUERY_NAME)).build();
 
-        when(caseService.findCasesMissingSjpn(empty(), empty())).thenReturn(resultView);
+        when(caseService.findCasesMissingSjpn(query, empty(), empty())).thenReturn(resultView);
 
         verifyResponse(sjpQueryView.findCasesMissingSjpn(query));
     }
@@ -59,7 +59,7 @@ public class FindCasesMissingSjpnTest {
     public void shouldFindCasesMissingSjpnWithCasesCountLimit() {
         final JsonEnvelope query = envelope().with(metadataWithRandomUUID(QUERY_NAME)).withPayloadOf(2, "limit").build();
 
-        when(caseService.findCasesMissingSjpn(Optional.of(2), empty())).thenReturn(resultView);
+        when(caseService.findCasesMissingSjpn(query, Optional.of(2), empty())).thenReturn(resultView);
 
         verifyResponse(sjpQueryView.findCasesMissingSjpn(query));
     }
@@ -68,7 +68,7 @@ public class FindCasesMissingSjpnTest {
     public void shouldFindCasesMissingSjpnWithPostingDateLimit() {
         final JsonEnvelope query = envelope().with(metadataWithRandomUUID(QUERY_NAME)).withPayloadOf(3, "daysSincePosting").build();
 
-        when(caseService.findCasesMissingSjpn(empty(), Optional.of(now().minusDays(3)))).thenReturn(resultView);
+        when(caseService.findCasesMissingSjpn(query, empty(), Optional.of(now().minusDays(3)))).thenReturn(resultView);
 
         verifyResponse(sjpQueryView.findCasesMissingSjpn(query));
     }
@@ -77,7 +77,7 @@ public class FindCasesMissingSjpnTest {
     public void shouldFindCasesMissingSjpnWithCaseCountAndPostingDateLimits() {
         final JsonEnvelope query = envelope().with(metadataWithRandomUUID(QUERY_NAME)).withPayloadOf(2, "limit").withPayloadOf(3, "daysSincePosting").build();
 
-        when(caseService.findCasesMissingSjpn(Optional.of(2), Optional.of(now().minusDays(3)))).thenReturn(resultView);
+        when(caseService.findCasesMissingSjpn(query, Optional.of(2), Optional.of(now().minusDays(3)))).thenReturn(resultView);
 
         verifyResponse(sjpQueryView.findCasesMissingSjpn(query));
     }

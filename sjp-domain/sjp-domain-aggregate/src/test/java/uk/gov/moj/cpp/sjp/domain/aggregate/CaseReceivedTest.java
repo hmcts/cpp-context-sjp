@@ -94,7 +94,7 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
 
         caseAggregate.apply(sjpCaseCreated);
 
-        assertThat("Case id does not match", caseAggregate.getCaseId().toString(), equalTo(sjpCaseCreated.getId()));
+        assertThat("Case id does not match", caseAggregate.getCaseId(), equalTo(sjpCaseCreated.getId()));
         assertThat("Case urn does not match", caseAggregate.getUrn(), equalTo(sjpCaseCreated.getUrn()));
         assertThat("Case prosecutingAuthority does not match", caseAggregate.getProsecutingAuthority(), equalTo(sjpCaseCreated.getProsecutingAuthority()));
         assertThat("Case offenceIdsByDefendantId does not match", caseAggregate.getOffenceIdsByDefendantId(),
@@ -110,11 +110,8 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
      */
     @SuppressWarnings("deprecation")
     private SjpCaseCreated buildSjpCaseCreated(Case aCase) {
-        return new SjpCaseCreated(aCase.getId().toString(), aCase.getUrn(), aCase.getPtiUrn(),
-                aCase.getInitiationCode(), aCase.getSummonsCode(), aCase.getProsecutingAuthority(),
-                aCase.getLibraOriginatingOrg(), aCase.getLibraHearingLocation(), aCase.getDateOfHearing(),
-                aCase.getTimeOfHearing(), aCase.getDefendant().getId(),
-                aCase.getDefendant().getNumPreviousConvictions(), aCase.getCosts(), aCase.getPostingDate(),
-                aCase.getDefendant().getOffences(), clock.now());
+        return new SjpCaseCreated(aCase.getId(), aCase.getUrn(), aCase.getProsecutingAuthority(),
+                aCase.getDefendant().getId(), aCase.getDefendant().getNumPreviousConvictions(), aCase.getCosts(),
+                aCase.getPostingDate(), aCase.getDefendant().getOffences(), clock.now());
     }
 }

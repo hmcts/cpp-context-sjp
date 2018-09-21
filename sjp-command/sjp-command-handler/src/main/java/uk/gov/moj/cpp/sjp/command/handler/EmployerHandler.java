@@ -37,10 +37,11 @@ public class EmployerHandler extends CaseCommandHandler {
                                         val.getAddress2().orElse(null),
                                         val.getAddress3().orElse(null),
                                         val.getAddress4().orElse(null),
+                                        // val.getAddress5().orElse(null), TODO: add back this when framework fixed! Currently val.getAddress5() is null.
                                         val.getPostcode().orElse(null)
                                 )
                         )
-                        .orElse(new Address(null, null, null, null, null));
+                        .orElse(Address.UNKNOWN);
 
         return new Employer(defendantId, name, employeeReference, phone, address);
     }

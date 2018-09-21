@@ -13,6 +13,7 @@ public class OffenceToOffenceDetail implements Converter<Offence, OffenceDetail>
                 .setCode(offence.getLibraOffenceCode())
                 .setSequenceNumber(offence.getOffenceSequenceNo())
                 .setWording(offence.getOffenceWording())
+                .setWordingWelsh(offence.getOffenceWordingWelsh())
                 .setStartDate(offence.getOffenceDate())
                 .setChargeDate(offence.getChargeDate())
                 .withLibraOffenceDateCode(offence.getLibraOffenceDateCode())

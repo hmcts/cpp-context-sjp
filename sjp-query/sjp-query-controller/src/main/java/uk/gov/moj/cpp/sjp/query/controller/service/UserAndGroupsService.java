@@ -27,8 +27,8 @@ public class UserAndGroupsService {
     private Enveloper enveloper;
 
     private static final String PROSECUTOR_GROUP = "SJP Prosecutors";
-    final private String LEGAL_ADVISER_GROUP = "Legal Advisers";
-    final private String COURT_ADMINISTRATOR_GROUP = "Court Administrators";
+    private static final String LEGAL_ADVISER_GROUP = "Legal Advisers";
+    private static final String COURT_ADMINISTRATOR_GROUP = "Court Administrators";
 
 
     public boolean isSjpProsecutorUserGroupOnly(JsonEnvelope originalEnvelope) {

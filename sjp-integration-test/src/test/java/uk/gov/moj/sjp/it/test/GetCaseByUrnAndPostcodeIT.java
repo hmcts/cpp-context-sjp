@@ -1,7 +1,5 @@
 package uk.gov.moj.sjp.it.test;
 
-import static uk.gov.moj.sjp.it.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
-
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CitizenHelper;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
@@ -12,7 +10,7 @@ import javax.json.JsonObject;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class GetCaseByUrnAndPostcodeIT {
+public class GetCaseByUrnAndPostcodeIT extends BaseIntegrationTest {
 
     private static final String POSTCODE = "W1T 1JY";
     private static String urn;
@@ -20,15 +18,12 @@ public class GetCaseByUrnAndPostcodeIT {
 
     @BeforeClass
     public static void init() {
-        // Stub feature switching (Authorisation service)
-        stubEnableAllCapabilities();
-
         CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
         CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
 
         urn = createCasePayloadBuilder.getUrn();
 
-        ReferenceDataStub.stubQueryOffences("/GetCaseByUrnAndPostcodeIT/referencedata.query.offences.json");
+        ReferenceDataStub.stubQueryOffences("/GetCaseByUrnAndPostcodeIT/referencedataoffences.offences-list.json");
     }
 
     @Test
@@ -49,8 +44,7 @@ public class GetCaseByUrnAndPostcodeIT {
 
     @Test
     public void shouldFindCaseByUrnWithoutPrefixAndPostcode() {
-        final JsonObject expected = Json.createReader(getClass().getResourceAsStream("/GetCaseByUrnAndPostcodeIT/expected.json")).readObject();
         final String urnWithoutPrefix = urn.replaceAll("(\\p{Alpha})", "");
-        citizenHelper.verifyCaseByPersonUrnWithoutPrefixAndPostcode(expected, urnWithoutPrefix, urn, POSTCODE);
+        citizenHelper.verifyCaseByPersonUrnWithoutPrefixAndPostcode(urnWithoutPrefix, urn, POSTCODE);
     }
 }

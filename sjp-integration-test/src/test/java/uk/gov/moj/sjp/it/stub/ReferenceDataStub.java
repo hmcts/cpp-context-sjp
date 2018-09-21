@@ -24,23 +24,23 @@ import org.apache.commons.io.IOUtils;
 
 public class ReferenceDataStub {
 
-    public static void stubQueryOffences(String resourceName) {
-        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+    public static void stubQueryOffences(final String resourceName) {
+        InternalEndpointMockUtils.stubPingFor("referencedataoffences-service");
         final JsonObject offences = Json.createReader(ReferenceDataStub.class
                 .getResourceAsStream(resourceName))
                 .readObject();
 
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/offences";
+        final String urlPath = "/referencedataoffences-service/query/api/rest/referencedataoffences/offences";
         stubFor(get(urlPathEqualTo(urlPath))
                 .withQueryParam("cjsoffencecode", matching(".*"))
+                .withQueryParam("date", matching(".*"))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(offences.toString())));
 
-        waitForStubToBeReady(urlPath + "?cjsoffencecode", "application/vnd.referencedata.query.offences+json");
+        waitForStubToBeReady(urlPath + "?cjsoffencecode=ANY&date=2018-08-27", "application/vnd.referencedataoffences.offences-list+json");
     }
-
 
     public static void stubCourtByCourtHouseOUCodeQuery(final String courtHouseOUCode, final String localJusticeAreaNationalCourtCode, final String courtHouseName) {
         stubCourt(courtHouseOUCode, getOrganisationUnit(localJusticeAreaNationalCourtCode, courtHouseName));

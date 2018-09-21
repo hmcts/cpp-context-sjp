@@ -344,8 +344,8 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
           description: OK
           body:
                 application/vnd.sjp.query.case-by-urn-postcode+json:
-                  schema: !include json/schema/sjp.query.case-by-urn-postcode.json
-                  example: !include json/sjp.query.case-by-urn-postcode.json
+                  schema: !include json/schema/sjp.query.case-with-offence-reference-data.json
+                  example: !include json/sjp.query.case-with-offence-reference-data.json
 
 /cases/{caseId}/defendants-online-plea:
   get:

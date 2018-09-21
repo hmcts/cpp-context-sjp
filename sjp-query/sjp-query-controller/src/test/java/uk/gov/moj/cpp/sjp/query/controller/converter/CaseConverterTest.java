@@ -10,7 +10,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuil
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.query.controller.service.ReferenceDataService;
+import uk.gov.moj.cpp.sjp.query.controller.service.ReferenceOffencesDataService;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -31,7 +31,7 @@ public class CaseConverterTest {
     private CaseConverter caseConverter;
 
     @Mock
-    private ReferenceDataService referenceDataService;
+    private ReferenceOffencesDataService referenceOffencesDataService;
 
     @Test
     public void shouldAddPersonInfoForDefendantWithMatchingPostcode() {
@@ -57,11 +57,14 @@ public class CaseConverterTest {
         final String plea = "GUILTY";
         final boolean pendingWithdrawal = true;
 
+        final String title = "this is offence title";
         final String wording = "this is offence wording";
-        final String wordingWelsh = "Welsh wording: this is offence wording in Welsh";
+        final String wordingWelsh = "this is offence wording in Welsh";
         final String legislation = "legislation";
 
-        final String offenceTitle = "this is offence title";
+        // reference data
+        final String titleWelsh = "this is the Welsh offence title";
+        final String legislationWelsh = "this is the Welsh legislation";
 
         final JsonObject caseDetails = createObjectBuilder()
                 .add("id", caseId.toString())
@@ -95,12 +98,13 @@ public class CaseConverterTest {
                         )
                 ).build();
 
-        JsonEnvelope request = envelope()
+        final JsonEnvelope request = envelope()
                 .with(metadataWithRandomUUID("sjp.query.case-by-urn-postcode")).build();
 
-        final JsonObject offenceReferenceData = expectedOffenceReferenceData(offenceTitle, legislation);
+        final JsonObject offenceReferenceData = buildOffenceReferenceData(title, legislation, titleWelsh, legislationWelsh);
 
-        when(referenceDataService.getOffenceReferenceData(request, offenceCode, offenceStartDate)).thenReturn(offenceReferenceData);
+        when(referenceOffencesDataService.getOffenceReferenceData(request, offenceCode, offenceStartDate)).thenReturn(offenceReferenceData);
+
         final JsonObject result = caseConverter.addOffenceReferenceDataToOffences(caseDetails, request);
 
         final JsonObject expectedResult = createObjectBuilder()
@@ -125,11 +129,13 @@ public class CaseConverterTest {
                         .add("offences", createArrayBuilder()
                                 .add(createObjectBuilder()
                                         .add("id", offenceId.toString())
-                                        .add("title", offenceTitle)
-                                        .add("legislation", legislation)
                                         .add("wording", wording)
-                                        .add("wordingWelsh", wordingWelsh)
                                         .add("pendingWithdrawal", pendingWithdrawal)
+                                        .add("title", title)
+                                        .add("legislation", legislation)
+                                        .add("wordingWelsh", wordingWelsh)
+                                        .add("titleWelsh", titleWelsh)
+                                        .add("legislationWelsh", legislationWelsh)
                                         .add("plea", plea)
                                 )
                         )
@@ -138,11 +144,17 @@ public class CaseConverterTest {
         assertThat(result, is(expectedResult));
     }
 
-    private JsonObject expectedOffenceReferenceData(final String title, final String legislation) {
-
+    private JsonObject buildOffenceReferenceData(final String title, final String legislation,
+                                                 final String titleWelsh, final String legislationWelsh) {
         return Json.createObjectBuilder()
                 .add("title", title)
                 .add("legislation", legislation)
+                .add("details", Json.createObjectBuilder()
+                        .add("document", Json.createObjectBuilder()
+                                .add("welsh", Json.createObjectBuilder()
+                                        .add("welshoffencetitle", titleWelsh)
+                                        .add("welshlegislation", legislationWelsh)
+                )))
                 .build();
     }
 }

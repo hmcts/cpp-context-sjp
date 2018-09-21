@@ -33,23 +33,23 @@ public class HttpClientUtil {
     private static final String WRITE_BASE_URL = BASE_URI + "/sjp-command-api/command/api/rest/sjp";
     private static final String READ_BASE_URL = BASE_URI + "/sjp-query-api/query/api/rest/sjp";
 
-    public static UUID makePostCall(String url, String mediaType, String payload) {
+    public static UUID makePostCall(final String url, final String mediaType, final String payload) {
         return makePostCall(USER_ID, url, mediaType, payload, Response.Status.ACCEPTED);
     }
 
-    public static UUID makePostCall(String url, String mediaType, String payload, Response.Status expectedStatus) {
+    public static UUID makePostCall(final String url, final String mediaType, final String payload, final Response.Status expectedStatus) {
         return makePostCall(USER_ID, url, mediaType, payload, expectedStatus);
     }
 
-    public static UUID makePostCall(UUID userId, String url, String mediaType, String payload, Response.Status expectedStatus) {
-        UUID correlationId = UUID.randomUUID();
+    public static UUID makePostCall(final UUID userId, final String url, final String mediaType, final String payload, final Response.Status expectedStatus) {
+        final UUID correlationId = UUID.randomUUID();
 
-        MultivaluedMap<String, Object> map = new MultivaluedHashMap<>();
+        final MultivaluedMap<String, Object> map = new MultivaluedHashMap<>();
         map.add(HeaderConstants.USER_ID, userId.toString());
         map.add(HeaderConstants.CLIENT_CORRELATION_ID, correlationId);
 
         final String writeUrl = getWriteUrl(url);
-        Response response = restClient.postCommand(writeUrl, mediaType, payload, map);
+        final Response response = restClient.postCommand(writeUrl, mediaType, payload, map);
         LOGGER.info("Post call made: \n\tURL = {} \n\tMedia type = {} \n\tPayload = {}\n\tUser = {}\n",
                 writeUrl, mediaType, payload, userId);
         assertThat(response.getStatus(), is(expectedStatus.getStatusCode()));
@@ -57,19 +57,19 @@ public class HttpClientUtil {
         return correlationId;
     }
 
-    public static UUID makeMultipartFormPostCall(UUID userId, String url, String fileFieldName, String fileName) {
-        File file = new File(fileName);
-        UUID correlationId = UUID.randomUUID();
+    public static UUID makeMultipartFormPostCall(final UUID userId, final String url, final String fileFieldName, final String fileName) {
+        final File file = new File(fileName);
+        final UUID correlationId = UUID.randomUUID();
 
-        MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+        final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
         headers.add(HeaderConstants.USER_ID, userId.toString());
         headers.add(HeaderConstants.CLIENT_CORRELATION_ID, correlationId);
 
-        MultipartFormDataOutput mdo = new MultipartFormDataOutput();
+        final MultipartFormDataOutput mdo = new MultipartFormDataOutput();
         mdo.addFormData(fileFieldName, file, MediaType.MULTIPART_FORM_DATA_TYPE, file.getName());
-        GenericEntity<MultipartFormDataOutput> entity = new GenericEntity<MultipartFormDataOutput>(mdo) {
+        final GenericEntity<MultipartFormDataOutput> entity = new GenericEntity<MultipartFormDataOutput>(mdo) {
         };
-        Response response = ResteasyClientBuilderFactory.clientBuilder().build().target(getWriteUrl(url)).request().headers(headers).post(
+        final Response response = ResteasyClientBuilderFactory.clientBuilder().build().target(getWriteUrl(url)).request().headers(headers).post(
                 Entity.entity(entity, MediaType.MULTIPART_FORM_DATA_TYPE)
         );
         response.close();
@@ -78,12 +78,12 @@ public class HttpClientUtil {
         return correlationId;
     }
 
-    public static  Response makeGetCall(String url, String mediaType) {
+    public static  Response makeGetCall(final String url, final String mediaType) {
         return makeGetCall(url, mediaType, USER_ID);
     }
 
-    public static Response makeGetCall(String url, String mediaType, UUID userId) {
-        MultivaluedMap<String, Object> map = new MultivaluedHashMap<>();
+    public static Response makeGetCall(final String url, final String mediaType, final UUID userId) {
+        final MultivaluedMap<String, Object> map = new MultivaluedHashMap<>();
         map.add(HeaderConstants.USER_ID, userId);
         //FIXME: bug in framework requiring the media type to be added explicitly when using this API call on RestClient
         map.add(HttpHeaders.ACCEPT, mediaType);
@@ -96,11 +96,11 @@ public class HttpClientUtil {
         return restClient.query(readUrl, mediaType, map);
     }
 
-    private static String getWriteUrl(String resource) {
+    private static String getWriteUrl(final String resource) {
         return WRITE_BASE_URL + resource;
     }
 
-    public static String getReadUrl(String resource) {
+    public static String getReadUrl(final String resource) {
         return READ_BASE_URL + resource;
     }
 

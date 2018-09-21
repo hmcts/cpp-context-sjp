@@ -2,10 +2,11 @@ package uk.gov.moj.cpp.sjp.query.controller.converter;
 
 
 import static javax.json.Json.createObjectBuilder;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
-import uk.gov.moj.cpp.sjp.query.controller.service.ReferenceDataService;
+import uk.gov.moj.cpp.sjp.query.controller.service.ReferenceOffencesDataService;
 
 import java.util.Optional;
 
@@ -16,11 +17,15 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
+import org.slf4j.Logger;
+
 @SuppressWarnings("WeakerAccess")
 public class CaseConverter {
 
+    private static final Logger LOGGER = getLogger(CaseConverter.class);
+
     @Inject
-    private ReferenceDataService referenceDataService;
+    private ReferenceOffencesDataService referenceOffencesDataService;
 
     /**
      * Only returns a subset of the case attributes
@@ -34,7 +39,7 @@ public class CaseConverter {
         return buildCaseObject(caseDetails, defendant);
     }
 
-    private JsonObject buildDefendant(JsonEnvelope query, JsonObject caseDetails) {
+    private JsonObject buildDefendant(final JsonEnvelope query, final JsonObject caseDetails) {
         final JsonObject defendant = caseDetails.getJsonObject("defendant");
         final JsonArray decoratedOffences = buildOffencesArray(query, defendant.getJsonArray("offences"));
 
@@ -53,8 +58,10 @@ public class CaseConverter {
     }
 
     private JsonObject buildOffenceObject(final JsonEnvelope query, final JsonObject offence) {
-        final JsonObject offenceReferenceData = referenceDataService
-                .getOffenceReferenceData(query, offence.getString("offenceCode"), offence.getString("startDate"));
+
+        final String offenceCode = offence.getString("offenceCode");
+        final JsonObject offenceReferenceData = referenceOffencesDataService
+                .getOffenceReferenceData(query, offenceCode, offence.getString("startDate"));
 
         final JsonObjectBuilder builder = Json.createObjectBuilder()
                 .add("id", offence.getString("id"))
@@ -66,13 +73,25 @@ public class CaseConverter {
         Optional.ofNullable(offence.getString("wordingWelsh", null))
                 .ifPresent(wordingWelsh -> builder.add("wordingWelsh", wordingWelsh));
 
+        final JsonObject document = offenceReferenceData.getJsonObject("details").getJsonObject("document");
+        if (document.containsKey("welsh")) {
+            final JsonObject welsh = document.getJsonObject("welsh");
+            Optional.ofNullable(welsh.getString("welshoffencetitle", null))
+                    .ifPresent(titleWelsh -> builder.add("titleWelsh", titleWelsh));
+            Optional.ofNullable(welsh.getString("welshlegislation", null))
+                    .ifPresent(legislationWelsh -> builder.add("legislationWelsh", legislationWelsh));
+        }
+        else {
+            LOGGER.warn("No referencedata offence welsh translations for offenceCode: {}", offenceCode);
+        }
+
         Optional.ofNullable(offence.getString("plea", null))
                 .ifPresent(plea -> builder.add("plea", plea));
 
         return builder.build();
     }
 
-    private static JsonObject buildCaseObject(JsonObject caseDetails, JsonObject defendant) {
+    private static JsonObject buildCaseObject(final JsonObject caseDetails, final JsonObject defendant) {
         return createObjectBuilder()
                 .add("id", caseDetails.getString("id"))
                 .add("urn", caseDetails.getString("urn"))

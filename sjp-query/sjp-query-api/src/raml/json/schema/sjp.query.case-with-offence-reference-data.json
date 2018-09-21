@@ -11,7 +11,13 @@
         "title": {
           "type": "string"
         },
+        "titleWelsh": {
+          "type": "string"
+        },
         "legislation": {
+          "type": "string"
+        },
+        "legislationWelsh": {
           "type": "string"
         },
         "wording": {

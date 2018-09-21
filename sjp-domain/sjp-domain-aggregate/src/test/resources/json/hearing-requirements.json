@@ -1,5 +1,6 @@
 {
   "userId": "c1617215-8159-463e-85e0-22ca867aeee0",
   "defendantId": "50770ba9-37ea-4713-8cab-fe5bf1202716",
-  "language": "French"
+  "interpreterLanguage": "French",
+  "speakWelsh": true
 }

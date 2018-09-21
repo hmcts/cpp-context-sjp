@@ -20,6 +20,7 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_INCOME_PAYMENT_AMOUNT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_STATUS;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_STATUS_DETAILS;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.HEARING_LANGUAGE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.INTERPRETER_LANGUAGE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.MITIGATION;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.NOT_GUILTY_BECAUSE;
@@ -137,6 +138,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         WITNESS_DETAILS(o -> o.getPleaDetails().getWitnessDetails(), "pleaDetails", "witnessDetails"),
         UNAVAILABILITY(o -> o.getPleaDetails().getUnavailability(), "pleaDetails", "unavailability"),
         INTERPRETER_LANGUAGE(o -> o.getPleaDetails().getInterpreterLanguage(), "pleaDetails", "interpreterLanguage"),
+        HEARING_LANGUAGE(o -> o.getPleaDetails().getSpeakWelsh(), "pleaDetails", "speakWelsh"),
 
         PERSON_FIRST_NAME(o -> o.getPersonalDetails().getFirstName(), "personalDetails", "firstName"),
         PERSON_LAST_NAME(o -> o.getPersonalDetails().getLastName(), "personalDetails", "lastName"),
@@ -177,7 +179,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    public static abstract class FinancialMeansOnlinePleaRepository extends OnlinePleaRepository {
+    public abstract static class FinancialMeansOnlinePleaRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
             return asList(
@@ -200,7 +202,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    public static abstract class EmployerOnlinePleaRepository extends OnlinePleaRepository {
+    public abstract static class EmployerOnlinePleaRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
             return asList(
@@ -217,7 +219,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    public static abstract class TrialOnlinePleaRepository extends OnlinePleaRepository {
+    public abstract static class TrialOnlinePleaRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
             return asList(
@@ -229,14 +231,21 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    public static abstract class InterpreterLanguageOnlinePleaRepository extends OnlinePleaRepository {
+    public abstract static class InterpreterLanguageOnlinePleaRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
             return singletonList(INTERPRETER_LANGUAGE);
         }
     }
 
-    public static abstract class PersonDetailsOnlinePleaRepository extends OnlinePleaRepository {
+    public abstract static class HearingLanguageOnlinePleaRepository extends OnlinePleaRepository {
+        @Override
+        final List<FIELDS> getFieldsToUpdate(){
+            return singletonList(HEARING_LANGUAGE);
+        }
+    }
+
+    public abstract static class PersonDetailsOnlinePleaRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
             return asList(
@@ -256,7 +265,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    public static abstract class PleaDetailsRepository extends OnlinePleaRepository {
+    public abstract static class PleaDetailsRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
             return asList(

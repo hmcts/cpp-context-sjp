@@ -16,7 +16,7 @@ import javax.json.JsonObject;
 
 import org.junit.Test;
 
-public class UpdateInterpreterTest extends BaseDroolsAccessControlTest {
+public class UpdateHearingRequirementsTest extends BaseDroolsAccessControlTest {
 
     @Override
     protected Map<Class, Object> getProviderMocks() {
@@ -24,12 +24,12 @@ public class UpdateInterpreterTest extends BaseDroolsAccessControlTest {
     }
 
     @Test
-    public void shouldAllowUpdateInterpreterCommand() {
+    public void shouldAllowUpdateHearingRequirementsCommand() {
         final JsonObject inputPayload = createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .add("defendantId", randomUUID().toString())
                 .build();
-        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID("sjp.command.update-interpreter").build(), inputPayload);
+        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID("sjp.command.update-hearing-requirements").build(), inputPayload);
         final Action action = new Action(envelope);
         assertSuccessfulOutcome(executeRulesWith(action));
     }

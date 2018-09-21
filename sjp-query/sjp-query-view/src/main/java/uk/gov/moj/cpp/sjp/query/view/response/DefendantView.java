@@ -18,7 +18,8 @@ public class DefendantView {
     private final List<OffenceView> offences;
     private final UUID caseId;
     private final Interpreter interpreter;
-    private Integer numPreviousConvictions;
+    private final Boolean speakWelsh;
+    private final Integer numPreviousConvictions;
     private final PersonalDetailsView personalDetails;
 
     public DefendantView(DefendantDetail defendant) {
@@ -30,7 +31,7 @@ public class DefendantView {
                 Optional.ofNullable(defendant.getInterpreter())
                         .map(InterpreterDetail::getLanguage)
                         .orElse(null));
-
+        this.speakWelsh = defendant.getSpeakWelsh();
         this.numPreviousConvictions = defendant.getNumPreviousConvictions();
     }
 
@@ -54,14 +55,18 @@ public class DefendantView {
         return interpreter;
     }
 
+    public Boolean getSpeakWelsh() {
+        return speakWelsh;
+    }
+
+    public Integer getNumPreviousConvictions() {
+        return numPreviousConvictions;
+    }
+
     private static List<OffenceView> constructDefendantChargeView(final DefendantDetail defendant) {
         return defendant.getOffences().stream()
                 .map(OffenceView::new)
                 .sorted(comparing(OffenceView::getOffenceSequenceNumber))
                 .collect(toList());
-    }
-
-    public Integer getNumPreviousConvictions() {
-        return numPreviousConvictions;
     }
 }

@@ -75,6 +75,9 @@
     "interpreterLanguage": {
       "type": "string"
     },
+    "speakWelsh": {
+      "type": "boolean"
+    },
     "unavailability": {
       "type": "string"
     },

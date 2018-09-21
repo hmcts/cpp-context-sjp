@@ -26,6 +26,8 @@ import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceCancelledForDefendant;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
@@ -63,52 +65,72 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
     }
 
     @Test
-    public void shouldAddUpdateAndCancelPleaAndInterpreter() {
+    public void shouldAddUpdateAndCancelPleaAndHearingRequirements() {
         String interpreterLanguage;
+        Boolean speakWelsh;
 
         // add plea
         interpreterLanguage = null;
-        updatePleaAndThenVerifyEvents(PleaType.GUILTY_REQUEST_HEARING, interpreterLanguage, () -> singletonList(
+        speakWelsh = null;
+        updatePleaAndThenVerifyEvents(PleaType.GUILTY_REQUEST_HEARING, interpreterLanguage, speakWelsh, () -> singletonList(
                 PleaUpdated.class));
 
-        // add interpreter
+        // add hearing requirements
         interpreterLanguage = "Maori";
-        updatePleaAndThenVerifyEvents(PleaType.GUILTY_REQUEST_HEARING, interpreterLanguage, () -> asList(
+        speakWelsh = false;
+        updatePleaAndThenVerifyEvents(PleaType.GUILTY_REQUEST_HEARING, interpreterLanguage, speakWelsh, () -> asList(
                 PleaUpdated.class,
-                InterpreterUpdatedForDefendant.class));
+                InterpreterUpdatedForDefendant.class,
+                HearingLanguagePreferenceUpdatedForDefendant.class));
 
         // update just plea
-        updatePleaAndThenVerifyEvents(PleaType.NOT_GUILTY, interpreterLanguage, () -> asList(
+        updatePleaAndThenVerifyEvents(PleaType.NOT_GUILTY, interpreterLanguage, speakWelsh, () -> asList(
                 PleaUpdated.class,
                 TrialRequested.class));
 
         // update just interpreter
         interpreterLanguage = "Welsh";
-        updatePleaAndThenVerifyEvents(PleaType.NOT_GUILTY, interpreterLanguage, () -> asList(
+        updatePleaAndThenVerifyEvents(PleaType.NOT_GUILTY, interpreterLanguage, speakWelsh, () -> asList(
                 PleaUpdated.class,
                 InterpreterUpdatedForDefendant.class));
+
+        // update just speak welsh
+        speakWelsh = true;
+        updatePleaAndThenVerifyEvents(PleaType.NOT_GUILTY, interpreterLanguage, speakWelsh, () -> asList(
+                PleaUpdated.class,
+                HearingLanguagePreferenceUpdatedForDefendant.class));
 
         // cancel the interpreter
         interpreterLanguage = null;
-        updatePleaAndThenVerifyEvents(PleaType.NOT_GUILTY, interpreterLanguage, () -> asList(
+        updatePleaAndThenVerifyEvents(PleaType.NOT_GUILTY, interpreterLanguage, speakWelsh, () -> asList(
                 PleaUpdated.class,
                 InterpreterCancelledForDefendant.class));
 
+        // cancel the speak welsh
+        speakWelsh = null;
+        updatePleaAndThenVerifyEvents(PleaType.NOT_GUILTY, interpreterLanguage, speakWelsh, () -> asList(
+                PleaUpdated.class,
+                HearingLanguagePreferenceCancelledForDefendant.class));
+
         // update plea and interpreter
         interpreterLanguage = "Maori";
-        updatePleaAndThenVerifyEvents(PleaType.GUILTY_REQUEST_HEARING, interpreterLanguage, () -> asList(
+        speakWelsh = true;
+        updatePleaAndThenVerifyEvents(PleaType.GUILTY_REQUEST_HEARING, interpreterLanguage, speakWelsh, () -> asList(
                 PleaUpdated.class,
                 TrialRequestCancelled.class,
-                InterpreterUpdatedForDefendant.class));
+                InterpreterUpdatedForDefendant.class,
+                HearingLanguagePreferenceUpdatedForDefendant.class));
 
-        // cancel plea (and interpreter)
+        // cancel plea (and hearing requirements)
         cancelPleaAndThenVerifyEvents(
                 PleaCancelled.class,
-                InterpreterCancelledForDefendant.class);
+                InterpreterCancelledForDefendant.class,
+                HearingLanguagePreferenceCancelledForDefendant.class);
 
         // add plea
         interpreterLanguage = null;
-        updatePleaAndThenVerifyEvents(PleaType.GUILTY_REQUEST_HEARING, interpreterLanguage, () -> singletonList(
+        speakWelsh = null;
+        updatePleaAndThenVerifyEvents(PleaType.GUILTY_REQUEST_HEARING, interpreterLanguage, speakWelsh, () -> singletonList(
                 PleaUpdated.class));
 
         // cancel plea (but not interpreter)
@@ -361,8 +383,9 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         toggleTrialEventsByUpdatingAndCancellingPleasRepeatedly();
     }
 
-    private void updatePleaAndThenVerifyEvents(final PleaType plea, final String expectedInterpreterLanguage, final Supplier<List<Class<?>>> expectedEvents) {
-        updatePleaAndThenVerifyEvents(new UpdatePlea(caseId, offenceId, plea, expectedInterpreterLanguage), expectedEvents);
+    private void updatePleaAndThenVerifyEvents(final PleaType plea, final String expectedInterpreterLanguage,
+                                               final Boolean expectedSpeakWelsh, final Supplier<List<Class<?>>> expectedEvents) {
+        updatePleaAndThenVerifyEvents(new UpdatePlea(caseId, offenceId, plea, expectedInterpreterLanguage, expectedSpeakWelsh), expectedEvents);
     }
 
     private void updatePleaAndThenVerifyEvents(final UpdatePlea updatePlea, final Supplier<List<Class<?>>> expectedEvents) {
@@ -371,7 +394,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
                 .collect(toList());
 
         // then
-        verifyEvents(actualEvents, updatePlea.getPlea(), updatePlea.getInterpreterLanguage(), expectedEvents.get());
+        verifyEvents(actualEvents, updatePlea.getPlea(), updatePlea.getInterpreterLanguage(), updatePlea.getSpeakWelsh(), expectedEvents.get());
     }
 
     private void cancelPleaAndThenVerifyEvents(final Class<?>... expectedEvents) {
@@ -385,7 +408,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
         final List<Object> actualEvents = caseAggregate.cancelPlea(userId, cancelPlea, now)
                 .collect(toList());
 
-        verifyEvents(actualEvents, null, null, expectedEvents.get());
+        verifyEvents(actualEvents, null, null, null, expectedEvents.get());
     }
 
     private void sendPleadOnlineWithType(final PleaType pleaType) {
@@ -405,12 +428,12 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
 
         if (pleaType.equals(PleaType.NOT_GUILTY)) {
             pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithNotGuiltyPlea(offenceId,
-                    defendantId, null, true);
+                    defendantId, null, null, true);
             expectedEventTypes.add(1, TrialRequested.class);
         }
         else if (pleaType.equals(PleaType.GUILTY_REQUEST_HEARING)) {
             pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyRequestHearingPlea(offenceId,
-                    defendantId, null);
+                    defendantId, null, null);
         }
         else if (pleaType.equals(PleaType.GUILTY)) {
             pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId);
@@ -427,10 +450,11 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
                 .collect(toList());
 
         // then
-        verifyEvents(actualEvents, pleaType, null, expectedEventTypes);
+        verifyEvents(actualEvents, pleaType, null, null, expectedEventTypes);
     }
 
-    private void verifyEvents(final List<Object> actualEvents, final PleaType expectedPleaType, final String expectedInterpreterLanguage, final List<Class<?>> expectedEvents) {
+    private void verifyEvents(final List<Object> actualEvents, final PleaType expectedPleaType, final String expectedInterpreterLanguage,
+                              final Boolean expectedSpeakWelsh, final List<Class<?>> expectedEvents) {
         assertThat(actualEvents, contains(expectedEvents.stream().map(Matchers::instanceOf).collect(toList())));
 
         actualEvents.forEach(event -> {
@@ -456,6 +480,17 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
 
                 assertThat(interpreterCancelledForDefendant.getCaseId(), equalTo(caseId));
                 assertThat(interpreterCancelledForDefendant.getDefendantId(), equalTo(defendantId));
+            } else if (event instanceof HearingLanguagePreferenceUpdatedForDefendant) {
+                final HearingLanguagePreferenceUpdatedForDefendant HearingLanguagePreferenceUpdatedForDefendant = (HearingLanguagePreferenceUpdatedForDefendant) event;
+
+                assertThat(HearingLanguagePreferenceUpdatedForDefendant.getCaseId(), equalTo(caseId));
+                assertThat(HearingLanguagePreferenceUpdatedForDefendant.getDefendantId(), equalTo(defendantId));
+                assertThat(HearingLanguagePreferenceUpdatedForDefendant.getSpeakWelsh(), equalTo(expectedSpeakWelsh));
+            } else if (event instanceof HearingLanguagePreferenceCancelledForDefendant) {
+                final HearingLanguagePreferenceCancelledForDefendant hearingLanguageCancelledForDefendan = (HearingLanguagePreferenceCancelledForDefendant) event;
+
+                assertThat(hearingLanguageCancelledForDefendan.getCaseId(), equalTo(caseId));
+                assertThat(hearingLanguageCancelledForDefendan.getDefendantId(), equalTo(defendantId));
             } else if (event instanceof TrialRequested) {
                 final TrialRequested trialRequested = (TrialRequested) event;
 

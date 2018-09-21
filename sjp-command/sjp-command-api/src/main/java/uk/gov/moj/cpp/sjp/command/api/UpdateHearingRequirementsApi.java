@@ -11,7 +11,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import javax.inject.Inject;
 
 @ServiceComponent(COMMAND_API)
-public class UpdateInterpreterApi {
+public class UpdateHearingRequirementsApi {
 
     @Inject
     private Sender sender;
@@ -19,9 +19,9 @@ public class UpdateInterpreterApi {
     @Inject
     private Enveloper enveloper;
 
-    @Handles("sjp.update-interpreter")
-    public void updateInterpreter(final JsonEnvelope envelope) {
-        sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.update-interpreter").apply(envelope.payloadAsJsonObject()));
+    @Handles("sjp.update-hearing-requirements")
+    public void updateHearingRequirements(final JsonEnvelope envelope) {
+        sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.update-hearing-requirements").apply(envelope.payloadAsJsonObject()));
     }
 
 }

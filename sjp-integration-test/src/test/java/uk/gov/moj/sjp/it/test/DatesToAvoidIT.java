@@ -224,6 +224,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         return createObjectBuilder()
                 .add("plea", pleaType.name())
                 .add("interpreterRequired", false)
+                .add("speakWelsh", false)
                 .build();
     }
 

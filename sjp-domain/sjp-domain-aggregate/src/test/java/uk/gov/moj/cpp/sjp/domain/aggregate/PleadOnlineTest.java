@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -8,6 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.emptyCollectionOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsNot.not;
@@ -44,6 +47,7 @@ import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
 import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
@@ -114,10 +118,11 @@ public class PleadOnlineTest {
     public void shouldPleaOnlineSuccessfullyForGuiltyRequestHearingPlea() {
         //given
         final String interpreterLanguage = "French";
+        final Boolean speakWelsh = FALSE;
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyRequestHearingPlea(offenceId,
-                defendantId, interpreterLanguage);
+                defendantId, interpreterLanguage, speakWelsh);
         final Stream<Object> eventStream = caseAggregate.pleadOnline(caseId, pleadOnline, now);
 
         //then
@@ -129,6 +134,7 @@ public class PleadOnlineTest {
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
                 InterpreterUpdatedForDefendant.class,
+                HearingLanguagePreferenceUpdatedForDefendant.class,
                 OnlinePleaReceived.class));
 
         assertCommonExpectations(pleadOnline, events, now);
@@ -138,10 +144,11 @@ public class PleadOnlineTest {
     public void shouldPleaOnlineSuccessfullyForGuiltyRequestHearingPleaWithoutInterpreterLanguage() {
         //given
         final String interpreterLanguage = null;
+        final Boolean speakWelsh = null;
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyRequestHearingPlea(offenceId,
-                defendantId, interpreterLanguage);
+                defendantId, interpreterLanguage, speakWelsh);
         final Stream<Object> eventStream = caseAggregate.pleadOnline(caseId, pleadOnline, now);
 
         //then
@@ -161,9 +168,11 @@ public class PleadOnlineTest {
     public void shouldPleaOnlineSuccessfullyForNotGuiltyPlea() {
         //given
         final String interpreterLanguage = "French";
+        final Boolean speakWelsh = TRUE;
+
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithNotGuiltyPlea(offenceId,
-                defendantId, interpreterLanguage, true);
+                defendantId, interpreterLanguage, speakWelsh, true);
         final Stream<Object> eventStream = caseAggregate.pleadOnline(caseId, pleadOnline, now);
 
         //then
@@ -176,6 +185,7 @@ public class PleadOnlineTest {
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
                 InterpreterUpdatedForDefendant.class,
+                HearingLanguagePreferenceUpdatedForDefendant.class,
                 OnlinePleaReceived.class));
 
         assertCommonExpectations(pleadOnline, events, now);
@@ -185,10 +195,11 @@ public class PleadOnlineTest {
     public void shouldPleaOnlineSuccessfullyForNotGuiltyPleaWithoutTrialRequestedEvent() {
         //given
         final String interpreterLanguage = "French";
+        final Boolean speakWelsh = TRUE;
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithNotGuiltyPlea(offenceId,
-                defendantId, interpreterLanguage, false);
+                defendantId, interpreterLanguage, speakWelsh, false);
         final Stream<Object> eventStream = caseAggregate.pleadOnline(caseId, pleadOnline, now);
 
         //then
@@ -201,6 +212,7 @@ public class PleadOnlineTest {
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
                 InterpreterUpdatedForDefendant.class,
+                HearingLanguagePreferenceUpdatedForDefendant.class,
                 OnlinePleaReceived.class));
 
         assertCommonExpectations(pleadOnline, events, now);
@@ -222,10 +234,11 @@ public class PleadOnlineTest {
         setup(testCase); // Override the @Before
 
         final String interpreterLanguage = "French";
+        final Boolean speakWelsh = TRUE;
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaForMultipleOffences(
-                pleaInformationArray, defendantId, interpreterLanguage);
+                pleaInformationArray, defendantId, interpreterLanguage, speakWelsh);
         final Stream<Object> eventStream = caseAggregate.pleadOnline(caseId, pleadOnline, now);
 
         //then
@@ -238,6 +251,7 @@ public class PleadOnlineTest {
                 EmployerUpdated.class,
                 EmploymentStatusUpdated.class,
                 InterpreterUpdatedForDefendant.class,
+                HearingLanguagePreferenceUpdatedForDefendant.class,
                 OnlinePleaReceived.class));
 
         //asserts expectations for all pleas
@@ -506,6 +520,19 @@ public class PleadOnlineTest {
                 assertThat(interpreterUpdatedForDefendant.getUpdatedDate(), equalTo(createDate));
                 assertThat(interpreterUpdatedForDefendant.isUpdatedByOnlinePlea(), equalTo(updateByOnlinePlea));
                 assertTrue(interpreterUpdatedForDefendant.isUpdatedByOnlinePlea());
+
+                // if contains InterpreterUpdatedForDefendant then contains also HearingLanguagePreferenceUpdatedForDefendant
+                assertThat(events, hasItem(instanceOf(HearingLanguagePreferenceUpdatedForDefendant.class)));
+            } else if (e instanceof HearingLanguagePreferenceUpdatedForDefendant){
+                final HearingLanguagePreferenceUpdatedForDefendant HearingLanguagePreferenceUpdatedForDefendant = (HearingLanguagePreferenceUpdatedForDefendant) e;
+
+                assertThat(HearingLanguagePreferenceUpdatedForDefendant.getCaseId(), equalTo(caseId));
+                assertThat(HearingLanguagePreferenceUpdatedForDefendant.getDefendantId(), equalTo(defendantId));
+                assertThat(HearingLanguagePreferenceUpdatedForDefendant.getSpeakWelsh(), equalTo(pleadOnline.getSpeakWelsh()));
+                assertThat(HearingLanguagePreferenceUpdatedForDefendant.isUpdatedByOnlinePlea(), equalTo(updateByOnlinePlea));
+
+                // if contains InterpreterUpdatedForDefendant then contains also HearingLanguagePreferenceUpdatedForDefendant
+                assertThat(events, hasItem(instanceOf(InterpreterUpdatedForDefendant.class)));
             } else if(e instanceof TrialRequested) {
                 final TrialRequested trialRequested = (TrialRequested) e;
 
@@ -576,10 +603,8 @@ public class PleadOnlineTest {
 
         return new Case(UUID.randomUUID(), "TFL123456", RandomStringUtils.randomAlphanumeric(12).toUpperCase(),
                 ProsecutingAuthority.TFL,  null, null,
-
                 new Defendant(UUID.randomUUID(), title, PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_DOB,
-                        null, PERSON_NI_NUMBER, null, PERSON_ADDRESS, PERSON_CONTACT_DETAILS, 1, offences,
-                        null, null, null));
+                        null, PERSON_NI_NUMBER, null, PERSON_ADDRESS, PERSON_CONTACT_DETAILS, 1, offences, null, null, null));
     }
 
 }

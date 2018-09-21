@@ -39,7 +39,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseReferredToCourtRepository;
@@ -210,6 +209,46 @@ public class CaseServiceTest {
         assertThat(caseView.getCosts(), nullValue());
         assertThat(caseView.isOnlinePleaReceived(), is(true));
     }
+
+    @Test
+    public void shouldFindCaseByUrnAndContainsSpeakWelsh(){
+        final CaseDetail caseDetail = createCaseDetail(true);
+        caseDetail.getDefendant().setSpeakWelsh(Boolean.TRUE);
+
+        given(caseRepository.findByUrn(URN)).willReturn(caseDetail);
+        final CaseView caseView = service.findCaseByUrn(URN);
+
+        assertThat(caseView, notNullValue());
+        assertThat(caseView.getDefendant(), notNullValue());
+        assertThat(caseView.getDefendant().getSpeakWelsh(), is(Boolean.TRUE));
+
+    }
+
+    @Test
+    public void shouldFindCaseByUrnAndDoesNotContainSpeakWelsh(){
+        final CaseDetail caseDetail = createCaseDetail(true);
+        assertThat(caseDetail.getDefendant().getSpeakWelsh(), nullValue());
+
+        given(caseRepository.findByUrn(URN)).willReturn(caseDetail);
+        final CaseView caseView = service.findCaseByUrn(URN);
+
+        assertThat(caseView, notNullValue());
+        assertThat(caseView.getDefendant(), notNullValue());
+        assertThat(caseView.getDefendant().getSpeakWelsh(), nullValue());
+    }
+
+    @Test
+    public void shouldFindCaseByUrnAndContainsSpeakWelshFalse(){
+        final CaseDetail caseDetail = createCaseDetail(true);
+        caseDetail.getDefendant().setSpeakWelsh(false);
+
+        given(caseRepository.findByUrn(URN)).willReturn(caseDetail);
+        final CaseView caseView = service.findCaseByUrn(URN);
+
+        assertThat(caseView, notNullValue());
+        assertThat(caseView.getDefendant().getSpeakWelsh(), is(Boolean.FALSE));
+    }
+
 
     @Test
     public void shouldHandleWhenNoCaseFoundForUrn() {
@@ -408,8 +447,7 @@ public class CaseServiceTest {
         final LocalDate FROM_DATE = LocalDates.from("2017-01-01");
         final LocalDate TO_DATE = LocalDates.from("2017-01-10");
 
-        final DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null, 0);
-        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", "2K2SLYFC743H", null, null, null, null, defendantDetail, null, null);
+        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", "2K2SLYFC743H", null, null, null, null, new DefendantDetail(), null, null);
 
         final CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
@@ -439,8 +477,7 @@ public class CaseServiceTest {
         final LocalDate FROM_DATE = LocalDates.from("2017-01-01");
         final LocalDate TO_DATE = LocalDates.from("2017-01-10");
 
-        final DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), null, 0);
-        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", "2K2SLYFC743H", null, null, null, null, defendantDetail, null, null);
+        final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID(), "TFL1234", "2K2SLYFC743H", null, null, null, null, new DefendantDetail(), null, null);
         final CaseDocument caseDocument = new CaseDocument(UUID.randomUUID(),
                 UUID.randomUUID(), CaseDocument.RESULT_ORDER_DOCUMENT_TYPE,
                 clock.now(), caseDetail.getId(), null);

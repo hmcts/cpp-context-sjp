@@ -24,6 +24,7 @@
   "witnessDetails": "My mate Dave",
   "unavailability": "I'm on holiday November 17 to 19",
   "interpreterLanguage": "French",
+  "speakWelsh": false,
   "financialMeans": {
     "income": {
       "amount": 200.25,

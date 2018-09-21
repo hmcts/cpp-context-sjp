@@ -18,7 +18,7 @@ public class DefendantToDefendantDetails implements Converter<Defendant, Defenda
     private OffenceToOffenceDetail offenceToOffenceDetailConverter;
 
     @Override
-    public DefendantDetail convert(Defendant defendant) {
+    public DefendantDetail convert(final Defendant defendant) {
         final PersonalDetails personalDetails = personToPersonalDetailsEntity.convert(defendant);
 
         return new DefendantDetail(

@@ -4,10 +4,12 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyCollectionOf;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.StringContains.containsString;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateDefendantTest.DefendantData.defaultDefendantData;
 
@@ -27,6 +29,10 @@ import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceCancelledForDefendant;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
+import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
+import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -261,6 +267,66 @@ public class CaseAggregateDefendantTest {
 
         final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(1);
         assertThat(defendantDetailsUpdated.getAddress(), is(newAddress));
+    }
+
+    @Test
+    public void addsAndRemovesDefendantInterpreterLanguage() {
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+
+        final String newDefendantInterpreterLanguage = "French";
+        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantInterpreterLanguage));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), equalTo(newDefendantInterpreterLanguage));
+
+        // InterpreterUpdatedForDefendant with `null` value need to behave like InterpreterCancelledForDefendant
+        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, null));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+
+        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantInterpreterLanguage));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), equalTo(newDefendantInterpreterLanguage));
+
+        caseAggregate.apply(new InterpreterCancelledForDefendant(caseId, defendantId));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+    }
+
+    @Test
+    public void updateInterpreterAsEmptyShouldEqualToNullOrCancellation() {
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+
+        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, ""));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+
+        final String newDefendantInterpreterLanguage = "French";
+        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantInterpreterLanguage));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), equalTo(newDefendantInterpreterLanguage));
+
+        // InterpreterUpdatedForDefendant with `null` value need to behave like InterpreterCancelledForDefendant
+        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, ""));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+
+        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantInterpreterLanguage));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), equalTo(newDefendantInterpreterLanguage));
+
+        caseAggregate.apply(new InterpreterCancelledForDefendant(caseId, defendantId));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+    }
+
+    @Test
+    public void addsAndRemovesDefendantSpeakWelsh() {
+        assertThat(caseAggregate.getDefendantSpeakWelsh(defendantId), nullValue());
+
+        final Boolean newDefendantSpeakWelsh = Boolean.TRUE;
+        caseAggregate.apply(HearingLanguagePreferenceUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantSpeakWelsh));
+        assertThat(caseAggregate.getDefendantSpeakWelsh(defendantId), equalTo(newDefendantSpeakWelsh));
+
+        // HearingLanguagePreferenceUpdatedForDefendant with `null` value need to behave like HearingLanguagePreferenceCancelledForDefendant
+        caseAggregate.apply(HearingLanguagePreferenceUpdatedForDefendant.createEvent(caseId, defendantId, null));
+        assertThat(caseAggregate.getDefendantSpeakWelsh(defendantId), nullValue());
+
+        caseAggregate.apply(HearingLanguagePreferenceUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantSpeakWelsh));
+        assertThat(caseAggregate.getDefendantSpeakWelsh(defendantId), equalTo(newDefendantSpeakWelsh));
+
+        caseAggregate.apply(new HearingLanguagePreferenceCancelledForDefendant(caseId, defendantId));
+        assertThat(caseAggregate.getDefendantSpeakWelsh(defendantId), nullValue());
     }
 
     static class DefendantData {

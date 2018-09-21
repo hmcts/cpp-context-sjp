@@ -103,12 +103,12 @@ public class UpdatePleaHelper implements AutoCloseable {
     }
 
     public static JsonObject getPleaPayload(final PleaType pleaType) {
-        final Boolean interpreterRequiredValueWhenNonGuilty = (PleaType.NOT_GUILTY.equals(pleaType) || PleaType.GUILTY_REQUEST_HEARING.equals(pleaType)) ? false : null;
+        final Boolean mandatoryFields = (PleaType.NOT_GUILTY.equals(pleaType) || PleaType.GUILTY_REQUEST_HEARING.equals(pleaType)) ? false : null;
 
-        return getPleaPayload(pleaType, interpreterRequiredValueWhenNonGuilty, null);
+        return getPleaPayload(pleaType, mandatoryFields, null, mandatoryFields);
     }
 
-    public static JsonObject getPleaPayload(final PleaType pleaType, final Boolean interpreterRequired, final String interpreterLanguage) {
+    public static JsonObject getPleaPayload(final PleaType pleaType, final Boolean interpreterRequired, final String interpreterLanguage, final Boolean speakWelsh) {
         final JsonObjectBuilder builder = createObjectBuilder()
                 .add("plea", pleaType.name());
         if (interpreterRequired != null) {
@@ -117,6 +117,10 @@ public class UpdatePleaHelper implements AutoCloseable {
         if (interpreterLanguage != null) {
             builder.add("interpreterLanguage", interpreterLanguage);
         }
+        if (speakWelsh != null) {
+            builder.add("speakWelsh", speakWelsh);
+        }
+
         return builder.build();
     }
 }

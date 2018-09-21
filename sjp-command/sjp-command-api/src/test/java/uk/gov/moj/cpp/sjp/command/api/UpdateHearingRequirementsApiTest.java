@@ -22,7 +22,7 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UpdateInterpreterApiTest {
+public class UpdateHearingRequirementsApiTest {
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
@@ -31,21 +31,21 @@ public class UpdateInterpreterApiTest {
     private Sender sender;
 
     @InjectMocks
-    private UpdateInterpreterApi updateInterpreterApi;
+    private UpdateHearingRequirementsApi updateHearingRequirementsApi;
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
 
     @Test
     public void shouldRenameUpdateCommand() {
-        final JsonEnvelope command = envelope().with(metadataWithRandomUUID("sjp.update-interpreter")).build();
+        final JsonEnvelope command = envelope().with(metadataWithRandomUUID("sjp.update-hearing-requirements")).build();
 
-        updateInterpreterApi.updateInterpreter(command);
+        updateHearingRequirementsApi.updateHearingRequirements(command);
 
         verify(sender).send(envelopeCaptor.capture());
 
         final JsonEnvelope newCommand = envelopeCaptor.getValue();
-        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName("sjp.command.update-interpreter"));
+        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName("sjp.command.update-hearing-requirements"));
         assertThat(newCommand.payloadAsJsonObject(), equalTo(command.payloadAsJsonObject()));
     }
 }

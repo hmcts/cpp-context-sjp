@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.lang.Boolean.TRUE;
 import static java.util.Collections.emptyList;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -103,7 +104,7 @@ public class PleaNotificationProcessorTest {
                 LocalDate.of(1981, 1, 1),
                 "JH41 1269B");
         return new OnlinePleaReceived(urn, UUID.randomUUID(), UUID.randomUUID(),
-                "6th March 2018", "French", "Joe Cornish", "He was not there",
+                "6th March 2018", "French", TRUE, "Joe Cornish", "He was not there",
                 personalDetails, null, null, emptyList());
     }
 }

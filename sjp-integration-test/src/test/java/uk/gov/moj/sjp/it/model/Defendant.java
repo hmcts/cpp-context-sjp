@@ -42,9 +42,6 @@ public class Defendant {
     public Language documentationLanguage = Language.W;
 
     @Builder.Default
-    public String hearingLanguageIndicator = "E";
-
-    @Builder.Default
     public String languageNeeds = "No special needs";
 
     @Builder.Default

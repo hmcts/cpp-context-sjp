@@ -11,6 +11,9 @@
     },
     "interpreterLanguage": {
       "type": "string"
+    },
+    "speakWelsh": {
+      "type": "boolean"
     }
   },
   "required": [

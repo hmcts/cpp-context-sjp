@@ -1,16 +1,17 @@
 package uk.gov.moj.cpp.sjp.command.accesscontrol;
 
+import static java.util.Collections.singletonMap;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.eq;
 import static uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants.getDeleteEmployerGroups;
 
 import uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
 
-import java.util.Arrays;
 import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.mockito.Mock;
 
@@ -32,13 +33,13 @@ public class DeleteEmployerTest extends BaseDroolsAccessControlTest {
     @Test
     public void shouldNotAllowUserNotInAuthorisedGroup() {
         final Action action = createActionFor(SJP_COMMAND_DELETE_EMPLOYER);
-        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, Arrays.asList("random group"))).willReturn(false);
+        given(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(eq(action), anyListOf(String.class))).willReturn(false);
 
         assertFailureOutcome(executeRulesWith(action));
     }
 
     @Override
     protected Map<Class, Object> getProviderMocks() {
-        return ImmutableMap.<Class, Object>builder().put(UserAndGroupProvider.class, userAndGroupProvider).build();
+        return singletonMap(UserAndGroupProvider.class, userAndGroupProvider);
     }
 }

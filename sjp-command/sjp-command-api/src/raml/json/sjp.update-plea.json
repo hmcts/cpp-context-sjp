@@ -1,5 +1,6 @@
 {
   "plea": "NOT_GUILTY",
   "interpreterRequired": true,
-  "interpreterLanguage": "Swahili"
+  "interpreterLanguage": "Swahili",
+  "speakWelsh": false
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.update-interpreter.json",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/hearing-language-preference-for-defendant-cancelled.json",
   "type": "object",
   "properties": {
     "caseId": {
@@ -8,11 +8,10 @@
     },
     "defendantId": {
       "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
-    },
-    "language": {
-      "type": "string"
     }
   },
-  "required": [ "caseId", "defendantId" ],
+  "required": [
+    "caseId", "defendantId"
+  ],
   "additionalProperties": false
 }

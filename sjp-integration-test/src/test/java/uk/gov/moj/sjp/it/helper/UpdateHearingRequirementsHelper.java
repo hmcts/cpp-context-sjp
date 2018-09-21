@@ -26,18 +26,27 @@ import javax.ws.rs.core.Response;
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 
-public class UpdateInterpreterHelper implements AutoCloseable {
+public class UpdateHearingRequirementsHelper implements AutoCloseable {
 
     private MessageConsumer messageConsumer;
 
-    public UpdateInterpreterHelper() {
+    public UpdateHearingRequirementsHelper() {
         messageConsumer = QueueUtil.publicEvents.createConsumer("public.sjp.case-update-rejected");
     }
 
-    public void updateInterpreter(final UUID caseId, final String defendantId, final JsonObject payload) {
+    /**
+     * Makes a post call to update the hearing requirements. The hearing requirements consists of
+     * hearing language and interpreter
+     */
+    private void updateHearingRequirements(final UUID caseId, final String defendantId, final JsonObject payload) {
         final String resource = String.format("/cases/%s/defendants/%s", caseId, defendantId);
-        final String contentType = "application/vnd.sjp.update-interpreter+json";
+        final String contentType = "application/vnd.sjp.update-hearing-requirements+json";
+
         HttpClientUtil.makePostCall(resource, contentType, payload.toString());
+    }
+
+    public void updateHearingRequirements(final UUID caseId, final String defendantId, final String interpreterLanguage, final Boolean speakWelsh) {
+        updateHearingRequirements(caseId, defendantId, buildUpdateHearingRequirementsPayload(interpreterLanguage, speakWelsh));
     }
 
     private Response getCase(final String caseId) {
@@ -55,7 +64,7 @@ public class UpdateInterpreterHelper implements AutoCloseable {
 
         final Matcher<? super ReadContext> languageMatcher =
                 interpreter.isNeeded() ?
-                        withJsonPath("language", equalTo(interpreter.getLanguage())) :
+                        withJsonPath("language", equalTo(expectedInterpreterLanguage)) :
                         withoutJsonPath("language");
 
         final Matcher<? super ReadContext> neededMatcher = withJsonPath("needed", equalTo(interpreter.isNeeded()));
@@ -68,12 +77,28 @@ public class UpdateInterpreterHelper implements AutoCloseable {
                         )))));
     }
 
-    public static JsonObject buildUpdateInterpreterPayload(final String interpreterLanguage) {
+    public String pollForSpeakWelsh(final UUID caseId, final String defendantId, final Boolean expectedSpeakWelsh) {
+        return pollForSpeakWelsh(caseId, defendantId, withJsonPath("speakWelsh", is(expectedSpeakWelsh)));
+    }
+
+    public String pollForEmptySpeakWelsh(final UUID caseId, final String defendantId) {
+        return pollForSpeakWelsh(caseId, defendantId, withoutJsonPath("speakWelsh"));
+    }
+
+    private String pollForSpeakWelsh(final UUID caseId, final String defendantId, final Matcher<? super ReadContext> speakWelshMatcher) {
+        return await().atMost(20, TimeUnit.SECONDS).until(() -> getCase(caseId.toString()).readEntity(String.class),
+                isJson(withJsonPath("$.defendant",
+                        isJson(speakWelshMatcher))));
+    }
+
+    public static JsonObject buildUpdateHearingRequirementsPayload(final String interpreterLanguage, final Boolean speakWelsh) {
         final JsonObjectBuilder payloadBuilder = createObjectBuilder();
-        ofNullable(interpreterLanguage).ifPresent(language -> payloadBuilder.add("language", language));
+        ofNullable(interpreterLanguage).ifPresent(language -> payloadBuilder.add("interpreterLanguage", language));
+        ofNullable(speakWelsh).ifPresent(sw -> payloadBuilder.add("speakWelsh", sw));
 
         return payloadBuilder.build();
     }
+
 
     @Override
     public void close() throws Exception {

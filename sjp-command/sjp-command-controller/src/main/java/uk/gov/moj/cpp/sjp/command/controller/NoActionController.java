@@ -122,8 +122,8 @@ public class NoActionController {
         send(envelope);
     }
 
-    @Handles("sjp.command.update-interpreter")
-    public void updateInterpreter(final JsonEnvelope envelope) {
+    @Handles("sjp.command.update-hearing-requirements")
+    public void updateHearingRequirements(final JsonEnvelope envelope) {
         send(envelope);
     }
 

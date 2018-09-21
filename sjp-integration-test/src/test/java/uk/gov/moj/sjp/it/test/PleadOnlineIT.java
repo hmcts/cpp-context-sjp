@@ -386,6 +386,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                 withJsonPath("$.pleaDetails.notGuiltyBecause", equalTo(offence.getString("notGuiltyBecause"))),
                 withJsonPath("$.pleaDetails.witnessDispute", equalTo(onlinePleaPayload.getString("witnessDispute"))),
                 withJsonPath("$.pleaDetails.witnessDetails", equalTo(onlinePleaPayload.getString("witnessDetails"))),
+                withJsonPath("$.pleaDetails.speakWelsh", equalTo(onlinePleaPayload.getBoolean("speakWelsh"))),
                 withJsonPath("$.pleaDetails.interpreterLanguage", equalTo(onlinePleaPayload.getString("interpreterLanguage"))),
                 withJsonPath("$.pleaDetails.interpreterRequired", equalTo(true)),
                 withJsonPath("$.pleaDetails.unavailability", equalTo(onlinePleaPayload.getString("unavailability"))),
@@ -417,7 +418,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private List<Matcher> getGuiltyRequestHearingMatchers(final JSONObject onlinePleaPayload) {
         final JSONObject offence = onlinePleaPayload.getJSONArray("offences").getJSONObject(0);
         return asList(
-                withJsonPath("$.pleaDetails.interpreterLanguage", equalTo(onlinePleaPayload.getString("interpreterLanguage"))),
+                onlinePleaPayload.has("speakWelsh") ? withJsonPath("$.pleaDetails.speakWelsh", equalTo(onlinePleaPayload.getBoolean("speakWelsh"))) : withoutJsonPath("speakWelsh"),
+                onlinePleaPayload.has("interpreterLanguage") ? withJsonPath("$.pleaDetails.interpreterLanguage", equalTo(onlinePleaPayload.getString("interpreterLanguage"))) : withoutJsonPath("interpreterLanguage"),
                 withJsonPath("$.pleaDetails.interpreterRequired", equalTo(true)),
                 withJsonPath("$.pleaDetails.plea", equalTo(PleaType.GUILTY_REQUEST_HEARING.name())),
                 withJsonPath("$.pleaDetails.comeToCourt", equalTo(true)),

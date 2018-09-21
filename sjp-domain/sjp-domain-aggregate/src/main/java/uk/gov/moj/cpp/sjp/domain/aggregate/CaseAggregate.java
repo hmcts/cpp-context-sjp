@@ -21,6 +21,7 @@ import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
+import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.PersonalName;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
@@ -73,6 +74,8 @@ import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
 import uk.gov.moj.cpp.sjp.event.EnterpriseIdAssociated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceCancelledForDefendant;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
@@ -112,7 +115,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 5L;
+    private static final long serialVersionUID = 6L;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseAggregate.class);
 
@@ -140,6 +143,7 @@ public class CaseAggregate implements Aggregate {
     private final List<UUID> offenceIdsWithPleas = new ArrayList<>();
 
     private final Map<UUID, String> defendantInterpreterLanguages = new HashMap<>();
+    private final Map<UUID, Boolean> defendantSpeakWelsh = new HashMap<>();
 
     private boolean trialRequested;
     private boolean trialRequestedPreviously;
@@ -315,16 +319,16 @@ public class CaseAggregate implements Aggregate {
                 streamBuilder.add(new PleaUpdated(updatePlea.getCaseId(), updatePlea.getOffenceId(), updatePlea.getPlea(), PleaMethod.POSTAL));
 
                 handleTrialRequestEventsForUpdatePlea(updatePlea, streamBuilder, updatedOn);
-                updateInterpreter(updatePlea.getInterpreterLanguage(), defendantId.get(), false)
-                        .ifPresent(streamBuilder::add);
+                updateHearingRequirementsForPostalPlea(defendantId.get(), updatePlea.getInterpreterLanguage(), updatePlea.getSpeakWelsh())
+                        .forEach(streamBuilder::add);
             } else if (changePleaCommand instanceof CancelPlea) {
                 final CancelPlea cancelPlea = (CancelPlea) changePleaCommand;
                 streamBuilder.add(new PleaCancelled(cancelPlea.getCaseId(), cancelPlea.getOffenceId()));
                 if (trialRequested) {
                     streamBuilder.add(new TrialRequestCancelled(caseId));
                 }
-                updateInterpreter(null, defendantId.get(), false)
-                        .ifPresent(streamBuilder::add);
+                updateHearingRequirementsForPostalPlea(defendantId.get(), null, null)
+                        .forEach(streamBuilder::add);
             }
             return apply(streamBuilder.build());
         });
@@ -358,10 +362,30 @@ public class CaseAggregate implements Aggregate {
         return PleaType.NOT_GUILTY.equals(updatePlea.getPlea());
     }
 
-    public Stream<Object> updateInterpreter(final UUID userId, final UUID defendantId, final String language) {
-        return applyEventStreamIfNotRejected("Update interpreter", userId, defendantId, () ->
-            updateInterpreter(language, defendantId, false).map(Stream::of).orElse(Stream.empty())
-        );
+    public Stream<Object> updateHearingRequirements(final UUID userId,
+                                                    final UUID defendantId,
+                                                    final String interpreterLanguage,
+                                                    final Boolean speakWelsh) {
+        return applyEventStreamIfNotRejected("Update hearing requirements", userId, defendantId,
+                () -> updateHearingRequirementsForPostalPlea(defendantId, interpreterLanguage, speakWelsh));
+    }
+
+    private Stream<Object> updateHearingRequirementsForPostalPlea(final UUID defendantId, final String interpreterLanguage, final Boolean speakWelsh) {
+        return updateHearingRequirements(false, null, defendantId, interpreterLanguage, speakWelsh);
+    }
+
+    private Stream<Object> updateHearingRequirementsForOnlinePlea(final ZonedDateTime createdOn, final UUID defendantId, final String interpreterLanguage, final Boolean speakWelsh) {
+        return updateHearingRequirements(true, createdOn, defendantId, interpreterLanguage, speakWelsh);
+    }
+
+    private Stream<Object> updateHearingRequirements(final boolean updatedByOnlinePlea, final ZonedDateTime createdOn, final UUID defendantId, final String interpreterLanguage, final Boolean speakWelsh) {
+        assert !updatedByOnlinePlea || createdOn != null; // createdOn must be specified when is updated-by-OnlinePlea
+
+        return Stream.of(
+                updateInterpreterLanguage(interpreterLanguage, defendantId, updatedByOnlinePlea, createdOn),
+                updateSpeakWelsh(speakWelsh, defendantId, updatedByOnlinePlea, createdOn))
+                .filter(Optional::isPresent)
+                .map(Optional::get);
     }
 
     public Stream<Object> addDatesToAvoid(final String datesToAvoid) {
@@ -377,24 +401,41 @@ public class CaseAggregate implements Aggregate {
 
     }
 
-    private Optional<Object> updateInterpreter(final String newInterpreterLanguage, final UUID defendantId,
-                                               final boolean updatedByOnlinePlea) {
-        return updateInterpreter(newInterpreterLanguage, defendantId, updatedByOnlinePlea, null);
+    private Optional<Object> updateInterpreterLanguage(final String newInterpreterLanguage, final UUID defendantId,
+                                                       final boolean updatedByOnlinePlea, final ZonedDateTime createdOn) {
+        final Object event;
+        final Interpreter interpreter = Interpreter.of(newInterpreterLanguage);
+
+        if (!Objects.equals(this.getDefendantInterpreterLanguage(defendantId), interpreter.getLanguage())) {
+            if (interpreter.isNeeded()) {
+                if (updatedByOnlinePlea) {
+                    event = InterpreterUpdatedForDefendant.createEventForOnlinePlea(caseId, defendantId, newInterpreterLanguage, createdOn);
+                } else {
+                    event = InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, newInterpreterLanguage);
+                }
+            } else {
+                event = new InterpreterCancelledForDefendant(caseId, defendantId);
+            }
+        } else {
+            event = null;
+        }
+
+        return Optional.ofNullable(event);
     }
 
-    private Optional<Object> updateInterpreter(final String newInterpreterLanguage, final UUID defendantId,
-                                               final boolean updatedByOnlinePlea, final ZonedDateTime createdOn) {
-        // Assuming that if there is an interpreterLanguage interpreterRequired should always be true
-        final String existingInterpreterLanguage = this.defendantInterpreterLanguages.get(defendantId);
+    private Optional<Object> updateSpeakWelsh(final Boolean newSpeakWelsh, final UUID defendantId,
+                                              final boolean updatedByOnlinePlea, final ZonedDateTime createdOn) {
         final Object event;
 
-        if (existingInterpreterLanguage != null && newInterpreterLanguage == null) {
-            event = new InterpreterCancelledForDefendant(caseId, defendantId);
-        } else if (!Objects.equals(existingInterpreterLanguage, newInterpreterLanguage)) {
-            if (updatedByOnlinePlea) {
-                event = InterpreterUpdatedForDefendant.createEventForOnlinePlea(caseId, defendantId, newInterpreterLanguage, createdOn);
+        if ( ! Objects.equals(this.getDefendantSpeakWelsh(defendantId), newSpeakWelsh)) {
+            if (newSpeakWelsh != null) {
+                if (updatedByOnlinePlea) {
+                    event = HearingLanguagePreferenceUpdatedForDefendant.createEventForOnlinePlea(caseId, defendantId, newSpeakWelsh, createdOn);
+                } else {
+                    event = HearingLanguagePreferenceUpdatedForDefendant.createEvent(caseId, defendantId, newSpeakWelsh);
+                }
             } else {
-                event = InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, newInterpreterLanguage);
+                event = new HearingLanguagePreferenceCancelledForDefendant(caseId, defendantId);
             }
         } else {
             event = null;
@@ -507,10 +548,10 @@ public class CaseAggregate implements Aggregate {
             getEmployerEventStream(pleadOnline.getEmployer(), defendantId, updatedByOnlinePlea, createdOn)
                     .forEach(streamBuilder::add);
         }
-        updateInterpreter(pleadOnline.getInterpreterLanguage(), defendantId, updatedByOnlinePlea, createdOn)
-                .ifPresent(streamBuilder::add);
+        updateHearingRequirementsForOnlinePlea(createdOn, pleadOnline.getDefendantId(), pleadOnline.getInterpreterLanguage(), pleadOnline.getSpeakWelsh())
+                .forEach(streamBuilder::add);
         streamBuilder.add(new OnlinePleaReceived(urn, this.caseId, defendantId,
-                pleadOnline.getUnavailability(), pleadOnline.getInterpreterLanguage(),
+                pleadOnline.getUnavailability(), pleadOnline.getInterpreterLanguage(), pleadOnline.getSpeakWelsh(),
                 pleadOnline.getWitnessDetails(), pleadOnline.getWitnessDispute(), personalDetails,
                 pleadOnline.getFinancialMeans(), pleadOnline.getEmployer(), pleadOnline.getOutgoings()
         ));
@@ -644,6 +685,7 @@ public class CaseAggregate implements Aggregate {
         //TODO check reject reasons
 
         final Stream.Builder<Object> events = Stream.builder();
+        final boolean updatedByOnlinePlea = false;
 
         try {
             validateDefendantTitle(person.getTitle());
@@ -653,7 +695,7 @@ public class CaseAggregate implements Aggregate {
             return apply(Stream.of(new DefendantDetailsUpdateFailed(caseId, defendantId, e.getMessage())));
         }
 
-        getDefendantWarningEvents(person, updatedDate, false).forEach(events::add);
+        getDefendantWarningEvents(person, updatedDate, updatedByOnlinePlea).forEach(events::add);
 
         final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdated()
                 .withCaseId(caseId)
@@ -666,7 +708,7 @@ public class CaseAggregate implements Aggregate {
                 .withNationalInsuranceNumber(person.getNationalInsuranceNumber())
                 .withContactDetails(person.getContactDetails())
                 .withAddress(person.getAddress())
-                .withUpdateByOnlinePlea(false)
+                .withUpdateByOnlinePlea(updatedByOnlinePlea)
                 .withUpdatedDate(updatedDate)
                 .build();
         events.add(defendantDetailsUpdated);
@@ -744,7 +786,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "squid:S1602"})
     public Object apply(Object event) {
         return match(event).with(
                 when(CaseCreationFailedBecauseCaseAlreadyExisted.class).apply(e -> {
@@ -803,14 +845,19 @@ public class CaseAggregate implements Aggregate {
                     //nothing to update
                 }),
                 when(InterpreterUpdatedForDefendant.class).apply(e -> {
-                    if (e.getInterpreter() != null && e.getInterpreter().getLanguage() != null) {
-                        this.defendantInterpreterLanguages.put(e.getDefendantId(), e.getInterpreter().getLanguage());
-                    }
-                    // should never happen (but just in case)
-                    else {
-                        this.defendantInterpreterLanguages.remove(e.getDefendantId());
-                    }
+                    this.defendantInterpreterLanguages.compute(
+                            e.getDefendantId(),
+                            (defendantId, previousValue) -> Optional.ofNullable(e.getInterpreter())
+                                    .map(Interpreter::getLanguage)
+                                    .orElse(null));
                 }),
+                when(HearingLanguagePreferenceUpdatedForDefendant.class).apply(e -> {
+                    this.defendantSpeakWelsh.compute(
+                            e.getDefendantId(),
+                            (defendantId, previousValue) -> e.getSpeakWelsh());
+                }),
+                when(HearingLanguagePreferenceCancelledForDefendant.class).apply(e ->
+                        this.defendantSpeakWelsh.remove(e.getDefendantId())),
                 when(InterpreterCancelledForDefendant.class).apply(e ->
                         this.defendantInterpreterLanguages.remove(e.getDefendantId())),
                 when(AllOffencesWithdrawalRequested.class).apply(e ->
@@ -984,8 +1031,15 @@ public class CaseAggregate implements Aggregate {
         return defendantDateOfBirth;
     }
 
-    // TODO fix the tests that require the following to be public
+    String getDefendantInterpreterLanguage(final UUID defendantID) {
+        return defendantInterpreterLanguages.get(defendantID);
+    }
 
+    Boolean getDefendantSpeakWelsh(final UUID defendantID) {
+        return defendantSpeakWelsh.get(defendantID);
+    }
+
+    // TODO fix the tests that require the following to be public
     public boolean isCaseReopened() {
         return caseReopened;
     }

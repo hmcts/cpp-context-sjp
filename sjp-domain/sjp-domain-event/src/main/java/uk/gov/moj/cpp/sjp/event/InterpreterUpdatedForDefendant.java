@@ -14,18 +14,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InterpreterUpdatedForDefendant {
 
-    private UUID caseId;
-    private UUID defendantId;
-    private Interpreter interpreter;
-    private boolean updatedByOnlinePlea;
-    private ZonedDateTime updatedDate;
+    private final UUID caseId;
+    private final UUID defendantId;
+    private final Interpreter interpreter;
+    private final boolean updatedByOnlinePlea;
+    private final ZonedDateTime updatedDate;
 
     @JsonCreator
     private InterpreterUpdatedForDefendant(
-            @JsonProperty("caseId") UUID caseId,
-            @JsonProperty("defendantId") UUID defendantId,
-            @JsonProperty("interpreter") Interpreter interpreter,
-            @JsonProperty("updatedByOnlinePlea") boolean updatedByOnlinePlea,
+            @JsonProperty("caseId") final UUID caseId,
+            @JsonProperty("defendantId") final UUID defendantId,
+            @JsonProperty("interpreter") final Interpreter interpreter,
+            @JsonProperty("updatedByOnlinePlea") final boolean updatedByOnlinePlea,
             @JsonProperty("updatedDate") final ZonedDateTime updatedDate) {
         this.caseId = caseId;
         this.defendantId = defendantId;

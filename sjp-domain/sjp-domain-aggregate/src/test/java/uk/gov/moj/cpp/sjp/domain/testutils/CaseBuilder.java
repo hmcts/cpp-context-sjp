@@ -62,7 +62,7 @@ public class CaseBuilder {
                 DOCUMENTATION_LANGUAGE, HEARING_LANGUAGE_INDICATOR, LANGUAGE_NEEDS);
     }
 
-        public static CaseBuilder aDefaultSjpCase() {
+    public static CaseBuilder aDefaultSjpCase() {
         return new CaseBuilder();
     }
 

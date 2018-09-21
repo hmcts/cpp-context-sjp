@@ -108,6 +108,7 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
         pleaDetails.setUnavailability("unavailability");
         pleaDetails.setWitnessDetails("witnessDetails");
         pleaDetails.setWitnessDispute("witnessDispute");
+        pleaDetails.setSpeakWelsh(true);
 
         final OnlinePlea onlinePlea = new OnlinePlea(caseDetail.getId(), pleaDetails, caseDetail.getDefendant(), personalDetails, onlinePleaSubmittedOn);
 

@@ -31,7 +31,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
         // case needs to be created before adding an interpreter language
         updatePleaHelper.updatePlea(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(),
-                getPleaPayload(NOT_GUILTY, true, interpreterLanguage));
+                getPleaPayload(NOT_GUILTY, true, interpreterLanguage, false));
     }
 
     @After

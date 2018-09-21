@@ -2,8 +2,11 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "language": {
+    "interpreterLanguage": {
       "type": "string"
+    },
+    "speakWelsh": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false

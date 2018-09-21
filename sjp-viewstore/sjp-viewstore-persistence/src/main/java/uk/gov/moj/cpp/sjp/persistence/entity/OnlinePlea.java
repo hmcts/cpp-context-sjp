@@ -10,6 +10,7 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
@@ -85,6 +86,10 @@ public class OnlinePlea {
 
     public OnlinePlea(final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant) {
         this(interpreterUpdatedForDefendant.getCaseId(), new PleaDetails(interpreterUpdatedForDefendant), interpreterUpdatedForDefendant.getUpdatedDate());
+    }
+
+    public OnlinePlea(final HearingLanguagePreferenceUpdatedForDefendant hearingLanguageUpdated) {
+        this(hearingLanguageUpdated.getCaseId(), new PleaDetails(hearingLanguageUpdated), hearingLanguageUpdated.getUpdatedDate());
     }
 
     public OnlinePlea(final DefendantDetailsUpdated defendantDetailsUpdated) {
@@ -197,6 +202,8 @@ public class OnlinePlea {
         private String witnessDetails;
         @Column(name = "unavailability")
         private String unavailability;
+        @Column(name = "speak_welsh")
+        private Boolean speakWelsh;
 
         public PleaDetails() {}
 
@@ -204,6 +211,10 @@ public class OnlinePlea {
             this.interpreterLanguage = Optional.ofNullable(interpreterUpdatedForDefendant.getInterpreter())
                     .map(Interpreter::getLanguage)
                     .orElse(null);
+        }
+
+        public PleaDetails(final HearingLanguagePreferenceUpdatedForDefendant hearingLanguageUpdated) {
+            this.speakWelsh = hearingLanguageUpdated.getSpeakWelsh();
         }
 
         public PleaDetails(final TrialRequested trialRequested) {
@@ -246,6 +257,14 @@ public class OnlinePlea {
         @Transient
         public boolean isInterpreterRequired() {
             return Interpreter.isNeeded(interpreterLanguage);
+        }
+
+        public Boolean getSpeakWelsh() {
+            return speakWelsh;
+        }
+
+        public void setSpeakWelsh(final Boolean speakWelsh) {
+            this.speakWelsh = speakWelsh;
         }
 
         public String getWitnessDispute() {

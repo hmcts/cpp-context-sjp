@@ -18,6 +18,7 @@ public class PleadOnline {
     private final List<Offence> offences;
     private final String unavailability;
     private final String interpreterLanguage;
+    private final Boolean speakWelsh;
     private final String witnessDetails;
     private final String witnessDispute;
     private final PersonalDetails personalDetails;
@@ -30,6 +31,7 @@ public class PleadOnline {
                        @JsonProperty("offences") final List<Offence> offences,
                        @JsonProperty("unavailability") final String unavailability,
                        @JsonProperty("interpreterLanguage") final String interpreterLanguage,
+                       @JsonProperty("speakWelsh") final Boolean speakWelsh,
                        @JsonProperty("witnessDetails") final String witnessDetails,
                        @JsonProperty("witnessDispute") final String witnessDispute,
                        @JsonProperty("personalDetails") final PersonalDetails personalDetails,
@@ -40,6 +42,7 @@ public class PleadOnline {
         this.offences = offences;
         this.unavailability = unavailability;
         this.interpreterLanguage = interpreterLanguage;
+        this.speakWelsh = speakWelsh;
         this.witnessDetails = witnessDetails;
         this.witnessDispute = witnessDispute;
         this.personalDetails = personalDetails;
@@ -62,6 +65,10 @@ public class PleadOnline {
 
     public String getInterpreterLanguage() {
         return interpreterLanguage;
+    }
+
+    public Boolean getSpeakWelsh() {
+        return speakWelsh;
     }
 
     public String getWitnessDetails() {
@@ -87,4 +94,5 @@ public class PleadOnline {
     public List<Outgoing> getOutgoings() {
         return outgoings;
     }
+
 }

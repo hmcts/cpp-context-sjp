@@ -21,7 +21,7 @@ public class Interpreter implements Serializable {
     private final String language;
 
     @JsonCreator
-    private Interpreter(@JsonProperty("language") String language) {
+    private Interpreter(@JsonProperty("language") final String language) {
         this.language = language;
     }
 

@@ -120,18 +120,18 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       type: string
   post:
     description: |
-      Update defendant's interpreter
+      Update defendant's hearing requirements
       ...
       (mapping):
-          requestType: application/vnd.sjp.update-interpreter+json
-          name: sjp.update-interpreter
+          requestType: application/vnd.sjp.update-hearing-requirements+json
+          name: sjp.update-hearing-requirements
       ...
     body:
-      application/vnd.sjp.update-interpreter+json:
+      application/vnd.sjp.update-hearing-requirements+json:
         example:
-          !include json/sjp.update-interpreter.json
+          !include json/sjp.update-hearing-requirements.json
         schema:
-          !include json/schema/sjp.update-interpreter.json
+          !include json/schema/sjp.update-hearing-requirements.json
     responses:
       500:
         description: Internal Server Error

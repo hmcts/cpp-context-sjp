@@ -46,6 +46,9 @@ public class DefendantDetail implements Serializable {
     @Embedded
     private InterpreterDetail interpreter;
 
+    @Column(name = "speak_welsh")
+    private Boolean speakWelsh;
+
     @Column(name = "num_previous_convictions")
     private Integer numPreviousConvictions;
 
@@ -61,7 +64,10 @@ public class DefendantDetail implements Serializable {
         this(id, null, null, 0);
     }
 
-    public DefendantDetail(final UUID id, final PersonalDetails personalDetails, final List<OffenceDetail> offences, final Integer numPreviousConvictions) {
+    public DefendantDetail(final UUID id,
+                           final PersonalDetails personalDetails,
+                           final List<OffenceDetail> offences,
+                           final Integer numPreviousConvictions) {
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
         setOffences(offences);
@@ -137,6 +143,14 @@ public class DefendantDetail implements Serializable {
 
     public void setInterpreter(InterpreterDetail interpreter) {
         this.interpreter = interpreter;
+    }
+
+    public Boolean getSpeakWelsh() {
+        return speakWelsh;
+    }
+
+    public void setSpeakWelsh(final Boolean speakWelsh) {
+        this.speakWelsh = speakWelsh;
     }
 
     public void markNameUpdated(ZonedDateTime updateDate) {

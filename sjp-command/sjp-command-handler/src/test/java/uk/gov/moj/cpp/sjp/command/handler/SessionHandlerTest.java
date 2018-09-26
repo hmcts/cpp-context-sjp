@@ -23,6 +23,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
 
 import uk.gov.justice.domain.annotation.Event;
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -140,7 +141,7 @@ public class SessionHandlerTest {
                                         withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                                         withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                                         withJsonPath("$.magistrate", equalTo(magistrate)),
-                                        withJsonPath("$.startedAt", equalTo(startedAt.toString()))
+                                        withJsonPath("$.startedAt", equalTo(ZonedDateTimes.toString(startedAt)))
                                 ))))));
     }
 
@@ -174,7 +175,7 @@ public class SessionHandlerTest {
                                         withJsonPath("$.courtHouseCode", equalTo(courtHouseCode)),
                                         withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                                         withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
-                                        withJsonPath("$.startedAt", equalTo(startedAt.toString())),
+                                        withJsonPath("$.startedAt", equalTo(ZonedDateTimes.toString(startedAt))),
                                         withoutJsonPath("$.magistrate")
                                 ))))));
     }
@@ -200,7 +201,7 @@ public class SessionHandlerTest {
                         .add("magistrate", magistrate)
                         .add("courtHouseName", courtHouseName)
                         .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
-                        .add("startedAt", startedAt.toString())
+                        .add("startedAt", ZonedDateTimes.toString(startedAt))
                         .build());
 
         final MagistrateSessionStarted sessionStartedEvent = new MagistrateSessionStarted(sessionId, userId, null, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate);
@@ -222,7 +223,7 @@ public class SessionHandlerTest {
                                         withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                                         withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                                         withJsonPath("$.magistrate", equalTo(magistrate)),
-                                        withJsonPath("$.startedAt", equalTo(startedAt.toString()))
+                                        withJsonPath("$.startedAt", equalTo(ZonedDateTimes.toString(startedAt)))
                                 ))))));
     }
 
@@ -234,7 +235,7 @@ public class SessionHandlerTest {
                         .add("sessionId", sessionId.toString())
                         .add("courtHouseName", courtHouseName)
                         .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
-                        .add("startedAt", startedAt.toString())
+                        .add("startedAt", ZonedDateTimes.toString(startedAt))
                         .build());
 
         final DelegatedPowersSessionStarted sessionStartedEvent = new DelegatedPowersSessionStarted(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
@@ -255,7 +256,7 @@ public class SessionHandlerTest {
                                         withJsonPath("$.userId", equalTo(userId.toString())),
                                         withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                                         withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
-                                        withJsonPath("$.startedAt", equalTo(startedAt.toString())),
+                                        withJsonPath("$.startedAt", equalTo(ZonedDateTimes.toString(startedAt))),
                                         withoutJsonPath("$.magistrate")
                                 ))))));
     }
@@ -277,7 +278,7 @@ public class SessionHandlerTest {
                                         .withName(sessionEnded.getClass().getAnnotation(Event.class).value()),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.sessionId", equalTo(sessionEnded.getSessionId().toString())),
-                                        withJsonPath("$.endedAt", equalTo(sessionEnded.getEndedAt().toString()))
+                                        withJsonPath("$.endedAt", equalTo(ZonedDateTimes.toString(sessionEnded.getEndedAt())))
                                 ))))));
     }
 

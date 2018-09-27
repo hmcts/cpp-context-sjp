@@ -1,7 +1,5 @@
 package uk.gov.moj.sjp.it.model;
 
-import uk.gov.justice.json.schemas.domains.sjp.Language;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -37,9 +35,6 @@ public class Defendant {
     @Builder.Default
     @Size(min = 1, max = 1, message = "Only one offence is supported")
     public Offence[] offences = {Offence.builder().build()};
-
-    @Builder.Default
-    public Language documentationLanguage = Language.W;
 
     @Builder.Default
     public String languageNeeds = "No special needs";

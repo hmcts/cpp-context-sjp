@@ -972,7 +972,7 @@ public class CaseAggregate implements Aggregate {
     @SuppressWarnings("deprecation")
     private static CaseReceived convertSjpCaseCreatedToCaseReceived(final SjpCaseCreated sjpCaseCreated) {
         final Defendant defendant = new Defendant(sjpCaseCreated.getDefendantId(), null, null, null, null, null, null, null, null, null,
-                sjpCaseCreated.getNumPreviousConvictions(), sjpCaseCreated.getOffences(), null, null, null);
+                sjpCaseCreated.getNumPreviousConvictions(), sjpCaseCreated.getOffences(), null);
 
         return new CaseReceived(sjpCaseCreated.getId(), sjpCaseCreated.getUrn(), null,
                 sjpCaseCreated.getProsecutingAuthority(), sjpCaseCreated.getCosts(), sjpCaseCreated.getPostingDate(),

@@ -142,6 +142,11 @@ public class NoActionController {
         send(envelope);
     }
 
+    @Handles("sjp.command.acknowledge-defendant-details-updates")
+    public void acknowledgeDefendantDetailsUpdates(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
     private void send(final Envelope<?> envelope) {
         sender.send(envelope);
     }

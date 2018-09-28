@@ -78,4 +78,3 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
         eventStream.append(events.map(enveloper.withMetadataFrom(command)));
     }
 }
-

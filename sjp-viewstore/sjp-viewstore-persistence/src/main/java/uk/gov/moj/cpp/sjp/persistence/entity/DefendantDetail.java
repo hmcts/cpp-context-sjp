@@ -165,4 +165,7 @@ public class DefendantDetail implements Serializable {
         personalDetails.markDateOfBirthUpdated(updateDate);
     }
 
+    public void acknowledgeDetailsUpdates(ZonedDateTime acknowledgedAt) {
+        personalDetails.acknowledgeUpdates(acknowledgedAt);
+    }
 }

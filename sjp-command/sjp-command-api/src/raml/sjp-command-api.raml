@@ -69,6 +69,9 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       (mapping):
           requestType: application/vnd.sjp.update-defendant-details+json
           name: sjp.update-defendant-details
+      (mapping):
+          requestType: application/vnd.sjp.acknowledge-defendant-details-updates+json
+          name: sjp.acknowledge-defendant-details-updates
       ...
     body:
       application/vnd.sjp.update-defendant-details+json:
@@ -76,6 +79,7 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
           !include json/sjp.update-defendant-details.json
         schema:
           !include json/schema/sjp.update-defendant-details.json
+      application/vnd.sjp.acknowledge-defendant-details-updates+json: !!null
     responses:
       500:
         description: Internal Server Error

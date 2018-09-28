@@ -65,6 +65,7 @@ import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdatesAcknowledged;
 import uk.gov.moj.cpp.sjp.event.DefendantNotEmployed;
 import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
 import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
@@ -168,16 +169,13 @@ public class CaseAggregate implements Aggregate {
         if (this.caseId == null) {
             LOGGER.warn("Case not found: {}", action);
             event = new CaseNotFound(null, action);
-        }
-        else if (defendantId != null && !hasDefendant(defendantId)) {
+        } else if (defendantId != null && !hasDefendant(defendantId)) {
             LOGGER.warn("Defendant not found: {}", action);
             event = new DefendantNotFound(defendantId, action);
-        }
-        else if (assigneeId != null && !assigneeId.equals(userId)) {
+        } else if (assigneeId != null && !assigneeId.equals(userId)) {
             LOGGER.warn("Update rejected because case is assigned to another user: {}", action);
             event = new CaseUpdateRejected(this.caseId, RejectReason.CASE_ASSIGNED);
-        }
-        else if (isCaseCompleted()) {
+        } else if (isCaseCompleted()) {
             LOGGER.warn("Update rejected because case is already completed: {}", action);
             event = new CaseUpdateRejected(this.caseId, RejectReason.CASE_COMPLETED);
         }
@@ -611,6 +609,24 @@ public class CaseAggregate implements Aggregate {
                         return new CaseNotReopened(caseReopenDetails.getCaseId(), "Cannot update case reopened");
                     }
                 })));
+    }
+
+    public Stream<Object> acknowledgeDefendantDetailsUpdates(
+            final UUID defendantId,
+            final ZonedDateTime acknowledgedAt) {
+
+        Object event;
+        if (this.caseId == null) {
+            LOGGER.warn("Case not found: {}", caseId);
+            event = new CaseNotFound(null, "Acknowledge defendant details updates");
+        } else if (defendantId != null && !hasDefendant(defendantId)) {
+            LOGGER.warn("Defendant not found: {}", defendantId);
+            event = new DefendantNotFound(defendantId, "Acknowledge defendant details updates");
+        } else {
+            event = new DefendantDetailsUpdatesAcknowledged(caseId, defendantId, acknowledgedAt);
+        }
+
+        return Stream.of(event);
     }
 
     public Stream<Object> undoCaseReopened(final UUID caseId) {

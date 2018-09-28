@@ -27,6 +27,7 @@ public abstract class DefendantRepository implements EntityRepository<DefendantD
             "dd.personalDetails.firstName, " +
             "dd.personalDetails.lastName, " +
             "dd.personalDetails.dateOfBirth, " +
+            "dd.id, " +
             "dd.personalDetails.addressUpdatedAt, " +
             "dd.personalDetails.dateOfBirthUpdatedAt, " +
             "dd.personalDetails.nameUpdatedAt, " +

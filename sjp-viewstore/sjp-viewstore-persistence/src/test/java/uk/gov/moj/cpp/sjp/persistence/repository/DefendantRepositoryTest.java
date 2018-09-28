@@ -207,6 +207,7 @@ public class DefendantRepositoryTest extends BaseTransactionalTest {
                 defendant.getPersonalDetails().getFirstName(),
                 defendant.getPersonalDetails().getLastName(),
                 defendant.getPersonalDetails().getDateOfBirth(),
+                defendant.getId(),
                 defendant.getPersonalDetails().getAddressUpdatedAt(),
                 defendant.getPersonalDetails().getDateOfBirthUpdatedAt(),
                 defendant.getPersonalDetails().getNameUpdatedAt(),

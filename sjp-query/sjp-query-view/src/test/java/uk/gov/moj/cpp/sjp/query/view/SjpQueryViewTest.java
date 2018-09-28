@@ -529,6 +529,7 @@ public class SjpQueryViewTest {
         DefendantDetailsUpdatesView.DefendantDetailsUpdate defendantDetailsUpdate = new DefendantDetailsUpdatesView.DefendantDetailsUpdate(
                 "firstName",
                 "lastName",
+                "defendantId",
                 "caseId",
                 "caseUrn",
                 dateOfBirth.format(DateTimeFormatter.ISO_LOCAL_DATE),
@@ -550,6 +551,7 @@ public class SjpQueryViewTest {
                                 withJsonPath("$.total", equalTo(1)),
                                 withJsonPath("$.defendantDetailsUpdates[0].firstName", equalTo("firstName")),
                                 withJsonPath("$.defendantDetailsUpdates[0].lastName", equalTo("lastName")),
+                                withJsonPath("$.defendantDetailsUpdates[0].defendantId", equalTo("defendantId")),
                                 withJsonPath("$.defendantDetailsUpdates[0].caseUrn", equalTo("caseUrn")),
                                 withJsonPath("$.defendantDetailsUpdates[0].caseId", equalTo("caseId")),
                                 withJsonPath("$.defendantDetailsUpdates[0].dateOfBirth", equalTo(dateOfBirth.format(DateTimeFormatter.ISO_LOCAL_DATE))),

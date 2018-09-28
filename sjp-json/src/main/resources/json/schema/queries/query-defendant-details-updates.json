@@ -21,6 +21,9 @@
           "caseUrn": {
             "type": "string"
           },
+          "defendantId": {
+            "type": "string"
+          },
           "caseId": {
             "type": "string"
           },
@@ -43,6 +46,7 @@
         "required": [
           "firstName",
           "lastName",
+          "defendantId",
           "caseId",
           "caseUrn",
           "dateOfBirth",

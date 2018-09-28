@@ -26,6 +26,11 @@ public class UpdateDefendantDetails {
         new UpdateDefendantDetails(payloadBuilder).updateDefendantDetails(caseId, defendantId);
     }
 
+    public static void acknowledgeDefendantDetailsUpdates(final UUID caseId, final UUID defendantId) {
+        String url = String.format("/cases/%s/defendant/%s", caseId, defendantId);
+        makePostCall(url, "application/vnd.sjp.acknowledge-defendant-details-updates+json", null);
+    }
+
     public void updateDefendantDetails(UUID caseId, UUID defendantId) {
         final JsonObject payload = preparePayload(payloadBuilder);
         String url = String.format("/cases/%s/defendant/%s", caseId, defendantId);

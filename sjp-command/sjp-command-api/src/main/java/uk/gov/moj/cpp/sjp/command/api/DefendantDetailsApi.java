@@ -11,7 +11,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import javax.inject.Inject;
 
 @ServiceComponent(COMMAND_API)
-public class UpdateDefendantDetailsApi {
+public class DefendantDetailsApi {
 
     @Inject
     private Enveloper enveloper;
@@ -22,6 +22,15 @@ public class UpdateDefendantDetailsApi {
     @Handles("sjp.update-defendant-details")
     public void updateDefendantDetails(final JsonEnvelope envelope) {
         sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.update-defendant-details").apply(envelope.payloadAsJsonObject()));
+    }
+
+    @Handles("sjp.acknowledge-defendant-details-updates")
+    public void acknowledgeDefendantDetailsUpdates(final JsonEnvelope envelope) {
+        sender.send(
+                enveloper.withMetadataFrom(
+                        envelope,
+                        "sjp.command.acknowledge-defendant-details-updates")
+                        .apply(envelope.payloadAsJsonObject()));
     }
 
     @Handles("sjp.update-defendant-national-insurance-number")

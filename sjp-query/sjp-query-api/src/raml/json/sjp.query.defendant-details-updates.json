@@ -5,6 +5,7 @@
       "firstName": "Billy",
       "lastName": "SMITH",
       "caseUrn": "9012466",
+      "defendantId": "c1d922ba-20c6-4d68-ab56-3111401bbc7c",
       "caseId": "c4d922ba-20c6-4d68-ab56-3611401bbc7c",
       "dateOfBirth": "1991-12-01",
       "nameUpdated": true,
@@ -14,6 +15,7 @@
     }, {
       "firstName": "Camilla",
       "lastName": "SMITH",
+      "defendantId": "c1d922ba-20c6-4d68-ab56-3111401bbc7c",
       "caseId": "c4d922ba-20c6-4d68-ab56-3611401bbc7c",
       "caseUrn": "JONES",
       "dateOfBirth": "1965-12-27",
@@ -24,6 +26,7 @@
     }, {
       "firstName": "Steven",
       "lastName": "GERARD",
+      "defendantId": "c1d922ba-20c6-4d68-ab56-3111401bbc7c",
       "caseId": "c4d922ba-20c6-4d68-ab56-3611401bbc7c",
       "caseUrn": "5160991",
       "dateOfBirth": "1965-11-27",

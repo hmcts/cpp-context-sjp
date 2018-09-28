@@ -116,6 +116,7 @@ public class DefendantServiceTest {
                 "firstName",
                 "lastName",
                 LocalDate.now(),
+                UUID.randomUUID(),
                 updateTime,
                 null,
                 null,

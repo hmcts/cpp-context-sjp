@@ -1,0 +1,45 @@
+package uk.gov.moj.cpp.sjp.event;
+
+import uk.gov.justice.domain.annotation.Event;
+
+import java.time.ZonedDateTime;
+import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+/**
+ * Issued when a prosecutor acknowledges the updates for given defendant and case.
+ */
+@Event(DefendantDetailsUpdatesAcknowledged.EVENT_NAME)
+public class DefendantDetailsUpdatesAcknowledged {
+
+    public static final String EVENT_NAME = "sjp.events.defendant-details-updates-acknowledged";
+
+    private final UUID caseId;
+    private final UUID defendantId;
+    private final ZonedDateTime acknowledgedAt;
+
+    @JsonCreator
+    public DefendantDetailsUpdatesAcknowledged(
+            @JsonProperty("caseId") final UUID caseId,
+            @JsonProperty("defendantId") final UUID defendantId,
+            @JsonProperty("acknowledgedAt") final ZonedDateTime acknowledgedAt) {
+
+        this.caseId = caseId;
+        this.defendantId = defendantId;
+        this.acknowledgedAt = acknowledgedAt;
+    }
+
+    public UUID getCaseId() {
+        return caseId;
+    }
+
+    public UUID getDefendantId() {
+        return defendantId;
+    }
+
+    public ZonedDateTime getAcknowledgedAt() {
+        return acknowledgedAt;
+    }
+}

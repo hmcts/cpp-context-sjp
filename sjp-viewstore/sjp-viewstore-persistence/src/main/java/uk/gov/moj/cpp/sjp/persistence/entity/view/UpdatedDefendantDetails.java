@@ -14,6 +14,7 @@ public class UpdatedDefendantDetails {
     private final String firstName;
     private final String lastName;
     private final LocalDate dateOfBirth;
+    private final UUID defendantId;
     private final ZonedDateTime addressUpdatedAt;
     private final ZonedDateTime dateOfBirthUpdatedAt;
     private final ZonedDateTime nameUpdatedAt;
@@ -25,6 +26,7 @@ public class UpdatedDefendantDetails {
             final String firstName,
             final String lastName,
             final LocalDate dateOfBirth,
+            final UUID defendantId,
             final ZonedDateTime addressUpdatedAt,
             final ZonedDateTime dateOfBirthUpdatedAt,
             final ZonedDateTime nameUpdatedAt,
@@ -34,6 +36,7 @@ public class UpdatedDefendantDetails {
         this.firstName = firstName;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
+        this.defendantId = defendantId;
         this.addressUpdatedAt = addressUpdatedAt;
         this.dateOfBirthUpdatedAt = dateOfBirthUpdatedAt;
         this.nameUpdatedAt = nameUpdatedAt;
@@ -68,6 +71,10 @@ public class UpdatedDefendantDetails {
 
     public String getLastName() {
         return lastName;
+    }
+
+    public UUID getDefendantId() {
+        return defendantId;
     }
 
     public LocalDate getDateOfBirth() {
@@ -108,6 +115,7 @@ public class UpdatedDefendantDetails {
         return Objects.equal(firstName, that.firstName) &&
                 Objects.equal(lastName, that.lastName) &&
                 Objects.equal(dateOfBirth, that.dateOfBirth) &&
+                Objects.equal(defendantId, that.defendantId) &&
                 Objects.equal(addressUpdatedAt, that.addressUpdatedAt) &&
                 Objects.equal(dateOfBirthUpdatedAt, that.dateOfBirthUpdatedAt) &&
                 Objects.equal(nameUpdatedAt, that.nameUpdatedAt) &&
@@ -121,6 +129,7 @@ public class UpdatedDefendantDetails {
                 firstName,
                 lastName,
                 dateOfBirth,
+                defendantId,
                 addressUpdatedAt,
                 dateOfBirthUpdatedAt,
                 nameUpdatedAt,

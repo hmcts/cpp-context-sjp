@@ -150,6 +150,10 @@ public class CaseDetail implements Serializable {
         this.postingDate = postingDate;
     }
 
+    public void acknowledgeDefendantDetailsUpdates(ZonedDateTime acknowledgedAt) {
+        defendant.acknowledgeDetailsUpdates(acknowledgedAt);
+    }
+
     public String getUrn() {
         return urn;
     }

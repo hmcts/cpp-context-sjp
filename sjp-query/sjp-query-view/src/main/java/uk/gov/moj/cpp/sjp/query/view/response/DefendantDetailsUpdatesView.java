@@ -69,6 +69,11 @@ public class DefendantDetailsUpdatesView {
         private final String lastName;
 
         /**
+         * The id of the defendant that the update is linked to.
+         */
+        private final String defendantId;
+
+        /**
          * The case id for the defendant update.
          */
         private final String caseId;
@@ -107,6 +112,7 @@ public class DefendantDetailsUpdatesView {
         public DefendantDetailsUpdate(
                 final String firstName,
                 final String lastName,
+                final String defendantId,
                 final String caseId,
                 final String caseUrn,
                 final String dateOfBirth,
@@ -117,6 +123,7 @@ public class DefendantDetailsUpdatesView {
 
             this.firstName = firstName;
             this.lastName = lastName;
+            this.defendantId = defendantId;
             this.caseId = caseId;
             this.caseUrn = caseUrn;
             this.dateOfBirth = dateOfBirth;
@@ -132,6 +139,10 @@ public class DefendantDetailsUpdatesView {
 
         public String getFirstName() {
             return firstName;
+        }
+
+        public String getDefendantId() {
+            return defendantId;
         }
 
         public String getCaseUrn() {
@@ -166,6 +177,7 @@ public class DefendantDetailsUpdatesView {
             return new DefendantDetailsUpdate(
                     defendantDetail.getFirstName(),
                     defendantDetail.getLastName(),
+                    defendantDetail.getDefendantId().toString(),
                     defendantDetail.getCaseId().toString(),
                     defendantDetail.getCaseUrn(),
                     defendantDetail.getDateOfBirth().format(DateTimeFormatter.ISO_LOCAL_DATE),

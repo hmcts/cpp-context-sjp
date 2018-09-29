@@ -115,26 +115,32 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
 
     @Test
     public void shouldNotReturnAcknowledgedUpdates() {
+        final JsonObject defendantDetailsUpdatesBeforeUpdate = getUpdatedDefendantDetails(USER_ID);
+        final int totalUpdatesBeforeUpdate = defendantDetailsUpdatesBeforeUpdate.getInt("total");
+
         UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults();
         UUID defendantId = UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id"));
         UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseIdOne, defendantId, payloadBuilder);
 
-        final JsonObject defendantDetailsUpdatesBeforeAcknowledgement = getUpdatedDefendantDetails(USER_ID);
-        final int totalUpdatesBeforeAcknowledgement = defendantDetailsUpdatesBeforeAcknowledgement.getInt("total");
+        verifyUpdatedDetailsTotalChanged(totalUpdatesBeforeUpdate + 1);
 
         final EventListener updatesAcknowledgedListener = new EventListener()
                 .subscribe(DEFENDANT_DETAILS_UPDATES_ACKNOWLEDGED_PUBLIC_EVENT)
                 .run(() -> UpdateDefendantDetails.acknowledgeDefendantDetailsUpdates(caseIdOne, defendantId));
 
+        verifyUpdatedDetailsTotalChanged(totalUpdatesBeforeUpdate);
+
+        assertThatUpdatesAcknowledgedPublicEventRaised(updatesAcknowledgedListener, caseIdOne, defendantId);
+    }
+
+    private void verifyUpdatedDetailsTotalChanged(final int expectedUpdatedDetailsTotal) {
         pollWithDefaults(defendantDetailUpdatesRequestParams(Integer.MAX_VALUE, USER_ID))
                 .until(
                         status().is(OK),
                         payload().isJson(
                                 withJsonPath(
                                         "$.total",
-                                        equalTo(totalUpdatesBeforeAcknowledgement - 1))));
-
-        assertThatUpdatesAcknowledgedPublicEventRaised(updatesAcknowledgedListener, caseIdOne, defendantId);
+                                        equalTo(expectedUpdatedDetailsTotal))));
     }
 
     private void assertThatUpdatesAcknowledgedPublicEventRaised(

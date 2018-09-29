@@ -46,6 +46,7 @@
     "offences": {
       "type": "array",
       "items": {
+        "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/offence.json",
         "type": "object",
         "properties": {
           "id": {
@@ -129,11 +130,6 @@
           "type": "string"
         }
       },
-      "required": [
-        "income",
-        "benefits",
-        "employmentStatus"
-      ],
       "additionalProperties": false
     },
     "employer": {
@@ -178,8 +174,7 @@
     "caseId",
     "defendantId",
     "personalDetails",
-    "offences",
-    "financialMeans"
+    "offences"
   ],
   "additionalProperties": false
 }

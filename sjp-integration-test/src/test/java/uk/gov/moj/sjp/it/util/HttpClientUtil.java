@@ -1,5 +1,6 @@
 package uk.gov.moj.sjp.it.util;
 
+import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
@@ -52,7 +53,9 @@ public class HttpClientUtil {
         final Response response = restClient.postCommand(writeUrl, mediaType, payload, map);
         LOGGER.info("Post call made: \n\tURL = {} \n\tMedia type = {} \n\tPayload = {}\n\tUser = {}\n",
                 writeUrl, mediaType, payload, userId);
-        assertThat(response.getStatus(), is(expectedStatus.getStatusCode()));
+
+        assertThat(format("Post returned not expected status code with body: %s", response.readEntity(String.class)),
+                response.getStatus(), is(expectedStatus.getStatusCode()));
 
         return correlationId;
     }

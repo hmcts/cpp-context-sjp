@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static java.time.ZoneOffset.UTC;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
@@ -22,6 +23,7 @@ import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
+import uk.gov.moj.cpp.sjp.domain.Outgoing;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.PersonalName;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
@@ -538,9 +540,17 @@ public class CaseAggregate implements Aggregate {
         getDefendantWarningEvents(personalDetails, createdOn, updatedByOnlinePlea)
                 .forEach(streamBuilder::add);
 
-        streamBuilder.add(FinancialMeansUpdated.createEventForOnlinePlea(defendantId, pleadOnline.getFinancialMeans().getIncome(),
-                pleadOnline.getFinancialMeans().getBenefits(), pleadOnline.getFinancialMeans().getEmploymentStatus(),
-                pleadOnline.getOutgoings(), createdOn));
+        if (anyUpdatesOnFinancialMeans(pleadOnline.getFinancialMeans(), pleadOnline.getOutgoings())) {
+            final Optional<FinancialMeans> optionalFinancialMeans = Optional.ofNullable(pleadOnline.getFinancialMeans());
+
+            streamBuilder.add(FinancialMeansUpdated.createEventForOnlinePlea(
+                    defendantId,
+                    optionalFinancialMeans.map(FinancialMeans::getIncome).orElse(null),
+                    optionalFinancialMeans.map(FinancialMeans::getBenefits).orElse(null),
+                    optionalFinancialMeans.map(FinancialMeans::getEmploymentStatus).orElse(null),
+                    pleadOnline.getOutgoings(),
+                    createdOn));
+        }
 
         if (pleadOnline.getEmployer() != null) {
             getEmployerEventStream(pleadOnline.getEmployer(), defendantId, updatedByOnlinePlea, createdOn)
@@ -667,6 +677,10 @@ public class CaseAggregate implements Aggregate {
             streamBuilder.add(new CaseUnassignmentRejected(CaseUnassignmentRejected.RejectReason.CASE_NOT_ASSIGNED));
         }
         return apply(streamBuilder.build());
+    }
+
+    private static boolean anyUpdatesOnFinancialMeans(final FinancialMeans financialMeans, final List<Outgoing> outgoings) {
+        return financialMeans != null || ! isEmpty(outgoings);
     }
 
     private void validateDefendantAddress(final Address address) {

@@ -17,6 +17,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
@@ -29,8 +30,6 @@ import uk.gov.moj.cpp.sjp.domain.SessionCourt;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
-
-import javax.ws.rs.BadRequestException;
 
 import org.junit.Rule;
 import org.junit.Test;

@@ -6,9 +6,11 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assume.assumeThat;
@@ -130,7 +132,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                                               final Collection<UUID> userIds, final boolean expectToHaveFinances) {
         assumeThat(userIds, not(empty()));
 
-        final PleaMethod pleaMethod = PleaMethod.ONLINE;
         final String defendantId = CasePoller.pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId()).getString("defendant.id");
 
         //checks person-info before plead-online
@@ -143,7 +144,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
         //verify plea
         updatePleaHelper.verifyInPublicTopic(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), pleaType, null);
-        updatePleaHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaType, pleaMethod);
+        updatePleaHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaType, PleaMethod.ONLINE);
         caseSearchResultHelper.verifyPleaReceivedDate();
 
         //verify employer
@@ -201,6 +202,38 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     @Test
     public void shouldHideFinancesForProsecutors() {
         verifyGroupsCanSeeDefendantFinances(false, singleton(SJP_PROSECUTORS_GROUP));
+    }
+
+    @Test
+    public void shouldPleaNotGuiltyWithoutFinancialMeans() {
+        final JSONObject pleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
+        pleaPayload.remove("financialMeans");
+
+        assertThat(pleaPayload.has("financialMeans"), is(false));
+
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper()) {
+             final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
+
+            pleadOnlineHelper.pleadOnline(pleaPayload.toString());
+
+            updatePleaHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), PleaType.NOT_GUILTY, PleaMethod.ONLINE);
+        }
+    }
+
+    @Test
+    public void shouldPleaNotGuiltyWithEmptyFinancialMeans() {
+        final JSONObject pleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
+        pleaPayload.put("financialMeans", createObjectBuilder().build());
+
+        assertThat(pleaPayload.getJSONObject("financialMeans").keySet(), is(empty()));
+
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper()) {
+            final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
+
+            pleadOnlineHelper.pleadOnline(pleaPayload.toString());
+
+            updatePleaHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), PleaType.NOT_GUILTY, PleaMethod.ONLINE);
+        }
     }
 
     private void verifyGroupsCanSeeDefendantFinances(boolean expectToHaveFinances, Collection<String> financeProsecutors) {

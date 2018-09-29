@@ -30,7 +30,7 @@ public class PleadOnlineHelper {
 
     private final String writeUrl;
 
-    public PleadOnlineHelper(UUID caseId) {
+    public PleadOnlineHelper(final UUID caseId) {
         final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
         writeUrl = String.format("/cases/%s/defendants/%s/plead-online", caseId, defendantId);
     }
@@ -44,13 +44,13 @@ public class PleadOnlineHelper {
         pleadOnline(payload, "application/vnd.sjp.plead-online+json");
     }
 
-    public Response getOnlinePlea(final String caseId, final UUID userId) {
+    public static Response getOnlinePlea(final String caseId, final UUID userId) {
         final String resource = format("/cases/%s/defendants-online-plea", caseId);
         final String contentType = "application/vnd.sjp.query.defendants-online-plea+json";
         return HttpClientUtil.makeGetCall(resource, contentType, userId);
     }
 
-    public String getOnlinePlea(final String caseId, final Matcher<Object> jsonMatcher, final UUID userId) {
+    public static String getOnlinePlea(final String caseId, final Matcher<Object> jsonMatcher, final UUID userId) {
         return await().atMost(20, TimeUnit.SECONDS).until(() -> {
             Response onlinePlea = getOnlinePlea(caseId, userId);
             if (onlinePlea.getStatus() != OK.getStatusCode()) {
@@ -61,7 +61,7 @@ public class PleadOnlineHelper {
         }, jsonMatcher);
     }
 
-    public void verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(UUID caseId, boolean onlinePleaReceived) {
+    public static void verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(final UUID caseId, final boolean onlinePleaReceived) {
         pollWithDefaults(getCaseById(caseId))
                 .timeout(20, TimeUnit.SECONDS)
                 .until(

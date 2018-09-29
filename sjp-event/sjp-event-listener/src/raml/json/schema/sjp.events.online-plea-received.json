@@ -103,11 +103,6 @@
           "type": "string"
         }
       },
-      "required": [
-        "income",
-        "benefits",
-        "employmentStatus"
-      ],
       "additionalProperties": false
     },
     "employer": {
@@ -152,8 +147,7 @@
     "urn",
     "caseId",
     "defendantId",
-    "personalDetails",
-    "financialMeans"
+    "personalDetails"
   ],
   "additionalProperties": false
 }

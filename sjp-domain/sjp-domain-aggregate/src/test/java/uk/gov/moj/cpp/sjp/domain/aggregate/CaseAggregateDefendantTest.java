@@ -14,7 +14,6 @@ import static org.hamcrest.core.StringContains.containsString;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateDefendantTest.DefendantData.defaultDefendantData;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
-import uk.gov.justice.json.schemas.domains.sjp.Language;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
@@ -63,8 +62,6 @@ public class CaseAggregateDefendantTest {
     private static final String title = "Mr";
     private static final Address address = new Address("address1", "address2", "address3", "address4", "address5","CR02FW");
     private static final Clock clock = new UtcClock();
-    private static final Language documentationLanguage = Language.W;
-    private static final Language hearingLanguageIndicator = Language.E;
     private static final String languageNeeds = "languageNeeds_" + RandomStringUtils.randomAlphabetic(10);
     private static final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
     private static final int numPreviousConvictions = 0;
@@ -341,8 +338,6 @@ public class CaseAggregateDefendantTest {
         private String driverNumber = CaseAggregateDefendantTest.driverNumber;
         private LocalDate dateOfBirth = CaseAggregateDefendantTest.dateOfBirth;
         private Address address = CaseAggregateDefendantTest.address;
-        private Language documentationLanguage = CaseAggregateDefendantTest.documentationLanguage;
-        private Language hearingLanguageIndicator = CaseAggregateDefendantTest.hearingLanguageIndicator;
         private String languageNeeds = CaseAggregateDefendantTest.languageNeeds;
         private ContactDetails contactDetails = CaseAggregateDefendantTest.contactDetails;
         private int numPreviousConvictions = CaseAggregateDefendantTest.numPreviousConvictions;
@@ -397,8 +392,6 @@ public class CaseAggregateDefendantTest {
                         defendantData.contactDetails,
                         defendantData.numPreviousConvictions,
                         defendantData.offences,
-                        defendantData.documentationLanguage,
-                        defendantData.hearingLanguageIndicator,
                         defendantData.languageNeeds
                 )).build(),
                 clock.now()

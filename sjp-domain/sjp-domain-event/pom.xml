@@ -52,7 +52,6 @@
                             <sourceDirectory>CLASSPATH</sourceDirectory>
                             <includes>
                                 <include>json/schema/fragments/gender.json</include>
-                                <include>json/schema/fragments/language.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>

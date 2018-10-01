@@ -12,7 +12,6 @@ import java.util.UUID;
 
 import org.apache.deltaspike.data.api.AbstractEntityRepository;
 import org.apache.deltaspike.data.api.MaxResults;
-import org.apache.deltaspike.data.api.Modifying;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.QueryResult;
@@ -127,8 +126,8 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     @Query(value = "SELECT cd.prosecutingAuthority FROM CaseDetail cd WHERE cd.id = :caseId", singleResult = SingleResultType.OPTIONAL)
     public abstract String getProsecutingAuthority(@QueryParam("caseId") final UUID caseId);
 
-    @Modifying
-    @Query(value = "UPDATE CaseDetail cd set cd.datesToAvoid=:datesToAvoid WHERE cd.id=:id")
-    public abstract void updateDatesToAvoid(@QueryParam("id") UUID id, @QueryParam("datesToAvoid") String datesToAvoid);
+    public void updateDatesToAvoid(final UUID caseId, final String datesToAvoid) {
+        findBy(caseId).setDatesToAvoid(datesToAvoid);
+    }
 
 }

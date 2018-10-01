@@ -1,13 +1,8 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
 import static com.google.common.collect.Iterables.isEmpty;
-import static com.google.common.collect.Range.atMost;
-import static com.google.common.collect.Range.closed;
-import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Arrays.asList;
 import static java.util.UUID.fromString;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.summingLong;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -17,24 +12,19 @@ import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.entity.AwaitingCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
-import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseReferredToCourt;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseReferredToCourtRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.NotReadyCaseRepository;
 import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
-import uk.gov.moj.cpp.sjp.query.view.response.CaseMissingSjpnWithDetailsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnView;
-import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnWithDetailsView;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 
@@ -43,7 +33,6 @@ import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -58,7 +47,6 @@ import javax.json.JsonObjectBuilder;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 
-import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import org.apache.deltaspike.data.api.QueryResult;
 import org.slf4j.Logger;
@@ -68,18 +56,11 @@ import org.slf4j.LoggerFactory;
 public class CaseService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseService.class);
-
-    private static final int NOTICE_PERIOD = 21;
-    private static final int NOTICE_DELIVERY_TOLERANCE = 7;
-
     @Inject
     private CaseRepository caseRepository;
 
     @Inject
     private CaseDocumentRepository caseDocumentRepository;
-
-    @Inject
-    private NotReadyCaseRepository notReadyCaseRepository;
 
     @Inject
     private CaseSearchResultRepository caseSearchResultRepository;
@@ -145,27 +126,6 @@ public class CaseService {
                 .orElseGet(() -> caseRepository.countCasesMissingSjpn(prosecutingAuthorityFilterValue));
 
         return new CasesMissingSjpnView(casesIds, casesCount);
-    }
-
-    /**
-     * Find cases missing the SJP notice document with additional details.
-     *
-     * @param postedBefore only find docs posted before this number of days
-     * @return CasesMissingSjpnWithDetailsView
-     */
-    public CasesMissingSjpnWithDetailsView findCasesMissingSjpnWithDetails(final Optional<LocalDate> postedBefore) {
-
-        List<CaseDetailMissingSjpn> caseDetailMissingSjpnResult;
-        if (postedBefore.isPresent()) {
-            caseDetailMissingSjpnResult = caseRepository.findCasesMissingSjpnWithDetails(postedBefore.get());
-        } else {
-            caseDetailMissingSjpnResult = caseRepository.findCasesMissingSjpnWithDetails();
-        }
-        final int casesCount = caseDetailMissingSjpnResult.size();
-
-        return new CasesMissingSjpnWithDetailsView(
-                caseDetailMissingSjpnResult.stream().map(CaseMissingSjpnWithDetailsView::new).collect(toList()),
-                casesCount);
     }
 
     /**
@@ -309,44 +269,6 @@ public class CaseService {
         resultOrders.stream().filter(e -> caseRepository.findBy(e.getCaseId()) != null).forEach(caseDocumentConsumer);
 
         return resultOrdersView;
-    }
-
-    public JsonObject getNotReadyCasesGroupedByAge() {
-        final List<CaseCountByAgeView> caseCountByAgeViews = notReadyCaseRepository.getCountOfCasesByAge();
-
-        final List<Range<Integer>> ageRanges = asList(atMost(NOTICE_PERIOD - 1), closed(NOTICE_PERIOD, NOTICE_PERIOD + NOTICE_DELIVERY_TOLERANCE - 1));
-
-        final Map<Range<Integer>, Long> caseCountsByAgeRange = caseCountByAgeViews.stream().collect(
-                groupingBy(
-                        caseCountByAge -> ageRanges.stream().filter(range -> range.contains(caseCountByAge.getAge())).findFirst().orElse(null),
-                        summingLong(CaseCountByAgeView::getCount)
-                ));
-
-        final JsonArrayBuilder caseCountsByAgeRanges = createArrayBuilder();
-
-        for (final Map.Entry<Range<Integer>, Long> casesCountByAgeRange : caseCountsByAgeRange.entrySet()) {
-
-            final Range<Integer> ageRange = casesCountByAgeRange.getKey();
-            final Long casesCount = casesCountByAgeRange.getValue();
-
-            final JsonObjectBuilder casesCountInAgeRange = createObjectBuilder();
-            if (ageRange.hasLowerBound()) {
-                casesCountInAgeRange.add("ageFrom", ageRange.lowerEndpoint());
-            }
-            if (ageRange.hasUpperBound()) {
-                casesCountInAgeRange.add("ageTo", ageRange.upperEndpoint());
-            }
-            casesCountInAgeRange.add("casesCount", casesCount);
-            caseCountsByAgeRanges.add(casesCountInAgeRange.build());
-        }
-
-        return createObjectBuilder().add("caseCountsByAgeRanges", caseCountsByAgeRanges).build();
-    }
-
-    public JsonObject getOldestCaseAge() {
-        final LocalDate oldestUncompletedPostingDate = caseRepository.findOldestUncompletedPostingDate();
-        final long age = oldestUncompletedPostingDate == null ? 0 : DAYS.between(oldestUncompletedPostingDate, LocalDate.now());
-        return createObjectBuilder().add("oldestCaseAge", age).build();
     }
 
     public Optional<CaseDetail> getCase(final UUID caseId) {

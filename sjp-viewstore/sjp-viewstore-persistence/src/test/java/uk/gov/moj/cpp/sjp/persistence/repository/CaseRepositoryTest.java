@@ -262,28 +262,6 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     }
 
     @Test
-    public void shouldFindOldestUncompletedPostingDate() {
-
-        final LocalDate oldestPostingDate = postingDate.minusDays(1);
-
-        final CaseDetail oldestUncompletedCase = getCase(randomUUID(), randomUrn());
-        oldestUncompletedCase.setCompleted(false);
-        oldestUncompletedCase.setPostingDate(oldestPostingDate);
-        caseRepository.save(oldestUncompletedCase);
-
-        final CaseDetail completedCase = getCase(randomUUID(), randomUrn());
-        completedCase.setCompleted(true);
-        completedCase.setPostingDate(postingDate.minusDays(2));
-        caseRepository.save(completedCase);
-
-        // for deletion after the test has run
-        CASES.put(completedCase.getId(), completedCase);
-        CASES.put(oldestUncompletedCase.getId(), oldestUncompletedCase);
-
-        assertThat(caseRepository.findOldestUncompletedPostingDate(), equalTo(oldestPostingDate));
-    }
-
-    @Test
     public void shouldFindCaseMatchingUrnWithPrefixAndPostcode() {
         final CaseDetail actualCase = caseRepository.findByUrnPostcode(VALID_URN_1, POSTCODE);
 

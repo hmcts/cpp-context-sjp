@@ -61,14 +61,6 @@ public final class RuleConstants {
         return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
-    public static List<String> getNotReadyCasesGroupedByAgeActionGroups() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
-    }
-
-    public static List<String> getOldestCaseAgeActionGroups() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
-    }
-
     public static List<String> getQueryResultOrders() {
         return asList(GROUP_COURT_ADMINISTRATORS);
     }
@@ -91,10 +83,6 @@ public final class RuleConstants {
 
     public static List<String> getQueryCaseAssignmentGroups() {
         return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
-    }
-
-    public static List<String> getReadyCasesReasonsCountsGroups() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getReadyCasesGroups() {

@@ -102,15 +102,6 @@ rule "sjp.query.cases-missing-sjpn"
     $outcome.setSuccess(true);
 end
 
-rule "sjp.query.cases-missing-sjpn-with-details"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.cases-missing-sjpn-with-details");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCasesMissingSjpnActionGroups()))
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "sjp.query.financial-means"
   when
     $outcome: Outcome();
@@ -143,24 +134,6 @@ rule "sjp.query.cases-referred-to-court"
     $outcome: Outcome();
     $action: Action(name == "sjp.query.cases-referred-to-court");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCasesReferredToCourtActionGroups()))
-  then
-    $outcome.setSuccess(true);
-end
-
-rule "sjp.query.not-ready-cases-grouped-by-age"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.not-ready-cases-grouped-by-age");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getNotReadyCasesGroupedByAgeActionGroups()))
-  then
-    $outcome.setSuccess(true);
-end
-
-rule "sjp.query.oldest-case-age"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.oldest-case-age");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getOldestCaseAgeActionGroups()))
   then
     $outcome.setSuccess(true);
 end
@@ -206,15 +179,6 @@ rule "sjp - Query - API - Get case assignment"
     $outcome: Outcome();
     $action: Action(name == "sjp.query.case-assignment");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCaseAssignmentGroups()))
-  then
-    $outcome.setSuccess(true);
-end
-
-rule "sjp - Query - API - Get ready cases reasons counts"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.ready-cases-reasons-counts");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getReadyCasesReasonsCountsGroups()))
   then
     $outcome.setSuccess(true);
 end

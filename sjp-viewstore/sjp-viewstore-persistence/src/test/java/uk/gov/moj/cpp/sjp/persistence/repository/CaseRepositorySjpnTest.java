@@ -82,14 +82,6 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
     }
 
     @Test
-    public void findCasesMissingSjpnWithDetails() {
-        final List<CaseDetailMissingSjpn> actualCases = caseRepository.findCasesMissingSjpnWithDetails();
-        final List<UUID> actualCaseIds = extractCaseIdsFromCaseDetailMissingSjpn(actualCases);
-
-        assertThat(actualCaseIds, equalTo(extractCaseIds(allCases.uncompletedSjpCasesWithoutSjpn)));
-    }
-
-    @Test
     public void findCasesMissingSjpnWithLimitForTflProsecutors() {
         int limit = 3;
 

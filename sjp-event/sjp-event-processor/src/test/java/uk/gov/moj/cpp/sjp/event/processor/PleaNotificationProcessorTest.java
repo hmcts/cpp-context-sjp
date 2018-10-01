@@ -24,6 +24,8 @@ import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
+import uk.gov.moj.cpp.sjp.event.processor.service.PostcodeService;
+import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -47,6 +49,12 @@ public class PleaNotificationProcessorTest {
     @Mock
     private JsonObjectToObjectConverter jsonObjectConverter;
 
+    @Mock
+    private ReferenceDataService referenceDataService;
+
+    @Mock
+    private PostcodeService postcodeService;
+
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
@@ -56,18 +64,33 @@ public class PleaNotificationProcessorTest {
     @Captor
     private ArgumentCaptor<JsonEnvelope> argumentCaptor;
 
+    private static final String ENGLISH_TEMPLATE_ID = "07d1f043-6052-4d18-adce-58678d0e7018";
+    private static final String WELSH_TEMPLATE_ID = "af48b904-3ee5-402b-bd82-0a80249c4405";
+
+
     @Before
     public void before() {
         // use defaults
         pleaNotificationProcessor.replyToAddress = "noreply@cjscp.org.uk";
-        pleaNotificationProcessor.templateId = "32d520ca-4d6e-4b5c-a9f3-e761d4ffd9a2";
+        pleaNotificationProcessor.englishTemplateId = ENGLISH_TEMPLATE_ID;
+        pleaNotificationProcessor.welshTemplateId = WELSH_TEMPLATE_ID;
     }
 
     @Test
-    public void shouldSendPleaNotificationEmail() {
+    public void shouldSendEnglishPleaNotificationEmail(){
+        shouldSendPleaNotificationEmail("England", ENGLISH_TEMPLATE_ID);
+    }
+
+    @Test
+    public void shouldSendWelshPleaNotificationEmail(){
+        shouldSendPleaNotificationEmail("Wales", WELSH_TEMPLATE_ID);
+    }
+
+    private void shouldSendPleaNotificationEmail(String country, String templateId) {
 
         final String email = "test@test.com";
         final String urn = "TFL123";
+        final String postcode = "W1 1AA";
 
         final JsonEnvelope event = JsonEnvelopeBuilder.envelopeFrom(
                 metadataWithRandomUUID("sjp.events.online-plea-received"),
@@ -75,8 +98,10 @@ public class PleaNotificationProcessorTest {
                         .add("urn", urn)
                         .build()
         );
-        OnlinePleaReceived onlinePleaReceived = generateOnlinePleaReceived(email, urn);
+        OnlinePleaReceived onlinePleaReceived = generateOnlinePleaReceived(email, urn, postcode);
         when(jsonObjectConverter.convert(event.payloadAsJsonObject(), OnlinePleaReceived.class)).thenReturn(onlinePleaReceived);
+        when(postcodeService.getOutwardCode(postcode)).thenReturn("W1");
+        when(referenceDataService.getCountryByPostcode("W1", event)).thenReturn(country);
 
         pleaNotificationProcessor.sendPleaNotificationEmail(event);
 
@@ -87,7 +112,7 @@ public class PleaNotificationProcessorTest {
                 withMetadataEnvelopedFrom(event).withName("notificationnotify.send-email-notification"),
                 payload().isJson(allOf(
                         withJsonPath("$.notificationId", notNullValue()),
-                        withJsonPath("$.templateId", is("32d520ca-4d6e-4b5c-a9f3-e761d4ffd9a2")),
+                        withJsonPath("$.templateId", is(templateId)),
                         withJsonPath("$.sendToAddress", is(email)),
                         withJsonPath("$.replyToAddress", is("noreply@cjscp.org.uk")),
                         withJsonPath("$.personalisation.urn", is(urn))
@@ -95,10 +120,10 @@ public class PleaNotificationProcessorTest {
         )));
     }
 
-    private static OnlinePleaReceived generateOnlinePleaReceived(final String email, final String urn) {
+    private static OnlinePleaReceived generateOnlinePleaReceived(final String email, final String urn, final String postcode) {
         final PersonalDetails personalDetails = new PersonalDetails(
                 "Bobby", "Davro",
-                new Address("82 Old Rd", "Leicester", "London", "UK", "United Kingdom", "W1 1AA"),
+                new Address("82 Old Rd", "Leicester", "London", "UK", "United Kingdom", postcode),
                 new ContactDetails("07429 567901", "07429 567901", "07429 567999", email, null),
                 LocalDate.of(1981, 1, 1),
                 "JH41 1269B");

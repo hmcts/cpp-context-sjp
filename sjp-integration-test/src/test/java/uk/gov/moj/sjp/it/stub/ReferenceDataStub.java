@@ -10,6 +10,7 @@ import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
+import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
@@ -35,7 +36,7 @@ public class ReferenceDataStub {
                 .withQueryParam("cjsoffencecode", matching(".*"))
                 .withQueryParam("date", matching(".*"))
                 .willReturn(aResponse().withStatus(SC_OK)
-                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(offences.toString())));
 
@@ -57,11 +58,26 @@ public class ReferenceDataStub {
         stubFor(get(urlPathEqualTo(urlPath))
                 .withQueryParam("oucodeL3Code", equalTo(courtHouseOUCode))
                 .willReturn(aResponse().withStatus(SC_OK)
-                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(responseBody)));
 
         waitForStubToBeReady(urlPath + "?oucodeL3Code=" + courtHouseOUCode, "application/vnd.referencedata.query.organisationunits+json");
+    }
+
+    public static void stubCountryByPostcodeQuery(final String postcode, final String country){
+        InternalEndpointMockUtils.stubPingFor("referencedata-query-api");
+
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/country-by-postcode";
+        stubFor(get(urlPathEqualTo(urlPath))
+                .withQueryParam("postCode", equalTo(postcode))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(Json.createObjectBuilder().add("country", country).build().toString())));
+
+        waitForStubToBeReady(urlPath + "?postCode=" + postcode, "application/vnd.reference-data.country-by-postcode+json");
+
     }
 
     private static String getOrganisationUnit(final String localJusticeAreaNationalCourtCode, final String courtHouseName) {

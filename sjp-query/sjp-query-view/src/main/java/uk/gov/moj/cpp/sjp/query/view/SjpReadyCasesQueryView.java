@@ -9,7 +9,6 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
-import uk.gov.moj.cpp.sjp.persistence.entity.view.ReadyCasesReasonCount;
 import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
 import java.util.List;
@@ -30,22 +29,6 @@ public class SjpReadyCasesQueryView {
 
     @Inject
     private Enveloper enveloper;
-
-    @Handles("sjp.query.ready-cases-reasons-counts")
-    public JsonEnvelope getReadyCasesReasonsCounts(final JsonEnvelope envelope) {
-
-        final List<ReadyCasesReasonCount> readyCasesReasonsCounts = readyCaseRepository.getReadyCasesReasonCount();
-
-        final JsonArray readyCasesReasonsCountsArray = toJsonArray(readyCasesReasonsCounts,
-                readyCasesCounts -> createObjectBuilder()
-                        .add("reason", readyCasesCounts.getReason())
-                        .add("count", readyCasesCounts.getCount()).build());
-
-        final JsonObject readyCasesPayload = createObjectBuilder().add("reasons", readyCasesReasonsCountsArray).build();
-
-        return enveloper.withMetadataFrom(envelope, "sjp.query.ready-cases-reasons-counts")
-                .apply(readyCasesPayload);
-    }
 
     @Handles("sjp.query.ready-cases")
     public JsonEnvelope getReadyCases(final JsonEnvelope envelope) {

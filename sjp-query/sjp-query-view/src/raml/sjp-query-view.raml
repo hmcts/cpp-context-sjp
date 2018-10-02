@@ -107,29 +107,6 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
             schema: !include json/schema/sjp.query.cases-missing-sjpn.json
             example: !include json/sjp.query.cases-missing-sjpn.json
 
-/cases-missing-sjpn-with-details:
-  get:
-    description: |
-      Get cases missing the SJPN with defendant details
-      ...
-      (mapping):
-          responseType: application/vnd.sjp.query.cases-missing-sjpn-with-details+json
-          name: sjp.query.cases-missing-sjpn-with-details
-      ...
-    queryParameters:
-      daysSincePosting:
-        description: |
-          Returns cases that has posting date older than daysSincePosting.
-        type: integer
-        required: false
-
-    responses:
-      200:
-        body:
-          application/vnd.sjp.query.cases-missing-sjpn-with-details+json:
-            schema: !include json/schema/sjp.query.cases-missing-sjpn-with-details.json
-            example: !include json/sjp.query.cases-missing-sjpn-with-details.json
-
 /defendant-details-updates:
   get:
     description: |
@@ -327,35 +304,6 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
             schema: !include json/schema/sjp.query.cases-referred-to-court.json
             example: !include json/sjp.query.cases-referred-to-court.json
 
-/cases/not-ready-grouped-by-age:
-  get:
-    description: |
-      ...
-      (mapping):
-          responseType: application/vnd.sjp.query.not-ready-cases-grouped-by-age+json
-          name: sjp.query.not-ready-cases-grouped-by-age
-      ...
-    responses:
-      200:
-        body:
-          application/vnd.sjp.query.not-ready-cases-grouped-by-age+json:
-            schema: !include json/schema/sjp.query.not-ready-cases-grouped-by-age.json
-            example: !include json/sjp.query.not-ready-cases-grouped-by-age.json
-
-/cases/oldest-age:
-  get:
-    description: |
-      ...
-      (mapping):
-          responseType: application/vnd.sjp.query.oldest-case-age+json
-          name: sjp.query.oldest-case-age
-      ...
-    responses:
-      200:
-        body:
-          application/vnd.sjp.query.oldest-case-age+json:
-            schema: !include json/schema/sjp.query.oldest-case-age.json
-            example: !include json/sjp.query.oldest-case-age.json
 
 /cases/{caseId}/defendants-online-plea:
   get:
@@ -439,22 +387,6 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
                 application/vnd.sjp.query.pending-dates-to-avoid+json:
                   schema: !include json/schema/sjp.query.pending-dates-to-avoid.json
                   example: !include json/sjp.query.pending-dates-to-avoid.json
-
-/cases/ready-cases-reasons-counts:
-  get:
-    description: |
-      Get count of ready cases grouped by reason
-      ...
-      (mapping):
-          responseType: application/vnd.sjp.query.ready-cases-reasons-counts+json
-          name: sjp.query.ready-cases-reasons-counts
-      ...
-    responses:
-      200:
-        body:
-          application/vnd.sjp.query.ready-cases-reasons-counts+json:
-            schema: !include json/schema/sjp.query.ready-cases-reasons-counts.json
-            example: !include json/sjp.query.ready-cases-reasons-counts.json
 
 /cases/ready-cases:
   get:

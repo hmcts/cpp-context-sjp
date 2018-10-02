@@ -7,13 +7,10 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertEquals;
@@ -35,13 +32,10 @@ import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.FIELD_URN;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
-import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher;
-import uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.Employer;
@@ -373,56 +367,6 @@ public class SjpQueryViewTest {
 
         verify(function).apply(payload);
         assertThat(result, is(outputEnvelope));
-    }
-
-    @Test
-    public void shouldHandleQueries() {
-        assertThat(SjpQueryView.class,
-                HandlerClassMatcher.isHandlerClass(Component.QUERY_VIEW)
-                        .with(HandlerMethodMatcher.method("findNotReadyCasesGroupedByAge")
-                                .thatHandles("sjp.query.not-ready-cases-grouped-by-age")));
-    }
-
-    @Test
-    public void shouldFindNotReadyCasesGroupedByAge() {
-        final JsonEnvelope queryEnvelope = envelope()
-                .with(metadataWithRandomUUID("sjp.query.not-ready-grouped-by-age"))
-                .build();
-
-        final JsonObject jsonObject = createObjectBuilder()
-                .add("caseCountsByAgeRanges", createArrayBuilder().add(createObjectBuilder()
-                        .add("ageFrom", 0)
-                        .add("ageTo", 20).add("casesCount", 5)))
-                .build();
-
-        when(caseService.getNotReadyCasesGroupedByAge()).thenReturn(jsonObject);
-
-        final JsonEnvelope responseEnvelope = sjpQueryView.findNotReadyCasesGroupedByAge(queryEnvelope);
-
-        assertThat(responseEnvelope, jsonEnvelope(metadata().withName("sjp.query.not-ready-cases-grouped-by-age"), payload().isJson(allOf(
-                withJsonPath("$.caseCountsByAgeRanges", hasSize(1)),
-                withJsonPath("$.caseCountsByAgeRanges[?(@.ageFrom == 0 && @.ageTo == 20)].casesCount", contains(5))
-        ))));
-    }
-
-    @Test
-    public void shouldFindOldestCaseAge() {
-
-        final int oldestCaseAge = 31;
-
-        final JsonEnvelope queryEnvelope = envelope()
-                .with(metadataWithRandomUUID("sjp.query.oldest-case-age"))
-                .build();
-
-        final JsonObject payload = createObjectBuilder()
-                .add("oldestCaseAge", oldestCaseAge).build();
-        when(caseService.getOldestCaseAge()).thenReturn(payload);
-
-        final JsonEnvelope response = sjpQueryView.findOldestCaseAge(queryEnvelope);
-
-        assertThat(response, jsonEnvelope(metadata().withName("sjp.query.oldest-case-age"),
-                payload().isJson(withJsonPath("$.oldestCaseAge", equalTo(oldestCaseAge))
-                )).thatMatchesSchema());
     }
 
     @Test

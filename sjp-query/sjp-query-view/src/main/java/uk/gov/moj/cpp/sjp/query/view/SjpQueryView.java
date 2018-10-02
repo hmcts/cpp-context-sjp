@@ -116,15 +116,6 @@ public class SjpQueryView {
                 .apply(caseService.findCasesMissingSjpn(envelope, limit, postedBefore));
     }
 
-    @Handles("sjp.query.cases-missing-sjpn-with-details")
-    public JsonEnvelope findCasesMissingSjpnWithDetails(final JsonEnvelope envelope) {
-        final JsonObject payload = envelope.payloadAsJsonObject();
-        final Optional<LocalDate> postedBefore = payload.containsKey(FIELD_DAYS_SINCE_POSTING) ?
-                Optional.of(LocalDate.now().minusDays(payload.getInt(FIELD_DAYS_SINCE_POSTING))) : empty();
-        return enveloper.withMetadataFrom(envelope, "sjp.query.cases-missing-sjpn-with-details")
-                .apply(caseService.findCasesMissingSjpnWithDetails(postedBefore));
-    }
-
     @Handles("sjp.query.case-documents")
     public JsonEnvelope findCaseDocuments(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE_DOCUMENTS).apply(
@@ -171,18 +162,6 @@ public class SjpQueryView {
     public JsonEnvelope getCasesReferredToCourt(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASES_REFERRED_TO_COURT).apply(
                 caseService.findCasesReferredToCourt());
-    }
-
-    @Handles("sjp.query.not-ready-cases-grouped-by-age")
-    public JsonEnvelope findNotReadyCasesGroupedByAge(final JsonEnvelope envelope) {
-        return enveloper.withMetadataFrom(envelope, "sjp.query.not-ready-cases-grouped-by-age")
-                .apply(caseService.getNotReadyCasesGroupedByAge());
-    }
-
-    @Handles("sjp.query.oldest-case-age")
-    public JsonEnvelope findOldestCaseAge(final JsonEnvelope envelope) {
-        return enveloper.withMetadataFrom(envelope, "sjp.query.oldest-case-age")
-                .apply(caseService.getOldestCaseAge());
     }
 
     @Handles("sjp.query.result-orders")

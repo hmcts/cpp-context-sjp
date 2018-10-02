@@ -1,7 +1,5 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -11,8 +9,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.BDDMockito.given;
@@ -39,18 +35,15 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseReferredToCourtRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.NotReadyCaseRepository;
 import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
-import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnWithDetailsView;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 
@@ -94,9 +87,6 @@ public class CaseServiceTest {
 
     @Mock
     private CaseRepository caseRepository;
-
-    @Mock
-    private NotReadyCaseRepository notReadyCaseRepository;
 
     @Mock
     private CaseDocumentRepository caseDocumentRepository;
@@ -495,39 +485,6 @@ public class CaseServiceTest {
     }
 
     @Test
-    public void shouldGroupNotReadyCasesByAgeRange() {
-
-        final List<CaseCountByAgeView> casesCountsInAgeRanges = new ArrayList<>();
-        casesCountsInAgeRanges.add(new CaseCountByAgeView(-1, 1));
-        casesCountsInAgeRanges.add(new CaseCountByAgeView(0, 1));
-        casesCountsInAgeRanges.add(new CaseCountByAgeView(1, 1));
-        casesCountsInAgeRanges.add(new CaseCountByAgeView(20, 2));
-        casesCountsInAgeRanges.add(new CaseCountByAgeView(21, 3));
-        casesCountsInAgeRanges.add(new CaseCountByAgeView(22, 4));
-        casesCountsInAgeRanges.add(new CaseCountByAgeView(27, 5));
-
-        when(notReadyCaseRepository.getCountOfCasesByAge()).thenReturn(casesCountsInAgeRanges);
-
-        final JsonObject notReadyCasesGroupedByAge = service.getNotReadyCasesGroupedByAge();
-        assertThat(notReadyCasesGroupedByAge.toString(), isJson(allOf(
-                withJsonPath("$.caseCountsByAgeRanges", hasSize(2)),
-                withJsonPath("$.caseCountsByAgeRanges[?(@.ageTo == 20)].casesCount", contains(5)),
-                withJsonPath("$.caseCountsByAgeRanges[?(@.ageFrom == 21 && @.ageTo == 27)].casesCount", contains(12))
-        )));
-    }
-
-    @Test
-    public void shouldGetOldestCaseAge() {
-
-        final int age = 7;
-        when(caseRepository.findOldestUncompletedPostingDate()).thenReturn(LocalDate.now().minusDays(age));
-
-        final JsonObject response = service.getOldestCaseAge();
-
-        assertThat(response.getInt("oldestCaseAge"), equalTo(age));
-    }
-
-    @Test
     public void shouldSearchCasesByUrn() {
         final String query = URN;
         final ProsecutingAuthorityAccess prosecutingAuthorityAccess = mock(ProsecutingAuthorityAccess.class);
@@ -588,19 +545,6 @@ public class CaseServiceTest {
 
         // then
         assertThat(result.getJsonArray("cases"), hasSize(0));
-    }
-
-    @Test
-    public void findCasesMissingSjpnWithDetailsTest() {
-        // given
-        when(caseRepository.findCasesMissingSjpnWithDetails()).thenReturn(Lists.newArrayList());
-
-        // when
-        final CasesMissingSjpnWithDetailsView result = service.findCasesMissingSjpnWithDetails(Optional.empty());
-
-        // then
-        assertThat(result.getCaseMissingSjpnWithDetailsView(), hasSize(0));
-
     }
 
     @Test

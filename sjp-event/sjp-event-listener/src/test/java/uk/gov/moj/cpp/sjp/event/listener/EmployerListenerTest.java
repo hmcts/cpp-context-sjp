@@ -6,14 +6,14 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.util.Clock;
@@ -60,9 +60,6 @@ public class EmployerListenerTest {
     private OnlinePleaRepository.EmployerOnlinePleaRepository onlinePleaRepository;
 
     @Mock
-    private OnlinePlea onlinePlea;
-
-    @Mock
     private DefendantRepository defendantRepository;
 
     @InjectMocks
@@ -78,15 +75,19 @@ public class EmployerListenerTest {
     private ZonedDateTime now = clock.now();
     private DefendantDetail defendantDetail;
 
+    private static final UUID CASE_ID = UUID.randomUUID();
+
     @Before
     public void setUp() {
         defendantDetail = new DefendantDetail();
         defendantDetail.setCaseDetail(new CaseDetail());
-        defendantDetail.getCaseDetail().setId(UUID.randomUUID());
+        defendantDetail.getCaseDetail().setId(CASE_ID);
     }
 
     private EmployerUpdated stubEmployerUpdatedEvent(boolean updatedByOnlinePlea) {
         final UUID defendantId = UUID.randomUUID();
+        when(defendantRepository.findCaseIdByDefendantId(defendantId)).thenReturn(CASE_ID);
+
         final uk.gov.moj.cpp.sjp.domain.Employer employer = new uk.gov.moj.cpp.sjp.domain.Employer(defendantId, "Test",
                 "123", "07777888999",
                 new Address("street", "suburb", "town", "county", "nation", "AA1 2BB"));
@@ -104,14 +105,13 @@ public class EmployerListenerTest {
         final JsonObject payload = createObjectBuilder().build();
         when(eventEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectConverter.convert(payload, EmployerUpdated.class)).thenReturn(employerUpdated);
-        when(defendantRepository.findBy(employerUpdated.getDefendantId())).thenReturn(defendantDetail);
 
         employerListener.updateEmployer(eventEnvelope);
 
         verify(employerRepository).save(captor.capture());
         verify(jsonObjectConverter).convert(payload, EmployerUpdated.class);
-        verify(defendantRepository, never()).findBy(employerUpdated.getDefendantId());
-        verify(onlinePleaRepository, never()).saveOnlinePlea(anyObject());
+        verifyZeroInteractions(defendantRepository);
+        verifyZeroInteractions(onlinePleaRepository);
 
         final Employer employer = captor.getValue();
         assertThat(employer.getDefendantId(), equalTo(employerUpdated.getDefendantId()));
@@ -132,13 +132,12 @@ public class EmployerListenerTest {
         final JsonObject payload = createObjectBuilder().build();
         when(eventEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectConverter.convert(payload, EmployerUpdated.class)).thenReturn(employerUpdated);
-        when(defendantRepository.findBy(employerUpdated.getDefendantId())).thenReturn(defendantDetail);
 
         employerListener.updateEmployer(eventEnvelope);
 
         verify(employerRepository).save(captor.capture());
         verify(jsonObjectConverter).convert(payload, EmployerUpdated.class);
-        verify(defendantRepository).findBy(employerUpdated.getDefendantId());
+        verify(defendantRepository).findCaseIdByDefendantId(employerUpdated.getDefendantId());
         verify(onlinePleaRepository).saveOnlinePlea(onlinePleaCaptor.capture());
 
         final Employer employer = captor.getValue();
@@ -169,14 +168,13 @@ public class EmployerListenerTest {
         final JsonObject payload = createObjectBuilder().build();
         when(eventEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectConverter.convert(payload, EmployerUpdated.class)).thenReturn(employerUpdated);
-        when(defendantRepository.findBy(employerUpdated.getDefendantId())).thenReturn(defendantDetail);
 
         employerListener.updateEmployer(eventEnvelope);
 
         verify(employerRepository, times(1)).save(captor.capture());
         verify(jsonObjectConverter, times(1)).convert(payload, EmployerUpdated.class);
-        verify(defendantRepository, never()).findBy(defendantDetail);
-        verify(onlinePleaRepository, never()).saveOnlinePlea(anyObject());
+        verifyZeroInteractions(defendantRepository);
+        verifyZeroInteractions(onlinePleaRepository);
         final Employer employer = captor.getValue();
         assertThat(employer.getDefendantId(), equalTo(employerUpdated.getDefendantId()));
         assertThat(employer.getName(), nullValue());
@@ -216,7 +214,7 @@ public class EmployerListenerTest {
         verify(employerRepository, never()).remove(argThat(any(Employer.class)));
     }
 
-    private JsonEnvelope createDeleteEmployerEvent(final UUID defendantId) {
+    private static JsonEnvelope createDeleteEmployerEvent(final UUID defendantId) {
         return envelope()
                 .with(metadataWithRandomUUID("sjp.events.employer-deleted"))
                 .withPayloadOf(defendantId.toString(), "defendantId")

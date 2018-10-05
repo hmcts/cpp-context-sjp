@@ -12,6 +12,8 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 
 import org.apache.deltaspike.data.api.EntityRepository;
+import org.apache.deltaspike.data.api.Query;
+import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.Repository;
 
 /**
@@ -53,4 +55,8 @@ public abstract class DefendantRepository implements EntityRepository<DefendantD
 
         return query.getResultList();
     }
+
+    @Query("SELECT d.caseDetail.id FROM DefendantDetail d WHERE d.id=:id")
+    public abstract UUID findCaseIdByDefendantId(@QueryParam("id") final UUID id);
+
 }

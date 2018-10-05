@@ -49,6 +49,7 @@ public class CaseReferredToCourtRepositoryTest extends BaseTransactionalTest {
 
         assertThat(unactionedCases.size(), is(2));
         assertThat(unactionedCases.get(0).getCaseId(), is(case1.getCaseId()));
+        assertThat(unactionedCases.get(1).getCaseId(), is(case2.getCaseId()));
     }
 
     private CaseReferredToCourt createCaseReferredToCourt(final LocalDate hearingDate) {

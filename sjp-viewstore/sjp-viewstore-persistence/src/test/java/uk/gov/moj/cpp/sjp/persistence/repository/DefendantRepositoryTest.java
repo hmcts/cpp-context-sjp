@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 import static java.time.ZoneOffset.UTC;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
@@ -184,6 +185,15 @@ public class DefendantRepositoryTest extends BaseTransactionalTest {
         final List<UpdatedDefendantDetails> defendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority(TFL.name(), ZonedDateTime.now().minusDays(10), ZonedDateTime.now());
 
         assertThat(defendantDetails, iterableWithSize(0));
+    }
+
+    @Test
+    public void shouldfindCaseIdByDefendantId() {
+        final UpdatedDefendantDetails caseDetail = createCaseDetail(new PersonalDetails(), TVL);
+
+        final UUID actualCaseId = defendantRepository.findCaseIdByDefendantId(caseDetail.getDefendantId());
+
+        assertThat(actualCaseId, equalTo(caseDetail.getCaseId()));
     }
 
     private UpdatedDefendantDetails createCaseDetail(

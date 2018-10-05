@@ -7,7 +7,6 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.Employer;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.repository.DefendantRepository;
@@ -54,8 +53,8 @@ public class EmployerListener {
 
         //this listener updates two tables for the case where the event is fired via plead-online command
         if (employerUpdated.isUpdatedByOnlinePlea()) {
-            final DefendantDetail defendantDetail = defendantRepository.findBy(employerUpdated.getDefendantId());
-            final OnlinePlea onlinePlea = new OnlinePlea(defendantDetail.getCaseDetail().getId(), employerUpdated);
+            final UUID caseId = defendantRepository.findCaseIdByDefendantId(employerUpdated.getDefendantId());
+            final OnlinePlea onlinePlea = new OnlinePlea(caseId, employerUpdated);
             onlinePleaRepository.saveOnlinePlea(onlinePlea);
         }
     }

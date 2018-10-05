@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event;
 
 import static java.util.Collections.emptyList;
+import static java.util.Optional.ofNullable;
 
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
@@ -28,6 +29,7 @@ public class FinancialMeansUpdated {
     private ZonedDateTime updatedDate;
 
     @JsonCreator
+    @SuppressWarnings("unused") // used during deserialization
     private FinancialMeansUpdated(@JsonProperty("defendantId") final UUID defendantId,
                                   @JsonProperty("income") final Income income,
                                   @JsonProperty("benefits") final Benefits benefits,
@@ -45,7 +47,7 @@ public class FinancialMeansUpdated {
     }
 
     public static FinancialMeansUpdated createEvent(final UUID defendantId, final Income income, final Benefits benefits,
-                                                                   final String employmentStatus) {
+                                                    final String employmentStatus) {
         return new FinancialMeansUpdated(defendantId, income, benefits, employmentStatus, emptyList(), false, null);
     }
 
@@ -60,11 +62,11 @@ public class FinancialMeansUpdated {
     }
 
     public Income getIncome() {
-        return income;
+        return ofNullable(income).orElseGet(() -> new Income(null, null));
     }
 
     public Benefits getBenefits() {
-        return benefits;
+        return ofNullable(benefits).orElseGet(Benefits::new);
     }
 
     public String getEmploymentStatus() {

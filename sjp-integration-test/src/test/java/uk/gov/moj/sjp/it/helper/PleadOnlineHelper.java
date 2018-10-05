@@ -30,8 +30,10 @@ public class PleadOnlineHelper {
 
     private final String writeUrl;
 
+    private final UUID defendantId;
+
     public PleadOnlineHelper(final UUID caseId) {
-        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
+        defendantId = UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id"));
         writeUrl = String.format("/cases/%s/defendants/%s/plead-online", caseId, defendantId);
     }
 
@@ -72,4 +74,9 @@ public class PleadOnlineHelper {
                 );
 
     }
+
+    public UUID getCaseDefendantId() {
+        return defendantId;
+    }
+
 }

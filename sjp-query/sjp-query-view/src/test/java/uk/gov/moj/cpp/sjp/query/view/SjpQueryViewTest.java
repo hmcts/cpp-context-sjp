@@ -4,7 +4,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
@@ -47,8 +46,6 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
@@ -507,17 +504,11 @@ public class SjpQueryViewTest {
     }
 
     private OnlinePlea stubOnlinePlea(final UUID caseId, final UUID defendantId, final UUID offenceId) {
-        final OffenceDetail offence = new OffenceDetail();
-        offence.setId(offenceId);
-        offence.setPlea(PleaType.NOT_GUILTY);
-        offence.setPleaMethod(PleaMethod.ONLINE);
-
-        final DefendantDetail defendant = new DefendantDetail(defendantId, null, singletonList(offence), null);
         final OnlinePlea onlinePlea = new OnlinePlea(
-                new PleaUpdated(caseId, offence.getId(), offence.getPlea(),
-                        null, "I was not there, they are lying", offence.getPleaMethod(), clock.now())
+                new PleaUpdated(caseId, offenceId, PleaType.NOT_GUILTY,
+                        null, "I was not there, they are lying", PleaMethod.ONLINE, clock.now())
         );
-        onlinePlea.setDefendantDetail(defendant);
+        onlinePlea.setDefendantId(defendantId);
 
         return onlinePlea;
     }

@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static org.apache.commons.lang.builder.EqualsBuilder.reflectionEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
@@ -12,10 +11,8 @@ import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaPersonalDetails;
-import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -47,7 +44,7 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
     @Before
     public void set() {
         caseId = UUID.randomUUID();
-        final CaseDetail caseDetail = getCaseWithDefendantOffences(caseId);
+        final CaseDetail caseDetail = getCaseWithDefendant(caseId);
         caseRepository.save(caseDetail);
 
         final OnlinePlea insertedOnlinePlea = buildOnlinePlea(caseDetail, clock.now());
@@ -83,12 +80,9 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
         assertThat(actualOnlinePleaWithoutFinances.getEmployer(), nullValue());
     }
 
-    private static CaseDetail getCaseWithDefendantOffences(final UUID caseId) {
-        final CaseDetail caseDetail = new CaseDetail();
-        caseDetail.setId(caseId);
+    private static CaseDetail getCaseWithDefendant(final UUID caseId) {
+        final CaseDetail caseDetail = new CaseDetail(caseId);
         caseDetail.setOnlinePleaReceived(true);
-        caseDetail.setDefendant(
-                new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), emptyList(), 1));
 
         return caseDetail;
     }
@@ -110,7 +104,7 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
         pleaDetails.setWitnessDispute("witnessDispute");
         pleaDetails.setSpeakWelsh(true);
 
-        final OnlinePlea onlinePlea = new OnlinePlea(caseDetail.getId(), pleaDetails, caseDetail.getDefendant(), personalDetails, onlinePleaSubmittedOn);
+        final OnlinePlea onlinePlea = new OnlinePlea(caseDetail.getId(), pleaDetails, caseDetail.getDefendant().getId(), personalDetails, onlinePleaSubmittedOn);
 
         final OnlinePlea.Employer employer = new OnlinePlea.Employer();
         employer.setName("employer_name");

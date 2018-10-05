@@ -9,12 +9,13 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.listener.converter.FinancialMeansConverter;
 import uk.gov.moj.cpp.sjp.event.listener.converter.OnlinePleaConverter;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.FinancialMeans;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.repository.DefendantRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.FinancialMeansRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
+
+import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -47,8 +48,8 @@ public class FinancialMeansListener {
 
         //this listener updates two tables for the case where the event is fired via plead-online command
         if (financialMeansUpdated.isUpdatedByOnlinePlea()) {
-            final DefendantDetail defendantDetail = defendantRepository.findBy(financialMeansUpdated.getDefendantId());
-            final OnlinePlea onlinePlea = onlinePleaConverter.convertToOnlinePleaEntity(defendantDetail, financialMeansUpdated);
+            final UUID caseId = defendantRepository.findCaseIdByDefendantId(financialMeansUpdated.getDefendantId());
+            final OnlinePlea onlinePlea = onlinePleaConverter.convertToOnlinePleaEntity(caseId, financialMeansUpdated);
             onlinePleaRepository.saveOnlinePlea(onlinePlea);
         }
     }

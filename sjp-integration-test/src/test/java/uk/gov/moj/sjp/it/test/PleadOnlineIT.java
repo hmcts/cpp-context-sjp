@@ -13,12 +13,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeThat;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_SJP_CASE_UPDATE_REJECTED;
 import static uk.gov.moj.sjp.it.Constants.SJP_EVENTS_CASE_UPDATE_REJECTED;
+import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.getOnlinePlea;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.stubNotifications;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.verifyNotification;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataStub.stubCountryByPostcodeQuery;
@@ -42,18 +44,21 @@ import uk.gov.moj.sjp.it.helper.EmployerHelper;
 import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
-import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import com.jayway.jsonpath.ReadContext;
+import com.jayway.restassured.path.json.JsonPath;
+import org.apache.commons.lang.text.StrSubstitutor;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
 import org.junit.After;
@@ -70,10 +75,15 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private static final String TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__not-guilty.json";
     private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__guilty.json";
     private static final String TEMPLATE_PLEA_GUILTY_REQUEST_HEARING_PAYLOAD = "raml/json/sjp.command.plead-online__guilty_request_hearing.json";
+    private static final String TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_RESPONSE = "raml/json/sjp.command.plead-online__guilty_with_finances_response.json";
+    private static final String TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_CASE_RESPONSE = "raml/json/sjp.command.plead-online__guilty_with_finances_case_response.json";
+    private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_finances_response.json";
+    private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_AND_OUTGOINGS_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_finances_and_outgoings_response.json";
+    private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_OUTGOINGS_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_outgoings_response.json";
+    private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_finances_case_response.json";
     private static final String ENGLISH_TEMPLATE_ID = "07d1f043-6052-4d18-adce-58678d0e7018";
 
     private static final Set<UUID> DEFAULT_STUBBED_USER_ID = singleton(USER_ID);
-
 
     @Before
     public void setUp() {
@@ -132,8 +142,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                                               final Collection<UUID> userIds, final boolean expectToHaveFinances) {
         assumeThat(userIds, not(empty()));
 
-        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId()).getString("defendant.id");
-
         //checks person-info before plead-online
         personInfoVerifier.verifyPersonInfo();
 
@@ -148,6 +156,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         caseSearchResultHelper.verifyPleaReceivedDate();
 
         //verify employer
+        final String defendantId = pleadOnlineHelper.getCaseDefendantId().toString();
         employerHelper.getEmployer(defendantId, getEmployerUpdatedPayloadMatcher(pleaPayload));
         assertThat(employerHelper.getEventFromPublicTopic(), getEmployerUpdatedPublicEventMatcher(pleaPayload));
 
@@ -162,7 +171,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
         //verify online-plea
         final Matcher<Object> expectedResult = getSavedOnlinePleaPayloadContentMatcher(pleaType, pleaPayload, createCasePayloadBuilder.getId().toString(), defendantId, expectToHaveFinances);
-        userIds.forEach(userId -> pleadOnlineHelper.getOnlinePlea(createCasePayloadBuilder.getId().toString(), expectedResult, userId));
+        userIds.forEach(userId -> getOnlinePlea(createCasePayloadBuilder.getId().toString(), expectedResult, userId));
         pleadOnlineHelper.verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
 
         verifyNotification("criminal@gmail.com", createCasePayloadBuilder.getUrn(), ENGLISH_TEMPLATE_ID);
@@ -206,33 +215,132 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     @Test
     public void shouldPleaNotGuiltyWithoutFinancialMeans() {
-        final JSONObject pleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
+        final PleaType notGuilty = PleaType.NOT_GUILTY;
+        final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
         pleaPayload.remove("financialMeans");
 
         assertThat(pleaPayload.has("financialMeans"), is(false));
+        assertThat(pleaPayload.has("outgoings"), is(true));
 
-        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper()) {
-             final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
+        final JsonPath response = pleadOnline(pleaPayload);
 
-            pleadOnlineHelper.pleadOnline(pleaPayload.toString());
+        verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
+        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_RESPONSE, notGuilty);
+    }
 
-            updatePleaHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), PleaType.NOT_GUILTY, PleaMethod.ONLINE);
-        }
+    @Test
+    public void shouldPleaNotGuiltyWithoutOutgoings() {
+        final PleaType notGuilty = PleaType.NOT_GUILTY;
+        final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
+        pleaPayload.remove("outgoings");
+
+        assertThat(pleaPayload.has("financialMeans"), is(true));
+        assertThat(pleaPayload.has("outgoings"), is(false));
+
+        final JsonPath response = pleadOnline(pleaPayload);
+
+        verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
+        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_OUTGOINGS_RESPONSE, notGuilty);
+    }
+
+    @Test
+    public void shouldPleaNotGuiltyWithoutFinancialMeansAndOutgoings() {
+        final PleaType notGuilty = PleaType.NOT_GUILTY;
+        final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
+        pleaPayload.remove("financialMeans");
+        pleaPayload.remove("outgoings");
+
+        assertThat(pleaPayload.has("financialMeans"), is(false));
+        assertThat(pleaPayload.has("outgoings"), is(false));
+
+        final JsonPath response = pleadOnline(pleaPayload);
+
+        verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
+        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_AND_OUTGOINGS_RESPONSE, notGuilty);
+    }
+
+    private void verifyResponseOnlinePlea(final String nameFile, final PleaType pleaType) {
+        final UUID caseId = createCasePayloadBuilder.getId();
+
+        final JsonPath response = JsonPath.from(
+                getOnlinePlea(caseId.toString(), isJson(allOf(
+                        withJsonPath("$.defendantId"),
+                        withJsonPath("$.pleaDetails.plea", equalTo(pleaType.name())))
+                ), USER_ID));
+        System.out.println(response.prettify());
+
+        final String submittedOn = response.getString("submittedOn");
+        final String defendantId = response.getString("defendantId");
+
+        final Map<String, String> params = new HashMap<>();
+        params.put("submittedOn", submittedOn);
+        params.put("defendantId", defendantId);
+
+        final JsonPath expectedResponse = fillTemplate(nameFile, params);
+
+        assertEquals(expectedResponse.prettify(), response.prettify());
+
+
     }
 
     @Test
     public void shouldPleaNotGuiltyWithEmptyFinancialMeans() {
-        final JSONObject pleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
+        final PleaType notGuilty = PleaType.NOT_GUILTY;
+        final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
         pleaPayload.put("financialMeans", createObjectBuilder().build());
 
         assertThat(pleaPayload.getJSONObject("financialMeans").keySet(), is(empty()));
+
+        final JsonPath response = pleadOnline(pleaPayload);
+
+        verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
+        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_RESPONSE, notGuilty);
+    }
+
+    @Test
+    public void shouldPleaGuiltyWithFinancialMeans() {
+        final PleaType guilty = PleaType.GUILTY;
+        final JSONObject pleaPayload = getOnlinePleaPayload(guilty);
+        assertThat(pleaPayload.has("financialMeans"), is(true));
+
+        final JsonPath response = pleadOnline(pleaPayload);
+
+        verifyResponseCase(response, TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_CASE_RESPONSE);
+        verifyResponseOnlinePlea(TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_RESPONSE, guilty);
+    }
+
+    private void verifyResponseCase(final JsonPath response, final String templatePath) {
+        final String dateTimeCreated = response.getString("dateTimeCreated");
+        final String defendantId = response.getString("defendant.id");
+        final String offenceId = response.getString("defendant.offences[0].id");
+
+        final Map<String, String> params = new HashMap<>();
+        params.put("dateTimeCreated", dateTimeCreated);
+        params.put("offenceId", offenceId);
+        params.put("defendantId", defendantId);
+
+        final JsonPath expectedResponse = fillTemplate(templatePath, params);
+
+        assertEquals(expectedResponse.prettify(), response.prettify());
+    }
+
+    private JsonPath fillTemplate(final String nameFile, final Map<String, String> values) {
+        values.putIfAbsent("caseId", createCasePayloadBuilder.getId().toString());
+        values.putIfAbsent("urn", createCasePayloadBuilder.getUrn());
+        values.putIfAbsent("enterpriseId", createCasePayloadBuilder.getEnterpriseId());
+
+        return JsonPath.from(new StrSubstitutor(values).replace(getPayload(nameFile)));
+    }
+
+    private JsonPath pleadOnline(JSONObject pleaPayload) {
+        final PleaType pleaType = PleaType.valueOf(pleaPayload.getJSONArray("offences").getJSONObject(0).getString("plea"));
 
         try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper()) {
             final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
 
             pleadOnlineHelper.pleadOnline(pleaPayload.toString());
 
-            updatePleaHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), PleaType.NOT_GUILTY, PleaMethod.ONLINE);
+            return updatePleaHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaType, PleaMethod.ONLINE);
         }
     }
 

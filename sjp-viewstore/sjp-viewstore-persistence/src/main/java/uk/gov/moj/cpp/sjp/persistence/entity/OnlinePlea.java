@@ -32,24 +32,20 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "online_plea")
 public class OnlinePlea {
     @Id
-    @Column(name = "case_id")
+    @Column(name = "case_id", updatable = false, nullable = false)
     private UUID caseId;
-    @ManyToOne
-    @JoinColumn(name = "defendant_id")
-    @JsonIgnore
-    private DefendantDetail defendantDetail;
-    @Column(name = "submitted_on")
+
+    @Column(name = "defendant_id", updatable = false, nullable = false)
+    private UUID defendantId;
+
+    @Column(name = "submitted_on", updatable = false, nullable = false)
     private ZonedDateTime submittedOn;
     @Embedded
     private OnlinePleaPersonalDetails personalDetails;
@@ -101,15 +97,15 @@ public class OnlinePlea {
      * Used in {@link OnlinePleaRepository#findOnlinePleaWithoutFinances} to filter finances
      * It must include every field apart finances (employment, employer, outgoings)
      */
-    public OnlinePlea(final UUID caseId, final PleaDetails pleaDetails, final DefendantDetail defendantDetail, final OnlinePleaPersonalDetails personalDetails, final ZonedDateTime submittedOn) {
+    public OnlinePlea(final UUID caseId, final PleaDetails pleaDetails, final UUID defendantId, final OnlinePleaPersonalDetails personalDetails, final ZonedDateTime submittedOn) {
         this(caseId, pleaDetails, submittedOn);
-        this.defendantDetail = defendantDetail;
+        this.defendantId = defendantId;
         this.personalDetails = personalDetails;
     }
 
     private OnlinePlea(final UUID caseId, final UUID defendantId, final ZonedDateTime submittedOn) {
         this.caseId = caseId;
-        this.defendantDetail = new DefendantDetail(defendantId);
+        this.defendantId = defendantId;
         this.submittedOn = submittedOn;
     }
 
@@ -128,11 +124,11 @@ public class OnlinePlea {
     }
 
     public UUID getDefendantId() {
-        return defendantDetail.getId();
+        return defendantId;
     }
 
-    public void setDefendantDetail(final DefendantDetail defendantDetail) {
-        this.defendantDetail = defendantDetail;
+    public void setDefendantId(final UUID defendantId) {
+        this.defendantId = defendantId;
     }
 
     public ZonedDateTime getSubmittedOn() {
@@ -403,13 +399,14 @@ public class OnlinePlea {
             this.employeeReference = employerUpdated.getEmployeeReference();
             this.name = employerUpdated.getName();
             this.phone = employerUpdated.getPhone();
-            if (employerUpdated.getAddress() != null) {
-                this.address = new Address(employerUpdated.getAddress().getAddress1(), employerUpdated.getAddress().getAddress2(), employerUpdated.getAddress().getAddress3(),
-                        employerUpdated.getAddress().getAddress4(), employerUpdated.getAddress().getPostcode());
-            }
-            else {
-                this.address = new Address();
-            }
+            this.address = Optional.ofNullable(employerUpdated.getAddress())
+                    .map(employerAddress -> new Address(
+                            employerAddress.getAddress1(),
+                            employerAddress.getAddress2(),
+                            employerAddress.getAddress3(),
+                            employerAddress.getAddress4(),
+                            employerAddress.getPostcode()))
+                    .orElseGet(Address::new);
         }
 
         public String getEmployeeReference() {
@@ -471,7 +468,7 @@ public class OnlinePlea {
                     childMaintenanceAmount,
                     otherAmount)
                     .filter(Objects::nonNull)
-                    .reduce(BigDecimal.valueOf(0), BigDecimal::add);
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
         }
 
         public BigDecimal getAccommodationAmount() {

@@ -78,11 +78,12 @@ public class UpdatePleaHelper implements AutoCloseable {
         assertThat(message.get("denialReason"), equalTo(denialReason));
     }
 
-    public void verifyPleaUpdated(final UUID caseId, final PleaType pleaType, final PleaMethod pleaMethod) {
-        CasePoller.pollUntilCaseByIdIsOk(caseId,
+    public JsonPath verifyPleaUpdated(final UUID caseId, final PleaType pleaType, final PleaMethod pleaMethod) {
+        return CasePoller.pollUntilCaseByIdIsOk(caseId,
                 allOf(
                         withJsonPath("defendant.offences[0].plea", is(pleaType.name())),
-                        withJsonPath("defendant.offences[0].pleaMethod", is(pleaMethod.name()))
+                        withJsonPath("defendant.offences[0].pleaMethod", is(pleaMethod.name())),
+                        withJsonPath("onlinePleaReceived", is(PleaMethod.ONLINE.equals(pleaMethod)))
                 )
         );
     }

@@ -32,6 +32,7 @@ import uk.gov.moj.cpp.sjp.UpdateEmployer;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
@@ -76,13 +77,13 @@ public class EmployerHandlerTest {
     private ArgumentCaptor<Stream<JsonEnvelope>> argumentCaptor;
 
     @Test
-    public void shouldUpdateEmployer() throws EventStreamException {
+    public void shouldUpdateEmployer() throws EventStreamException, NoSuchFieldException, IllegalAccessException {
         final CaseAggregate caseAggregate = new CaseAggregate();
         final Case aCase = CaseBuilder.aDefaultSjpCase().build();
-        caseAggregate.receiveCase(aCase, now());
+        CaseReceived caseReceivedEvent = (CaseReceived) caseAggregate.receiveCase(aCase, now()).findFirst().get();
 
         // Note that the defendantId created by the builder is overwritten by the aggregate
-        final UUID defendantId = caseAggregate.getOffenceIdsByDefendantId().keySet().iterator().next();
+        final UUID defendantId = caseReceivedEvent.getDefendant().getId();
 
         final Address address = Address.address()
                 .withAddress1("123 High St")
@@ -133,7 +134,6 @@ public class EmployerHandlerTest {
                                 withJsonPath("$.address.postcode", equalTo("CR01XG"))
 
                         ))),
-//                        .thatMatchesSchema() Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648"                jsonEnvelope(
                         jsonEnvelope(withMetadataEnvelopedFrom(jsonEnvelope)
                                 .withName("sjp.events.employment-status-updated"),
                         payloadIsJson(allOf(
@@ -141,9 +141,9 @@ public class EmployerHandlerTest {
                                 withJsonPath("$.employmentStatus", equalTo("EMPLOYED"))
 
                         ))))
-//                        .thatMatchesSchema() Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648"
         ));
     }
+
 
     @Test
     public void shouldDeleteEmployer() throws EventStreamException {
@@ -152,7 +152,7 @@ public class EmployerHandlerTest {
         caseAggregate.receiveCase(aCase, now());
 
         // Note that the defendantId created by the builder is overwritten by the aggregate
-        final UUID defendantId = caseAggregate.getOffenceIdsByDefendantId().keySet().iterator().next();
+        final UUID defendantId = aCase.getDefendant().getId();
 
         caseAggregate.apply(new EmploymentStatusUpdated(defendantId, "EMPLOYED"));
 
@@ -178,7 +178,6 @@ public class EmployerHandlerTest {
                                 withJsonPath("$.defendantId", equalTo(defendantId.toString()))
 
                         ))
-//                        .thatMatchesSchema() Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648"
         )));
     }
 }

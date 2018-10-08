@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
 import uk.gov.justice.services.common.converter.LocalDates;
@@ -34,7 +33,7 @@ public class CaseReopenedTest extends CaseAggregateBaseTest {
     public void setupCaseReopenDetails() {
         super.setUp();
         caseReopenDetails = new CaseReopenDetails(
-                caseAggregate.getCaseId(),
+                aCase.getId(),
                 LocalDates.from(REOPENED_DATE),
                 LIBRA_CASE_NUMBER,
                 REASON
@@ -113,11 +112,7 @@ public class CaseReopenedTest extends CaseAggregateBaseTest {
     }
 
     private List<Object> reopenCase() {
-        assertThat(caseAggregate.isCaseReopened(), is(false));
-        List<Object> collect = caseAggregate.markCaseReopened(caseReopenDetails).collect(Collectors.toList());
-        assertThat(caseAggregate.isCaseReopened(), is(true));
-
-        return collect;
+        return caseAggregate.markCaseReopened(caseReopenDetails).collect(Collectors.toList());
     }
 
     private void assertCaseReopenedDetails(CaseReopenDetails caseReopenDetails) {

@@ -29,7 +29,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdatesAcknowledged;
 
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -85,7 +85,10 @@ public class AcknowledgeDefendantDetailsUpdatesHandlerTest extends CaseAggregate
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(caseReceivedEvent.getCaseId().toString())),
                                         withJsonPath("$.defendantId", equalTo(defendantId.toString())),
-                                        withJsonPath("$.acknowledgedAt", equalTo(NOW.format(DateTimeFormatter.ISO_DATE_TIME)))
+                                        withJsonPath("$.acknowledgedAt", equalTo(NOW.format(new DateTimeFormatterBuilder()
+                                                .appendPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+                                                .appendZoneId()
+                                                .toFormatter())))
                                 )))
                 )));
     }

@@ -1,26 +1,23 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
-import static java.util.Collections.singletonMap;
-import static java.util.stream.Collectors.toSet;
+import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang.builder.EqualsBuilder.reflectionEquals;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import uk.gov.moj.cpp.sjp.domain.Case;
-import uk.gov.moj.cpp.sjp.domain.Offence;
+import uk.gov.moj.cpp.sjp.domain.command.UpdatePlea;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
+import uk.gov.moj.cpp.sjp.event.CaseCreationFailedBecauseCaseAlreadyExisted;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
+import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,15 +31,10 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
     public void setUp() {
         super.setUp();
         caseAggregate = new CaseAggregate();
-        assertThat(caseAggregate.getCaseId(), nullValue());
-        assertThat(caseAggregate.getUrn(), nullValue());
-        assertThat(caseAggregate.getProsecutingAuthority(), nullValue());
-        assertThat(caseAggregate.getOffenceIdsByDefendantId(), equalTo(emptyMap()));
-        assertThat(caseAggregate.isCaseReceived(), equalTo(false));
     }
 
     @Test
-    public void testCreateCase_whenValidSjpCase_shouldTriggerExpectedCaseCreatedAndStartedEvents() {
+    public void testCreateCase_whenValidSjpCase_shouldTriggerExpectedCaseCreated() {
         final List<Object> events = caseAggregate.receiveCase(aCase, clock.now()).collect(Collectors.toList());
 
         final CaseReceived expectedCaseReceived = buildCaseReceived(aCase);
@@ -51,38 +43,22 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
                 ((CaseReceived) events.get(0)).getDefendant(),
                 expectedCaseReceived.getDefendant(),
                 singleton("id")), is(true));
-
-        assertThat(caseAggregate.isCaseReceived(), equalTo(true));
-        assertThat(caseAggregate.getCaseId(), notNullValue());
-        assertThat(caseAggregate.getUrn(), notNullValue());
-        assertThat(caseAggregate.getProsecutingAuthority(), notNullValue());
-        assertThat(caseAggregate.getOffenceIdsByDefendantId().keySet(), hasSize(1));
-
-        verifyAggregatorApplyCall(events);
-    }
-
-    private void verifyAggregatorApplyCall(Collection<Object> events) {
-        assertThat(events, not(empty()));
-        events.stream().map(CaseReceived.class::cast).forEach(caseReceived -> {
-            assertThat("Case id does not match", caseAggregate.getCaseId(), equalTo(caseReceived.getCaseId()));
-            assertThat("Case urn does not match", caseAggregate.getUrn(), equalTo(caseReceived.getUrn()));
-            assertThat("Case prosecutingAuthority does not match", caseAggregate.getProsecutingAuthority(), equalTo(caseReceived.getProsecutingAuthority()));
-            assertThat("Case offenceIdsByDefendantId does not match", caseAggregate.getOffenceIdsByDefendantId(),
-                    equalTo(singletonMap(
-                            caseReceived.getDefendant().getId(),
-                            caseReceived.getDefendant().getOffences().stream()
-                                    .map(Offence::getId)
-                                    .collect(toSet()))));
-        });
     }
 
     @Test
-    public void testApply_whenCaseReceivedEvent() {
-        CaseReceived sjpCaseCreated = buildCaseReceived(CaseBuilder.aDefaultSjpCase().build());
+    public void rejectsSecondCaseReceivingWithAppropriateEvent() {
+        // GIVEN the case was received
+        caseAggregate.receiveCase(aCase, clock.now());
 
-        caseAggregate.apply(sjpCaseCreated);
+        // WHEN receiving the same case again
+        final List<Object> events = caseAggregate.receiveCase(aCase, clock.now()).collect(Collectors.toList());
 
-        verifyAggregatorApplyCall(singleton(sjpCaseCreated));
+        assertThat(events, hasSize(1));
+
+        final CaseCreationFailedBecauseCaseAlreadyExisted rejectionEvent = (CaseCreationFailedBecauseCaseAlreadyExisted) events.get(0);
+
+        assertThat(rejectionEvent.getCaseId(), equalTo(aCase.getId()));
+        assertThat(rejectionEvent.getUrn(), equalTo(aCase.getUrn()));
     }
 
     /**
@@ -90,19 +66,29 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
      */
     @Test
     public void testApply_whenSjpCaseCreatedEvent() {
+        //GIVEN legacy case was created (using SjpCaseCreated)
         SjpCaseCreated sjpCaseCreated = buildSjpCaseCreated(CaseBuilder.aDefaultSjpCase().build());
-
         caseAggregate.apply(sjpCaseCreated);
 
-        assertThat("Case id does not match", caseAggregate.getCaseId(), equalTo(sjpCaseCreated.getId()));
-        assertThat("Case urn does not match", caseAggregate.getUrn(), equalTo(sjpCaseCreated.getUrn()));
-        assertThat("Case prosecutingAuthority does not match", caseAggregate.getProsecutingAuthority(), equalTo(sjpCaseCreated.getProsecutingAuthority()));
-        assertThat("Case offenceIdsByDefendantId does not match", caseAggregate.getOffenceIdsByDefendantId(),
-                equalTo(singletonMap(
-                        sjpCaseCreated.getDefendantId(),
-                        sjpCaseCreated.getOffences().stream()
-                                .map(Offence::getId)
-                                .collect(toSet()))));
+        //WHEN we try to create duplicate state
+        final List<Object> events = caseAggregate.receiveCase(aCase, clock.now()).collect(Collectors.toList());
+        assertThat(events, hasSize(1));
+
+        //THEN it fails as the state was properly managed
+        final CaseCreationFailedBecauseCaseAlreadyExisted rejectionEvent = (CaseCreationFailedBecauseCaseAlreadyExisted) events.get(0);
+        assertThat("Case id does not match", rejectionEvent.getCaseId(), equalTo(sjpCaseCreated.getId()));
+        assertThat("Case urn does not match", rejectionEvent.getUrn(), equalTo(sjpCaseCreated.getUrn()));
+
+        //and WHEN we try to update plea
+        final List<Object> pleaUpdateEvents = caseAggregate.updatePlea(randomUUID(),
+                new UpdatePlea(aCase.getId(), aCase.getDefendant().getOffences().get(0).getId(),
+                        PleaType.GUILTY),
+                clock.now()).collect(toList());
+
+        //THEN plea is properly updated
+        assertThat(pleaUpdateEvents, hasSize(1));
+        final PleaUpdated pleaUpdateEvent = (PleaUpdated) pleaUpdateEvents.get(0);
+        assertThat(pleaUpdateEvent.getPlea(), equalTo(PleaType.GUILTY));
     }
 
     /**

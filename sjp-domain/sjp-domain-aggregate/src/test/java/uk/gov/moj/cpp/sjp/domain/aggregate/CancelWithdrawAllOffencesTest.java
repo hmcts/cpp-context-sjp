@@ -28,7 +28,6 @@ public class CancelWithdrawAllOffencesTest extends CaseAggregateBaseTest {
 
         final AllOffencesWithdrawalRequestCancelled event = (AllOffencesWithdrawalRequestCancelled) events.get(0);
         assertEquals(aCase.getId(), event.getCaseId());
-        assertThat("Case withdrawal all offences cancelled", caseAggregate.isWithdrawalAllOffencesRequested(), Matchers.is(false));
     }
 
     @Test

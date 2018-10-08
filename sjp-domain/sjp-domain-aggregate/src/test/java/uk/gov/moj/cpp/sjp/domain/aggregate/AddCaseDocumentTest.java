@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static java.util.Arrays.asList;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
@@ -89,14 +90,14 @@ public class AddCaseDocumentTest extends CaseAggregateBaseTest {
 
     @Test
     public void testAddCaseDocument_shouldUpdateAggState() {
-        caseAggregate.addCaseDocument(aCase.getId(), caseDocument);
+        final Stream<Object> eventStream = caseAggregate.addCaseDocument(aCase.getId(), caseDocument);
 
-        final UUID caseDocumentId = caseDocument.getId();
-        assertTrue("Aggregate state contains the new case document", caseAggregate.getCaseDocuments().containsKey(caseDocumentId));
-        CaseDocument caseDocumentAggState = caseAggregate.getCaseDocuments().get(caseDocumentId);
-        assertThat("Document id", caseDocumentAggState.getId(), is(caseDocument.getId()));
-        assertThat("Document material id", caseDocumentAggState.getMaterialId(), is(caseDocument.getMaterialId()));
-        assertThat("Document type", caseDocumentAggState.getDocumentType(), is(caseDocument.getDocumentType()));
+        final CaseDocumentAdded caseDocumentAddedEvent = (CaseDocumentAdded) eventStream.findFirst().get();
+
+        assertTrue("CaseDocumentAdded event created", nonNull(caseDocumentAddedEvent));
+        assertThat(caseDocumentAddedEvent.getCaseId(), is(aCase.getId()));
+        assertThat(caseDocumentAddedEvent.getCaseDocument(), is(caseDocument));
+        assertThat(caseDocumentAddedEvent.getIndexWithinDocumentType(), is(1));
     }
 
     @Test

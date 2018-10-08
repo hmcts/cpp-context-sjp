@@ -99,8 +99,6 @@ public class CaseReopenedHandlerTest {
 
         verify(eventStream).append(argumentCaptor.capture());
 
-        assertThat(caseAggregate.isCaseReopened(), is(true));
-
         assertThat(argumentCaptor.getValue(), streamContaining(
                 jsonEnvelope(metadata().withName(EventNamesHolder.CASE_REOPENED),
                         payloadIsJson(allOf(
@@ -118,8 +116,6 @@ public class CaseReopenedHandlerTest {
 
         verify(eventStream).append(argumentCaptor.capture());
 
-        assertThat(caseAggregate.isCaseReopened(), is(true));
-
         assertThat(argumentCaptor.getValue(), streamContaining(
                 jsonEnvelope(metadata().withName(EventNamesHolder.CASE_REOPENED_UPDATED),
                         payloadIsJson(allOf(
@@ -134,7 +130,6 @@ public class CaseReopenedHandlerTest {
         // given
         caseAggregate.markCaseReopened(CASE_REOPEN_DETAILS.getCaseReopenDetails());
         caseAggregate.updateCaseReopened(CASE_REOPEN_DETAILS_UPDATED.getCaseReopenDetails());
-        assertThat(caseAggregate.isCaseReopened(), is(true));
 
         // when
         JsonEnvelope jsonEnvelope = JsonEnvelopeBuilder.envelopeFrom(
@@ -146,7 +141,6 @@ public class CaseReopenedHandlerTest {
         verify(eventStream).append(argumentCaptor.capture());
 
         // then
-        assertThat(caseAggregate.isCaseReopened(), is(false));
 
         assertThat(argumentCaptor.getValue(), streamContaining(
                 jsonEnvelope(metadata().withName(EventNamesHolder.CASE_REOPENED_UNDONE),

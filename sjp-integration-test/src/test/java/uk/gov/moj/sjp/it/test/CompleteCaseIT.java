@@ -2,6 +2,7 @@ package uk.gov.moj.sjp.it.test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
@@ -22,6 +23,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
 
     @Before
     public void setUp() {
+        stubRemoveAssignmentCommand();
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseId);
 
         final EventListener eventListener = new EventListener();

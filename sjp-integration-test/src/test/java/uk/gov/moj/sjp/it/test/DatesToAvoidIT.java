@@ -20,6 +20,7 @@ import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.pollingquery.PendingDatesToAvoidPoller.pollUntilPendingDatesToAvoidIsOk;
+import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
@@ -39,6 +40,7 @@ import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
+import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
 
 import java.time.LocalDate;
@@ -75,6 +77,8 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
     @Before
     public void setUp() {
+        stubRemoveAssignmentCommand();
+
         tflUserId = randomUUID();
         stubGroupForUser(tflUserId, SJP_PROSECUTORS_GROUP);
         stubForUserDetails(tflUserId, TFL);

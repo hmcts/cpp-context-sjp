@@ -132,7 +132,7 @@ public class Defendant extends Person {
             return this;
         }
 
-        /**
+        /*
          * Overwrite not-set values with the ones of the specified object.
          */
         public Defendant buildBasedFrom(final Defendant defendant) {

@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * WARNING:
  * This is a quick patch to avoid duplications and merge PersonalDetails with {@link Defendant}
  * Here there is a wrong domain: Person is-not a PersonalDetails.
- * TODO: replace the usage with Defendant->personalDetails, major change what will affect events historical data.
+ * TODO: replace the usage with Defendant.personalDetails, major change what will affect events historical data.
  */
 @Deprecated
 @JsonIgnoreProperties(ignoreUnknown = true)

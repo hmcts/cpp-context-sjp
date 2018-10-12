@@ -92,8 +92,6 @@ public class AssignmentStub {
                 .withHeader(CONTENT_TYPE, equalTo(REMOVE_ASSIGNMENT_MEDIA_TYPE))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)));
-
-        waitForStubToBeReady(ASSIGNMENT_COMMAND_URL, REMOVE_ASSIGNMENT_MEDIA_TYPE, Response.Status.ACCEPTED);
     }
 
     public static void verifyAddAssignmentCommandSent(final UUID caseId, final UUID assigneeId, final CaseAssignmentType caseAssignmentType) {

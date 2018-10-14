@@ -18,7 +18,7 @@ import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.event.processor.activiti.CaseAssignmentTimeoutProcess;
-import uk.gov.moj.cpp.sjp.event.processor.service.AssignmentService;
+import uk.gov.moj.cpp.sjp.event.processor.service.assignment.AssignmentService;
 import uk.gov.moj.cpp.sjp.event.session.CaseAlreadyAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
@@ -63,9 +63,9 @@ public class AssignmentProcessor {
         final UUID sessionId = UUID.fromString(session.getString("id"));
         final SessionType sessionType = SessionType.valueOf(session.getString("type"));
         final UUID userId = UUID.fromString(session.getString("userId"));
-        final String localJusticeAreaNationalCourtCode = session.getString("localJusticeAreaNationalCourtCode");
+        final String courtHouseCode = session.getString("courtHouseCode");
 
-        final List<AssignmentCandidate> assignmentCandidates = assignmentService.getAssignmentCandidates(caseAssignmentRequest, userId, localJusticeAreaNationalCourtCode, sessionType);
+        final List<AssignmentCandidate> assignmentCandidates = assignmentService.getAssignmentCandidates(caseAssignmentRequest, userId, courtHouseCode, sessionType);
 
         if (assignmentCandidates.isEmpty()) {
             emitCaseNotAssignedPublicEvent(caseAssignmentRequest);

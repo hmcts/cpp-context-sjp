@@ -350,10 +350,13 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
       ...
 
     queryParameters:
-      excludedProsecutingAuthorities:
-        description: comma separated list of prosecuting authorities whose cases should be excluded
+      prosecutingAuthorities:
+        description: comma separated list of prosecuting authorities.
         type: string
-        required: false
+      assignmentRule:
+        description: if ALLOW then cases which belong to specified prosecuting authorities are allowed to be returned
+        enum: [ALLOW, DISALLOW]
+        required: true
       limit:
         description: maximum number of assignment candidates
         type: number

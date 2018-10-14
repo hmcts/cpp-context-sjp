@@ -15,15 +15,18 @@
         "userId": {
           "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
         },
+        "courtHouseCode": {
+          "type": "string"
+        },
         "localJusticeAreaNationalCourtCode": {
+          "description": "backward compatibility",
           "type": "string"
         }
       },
       "required": [
         "id",
         "type",
-        "userId",
-        "localJusticeAreaNationalCourtCode"
+        "userId"
       ]
     }
   },

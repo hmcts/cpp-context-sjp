@@ -1,0 +1,17 @@
+{
+  "description": "assignment rule that have longest courtHouseCodePrefix match with courtHouseCode is selected",
+  "assignmentRules": [
+    {
+      "courtHouseCodePrefix": "B01",
+      "allowedProsecutingAuthorities": [
+        "TFL"
+      ]
+    },
+    {
+      "courtHouseCodePrefix": "",
+      "disallowedProsecutingAuthorities": [
+        "TFL"
+      ]
+    }
+  ]
+}

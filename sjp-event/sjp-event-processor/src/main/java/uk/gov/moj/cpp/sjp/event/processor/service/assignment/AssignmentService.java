@@ -1,7 +1,6 @@
-package uk.gov.moj.cpp.sjp.event.processor.service;
+package uk.gov.moj.cpp.sjp.event.processor.service.assignment;
 
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -29,7 +28,7 @@ import javax.json.JsonObject;
 public class AssignmentService {
 
     @Inject
-    private CaseAssignmentConfiguration caseAssignmentConfiguration;
+    private AssignmentConfiguration assignmentConfiguration;
 
     @Inject
     private Enveloper enveloper;
@@ -42,19 +41,18 @@ public class AssignmentService {
     @ServiceComponent(Component.EVENT_PROCESSOR)
     private Sender sender;
 
-    public List<AssignmentCandidate> getAssignmentCandidates(final JsonEnvelope envelope, final UUID legalAdviserId, final String courtCode, final SessionType sessionType) {
+    public List<AssignmentCandidate> getAssignmentCandidates(final JsonEnvelope envelope, final UUID legalAdviserId, final String courtHouseCode, final SessionType sessionType) {
 
-        final int assignmentCandidatesLimit = caseAssignmentConfiguration.getAssignmentCandidatesLimit();
+        final int assignmentCandidatesLimit = assignmentConfiguration.getAssignmentCandidatesLimit();
+        final AssignmentRule assignmentRule = assignmentConfiguration.getAssignmentRules().getBestCaseAssignmentRule(courtHouseCode);
 
-        final String excludedProsecutingAuthorities = String.join(
-                ",",
-                caseAssignmentConfiguration.getProsecutingAuthoritiesAssignmentRules()
-                        .getCourtExcludedProsecutingAuthorities(courtCode));
+        final String prosecutingAuthorities = String.join(",", assignmentRule.getProsecutingAuthorities());
 
         final JsonObject queryOptions = createObjectBuilder()
                 .add("sessionType", sessionType.name())
                 .add("assigneeId", legalAdviserId.toString())
-                .add("excludedProsecutingAuthorities", excludedProsecutingAuthorities)
+                .add("assignmentRule", assignmentRule.getAssignmentRuleType().name())
+                .add("prosecutingAuthorities", prosecutingAuthorities)
                 .add("limit", assignmentCandidatesLimit)
                 .build();
 

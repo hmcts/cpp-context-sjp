@@ -6,8 +6,10 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.sjp.domain.AssignmentRuleType.ALLOW;
 
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
+import uk.gov.moj.cpp.sjp.domain.AssignmentRuleType;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.persistence.repository.AssignmentRepository;
 
@@ -37,7 +39,8 @@ public class AssignmentServiceTest {
 
     private UUID assigneeId;
     private List<AssignmentCandidate> expectedAssignmentCandidates;
-    private Set<String> excludedProsecutingAuthorities = emptySet();
+    private Set<String> prosecutingAuthorities = emptySet();
+    private AssignmentRuleType assignmentRule = ALLOW;
 
     @Before
     public void init() {
@@ -49,9 +52,9 @@ public class AssignmentServiceTest {
     public void shouldGetAssignmentCandidatesForMagistrateSession() {
         final SessionType sessionType = SessionType.MAGISTRATE;
 
-        when(assignmentRepository.getAssignmentCandidatesForMagistrateSession(assigneeId, excludedProsecutingAuthorities, QUERY_LIMIT)).thenReturn(expectedAssignmentCandidates);
+        when(assignmentRepository.getAssignmentCandidatesForMagistrateSession(assigneeId, prosecutingAuthorities, assignmentRule, QUERY_LIMIT)).thenReturn(expectedAssignmentCandidates);
 
-        final List<AssignmentCandidate> actualAssignmentCandidates = assignmentService.getAssignmentCandidates(assigneeId, sessionType, excludedProsecutingAuthorities, QUERY_LIMIT);
+        final List<AssignmentCandidate> actualAssignmentCandidates = assignmentService.getAssignmentCandidates(assigneeId, sessionType, prosecutingAuthorities, ALLOW, QUERY_LIMIT);
 
         assertThat(actualAssignmentCandidates, contains(expectedAssignmentCandidates.toArray()));
     }
@@ -59,9 +62,9 @@ public class AssignmentServiceTest {
     @Test
     public void shouldGetAssignmentCandidatesForDelegatedPowersSession() {
         final SessionType sessionType = SessionType.DELEGATED_POWERS;
-        when(assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, excludedProsecutingAuthorities, QUERY_LIMIT)).thenReturn(expectedAssignmentCandidates);
+        when(assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities, assignmentRule, QUERY_LIMIT)).thenReturn(expectedAssignmentCandidates);
 
-        final List<AssignmentCandidate> actualAssignmentCandidates = assignmentService.getAssignmentCandidates(assigneeId, sessionType, excludedProsecutingAuthorities, QUERY_LIMIT);
+        final List<AssignmentCandidate> actualAssignmentCandidates = assignmentService.getAssignmentCandidates(assigneeId, sessionType, prosecutingAuthorities, ALLOW, QUERY_LIMIT);
 
         assertThat(actualAssignmentCandidates, contains(expectedAssignmentCandidates.toArray()));
     }

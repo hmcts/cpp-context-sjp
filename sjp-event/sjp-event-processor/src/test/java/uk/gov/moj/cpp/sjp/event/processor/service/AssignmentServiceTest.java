@@ -1,23 +1,24 @@
 package uk.gov.moj.cpp.sjp.event.processor.service;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toSet;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.domain.AssignmentRuleType.DISALLOW;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
@@ -28,13 +29,14 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
+import uk.gov.moj.cpp.sjp.event.processor.service.assignment.AssignmentConfiguration;
+import uk.gov.moj.cpp.sjp.event.processor.service.assignment.AssignmentRule;
+import uk.gov.moj.cpp.sjp.event.processor.service.assignment.AssignmentRules;
+import uk.gov.moj.cpp.sjp.event.processor.service.assignment.AssignmentService;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import javax.json.Json;
 
@@ -55,10 +57,10 @@ public class AssignmentServiceTest {
     private static final String ASSIGNMENT_CANDIDATES_QUERY = "sjp.query.assignment-candidates";
 
     @Mock
-    private CaseAssignmentConfiguration caseAssignmentConfiguration;
+    private AssignmentConfiguration assignmentConfiguration;
 
     @Mock
-    private ProsecutingAuthoritiesAssignmentsRules prosecutingAuthoritiesAssignmentsRules;
+    private AssignmentRules assignmentRules;
 
     @Mock
     private Requester requester;
@@ -75,9 +77,10 @@ public class AssignmentServiceTest {
     @Test
     public void shouldReturnLimitedListOfAssignmentCandidates() {
         final UUID legalAdviserId = UUID.randomUUID();
-        final String courtCode = "2222";
+        final String courtHouseCode = "B23HS";
         final int assignmentCandidatesLimit = 10;
-        final Set<String> excludedProsecutingAuthorities = Stream.of("TFL", "TVL").collect(toSet());
+
+        final AssignmentRule assignmentRule = new AssignmentRule("B23", asList("TFL", "TVL"), DISALLOW);
 
         final AssignmentCandidate assignmentCandidate1 = new AssignmentCandidate(randomUUID(), 4);
         final AssignmentCandidate assignmentCandidate2 = new AssignmentCandidate(randomUUID(), 5);
@@ -96,21 +99,22 @@ public class AssignmentServiceTest {
                         )
                 ).build());
 
-        when(caseAssignmentConfiguration.getAssignmentCandidatesLimit()).thenReturn(assignmentCandidatesLimit);
-        when(caseAssignmentConfiguration.getProsecutingAuthoritiesAssignmentRules()).thenReturn(prosecutingAuthoritiesAssignmentsRules);
-        when(prosecutingAuthoritiesAssignmentsRules.getCourtExcludedProsecutingAuthorities(courtCode)).thenReturn(excludedProsecutingAuthorities);
+        when(assignmentConfiguration.getAssignmentCandidatesLimit()).thenReturn(assignmentCandidatesLimit);
+        when(assignmentConfiguration.getAssignmentRules()).thenReturn(assignmentRules);
+        when(assignmentRules.getBestCaseAssignmentRule(courtHouseCode)).thenReturn(assignmentRule);
 
         when(requester.request(argThat(jsonEnvelope()
                 .withMetadataOf(withMetadataEnvelopedFrom(sourceCommand))
                 .withPayloadOf(payloadIsJson(allOf(
                         withJsonPath("sessionType", equalTo(MAGISTRATE.toString())),
                         withJsonPath("assigneeId", equalTo(legalAdviserId.toString())),
-                        withJsonPath("excludedProsecutingAuthorities", equalTo("TFL,TVL")),
+                        withJsonPath("prosecutingAuthorities", equalTo("TFL,TVL")),
+                        withJsonPath("assignmentRule", equalTo(DISALLOW.name())),
                         withJsonPath("limit", equalTo(assignmentCandidatesLimit))
                 ))))))
                 .thenReturn(assignmentCandidatesResponse);
 
-        final List<AssignmentCandidate> assignmentCandidates = assignmentService.getAssignmentCandidates(sourceCommand, legalAdviserId, courtCode, MAGISTRATE);
+        final List<AssignmentCandidate> assignmentCandidates = assignmentService.getAssignmentCandidates(sourceCommand, legalAdviserId, courtHouseCode, MAGISTRATE);
 
         assertThat(assignmentCandidates, contains(assignmentCandidate1, assignmentCandidate2));
     }
@@ -118,9 +122,9 @@ public class AssignmentServiceTest {
     @Test
     public void shouldReturnEmptyListOfAssignmentCandidates() {
         final UUID legalAdviserId = UUID.randomUUID();
-        final String courtCode = "2222";
+        final String courtHouseCode = "B23HS";
         final int assignmentCandidatesLimit = 10;
-        final Set<String> excludedProsecutingAuthorities = Collections.emptySet();
+        final AssignmentRule assignmentRule = new AssignmentRule("B23", asList("TFL"), DISALLOW);
 
         final JsonEnvelope sourceCommand = envelopeFrom(metadataWithRandomUUID(SESSION_STARTED_EVENT), createObjectBuilder().build());
 
@@ -128,21 +132,22 @@ public class AssignmentServiceTest {
                 .add("assignmentCandidates", Json.createArrayBuilder())
                 .build());
 
-        when(caseAssignmentConfiguration.getAssignmentCandidatesLimit()).thenReturn(assignmentCandidatesLimit);
-        when(caseAssignmentConfiguration.getProsecutingAuthoritiesAssignmentRules()).thenReturn(prosecutingAuthoritiesAssignmentsRules);
-        when(prosecutingAuthoritiesAssignmentsRules.getCourtExcludedProsecutingAuthorities(courtCode)).thenReturn(excludedProsecutingAuthorities);
+        when(assignmentConfiguration.getAssignmentCandidatesLimit()).thenReturn(assignmentCandidatesLimit);
+        when(assignmentConfiguration.getAssignmentRules()).thenReturn(assignmentRules);
+        when(assignmentRules.getBestCaseAssignmentRule(courtHouseCode)).thenReturn(assignmentRule);
 
         when(requester.request(argThat(jsonEnvelope()
                 .withMetadataOf(withMetadataEnvelopedFrom(sourceCommand))
                 .withPayloadOf(payloadIsJson(allOf(
                         withJsonPath("sessionType", equalTo(DELEGATED_POWERS.toString())),
                         withJsonPath("assigneeId", equalTo(legalAdviserId.toString())),
-                        withJsonPath("excludedProsecutingAuthorities", isEmptyString()),
+                        withJsonPath("prosecutingAuthorities", is("TFL")),
+                        withJsonPath("assignmentRule", equalTo(DISALLOW.name())),
                         withJsonPath("limit", equalTo(assignmentCandidatesLimit))
                 ))))))
                 .thenReturn(assignmentCandidatesResponse);
 
-        final List<AssignmentCandidate> assignmentCandidates = assignmentService.getAssignmentCandidates(sourceCommand, legalAdviserId, courtCode, DELEGATED_POWERS);
+        final List<AssignmentCandidate> assignmentCandidates = assignmentService.getAssignmentCandidates(sourceCommand, legalAdviserId, courtHouseCode, DELEGATED_POWERS);
 
         assertThat(assignmentCandidates, hasSize(0));
     }

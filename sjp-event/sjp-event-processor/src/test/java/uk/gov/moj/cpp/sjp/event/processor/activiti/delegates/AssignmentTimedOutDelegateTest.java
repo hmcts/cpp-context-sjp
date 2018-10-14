@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import uk.gov.moj.cpp.sjp.event.processor.service.AssignmentService;
+import uk.gov.moj.cpp.sjp.event.processor.service.assignment.AssignmentService;
 
 import java.util.UUID;
 

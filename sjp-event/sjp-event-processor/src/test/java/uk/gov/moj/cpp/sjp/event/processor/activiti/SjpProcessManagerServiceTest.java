@@ -19,6 +19,7 @@ import org.activiti.engine.runtime.ExecutionQuery;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -33,12 +34,9 @@ public class SjpProcessManagerServiceTest {
     private RuntimeService runtimeService;
 
     @Mock
-    private MetadataHelper metadataHelper;
-
-    @Mock
     private JsonEnvelope envelope;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private Metadata metadata;
 
     @Mock
@@ -53,7 +51,7 @@ public class SjpProcessManagerServiceTest {
     @Test
     public void startsUploadFileProcess() {
         when(envelope.metadata()).thenReturn(metadata);
-        when(metadataHelper.metadataToString(envelope.metadata())).thenReturn("metadataAsString");
+        when(MetadataHelper.metadataToString(envelope.metadata())).thenReturn("metadataAsString");
 
         final UUID caseId = UUID.randomUUID();
         final UUID documentReference = UUID.randomUUID();
@@ -81,7 +79,7 @@ public class SjpProcessManagerServiceTest {
         when(executionQuery.singleResult()).thenReturn(execution);
 
         when(envelope.metadata()).thenReturn(metadata);
-        when(metadataHelper.metadataToString(envelope.metadata())).thenReturn("metadataAsString");
+        when(metadata.asJsonObject().toString()).thenReturn("metadataAsString");
 
         final UUID materialId = UUID.randomUUID();
 

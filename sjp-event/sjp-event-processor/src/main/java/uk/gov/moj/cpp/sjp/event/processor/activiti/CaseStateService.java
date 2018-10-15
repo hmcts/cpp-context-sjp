@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.sjp.event.processor.activiti;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
-import static java.util.Collections.singletonMap;
 
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -12,11 +11,10 @@ import uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-
-import com.google.common.collect.ImmutableMap;
 
 public class CaseStateService {
 
@@ -45,60 +43,53 @@ public class CaseStateService {
     @Inject
     private ActivitiService activitiService;
 
-    @Inject
-    private MetadataHelper metadataHelper;
-
     public String caseReceived(final UUID caseId, final LocalDate postingDate, final Metadata metadata) {
-        final Map<String, Object> parameters = new HashMap<>();
-        parameters.put(POSTING_DATE_VARIABLE, postingDate.format(ISO_DATE));
-        parameters.put(NOTICE_ENDED_DATE_VARIABLE, postingDate.plusDays(NOTICE_PERIOD).atStartOfDay().format(ISO_DATE_TIME));
-        parameters.put(METADATA_VARIABLE, metadataHelper.metadataToString(metadata));
+        final Map<String, Object> params = getCommonParams(metadata);
+        params.put(POSTING_DATE_VARIABLE, postingDate.format(ISO_DATE));
+        params.put(NOTICE_ENDED_DATE_VARIABLE, postingDate.plusDays(NOTICE_PERIOD).atStartOfDay().format(ISO_DATE_TIME));
 
-        return activitiService.startProcess(PROCESS_NAME, caseId.toString(), parameters);
+        return activitiService.startProcess(PROCESS_NAME, caseId.toString(), params);
     }
 
     public void withdrawalRequested(final UUID caseId, final Metadata metadata) {
-        final String processInstanceId = activitiService.getProcessInstanceId(PROCESS_NAME, caseId.toString()).get();
-
-        final Map<String, Object> params = singletonMap(METADATA_VARIABLE, metadataHelper.metadataToString(metadata));
-
-        activitiService.signalProcess(processInstanceId, WITHDRAWAL_REQUESTED_SIGNAL_NAME, params);
+        signalProcess(caseId, WITHDRAWAL_REQUESTED_SIGNAL_NAME, getCommonParams(metadata));
     }
 
     public void withdrawalRequestCancelled(final UUID caseId, final Metadata metadata) {
-        final String processInstanceId = activitiService.getProcessInstanceId(PROCESS_NAME, caseId.toString()).get();
-
-        final Map<String, Object> params = singletonMap(METADATA_VARIABLE, metadataHelper.metadataToString(metadata));
-
-        activitiService.signalProcess(processInstanceId, WITHDRAWAL_REQUEST_CANCELLED_SIGNAL_NAME, params);
+        signalProcess(caseId, WITHDRAWAL_REQUEST_CANCELLED_SIGNAL_NAME, getCommonParams(metadata));
     }
 
     public void pleaUpdated(final UUID caseId, final UUID offenceId, final PleaType pleaType, final Metadata metadata) {
-        final String processInstanceId = activitiService.getProcessInstanceId(PROCESS_NAME, caseId.toString()).get();
-
-        final Map<String, Object> params = new HashMap<>();
+        final Map<String, Object> params = getCommonParams(metadata);
         params.put(PLEA_TYPE_VARIABLE, pleaType.name());
         params.put(OFFENCE_ID_VARIABLE, offenceId.toString());
-        params.put(METADATA_VARIABLE, metadataHelper.metadataToString(metadata));
 
-        activitiService.signalProcess(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, params);
+        signalProcess(caseId, PLEA_UPDATED_SIGNAL_NAME, params);
     }
 
     public void pleaCancelled(final UUID caseId, final UUID offenceId, final Metadata metadata) {
-        final String processInstanceId = activitiService.getProcessInstanceId(PROCESS_NAME, caseId.toString()).get();
-
-        final Map<String, Object> params = new HashMap<>();
+        final Map<String, Object> params = getCommonParams(metadata);
         params.put(OFFENCE_ID_VARIABLE, offenceId.toString());
-        params.put(METADATA_VARIABLE, metadataHelper.metadataToString(metadata));
 
-        activitiService.signalProcess(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, params);
+        signalProcess(caseId, PLEA_CANCELLED_SIGNAL_NAME, params);
     }
 
     public void caseCompleted(final UUID caseId, final Metadata metadata) {
-        final String processInstanceId = activitiService.getProcessInstanceId(PROCESS_NAME, caseId.toString()).get();
+        signalProcess(caseId, CASE_COMPLETED_SIGNAL_NAME, getCommonParams(metadata));
+    }
 
-        final Map<String, Object> params = ImmutableMap.of(METADATA_VARIABLE, metadataHelper.metadataToString(metadata));
+    private void signalProcess(final UUID caseId, final String signalName, Map<String, Object> params) {
+        final String processInstanceId = Optional.ofNullable(caseId)
+                .flatMap(cId -> activitiService.getProcessInstanceId(PROCESS_NAME, cId.toString()))
+                .orElseThrow(() -> new IllegalArgumentException("Please provide a valid caseId."));
 
-        activitiService.signalProcess(processInstanceId, CASE_COMPLETED_SIGNAL_NAME, params);
+        activitiService.signalProcess(processInstanceId, signalName, params);
+    }
+
+    private static Map<String, Object> getCommonParams(final Metadata metadata) {
+        final Map<String, Object> params = new HashMap<>();
+        params.put(METADATA_VARIABLE, MetadataHelper.metadataToString(metadata));
+
+        return params;
     }
 }

@@ -33,6 +33,7 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.EnumMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -50,7 +51,7 @@ import org.slf4j.LoggerFactory;
 public class ReadyCaseDelegate extends AbstractCaseDelegate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReadyCaseDelegate.class);
-    private static final EnumMap<PleaType, CaseReadinessReason> READINESS_REASON_BY_PLEA_TYPE = new EnumMap(PleaType.class);
+    private static final Map<PleaType, CaseReadinessReason> READINESS_REASON_BY_PLEA_TYPE = new EnumMap<>(PleaType.class);
 
     static {
         READINESS_REASON_BY_PLEA_TYPE.put(GUILTY, PLEADED_GUILTY);

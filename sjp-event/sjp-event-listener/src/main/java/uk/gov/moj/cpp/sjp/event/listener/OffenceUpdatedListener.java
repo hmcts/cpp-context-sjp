@@ -82,8 +82,7 @@ public class OffenceUpdatedListener {
 
     }
 
-    @Transactional
-    void updatePleaReceivedDate(final UUID caseId, final LocalDate pleaReceivedDate) {
+    private void updatePleaReceivedDate(final UUID caseId, final LocalDate pleaReceivedDate) {
         caseSearchResultService.updatePleaReceivedDate(caseId, pleaReceivedDate);
     }
 

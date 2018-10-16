@@ -354,19 +354,6 @@ public class SjpQueryViewTest {
     }
 
     @Test
-    public void shouldGetCasesReferredToCourt() {
-        setupExpectations();
-        when(envelope.metadata()).thenReturn(metadata);
-        final JsonObject payload = createObjectBuilder().build();
-        when(caseService.findCasesReferredToCourt()).thenReturn(payload);
-
-        final JsonEnvelope result = sjpQueryView.getCasesReferredToCourt(envelope);
-
-        verify(function).apply(payload);
-        assertThat(result, is(outputEnvelope));
-    }
-
-    @Test
     public void shouldFindPendingDatesToAvoid() {
         final UUID caseId = randomUUID();
         final JsonEnvelope response = mockAndVerifyPendingDatesToAvoid(caseId, UUID.randomUUID());

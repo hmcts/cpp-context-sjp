@@ -22,7 +22,6 @@ public class SjpDatabaseCleaner {
                 SJP_NAME,
                 "financial_means",
                 "employer",
-                "court_referral",
                 "case_search_result",
                 "offence",
                 "case_document",

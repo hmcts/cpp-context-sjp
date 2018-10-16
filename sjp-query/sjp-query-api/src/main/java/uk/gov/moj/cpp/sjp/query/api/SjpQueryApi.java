@@ -61,11 +61,6 @@ public class SjpQueryApi {
         return requester.request(query);
     }
 
-    @Handles("sjp.query.cases-referred-to-court")
-    public JsonEnvelope getCasesReferredToCourt(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
     @Handles("sjp.query.result-orders")
     public JsonEnvelope getResultOrders(final JsonEnvelope query) {
         return requester.request(query);

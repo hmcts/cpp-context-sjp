@@ -129,15 +129,6 @@ rule "sjp.query.awaiting-cases"
     $outcome.setSuccess(true);
 end
 
-rule "sjp.query.cases-referred-to-court"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.cases-referred-to-court");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCasesReferredToCourtActionGroups()))
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "sjp - Query - API - Get result orders"
   when
     $outcome: Outcome();

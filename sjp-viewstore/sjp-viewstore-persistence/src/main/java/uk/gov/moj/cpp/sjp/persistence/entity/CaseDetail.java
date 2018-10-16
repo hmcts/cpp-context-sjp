@@ -6,7 +6,6 @@ import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverte
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
-import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseReferredToCourt;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -42,19 +41,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
                                 @ColumnResult(name = "age", type = Integer.class),
                                 @ColumnResult(name = "count", type = Integer.class)
                         })),
-        @SqlResultSetMapping(
-                name = "caseReferredToCourt",
-                classes = @ConstructorResult(
-                        targetClass = CaseReferredToCourt.class,
-                        columns = {
-                                @ColumnResult(name = "case_id", type = UUID.class),
-                                @ColumnResult(name = "urn", type = String.class),
-                                @ColumnResult(name = "first_name", type = String.class),
-                                @ColumnResult(name = "last_name", type = String.class),
-                                @ColumnResult(name = "interpreter_language", type = String.class),
-                                @ColumnResult(name = "hearing_date", type = LocalDate.class)
-                        })),
-        @SqlResultSetMapping(
+         @SqlResultSetMapping(
                 name = "assignmentCandidates",
                 classes = @ConstructorResult(
                         targetClass = AssignmentCandidate.class,

@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
-import static java.time.ZoneOffset.UTC;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
@@ -12,7 +11,6 @@ import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReas
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_COMPLETED;
 
 import uk.gov.justice.domain.aggregate.Aggregate;
-import uk.gov.moj.cpp.sjp.CourtReferralNotFound;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
@@ -59,8 +57,6 @@ import uk.gov.moj.cpp.sjp.event.CaseStarted;
 import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason;
-import uk.gov.moj.cpp.sjp.event.CourtReferralActioned;
-import uk.gov.moj.cpp.sjp.event.CourtReferralCreated;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
@@ -128,7 +124,6 @@ public class CaseAggregate implements Aggregate {
     private LocalDate caseReopenedDate;
     private boolean caseCompleted;
     private boolean withdrawalAllOffencesRequested;
-    private boolean hasCourtReferral;
     private UUID assigneeId;
     private String defendantTitle;
     private String defendantFirstName;
@@ -565,20 +560,6 @@ public class CaseAggregate implements Aggregate {
         ));
     }
 
-    public Stream<Object> createCourtReferral(final UUID caseId, final LocalDate hearingDate) {
-        return apply(Stream.of(checkCaseNotFound(caseId, "Create court referral")
-                .orElse(new CourtReferralCreated(this.caseId, hearingDate))));
-    }
-
-    public Stream<Object> actionCourtReferral(final UUID caseId) {
-
-        if (this.hasCourtReferral) {
-            return apply(Stream.of(new CourtReferralActioned(this.caseId, ZonedDateTime.now(UTC))));
-        } else {
-            LOGGER.warn("Cannot action court referral that does not exist");
-            return apply(Stream.of(new CourtReferralNotFound(caseId)));
-        }
-    }
 
     public Stream<Object> requestWithdrawalAllOffences() {
         return applyEventStreamIfNotRejected("Request withdrawal all offences", null, null,
@@ -955,13 +936,6 @@ public class CaseAggregate implements Aggregate {
                     //nothing to update
                 }),
                 when(EmployerUpdated.class).apply(e -> {
-                    //nothing to update
-                }), when(CourtReferralCreated.class).apply(e ->
-                        this.hasCourtReferral = true),
-                when(CourtReferralActioned.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(CourtReferralNotFound.class).apply(e -> {
                     //nothing to update
                 }),
                 when(CaseAssigned.class).apply(e -> assigneeId = e.getAssigneeId()),

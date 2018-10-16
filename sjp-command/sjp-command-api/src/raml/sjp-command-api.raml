@@ -399,21 +399,6 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
-/cases/{caseId}/court-referral:
-  post:
-    description: |
-      Action court referral
-      ...
-      (mapping):
-          requestType: application/vnd.sjp.action-court-referral+json
-          name: sjp.action-court-referral
-      ...
-    body:
-      application/vnd.sjp.action-court-referral+json: !!null
-    responses:
-      202:
-        description: Accepted
-
 /cases/{caseId}/unassign:
   post:
     description: |

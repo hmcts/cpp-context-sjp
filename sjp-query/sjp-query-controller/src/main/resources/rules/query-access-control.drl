@@ -91,14 +91,6 @@ rule "sjp.query.awaiting-cases"
     $outcome.setSuccess(true);
 end
 
-rule "sjp.query.cases-referred-to-court"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.cases-referred-to-court");
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "sjp.query.result-orders"
   when
     $outcome: Outcome();

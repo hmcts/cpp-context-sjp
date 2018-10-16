@@ -251,21 +251,6 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
             schema: !include json/schema/sjp.query.awaiting-cases.json
             example: !include json/sjp.query.awaiting-cases.json
 
-/cases/referred-to-court:
-  description: return the SJP cases which have been referred to court
-  get:
-    description: |
-      ...
-      (mapping):
-          responseType: application/vnd.sjp.query.cases-referred-to-court+json
-          name: sjp.query.cases-referred-to-court
-      ...
-    responses:
-      200:
-        body:
-          application/vnd.sjp.query.cases-referred-to-court+json:
-            schema: !include json/schema/sjp.query.cases-referred-to-court.json
-            example: !include json/sjp.query.cases-referred-to-court.json
 
 /cases-for-citizen:
   get:

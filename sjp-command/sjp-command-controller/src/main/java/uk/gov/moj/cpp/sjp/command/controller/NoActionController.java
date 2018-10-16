@@ -22,11 +22,6 @@ public class NoActionController {
     @Inject
     private Sender sender;
 
-    @Handles("sjp.command.action-court-referral")
-    public void actionCourtReferral(final JsonEnvelope envelope) {
-        send(envelope);
-    }
-
     @Handles("sjp.command.add-case-document")
     public void addCaseDocument(final JsonEnvelope envelope) {
         send(envelope);

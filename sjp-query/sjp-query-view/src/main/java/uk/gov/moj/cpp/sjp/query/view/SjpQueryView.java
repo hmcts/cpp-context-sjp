@@ -44,7 +44,6 @@ public class SjpQueryView {
     private static final String NAME_RESPONSE_CASES_SEARCH_BY_MATERIAL_ID = "sjp.query.cases-search-by-material-id-response";
     private static final String NAME_RESPONSE_CASE_DOCUMENTS = "sjp.query.case-documents-response";
     private static final String NAME_RESPONSE_AWAITING_CASES = "sjp.query.awaiting-cases-response";
-    private static final String NAME_RESPONSE_CASES_REFERRED_TO_COURT = "sjp.query.cases-referred-to-court-response";
 
     @Inject
     private CaseService caseService;
@@ -156,12 +155,6 @@ public class SjpQueryView {
     public JsonEnvelope getAwaitingCases(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_AWAITING_CASES).apply(
                 caseService.findAwaitingCases());
-    }
-
-    @Handles("sjp.query.cases-referred-to-court")
-    public JsonEnvelope getCasesReferredToCourt(final JsonEnvelope envelope) {
-        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASES_REFERRED_TO_COURT).apply(
-                caseService.findCasesReferredToCourt());
     }
 
     @Handles("sjp.query.result-orders")

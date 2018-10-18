@@ -1,25 +1,25 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.state;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-/** Defines the case aggregate state. */
+/**
+ * Defines the case aggregate state.
+ */
 public class CaseAggregateState implements AggregateState {
 
     private UUID caseId;
@@ -28,7 +28,6 @@ public class CaseAggregateState implements AggregateState {
     private LocalDate caseReopenedDate;
     private boolean caseCompleted;
     private boolean withdrawalAllOffencesRequested;
-    private boolean courtReferralRequested;
     private UUID assigneeId;
     private String defendantTitle;
     private String defendantFirstName;
@@ -43,7 +42,7 @@ public class CaseAggregateState implements AggregateState {
     private final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
 
     private final Map<UUID, CaseDocument> caseDocuments = new HashMap<>();
-    private final List<UUID> offenceIdsWithPleas = new ArrayList<>();
+    private final Set<UUID> offenceIdsWithPleas = new HashSet<>();
 
     private final Map<UUID, String> defendantsInterpreterLanguages = new HashMap<>();
     private final Map<UUID, Boolean> defendantsSpeakWelsh = new HashMap<>();
@@ -57,6 +56,8 @@ public class CaseAggregateState implements AggregateState {
     private DocumentCountByDocumentType documentCountByDocumentType = new DocumentCountByDocumentType();
 
     private final Map<UUID, String> employmentStatusByDefendantId = new HashMap<>();
+
+    private ProsecutingAuthority prosecutingAuthority;
 
     public UUID getCaseId() {
         return caseId;
@@ -104,14 +105,6 @@ public class CaseAggregateState implements AggregateState {
 
     public void setWithdrawalAllOffencesRequested(final boolean withdrawalAllOffencesRequested) {
         this.withdrawalAllOffencesRequested = withdrawalAllOffencesRequested;
-    }
-
-    public boolean hasCourtReferralRequested() {
-        return courtReferralRequested;
-    }
-
-    public void setCourtReferralRequested(final boolean courtReferralRequested) {
-        this.courtReferralRequested = courtReferralRequested;
     }
 
     public UUID getAssigneeId() {
@@ -198,8 +191,8 @@ public class CaseAggregateState implements AggregateState {
         return caseDocuments;
     }
 
-    public List<UUID> getOffenceIdsWithPleas() {
-        return newArrayList(offenceIdsWithPleas);
+    public Set<UUID> getOffenceIdsWithPleas() {
+        return offenceIdsWithPleas;
     }
 
     public Map<UUID, String> getDefendantsInterpreterLanguages() {
@@ -254,6 +247,14 @@ public class CaseAggregateState implements AggregateState {
         return documentCountByDocumentType;
     }
 
+    public ProsecutingAuthority getProsecutingAuthority() {
+        return prosecutingAuthority;
+    }
+
+    public void setProsecutingAuthority(final ProsecutingAuthority prosecutingAuthority) {
+        this.prosecutingAuthority = prosecutingAuthority;
+    }
+
     public Map<UUID, String> getEmploymentStatusByDefendantId() {
         return employmentStatusByDefendantId;
     }
@@ -278,7 +279,6 @@ public class CaseAggregateState implements AggregateState {
         offenceIdsWithPleas.add(offenceId);
     }
 
-    @SuppressWarnings("squid:S2250")
     public void removePleaFromOffence(final UUID offenceId) {
         offenceIdsWithPleas.remove(offenceId);
     }

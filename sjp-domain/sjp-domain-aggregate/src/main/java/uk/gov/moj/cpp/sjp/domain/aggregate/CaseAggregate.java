@@ -1,11 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static java.util.Objects.nonNull;
-import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
-import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus.EMPLOYED;
 import static uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason.PLEA_ALREADY_SUBMITTED;
 import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
@@ -27,6 +23,7 @@ import uk.gov.moj.cpp.sjp.domain.Outgoing;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.PersonalName;
 import uk.gov.moj.cpp.sjp.domain.aggregate.domain.PleadOnlineOutcomes;
+import uk.gov.moj.cpp.sjp.domain.aggregate.mutator.AggregateStateMutator;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.command.CancelPlea;
 import uk.gov.moj.cpp.sjp.domain.command.ChangePlea;
@@ -36,7 +33,6 @@ import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalDenied;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.CaseAlreadyCompleted;
@@ -44,7 +40,6 @@ import uk.gov.moj.cpp.sjp.event.CaseAlreadyReopened;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseCreationFailedBecauseCaseAlreadyExisted;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
-import uk.gov.moj.cpp.sjp.event.CaseDocumentAlreadyAdded;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAlreadyExists;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentUploaded;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
@@ -54,7 +49,6 @@ import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.CaseReopened;
 import uk.gov.moj.cpp.sjp.event.CaseReopenedUndone;
 import uk.gov.moj.cpp.sjp.event.CaseReopenedUpdated;
-import uk.gov.moj.cpp.sjp.event.CaseStarted;
 import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
@@ -71,7 +65,6 @@ import uk.gov.moj.cpp.sjp.event.DefendantsNationalInsuranceNumberUpdated;
 import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
-import uk.gov.moj.cpp.sjp.event.EnterpriseIdAssociated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
@@ -80,12 +73,9 @@ import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
 import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
-import uk.gov.moj.cpp.sjp.event.PleaUpdateDenied;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
-import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
 import uk.gov.moj.cpp.sjp.event.TrialRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
-import uk.gov.moj.cpp.sjp.event.decommissioned.CaseAssignmentDeleted;
 import uk.gov.moj.cpp.sjp.event.session.CaseAlreadyAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
@@ -114,7 +104,9 @@ public class CaseAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseAggregate.class);
 
+    @SuppressWarnings("squid:S1948")
     private final CaseAggregateState state = new CaseAggregateState();
+    private static final AggregateStateMutator<Object, CaseAggregateState> AGGREGATE_STATE_MUTATOR = AggregateStateMutator.compositeCaseAggregateStateMutator();
 
     /**
      * @param userId could be null if the user is not a legal adviser (only they can be assigned cases)
@@ -522,7 +514,6 @@ public class CaseAggregate implements Aggregate {
         ));
     }
 
-
     public Stream<Object> requestWithdrawalAllOffences() {
         return applyEventStreamIfNotRejected("Request withdrawal all offences", null, null,
                 () -> Stream.of(new AllOffencesWithdrawalRequested(state.getCaseId())));
@@ -768,185 +759,8 @@ public class CaseAggregate implements Aggregate {
     }
 
     @Override
-    @SuppressWarnings({"deprecation", "squid:S1602"})
     public Object apply(Object event) {
-        return match(event).with(
-                when(CaseCreationFailedBecauseCaseAlreadyExisted.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(CaseStarted.class)
-                        .apply(e -> state.setCaseId(e.getId())),
-                when(CaseReceived.class).apply(e -> {
-                    state.setCaseId(e.getCaseId());
-                    state.setUrn(e.getUrn());
-                    state.addOffenceIdsForDefendant(
-                            e.getDefendant().getId(),
-                            e.getDefendant().getOffences().stream()
-                                    .map(uk.gov.moj.cpp.sjp.domain.Offence::getId)
-                                    .collect(toSet()));
-                    state.setDefendantTitle(e.getDefendant().getTitle());
-                    state.setDefendantFirstName(e.getDefendant().getFirstName());
-                    state.setDefendantLastName(e.getDefendant().getLastName());
-                    state.setDefendantDateOfBirth(e.getDefendant().getDateOfBirth());
-                    state.setDefendantAddress(e.getDefendant().getAddress());
-                    state.setCaseReceived(true);
-                }),
-                when(DatesToAvoidAdded.class).apply(e -> state.setDatesToAvoid(e.getDatesToAvoid())),
-                when(DatesToAvoidUpdated.class).apply(e -> state.setDatesToAvoid(e.getDatesToAvoid())),
-                when(CaseCompleted.class)
-                        .apply(e -> state.markCaseCompleted()),
-                when(CaseDocumentAdded.class).apply(e -> {
-                    state.addCaseDocument(e.getCaseDocument().getId(), e.getCaseDocument());
-                    state.getDocumentCountByDocumentType().increaseCount(e.getCaseDocument().getDocumentType());
-                }),
-                when(CaseDocumentUploaded.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(PleaUpdated.class).apply(e ->
-                        state.addOffenceIdWithPleas(e.getOffenceId())
-                ),
-                when(PleaCancelled.class).apply(e ->
-                        state.removePleaFromOffence(e.getOffenceId())
-                ),
-                // Old event. Replaced by CaseUpdateRejected
-                when(PleaUpdateDenied.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(TrialRequested.class).apply(e -> {
-                    state.setTrialRequested(true);
-                    state.setTrialRequestedPreviously(true);
-                    state.setTrialRequestedUnavailability(e.getUnavailability());
-                    state.setTrialRequestedWitnessDetails(e.getWitnessDetails());
-                    state.setTrialRequestedWitnessDispute(e.getWitnessDispute());
-                }),
-                when(TrialRequestCancelled.class).apply(e -> {
-                    state.setTrialRequested(false);
-                }),
-                when(DefendantsNationalInsuranceNumberUpdated.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(InterpreterUpdatedForDefendant.class).apply(e ->
-                        state.updateDefendantInterpreterLanguage(e.getDefendantId(), e.getInterpreter())
-                ),
-                when(HearingLanguagePreferenceUpdatedForDefendant.class).apply(e ->
-                        state.updateDefendantSpeakWelsh(e.getDefendantId(), e.getSpeakWelsh())
-                ),
-                when(HearingLanguagePreferenceCancelledForDefendant.class).apply(e ->
-                        state.removeDefendantSpeakWelshPreference(e.getDefendantId())),
-                when(InterpreterCancelledForDefendant.class).apply(e ->
-                        state.removeInterpreterForDefendant(e.getDefendantId())
-                ),
-                when(AllOffencesWithdrawalRequested.class).apply(e ->
-                        state.setWithdrawalAllOffencesRequested(true)
-                ),
-                // Old event. Replaced by CaseUpdateRejected
-                when(AllOffencesWithdrawalDenied.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(CaseUpdateRejected.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(AllOffencesWithdrawalRequestCancelled.class).apply(e ->
-                        // TODO check there is a withdrawal request
-                        state.setWithdrawalAllOffencesRequested(false)
-                ),
-                when(CaseNotFound.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(CaseAlreadyCompleted.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(CaseDocumentAlreadyExists.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(CaseDocumentAlreadyAdded.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(DefendantNotFound.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(OffenceNotFound.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(CaseReopened.class).apply(e -> {
-                    state.setCaseReopened(true);
-                    state.setCaseReopenedDate(e.getCaseReopenDetails().getReopenedDate());
-                }),
-                when(CaseReopenedUpdated.class).apply(e ->
-                        state.setCaseReopenedDate(e.getCaseReopenDetails().getReopenedDate())
-                ),
-                when(CaseReopenedUndone.class).apply(e -> {
-                    state.setCaseReopened(false);
-                    state.setCaseReopenedDate(null);
-                }),
-                when(CaseAlreadyReopened.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(CaseNotReopened.class).apply(e -> {
-                    //nothing to update
-                }),
-                // Old event
-                when(EnterpriseIdAssociated.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(FinancialMeansUpdated.class).apply(e ->
-                        state.updateEmploymentStatusForDefendant(e.getDefendantId(), e.getEmploymentStatus())
-                ),
-                when(EmploymentStatusUpdated.class).apply(e ->
-                        state.updateEmploymentStatusForDefendant(e.getDefendantId(), e.getEmploymentStatus())
-                ),
-                when(EmployerDeleted.class).apply(e ->
-                        state.removeEmploymentStatusForDefendant(e.getDefendantId())
-                ),
-                when(DefendantNotEmployed.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(EmployerUpdated.class).apply(e -> {
-                    //nothing to update
-                }),
-                when(CaseAssigned.class).apply(e -> state.setAssigneeId(e.getAssigneeId())),
-                when(CaseUnassigned.class).apply(e -> state.setAssigneeId(null)),
-                when(CaseAssignmentDeleted.class).apply(e -> state.setAssigneeId(null)),
-                when(DefendantDetailsUpdated.class).apply(e -> {
-                    state.setDefendantTitle(e.getTitle());
-                    state.setDefendantFirstName(e.getFirstName());
-                    state.setDefendantLastName(e.getLastName());
-                    state.setDefendantDateOfBirth(e.getDateOfBirth());
-                    state.setDefendantAddress(e.getAddress());
-                }),
-                when(DefendantDetailsUpdateFailed.class).apply(e -> {
-                    // no change in aggregate state
-                }),
-                when(DefendantDateOfBirthUpdated.class).apply(e -> {
-                    // no change in aggregate state
-                }),
-                when(DefendantPersonalNameUpdated.class).apply(e -> {
-                    // no change in aggregate state
-                }),
-                when(DefendantAddressUpdated.class).apply(e -> {
-                    // no change in aggregate state
-                }),
-                when(CaseMarkedReadyForDecision.class).apply(e -> state.setReadinessReason(e.getReason())),
-                when(CaseUnmarkedReadyForDecision.class).apply(e -> state.setReadinessReason(null)),
-                when(SjpCaseCreated.class).apply(e -> apply(Stream.of(convertSjpCaseCreatedToCaseReceived(e)))),
-                otherwiseDoNothing()
-        );
+        AGGREGATE_STATE_MUTATOR.apply(event, state);
+        return event;
     }
-
-    /**
-     * Ensure backward compatibility for {@link SjpCaseCreated} events
-     *
-     * @param sjpCaseCreated deprecated case creation event
-     * @return conversion to new event
-     */
-    @SuppressWarnings("deprecation")
-    private static CaseReceived convertSjpCaseCreatedToCaseReceived(final SjpCaseCreated sjpCaseCreated) {
-        final Defendant defendant = new Defendant(sjpCaseCreated.getDefendantId(), null, null, null, null, null, null, null, null, null,
-                sjpCaseCreated.getNumPreviousConvictions(), sjpCaseCreated.getOffences(), null);
-
-        return new CaseReceived(sjpCaseCreated.getId(), sjpCaseCreated.getUrn(), null,
-                sjpCaseCreated.getProsecutingAuthority(), sjpCaseCreated.getCosts(), sjpCaseCreated.getPostingDate(),
-                defendant, sjpCaseCreated.getCreatedOn());
-    }
-
 }

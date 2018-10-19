@@ -10,7 +10,7 @@
       "oucodeL1Name": "Magistrates' Courts",
       "oucodeEffectiveFromDate": "2006-01-27",
       "oucodeEffectiveToDate": "2020-01-27",
-      "courtCode": $(localJusticeAreaNationalCourtCode),
+      "lja": "$(localJusticeAreaNationalCourtCode)",
       "locaName": "wording of fact",
       "phone": "020 7805 1447",
       "fax": "020 7805 1447",

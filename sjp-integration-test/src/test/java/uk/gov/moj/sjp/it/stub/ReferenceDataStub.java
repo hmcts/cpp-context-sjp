@@ -6,9 +6,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static java.net.URLEncoder.encode;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.apache.commons.io.Charsets.UTF_8;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
@@ -17,6 +19,7 @@ import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.io.UnsupportedEncodingException;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -65,18 +68,19 @@ public class ReferenceDataStub {
         waitForStubToBeReady(urlPath + "?oucodeL3Code=" + courtHouseOUCode, "application/vnd.referencedata.query.organisationunits+json");
     }
 
-    public static void stubCountryByPostcodeQuery(final String postcode, final String country){
+    public static void stubCountryByPostcodeQuery(final String postcode, final String country) throws UnsupportedEncodingException {
         InternalEndpointMockUtils.stubPingFor("referencedata-query-api");
 
         final String urlPath = "/referencedata-service/query/api/rest/referencedata/country-by-postcode";
+        final String encodedPostcode = encode(postcode, UTF_8.name());
         stubFor(get(urlPathEqualTo(urlPath))
-                .withQueryParam("postCode", equalTo(postcode))
+                .withQueryParam("postCode", equalTo(encodedPostcode))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(Json.createObjectBuilder().add("country", country).build().toString())));
+        waitForStubToBeReady(urlPath + "?postCode=" + encodedPostcode, "application/vnd.reference-data.country-by-postcode+json");
 
-        waitForStubToBeReady(urlPath + "?postCode=" + postcode, "application/vnd.reference-data.country-by-postcode+json");
 
     }
 

@@ -13,7 +13,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
 import uk.gov.moj.cpp.sjp.event.processor.service.Country;
-import uk.gov.moj.cpp.sjp.event.processor.service.PostcodeService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
 import javax.inject.Inject;
@@ -33,9 +32,6 @@ public class PleaNotificationProcessor {
 
     @Inject
     private ReferenceDataService referenceDataService;
-
-    @Inject
-    private PostcodeService postcodeService;
 
     @Inject
     @Value(key = "pleaNotificationEnglishTemplateId", defaultValue = "07d1f043-6052-4d18-adce-58678d0e7018")
@@ -68,8 +64,7 @@ public class PleaNotificationProcessor {
     }
 
     private String getTemplateId(String postcode, JsonEnvelope envelope) {
-        final String outwardCode = postcodeService.getOutwardCode(postcode);
-        final String country = referenceDataService.getCountryByPostcode(outwardCode, envelope);
+        final String country = referenceDataService.getCountryByPostcode(postcode, envelope);
         return Country.WALES.getName().equalsIgnoreCase(country) ? welshTemplateId : englishTemplateId;
     }
 

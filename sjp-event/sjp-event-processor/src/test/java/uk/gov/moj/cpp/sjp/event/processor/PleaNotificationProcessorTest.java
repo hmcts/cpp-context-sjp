@@ -25,7 +25,6 @@ import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
-import uk.gov.moj.cpp.sjp.event.processor.service.PostcodeService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
 import java.time.LocalDate;
@@ -52,9 +51,6 @@ public class PleaNotificationProcessorTest {
 
     @Mock
     private ReferenceDataService referenceDataService;
-
-    @Mock
-    private PostcodeService postcodeService;
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
@@ -101,8 +97,7 @@ public class PleaNotificationProcessorTest {
         );
         OnlinePleaReceived onlinePleaReceived = generateOnlinePleaReceived(email, urn, postcode);
         when(jsonObjectConverter.convert(event.payloadAsJsonObject(), OnlinePleaReceived.class)).thenReturn(onlinePleaReceived);
-        when(postcodeService.getOutwardCode(postcode)).thenReturn("W1");
-        when(referenceDataService.getCountryByPostcode("W1", event)).thenReturn(country);
+        when(referenceDataService.getCountryByPostcode("W1 1AA", event)).thenReturn(country);
 
         pleaNotificationProcessor.sendPleaNotificationEmail(event);
 

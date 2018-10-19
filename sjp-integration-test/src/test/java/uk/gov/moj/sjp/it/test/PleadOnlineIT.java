@@ -47,6 +47,7 @@ import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -86,13 +87,13 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private static final Set<UUID> DEFAULT_STUBBED_USER_ID = singleton(USER_ID);
 
     @Before
-    public void setUp() {
+    public void setUp() throws UnsupportedEncodingException {
         this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
         CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
         employerHelper = new EmployerHelper();
         financialMeansHelper = new FinancialMeansHelper();
         personInfoVerifier = PersonInfoVerifier.personInfoVerifierForCasePayload(createCasePayloadBuilder);
-        stubCountryByPostcodeQuery("W1T", "England");
+        stubCountryByPostcodeQuery("W1T 1JY", "England");
         stubNotifications();
     }
 

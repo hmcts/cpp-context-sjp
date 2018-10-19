@@ -149,10 +149,10 @@ public class EmployerHandlerTest {
     public void shouldDeleteEmployer() throws EventStreamException {
         final CaseAggregate caseAggregate = new CaseAggregate();
         final Case aCase = CaseBuilder.aDefaultSjpCase().build();
-        caseAggregate.receiveCase(aCase, now());
+        CaseReceived caseReceivedEvent = (CaseReceived) caseAggregate.receiveCase(aCase, now()).findFirst().get();
 
         // Note that the defendantId created by the builder is overwritten by the aggregate
-        final UUID defendantId = aCase.getDefendant().getId();
+        final UUID defendantId = caseReceivedEvent.getDefendant().getId();
 
         caseAggregate.apply(new EmploymentStatusUpdated(defendantId, "EMPLOYED"));
 

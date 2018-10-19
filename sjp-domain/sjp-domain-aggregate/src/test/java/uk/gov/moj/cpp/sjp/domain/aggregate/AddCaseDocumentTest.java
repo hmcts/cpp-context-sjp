@@ -56,18 +56,19 @@ public class AddCaseDocumentTest extends CaseAggregateBaseTest {
     @Test
     public void caseDocumentAdded_apply() {
         //given
-        CaseDocument sjpn =
+        final CaseDocument sjpn =
                 new CaseDocument(UUID.randomUUID(), UUID.randomUUID(), "SJPN", null);
-        caseAggregate.apply(new CaseDocumentAdded(UUID.randomUUID(), sjpn, 1));
-        caseAggregate.apply(new CaseDocumentAdded(UUID.randomUUID(), sjpn, 2));
-        assertEquals(2, caseAggregate.getNumberOfDocumentOfGivenType("SJPN"));
+        final CaseDocumentAdded firstCaseDocumentAddedEvent = (CaseDocumentAdded) caseAggregate.apply(new CaseDocumentAdded(UUID.randomUUID(), sjpn, 1));
+        assertEquals(1, firstCaseDocumentAddedEvent.getIndexWithinDocumentType());
+
+        final CaseDocumentAdded secondCaseDocumentAddedEvent = (CaseDocumentAdded) caseAggregate.apply(new CaseDocumentAdded(UUID.randomUUID(), sjpn, 2));
+        assertEquals(2, secondCaseDocumentAddedEvent.getIndexWithinDocumentType());
 
         //when
         Stream<Object> eventStream = caseAggregate.addCaseDocument(aCase.getId(), new CaseDocument(UUID.randomUUID(), UUID.randomUUID(), "SJPN", null));
         List<Object> events = asList(eventStream.toArray());
 
         //then
-        assertEquals(3, caseAggregate.getNumberOfDocumentOfGivenType("SJPN"));
         assertEquals(1, events.size());
         assertEquals(3, ((CaseDocumentAdded) events.get(0)).getIndexWithinDocumentType());
     }

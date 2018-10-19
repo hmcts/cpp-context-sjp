@@ -405,7 +405,7 @@ public class UpdatePleaTest extends CaseAggregateBaseTest {
     }
 
     private void cancelPleaAndThenVerifyEvents(final CancelPlea cancelPlea, final Supplier<List<Class<?>>> expectedEvents) {
-        final List<Object> actualEvents = caseAggregate.cancelPlea(userId, cancelPlea, now)
+        final List<Object> actualEvents = caseAggregate.cancelPlea(userId, cancelPlea)
                 .collect(toList());
 
         verifyEvents(actualEvents, null, null, null, expectedEvents.get());

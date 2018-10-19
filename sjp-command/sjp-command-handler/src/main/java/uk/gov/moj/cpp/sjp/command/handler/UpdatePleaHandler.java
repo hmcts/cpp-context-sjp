@@ -26,6 +26,6 @@ public class UpdatePleaHandler extends CaseCommandHandler {
     @Handles("sjp.command.cancel-plea")
     public void cancelPlea(final JsonEnvelope command) throws EventStreamException {
         applyToCaseAggregate(command, aCase -> aCase.cancelPlea(getUserId(command),
-                        converter.convert(command.payloadAsJsonObject(), CancelPlea.class), clock.now()));
+                        converter.convert(command.payloadAsJsonObject(), CancelPlea.class)));
     }
 }

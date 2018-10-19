@@ -315,8 +315,21 @@ public class CaseAggregateState implements AggregateState {
         return Optional.ofNullable(employmentStatusByDefendantId.get(defendantId));
     }
 
+    public Optional<UUID> getDefendantForOffence(final UUID offenceId) {
+        return offenceIdsByDefendantId.entrySet().stream()
+                .filter(entry -> entry.getValue().contains(offenceId))
+                .map(Map.Entry::getKey)
+                .findFirst();
+    }
+
     public boolean isAssignee(final UUID userId) {
         return nonNull(assigneeId) && assigneeId.equals(userId);
+    }
+
+    public boolean offenceExists(final UUID offenceId) {
+        return offenceIdsByDefendantId.values().stream()
+                .flatMap(Set::stream)
+                .anyMatch(offenceId::equals);
     }
 
     public boolean isCaseIdEqualTo(final UUID id) {

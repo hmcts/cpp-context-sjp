@@ -31,7 +31,7 @@ public class ReferenceDataService {
                 .getJsonArray("organisationunits")
                 .getValuesAs(JsonObject.class).stream()
                 .findFirst()
-                .map(ou -> new SessionCourt(ou.getString("oucodeL3Name"), ou.getJsonNumber("courtCode").toString()));
+                .map(ou -> new SessionCourt(ou.getString("oucodeL3Name"), ou.getString("lja")));
     }
 
 }

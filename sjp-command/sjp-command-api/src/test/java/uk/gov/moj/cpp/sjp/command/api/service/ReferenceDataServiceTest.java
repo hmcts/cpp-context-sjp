@@ -43,7 +43,7 @@ public class ReferenceDataServiceTest {
 
     final String courtHouseOUCode = "B01OK";
     final String courtHouseName = "Wimbledon Magistrates' Court";
-    final int localJusticeAreaNationalCourtCode = 2577;
+    final String localJusticeAreaNationalCourtCode = "2577";
     final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
 
     @Test
@@ -57,7 +57,7 @@ public class ReferenceDataServiceTest {
                 createObjectBuilder().add("organisationunits", createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add("oucodeL3Name", courtHouseName)
-                                .add("courtCode", localJusticeAreaNationalCourtCode)))
+                                .add("lja", localJusticeAreaNationalCourtCode)))
                         .build());
 
         when(requester.requestAsAdmin(expectedOrganisationUnitsQuery)).thenReturn(organisationUnitsResponse);

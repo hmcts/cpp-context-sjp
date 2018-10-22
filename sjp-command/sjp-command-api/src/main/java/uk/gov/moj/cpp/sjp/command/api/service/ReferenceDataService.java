@@ -24,7 +24,7 @@ public class ReferenceDataService {
     private Requester requester;
 
     public Optional<SessionCourt> getCourtByCourtHouseOUCode(final String courtHouseOUCode, final JsonEnvelope envelope) {
-        final JsonObject queryParams = createObjectBuilder().add("oucodeL3Code", courtHouseOUCode).build();
+        final JsonObject queryParams = createObjectBuilder().add("oucode", courtHouseOUCode).build();
         final JsonEnvelope query = enveloper.withMetadataFrom(envelope, "referencedata.query.organisationunits").apply(queryParams);
         final JsonEnvelope organisationUnitsResponse = requester.requestAsAdmin(query);
         return organisationUnitsResponse.payloadAsJsonObject()

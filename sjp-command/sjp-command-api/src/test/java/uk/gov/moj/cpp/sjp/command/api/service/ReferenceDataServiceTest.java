@@ -50,7 +50,7 @@ public class ReferenceDataServiceTest {
     public void shouldGetSessionCourt() {
         final JsonEnvelope expectedOrganisationUnitsQuery = argThat(
                 jsonEnvelope(withMetadataEnvelopedFrom(envelope).withName("referencedata.query.organisationunits"),
-                        payloadIsJson(withJsonPath("$.oucodeL3Code", equalTo(courtHouseOUCode)))));
+                        payloadIsJson(withJsonPath("$.oucode", equalTo(courtHouseOUCode)))));
 
         final JsonEnvelope organisationUnitsResponse = envelopeFrom(
                 metadataWithRandomUUIDAndName(),

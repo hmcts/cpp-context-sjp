@@ -59,13 +59,13 @@ public class ReferenceDataStub {
 
         final String urlPath = "/referencedata-service/query/api/rest/referencedata/organisationunits";
         stubFor(get(urlPathEqualTo(urlPath))
-                .withQueryParam("oucodeL3Code", equalTo(courtHouseOUCode))
+                .withQueryParam("oucode", equalTo(courtHouseOUCode))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(responseBody)));
 
-        waitForStubToBeReady(urlPath + "?oucodeL3Code=" + courtHouseOUCode, "application/vnd.referencedata.query.organisationunits+json");
+        waitForStubToBeReady(urlPath + "?oucode=" + courtHouseOUCode, "application/vnd.referencedata.query.organisationunits+json");
     }
 
     public static void stubCountryByPostcodeQuery(final String postcode, final String country) throws UnsupportedEncodingException {

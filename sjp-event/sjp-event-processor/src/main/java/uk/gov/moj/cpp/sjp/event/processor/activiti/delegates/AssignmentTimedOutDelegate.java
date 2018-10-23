@@ -4,7 +4,7 @@ package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 import static java.util.UUID.fromString;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import uk.gov.moj.cpp.sjp.event.processor.service.AssignmentService;
+import uk.gov.moj.cpp.sjp.event.processor.service.assignment.AssignmentService;
 
 import java.util.UUID;
 

@@ -161,7 +161,7 @@ public class AssignmentHandlerTest {
                 createObjectBuilder().add("sessionId", sessionId.toString()).build()
         );
 
-        final CaseAssignmentRequested caseAssignmentRequested = new CaseAssignmentRequested(new uk.gov.moj.cpp.sjp.domain.Session(sessionId, userId, DELEGATED_POWERS, "lja"));
+        final CaseAssignmentRequested caseAssignmentRequested = new CaseAssignmentRequested(new uk.gov.moj.cpp.sjp.domain.Session(sessionId, userId, DELEGATED_POWERS, "B01LY"));
 
         when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
         when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);
@@ -177,10 +177,9 @@ public class AssignmentHandlerTest {
                                         withJsonPath("$.session.id", equalTo(caseAssignmentRequested.getSession().getId().toString())),
                                         withJsonPath("$.session.userId", equalTo(caseAssignmentRequested.getSession().getUserId().toString())),
                                         withJsonPath("$.session.type", equalTo(caseAssignmentRequested.getSession().getType().toString())),
-                                        withJsonPath("$.session.localJusticeAreaNationalCourtCode", equalTo(caseAssignmentRequested.getSession().getLocalJusticeAreaNationalCourtCode())))
+                                        withJsonPath("$.session.courtHouseCode", equalTo(caseAssignmentRequested.getSession().getCourtHouseCode())))
                                 )))));
     }
-
 
     public void shouldUnassignCase() throws EventStreamException {
 

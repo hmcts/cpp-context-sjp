@@ -1,0 +1,16 @@
+{
+  "assignmentRules": [
+    {
+      "courtHouseCodePrefix": "B01",
+      "allowedProsecutingAuthorities": [
+        "TFL"
+      ]
+    },
+    {
+      "courtHouseCodePrefix": "",
+      "disallowedProsecutingAuthorities": [
+        "TFL"
+      ]
+    }
+  ]
+}

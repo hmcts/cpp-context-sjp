@@ -106,7 +106,7 @@ public class Session implements Aggregate {
         } else if (!userId.equals(this.userId)) {
             streamBuilder.add(new CaseAssignmentRejected(CaseAssignmentRejected.RejectReason.SESSION_NOT_OWNED_BY_USER));
         } else {
-            streamBuilder.add(new CaseAssignmentRequested(new uk.gov.moj.cpp.sjp.domain.Session(id, userId, sessionType, localJusticeAreaNationalCourtCode)));
+            streamBuilder.add(new CaseAssignmentRequested(new uk.gov.moj.cpp.sjp.domain.Session(id, userId, sessionType, courtHouseCode)));
         }
 
         return apply(streamBuilder.build());

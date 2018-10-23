@@ -10,6 +10,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
+import uk.gov.moj.cpp.sjp.domain.AssignmentRuleType;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.query.view.service.AssignmentService;
@@ -63,14 +64,15 @@ public class AssignmentQueryView {
         final UUID assigneeId = UUID.fromString(queryOptions.getString("assigneeId"));
         final SessionType sessionType = SessionType.valueOf(queryOptions.getString("sessionType"));
         final int limit = queryOptions.getInt("limit");
-        final String excludedProsecutingAuthoritiesAsString = queryOptions.getString("excludedProsecutingAuthorities", "");
+        final String prosecutingAuthoritiesAsString = queryOptions.getString("prosecutingAuthorities", "");
+        final AssignmentRuleType assignmentRule = AssignmentRuleType.valueOf(queryOptions.getString("assignmentRule"));
 
-        final Set<String> excludedProsecutingAuthorities = Stream.of(excludedProsecutingAuthoritiesAsString.split(","))
+        final Set<String> prosecutingAuthorities = Stream.of(prosecutingAuthoritiesAsString.split(","))
                 .map(String::trim)
                 .filter(prosecutor -> !prosecutor.isEmpty())
                 .collect(toSet());
 
-        final List<AssignmentCandidate> assignmentCandidatesList = assignmentService.getAssignmentCandidates(assigneeId, sessionType, excludedProsecutingAuthorities, limit);
+        final List<AssignmentCandidate> assignmentCandidatesList = assignmentService.getAssignmentCandidates(assigneeId, sessionType, prosecutingAuthorities, assignmentRule, limit);
 
         final JsonArrayBuilder casesReadyForDecisionBuilder = Json.createArrayBuilder();
 

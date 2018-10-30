@@ -87,11 +87,6 @@ public class NoActionController {
         send(envelope);
     }
 
-    @Handles("sjp.command.migrate-session")
-    public void migrateSession(final JsonEnvelope envelope) {
-        send(envelope);
-    }
-
     @Handles("sjp.command.assign-case")
     public void assignCase(final JsonEnvelope envelope) {
         send(envelope);

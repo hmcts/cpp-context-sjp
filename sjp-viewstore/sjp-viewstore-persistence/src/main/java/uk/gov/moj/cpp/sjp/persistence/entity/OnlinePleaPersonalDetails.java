@@ -21,6 +21,7 @@ public class OnlinePleaPersonalDetails {
             @AttributeOverride(name="address2", column=@Column(name="personal_details_address2")),
             @AttributeOverride(name="address3", column=@Column(name="personal_details_address3")),
             @AttributeOverride(name="address4", column=@Column(name="personal_details_address4")),
+            @AttributeOverride(name="address5", column=@Column(name="personal_details_address5")),
             @AttributeOverride(name="postcode", column=@Column(name="personal_details_postcode"))
     })
     private Address address;
@@ -42,7 +43,7 @@ public class OnlinePleaPersonalDetails {
         this.firstName = defendantDetailsUpdated.getFirstName();
         this.lastName = defendantDetailsUpdated.getLastName();
         this.address = new Address(defendantDetailsUpdated.getAddress().getAddress1(), defendantDetailsUpdated.getAddress().getAddress2(), defendantDetailsUpdated.getAddress().getAddress3(),
-                defendantDetailsUpdated.getAddress().getAddress4(), defendantDetailsUpdated.getAddress().getPostcode());
+                defendantDetailsUpdated.getAddress().getAddress4(), defendantDetailsUpdated.getAddress().getAddress5(), defendantDetailsUpdated.getAddress().getPostcode());
         this.homeTelephone = defendantDetailsUpdated.getContactDetails().getHome();
         this.mobile = defendantDetailsUpdated.getContactDetails().getMobile();
         this.email = defendantDetailsUpdated.getContactDetails().getEmail();

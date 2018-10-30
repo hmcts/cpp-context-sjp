@@ -36,6 +36,9 @@ public class Employer {
     @Column(name = "address_4")
     private String address4;
 
+    @Column(name = "address_5")
+    private String address5;
+
     @Column(name = "postcode")
     private String postcode;
 
@@ -105,6 +108,14 @@ public class Employer {
 
     public void setAddress4(String address4) {
         this.address4 = address4;
+    }
+
+    public String getAddress5() {
+        return address5;
+    }
+
+    public void setAddress5(final String address5) {
+        this.address5 = address5;
     }
 
     public String getPostcode() {

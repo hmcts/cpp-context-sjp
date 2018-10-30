@@ -33,6 +33,7 @@ public class CitizenHelper {
                                 withJsonPath("$.defendant.personalDetails.address.address2", equalTo(address(expected).getString("address2"))),
                                 withJsonPath("$.defendant.personalDetails.address.address3", equalTo(address(expected).getString("address3"))),
                                 withJsonPath("$.defendant.personalDetails.address.address4", equalTo(address(expected).getString("address4"))),
+                                withJsonPath("$.defendant.personalDetails.address.address5", equalTo(address(expected).getString("address5"))),
                                 withJsonPath("$.defendant.personalDetails.address.postcode", equalTo(postcode)),
                                 withJsonPath("$.defendant.offences[0].title", equalTo(offence(expected).getString("title"))),
                                 withJsonPath("$.defendant.offences[0].legislation", equalTo(offence(expected).getString("legislation"))),

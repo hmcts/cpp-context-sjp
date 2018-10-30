@@ -73,6 +73,7 @@ public class ResultOrdersIT extends BaseIntegrationTest {
                 withJsonPath("$.resultOrders[0].defendant.address.address2", is(case1.getDefendantBuilder().getAddressBuilder().getAddress2())),
                 withJsonPath("$.resultOrders[0].defendant.address.address3", is(case1.getDefendantBuilder().getAddressBuilder().getAddress3())),
                 withJsonPath("$.resultOrders[0].defendant.address.address4", is(case1.getDefendantBuilder().getAddressBuilder().getAddress4())),
+                withJsonPath("$.resultOrders[0].defendant.address.address5", is(case1.getDefendantBuilder().getAddressBuilder().getAddress5())),
                 withJsonPath("$.resultOrders[0].defendant.address.postCode", is(case1.getDefendantBuilder().getAddressBuilder().getPostcode())),
                 withJsonPath("$.resultOrders[0].order.documentId", is(resultOrder1.getDocumentId())),
                 withJsonPath("$.resultOrders[1].caseId", is(case0.getId().toString())),
@@ -85,6 +86,7 @@ public class ResultOrdersIT extends BaseIntegrationTest {
                 withJsonPath("$.resultOrders[1].defendant.address.address2", is(case0.getDefendantBuilder().getAddressBuilder().getAddress2())),
                 withJsonPath("$.resultOrders[1].defendant.address.address3", is(case0.getDefendantBuilder().getAddressBuilder().getAddress3())),
                 withJsonPath("$.resultOrders[1].defendant.address.address4", is(case0.getDefendantBuilder().getAddressBuilder().getAddress4())),
+                withJsonPath("$.resultOrders[1].defendant.address.address5", is(case0.getDefendantBuilder().getAddressBuilder().getAddress5())),
                 withJsonPath("$.resultOrders[1].defendant.address.postCode", is(case0.getDefendantBuilder().getAddressBuilder().getPostcode())),
                 withJsonPath("$.resultOrders[1].order.documentId", is(resultOrder0.getDocumentId())))));
     }

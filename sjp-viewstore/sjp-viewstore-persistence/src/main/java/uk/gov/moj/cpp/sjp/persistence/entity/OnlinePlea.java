@@ -389,6 +389,7 @@ public class OnlinePlea {
                 @AttributeOverride(name="address2", column=@Column(name="employer_address_2")),
                 @AttributeOverride(name="address3", column=@Column(name="employer_address_3")),
                 @AttributeOverride(name="address4", column=@Column(name="employer_address_4")),
+                @AttributeOverride(name="address5", column=@Column(name="employer_address_5")),
                 @AttributeOverride(name="postcode", column=@Column(name="employer_postcode"))
         })
         private Address address;
@@ -405,6 +406,7 @@ public class OnlinePlea {
                             employerAddress.getAddress2(),
                             employerAddress.getAddress3(),
                             employerAddress.getAddress4(),
+                            employerAddress.getAddress5(),
                             employerAddress.getPostcode()))
                     .orElseGet(Address::new);
         }

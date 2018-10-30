@@ -125,6 +125,7 @@ public class ResultOrdersView {
                 private final String address2;
                 private final String address3;
                 private final String address4;
+                private final String address5;
                 private final String postCode;
 
                 public DefendantAddressView(final Address address) {
@@ -132,6 +133,7 @@ public class ResultOrdersView {
                     this.address2 = address.getAddress2();
                     this.address3 = address.getAddress3();
                     this.address4 = address.getAddress4();
+                    this.address5 = address.getAddress5();
                     this.postCode = address.getPostcode();
                 }
 
@@ -149,6 +151,10 @@ public class ResultOrdersView {
 
                 public String getAddress4() {
                     return address4;
+                }
+
+                public String getAddress5() {
+                    return address5;
                 }
 
                 public String getPostCode() {

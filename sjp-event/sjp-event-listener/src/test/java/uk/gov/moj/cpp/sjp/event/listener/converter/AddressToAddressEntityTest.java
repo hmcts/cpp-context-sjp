@@ -14,7 +14,8 @@ public class AddressToAddressEntityTest {
     @Test
     public void shouldConvertAddressToAddressEntity() {
         uk.gov.moj.cpp.sjp.domain.Address inputAddress = new uk.gov.moj.cpp.sjp.domain.Address(
-                "address1", "address2", "address3", "address4", "postcode");
+                "address1", "address2", "address3",
+                "address4", "address5", "postcode");
 
         Address outputAddress = addressToAddressEntity.convert(inputAddress);
 
@@ -23,6 +24,7 @@ public class AddressToAddressEntityTest {
                 inputAddress.getAddress2(),
                 inputAddress.getAddress3(),
                 inputAddress.getAddress4(),
+                inputAddress.getAddress5(),
                 inputAddress.getPostcode());
 
         assertTrue(reflectionEquals(outputAddress, expectedAddress));

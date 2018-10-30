@@ -26,17 +26,21 @@ public class Address implements Serializable {
     @Column(name="address4")
     private String address4;
 
+    @Column(name="address5")
+    private String address5;
+
     @Column(name="postcode")
     private String postcode;
 
     public Address() {
     }
 
-    public Address(String address1, String address2, String address3, String address4, String postcode) {
+    public Address(String address1, String address2, String address3, String address4, String address5, String postcode) {
         this.address1 = address1;
         this.address2 = address2;
         this.address3 = address3;
         this.address4 = address4;
+        this.address5 = address5;
         this.postcode = postcode;
     }
 
@@ -56,6 +60,14 @@ public class Address implements Serializable {
         return address4;
     }
 
+    public String getAddress5() {
+        return address5;
+    }
+
+    public void setAddress5(final String address5) {
+        this.address5 = address5;
+    }
+
     public String getPostcode() {
         return postcode;
     }
@@ -73,12 +85,13 @@ public class Address implements Serializable {
                 Objects.equals(address2, address.address2) &&
                 Objects.equals(address3, address.address3) &&
                 Objects.equals(address4, address.address4) &&
+                Objects.equals(address5, address.address5) &&
                 Objects.equals(postcode, address.postcode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(address1, address2, address3, address4, postcode);
+        return Objects.hash(address1, address2, address3, address4, address5, postcode);
     }
 
     @Override

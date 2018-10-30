@@ -19,7 +19,7 @@ public class AddressBuilder {
         addressBuilder.address2 = "London";
         addressBuilder.address3 = "England";
         addressBuilder.address4 = "UK";
-        addressBuilder.address5 = "United Kingdom";
+        addressBuilder.address5 = "Greater London";
         addressBuilder.postcode = "W1T 1JY";
 
         return addressBuilder;

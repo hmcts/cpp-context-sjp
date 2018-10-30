@@ -8,6 +8,7 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_ADDRESS_2;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_ADDRESS_3;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_ADDRESS_4;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_ADDRESS_5;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_NAME;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_PHONE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_POSTCODE;
@@ -34,6 +35,7 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_ADDRESS_2;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_ADDRESS_3;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_ADDRESS_4;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_ADDRESS_5;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_DOB;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_EMAIL;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_FIRST_NAME;
@@ -118,6 +120,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         EMPLOYER_ADDRESS_2(o -> o.getEmployer().getAddress().getAddress2(), "employer", "address", "address2"),
         EMPLOYER_ADDRESS_3(o -> o.getEmployer().getAddress().getAddress3(), "employer", "address", "address3"),
         EMPLOYER_ADDRESS_4(o -> o.getEmployer().getAddress().getAddress4(), "employer", "address", "address4"),
+        EMPLOYER_ADDRESS_5(o -> o.getEmployer().getAddress().getAddress5(), "employer", "address", "address5"),
         EMPLOYER_POSTCODE(o -> o.getEmployer().getAddress().getPostcode(), "employer", "address", "postcode"),
 
         EMPLOYMENT_INCOME_PAYMENT_AMOUNT(o -> o.getEmployment().getIncomePaymentAmount(), "employment", "incomePaymentAmount"),
@@ -153,6 +156,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         PERSON_ADDRESS_2(o -> o.getPersonalDetails().getAddress().getAddress2(), "personalDetails", "address", "address2"),
         PERSON_ADDRESS_3(o -> o.getPersonalDetails().getAddress().getAddress3(), "personalDetails", "address", "address3"),
         PERSON_ADDRESS_4(o -> o.getPersonalDetails().getAddress().getAddress4(), "personalDetails", "address", "address4"),
+        PERSON_ADDRESS_5(o -> o.getPersonalDetails().getAddress().getAddress5(), "personalDetails", "address", "address5"),
         PERSON_POSTCODE(o -> o.getPersonalDetails().getAddress().getPostcode(), "personalDetails", "address", "postcode"),
 
         PLEA(o -> o.getPleaDetails().getPlea(), "pleaDetails", "plea"),
@@ -214,6 +218,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
                     EMPLOYER_ADDRESS_2,
                     EMPLOYER_ADDRESS_3,
                     EMPLOYER_ADDRESS_4,
+                    EMPLOYER_ADDRESS_5,
                     EMPLOYER_POSTCODE
             );
         }
@@ -260,6 +265,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
                     PERSON_ADDRESS_2,
                     PERSON_ADDRESS_3,
                     PERSON_ADDRESS_4,
+                    PERSON_ADDRESS_5,
                     PERSON_POSTCODE
             );
         }

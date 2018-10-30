@@ -91,7 +91,7 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
         final OnlinePleaPersonalDetails personalDetails = new OnlinePleaPersonalDetails();
         personalDetails.setFirstName("first_name");
         personalDetails.setLastName("last_name");
-        personalDetails.setAddress(new Address("address1", "address2", "address3", "address4", "postcode"));
+        personalDetails.setAddress(new Address("address1", "address2", "address3", "address4", "address5", "postcode"));
         personalDetails.setEmail("email@email.email");
         personalDetails.setNationalInsuranceNumber("national_number");
         personalDetails.setHomeTelephone("123456789");

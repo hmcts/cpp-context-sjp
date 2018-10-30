@@ -50,6 +50,7 @@ public class UpdateDefendantDetails {
                         .add("address2", payloadBuilder.getAddressBuilder().getAddress2())
                         .add("address3", payloadBuilder.getAddressBuilder().getAddress3())
                         .add("address4", payloadBuilder.getAddressBuilder().getAddress4())
+                        .add("address5", payloadBuilder.getAddressBuilder().getAddress5())
                         .add("postcode", payloadBuilder.getAddressBuilder().getPostcode())
                 )
                 .add("contactNumber", Json.createObjectBuilder()

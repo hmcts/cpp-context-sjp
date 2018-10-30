@@ -26,11 +26,12 @@
       "firstName": "Testy",
       "lastName": "Testerson",
       "address": {
-        "address3": "England",
-        "address2": "London",
         "address1": "14 Tottenham Court Road",
-        "postcode": "W1T 1JY",
-        "address4": "UK"
+        "address2": "London",
+        "address3": "England",
+        "address4": "UK",
+        "address5": "Greater London",
+        "postcode": "W1T 1JY"
       },
       "gender": "Male",
       "nationalInsuranceNumber": "AB123456A",

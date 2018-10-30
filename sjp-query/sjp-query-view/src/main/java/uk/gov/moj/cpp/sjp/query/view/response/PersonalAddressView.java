@@ -12,6 +12,8 @@ public class PersonalAddressView {
 
     private final String address4;
 
+    private final String address5;
+
     private final String postcode;
 
 
@@ -20,6 +22,7 @@ public class PersonalAddressView {
         this.address2 = address.getAddress2();
         this.address3 = address.getAddress3();
         this.address4 = address.getAddress4();
+        this.address5 = address.getAddress5();
         this.postcode = address.getPostcode();
     }
 
@@ -37,6 +40,10 @@ public class PersonalAddressView {
 
     public String getAddress4() {
         return address4;
+    }
+
+    public String getAddress5() {
+        return address5;
     }
 
     public String getPostcode() {

@@ -120,6 +120,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final String address2 = address.getString("address2");
         final String address3 = address.getString("address3");
         final String address4 = address.getString("address4");
+        final String address5 = address.getString("address5");
         final String postcode = address.getString("postcode");
 
         //fields that we do not override
@@ -127,7 +128,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final Gender gender = personInfoVerifier.getPersonalDetails().getGender();
 
         return new PersonalDetails(title, firstName, lastName, LocalDate.parse(dateOfBirth), gender, nationalInsuranceNumber,
-                new Address(address1, address2, address3, address4, postcode),
+                new Address(address1, address2, address3, address4, address5, postcode),
                 new ContactDetails(email, homeNumber, mobileNumber)
         );
     }
@@ -417,6 +418,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                 withJsonPath("$.address.address2", equalTo(address.getString("address2"))),
                 withJsonPath("$.address.address3", equalTo(address.getString("address3"))),
                 withJsonPath("$.address.address4", equalTo(address.getString("address4"))),
+                withJsonPath("$.address.address5", equalTo(address.getString("address5"))),
                 withJsonPath("$.address.postcode", equalTo(address.getString("postcode")))
         );
     }
@@ -479,6 +481,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                 withJsonPath("$.personalDetails.address.address2", equalTo(personAddress.getString("address2"))),
                 withJsonPath("$.personalDetails.address.address3", equalTo(personAddress.getString("address3"))),
                 withJsonPath("$.personalDetails.address.address4", equalTo(personAddress.getString("address4"))),
+                withJsonPath("$.personalDetails.address.address5", equalTo(personAddress.getString("address5"))),
                 withJsonPath("$.personalDetails.address.postcode", equalTo(personAddress.getString("postcode")))
         ));
 
@@ -499,6 +502,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                     withJsonPath("$.employer.address.address2", equalTo(employerAddress.getString("address2"))),
                     withJsonPath("$.employer.address.address3", equalTo(employerAddress.getString("address3"))),
                     withJsonPath("$.employer.address.address4", equalTo(employerAddress.getString("address4"))),
+                    withJsonPath("$.employer.address.address5", equalTo(employerAddress.getString("address5"))),
                     withJsonPath("$.employer.address.postcode", equalTo(employerAddress.getString("postcode"))),
 
                     //outgoings

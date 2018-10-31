@@ -12,7 +12,9 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.OFFENCE_ID_VARIABLE;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_READY_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_TYPE_VARIABLE;
 
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -32,10 +34,10 @@ public class PleaUpdatedDelegateTest extends AbstractCaseDelegateTest {
 
     @Test
     public void shouldEmitPublicEventAndSetPleaTypeAsProcessVariables() {
-
         final UUID offenceId = randomUUID();
         final PleaType pleaType = GUILTY;
 
+        when(delegateExecution.hasVariable(PLEA_TYPE_VARIABLE)).thenReturn(true);
         when(delegateExecution.getVariable(OFFENCE_ID_VARIABLE, String.class)).thenReturn(offenceId.toString());
         when(delegateExecution.getVariable(PLEA_TYPE_VARIABLE, String.class)).thenReturn(pleaType.name());
 
@@ -51,6 +53,19 @@ public class PleaUpdatedDelegateTest extends AbstractCaseDelegateTest {
                         ))
                 )));
 
-        verify(delegateExecution).setVariable(PLEA_TYPE_VARIABLE, pleaType.name());
+        verify(delegateExecution).setVariable(PLEA_READY_VARIABLE, true);
+    }
+
+    @Test
+    public void shouldSetPleaNotReadyWhenPleaNotNotGuilty() {
+        final PleaType pleaType = NOT_GUILTY;
+
+        when(delegateExecution.hasVariable(PLEA_TYPE_VARIABLE)).thenReturn(true);
+        when(delegateExecution.getVariable(OFFENCE_ID_VARIABLE, String.class)).thenReturn(randomUUID().toString());
+        when(delegateExecution.getVariable(PLEA_TYPE_VARIABLE, String.class)).thenReturn(pleaType.name());
+
+        pleaUpdatedDelegate.execute(delegateExecution);
+
+        verify(delegateExecution).setVariable(PLEA_READY_VARIABLE, false);
     }
 }

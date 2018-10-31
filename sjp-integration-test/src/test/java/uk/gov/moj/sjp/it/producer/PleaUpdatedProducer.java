@@ -4,6 +4,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.OFFENCE_ID;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.PLEA;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.PLEA_METHOD;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.UPDATED_DATE;
 import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_PLEA_UPDATED;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
@@ -42,11 +47,11 @@ public class PleaUpdatedProducer {
     public void producePleaUpdatedEvent(final UUID offenceId, final PleaType plea, final PleaMethod pleaMethod,
                                         final ZonedDateTime updatedDate, final int eventSequenceId) {
         final JsonObject pleaUpdatedPayload = Json.createObjectBuilder()
-                .add("caseId", caseId.toString())
-                .add("offenceId", offenceId.toString())
-                .add("plea", plea.name())
-                .add("pleaMethod", pleaMethod.toString())
-                .add("updatedDate", ZonedDateTimes.toString(updatedDate))
+                .add(CASE_ID, caseId.toString())
+                .add(OFFENCE_ID, offenceId.toString())
+                .add(PLEA, plea.name())
+                .add(PLEA_METHOD, pleaMethod.toString())
+                .add(UPDATED_DATE, ZonedDateTimes.toString(updatedDate))
                 .build();
 
         final JsonEnvelope pleaUpdatedEvent = envelopeFrom(

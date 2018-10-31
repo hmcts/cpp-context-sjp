@@ -1,10 +1,12 @@
 package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 
+import static java.util.Arrays.asList;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.OFFENCE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.OFFENCE_ID_VARIABLE;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_READY_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_TYPE_VARIABLE;
 
 import uk.gov.justice.services.messaging.Metadata;
@@ -45,7 +47,7 @@ public class PleaCancelledDelegate extends AbstractCaseDelegate {
             LOGGER.warn("Process migration. Event {} not emitted", PLEA_CANCELLED_PUBLIC_EVENT_NAME);
         }
 
-        execution.removeVariable(PLEA_TYPE_VARIABLE);
+        execution.removeVariables(asList(PLEA_TYPE_VARIABLE, PLEA_READY_VARIABLE));
     }
 
 }

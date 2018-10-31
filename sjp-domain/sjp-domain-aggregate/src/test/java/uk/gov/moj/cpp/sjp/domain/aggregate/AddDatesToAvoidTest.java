@@ -54,11 +54,11 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
         datesToAvoidAddedEvent(DATES_TO_AVOID);
 
         //when
-        final List<Object> dateToAvoidUpdatedEvents = caseAggregate.addDatesToAvoid(DATES_TO_AVOID_UPDATED).collect(toList());
-        final DatesToAvoidUpdated datesToAvoidUpdated = (DatesToAvoidUpdated) dateToAvoidUpdatedEvents.get(0);
+        final List<Object> datesToAvoidUpdatedEvents = caseAggregate.addDatesToAvoid(DATES_TO_AVOID_UPDATED).collect(toList());
+        final DatesToAvoidUpdated datesToAvoidUpdated = (DatesToAvoidUpdated) datesToAvoidUpdatedEvents.get(0);
 
         //then
-        assertThatDatesToAvoidUpdatedEventWasRaised(dateToAvoidUpdatedEvents, datesToAvoidUpdated);
+        assertThatDatesToAvoidUpdatedEventWasRaised(datesToAvoidUpdatedEvents, datesToAvoidUpdated);
     }
 
     private void assertThatDatesToAvoidAddedEventWasRaised(List<Object> datesToAvoidAddedEvents, DatesToAvoidAdded datesToAvoidAdded) {

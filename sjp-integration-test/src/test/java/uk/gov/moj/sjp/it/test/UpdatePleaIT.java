@@ -15,9 +15,11 @@ import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.POSTAL;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
+import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_DATES_TO_AVOID_ADDED;
 import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_UPDATED;
+import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -87,18 +89,26 @@ public class UpdatePleaIT extends BaseIntegrationTest {
             final PleaType notGuiltyPlea = NOT_GUILTY;
 
             eventListener.reset()
-                    .subscribe(PleaUpdated.EVENT_NAME, CaseMarkedReadyForDecision.EVENT_NAME, PUBLIC_EVENT_SELECTOR_PLEA_UPDATED)
+                    .subscribe(PleaUpdated.EVENT_NAME, PUBLIC_EVENT_SELECTOR_PLEA_UPDATED, CaseMarkedReadyForDecision.EVENT_NAME)
                     .run(() -> updatePleaHelper.updatePlea(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), getPleaPayload(notGuiltyPlea)));
 
             verifyPrivatePleaUpdatedEventEmitted(eventListener, notGuiltyPlea);
             verifyPublicPleaUpdatedEventEmitted(eventListener, notGuiltyPlea);
+
+            assertThat(eventListener.popEvent(CaseMarkedReadyForDecision.EVENT_NAME).isPresent(), is(false));
+
+            eventListener.reset()
+                    .subscribe(EVENT_SELECTOR_DATES_TO_AVOID_ADDED, "public.sjp.dates-to-avoid-added", CaseMarkedReadyForDecision.EVENT_NAME)
+                    .run(() -> addDatesToAvoid(createCasePayloadBuilder.getId(), "my-dates-to-avoid"));
+
+            verifyDatesToAvoid(eventListener, "my-dates-to-avoid");
+
             verifyPrivateCaseMarkedReadyEventEmitted(eventListener, PLEADED_NOT_GUILTY);
             updatePleaHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), notGuiltyPlea, POSTAL);
 
-
             eventListener.reset()
                     .subscribe(PleaCancelled.EVENT_NAME, CaseMarkedReadyForDecision.EVENT_NAME, PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED)
-                    .run(() -> cancelPleaHelper.cancelPlea());
+                    .run(cancelPleaHelper::cancelPlea);
 
             verifyPrivatePleaCancelledEventEmitted(eventListener);
             verifyPublicPleaCancelledEventEmitted(eventListener);
@@ -143,6 +153,13 @@ public class UpdatePleaIT extends BaseIntegrationTest {
         verifyEventEmitted(eventListener, CaseMarkedReadyForDecision.EVENT_NAME, isJson(allOf(
                 withJsonPath("caseId", equalTo(createCasePayloadBuilder.getId().toString())),
                 withJsonPath("reason", equalTo(readinessReason.toString()))
+        )));
+    }
+
+    private void verifyDatesToAvoid(final EventListener eventListener, final String expectedDatesToAvoid) {
+        verifyEventEmitted(eventListener, EVENT_SELECTOR_DATES_TO_AVOID_ADDED, isJson(allOf(
+                withJsonPath("caseId", equalTo(createCasePayloadBuilder.getId().toString())),
+                withJsonPath("datesToAvoid", equalTo(expectedDatesToAvoid))
         )));
     }
 

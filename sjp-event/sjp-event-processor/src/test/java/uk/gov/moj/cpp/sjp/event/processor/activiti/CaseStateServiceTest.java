@@ -24,12 +24,13 @@ import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.POSTI
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PROCESS_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.WITHDRAWAL_REQUESTED_SIGNAL_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.WITHDRAWAL_REQUEST_CANCELLED_SIGNAL_NAME;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper.metadataToString;
 
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,14 +41,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseStateServiceTest {
-
-    @Spy
-    private MetadataHelper metadataHelper = new MetadataHelper();
 
     @Mock
     private ActivitiService activitiService;
@@ -65,7 +62,7 @@ public class CaseStateServiceTest {
         caseId = randomUUID();
         processId = randomAlphanumeric(10);
         metadata = metadataWithRandomUUIDAndName().build();
-        metadataAsString = metadataHelper.metadataToString(metadata);
+        metadataAsString = metadataToString(metadata);
     }
 
     @Test
@@ -119,7 +116,7 @@ public class CaseStateServiceTest {
 
         when(activitiService.getProcessInstanceId(PROCESS_NAME, caseId.toString())).thenReturn(Optional.of(processId));
 
-        caseStateService.pleaUpdated(caseId, offenceId, pleaType, metadata);
+        caseStateService.pleaUpdated(caseId, offenceId, pleaType, ZonedDateTime.now(), metadata);
 
         final Matcher<Map<String, Object>> paramsMatcher = allOf(
                 hasEntry(OFFENCE_ID_VARIABLE, offenceId.toString()),

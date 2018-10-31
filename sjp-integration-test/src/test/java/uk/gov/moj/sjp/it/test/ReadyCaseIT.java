@@ -13,6 +13,7 @@ import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.WITHDRAWAL_REQUESTED;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
+import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
@@ -99,6 +100,10 @@ public class ReadyCaseIT extends BaseIntegrationTest {
             pollUntilReadyWithReason(caseId, PLEADED_GUILTY);
 
             updatePleaHelper.updatePlea(caseId, offenceId, getPleaPayload(PleaType.NOT_GUILTY));
+
+            pollUntilNotReady(caseId);
+
+            addDatesToAvoid(caseId, "my-dates-to-avoid");
 
             pollUntilReadyWithReason(caseId, CaseReadinessReason.PLEADED_NOT_GUILTY);
 

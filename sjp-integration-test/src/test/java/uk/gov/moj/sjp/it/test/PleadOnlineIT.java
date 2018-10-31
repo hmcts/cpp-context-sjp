@@ -269,7 +269,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                         withJsonPath("$.defendantId"),
                         withJsonPath("$.pleaDetails.plea", equalTo(pleaType.name())))
                 ), USER_ID));
-        System.out.println(response.prettify());
 
         final String submittedOn = response.getString("submittedOn");
         final String defendantId = response.getString("defendantId");

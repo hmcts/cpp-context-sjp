@@ -6,6 +6,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.OFFENCE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.PLEA;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.OFFENCE_ID_VARIABLE;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_READY_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_TYPE_VARIABLE;
 
 import uk.gov.justice.services.messaging.Metadata;
@@ -29,9 +30,12 @@ public class PleaUpdatedDelegate extends AbstractCaseDelegate {
     private static final String PLEA_UPDATED_PUBLIC_EVENT_NAME = "public.sjp.plea-updated";
 
     @Override
+    @SuppressWarnings("squid:S4274")
     public void execute(final UUID caseId, final Metadata metadata, final DelegateExecution execution, boolean processMigration) {
+        assert execution.hasVariable(PLEA_TYPE_VARIABLE) : PLEA_TYPE_VARIABLE + " must be present";
+
         final String offenceId = execution.getVariable(OFFENCE_ID_VARIABLE, String.class);
-        final PleaType plea = PleaType.valueOf(execution.getVariable(PLEA_TYPE_VARIABLE, String.class));
+        final PleaType pleaType = PleaType.valueOf(execution.getVariable(PLEA_TYPE_VARIABLE, String.class));
 
         if (!processMigration) {
             final Metadata publicEventMetadata = metadataFrom(metadata)
@@ -41,7 +45,7 @@ public class PleaUpdatedDelegate extends AbstractCaseDelegate {
             final JsonObject publicEventPayload = Json.createObjectBuilder()
                     .add(CASE_ID, caseId.toString())
                     .add(OFFENCE_ID, offenceId)
-                    .add(PLEA, plea.name())
+                    .add(PLEA, pleaType.name())
                     .build();
 
             sender.send(envelopeFrom(publicEventMetadata, publicEventPayload));
@@ -49,7 +53,7 @@ public class PleaUpdatedDelegate extends AbstractCaseDelegate {
             LOGGER.warn("Process migration. Event {} not emitted", PLEA_UPDATED_PUBLIC_EVENT_NAME);
         }
 
-        execution.setVariable(PLEA_TYPE_VARIABLE, plea.name());
+        execution.setVariable(PLEA_READY_VARIABLE, !PleaType.NOT_GUILTY.equals(pleaType));
     }
 
 }

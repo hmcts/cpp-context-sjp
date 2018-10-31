@@ -156,11 +156,13 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
         final UUID caseId = tflCaseBuilder.getId();
 
+        updatePleaToNotGuilty(caseId, tflCaseBuilder.getOffenceId(), updatePleaHelper);
+
         //when
         addDatesToAvoid(caseId, DATE_TO_AVOID);
 
         //then
-        EventListener datesToAvoidAddedListener = new EventListener()
+        final EventListener datesToAvoidAddedListener = new EventListener()
                 .subscribe(DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME)
                 .run(() -> assertThatCaseHasDatesToAvoid(DATE_TO_AVOID));
 

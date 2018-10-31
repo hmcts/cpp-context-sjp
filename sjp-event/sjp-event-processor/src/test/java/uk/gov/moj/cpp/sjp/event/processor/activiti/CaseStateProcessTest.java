@@ -1,385 +1,499 @@
 package uk.gov.moj.cpp.sjp.event.processor.activiti;
 
-import static java.time.format.DateTimeFormatter.ISO_DATE;
-import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
+import static java.time.LocalDate.now;
+import static java.time.ZoneOffset.UTC;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonMap;
 import static java.util.UUID.randomUUID;
-import static org.activiti.engine.impl.test.JobTestHelper.waitForJobExecutorToProcessAllJobs;
-import static org.hamcrest.CoreMatchers.any;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.AllOf.allOf;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.CASE_COMPLETED_SIGNAL_NAME;
-import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.IS_READY_VARIABLE;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.DATES_TO_AVOID_ADDED_SIGNAL_NAME;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.DATES_TO_AVOID_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.METADATA_VARIABLE;
-import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.NOTICE_ENDED_DATE_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.OFFENCE_ID_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_CANCELLED_SIGNAL_NAME;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_DEADLINE_ADD_DATES_TO_AVOID_VARIABLE;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_READY_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_TYPE_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_UPDATED_SIGNAL_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.POSTING_DATE_VARIABLE;
-import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PROCESS_NAME;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PROVED_IN_ABSENCE_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.WITHDRAWAL_REQUESTED_SIGNAL_NAME;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.WITHDRAWAL_REQUESTED_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.WITHDRAWAL_REQUEST_CANCELLED_SIGNAL_NAME;
-import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegateExecutionStubber.mockDelegate;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.CASE_COMPLETED;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.CASE_STARTED;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.DATES_TO_AVOID_PROCESSED;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.PLEA_CANCELLED;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.PLEA_UPDATED;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.PROVED_IN_ABSENCE;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.READY_CASE;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.WITHDRAWAL_REQUESTED;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.WITHDRAWAL_REQUEST_CANCELLED;
 import static uk.gov.moj.cpp.sjp.event.processor.matcher.DelegateExecutionProcessBusinessKeyMatcher.withProcessBusinessKey;
 import static uk.gov.moj.cpp.sjp.event.processor.matcher.DelegateExecutionVariableMatcher.withProcessVariable;
+import static uk.gov.moj.cpp.sjp.event.processor.matcher.DelegateExecutionVariableMatcher.withoutProcessVariable;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper.metadataToString;
 
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper;
 
 import java.time.LocalDate;
-import java.util.HashMap;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableMap;
-import org.activiti.engine.ActivitiException;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.delegate.DelegateExecution;
-import org.activiti.engine.delegate.JavaDelegate;
-import org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration;
-import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.test.ActivitiRule;
 import org.activiti.engine.test.Deployment;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Matchers;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-@RunWith(MockitoJUnitRunner.class)
 public class CaseStateProcessTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CaseStateProcessTest.class);
-
     private static final String PROCESS_PATH = "processes/case-state.bpmn20.xml";
-    private RuntimeService runtimeService;
 
     @Rule
     public ActivitiRule rule = new ActivitiRule();
 
-    private JavaDelegate caseStartedDelegate, provedInAbsenceDelegate, readyCaseDelegate,
-            pleaUpdatedDelegate, pleaCancelledDelegate, withdrawalRequestedDelegate,
-            withdrawalRequestCancelledDelegate, caseCompletedDelegate;
-
-    private MetadataHelper metadataHelper = new MetadataHelper();
+    private DelegatesVerifier delegatesVerifier;
 
     private UUID caseId;
     private Metadata metadata;
+
+    private CaseStateService caseStateService;
 
     @Before
     public void init() {
         caseId = randomUUID();
         metadata = metadataWithRandomUUIDAndName().build();
+        caseStateService = new CaseStateService(new ActivitiService(rule.getRuntimeService()));
+        delegatesVerifier = new DelegatesVerifier(rule);
 
-        final StandaloneProcessEngineConfiguration configuration = (StandaloneProcessEngineConfiguration)
-                rule.getProcessEngine().getProcessEngineConfiguration();
+        resetExecutions();
+    }
 
-        final Map<Object, Object> beans = configuration.getBeans();
-
-        caseStartedDelegate = (JavaDelegate) beans.get("caseStartedDelegate");
-        provedInAbsenceDelegate = (JavaDelegate) beans.get("provedInAbsenceDelegate");
-        readyCaseDelegate = (JavaDelegate) beans.get("readyCaseDelegate");
-        pleaUpdatedDelegate = (JavaDelegate) beans.get("pleaUpdatedDelegate");
-        pleaCancelledDelegate = (JavaDelegate) beans.get("pleaCancelledDelegate");
-        withdrawalRequestedDelegate = (JavaDelegate) beans.get("withdrawalRequestedDelegate");
-        withdrawalRequestCancelledDelegate = (JavaDelegate) beans.get("withdrawalRequestCancelledDelegate");
-        caseCompletedDelegate = (JavaDelegate) beans.get("caseCompletedDelegate");
-        runtimeService = rule.getRuntimeService();
-
-        reset(caseStartedDelegate,
-                provedInAbsenceDelegate,
-                readyCaseDelegate,
-                pleaUpdatedDelegate,
-                pleaCancelledDelegate,
-                withdrawalRequestedDelegate,
-                withdrawalRequestCancelledDelegate,
-                caseCompletedDelegate);
+    private void resetExecutions() {
+        // reset manipulated parameters - the ones injected from the XML should should be reset as they were
+        Stream.of(DATES_TO_AVOID_PROCESSED, PLEA_UPDATED)
+                .map(delegatesVerifier::getDelegateExecution)
+                .forEach(delegate -> delegate.setVariablesOnExecution(emptyMap()));
+        delegatesVerifier.getDelegateExecution(PLEA_CANCELLED).setVariablesOnExecution(singletonMap(PLEA_READY_VARIABLE, false));
     }
 
     @Test
-    @Deployment(resources = {PROCESS_PATH})
-    public void shouldExecuteCaseStartedDelegateWhenProcessStarted() throws Exception {
+    @Deployment(resources = PROCESS_PATH)
+    public void shouldExecuteCaseStartedDelegateWhenProcessStarted() {
+        final LocalDate postingDate = now().plusDays(1);
 
-        final LocalDate postingDate = LocalDate.now().plusDays(1);
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
 
-        final ProcessInstance processInstance = startProcess(caseId, postingDate, metadata);
-
-        tryProcessPendingJobs();
-
-        verify(caseStartedDelegate).execute(argThat(allOf(
+        delegatesVerifier.assertDelegateCalledWith(CASE_STARTED, 0, allOf(
                 withProcessBusinessKey(caseId.toString()),
                 withProcessVariable(POSTING_DATE_VARIABLE, postingDate.toString()),
-                withProcessVariable(METADATA_VARIABLE, metadataHelper.metadataToString(metadata))
-        )));
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata))
+        ));
 
-        verifyZeroInteractions(
-                provedInAbsenceDelegate,
-                readyCaseDelegate,
-                pleaUpdatedDelegate,
-                pleaCancelledDelegate,
-                withdrawalRequestedDelegate,
-                withdrawalRequestCancelledDelegate,
-                caseCompletedDelegate);
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED);
 
-        assertThat(isProcessFinished(processInstance), equalTo(false));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, CASE_COMPLETED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, WITHDRAWAL_REQUESTED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, WITHDRAWAL_REQUEST_CANCELLED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
     }
 
     @Test
-    @Deployment(resources = {PROCESS_PATH})
-    public void shouldExecuteWithdrawalRelatedDelegates() throws Exception {
+    @Deployment(resources = PROCESS_PATH)
+    public void shouldExecuteWithdrawalRelatedDelegates() {
+        final LocalDate postingDate = now().plusDays(1);
 
-        final LocalDate postingDate = LocalDate.now().plusDays(1);
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
 
-        mockDelegate(de -> de.setVariable(IS_READY_VARIABLE, true))
-                .when(readyCaseDelegate).execute(Matchers.any(DelegateExecution.class));
+        caseStateService.withdrawalRequested(caseId, metadata);
 
-        final ProcessInstance processInstance = startProcess(caseId, postingDate, metadata);
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, WITHDRAWAL_REQUESTED, READY_CASE);
+        delegatesVerifier.assertDelegateCalledWith(WITHDRAWAL_REQUESTED, 0, withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)));
+        delegatesVerifier.verifyNumberOfExecution(WITHDRAWAL_REQUESTED, 1);
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 1);
 
-        requestWithdrawal(processInstance, metadata);
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
 
-        tryProcessPendingJobs();
+        caseStateService.withdrawalRequestCancelled(caseId, metadata);
 
-        verify(withdrawalRequestedDelegate).execute(argThat(withProcessVariable(METADATA_VARIABLE, metadataHelper.metadataToString(metadata))));
-        verify(readyCaseDelegate).execute(argThat(any(DelegateExecution.class)));
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, WITHDRAWAL_REQUESTED, READY_CASE, WITHDRAWAL_REQUEST_CANCELLED);
+        delegatesVerifier.assertDelegateCalledWith(WITHDRAWAL_REQUEST_CANCELLED, 0, withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)));
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 2);
 
-        cancelWithdrawalRequest(processInstance, metadata);
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
 
-        tryProcessPendingJobs();
+        caseStateService.withdrawalRequested(caseId, metadata);
 
-        verify(withdrawalRequestCancelledDelegate).execute(argThat(withProcessVariable(METADATA_VARIABLE, metadataHelper.metadataToString(metadata))));
+        delegatesVerifier.assertDelegateCalledWith(WITHDRAWAL_REQUESTED, 1, withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)));
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 3);
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, WITHDRAWAL_REQUESTED, READY_CASE, WITHDRAWAL_REQUEST_CANCELLED);
 
-        verify(readyCaseDelegate, times(2)).execute(argThat(any(DelegateExecution.class)));
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
 
-        verifyZeroInteractions(
-                provedInAbsenceDelegate,
-                pleaUpdatedDelegate,
-                pleaCancelledDelegate,
-                caseCompletedDelegate);
+        caseStateService.withdrawalRequestCancelled(caseId, metadata);
 
-        assertThat(isProcessFinished(processInstance), equalTo(false));
+        delegatesVerifier.assertDelegateCalledWith(WITHDRAWAL_REQUEST_CANCELLED, 1, withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)));
+
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 4);
+
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, WITHDRAWAL_REQUESTED, READY_CASE, WITHDRAWAL_REQUEST_CANCELLED);
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
+
+        caseStateService.caseCompleted(caseId, metadata);
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, true);
+
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 4);
+        IntStream.range(0, 4).forEach(i -> {
+            boolean expectedWithdrawalRequestedVariable = i % 2 == 0;
+            delegatesVerifier.assertDelegateCalledWith(READY_CASE, i, allOf(
+                    withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                    expectedWithdrawalRequestedVariable
+                            ? withProcessVariable(WITHDRAWAL_REQUESTED_VARIABLE, true)
+                            : withoutProcessVariable(WITHDRAWAL_REQUESTED_VARIABLE)
+            ));
+        });
     }
 
     @Test
-    @Deployment(resources = {PROCESS_PATH})
-    public void shouldExecutePleaRelatedDelegates() throws Exception {
+    @Deployment(resources = PROCESS_PATH)
+    public void shouldReadyCaseDelegateMergeVariablesFromDifferentDelegates() {
+        final LocalDate postingDate = now().minusDays(30);
 
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
+        delegatesVerifier.tryProcessPendingJobs();
+
+        caseStateService.withdrawalRequested(caseId, metadata);
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
+
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, PROVED_IN_ABSENCE, WITHDRAWAL_REQUESTED, READY_CASE);
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 2);
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 1, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(PROVED_IN_ABSENCE_VARIABLE, true),
+                withProcessVariable(WITHDRAWAL_REQUESTED_VARIABLE, true)));
+    }
+
+    @Test
+    @Deployment(resources = PROCESS_PATH)
+    public void shouldExecutePleaRelatedDelegatesWhenGuilty() {
         final UUID offenceId = randomUUID();
         final LocalDate postingDate = LocalDate.now().plusDays(1);
         final PleaType pleaType = PleaType.GUILTY;
 
-        mockDelegate(de -> de.setVariable(IS_READY_VARIABLE, true))
-                .when(readyCaseDelegate).execute(Matchers.any(DelegateExecution.class));
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
 
-        final ProcessInstance processInstance = startProcess(caseId, postingDate, metadata);
+        callPleaUpdated(offenceId, pleaType, ZonedDateTime.now(UTC), metadata);
 
-        pleaUpdated(processInstance, offenceId, PleaType.GUILTY, metadata);
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
 
-        tryProcessPendingJobs();
-
-        verify(pleaUpdatedDelegate).execute(argThat(allOf(
-                withProcessVariable(METADATA_VARIABLE, metadataHelper.metadataToString(metadata)),
+        delegatesVerifier.assertDelegateCalledWith(PLEA_UPDATED, 0, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
                 withProcessVariable(OFFENCE_ID_VARIABLE, offenceId.toString()),
-                withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name())
-        )));
+                withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
+                withProcessVariable(PLEA_READY_VARIABLE, true)
+        ));
 
-        verify(readyCaseDelegate).execute(argThat(any(DelegateExecution.class)));
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 1);
+        delegatesVerifier.assertDelegateCalledWith(PLEA_UPDATED, 0, allOf(
+                withProcessVariable(PLEA_READY_VARIABLE, true),
+                withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name())));
 
-        pleaCancelled(processInstance, offenceId, metadata);
+        caseStateService.pleaCancelled(caseId, offenceId, metadata);
 
-        tryProcessPendingJobs();
+        delegatesVerifier.assertDelegateCalledWith(PLEA_CANCELLED, 0, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(OFFENCE_ID_VARIABLE, offenceId.toString()),
+                withoutProcessVariable(PLEA_READY_VARIABLE),
+                withoutProcessVariable(PLEA_TYPE_VARIABLE)
+        ));
 
-        verify(pleaCancelledDelegate).execute(argThat(allOf(
-                withProcessVariable(METADATA_VARIABLE, metadataHelper.metadataToString(metadata)),
-                withProcessVariable(OFFENCE_ID_VARIABLE, offenceId.toString())
-        )));
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 2);
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 1, allOf(
+                withoutProcessVariable(PLEA_READY_VARIABLE),
+                withoutProcessVariable(PLEA_TYPE_VARIABLE)));
 
-        verify(readyCaseDelegate, times(2)).execute(argThat(any(DelegateExecution.class)));
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, READY_CASE, PLEA_UPDATED, PLEA_CANCELLED);
 
-        verifyZeroInteractions(
-                provedInAbsenceDelegate,
-                withdrawalRequestedDelegate,
-                withdrawalRequestCancelledDelegate,
-                caseCompletedDelegate);
-
-        assertThat(isProcessFinished(processInstance), equalTo(false));
-    }
-
-
-    @Test
-    @Deployment(resources = {PROCESS_PATH})
-    public void shouldExecuteProvedInAbsenceDelegateWhenPostingDateIsOlderThan28Days() throws Exception {
-
-        final LocalDate postingDate = LocalDate.now().minusDays(29);
-
-        mockDelegate(de -> de.setVariable(IS_READY_VARIABLE, true))
-                .when(readyCaseDelegate).execute(Matchers.any(DelegateExecution.class));
-
-        final ProcessInstance processInstance = startProcess(caseId, postingDate, metadata);
-
-        tryProcessPendingJobs();
-
-        verify(provedInAbsenceDelegate).execute(argThat(any(DelegateExecution.class)));
-
-        verifyZeroInteractions(
-                pleaUpdatedDelegate,
-                pleaCancelledDelegate,
-                withdrawalRequestedDelegate,
-                withdrawalRequestCancelledDelegate,
-                caseCompletedDelegate);
-
-        assertThat(isProcessFinished(processInstance), equalTo(false));
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
     }
 
     @Test
-    @Deployment(resources = {PROCESS_PATH})
-    public void shouldNotExecuteProvedInAbsenceDelegateWhenPostingDateIsYoungerThan28Days() {
+    @Deployment(resources = PROCESS_PATH)
+    public void shouldExecutePleaRelatedDelegatesWhenNotGuiltyAndAddDatesToAvoid() {
+        final UUID offenceId = randomUUID();
+        final LocalDate postingDate = LocalDate.now().plusDays(1);
+        final PleaType pleaType = PleaType.NOT_GUILTY;
 
-        final LocalDate postingDate = LocalDate.now().minusDays(27);
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
 
-        final ProcessInstance processInstance = startProcess(caseId, postingDate, metadata);
+        callPleaUpdated(offenceId, pleaType, ZonedDateTime.now(), metadata);
 
-        tryProcessPendingJobs();
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(1));
 
-        verifyZeroInteractions(
-                provedInAbsenceDelegate,
-                readyCaseDelegate,
-                pleaUpdatedDelegate,
-                pleaCancelledDelegate,
-                withdrawalRequestedDelegate,
-                withdrawalRequestCancelledDelegate,
-                caseCompletedDelegate);
+        delegatesVerifier.assertDelegateCalledWith(PLEA_UPDATED, 0, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(OFFENCE_ID_VARIABLE, offenceId.toString()),
+                withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name())));
 
-        assertThat(isProcessFinished(processInstance), equalTo(false));
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 1);
+
+        final String datesToAvoid = "my-dates-to-avoid";
+        delegatesVerifier.getDelegateExecution(DATES_TO_AVOID_PROCESSED).setVariablesOnExecution(singletonMap(DATES_TO_AVOID_VARIABLE, datesToAvoid));
+        caseStateService.datesToAvoidAdded(caseId, datesToAvoid, metadata);
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, READY_CASE, PLEA_UPDATED, DATES_TO_AVOID_PROCESSED);
+
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 2);
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 1, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(OFFENCE_ID_VARIABLE, offenceId.toString()),
+                withProcessVariable(DATES_TO_AVOID_VARIABLE, datesToAvoid)));
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, is(1));
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
     }
 
     @Test
-    @Deployment(resources = {PROCESS_PATH})
-    public void shouldNotCompleteProcessIfNotInReadyState() {
+    @Deployment(resources = PROCESS_PATH)
+    public void shouldKillDatesToAvoidSubProcessWhenReceivePleaUpdatedAction() {
+        final UUID offenceId = randomUUID();
 
+        final String processInstanceId = caseStateService.caseReceived(caseId, LocalDate.now(), metadata);
+
+        callPleaUpdated(offenceId, PleaType.NOT_GUILTY, ZonedDateTime.now(), metadata);
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(1));
+
+        callPleaUpdated(offenceId, PleaType.GUILTY_REQUEST_HEARING, ZonedDateTime.now(), metadata);
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 2);
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
+    }
+
+    @Test
+    @Deployment(resources = PROCESS_PATH)
+    public void shouldKillDatesToAvoidSubProcessWhenReceivePleaCancelAction() {
+        final UUID offenceId = randomUUID();
+        final LocalDate postingDate = LocalDate.now().plusDays(2);
+        final ZonedDateTime pleaDatesToAvoidDays = ZonedDateTime.now().minusDays(1);
+        final PleaType pleaType = PleaType.NOT_GUILTY;
+
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
+
+        callPleaUpdated(offenceId, pleaType, pleaDatesToAvoidDays, metadata);
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(1));
+
+        caseStateService.pleaCancelled(caseId, offenceId, metadata);
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 2);
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
+    }
+
+    @Test
+    @Deployment(resources = PROCESS_PATH)
+    public void shouldUpdatePleaWhenNotGuiltyAfter10Days() {
+        final UUID offenceId = randomUUID();
+        final LocalDate postingDate = LocalDate.now().plusDays(1);
+        final ZonedDateTime pleaDatesToAvoidDays = ZonedDateTime.now().minusDays(12);
+        final PleaType pleaType = PleaType.NOT_GUILTY;
+
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
+
+        callPleaUpdated(offenceId, pleaType, pleaDatesToAvoidDays, metadata);
+        delegatesVerifier.tryProcessPendingJobs();
+
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, PLEA_UPDATED, DATES_TO_AVOID_PROCESSED, READY_CASE);
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 2);
+
+        delegatesVerifier.assertDelegateCalledWith(PLEA_UPDATED, 0, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(OFFENCE_ID_VARIABLE, offenceId.toString()),
+                withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
+                withProcessVariable(PLEA_DEADLINE_ADD_DATES_TO_AVOID_VARIABLE, pleaDatesToAvoidDays.plusDays(10).format(ISO_LOCAL_DATE_TIME))));
+
+        delegatesVerifier.assertDelegateCalledWith(DATES_TO_AVOID_PROCESSED, 0, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(OFFENCE_ID_VARIABLE, offenceId.toString()),
+                withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
+                withProcessVariable(PLEA_DEADLINE_ADD_DATES_TO_AVOID_VARIABLE, pleaDatesToAvoidDays.plusDays(10).format(ISO_LOCAL_DATE_TIME))));
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 0, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(OFFENCE_ID_VARIABLE, offenceId.toString()),
+                withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name())));
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 1, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(OFFENCE_ID_VARIABLE, offenceId.toString()),
+                withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
+                withProcessVariable(PLEA_DEADLINE_ADD_DATES_TO_AVOID_VARIABLE, pleaDatesToAvoidDays.plusDays(10).format(ISO_LOCAL_DATE_TIME))));
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, is(1));
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
+    }
+
+    @Test
+    @Deployment(resources = PROCESS_PATH)
+    public void shouldExecutePleaCancelled() {
+        final UUID offenceId = randomUUID();
         final LocalDate postingDate = LocalDate.now().plusDays(1);
 
-        final ProcessInstance processInstance = startProcess(caseId, postingDate, metadata);
+        final String TESTING_KEY = "test-param";
+        final String TESTING_VALUE = UUID.randomUUID().toString();
+        final Map<String, Object> testingVariable = singletonMap(TESTING_KEY, TESTING_VALUE);
+        delegatesVerifier.getDelegateExecution(PLEA_CANCELLED).setVariablesOnExecution(testingVariable);
 
-        caseCompleted(processInstance, metadata);
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
 
-        tryProcessPendingJobs();
+        caseStateService.pleaCancelled(caseId, offenceId, metadata);
 
-        verifyZeroInteractions(
-                provedInAbsenceDelegate,
-                readyCaseDelegate,
-                pleaUpdatedDelegate,
-                pleaCancelledDelegate,
-                withdrawalRequestedDelegate,
-                withdrawalRequestCancelledDelegate,
-                caseCompletedDelegate);
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, READY_CASE, PLEA_CANCELLED);
 
-        tryProcessPendingJobs();
+        delegatesVerifier.assertDelegateCalledWith(PLEA_CANCELLED, 0, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(OFFENCE_ID_VARIABLE, offenceId.toString())));
 
-        assertThat(isProcessFinished(processInstance), equalTo(false));
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 0, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(TESTING_KEY, TESTING_VALUE)));
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
+    }
+
+    @Test
+    @Deployment(resources = PROCESS_PATH)
+    public void shouldExecuteProvedInAbsenceDelegateWhenPostingDateIsOlderThan28Days() {
+        final LocalDate postingDate = now().minusDays(29);
+
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
+        delegatesVerifier.tryProcessPendingJobs();
+
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, PROVED_IN_ABSENCE, READY_CASE);
+
+        delegatesVerifier.verifyNumberOfExecution(PROVED_IN_ABSENCE, 1);
+        delegatesVerifier.assertDelegateCalledWith(PROVED_IN_ABSENCE, 0, withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)));
+
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 1);
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 0, allOf(
+                withProcessBusinessKey(caseId.toString()),
+                withProcessVariable(POSTING_DATE_VARIABLE, postingDate.toString()),
+                withProcessVariable(PROVED_IN_ABSENCE_VARIABLE, true),
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata))
+        ));
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
+    }
+
+    @Test
+    @Deployment(resources = PROCESS_PATH)
+    public void shouldNotExecuteProvedInAbsenceDelegateWhenPostingDateIsYoungerThan28Days() {
+        final LocalDate postingDate = now().minusDays(27);
+
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
+
+        delegatesVerifier.verifyNumberOfExecution(PROVED_IN_ABSENCE, 0);
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED);
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
     }
 
     @Test
     @Deployment(resources = {PROCESS_PATH})
-    public void shouldCompleteProcessIfInReadyState() throws Exception {
+    public void shouldCompleteAlwaysBeReachable() {
+        final LocalDate postingDate = now().plusDays(1);
 
-        final LocalDate postingDate = LocalDate.now().minusDays(30);
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
 
-        mockDelegate(de -> de.setVariable(IS_READY_VARIABLE, true))
-                .when(readyCaseDelegate).execute(Matchers.any(DelegateExecution.class));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, CaseStateService.WITHDRAWAL_REQUESTED_SIGNAL_NAME, is(1));
 
-        final ProcessInstance processInstance = startProcess(caseId, postingDate, metadata);
+        caseStateService.caseCompleted(caseId, metadata);
 
-        tryProcessPendingJobs();
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, CASE_COMPLETED);
+        delegatesVerifier.assertDelegateCalledWith(CASE_COMPLETED, 0, withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)));
 
-        caseCompleted(processInstance, metadata);
-
-        tryProcessPendingJobs();
-
-        verify(caseCompletedDelegate).execute(argThat(withProcessVariable(METADATA_VARIABLE, metadataHelper.metadataToString(metadata))));
-
-        verifyZeroInteractions(
-                pleaUpdatedDelegate,
-                pleaCancelledDelegate,
-                withdrawalRequestedDelegate,
-                withdrawalRequestCancelledDelegate);
-
-        tryProcessPendingJobs();
-
-        assertThat(isProcessFinished(processInstance), equalTo(true));
+        delegatesVerifier.assertProcessFinished(processInstanceId, true);
     }
 
-    private ProcessInstance startProcess(final UUID caseId, final LocalDate postingDate, final Metadata metadata) {
-        final Map<String, Object> processParams = new HashMap<>();
-        processParams.put(NOTICE_ENDED_DATE_VARIABLE, postingDate.plusDays(28).atStartOfDay().format(ISO_DATE_TIME));
-        processParams.put(POSTING_DATE_VARIABLE, postingDate.format(ISO_DATE));
-        processParams.put(METADATA_VARIABLE, metadataHelper.metadataToString(metadata));
+    @Test
+    @Deployment(resources = {PROCESS_PATH})
+    public void shouldProvedInAbsenceVariableRemainPersistent() {
+        final UUID offenceId = randomUUID();
+        final LocalDate postingDate = now().minusDays(29);
+        final PleaType pleaType = PleaType.GUILTY;
 
-        return runtimeService.startProcessInstanceByKey(PROCESS_NAME, caseId.toString(), processParams);
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
+        delegatesVerifier.tryProcessPendingJobs();
+
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, PROVED_IN_ABSENCE, READY_CASE);
+
+        caseStateService.withdrawalRequested(caseId, metadata);
+
+        callPleaUpdated(offenceId, pleaType, ZonedDateTime.now(), metadata);
+
+        caseStateService.pleaCancelled(caseId, offenceId, metadata);
+
+        caseStateService.withdrawalRequestCancelled(caseId, metadata);
+
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, PROVED_IN_ABSENCE, READY_CASE, WITHDRAWAL_REQUESTED, PLEA_UPDATED, PLEA_CANCELLED, WITHDRAWAL_REQUEST_CANCELLED);
+        delegatesVerifier.verifyNumberOfExecution(CASE_STARTED, 1);
+        delegatesVerifier.verifyNumberOfExecution(PROVED_IN_ABSENCE, 1);
+        delegatesVerifier.verifyNumberOfExecution(WITHDRAWAL_REQUESTED, 1);
+        delegatesVerifier.verifyNumberOfExecution(PLEA_UPDATED, 1);
+        delegatesVerifier.verifyNumberOfExecution(PLEA_CANCELLED, 1);
+        delegatesVerifier.verifyNumberOfExecution(WITHDRAWAL_REQUEST_CANCELLED, 1);
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 5);
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
+
+        caseStateService.caseCompleted(caseId, metadata);
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, true);
+
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 5);
+        IntStream.range(0, 5).forEach(i ->
+                delegatesVerifier.assertDelegateCalledWith(READY_CASE, i, allOf(
+                        withProcessBusinessKey(caseId.toString()),
+                        withProcessVariable(POSTING_DATE_VARIABLE, postingDate.toString()),
+                        withProcessVariable(PROVED_IN_ABSENCE_VARIABLE, true),
+                        withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)))));
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 4, allOf(
+                withoutProcessVariable(PLEA_TYPE_VARIABLE),
+                withoutProcessVariable(WITHDRAWAL_REQUESTED_VARIABLE)));
     }
 
-    private void pleaUpdated(final ProcessInstance processInstance, final UUID offenceId, final PleaType pleaType, final Metadata metadata) {
-        final Map<String, Object> processParams = new HashMap<>();
-        processParams.put(METADATA_VARIABLE, metadataHelper.metadataToString(metadata));
-        processParams.put(OFFENCE_ID_VARIABLE, offenceId.toString());
-        processParams.put(PLEA_TYPE_VARIABLE, pleaType.name());
-
-        signalProcess(processInstance, PLEA_UPDATED_SIGNAL_NAME, processParams);
+    private void callPleaUpdated(final UUID offenceId, final PleaType pleaType, final ZonedDateTime pleaDatesToAvoidDays,
+                                 final Metadata metadata) {
+        delegatesVerifier.getDelegateExecution(PLEA_UPDATED).setVariablesOnExecution(singletonMap(PLEA_READY_VARIABLE, !PleaType.NOT_GUILTY.equals(pleaType)));
+        caseStateService.pleaUpdated(caseId, offenceId, pleaType, pleaDatesToAvoidDays, metadata);
     }
 
-    private void pleaCancelled(final ProcessInstance processInstance, final UUID offenceId, final Metadata metadata) {
-        final Map<String,Object> processParams = ImmutableMap.of(METADATA_VARIABLE, metadataHelper.metadataToString(metadata), OFFENCE_ID_VARIABLE, offenceId.toString());
-        signalProcess(processInstance, PLEA_CANCELLED_SIGNAL_NAME, processParams);
-    }
-
-    private void requestWithdrawal(final ProcessInstance processInstance, final Metadata metadata) {
-        final Map<String, Object> processParams = ImmutableMap.of(METADATA_VARIABLE, metadataHelper.metadataToString(metadata));
-        signalProcess(processInstance, WITHDRAWAL_REQUESTED_SIGNAL_NAME, processParams);
-    }
-
-    private void cancelWithdrawalRequest(final ProcessInstance processInstance, final Metadata metadata) {
-        final Map<String, Object> processParams = ImmutableMap.of(METADATA_VARIABLE, metadataHelper.metadataToString(metadata));
-        signalProcess(processInstance, WITHDRAWAL_REQUEST_CANCELLED_SIGNAL_NAME, processParams);
-    }
-
-    private void caseCompleted(final ProcessInstance processInstance, final Metadata metadata) {
-        final Map<String, Object> processParams = ImmutableMap.of(METADATA_VARIABLE, metadataHelper.metadataToString(metadata));
-        signalProcess(processInstance, CASE_COMPLETED_SIGNAL_NAME, processParams);
-    }
-
-    private void signalProcess(final ProcessInstance processInstance, final String signalName, final Map<String, Object> processParams) {
-        runtimeService.createExecutionQuery()
-                .processInstanceId(processInstance.getProcessInstanceId())
-                .signalEventSubscriptionName(signalName)
-                .list()
-                .forEach(execution -> runtimeService.signalEventReceived(signalName, execution.getId(), processParams));
-    }
-
-    private boolean isProcessFinished(final ProcessInstance processInstance) {
-        final ProcessInstance refreshedProcessInstance = rule.getProcessEngine()
-                .getRuntimeService()
-                .createProcessInstanceQuery()
-                .processInstanceId(processInstance.getProcessInstanceId())
-                .singleResult();
-
-        return refreshedProcessInstance == null;
-    }
-
-    private void tryProcessPendingJobs() {
-        try {
-            waitForJobExecutorToProcessAllJobs(rule, 1000, 10);
-        } catch (final ActivitiException e) {
-            LOGGER.warn("Exception thrown while waiting for jobs to be processed", e);
-        }
-    }
 }

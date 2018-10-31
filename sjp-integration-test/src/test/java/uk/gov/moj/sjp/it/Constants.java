@@ -20,6 +20,7 @@ public class Constants {
     public static final String PUBLIC_EVENT_SELECTOR_PLEA_UPDATED = "public.sjp.plea-updated";
     public static final String PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED = "public.sjp.plea-cancelled";
     public static final String EVENT_SELECTOR_TRIAL_REQUESTED = "sjp.events.trial-requested";
+    public static final String EVENT_SELECTOR_DATES_TO_AVOID_ADDED = "sjp.events.dates-to-avoid-added";
     public static final String EVENT_SELECTOR_CASE_RECEIVED = CaseReceived.EVENT_NAME;
     public static final String PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED = "public.sjp.all-offences-withdrawal-requested";
     public static final String SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED = AllOffencesWithdrawalRequested.EVENT_NAME;

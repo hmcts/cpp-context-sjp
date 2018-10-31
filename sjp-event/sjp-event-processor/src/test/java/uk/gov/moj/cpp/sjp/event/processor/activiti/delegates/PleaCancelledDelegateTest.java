@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.AllOf.allOf;
@@ -14,6 +15,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.OFFENCE_ID_VARIABLE;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_READY_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_TYPE_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PROCESS_MIGRATION_VARIABLE;
 
@@ -53,8 +55,8 @@ public class PleaCancelledDelegateTest extends AbstractCaseDelegateTest {
                         ))
                 )));
 
-        verify(delegateExecution).removeVariable(PLEA_TYPE_VARIABLE);
         verify(delegateExecution, never()).removeVariable(PROCESS_MIGRATION_VARIABLE);
+        verify(delegateExecution).removeVariables(asList(PLEA_TYPE_VARIABLE, PLEA_READY_VARIABLE));
     }
 
     @Test
@@ -65,7 +67,6 @@ public class PleaCancelledDelegateTest extends AbstractCaseDelegateTest {
 
         verify(sender, never()).send(any());
 
-        verify(delegateExecution).removeVariable(PLEA_TYPE_VARIABLE);
-        verify(delegateExecution).removeVariable(PROCESS_MIGRATION_VARIABLE);
+        verify(delegateExecution).removeVariables(asList(PLEA_TYPE_VARIABLE, PLEA_READY_VARIABLE));
     }
 }

@@ -23,7 +23,7 @@ public class MetadataHelper {
 
     private static final String SJP_ID = "sjpId";
 
-    public Metadata metadataFromString(final String metadataString) {
+    public static Metadata metadataFromString(final String metadataString) {
         return metadataFrom(readJson(metadataString)).build();
     }
 

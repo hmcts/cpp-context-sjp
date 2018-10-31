@@ -15,6 +15,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService;
 
 import java.util.UUID;
 
@@ -37,6 +38,9 @@ public class DatesToAvoidProcessorTest {
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
+    @Mock
+    private CaseStateService caseStateService;
+
     @Test
     public void raisesDatesToAvoidAddedPublicEvent() {
         final UUID caseId = UUID.randomUUID();
@@ -50,14 +54,7 @@ public class DatesToAvoidProcessorTest {
 
         processor.publishDatesToAvoidAdded(envelope);
 
-        verify(sender).send(argThat(jsonEnvelope(
-                metadata()
-                        .envelopedWith(envelope.metadata())
-                        .withName("public.sjp.dates-to-avoid-added"),
-                payloadIsJson(allOf(
-                        withJsonPath("$.caseId", equalTo(caseId.toString())),
-                        withJsonPath("$.datesToAvoid", equalTo(datesToAvoid))
-                )))));
+        verify(caseStateService).datesToAvoidAdded(caseId, datesToAvoid, envelope.metadata());
     }
 
     @Test

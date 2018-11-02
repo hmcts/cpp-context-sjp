@@ -18,7 +18,8 @@
         "address2": "London",
         "address1": "14 Tottenham Court Road",
         "postcode": "W1T 1JY",
-        "address4": "UK"
+        "address4": "UK",
+        "address5": "Greater London"
       },
       "nationalInsuranceNumber": "AB123456A",
       "dateOfBirth": "1990-09-09",
@@ -34,7 +35,8 @@
         "address2": "London",
         "address1": "18 Tottenham Court Road",
         "postcode": "W1T 1JY",
-        "address4": "UK"
+        "address4": "UK",
+        "address5": "Greater London"
       },
       "employeeReference": "12345",
       "phone": "020 7998 0007",

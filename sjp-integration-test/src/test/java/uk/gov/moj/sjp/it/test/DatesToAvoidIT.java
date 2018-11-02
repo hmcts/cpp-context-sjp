@@ -238,6 +238,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
                 withJsonPath("$.cases[0].address.address2"),
                 withJsonPath("$.cases[0].address.address3"),
                 withJsonPath("$.cases[0].address.address4"),
+
                 withJsonPath("$.cases[0].address.postcode"),
                 withJsonPath("$.cases[0].referenceNumber"),
                 withJsonPath("$.cases[0].dateOfBirth")
@@ -255,6 +256,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getAddress2(), ((Map) map.get("address")).get("address2"));
         assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getAddress3(), ((Map) map.get("address")).get("address3"));
         assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getAddress4(), ((Map) map.get("address")).get("address4"));
+        assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getAddress5(), ((Map) map.get("address")).get("address5"));
         assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getPostcode(), ((Map) map.get("address")).get("postcode"));
         assertEquals(aCase.getUrn(), map.get("referenceNumber"));
         assertEquals(aCase.getDefendantBuilder().getDateOfBirth().toString(), map.get("dateOfBirth"));

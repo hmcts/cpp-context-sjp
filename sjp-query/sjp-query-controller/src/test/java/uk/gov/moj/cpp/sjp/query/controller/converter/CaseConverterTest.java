@@ -50,6 +50,7 @@ public class CaseConverterTest {
         final String address2 = "Landsowne";
         final String address3 = "Oxford";
         final String address4 = "Surrey";
+        final String address5 = "Greater London";
         final String postcode = "OX4GF1";
 
         final String offenceCode = "OF611";
@@ -82,6 +83,7 @@ public class CaseConverterTest {
                                         .add("address2", address2)
                                         .add("address3", address3)
                                         .add("address4", address4)
+                                        .add("address5", address5)
                                         .add("postcode", postcode)
                                 )
                         )
@@ -123,6 +125,7 @@ public class CaseConverterTest {
                                         .add("address2", address2)
                                         .add("address3", address3)
                                         .add("address4", address4)
+                                        .add("address5", address5)
                                         .add("postcode", postcode)
                                 )
                         )

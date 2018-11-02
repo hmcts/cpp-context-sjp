@@ -90,6 +90,7 @@ public class EmployerHandlerTest {
                 .withAddress2("")
                 .withAddress3("London")
                 .withAddress4("Croydon")
+                .withAddress5("Greater London")
                 .withPostcode("CR01XG")
                 .build();
         final Employer employer = Employer.employer()
@@ -131,6 +132,7 @@ public class EmployerHandlerTest {
                                 withJsonPath("$.address.address2", equalTo("")),
                                 withJsonPath("$.address.address3", equalTo("London")),
                                 withJsonPath("$.address.address4", equalTo("Croydon")),
+                                withJsonPath("$.address.address5", equalTo("Greater London")),
                                 withJsonPath("$.address.postcode", equalTo("CR01XG"))
 
                         ))),

@@ -4,12 +4,10 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyCollectionOf;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.StringContains.containsString;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
@@ -30,7 +28,6 @@ import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
-import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
@@ -206,7 +203,7 @@ public class CaseAggregateDefendantTest {
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 new DefendantData().withNewAddress(new Address(" ", "address2",
-                        "address3", "address4", "CR02FW"))
+                        "address3", "address4", "address5", "CR02FW"))
         );
 
         assertThat(events, hasSize(1));
@@ -226,7 +223,7 @@ public class CaseAggregateDefendantTest {
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 new DefendantData().withNewAddress(new Address("address1", "address2",
-                        "address3", " ", "CR02FW"))
+                        "", "address4", "", "CR02FW"))
         );
 
         assertThat(events, hasSize(1));
@@ -234,7 +231,27 @@ public class CaseAggregateDefendantTest {
         final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
         assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
         assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
-        assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("town (address4) can not be blank as previous value is: address4"));
+        assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("town (address3) can not be blank as previous value is: address3"));
+    }
+
+    @Test
+    public void acceptsAddressWithMissingAddressLine5() {
+        givenCaseWasReceivedWithDefaultDefendantData();
+
+        final List<Object> events = whenTheDefendantIsUpdated(
+                new DefendantData().withNewAddress(new Address("address1", "address2",
+                        "address3", "address4", "", "CR02FW"))
+        );
+
+        assertThat(events, hasSize(2));
+
+        final DefendantAddressUpdated defendantAddressUpdated = (DefendantAddressUpdated) events.get(0);
+        assertThat(defendantAddressUpdated.getCaseId(), is(caseId));
+        assertThat(defendantAddressUpdated.getNewAddress().getAddress5(), is(""));
+
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(1);
+        assertThat(defendantDetailsUpdated.getCaseId(), is(caseId));
+        assertThat(defendantDetailsUpdated.getAddress().getAddress5(), is(""));
     }
 
     @Test
@@ -243,7 +260,7 @@ public class CaseAggregateDefendantTest {
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 new DefendantData().withNewAddress(new Address("address1", "address2",
-                        "address3", "address4", " "))
+                        "address3", "address4", "address5", ""))
         );
 
         assertThat(events, hasSize(1));
@@ -258,7 +275,7 @@ public class CaseAggregateDefendantTest {
     public void acceptsNewAddress() {
         givenCaseWasReceivedWithDefaultDefendantData();
 
-        final Address newAddress = new Address("new street", "", "", "new town", "CR02FT");
+        final Address newAddress = new Address("new street", "", "new town", "", "", "CR02FT");
         final List<Object> events = whenTheDefendantIsUpdated(
                 new DefendantData().withNewAddress(newAddress)
         );

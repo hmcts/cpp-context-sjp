@@ -21,6 +21,7 @@ public class EmployerConverter {
                 entity.getAddress2(),
                 entity.getAddress3(),
                 entity.getAddress4(),
+                entity.getAddress5(),
                 entity.getPostcode()).anyMatch(Objects::nonNull);
         return nonEmptyAddress ?
                 Optional.of(new Address(
@@ -28,6 +29,7 @@ public class EmployerConverter {
                         entity.getAddress2(),
                         entity.getAddress3(),
                         entity.getAddress4(),
+                        entity.getAddress5(),
                         entity.getPostcode()))
                 : Optional.empty();
     }

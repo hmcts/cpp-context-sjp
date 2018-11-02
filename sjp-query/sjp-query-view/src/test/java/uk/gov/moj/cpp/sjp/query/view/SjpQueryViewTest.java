@@ -315,6 +315,7 @@ public class SjpQueryViewTest {
                         withJsonPath("$.address.address2", is(address.getAddress2())),
                         withJsonPath("$.address.address3", is(address.getAddress3())),
                         withJsonPath("$.address.address4", is(address.getAddress4())),
+                        withJsonPath("$.address.address5", is(address.getAddress5())),
                         withJsonPath("$.address.postcode", is(address.getPostcode()))
                 ))
                 )

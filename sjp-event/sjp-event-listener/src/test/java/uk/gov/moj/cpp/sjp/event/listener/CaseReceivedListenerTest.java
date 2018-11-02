@@ -115,6 +115,7 @@ public class CaseReceivedListenerTest {
     private static final String address2 = "6 Luxury Street";
     private static final String address3 = "Croydon";
     private static final String address4 = "London";
+    private static final String address5 = "Greater London";
     private static final String postcode = "CR16BY";
     private static final String caseCreatedOn = "2018-01-11T16:17:15.294Z[UTC]";
     private static final UUID offenceId = UUID.randomUUID();
@@ -182,6 +183,7 @@ public class CaseReceivedListenerTest {
                                         address2,
                                         address3,
                                         address4,
+                                        address5,
                                         postcode),
                                 null),
                         singletonList(
@@ -218,6 +220,8 @@ public class CaseReceivedListenerTest {
                 equalTo(expectedPersonalDetails.getAddress().getAddress3()));
         assertThat(actualPersonalDetails.getAddress().getAddress4(),
                 equalTo(expectedPersonalDetails.getAddress().getAddress4()));
+        assertThat(actualPersonalDetails.getAddress().getAddress5(),
+                equalTo(expectedPersonalDetails.getAddress().getAddress5()));
         assertThat(actualPersonalDetails.getAddress().getPostcode(),
                 equalTo(expectedPersonalDetails.getAddress().getPostcode()));
 
@@ -279,6 +283,7 @@ public class CaseReceivedListenerTest {
                                 .add("address2", address2)
                                 .add("address3", address3)
                                 .add("address4", address4)
+                                .add("address5", address5)
                                 .add("postcode", postcode)
                         )
                         .add("offences", createArrayBuilder()

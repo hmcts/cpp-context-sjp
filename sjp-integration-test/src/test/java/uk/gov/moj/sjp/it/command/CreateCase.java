@@ -100,6 +100,7 @@ public class CreateCase {
                         .add("address2", payloadBuilder.defendantBuilder.addressBuilder.getAddress2())
                         .add("address3", payloadBuilder.defendantBuilder.addressBuilder.getAddress3())
                         .add("address4", payloadBuilder.defendantBuilder.addressBuilder.getAddress4())
+                        .add("address5", payloadBuilder.defendantBuilder.addressBuilder.getAddress5())
                         .add("postcode", payloadBuilder.defendantBuilder.addressBuilder.getPostcode())
                 )
                 .add("offences", createArrayBuilder().add(offence));

@@ -44,8 +44,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
                                 @ColumnResult(name = "age", type = Integer.class),
                                 @ColumnResult(name = "count", type = Integer.class)
                         })),
-         @SqlResultSetMapping(
-                name = "assignmentCandidates",
+        @SqlResultSetMapping(
+                name = CaseDetail.RESULT_SET_MAPPING_ASSIGNMENT_CANDIDATES,
                 classes = @ConstructorResult(
                         targetClass = AssignmentCandidate.class,
                         columns = {
@@ -56,6 +56,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 @Entity
 @Table(name = "case_details")
 public class CaseDetail implements Serializable {
+
+    public static final String RESULT_SET_MAPPING_ASSIGNMENT_CANDIDATES = "assignmentCandidates";
 
     private static final long serialVersionUID = -5400670786416162433L;
 

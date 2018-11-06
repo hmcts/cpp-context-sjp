@@ -35,6 +35,7 @@ public class InMemoryCourtHouseDataSource implements CourtHouseDataSource {
             .put("Westminster Magistrates' Court", "B01IX")
             .put("Willesden Magistrates' Court", "B01CE")
             .put("Wimbledon Magistrates' Court", "B01OK")
+            .put("Battersea", "B01LY")
             .build();
 
     private InMemoryCourtHouseDataSource() {

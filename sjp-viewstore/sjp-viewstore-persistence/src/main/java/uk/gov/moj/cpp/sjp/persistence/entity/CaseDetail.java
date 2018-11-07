@@ -5,6 +5,7 @@ import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
 
 import java.io.Serializable;
@@ -22,6 +23,8 @@ import javax.persistence.ColumnResult;
 import javax.persistence.ConstructorResult;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
@@ -108,6 +111,10 @@ public class CaseDetail implements Serializable {
 
     @Column(name = "dates_to_avoid")
     private String datesToAvoid;
+
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private CaseStatus status;
 
     public CaseDetail() {
         defendant.setCaseDetail(this);
@@ -286,6 +293,14 @@ public class CaseDetail implements Serializable {
 
     public void setDatesToAvoid(final String datesToAvoid) {
         this.datesToAvoid = datesToAvoid;
+    }
+
+    public CaseStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(CaseStatus status) {
+        this.status = status;
     }
 
     public void markDefendantNameUpdated(ZonedDateTime updateDate) {

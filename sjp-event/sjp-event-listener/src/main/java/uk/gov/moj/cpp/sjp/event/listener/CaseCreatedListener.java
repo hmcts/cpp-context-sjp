@@ -1,11 +1,10 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
-
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseReceivedToCase;
@@ -17,6 +16,8 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 @ServiceComponent(EVENT_LISTENER)
 public class CaseCreatedListener {
@@ -61,6 +62,7 @@ public class CaseCreatedListener {
                         envelope.payloadAsJsonObject(), CaseReceived.class
                 )
         );
+        caseDetail.setStatus(CaseStatus.NO_PLEA_RECEIVED);
 
         caseRepository.save(caseDetail);
 

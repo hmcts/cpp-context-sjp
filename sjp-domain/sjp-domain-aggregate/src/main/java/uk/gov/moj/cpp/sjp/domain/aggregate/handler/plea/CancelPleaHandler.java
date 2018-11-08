@@ -8,7 +8,6 @@ import uk.gov.moj.cpp.sjp.domain.command.CancelPlea;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.TrialRequestCancelled;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -45,7 +44,7 @@ public class CancelPleaHandler {
                                                     final CaseAggregateState state) {
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(new PleaCancelled(cancelPlea.getCaseId(), cancelPlea.getOffenceId()));
+        streamBuilder.add(new PleaCancelled(cancelPlea.getCaseId(), cancelPlea.getOffenceId(), state.isProvedInAbsence()));
 
         if (state.isTrialRequested()) {
             streamBuilder.add(new TrialRequestCancelled(state.getCaseId()));

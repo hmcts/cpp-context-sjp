@@ -5,6 +5,7 @@ import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
@@ -16,10 +17,13 @@ import static uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecor
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
 import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseCourtReferralStatus;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseCourtReferralStatusRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -41,6 +45,9 @@ public class CourtReferralListenerTest {
 
     @Mock
     private CaseCourtReferralStatusRepository caseCourtReferralStatusRepository;
+
+    @Mock
+    private CaseRepository caseRepository;
 
     @InjectMocks
     private CourtReferralListener courtReferralListener;
@@ -78,9 +85,13 @@ public class CourtReferralListenerTest {
                 metadataWithRandomUUID("sjp.events.case-referred-for-court-hearing"),
                 caseReferredForCourtHearing);
 
+        final CaseDetail caseDetail = mock(CaseDetail.class);
+        when(caseRepository.findBy(CASE_ID)).thenReturn(caseDetail);
+
         courtReferralListener.handleCaseReferredForCourtHearing(eventEnvelope);
 
         verify(caseCourtReferralStatusRepository).save(new CaseCourtReferralStatus(CASE_ID, RECEIVED_AT));
+        verify(caseDetail).setStatus(CaseStatus.REFERRED_FOR_COURT_HEARING);
     }
 
     @Test

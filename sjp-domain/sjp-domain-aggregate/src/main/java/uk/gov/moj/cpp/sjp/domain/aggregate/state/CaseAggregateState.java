@@ -9,6 +9,7 @@ import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -62,6 +63,9 @@ public class CaseAggregateState implements AggregateState {
     private ProsecutingAuthority prosecutingAuthority;
 
     private CaseStatus status;
+    private LocalDate postingDate;
+    private PleaType plea;
+    private boolean provedInAbsence;
 
     public UUID getCaseId() {
         return caseId;
@@ -99,6 +103,10 @@ public class CaseAggregateState implements AggregateState {
         return caseCompleted;
     }
 
+    public boolean isProvedInAbsence() {
+        return provedInAbsence;
+    }
+
     public void markCaseCompleted() {
         this.caseCompleted = true;
         //TODO ATCM-3121 implement allowed transition in CaseStatus enum - there is likely race condition between case completed and case referred for court hearing
@@ -122,6 +130,9 @@ public class CaseAggregateState implements AggregateState {
 
     public void setWithdrawalAllOffencesRequested(final boolean withdrawalAllOffencesRequested) {
         this.withdrawalAllOffencesRequested = withdrawalAllOffencesRequested;
+        if (withdrawalAllOffencesRequested) {
+            this.status = CaseStatus.WITHDRAWAL_REQUEST_READY_FOR_DECISION;
+        }
     }
 
     public UUID getAssigneeId() {
@@ -177,6 +188,14 @@ public class CaseAggregateState implements AggregateState {
     }
 
     public void setReadinessReason(final CaseReadinessReason readinessReason) {
+        if (CaseReadinessReason.PIA == readinessReason) {
+            this.provedInAbsence = true;
+        }
+        if (readinessReason != null) {
+            this.status = this.status.markReadyCase(readinessReason, datesToAvoid);
+        } else {
+            this.status = this.status.unmarkReadyCase(plea, this.readinessReason, datesToAvoid);
+        }
         this.readinessReason = readinessReason;
     }
 
@@ -195,6 +214,9 @@ public class CaseAggregateState implements AggregateState {
 
     public void setDatesToAvoid(final String datesToAvoid) {
         this.datesToAvoid = datesToAvoid;
+        if (PleaType.NOT_GUILTY == plea) {
+            this.status = CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION;
+        }
     }
 
     public void addOffenceIdsForDefendant(UUID defendantId, Set<UUID> offenceIds) {
@@ -293,12 +315,40 @@ public class CaseAggregateState implements AggregateState {
         caseDocuments.put(id, caseDocument);
     }
 
-    public void addOffenceIdWithPleas(final UUID offenceId) {
+    public void updateOffenceWithPlea(final UUID offenceId, PleaType pleaType) {
+        this.plea = pleaType;
         offenceIdsWithPleas.add(offenceId);
+
+        /* From https://tools.hmcts.net/confluence/display/PLAT/ATCM+Case+Statuses
+        When the case has been updated with a plea of Not Guilty via online or Court Admin (post) and not updated with dates to avoid and date plea updated <=10 days
+
+        NOTE: If the status of the case is 'Withdrawal request - ready for decision' before a Not guilty plea is received,
+        when a Not Guilty plea is received the status remains at 'Withdrawal request - ready for decision' */
+
+        /*  From https://tools.hmcts.net/confluence/display/PLAT/ATCM+Case+Statuses
+        Plea received - ready for decision
+            When the case has been updated with a plea of Guilty via online or Court Admin (post)
+
+        NOTE: If the status of the case is 'Withdrawal request - ready for decision' before a guilty plea is received,
+        when a Guilty plea is received the status remains at 'Withdrawal request - ready for decision'
+         */
+        this.status = this.status.pleaReceived(pleaType, datesToAvoid);
+
     }
 
-    public void removePleaFromOffence(final UUID offenceId) {
+    public void removePleaFromOffence(final UUID offenceId, final Boolean provedInAbsence) {
+        //Currently as we don't deal with multiple offences for defendant, we just simplified by just one plea.
+        this.plea = null;
         offenceIdsWithPleas.remove(offenceId);
+
+        /* Withdrawal request takes priority, in any case even if the plea is withdrawn.
+        From Confluence page
+        NOTE: When a plea is cancelled the case status goes back to the relevant status based on the rules above i.e. 'No plea received' if certificate of service date < 28 days
+        or 'No plea received - ready for decision' if the certificate of service date >= 28 days with the exception of
+        when there is a Withdrawal request - case status stays as Withdrawal request - ready for decision. */
+
+        this.status = this.status.cancelPlea(provedInAbsence);
+
     }
 
     public CaseStatus getStatus() {
@@ -358,4 +408,15 @@ public class CaseAggregateState implements AggregateState {
         return nonNull(caseId) && caseId.equals(id);
     }
 
+    public void setPostingDate(LocalDate postingDate) {
+        this.postingDate = postingDate;
+    }
+
+    public LocalDate getPostingDate() {
+        return postingDate;
+    }
+
+    public PleaType getPlea() {
+        return plea;
+    }
 }

@@ -29,6 +29,7 @@ final class CaseReceivedMutator implements AggregateStateMutator<CaseReceived, C
         state.setDefendantLastName(event.getDefendant().getLastName());
         state.setDefendantDateOfBirth(event.getDefendant().getDateOfBirth());
         state.setDefendantAddress(event.getDefendant().getAddress());
+        state.setPostingDate(event.getPostingDate());
         state.setCaseReceived(true);
     }
 }

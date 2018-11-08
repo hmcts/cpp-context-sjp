@@ -61,5 +61,6 @@
   "completed": false,
   "postingDate": "2015-12-02",
   "enterpriseId": "${enterpriseId}",
-  "onlinePleaReceived": true
+  "onlinePleaReceived": true,
+  "status": "${caseStatus}"
 }

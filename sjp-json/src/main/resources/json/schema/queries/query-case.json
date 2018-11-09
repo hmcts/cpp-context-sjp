@@ -47,6 +47,9 @@
     },
     "enterpriseId": {
       "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/enterprise-id.json"
+    },
+    "status": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/case-status.json"
     }
   },
   "additionalProperties": true,

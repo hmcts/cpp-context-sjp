@@ -6,18 +6,11 @@
 
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <artifactId>sjp-parent</artifactId>
+        <artifactId>sjp-domain</artifactId>
         <version>1.0.75-ATCM-SNAPSHOT</version>
     </parent>
 
-    <artifactId>sjp-domain</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>sjp-domain-common</artifactId>
 
-    <modules>
-        <module>sjp-domain-event</module>
-        <module>sjp-domain-aggregate</module>
-        <module>sjp-domain-transformation</module>
-        <module>sjp-domain-common</module>
-    </modules>
 
 </project>

@@ -1,0 +1,18 @@
+{
+  "caseId": "11c6aa99-f6f9-4960-adea-191ba5cfa4d4",
+  "newAddress": {
+    "address1": "10",
+    "address2": "Downing Street",
+    "address3": "London",
+    "address4": "Surrey",
+    "postcode": "SW1A 2AA"
+  },
+  "oldAddress": {
+    "address1": "Flat 55",
+    "address2": "1 Oxford Road",
+    "address3": "Croydon",
+    "address4": "Surrey",
+    "postcode": "SW99 1AA"
+  },
+  "updatedAt": "2018-11-10T16:47:44.091Z"
+}

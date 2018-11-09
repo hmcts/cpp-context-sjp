@@ -25,7 +25,7 @@
         <resulting.version>2.0.212-ATCM-SNAPSHOT</resulting.version>
         <scheduling.version>2.0.88</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
-        <usersgroups.version>2.0.105</usersgroups.version>
+        <usersgroups.version>2.0.106</usersgroups.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>

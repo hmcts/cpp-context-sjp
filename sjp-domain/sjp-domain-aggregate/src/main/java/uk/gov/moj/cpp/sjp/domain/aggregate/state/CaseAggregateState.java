@@ -8,6 +8,7 @@ import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -59,6 +60,8 @@ public class CaseAggregateState implements AggregateState {
 
     private ProsecutingAuthority prosecutingAuthority;
 
+    private CaseStatus status;
+
     public UUID getCaseId() {
         return caseId;
     }
@@ -97,6 +100,7 @@ public class CaseAggregateState implements AggregateState {
 
     public void markCaseCompleted() {
         this.caseCompleted = true;
+        this.status = CaseStatus.COMPLETED;
     }
 
     public boolean isWithdrawalAllOffencesRequested() {
@@ -169,6 +173,7 @@ public class CaseAggregateState implements AggregateState {
 
     public void setCaseReceived(final boolean caseReceived) {
         this.caseReceived = caseReceived;
+        this.status = CaseStatus.NO_PLEA_RECEIVED;
     }
 
     public String getDatesToAvoid() {
@@ -281,6 +286,10 @@ public class CaseAggregateState implements AggregateState {
 
     public void removePleaFromOffence(final UUID offenceId) {
         offenceIdsWithPleas.remove(offenceId);
+    }
+
+    public CaseStatus getStatus() {
+        return status;
     }
 
     public void updateDefendantInterpreterLanguage(final UUID defendantId, final Interpreter interpreter) {

@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 import org.junit.Test;
 import uk.gov.moj.cpp.sjp.domain.*;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.*;
@@ -138,6 +139,7 @@ public class CompositeCaseAggregateStateMutatorTest {
         CompositeCaseAggregateStateMutator.INSTANCE.apply(caseCompleted, caseAggregateState);
 
         assertTrue(caseAggregateState.isCaseCompleted());
+        assertThat(caseAggregateState.getStatus(), is(CaseStatus.COMPLETED));
     }
 
     @Test

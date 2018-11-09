@@ -59,4 +59,10 @@ public abstract class AbstractCaseDelegate implements JavaDelegate {
                 payload));
     }
 
+    protected void send(final Metadata metadata, final String metadataName, final JsonObject payload) {
+        sender.send(envelopeFrom(
+                metadataFrom(metadata).withName(metadataName).build(),
+                payload));
+    }
+
 }

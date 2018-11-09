@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 
 import java.math.BigDecimal;
@@ -27,6 +28,7 @@ public class CaseView {
     private String enterpriseId;
     private boolean onlinePleaReceived;
     private String datesToAvoid;
+    private CaseStatus status;
 
     public CaseView(CaseDetail caseDetail) {
 
@@ -53,6 +55,7 @@ public class CaseView {
         this.enterpriseId = caseDetail.getEnterpriseId();
         this.onlinePleaReceived = Boolean.TRUE.equals(caseDetail.getOnlinePleaReceived());
         this.datesToAvoid = caseDetail.getDatesToAvoid();
+        this.status = caseDetail.getStatus();
     }
 
     public String getId() {
@@ -117,5 +120,9 @@ public class CaseView {
 
     public String getDatesToAvoid() {
         return datesToAvoid;
+    }
+
+    public CaseStatus getStatus() {
+        return status;
     }
 }

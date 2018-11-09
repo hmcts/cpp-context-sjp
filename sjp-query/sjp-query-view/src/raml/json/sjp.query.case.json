@@ -44,5 +44,6 @@
       }
     ]
   },
-  "prosecutingAuthority": "TFL"
+  "prosecutingAuthority": "TFL",
+  "status": "NO_PLEA_RECEIVED"
 }

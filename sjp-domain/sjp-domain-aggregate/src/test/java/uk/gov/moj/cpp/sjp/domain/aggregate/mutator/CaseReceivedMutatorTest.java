@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 import org.junit.Test;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 
@@ -43,5 +44,6 @@ public class CaseReceivedMutatorTest {
         assertThat(state.getDefendantDateOfBirth(), is(aCase.getDefendant().getDateOfBirth()));
         assertThat(state.getDefendantAddress(), is(aCase.getDefendant().getAddress()));
         assertTrue(state.isCaseReceived());
+        assertThat(state.getStatus(), is(CaseStatus.NO_PLEA_RECEIVED));
     }
 }

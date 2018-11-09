@@ -21,7 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DatesToAvoidAddedDelegateTest extends AbstractCaseDelegateTest {
+public class DatesToAvoidProcessedDelegateTest extends AbstractCaseDelegateTest {
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> argumentCaptor;
@@ -44,7 +44,7 @@ public class DatesToAvoidAddedDelegateTest extends AbstractCaseDelegateTest {
         // THEN
         verify(delegateExecution).setVariable(PLEA_READY_VARIABLE, true);
 
-        verify(sender).sendAsAdmin(argumentCaptor.capture());
+        verify(sender).send(argumentCaptor.capture());
 
         final JsonEnvelope sentEnvelope = argumentCaptor.getValue();
         assertThat(sentEnvelope.metadata().name(), equalTo("public.sjp.dates-to-avoid-added"));

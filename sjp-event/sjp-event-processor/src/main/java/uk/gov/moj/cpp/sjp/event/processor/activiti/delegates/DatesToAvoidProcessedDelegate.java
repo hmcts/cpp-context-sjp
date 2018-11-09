@@ -28,7 +28,7 @@ public class DatesToAvoidProcessedDelegate extends AbstractCaseDelegate {
                 : "dates to avoid are available just for PLEA_NOT_GUILTY";
 
         if (execution.hasVariable(DATES_TO_AVOID_VARIABLE)) {
-            sendAsAdmin(metadata, DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME,
+            send(metadata, DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME,
                     createObjectBuilder()
                             .add(CASE_ID, caseId.toString())
                             .add(DATES_TO_AVOID, execution.getVariable(DATES_TO_AVOID_VARIABLE, String.class))

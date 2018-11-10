@@ -39,6 +39,9 @@ public final class HandlerUtils {
         } else if (state.isCaseCompleted()) {
             LOGGER.warn("Update rejected because case is already completed: {}", action);
             event = new CaseUpdateRejected(state.getCaseId(), CaseUpdateRejected.RejectReason.CASE_COMPLETED);
+        } else if (state.isCaseReferredForCourtHearing()) {
+            LOGGER.warn("Update rejected because case is referred to court for hearing: {}", action);
+            event = new CaseUpdateRejected(state.getCaseId(), CaseUpdateRejected.RejectReason.CASE_REFERRED_FOR_COURT_HEARING);
         }
 
         return Optional.ofNullable(event).map(Stream::of);

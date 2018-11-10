@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.asList;
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -32,6 +33,7 @@ import uk.gov.moj.cpp.sjp.domain.Offence;
 import uk.gov.moj.cpp.sjp.domain.PersonalName;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.command.CancelPlea;
+import uk.gov.moj.cpp.sjp.domain.command.UpdatePlea;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
@@ -77,7 +79,7 @@ public class PleadOnlineTest {
     private UUID defendantId;
     private UUID offenceId;
 
-    private static final UUID userId = UUID.randomUUID();
+    private static final UUID userId = randomUUID();
 
     @Before
     public void setup() {
@@ -222,10 +224,10 @@ public class PleadOnlineTest {
     public void shouldPleaOnlineSuccessfullyForDefendantWithTitleAndMultipleOffences() {
         //given
         final Object[][] pleaInformationArray = {
-                {UUID.randomUUID(), PleaType.NOT_GUILTY, true, PleaType.NOT_GUILTY},
-                {UUID.randomUUID(), PleaType.GUILTY, false, PleaType.GUILTY},
-                {UUID.randomUUID(), PleaType.GUILTY, true, PleaType.GUILTY_REQUEST_HEARING},
-                {UUID.randomUUID(), PleaType.NOT_GUILTY, true, PleaType.NOT_GUILTY},
+                {randomUUID(), PleaType.NOT_GUILTY, true, PleaType.NOT_GUILTY},
+                {randomUUID(), PleaType.GUILTY, false, PleaType.GUILTY},
+                {randomUUID(), PleaType.GUILTY, true, PleaType.GUILTY_REQUEST_HEARING},
+                {randomUUID(), PleaType.NOT_GUILTY, true, PleaType.NOT_GUILTY},
         };
         final UUID[] extraOffenceIds = Arrays.stream(pleaInformationArray).map(pleaInformation ->
                 (UUID) pleaInformation[0]).toArray(UUID[]::new);
@@ -335,6 +337,53 @@ public class PleadOnlineTest {
     }
 
     @Test
+    public void shouldNotStoreOnlinePleaWhenCaseStatusIsCompleted() {
+        final UUID caseId = randomUUID();
+
+        //given
+        caseAggregate.completeCase();
+
+        //when
+        final UpdatePlea updatePlea = new UpdatePlea(caseId, offenceId, PleaType.NOT_GUILTY, "welsh", false);
+        final Stream<Object> eventStream = caseAggregate.updatePlea(userId, updatePlea, now);
+
+        //then
+        final List<Object> events = asList(eventStream.toArray());
+        assertThat(events, containsEventsOf(CaseUpdateRejected.class));
+
+        assertThat(((CaseUpdateRejected) events.get(0)).getReason(),
+                is(CaseUpdateRejected.RejectReason.CASE_COMPLETED));
+    }
+    @Test
+    public void shouldNotStoreOnlinePleaWhenCaseStatusIsReferredToCourtForHearing() {
+        final UUID caseId = randomUUID();
+        final UUID sessionId = randomUUID();
+        final UUID referralReasonId = randomUUID();
+        final UUID hearingTypeId = randomUUID();
+        final int estimatedHearingDuration = 60;
+
+        //given
+        caseAggregate.referCaseForCourtHearing(caseId,
+                sessionId,
+                referralReasonId,
+                hearingTypeId,
+                estimatedHearingDuration,
+                "listing notes",
+                ZonedDateTime.now());
+
+        //when
+        final UpdatePlea updatePlea = new UpdatePlea(caseId, offenceId, PleaType.NOT_GUILTY, "welsh", false);
+        final Stream<Object> eventStream = caseAggregate.updatePlea(userId, updatePlea, now);
+
+        //then
+        final List<Object> events = asList(eventStream.toArray());
+        assertThat(events, containsEventsOf(CaseUpdateRejected.class));
+
+        assertThat(((CaseUpdateRejected) events.get(0)).getReason(),
+                is(CaseUpdateRejected.RejectReason.CASE_REFERRED_FOR_COURT_HEARING));
+    }
+
+    @Test
     public void shouldStoreOnlinePleaWhenWithdrawalOffencesRequested() {
         //given
         caseAggregate.requestWithdrawalAllOffences();
@@ -382,7 +431,7 @@ public class PleadOnlineTest {
     @Test
     public void shouldNotStoreOnlinePleaWhenOffenceDoesNotExist() {
         //given
-        final UUID offenceId = UUID.randomUUID();
+        final UUID offenceId = randomUUID();
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId);
@@ -395,7 +444,7 @@ public class PleadOnlineTest {
     @Test
     public void shouldNotStoreOnlinePleaWhenDefendantIncorrect() {
         //given
-        final UUID defendantId = UUID.randomUUID();
+        final UUID defendantId = randomUUID();
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId);
@@ -596,14 +645,14 @@ public class PleadOnlineTest {
     }
 
     private static Case createTestCase(final String title, final UUID... extraOffenceIds) {
-        final List<Offence> offences = Stream.concat(Stream.of(UUID.randomUUID()), Arrays.stream(extraOffenceIds))
+        final List<Offence> offences = Stream.concat(Stream.of(randomUUID()), Arrays.stream(extraOffenceIds))
                 .map(id -> new Offence(id, 1, null, null,
                         1, null, null, null, null, null))
                 .collect(toList());
 
-        return new Case(UUID.randomUUID(), "TFL123456", RandomStringUtils.randomAlphanumeric(12).toUpperCase(),
+        return new Case(randomUUID(), "TFL123456", RandomStringUtils.randomAlphanumeric(12).toUpperCase(),
                 ProsecutingAuthority.TFL,  null, null,
-                new Defendant(UUID.randomUUID(), title, PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_DOB,
+                new Defendant(randomUUID(), title, PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_DOB,
                         null, PERSON_NI_NUMBER, null, PERSON_ADDRESS, PERSON_CONTACT_DETAILS, 1, offences, null));
     }
 

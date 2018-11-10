@@ -14,7 +14,6 @@ import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -29,6 +28,20 @@ public class CaseAggregateStateStateTest {
     @Before
     public void setUp() {
         state = new CaseAggregateState();
+    }
+
+    @Test
+    public void shouldMarkCaseAsCompleted() {
+        state.markCaseCompleted();
+
+        assertThat(state.isCaseCompleted(), is(true));
+    }
+
+    @Test
+    public void shouldMarkCaseReferredToCourtForHearing() {
+        state.markCaseReferredForCourtHearing();
+
+        assertThat(state.isCaseReferredForCourtHearing(), is(true));
     }
 
     @Test

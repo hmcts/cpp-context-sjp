@@ -26,9 +26,9 @@ public class CaseAggregateState implements AggregateState {
     private UUID caseId;
     private String urn;
     private boolean caseReopened;
-    private LocalDate caseReopenedDate;
     private boolean caseCompleted;
     private boolean caseReferredForCourtHearing;
+    private LocalDate caseReopenedDate;
     private boolean withdrawalAllOffencesRequested;
     private UUID assigneeId;
     private String defendantTitle;
@@ -107,13 +107,13 @@ public class CaseAggregateState implements AggregateState {
         }
     }
 
-    public boolean isCaseReferredForCourtHearing() {
-        return caseReferredForCourtHearing;
-    }
-
     public void markCaseReferredForCourtHearing() {
         this.caseReferredForCourtHearing = true;
         this.status = CaseStatus.REFERRED_FOR_COURT_HEARING;
+    }
+
+    public boolean isCaseReferredForCourtHearing() {
+        return this.caseReferredForCourtHearing;
     }
 
     public boolean isWithdrawalAllOffencesRequested() {

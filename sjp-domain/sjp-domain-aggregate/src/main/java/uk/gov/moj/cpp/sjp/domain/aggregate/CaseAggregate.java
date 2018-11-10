@@ -16,6 +16,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseEmployerHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseFinancialMeansHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseLanguageHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseWithdrawalHandler;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CourtReferralHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.CancelPleaHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.OnlinePleaHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.UpdatePleaHandler;
@@ -143,6 +144,24 @@ public class CaseAggregate implements Aggregate {
                                                  final ZonedDateTime updatedDate) {
 
         return apply(CaseDefendantHandler.INSTANCE.updateDefendantDetails(caseId, defendantId, person, updatedDate, state));
+    }
+
+    public Stream<Object> referCaseForCourtHearing(final UUID caseId,
+                                                   final UUID sessionId,
+                                                   final UUID referralReasonId,
+                                                   final UUID hearingTypeId,
+                                                   final Integer estimatedHearingDuration,
+                                                   final String listingNotes,
+                                                   final ZonedDateTime requestedAt
+    ) {
+        return apply(CourtReferralHandler.INSTANCE.referCaseForCourtHearing(caseId,
+                sessionId,
+                referralReasonId,
+                hearingTypeId,
+                listingNotes,
+                estimatedHearingDuration,
+                requestedAt,
+                state));
     }
 
     @Override

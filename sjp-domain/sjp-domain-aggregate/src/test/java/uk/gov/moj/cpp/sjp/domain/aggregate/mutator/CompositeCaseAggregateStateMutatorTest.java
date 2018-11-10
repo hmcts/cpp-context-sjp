@@ -1,12 +1,44 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
-import org.junit.Test;
-import uk.gov.moj.cpp.sjp.domain.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.iterableWithSize;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
+
+import uk.gov.moj.cpp.sjp.domain.Benefits;
+import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
+import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
+import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
+import uk.gov.moj.cpp.sjp.domain.Income;
+import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
+import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.sjp.event.*;
+import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
+import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
+import uk.gov.moj.cpp.sjp.event.CaseCompleted;
+import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.CaseReopenedUpdated;
+import uk.gov.moj.cpp.sjp.event.CaseStarted;
+import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
+import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
+import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
+import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
+import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
+import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceCancelledForDefendant;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
+import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
+import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
+import uk.gov.moj.cpp.sjp.event.PleaCancelled;
+import uk.gov.moj.cpp.sjp.event.PleaUpdated;
+import uk.gov.moj.cpp.sjp.event.TrialRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.decommissioned.CaseAssignmentDeleted;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
@@ -17,9 +49,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 public class CompositeCaseAggregateStateMutatorTest {
 
@@ -103,6 +133,16 @@ public class CompositeCaseAggregateStateMutatorTest {
         CompositeCaseAggregateStateMutator.INSTANCE.apply(caseUnmarkedReadyForDecision, caseAggregateState);
 
         assertNull(caseAggregateState.getReadinessReason());
+    }
+
+    @Test
+    public void shouldMutateStateOnCaseReferredForCourtHearingEvent() {
+        CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing().build();
+
+        CaseAggregateState caseAggregateState = new CaseAggregateState();
+        CompositeCaseAggregateStateMutator.INSTANCE.apply(caseReferredForCourtHearing, caseAggregateState);
+
+        assertTrue(caseAggregateState.isCaseReferredForCourtHearing());
     }
 
     @Test

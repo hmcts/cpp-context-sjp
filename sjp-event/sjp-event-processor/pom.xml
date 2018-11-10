@@ -10,6 +10,11 @@
     <artifactId>sjp-event-processor</artifactId>
     <packaging>war</packaging>
 
+    <properties>
+        <cpp.service-component>EVENT_PROCESSOR</cpp.service-component>
+        <skip.schema.pojo.generation>false</skip.schema.pojo.generation>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>uk.gov.moj.cpp.sjp</groupId>
@@ -65,6 +70,11 @@
             <artifactId>activiti-cdi</artifactId>
         </dependency>
         <dependency>
+            <groupId>uk.gov.moj.cpp.core.domain</groupId>
+            <artifactId>coredomain-common-definitions-schema</artifactId>
+            <version>${coredomain.version}</version>
+        </dependency>
+        <dependency>
             <groupId>uk.gov.moj.cpp.activiti</groupId>
             <artifactId>activiti-embedded-rest</artifactId>
             <exclusions>
@@ -88,9 +98,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <properties>
-        <cpp.service-component>EVENT_PROCESSOR</cpp.service-component>
-    </properties>
 
     <build>
         <plugins>
@@ -174,6 +181,68 @@
                         <actionMapping>${cpp.framework.action.mapping.enabled}</actionMapping>
                     </generatorProperties>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>generator-plugin</artifactId>
+                <groupId>uk.gov.justice.maven.generator</groupId>
+                <executions>
+                    <execution>
+                        <id>pojo-generation</id>
+                        <configuration>
+                            <sourceDirectory>CLASSPATH</sourceDirectory>
+                            <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+                            <includes>
+                                <include>raml/json/schema/public.resulting.decision-to-refer-case-for-court-hearing-saved.json</include>
+                                <include>raml/json/schema/sjp.command.refer-case-for-court-hearing.json</include>
+                                <include>raml/json/schema/sjp.events.case-referred-for-court-hearing.json</include>
+                            </includes>
+                            <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
+                                <plugins>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddHashcodeAndEqualsPlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddToStringMethodToClassPlugin</plugin>
+                                </plugins>
+                                <typeMappings>
+                                    <typeMapping>
+                                        <name>uuid</name>
+                                        <type>reference</type>
+                                        <implementation>java.util.UUID</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
+                                        <name>date-time</name>
+                                        <type>reference</type>
+                                        <implementation>java.time.ZonedDateTime</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
+                                        <name>date-time</name>
+                                        <type>format</type>
+                                        <implementation>java.time.ZonedDateTime</implementation>
+                                    </typeMapping>
+                                </typeMappings>
+                            </generatorProperties>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.core.domain</groupId>
+                        <artifactId>coredomain-common-definitions-schema</artifactId>
+                        <version>${coredomain.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.resulting</groupId>
+                        <artifactId>resulting-event-processor</artifactId>
+                        <version>${resulting.version}</version>
+                        <classifier>raml</classifier>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.sjp</groupId>
+                        <artifactId>sjp-command-handler</artifactId>
+                        <version>${project.version}</version>
+                        <classifier>raml</classifier>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>

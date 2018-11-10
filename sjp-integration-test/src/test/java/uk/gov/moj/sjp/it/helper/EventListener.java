@@ -1,13 +1,19 @@
 package uk.gov.moj.sjp.it.helper;
 
+import static java.util.Objects.isNull;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
+import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.moj.sjp.it.Constants.MESSAGE_QUEUE_TIMEOUT;
 import static uk.gov.moj.sjp.it.Constants.PRIVATE_ACTIVE_MQ_TOPIC;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_ACTIVE_MQ_TOPIC;
 
+import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
+import uk.gov.moj.sjp.it.util.JsonHelper;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -102,7 +108,19 @@ public class EventListener {
     }
 
     public Optional<JsonEnvelope> popEvent(String eventName) {
-        return Optional.ofNullable(this.eventsByName.get(eventName).poll());
+        return ofNullable(this.eventsByName.get(eventName).poll());
+    }
+
+    public <T> Optional<Envelope<T>> popEvent(final Class<T> eventClass) {
+
+        final Event eventAnnotation = eventClass.getAnnotation(Event.class);
+
+        if (isNull(eventAnnotation)) {
+            throw new IllegalArgumentException(String.format("Class %s is not annotated with @Event", eventClass));
+        }
+
+        return ofNullable(this.eventsByName.get(eventAnnotation.value()).poll())
+                .map(jsonEnvelope -> envelopeFrom(jsonEnvelope.metadata(), JsonHelper.fromJsonObject(jsonEnvelope.payloadAsJsonObject(), eventClass)));
     }
 
     public EventListener reset() {

@@ -15,6 +15,7 @@ public class CaseUpdateRejected {
         WITHDRAWAL_PENDING,
         CASE_ASSIGNED,
         CASE_COMPLETED,
+        CASE_REFERRED_FOR_COURT_HEARING,
         //below applies to online-plea only
         PLEA_ALREADY_SUBMITTED
     }

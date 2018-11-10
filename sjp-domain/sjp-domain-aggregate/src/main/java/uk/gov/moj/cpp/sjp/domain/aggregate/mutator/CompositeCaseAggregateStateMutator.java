@@ -1,14 +1,40 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
-import com.google.common.collect.ImmutableMap;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
-import uk.gov.moj.cpp.sjp.event.*;
+import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
+import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
+import uk.gov.moj.cpp.sjp.event.CaseCompleted;
+import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
+import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.CaseReopened;
+import uk.gov.moj.cpp.sjp.event.CaseReopenedUndone;
+import uk.gov.moj.cpp.sjp.event.CaseReopenedUpdated;
+import uk.gov.moj.cpp.sjp.event.CaseStarted;
+import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
+import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
+import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
+import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
+import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
+import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceCancelledForDefendant;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
+import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
+import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
+import uk.gov.moj.cpp.sjp.event.PleaCancelled;
+import uk.gov.moj.cpp.sjp.event.PleaUpdated;
+import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
+import uk.gov.moj.cpp.sjp.event.TrialRequestCancelled;
+import uk.gov.moj.cpp.sjp.event.TrialRequested;
 import uk.gov.moj.cpp.sjp.event.decommissioned.CaseAssignmentDeleted;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
 import java.util.Map;
 import java.util.Optional;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Defines the composite {@link AggregateStateMutator} which delegates to the appropriate mutator
@@ -42,6 +68,8 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
             (event, state) -> state.setWithdrawalAllOffencesRequested(true);
     private static final AggregateStateMutator<AllOffencesWithdrawalRequestCancelled, CaseAggregateState> ALL_OFFENCES_CANCELLED_MUTATOR =
             (event, state) -> state.setWithdrawalAllOffencesRequested(false);
+    private static final AggregateStateMutator<CaseReferredForCourtHearing, CaseAggregateState> CASE_REFERRED_FOR_COURT_HEARING_MUTATOR =
+            (event, state) -> state.markCaseReferredForCourtHearing();
     private static final AggregateStateMutator<CaseReopenedUpdated, CaseAggregateState> CASE_REOPENED_UPDATED_MUTATOR =
             (event, state) -> state.setCaseReopenedDate(event.getCaseReopenDetails().getReopenedDate());
     private static final AggregateStateMutator<EmploymentStatusUpdated, CaseAggregateState> DEFENDANT_EMPLOYMENT_STATUS_MUTATOR =
@@ -78,6 +106,7 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 .put(CaseReopenedUpdated.class, CASE_REOPENED_UPDATED_MUTATOR)
                 .put(CaseReceived.class, CaseReceivedMutator.INSTANCE)
                 .put(CaseDocumentAdded.class, CaseDocumentAddedMutator.INSTANCE)
+                .put(CaseReferredForCourtHearing.class, CASE_REFERRED_FOR_COURT_HEARING_MUTATOR)
                 .put(CaseReopenedUndone.class, CaseReopenedUndoneMutator.INSTANCE)
                 .put(CaseReopened.class, CaseReopenedMutator.INSTANCE)
                 .put(CaseStarted.class, CASE_STARTED_MUTATOR)

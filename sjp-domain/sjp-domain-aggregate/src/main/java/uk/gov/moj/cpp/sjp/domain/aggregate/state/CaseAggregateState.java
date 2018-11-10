@@ -28,6 +28,7 @@ public class CaseAggregateState implements AggregateState {
     private boolean caseReopened;
     private LocalDate caseReopenedDate;
     private boolean caseCompleted;
+    private boolean caseReferredForCourtHearing;
     private boolean withdrawalAllOffencesRequested;
     private UUID assigneeId;
     private String defendantTitle;
@@ -100,7 +101,19 @@ public class CaseAggregateState implements AggregateState {
 
     public void markCaseCompleted() {
         this.caseCompleted = true;
-        this.status = CaseStatus.COMPLETED;
+        //TODO ATCM-3121 implement allowed transition in CaseStatus enum - there is likely race condition between case completed and case referred for court hearing
+        if (this.status != CaseStatus.REFERRED_FOR_COURT_HEARING) {
+            this.status = CaseStatus.COMPLETED;
+        }
+    }
+
+    public boolean isCaseReferredForCourtHearing() {
+        return caseReferredForCourtHearing;
+    }
+
+    public void markCaseReferredForCourtHearing() {
+        this.caseReferredForCourtHearing = true;
+        this.status = CaseStatus.REFERRED_FOR_COURT_HEARING;
     }
 
     public boolean isWithdrawalAllOffencesRequested() {

@@ -85,7 +85,6 @@ public class UpdatePleaIT extends BaseIntegrationTest {
             updatePleaHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), guiltyPlea, POSTAL);
             caseSearchResultHelper.verifyPleaReceivedDate();
 
-
             final PleaType notGuiltyPlea = NOT_GUILTY;
 
             eventListener.reset()

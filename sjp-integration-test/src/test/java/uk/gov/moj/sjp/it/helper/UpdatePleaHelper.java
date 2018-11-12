@@ -5,6 +5,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_UPDATED;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
@@ -15,6 +16,7 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.jms.JMSException;
@@ -83,6 +85,7 @@ public class UpdatePleaHelper implements AutoCloseable {
                 allOf(
                         withJsonPath("defendant.offences[0].plea", is(pleaType.name())),
                         withJsonPath("defendant.offences[0].pleaMethod", is(pleaMethod.name())),
+                        withJsonPath("defendant.offences[0].pleaDate", notNullValue()),
                         withJsonPath("onlinePleaReceived", is(PleaMethod.ONLINE.equals(pleaMethod)))
                 )
         );

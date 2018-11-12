@@ -49,6 +49,7 @@ import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -314,11 +315,13 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final String dateTimeCreated = response.getString("dateTimeCreated");
         final String defendantId = response.getString("defendant.id");
         final String offenceId = response.getString("defendant.offences[0].id");
+        final String pleaDate = response.getString("defendant.offences[0].pleaDate");
 
         final Map<String, String> params = new HashMap<>();
         params.put("dateTimeCreated", dateTimeCreated);
         params.put("offenceId", offenceId);
         params.put("defendantId", defendantId);
+        params.put("pleaDate", pleaDate);
 
         final JsonPath expectedResponse = fillTemplate(templatePath, params);
 

@@ -141,6 +141,7 @@ public class OffenceUpdatedListenerTest {
 
         verify(offence).setPlea(pleaUpdated.getPlea());
         verify(offence).setPleaMethod(pleaUpdated.getPleaMethod());
+        verify(offence).setPleaDate(Optional.ofNullable(pleaUpdated.getUpdatedDate()).orElseGet(() -> envelope.metadata().createdAt().orElse(null)));
         //TODO: should use a fixed clock for 100% test reliability
         verify(searchResult).setPleaDate(now());
 
@@ -175,6 +176,7 @@ public class OffenceUpdatedListenerTest {
 
         verify(offence).setPlea(null);
         verify(offence).setPleaMethod(null);
+        verify(offence).setPleaDate(null);
         verify(searchResult).setPleaDate(null);
     }
 }

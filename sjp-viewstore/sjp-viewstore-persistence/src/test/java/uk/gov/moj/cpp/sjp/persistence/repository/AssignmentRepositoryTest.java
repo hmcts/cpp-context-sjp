@@ -45,6 +45,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.StreamStatus;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -65,6 +66,8 @@ import org.junit.runner.RunWith;
 public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     private int NO_LIMIT = Integer.MAX_VALUE;
+
+    private static final ZonedDateTime TODAY_MIDNIGHT = ZonedDateTime.now(UTC).truncatedTo(ChronoUnit.DAYS);
 
     @Inject
     private AssignmentRepository assignmentRepository;
@@ -302,7 +305,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
         final Function<Integer, CaseDetail> saveCaseDetails = pastDaysFromNow -> CaseSaver.prosecutingAuthority(TFL)
                 .plea(NOT_GUILTY)
                 .datesToAvoid(null)
-                .pendingDatesToAvoid(ZonedDateTime.now(UTC).minusDays(pastDaysFromNow))
+                .pendingDatesToAvoid(TODAY_MIDNIGHT.minusDays(pastDaysFromNow))
                 .save(em, pastDaysFromNow > 10 ? PLEADED_NOT_GUILTY : CaseSaver.EXPECT_NOT_TO_BE_READY);
 
         // dates to avoid is not set -> return only older than 10 days
@@ -325,7 +328,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
         // GIVEN - all of them will be returned as datesToAvoid IS NOT NULL
         final Function<Integer, CaseDetail> saveCaseDetails = notGuiltyPleaDaysAgo -> CaseSaver.prosecutingAuthority(TFL)
                 .plea(NOT_GUILTY)
-                .pendingDatesToAvoid(ZonedDateTime.now(UTC).minusDays(notGuiltyPleaDaysAgo))
+                .pendingDatesToAvoid(TODAY_MIDNIGHT.minusDays(notGuiltyPleaDaysAgo))
                 .datesToAvoid("dates-to-avoid" + notGuiltyPleaDaysAgo)
                 .save(em, PLEADED_NOT_GUILTY);
 
@@ -382,11 +385,11 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
         private CaseSaver notGuiltyWithDatesToAvoid() {
             return plea(NOT_GUILTY)
                     .datesToAvoid("dates-to-avoid")
-                    .pendingDatesToAvoid(ZonedDateTime.now(UTC));
+                    .pendingDatesToAvoid(TODAY_MIDNIGHT);
         }
 
         private CaseSaver postedDaysAgo(int daysAgo) {
-            this.postingDate = LocalDate.now().minusDays(daysAgo);
+            this.postingDate = TODAY_MIDNIGHT.minusDays(daysAgo).toLocalDate();
             return this;
         }
 
@@ -470,7 +473,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
                         (! PleaType.NOT_GUILTY.equals(plea) ||
                                 (!StringUtils.isEmpty(datesToAvoid) ||
                                         Optional.ofNullable(datesToAvoidPleaDate)
-                                                .map(ZonedDateTime.now().minusDays(11)::isAfter)
+                                                .map(TODAY_MIDNIGHT.minusDays(10)::isAfter)
                                                 .orElse(false)))) {
                     caseReadinessReason = caseReadinessReasonForPlea(plea);
                 } else if (postingDate != null && postingDate.isBefore(now().minusDays(28))) {

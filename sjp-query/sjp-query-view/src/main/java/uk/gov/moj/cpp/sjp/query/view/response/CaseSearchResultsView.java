@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.query.view.response;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 
 import java.time.LocalDate;
@@ -46,6 +47,7 @@ public class CaseSearchResultsView {
         private final LocalDate pleaDate;
         private final LocalDate withdrawalRequestedDate;
         private final CaseSearchResultDefendantView defendant;
+        private final CaseStatus status;
         private final Boolean listedInCriminalCourts;
 
         public CaseSearchResultView(CaseSearchResult caseSearchResult) {
@@ -59,6 +61,7 @@ public class CaseSearchResultsView {
             this.reopenedDate = caseSearchResult.getCaseSummary().getReopenedDate();
             this.pleaDate = caseSearchResult.getPleaDate();
             this.withdrawalRequestedDate = caseSearchResult.getWithdrawalRequestedDate();
+            this.status = caseSearchResult.getCaseSummary().getStatus();
             this.listedInCriminalCourts = caseSearchResult.getCaseSummary().getListedInCriminalCourts();
             this.defendant = new CaseSearchResultDefendantView(caseSearchResult);
         }
@@ -109,6 +112,10 @@ public class CaseSearchResultsView {
 
         public CaseSearchResultDefendantView getDefendant() {
             return defendant;
+        }
+
+        public CaseStatus getStatus() {
+            return status;
         }
 
         public static class CaseSearchResultDefendantView {

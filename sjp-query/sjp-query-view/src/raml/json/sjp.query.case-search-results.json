@@ -11,6 +11,7 @@
       "reopenedDate": "2016-09-01",
       "pleaDate": "2016-07-02",
       "withdrawalRequestedDate": "2016-07-02",
+      "status": "NO_PLEA_RECEIVED_READY_FOR_DECISION",
       "defendant": {
         "firstName": "Teresa",
         "lastName": "May",

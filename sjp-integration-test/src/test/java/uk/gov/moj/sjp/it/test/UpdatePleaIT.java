@@ -24,6 +24,7 @@ import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
@@ -79,6 +80,7 @@ public class UpdatePleaIT extends BaseIntegrationTest {
                     .subscribe(PleaUpdated.EVENT_NAME, CaseMarkedReadyForDecision.EVENT_NAME, PUBLIC_EVENT_SELECTOR_PLEA_UPDATED)
                     .run(() -> updatePleaHelper.updatePlea(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), getPleaPayload(guiltyPlea)));
 
+            caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
             verifyPrivatePleaUpdatedEventEmitted(eventListener, guiltyPlea);
             verifyPublicPleaUpdatedEventEmitted(eventListener, guiltyPlea);
             verifyPrivateCaseMarkedReadyEventEmitted(eventListener, PLEADED_GUILTY);
@@ -91,6 +93,7 @@ public class UpdatePleaIT extends BaseIntegrationTest {
                     .subscribe(PleaUpdated.EVENT_NAME, PUBLIC_EVENT_SELECTOR_PLEA_UPDATED, CaseMarkedReadyForDecision.EVENT_NAME)
                     .run(() -> updatePleaHelper.updatePlea(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId(), getPleaPayload(notGuiltyPlea)));
 
+            caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_NOT_READY_FOR_DECISION);
             verifyPrivatePleaUpdatedEventEmitted(eventListener, notGuiltyPlea);
             verifyPublicPleaUpdatedEventEmitted(eventListener, notGuiltyPlea);
 
@@ -100,6 +103,7 @@ public class UpdatePleaIT extends BaseIntegrationTest {
                     .subscribe(EVENT_SELECTOR_DATES_TO_AVOID_ADDED, "public.sjp.dates-to-avoid-added", CaseMarkedReadyForDecision.EVENT_NAME)
                     .run(() -> addDatesToAvoid(createCasePayloadBuilder.getId(), "my-dates-to-avoid"));
 
+            caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
             verifyDatesToAvoid(eventListener, "my-dates-to-avoid");
 
             verifyPrivateCaseMarkedReadyEventEmitted(eventListener, PLEADED_NOT_GUILTY);
@@ -109,6 +113,7 @@ public class UpdatePleaIT extends BaseIntegrationTest {
                     .subscribe(PleaCancelled.EVENT_NAME, CaseMarkedReadyForDecision.EVENT_NAME, PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED)
                     .run(cancelPleaHelper::cancelPlea);
 
+            caseSearchResultHelper.verifyCaseStatus(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION);
             verifyPrivatePleaCancelledEventEmitted(eventListener);
             verifyPublicPleaCancelledEventEmitted(eventListener);
             verifyPrivateCaseMarkedReadyEventEmitted(eventListener, PIA);

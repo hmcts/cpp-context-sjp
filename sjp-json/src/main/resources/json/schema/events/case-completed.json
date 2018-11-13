@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "caseId": {
-      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     }
   },
   "required": [

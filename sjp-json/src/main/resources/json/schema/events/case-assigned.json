@@ -4,10 +4,10 @@
   "type": "object",
   "properties": {
     "caseId": {
-      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
     "assigneeId": {
-      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
     "assignedAt": {
       "description": "Property is not present in old version of event thus it cannot be marked as required",
@@ -15,7 +15,7 @@
     },
     "sessionId": {
       "description": "For the purpose of backward compatibility only",
-      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     }
   },
   "required": [

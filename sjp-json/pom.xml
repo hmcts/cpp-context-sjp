@@ -2,7 +2,7 @@
     <parent>
         <artifactId>sjp-parent</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>1.0.75-ATCM-SNAPSHOT</version>
+        <version>1.0.76-ATCM-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -18,9 +18,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>uk.gov.moj.cpp.support</groupId>
-            <artifactId>support-json</artifactId>
-            <version>${support.json.version}</version>
+            <groupId>uk.gov.moj.cpp.core.domain</groupId>
+            <artifactId>coredomain-common-definitions-schema</artifactId>
+            <version>${coredomain.version}</version>
         </dependency>
     </dependencies>
 

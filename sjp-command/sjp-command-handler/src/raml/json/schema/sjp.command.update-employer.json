@@ -7,10 +7,10 @@
       "$ref": "http://cpp.moj.gov.uk/sjp/employer.json"
     },
     "caseId": {
-      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
     "defendantId": {
-      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     }
   },
   "required": [ "employer", "caseId", "defendantId"],

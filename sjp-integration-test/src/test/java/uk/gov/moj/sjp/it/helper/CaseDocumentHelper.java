@@ -53,6 +53,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.jayway.jsonpath.Filter;
 import com.jayway.restassured.path.json.JsonPath;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -278,8 +279,18 @@ public class CaseDocumentHelper implements AutoCloseable {
     }
 
     public static Response getCaseDocumentContent(final UUID caseId, final UUID documentId, final UUID userId) {
+        return getCaseDocumentContent(caseId, documentId, userId, null);
+    }
+
+    public static Response getCaseDocumentContent(final UUID caseId, final UUID documentId, final UUID userId, final String filename) {
         final String contentType = "application/vnd.sjp.query.case-document-content+json";
-        final String url = String.format("/cases/%s/documents/%s/content", caseId, documentId);
+        final String url;
+        if (StringUtils.isBlank(filename)) {
+            url = String.format("/cases/%s/documents/%s/content", caseId, documentId);
+        } else {
+            url = String.format("/cases/%s/documents/%s/content/%s", caseId, documentId, filename);
+        }
+
         return HttpClientUtil.makeGetCall(url, contentType, userId);
     }
 

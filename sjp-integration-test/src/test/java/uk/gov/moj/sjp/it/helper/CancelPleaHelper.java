@@ -58,7 +58,8 @@ public class CancelPleaHelper implements AutoCloseable {
         CasePoller.pollUntilCaseByIdIsOk(caseId,
                 allOf(
                         withoutJsonPath("defendant.offences[0].plea"),
-                        withoutJsonPath("defendant.offences[0].pleaMethod"))
+                        withoutJsonPath("defendant.offences[0].pleaMethod"),
+                        withoutJsonPath("defendant.offences[0].pleaDate"))
         );
     }
 

@@ -11,6 +11,7 @@
         "offenceCode": "PS00001",
         "cjsCode": "PS00001",
         "pleaMethod": "ONLINE",
+        "pleaDate": "${pleaDate}",
         "compensation": 2.34,
         "id": "${offenceId}",
         "plea": "GUILTY",

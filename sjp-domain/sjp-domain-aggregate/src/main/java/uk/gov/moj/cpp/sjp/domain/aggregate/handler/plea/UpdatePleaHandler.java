@@ -57,7 +57,10 @@ public class UpdatePleaHandler {
                         updatePleaCommand.getCaseId(),
                         updatePleaCommand.getOffenceId(),
                         updatePleaCommand.getPlea(),
-                        PleaMethod.POSTAL));
+                        null,
+                        null,
+                        PleaMethod.POSTAL,
+                        updatedOn));
 
         handleTrialRequestEventsForUpdatePlea(updatePleaCommand, streamBuilder, updatedOn, state);
         caseLanguageHandler

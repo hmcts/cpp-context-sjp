@@ -19,6 +19,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -51,6 +52,7 @@ public class OffenceUpdatedListener {
 
         offenceDetail.setPlea(event.getPlea());
         offenceDetail.setPleaMethod(event.getPleaMethod());
+        offenceDetail.setPleaDate(Optional.ofNullable(event.getUpdatedDate()).orElseGet(() -> envelope.metadata().createdAt().orElse(null)));
         offenceDetail.setMitigation(event.getMitigation());
         offenceDetail.setNotGuiltyBecause(event.getNotGuiltyBecause());
 
@@ -77,6 +79,7 @@ public class OffenceUpdatedListener {
 
         offenceDetail.setPlea(null);
         offenceDetail.setPleaMethod(null);
+        offenceDetail.setPleaDate(null);
 
         updatePleaReceivedDate(event.getCaseId(), null);
 

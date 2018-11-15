@@ -35,6 +35,7 @@ import org.junit.Test;
 
 public class GetCaseDocumentIT extends BaseIntegrationTest {
 
+    private static final String A_FILENAME_PDF = "aFilename.pdf";
     private final UUID documentId = randomUUID();
     private final UUID materialId = randomUUID();
     private final UUID tflCaseId = randomUUID();
@@ -82,21 +83,19 @@ public class GetCaseDocumentIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldGetDocumentContent() {
+    public void shouldGetDocumentContentUsingTwoDifferentUrls() {
         MaterialStub.stubMaterialContent(materialId, documentContent.getBytes(), mimeType);
-        final Response documentContentResponse = getCaseDocumentContent(tflCaseId, documentId, tflUser);
-
-        assertThat(documentContentResponse.getHeaderString(CONTENT_TYPE), equalTo(mimeType));
-        assertThat(documentContentResponse.readEntity(String.class), equalTo(documentContent));
+        verifyDocumentResponse(getCaseDocumentContent(tflCaseId, documentId, tflUser, A_FILENAME_PDF));
+        verifyDocumentResponse(getCaseDocumentContent(tflCaseId, documentId, tflUser));
     }
 
     @Test
     public void shouldRestrictDocumentContentAccess() {
         MaterialStub.stubMaterialContent(materialId, documentContent.getBytes(), mimeType);
 
-        assertThat(getCaseDocumentContent(tflCaseId, documentId, tflUser).getStatus(), is(SC_OK));
-        assertThat(getCaseDocumentContent(tflCaseId, documentId, tvlUser).getStatus(), is(SC_FORBIDDEN));
-        assertThat(getCaseDocumentContent(tflCaseId, documentId, legalAdviserUser).getStatus(), is(SC_OK));
+        assertThat(getCaseDocumentContent(tflCaseId, documentId, tflUser, A_FILENAME_PDF).getStatus(), is(SC_OK));
+        assertThat(getCaseDocumentContent(tflCaseId, documentId, tvlUser, A_FILENAME_PDF).getStatus(), is(SC_FORBIDDEN));
+        assertThat(getCaseDocumentContent(tflCaseId, documentId, legalAdviserUser, A_FILENAME_PDF).getStatus(), is(SC_OK));
     }
 
     @Test
@@ -138,5 +137,10 @@ public class GetCaseDocumentIT extends BaseIntegrationTest {
             caseDocumentHelper.addCaseDocument(userId, documentId, materialId, documentType);
             return caseDocumentHelper.findDocument(userId, 0, documentType, 1);
         }
+    }
+
+    private void verifyDocumentResponse(final Response response) {
+        assertThat(response.getHeaderString(CONTENT_TYPE), equalTo(mimeType));
+        assertThat(response.readEntity(String.class), equalTo(documentContent));
     }
 }

@@ -34,6 +34,8 @@ public class CaseSummary implements Serializable {
     private LocalDate reopenedDate;
     @Column(name = "completed")
     private Boolean completed = Boolean.FALSE;
+    @Column(name = "listed_in_criminal_courts")
+    private Boolean listedInCriminalCourts = Boolean.FALSE;
 
     public UUID getId() {
         return id;
@@ -89,5 +91,13 @@ public class CaseSummary implements Serializable {
 
     public void setCompleted(Boolean completed) {
         this.completed = completed;
+    }
+
+    public Boolean getListedInCriminalCourts() {
+        return listedInCriminalCourts;
+    }
+
+    public void setListedInCriminalCourts(Boolean listedInCriminalCourts) {
+        this.listedInCriminalCourts = listedInCriminalCourts;
     }
 }

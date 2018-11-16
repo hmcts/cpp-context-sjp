@@ -118,6 +118,9 @@ public class CaseDetail implements Serializable {
     @Enumerated(EnumType.STRING)
     private CaseStatus status;
 
+    @Column(name = "listed_in_criminal_courts")
+    private Boolean listedInCriminalCourts = Boolean.FALSE;
+
     public CaseDetail() {
         defendant.setCaseDetail(this);
     }
@@ -303,6 +306,14 @@ public class CaseDetail implements Serializable {
 
     public void setStatus(CaseStatus status) {
         this.status = status;
+    }
+
+    public Boolean getListedInCriminalCourts() {
+        return listedInCriminalCourts;
+    }
+
+    public void setListedInCriminalCourts(Boolean listedInCriminalCourts) {
+        this.listedInCriminalCourts = listedInCriminalCourts;
     }
 
     public void markDefendantNameUpdated(ZonedDateTime updateDate) {

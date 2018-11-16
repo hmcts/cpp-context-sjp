@@ -50,6 +50,9 @@
     },
     "status": {
       "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/case-status.json"
+    },
+    "listedInCriminalCourts": {
+      "type": "boolean"
     }
   },
   "additionalProperties": true,

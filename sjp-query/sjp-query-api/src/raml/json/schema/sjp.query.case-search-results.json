@@ -64,6 +64,9 @@
               "firstName",
               "lastName"
             ]
+          },
+          "listedInCriminalCourts": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false,

@@ -16,7 +16,8 @@
         "lastName": "May",
         "dateOfBirth": "1867-11-07",
         "outdated": true
-      }
+      },
+      "listedInCriminalCourts": true
     }
   ],
   "foundCasesWithOutdatedDefendantsName": true

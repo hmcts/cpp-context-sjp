@@ -46,6 +46,7 @@ public class CaseSearchResultsView {
         private final LocalDate pleaDate;
         private final LocalDate withdrawalRequestedDate;
         private final CaseSearchResultDefendantView defendant;
+        private final Boolean listedInCriminalCourts;
 
         public CaseSearchResultView(CaseSearchResult caseSearchResult) {
             this.caseId = caseSearchResult.getCaseId();
@@ -58,6 +59,7 @@ public class CaseSearchResultsView {
             this.reopenedDate = caseSearchResult.getCaseSummary().getReopenedDate();
             this.pleaDate = caseSearchResult.getPleaDate();
             this.withdrawalRequestedDate = caseSearchResult.getWithdrawalRequestedDate();
+            this.listedInCriminalCourts = caseSearchResult.getCaseSummary().getListedInCriminalCourts();
             this.defendant = new CaseSearchResultDefendantView(caseSearchResult);
         }
 
@@ -99,6 +101,10 @@ public class CaseSearchResultsView {
 
         public LocalDate getWithdrawalRequestedDate() {
             return withdrawalRequestedDate;
+        }
+
+        public Boolean getListedInCriminalCourts() {
+            return listedInCriminalCourts;
         }
 
         public CaseSearchResultDefendantView getDefendant() {

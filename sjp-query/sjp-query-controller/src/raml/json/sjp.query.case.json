@@ -44,5 +44,6 @@
       }
     ]
   },
-  "prosecutingAuthority": "TFL"
+  "prosecutingAuthority": "TFL",
+  "listedInCriminalCourts": true
 }

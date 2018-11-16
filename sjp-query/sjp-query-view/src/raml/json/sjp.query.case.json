@@ -45,5 +45,6 @@
     ]
   },
   "prosecutingAuthority": "TFL",
-  "status": "NO_PLEA_RECEIVED"
+  "status": "NO_PLEA_RECEIVED",
+  "listedInCriminalCourts": true
 }

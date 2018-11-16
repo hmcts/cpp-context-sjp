@@ -59,5 +59,6 @@
   "assigned": false,
   "costs": 20,
   "postingDate": "2018-01-05",
-  "enterpriseId": "FNHMNHBQNV7L"
+  "enterpriseId": "FNHMNHBQNV7L",
+  "listedInCriminalCourts": true
 }

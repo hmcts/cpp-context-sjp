@@ -29,6 +29,7 @@ public class CaseView {
     private boolean onlinePleaReceived;
     private String datesToAvoid;
     private CaseStatus status;
+    private Boolean listedInCriminalCourts;
 
     public CaseView(CaseDetail caseDetail) {
 
@@ -56,6 +57,7 @@ public class CaseView {
         this.onlinePleaReceived = Boolean.TRUE.equals(caseDetail.getOnlinePleaReceived());
         this.datesToAvoid = caseDetail.getDatesToAvoid();
         this.status = caseDetail.getStatus();
+        this.listedInCriminalCourts = caseDetail.getListedInCriminalCourts();
     }
 
     public String getId() {
@@ -124,5 +126,9 @@ public class CaseView {
 
     public CaseStatus getStatus() {
         return status;
+    }
+
+    public Boolean getListedInCriminalCourts() {
+        return listedInCriminalCourts;
     }
 }

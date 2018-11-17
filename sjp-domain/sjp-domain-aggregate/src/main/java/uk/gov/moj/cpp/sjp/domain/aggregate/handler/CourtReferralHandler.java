@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
 import static java.util.Objects.isNull;
+import static uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded.caseReferralForCourtHearingRejectionRecorded;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 import static uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason.CASE_REFERRED_FOR_COURT_HEARING;
 
@@ -50,4 +51,24 @@ public class CourtReferralHandler {
         return streamBuilder.build();
     }
 
+    public Stream<Object> recordCaseReferralForCourtHearingRejection(
+            final UUID caseId,
+            final String rejectionReason,
+            final ZonedDateTime rejectionTimestamp,
+            final CaseAggregateState state) {
+
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        if (isNull(state.getCaseId())) {
+            streamBuilder.add(new CaseNotFound(caseId, "Referral rejection recording of non existing case rejected"));
+        } else if (state.isCaseReferredForCourtHearing()) {
+            streamBuilder.add(caseReferralForCourtHearingRejectionRecorded()
+                    .withCaseId(caseId)
+                    .withRejectionReason(rejectionReason)
+                    .withRejectedAt(rejectionTimestamp)
+                    .build());
+        }
+
+        return streamBuilder.build();
+    }
 }

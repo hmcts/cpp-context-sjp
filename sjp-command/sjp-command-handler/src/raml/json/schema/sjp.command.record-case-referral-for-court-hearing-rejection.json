@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/record-case-referral-for-court-hearing-rejection",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "rejectionReason": {
+      "type": "string"
+    },
+    "rejectedAt": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/date-time"
+    }
+  },
+  "required": [
+    "caseId",
+    "rejectionReason",
+    "rejectedAt"
+  ]
+}

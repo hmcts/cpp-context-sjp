@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="26" author="bshekerov" logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <createTable tableName="case_court_referral_status">
+            <column name="case_id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="requested_at" type="timestamp with time zone"/>
+            <column name="rejection_reason" type="text"/>
+            <column name="rejected_at" type="timestamp with time zone"/>
+        </createTable>
+
+    </changeSet>
+</databaseChangeLog>

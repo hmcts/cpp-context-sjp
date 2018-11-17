@@ -82,6 +82,7 @@
                             <includes>
                                 <include>**/sjp.command.update-employer.json</include>
                                 <include>**/sjp.command.refer-case-for-court-hearing.json</include>
+                                <include>**/sjp.command.record-case-referral-for-court-hearing-rejection.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>

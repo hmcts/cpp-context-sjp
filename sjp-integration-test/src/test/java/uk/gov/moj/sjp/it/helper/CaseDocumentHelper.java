@@ -9,6 +9,7 @@ import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.JsonPath.compile;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
+import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -20,20 +21,25 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.matchers.UuidStringMatcher.isAUuid;
 import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
+import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_REFER_FOR_COURT_HEARING_IN_RESULTING;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseDocumentsByCaseId;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeMultipartFormPostCall;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
+import static uk.gov.moj.sjp.it.util.QueueUtil.privateEvents;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
+import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.sjp.it.Constants;
 import uk.gov.moj.sjp.it.stub.MaterialStub;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
@@ -79,6 +85,10 @@ public class CaseDocumentHelper implements AutoCloseable {
     private static final String FILE_NAME_PLEA = "SMITH_Fred_TFL2041315_PLEA.pdf";
     private static final String FILE_PATH_PLEA = "src/test/resources/plea";
 
+    private static final String DOCUMENT_ID = "documentId";
+    private static final String DESCRIPTION = "description";
+
+
     private UUID caseId;
     private String request;
     private String id;
@@ -86,18 +96,26 @@ public class CaseDocumentHelper implements AutoCloseable {
 
     private MessageConsumerClient publicCaseDocumentAlreadyExistsConsumer = new MessageConsumerClient();
     private MessageConsumerClient publicCaseDocumentUploaded = new MessageConsumerClient();
+    private MessageConsumerClient publicReferredToCourtHearing = new MessageConsumerClient();
+
     private MessageConsumerClient publicConsumer = new MessageConsumerClient();
     private MessageConsumer privateEventsConsumer;
 
+    private MessageConsumer privateEventsConsumerForRejectedCaseUpload;
+
     public CaseDocumentHelper(UUID caseId) {
-        this.id = UUID.randomUUID().toString();
-        this.materialId = UUID.randomUUID().toString();
+        this.id = randomUUID().toString();
+        this.materialId = randomUUID().toString();
         this.caseId = caseId;
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_CASE_DOCUMENT_ADDED);
+        privateEventsConsumer = privateEvents.createConsumer(EVENT_SELECTOR_CASE_DOCUMENT_ADDED);
+
+        privateEventsConsumerForRejectedCaseUpload = privateEvents.createConsumer(EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED);
+
         publicConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
 
         publicCaseDocumentAlreadyExistsConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
         publicCaseDocumentUploaded.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
+        publicReferredToCourtHearing.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_REFER_FOR_COURT_HEARING_IN_RESULTING, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
     }
 
     private void addCaseDocument(UUID userId, String payload, String documentType) {
@@ -131,7 +149,7 @@ public class CaseDocumentHelper implements AutoCloseable {
     }
 
     public void addCaseDocumentWithDocumentType(final UUID userId, final String documentType) {
-        id = UUID.randomUUID().toString();
+        id = randomUUID().toString();
         addCaseDocument(userId, getPayload(TEMPLATE_ADD_CASE_DOCUMENT_PAYLOAD), documentType);
     }
 
@@ -163,6 +181,18 @@ public class CaseDocumentHelper implements AutoCloseable {
         assertJsonPayload(jsonRequest, caseDocument);
     }
 
+    public void verifyInActiveMQCaseUploadRejected() {
+        JsonPath jsonResponse = retrieveMessage(privateEventsConsumerForRejectedCaseUpload);
+
+        LOGGER.info("Response: {}", jsonResponse.prettify());
+        JsonPath jsonRequest = new JsonPath(request);
+
+        Map caseDocument = jsonResponse.getJsonObject(".");
+        final String description = String.format("Case Document %s Upload rejected as case %s is referred to court for hearing", caseDocument.get(DOCUMENT_ID), caseId);
+        assertThat(jsonResponse.get(DESCRIPTION), is(description));
+        assertJsonPayload(jsonResponse, caseDocument);
+    }
+
     public void verifyInPublicTopic() {
         final String caseDocumentAddedEvent = publicConsumer.retrieveMessage().orElse(null);
 
@@ -172,6 +202,22 @@ public class CaseDocumentHelper implements AutoCloseable {
                 .assertThat("$.caseId", is(caseId.toString()))
                 .assertThat("$.id", notNullValue())
                 .assertThat("$.materialId", is(materialId));
+    }
+
+    public void verifyInPublicTopicCaseRefered() {
+        final String caseDocumentAddedEvent = publicReferredToCourtHearing.retrieveMessage().orElse(null);
+
+        assertThat(caseDocumentAddedEvent, notNullValue());
+
+        with(caseDocumentAddedEvent)
+                .assertThat("$.caseId", is(caseId.toString()));
+    }
+
+
+    public static void sendPublicEvent(final JsonObject publicEventPayload, final Metadata publicEventMetadata, final String publicEventName) {
+        MessageProducerClient messageProducerClient = new MessageProducerClient();
+        messageProducerClient.startProducer("public.event");
+        messageProducerClient.sendMessage(publicEventName, publicEventPayload);
     }
 
 

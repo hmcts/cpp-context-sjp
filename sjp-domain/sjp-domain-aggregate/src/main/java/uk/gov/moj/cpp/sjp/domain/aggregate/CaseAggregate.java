@@ -92,7 +92,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> uploadCaseDocument(final UUID caseId, final UUID documentReference, final String documentType) {
-        return apply(CaseDocumentHandler.INSTANCE.uploadCaseDocument(caseId, documentReference, documentType));
+        return apply(CaseDocumentHandler.INSTANCE.uploadCaseDocument(caseId, documentReference, documentType, state));
     }
 
     public Stream<Object> updateHearingRequirements(final UUID userId,

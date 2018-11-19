@@ -24,7 +24,7 @@
           "type": "boolean"
         },
         "plea": {
-          "type": "string"
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-type.json"
         }
       },
       "additionalProperties": true,

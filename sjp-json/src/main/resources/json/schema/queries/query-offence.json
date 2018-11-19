@@ -10,10 +10,10 @@
       "type": "string"
     },
     "plea": {
-      "type": "string"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-type.json"
     },
     "pleaMethod": {
-      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/plea-method.json"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-method.json"
     },
     "pleaDate": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"

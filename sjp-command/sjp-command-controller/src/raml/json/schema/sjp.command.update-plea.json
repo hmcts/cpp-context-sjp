@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.command.update-plea.json",
   "type": "object",
   "properties": {
     "plea": {
-      "type": "string",
-      "enum": ["NOT_GUILTY", "GUILTY", "GUILTY_REQUEST_HEARING"]
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-type.json"
     },
     "caseId": {
       "type": "string"

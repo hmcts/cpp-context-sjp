@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.json.JsonObject;
 
 @ServiceComponent(COMMAND_API)
 public class UpdatePleaApi {
@@ -34,12 +35,13 @@ public class UpdatePleaApi {
 
     @Handles("sjp.update-plea")
     public void updatePlea(final JsonEnvelope envelope) {
-        final UpdatePleaModel updatePleaModel = new UpdatePleaModel(envelope.payloadAsJsonObject());
+        final JsonObject payload = envelope.payloadAsJsonObject();
+        final UpdatePleaModel updatePleaModel = new UpdatePleaModel(payload);
 
         final Map<String, List<String>> validationErrors = updatePleaValidator.validate(updatePleaModel);
 
         if (validationErrors.isEmpty()) {
-            sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.update-plea").apply(envelope.payloadAsJsonObject()));
+            sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.update-plea").apply(payload));
         } else {
             throw new BadRequestException(objectToJsonValueConverter.convert(validationErrors).toString());
         }

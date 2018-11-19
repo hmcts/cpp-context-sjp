@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
+import static uk.gov.moj.cpp.sjp.command.api.service.AddressService.normalizePostcodeInAddress;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -17,6 +18,13 @@ import javax.json.JsonObjectBuilder;
 @ServiceComponent(COMMAND_API)
 public class EmployerApi {
 
+    private static final String ADDRESS = "address";
+    private static final String CASE_ID = "caseId";
+    private static final String DEFENDANT_ID = "defendantId";
+
+    private static final String SJP_COMMAND_UPDATE_EMPLOYER = "sjp.command.update-employer";
+    private static final String SJP_COMMAND_DELETE_EMPLOYER = "sjp.command.delete-employer";
+
     @Inject
     private Enveloper enveloper;
 
@@ -28,22 +36,25 @@ public class EmployerApi {
         final JsonObject payloadAsJsonObject = envelope.payloadAsJsonObject();
         //TODO ATCM-3151: when the UI is adapted remove this code below
         final JsonObjectBuilder employerDetails = JsonObjects.createObjectBuilderWithFilter(payloadAsJsonObject,
-                key -> !("caseId".equals(key) || "defendantId".equals(key)));
+                key -> !(CASE_ID.equals(key) || DEFENDANT_ID.equals(key) || ADDRESS.equals(key)));
 
+        if (payloadAsJsonObject.containsKey(ADDRESS)) {
+            employerDetails.add(ADDRESS, normalizePostcodeInAddress(payloadAsJsonObject.getJsonObject(ADDRESS)));
+        }
 
         final JsonObject payload = Json.createObjectBuilder()
-                .add("caseId", payloadAsJsonObject.getString("caseId"))
-                .add("defendantId", payloadAsJsonObject.getString("defendantId"))
+                .add(CASE_ID, payloadAsJsonObject.getString(CASE_ID))
+                .add(DEFENDANT_ID, payloadAsJsonObject.getString(DEFENDANT_ID))
                 .add("employer", employerDetails)
                 .build();
 
-        sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.update-employer")
+        sender.send(enveloper.withMetadataFrom(envelope, SJP_COMMAND_UPDATE_EMPLOYER)
                 .apply(payload));
     }
 
     @Handles("sjp.delete-employer")
     public void deleteEmployer(final JsonEnvelope envelope) {
-        sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.delete-employer").apply(envelope.payloadAsJsonObject()));
+        sender.send(enveloper.withMetadataFrom(envelope, SJP_COMMAND_DELETE_EMPLOYER).apply(envelope.payloadAsJsonObject()));
     }
 
 }

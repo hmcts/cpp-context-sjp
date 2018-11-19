@@ -10,6 +10,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatch
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildAddressWithPostcode;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
@@ -17,6 +18,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
 import java.util.UUID;
+
+import javax.json.JsonObject;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,6 +41,7 @@ public class DefendantDetailsApiTest {
     private static final String ACKNOWLEDGE_DEFENDANT_UPDATES_NEW_COMMAND_NAME = "sjp.command.acknowledge-defendant-details-updates";
 
     @Spy
+    @SuppressWarnings("unused")
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
     @Mock
@@ -68,6 +72,24 @@ public class DefendantDetailsApiTest {
         final JsonEnvelope newCommand = envelopeCaptor.getValue();
         assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName(UPDATE_DEFENDANT_NEW_COMMAND_NAME));
         assertThat(newCommand.payloadAsJsonObject(), equalTo(command.payloadAsJsonObject()));
+    }
+
+    @Test
+    public void shouldRenameUpdateDefendantDetailsCommandWithAddress() {
+        final JsonEnvelope command = envelopeFrom(metadataWithRandomUUID(UPDATE_DEFENDANT_COMMAND_NAME), createObjectBuilder()
+                .add("address", buildAddressWithPostcode("se11pj")));
+
+        final JsonObject expectedPayload = createObjectBuilder()
+                .add("address", buildAddressWithPostcode("SE1 1PJ"))
+                .build();
+
+        defendantDetailsApi.updateDefendantDetails(command);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        final JsonEnvelope newCommand = envelopeCaptor.getValue();
+        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName(UPDATE_DEFENDANT_NEW_COMMAND_NAME));
+        assertThat(newCommand.payloadAsJsonObject(), equalTo(expectedPayload));
     }
 
     @Test

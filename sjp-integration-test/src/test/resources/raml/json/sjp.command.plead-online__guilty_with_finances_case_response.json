@@ -55,6 +55,7 @@
   "caseDocuments": [
 
   ],
+  "listedInCriminalCourts": false,
   "assigned": false,
   "id": "${caseId}",
   "completed": false,

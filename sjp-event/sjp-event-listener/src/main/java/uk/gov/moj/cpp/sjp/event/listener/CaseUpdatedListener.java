@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
 
+import static java.lang.Boolean.TRUE;
 import static java.time.LocalDate.now;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
@@ -13,6 +14,7 @@ import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
+import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourts;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseDocumentAddedToCaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
@@ -32,6 +34,8 @@ import javax.transaction.Transactional;
 
 @ServiceComponent(EVENT_LISTENER)
 public class CaseUpdatedListener {
+
+    private static final String CASE_ID = "caseId";
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -108,16 +112,26 @@ public class CaseUpdatedListener {
     @Handles("sjp.events.case-reopened-in-libra-undone")
     @Transactional
     public void undoCaseReopened(final JsonEnvelope envelope) {
-        CaseDetail caseDetail = findCaseById(
-                UUID.fromString(envelope.payloadAsJsonObject().getString("caseId"))
+        final CaseDetail caseDetail = findCaseById(
+                UUID.fromString(envelope.payloadAsJsonObject().getString(CASE_ID))
         );
         caseDetail.undoReopenCase();
+    }
+
+    @Handles(CaseListedInCriminalCourts.EVENT_NAME)
+    @Transactional
+    public void updateCaseListedInCriminalCourts(final JsonEnvelope envelope) {
+
+        final CaseDetail caseDetail = findCaseById(
+                UUID.fromString(envelope.payloadAsJsonObject().getString(CASE_ID))
+        );
+        caseDetail.setListedInCriminalCourts(TRUE);
     }
 
     private void handleCaseReopened(final JsonEnvelope envelope) {
         final JsonObject payload = envelope.payloadAsJsonObject();
 
-        final UUID caseId = UUID.fromString(payload.getString("caseId"));
+        final UUID caseId = UUID.fromString(payload.getString(CASE_ID));
         final CaseDetail caseDetail = findCaseById(caseId);
         caseDetail.setReopenedDate(LocalDates.from(payload.getString("reopenedDate")));
         caseDetail.setLibraCaseNumber(payload.getString("libraCaseNumber"));

@@ -47,6 +47,10 @@ public class CaseAggregate implements Aggregate {
         return apply(CaseCoreHandler.INSTANCE.completeCase(state));
     }
 
+    public Stream<Object> updateCaseListedInCriminalCourts(final UUID caseId) {
+        return apply(CaseCoreHandler.INSTANCE.updateCaseListedInCriminalCourts(caseId));
+    }
+
     public Stream<Object> markCaseReopened(final CaseReopenDetails caseReopenDetails) {
         return apply(CaseCoreHandler.INSTANCE.markCaseReopened(caseReopenDetails, state));
     }

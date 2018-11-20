@@ -14,6 +14,7 @@ import uk.gov.moj.cpp.sjp.event.CaseAlreadyCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseAlreadyReopened;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseCreationFailedBecauseCaseAlreadyExisted;
+import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourts;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseNotFound;
 import uk.gov.moj.cpp.sjp.event.CaseNotReopened;
@@ -82,6 +83,10 @@ public class CaseCoreHandler {
         }
 
         return Stream.of(new CaseUnassigned(caseId), new CaseCompleted(caseId));
+    }
+
+    public Stream<Object> updateCaseListedInCriminalCourts(final UUID caseId) {
+        return Stream.of(new CaseListedInCriminalCourts(caseId));
     }
 
     public Stream<Object> addDatesToAvoid(final String datesToAvoid,

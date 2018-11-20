@@ -52,7 +52,7 @@ public class OffenceUpdatedListener {
 
         offenceDetail.setPlea(event.getPlea());
         offenceDetail.setPleaMethod(event.getPleaMethod());
-        offenceDetail.setPleaDate(Optional.ofNullable(event.getUpdatedDate()).orElseGet(() -> envelope.metadata().createdAt().orElse(null)));
+        offenceDetail.setPleaDate(Optional.ofNullable(event.getUpdatedDate()).orElse(null));
         offenceDetail.setMitigation(event.getMitigation());
         offenceDetail.setNotGuiltyBecause(event.getNotGuiltyBecause());
 

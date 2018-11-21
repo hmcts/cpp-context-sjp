@@ -2,7 +2,7 @@ package uk.gov.moj.sjp.it.test;
 
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CitizenHelper;
-import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
+import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -23,7 +23,7 @@ public class GetCaseByUrnAndPostcodeIT extends BaseIntegrationTest {
 
         urn = createCasePayloadBuilder.getUrn();
 
-        ReferenceDataStub.stubQueryOffences("/GetCaseByUrnAndPostcodeIT/referencedataoffences.offences-list.json");
+        ReferenceDataServiceStub.stubQueryOffences("/GetCaseByUrnAndPostcodeIT/referencedataoffences.offences-list.json");
     }
 
     @Test

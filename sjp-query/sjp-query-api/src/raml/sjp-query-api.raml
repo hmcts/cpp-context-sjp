@@ -22,8 +22,8 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
       200:
         body:
           application/vnd.sjp.query.case+json:
-            schema: !include json/schema/sjp.query.case.json
-            example: !include json/sjp.query.case.json
+            schema: !include json/schema/sjp.query.case-details.json
+            example: !include json/sjp.query.case-details.json
 
 /cases:
   get:
@@ -44,8 +44,8 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
           description: OK
           body:
                 application/vnd.sjp.query.case-by-urn+json:
-                  schema: !include json/schema/sjp.query.case.json
-                  example: !include json/sjp.query.case.json
+                  schema: !include json/schema/sjp.query.case-details.json
+                  example: !include json/sjp.query.case-details.json
 
 /result-orders:
   get:

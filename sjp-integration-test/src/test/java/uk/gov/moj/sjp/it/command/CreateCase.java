@@ -190,8 +190,21 @@ public class CreateCase {
             return urn;
         }
 
+        public LocalDate getPostingDate() {
+            return postingDate;
+        }
+
+        public ProsecutingAuthority getProsecutingAuthority() {
+            return prosecutingAuthority;
+        }
+
         public String getEnterpriseId() {
             return enterpriseId;
+        }
+
+        public CreateCasePayloadBuilder withOffenceBuilder(final OffenceBuilder offenceBuilder) {
+            this.offenceBuilders = Lists.newArrayList(offenceBuilder);
+            return this;
         }
     }
 
@@ -303,6 +316,11 @@ public class CreateCase {
 
         public OffenceBuilder withId(final UUID id) {
             this.id = id;
+            return this;
+        }
+
+        public OffenceBuilder withLibraOffenceCode(final String libraOffenceCode) {
+            this.libraOffenceCode = libraOffenceCode;
             return this;
         }
 

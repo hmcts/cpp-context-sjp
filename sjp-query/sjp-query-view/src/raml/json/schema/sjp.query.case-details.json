@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/case.json",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/case-details.json",
   "type": "object",
   "properties": {
     "id": {
@@ -47,6 +47,12 @@
     },
     "enterpriseId": {
       "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/enterprise-id.json"
+    },
+    "onlinePleaReceived": {
+      "type" : "boolean"
+    },
+    "datesToAvoid": {
+      "type" : "string"
     },
     "status": {
       "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/case-status.json"

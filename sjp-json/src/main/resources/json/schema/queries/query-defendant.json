@@ -23,6 +23,9 @@
     },
     "numPreviousConvictions": {
       "type": "integer"
+    },
+    "speakWelsh": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false

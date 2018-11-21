@@ -1,5 +1,5 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/case.json",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/case-filter-other-and-financial-means-documents.json",
   "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/queries/case.json"
 }

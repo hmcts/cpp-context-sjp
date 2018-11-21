@@ -14,7 +14,7 @@ public class ContactDetailsToContactDetailsEntityTest {
     @Test
     public void shouldConvertContactDetailsToContactDetailsEntity() {
         final uk.gov.moj.cpp.sjp.domain.ContactDetails inputContactDetails = new uk.gov.moj.cpp.sjp.domain.ContactDetails(
-                "home","mobile", "business", "email", "email2"
+                "home", "mobile", "business", "email", "email2"
         );
 
         final ContactDetails outputContactDetails = contactDetailsToContactDetailsEntity.convert(inputContactDetails);

@@ -50,11 +50,6 @@ public class SjpQueryApi {
         return requester.request(query);
     }
 
-    @Handles("sjp.query.cases-missing-sjpn-with-details")
-    public JsonEnvelope findCasesMissingSjpnWithDetails(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
     //TODO CRC-3502 - Tech debt has been created to change the output format.
     @Handles("sjp.query.cases-search-by-material-id")
     public JsonEnvelope searchCaseByMaterialId(final JsonEnvelope query) {
@@ -68,16 +63,6 @@ public class SjpQueryApi {
 
     @Handles("sjp.query.cases-referred-to-court")
     public JsonEnvelope getCasesReferredToCourt(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
-    @Handles("sjp.query.not-ready-cases-grouped-by-age")
-    public JsonEnvelope getNotReadyCasesGroupedByAge(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
-    @Handles("sjp.query.oldest-case-age")
-    public JsonEnvelope getOldestCaseAge(final JsonEnvelope query) {
         return requester.request(query);
     }
 
@@ -96,11 +81,6 @@ public class SjpQueryApi {
         return requester.request(query);
     }
 
-    @Handles("sjp.query.ready-cases-reasons-counts")
-    public JsonEnvelope getReadyCasesReasonsCounts(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
     @Handles("sjp.query.ready-cases")
     public JsonEnvelope getReadyCases(final JsonEnvelope query) {
         return requester.request(query);
@@ -113,6 +93,11 @@ public class SjpQueryApi {
 
     @Handles("sjp.query.case-prosecuting-authority")
     public JsonEnvelope getProsecutingAuthority(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
+    @Handles("sjp.query.defendant-details-updates")
+    public JsonEnvelope getDefendantDetailsUpdates(final JsonEnvelope query) {
         return requester.request(query);
     }
 }

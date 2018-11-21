@@ -21,7 +21,7 @@ public class SearchCasesAccessControlIT extends BaseIntegrationTest {
 
     private static CreateCase.CreateCasePayloadBuilder prosecutor1CasePayloadBuilder, prosecutor2CasePayloadBuilder;
     private static CaseSearchResultHelper caseSearchResultHelper;
-    private static String defendantLastName = "LASTNAME" + new StringGenerator().next();
+    private static String defendantLastName = "LAST_NAME_" + new StringGenerator().next();
 
     @BeforeClass
     public static void setupCasesAndUsers() {

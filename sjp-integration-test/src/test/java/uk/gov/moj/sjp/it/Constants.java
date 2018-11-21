@@ -37,5 +37,6 @@ public class Constants {
     public static final String PUBLIC_ACTIVE_MQ_TOPIC = "public.event";
     public static final String PRIVATE_ACTIVE_MQ_TOPIC = "sjp.event";
     public static final Integer MESSAGE_QUEUE_TIMEOUT = 15000;
+    public static final int NOTICE_PERIOD_IN_DAYS = 28;
 
 }

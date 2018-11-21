@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.CASE_ID;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.COME_TO_COURT;
-import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.DEFENDANT_ID;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_ADDRESS_1;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_ADDRESS_2;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_ADDRESS_3;
@@ -20,10 +19,11 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_INCOME_PAYMENT_AMOUNT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_STATUS;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_STATUS_DETAILS;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.HEARING_LANGUAGE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.INTERPRETER_LANGUAGE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.MITIGATION;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.NOT_GUILTY_BECAUSE;
-import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_ACCOMODATION_AMOUNT;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_ACCOMMODATION_AMOUNT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_CHILD_MAINTENANCE_AMOUNT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_COUNCIL_TAX_AMOUNT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_HOUSEHOLD_BILLS_AMOUNT;
@@ -72,12 +72,16 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
     @Inject
     private EntityManager entityManager;
 
-    private static final String INSERT_STATEMENT = "INSERT INTO online_plea(case_id, submitted_on) VALUES (?, ?) ON CONFLICT (case_id) DO NOTHING";
+    private static final String INSERT_STATEMENT =
+            "INSERT INTO online_plea(case_id, submitted_on, defendant_id) " +
+            " VALUES (?, ?, (SELECT d.id FROM defendant d WHERE d.case_id=?)) " +
+            " ON CONFLICT (case_id) DO NOTHING";
 
     public void saveOnlinePlea(OnlinePlea onlinePlea) {
         final Query insertStatement = entityManager.createNativeQuery(INSERT_STATEMENT);
         insertStatement.setParameter(1, onlinePlea.getCaseId());
         insertStatement.setParameter(2, onlinePlea.getSubmittedOn());
+        insertStatement.setParameter(3, onlinePlea.getCaseId());
         insertStatement.executeUpdate();
         updateOnlinePlea(onlinePlea);
     }
@@ -98,15 +102,14 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
      * Hide employment, employer and outgoings.
      */
     @org.apache.deltaspike.data.api.Query(
-            value = "SELECT new OnlinePlea(op.caseId, op.pleaDetails, op.defendantDetail, op.personalDetails, op.submittedOn) FROM OnlinePlea op WHERE op.caseId = :caseId",
+            value = "SELECT new OnlinePlea(op.caseId, op.pleaDetails, op.defendantId, op.personalDetails, op.submittedOn) FROM OnlinePlea op WHERE op.caseId = :caseId",
             singleResult = SingleResultType.OPTIONAL)
-    public abstract OnlinePlea findOnlinePleaWithoutFinances(@QueryParam("caseId") UUID caseId);
+    public abstract OnlinePlea findOnlinePleaWithoutFinances(@QueryParam("caseId") final UUID caseId);
 
     abstract List<FIELDS> getFieldsToUpdate();
 
     enum FIELDS {
         CASE_ID(OnlinePlea::getCaseId, "caseId"),
-        DEFENDANT_ID(OnlinePlea::getDefendantId, "defendantDetail", "id"),
 
         EMPLOYER_REFERENCE(o -> o.getEmployer().getEmployeeReference(), "employer", "employeeReference"),
         EMPLOYER_NAME(o -> o.getEmployer().getName(), "employer", "name"),
@@ -125,7 +128,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         EMPLOYMENT_STATUS(o -> o.getEmployment().getEmploymentStatus(), "employment", "employmentStatus"),
         EMPLOYMENT_STATUS_DETAILS(o -> o.getEmployment().getEmploymentStatusDetails(), "employment", "employmentStatusDetails"),
 
-        OUTGOINGS_ACCOMODATION_AMOUNT(o -> o.getOutgoings().getAccommodationAmount(), "outgoings", "accommodationAmount"),
+        OUTGOINGS_ACCOMMODATION_AMOUNT(o -> o.getOutgoings().getAccommodationAmount(), "outgoings", "accommodationAmount"),
         OUTGOINGS_COUNCIL_TAX_AMOUNT(o -> o.getOutgoings().getCouncilTaxAmount(), "outgoings", "councilTaxAmount"),
         OUTGOINGS_HOUSEHOLD_BILLS_AMOUNT(o -> o.getOutgoings().getHouseholdBillsAmount(), "outgoings", "householdBillsAmount"),
         OUTGOINGS_TRAVEL_EXPENSES_AMOUNT(o -> o.getOutgoings().getTravelExpensesAmount(), "outgoings", "travelExpensesAmount"),
@@ -137,6 +140,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         WITNESS_DETAILS(o -> o.getPleaDetails().getWitnessDetails(), "pleaDetails", "witnessDetails"),
         UNAVAILABILITY(o -> o.getPleaDetails().getUnavailability(), "pleaDetails", "unavailability"),
         INTERPRETER_LANGUAGE(o -> o.getPleaDetails().getInterpreterLanguage(), "pleaDetails", "interpreterLanguage"),
+        HEARING_LANGUAGE(o -> o.getPleaDetails().getSpeakWelsh(), "pleaDetails", "speakWelsh"),
 
         PERSON_FIRST_NAME(o -> o.getPersonalDetails().getFirstName(), "personalDetails", "firstName"),
         PERSON_LAST_NAME(o -> o.getPersonalDetails().getLastName(), "personalDetails", "lastName"),
@@ -177,11 +181,10 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    public static abstract class FinancialMeansOnlinePleaRepository extends OnlinePleaRepository {
+    public abstract static class FinancialMeansOnlinePleaRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
             return asList(
-                    DEFENDANT_ID,
                     EMPLOYMENT_INCOME_PAYMENT_AMOUNT,
                     EMPLOYMENT_INCOME_FREQUENCY,
                     EMPLOYMENT_BENEFITS_TYPE,
@@ -189,7 +192,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
                     EMPLOYMENT_BENEFITS_DEDUCT_PENALTY_PREFERENCE,
                     EMPLOYMENT_STATUS,
                     EMPLOYMENT_STATUS_DETAILS,
-                    OUTGOINGS_ACCOMODATION_AMOUNT,
+                    OUTGOINGS_ACCOMMODATION_AMOUNT,
                     OUTGOINGS_COUNCIL_TAX_AMOUNT,
                     OUTGOINGS_HOUSEHOLD_BILLS_AMOUNT,
                     OUTGOINGS_TRAVEL_EXPENSES_AMOUNT,
@@ -200,11 +203,10 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    public static abstract class EmployerOnlinePleaRepository extends OnlinePleaRepository {
+    public abstract static class EmployerOnlinePleaRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
             return asList(
-                    DEFENDANT_ID,
                     EMPLOYER_REFERENCE,
                     EMPLOYER_NAME,
                     EMPLOYER_PHONE,
@@ -217,7 +219,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    public static abstract class TrialOnlinePleaRepository extends OnlinePleaRepository {
+    public abstract static class TrialOnlinePleaRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
             return asList(
@@ -229,14 +231,21 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    public static abstract class InterpreterLanguageOnlinePleaRepository extends OnlinePleaRepository {
+    public abstract static class InterpreterLanguageOnlinePleaRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
             return singletonList(INTERPRETER_LANGUAGE);
         }
     }
 
-    public static abstract class PersonDetailsOnlinePleaRepository extends OnlinePleaRepository {
+    public abstract static class HearingLanguageOnlinePleaRepository extends OnlinePleaRepository {
+        @Override
+        final List<FIELDS> getFieldsToUpdate(){
+            return singletonList(HEARING_LANGUAGE);
+        }
+    }
+
+    public abstract static class PersonDetailsOnlinePleaRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
             return asList(
@@ -256,7 +265,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
-    public static abstract class PleaDetailsRepository extends OnlinePleaRepository {
+    public abstract static class PleaDetailsRepository extends OnlinePleaRepository {
         @Override
         final List<FIELDS> getFieldsToUpdate(){
             return asList(

@@ -18,8 +18,6 @@ public class SjpQueryApiTest {
     public void shouldHandlesQueries() {
         assertThat(SjpQueryApi.class, isHandlerClass(Component.QUERY_API)
                 .with(allOf(
-                        method("getNotReadyCasesGroupedByAge").thatHandles("sjp.query.not-ready-cases-grouped-by-age").withRequesterPassThrough(),
-                        method("getOldestCaseAge").thatHandles("sjp.query.oldest-case-age").withRequesterPassThrough(),
                         method("findCase").thatHandles("sjp.query.case").withRequesterPassThrough(),
                         method("findCaseByUrn").thatHandles("sjp.query.case-by-urn").withRequesterPassThrough(),
                         method("findCaseByUrnPostcode").thatHandles("sjp.query.case-by-urn-postcode").withRequesterPassThrough(),
@@ -27,15 +25,14 @@ public class SjpQueryApiTest {
                         method("findEmployer").thatHandles("sjp.query.employer").withRequesterPassThrough(),
                         method("findCaseSearchResults").thatHandles("sjp.query.case-search-results").withRequesterPassThrough(),
                         method("findCasesMissingSjpn").thatHandles("sjp.query.cases-missing-sjpn").withRequesterPassThrough(),
-                        method("findCasesMissingSjpnWithDetails").thatHandles("sjp.query.cases-missing-sjpn-with-details").withRequesterPassThrough(),
                         method("searchCaseByMaterialId").thatHandles("sjp.query.cases-search-by-material-id").withRequesterPassThrough(),
                         method("getAwaitingCases").thatHandles("sjp.query.awaiting-cases").withRequesterPassThrough(),
                         method("getCasesReferredToCourt").thatHandles("sjp.query.cases-referred-to-court").withRequesterPassThrough(),
                         method("getResultOrders").thatHandles("sjp.query.result-orders").withRequesterPassThrough(),
-                        method("getReadyCasesReasonsCounts").thatHandles("sjp.query.ready-cases-reasons-counts").withRequesterPassThrough(),
                         method("getReadyCases").thatHandles("sjp.query.ready-cases").withRequesterPassThrough(),
                         method("getCaseAssignment").thatHandles("sjp.query.case-assignment").withRequesterPassThrough(),
-                        method("getProsecutingAuthority").thatHandles("sjp.query.case-prosecuting-authority").withRequesterPassThrough()
+                        method("getProsecutingAuthority").thatHandles("sjp.query.case-prosecuting-authority").withRequesterPassThrough(),
+                        method("getDefendantDetailsUpdates").thatHandles("sjp.query.defendant-details-updates").withRequesterPassThrough()
                 )));
     }
 }

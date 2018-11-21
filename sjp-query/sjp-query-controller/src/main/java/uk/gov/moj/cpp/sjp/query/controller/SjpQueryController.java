@@ -83,11 +83,6 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
-    @Handles("sjp.query.cases-missing-sjpn-with-details")
-    public JsonEnvelope findCasesMissingSjpnWithDetails(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
     @Handles("sjp.query.case-documents")
     public JsonEnvelope findCaseDocuments(final JsonEnvelope query) {
         if (userAndGroupsService.isSjpProsecutorUserGroupOnly(query)) {
@@ -116,16 +111,6 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
-    @Handles("sjp.query.not-ready-cases-grouped-by-age")
-    public JsonEnvelope getNotReadyCasesGroupedByAge(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
-    @Handles("sjp.query.oldest-case-age")
-    public JsonEnvelope getOldestCaseAge(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
     @Handles("sjp.query.result-orders")
     public JsonEnvelope getResultOrders(final JsonEnvelope query) {
         return requester.request(query);
@@ -141,11 +126,6 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
-    @Handles("sjp.query.ready-cases-reasons-counts")
-    public JsonEnvelope getReadyCasesReasonsCounts(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
     @Handles("sjp.query.ready-cases")
     public JsonEnvelope getReadyCases(final JsonEnvelope query) {
         return requester.request(query);
@@ -158,6 +138,11 @@ public class SjpQueryController {
 
     @Handles("sjp.query.case-prosecuting-authority")
     public JsonEnvelope getProsecutingAuthority(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
+    @Handles("sjp.query.defendant-details-updates")
+    public JsonEnvelope getDefendantDetailsUpdates(final JsonEnvelope query) {
         return requester.request(query);
     }
 

@@ -1,10 +1,13 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import static java.util.Collections.emptyList;
+
 import java.io.Serializable;
-import java.util.HashSet;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -20,6 +23,9 @@ import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 @Entity
 @Table(name = "defendant", uniqueConstraints = @UniqueConstraint(columnNames = "id"))
 public class DefendantDetail implements Serializable {
@@ -32,13 +38,16 @@ public class DefendantDetail implements Serializable {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "defendantDetail", orphanRemoval = true)
     @OrderBy("orderIndex ASC")
-    private Set<OffenceDetail> offences;
+    private List<OffenceDetail> offences;
 
     @Embedded
     private PersonalDetails personalDetails;
 
     @Embedded
     private InterpreterDetail interpreter;
+
+    @Column(name = "speak_welsh")
+    private Boolean speakWelsh;
 
     @Column(name = "num_previous_convictions")
     private Integer numPreviousConvictions;
@@ -55,7 +64,10 @@ public class DefendantDetail implements Serializable {
         this(id, null, null, 0);
     }
 
-    public DefendantDetail(final UUID id, final PersonalDetails personalDetails, final Set<OffenceDetail> offences, final Integer numPreviousConvictions) {
+    public DefendantDetail(final UUID id,
+                           final PersonalDetails personalDetails,
+                           final List<OffenceDetail> offences,
+                           final Integer numPreviousConvictions) {
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
         setOffences(offences);
@@ -79,6 +91,11 @@ public class DefendantDetail implements Serializable {
         return Objects.hash(id, personalDetails);
     }
 
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
     public UUID getId() {
         return id;
     }
@@ -95,12 +112,12 @@ public class DefendantDetail implements Serializable {
         this.personalDetails = Optional.ofNullable(personalDetails).orElseGet(PersonalDetails::new);
     }
 
-    public Set<OffenceDetail> getOffences() {
+    public List<OffenceDetail> getOffences() {
         return offences;
     }
 
-    public void setOffences(Set<OffenceDetail> offences) {
-        this.offences = Optional.ofNullable(offences).orElseGet(HashSet::new);
+    public void setOffences(final List<OffenceDetail> offences) {
+        this.offences = offences == null ? emptyList() : new ArrayList<>(offences);
         this.offences.forEach(offence -> offence.setDefendantDetail(this));
     }
 
@@ -128,4 +145,27 @@ public class DefendantDetail implements Serializable {
         this.interpreter = interpreter;
     }
 
+    public Boolean getSpeakWelsh() {
+        return speakWelsh;
+    }
+
+    public void setSpeakWelsh(final Boolean speakWelsh) {
+        this.speakWelsh = speakWelsh;
+    }
+
+    public void markNameUpdated(ZonedDateTime updateDate) {
+        personalDetails.markNameUpdated(updateDate);
+    }
+
+    public void markAddressUpdated(ZonedDateTime updateDate) {
+        personalDetails.markAddressUpdated(updateDate);
+    }
+
+    public void markDateOfBirthUpdated(ZonedDateTime updateDate) {
+        personalDetails.markDateOfBirthUpdated(updateDate);
+    }
+
+    public void acknowledgeDetailsUpdates(ZonedDateTime acknowledgedAt) {
+        personalDetails.acknowledgeUpdates(acknowledgedAt);
+    }
 }

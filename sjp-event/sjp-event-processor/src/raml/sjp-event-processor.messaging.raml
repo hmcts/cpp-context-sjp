@@ -104,6 +104,10 @@ baseUri: message://event/processor/message/sjp
         schema: !include json/schema/sjp.events.dates-to-avoid-updated.json
         example: !include json/sjp.events.dates-to-avoid-updated.json
 
+      application/vnd.sjp.events.defendant-details-updates-acknowledged+json:
+        schema: !include json/schema/sjp.events.defendant-details-updates-acknowledged.json
+        example: !include json/sjp.events.defendant-details-updates-acknowledged.json
+
 /public.event:
   post:
     body:

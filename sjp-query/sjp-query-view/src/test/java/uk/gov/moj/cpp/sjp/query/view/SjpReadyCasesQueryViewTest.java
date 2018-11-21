@@ -26,7 +26,6 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
-import uk.gov.moj.cpp.sjp.persistence.entity.view.ReadyCasesReasonCount;
 import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
 import java.util.Collections;
@@ -50,32 +49,6 @@ public class SjpReadyCasesQueryViewTest {
 
     @InjectMocks
     private SjpReadyCasesQueryView sjpReadyCasesQueryView;
-
-    @Test
-    public void shouldGetReadyCasesReasonsCounts() {
-        final JsonEnvelope queryEnvelope = envelope()
-                .with(metadataWithRandomUUID("sjp.query.ready-cases-reasons-counts"))
-                .build();
-
-        final ReadyCasesReasonCount readyCasesReasonCount1 = new ReadyCasesReasonCount(PIA.name(), 2);
-        final ReadyCasesReasonCount readyCasesReasonCount2 = new ReadyCasesReasonCount(PLEADED_GUILTY.name(), 3);
-
-        when(readyCaseRepository.getReadyCasesReasonCount()).thenReturn(asList(readyCasesReasonCount1, readyCasesReasonCount2));
-
-        final JsonEnvelope readyCasesReasonsCounts = sjpReadyCasesQueryView.getReadyCasesReasonsCounts(queryEnvelope);
-
-        assertThat(readyCasesReasonsCounts, jsonEnvelope(metadata().withName("sjp.query.ready-cases-reasons-counts"),
-                payload().isJson(allOf(withJsonPath("reasons", allOf(
-                        hasItem(isJson(allOf(
-                                withJsonPath("reason", equalTo(PIA.name())),
-                                withJsonPath("count", equalTo(2))
-                        ))),
-                        hasItem(isJson(allOf(
-                                withJsonPath("reason", equalTo(PLEADED_GUILTY.name())),
-                                withJsonPath("count", equalTo(3))
-                        )))
-                ))))));
-    }
 
     @Test
     public void shouldReturnAllReadyCases() {

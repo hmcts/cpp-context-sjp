@@ -4,6 +4,8 @@ import uk.gov.justice.json.schemas.domains.sjp.Gender;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -41,15 +43,17 @@ public class PersonalDetails implements Serializable {
     @Embedded
     private ContactDetails contactDetails;
 
-    @Column(name = "address_changed")
-    private Boolean addressChanged;
+    @Column(name = "address_updated_at")
+    private ZonedDateTime addressUpdatedAt;
 
-    @Column(name = "dob_changed")
-    private Boolean dobChanged;
+    @Column(name = "dob_updated_at")
+    private ZonedDateTime dateOfBirthUpdatedAt;
 
-    @Column(name = "personal_name_changed")
-    private Boolean nameChanged;
+    @Column(name = "name_updated_at")
+    private ZonedDateTime nameUpdatedAt;
 
+    @Column(name = "updates_acknowledged_at")
+    private ZonedDateTime updatesAcknowledgedAt;
 
     public PersonalDetails() {
         this.address = new Address();
@@ -64,6 +68,7 @@ public class PersonalDetails implements Serializable {
                            final String nationalInsuranceNumber,
                            final Address address,
                            final ContactDetails contactDetails) {
+
         this.title = title;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -138,22 +143,61 @@ public class PersonalDetails implements Serializable {
         this.contactDetails = contactDetails;
     }
 
-    public Boolean getAddressChanged() {
-        return addressChanged;
+    public ZonedDateTime getAddressUpdatedAt() {
+        return addressUpdatedAt;
     }
 
-    public void setAddressChanged(Boolean addressChanged) { this.addressChanged = addressChanged; }
-
-    public Boolean getDobChanged() {
-        return dobChanged;
+    public void markAddressUpdated(final ZonedDateTime updateDate) {
+        this.addressUpdatedAt = updateDate;
     }
 
-    public void setDobChanged(Boolean dobChanged) { this.dobChanged = dobChanged; }
-
-    public Boolean getNameChanged() {
-        return nameChanged;
+    public ZonedDateTime getDateOfBirthUpdatedAt() {
+        return dateOfBirthUpdatedAt;
     }
 
-    public void setNameChanged(Boolean nameChanged) { this.nameChanged = nameChanged; }
+    public void markDateOfBirthUpdated(final ZonedDateTime updateDate) {
+        this.dateOfBirthUpdatedAt = updateDate;
+    }
 
+    public ZonedDateTime getNameUpdatedAt() {
+        return nameUpdatedAt;
+    }
+
+    public void markNameUpdated(final ZonedDateTime updateDate) {
+        this.nameUpdatedAt = updateDate;
+    }
+
+    public void acknowledgeUpdates(final ZonedDateTime acknowledgementTime) {
+        this.updatesAcknowledgedAt = acknowledgementTime;
+    }
+
+    @Override
+    @SuppressWarnings("squid:S1067")
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof PersonalDetails)) {
+            return false;
+        }
+
+        final PersonalDetails that = (PersonalDetails) o;
+        return Objects.equals(title, that.title) &&
+                Objects.equals(firstName, that.firstName) &&
+                Objects.equals(lastName, that.lastName) &&
+                Objects.equals(dateOfBirth, that.dateOfBirth) &&
+                gender == that.gender &&
+                Objects.equals(nationalInsuranceNumber, that.nationalInsuranceNumber) &&
+                Objects.equals(address, that.address) &&
+                Objects.equals(contactDetails, that.contactDetails) &&
+                Objects.equals(addressUpdatedAt, that.addressUpdatedAt) &&
+                Objects.equals(dateOfBirthUpdatedAt, that.dateOfBirthUpdatedAt) &&
+                Objects.equals(nameUpdatedAt, that.nameUpdatedAt);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber,
+                address, contactDetails, addressUpdatedAt, dateOfBirthUpdatedAt, nameUpdatedAt);
+    }
 }

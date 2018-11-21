@@ -24,9 +24,11 @@
     },
     "offences": [
       {
-        "id": "c84cbf19-9b10-46c4-9408-1059af51376d",
-        "title": "Public service vehicle - passenger use altered / defaced   ticket",
-        "legislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+        "id": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+        "title": "Use / install a television set without a licence",
+        "legislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+        "titleWelsh": "Defnyddio set deledu heb drwydded",
+        "legislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
         "wording": "Committed some offence",
         "pendingWithdrawal": false,
         "plea": ""

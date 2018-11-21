@@ -58,10 +58,6 @@ public class UpdatePleaHelper implements AutoCloseable {
         makePostCall(writeUrl(caseId, offenceId), "application/vnd.sjp.update-plea+json", payload, expectedStatus);
     }
 
-    public void updatePleaAndExpectBadRequest(final UUID caseId, final UUID offenceId, final JsonObject payload) {
-        requestHttpCallWithPayloadAndStatus(caseId, offenceId, payload.toString(), Response.Status.BAD_REQUEST);
-    }
-
     public void updatePlea(final UUID caseId, final UUID offenceId, final JsonObject payload) {
         requestHttpCallWithPayloadAndStatus(caseId, offenceId, payload.toString(), Response.Status.ACCEPTED);
     }
@@ -82,19 +78,13 @@ public class UpdatePleaHelper implements AutoCloseable {
         assertThat(message.get("denialReason"), equalTo(denialReason));
     }
 
-    public void verifyPleaUpdated(final UUID caseId, final PleaType pleaType, final PleaMethod pleaMethod) {
-        CasePoller.pollUntilCaseByIdIsOk(caseId,
+    public JsonPath verifyPleaUpdated(final UUID caseId, final PleaType pleaType, final PleaMethod pleaMethod) {
+        return CasePoller.pollUntilCaseByIdIsOk(caseId,
                 allOf(
                         withJsonPath("defendant.offences[0].plea", is(pleaType.name())),
-                        withJsonPath("defendant.offences[0].pleaMethod", is(pleaMethod.name()))
+                        withJsonPath("defendant.offences[0].pleaMethod", is(pleaMethod.name())),
+                        withJsonPath("onlinePleaReceived", is(PleaMethod.ONLINE.equals(pleaMethod)))
                 )
-        );
-    }
-
-    public void verifyInterpreterLanguage(final UUID caseId, final String interpreterLanguage) {
-        CasePoller.pollUntilCaseByIdIsOk(caseId,
-                withJsonPath("defendant.interpreter.language",
-                        is(interpreterLanguage))
         );
     }
 
@@ -114,10 +104,24 @@ public class UpdatePleaHelper implements AutoCloseable {
     }
 
     public static JsonObject getPleaPayload(final PleaType pleaType) {
-        final JsonObjectBuilder builder = createObjectBuilder().add("plea", pleaType.name());
-        if (PleaType.NOT_GUILTY.equals(pleaType) || PleaType.GUILTY_REQUEST_HEARING.equals(pleaType)) {
-            builder.add("interpreterRequired", false);
+        final Boolean mandatoryFields = (PleaType.NOT_GUILTY.equals(pleaType) || PleaType.GUILTY_REQUEST_HEARING.equals(pleaType)) ? false : null;
+
+        return getPleaPayload(pleaType, mandatoryFields, null, mandatoryFields);
+    }
+
+    public static JsonObject getPleaPayload(final PleaType pleaType, final Boolean interpreterRequired, final String interpreterLanguage, final Boolean speakWelsh) {
+        final JsonObjectBuilder builder = createObjectBuilder()
+                .add("plea", pleaType.name());
+        if (interpreterRequired != null) {
+            builder.add("interpreterRequired", interpreterRequired);
         }
+        if (interpreterLanguage != null) {
+            builder.add("interpreterLanguage", interpreterLanguage);
+        }
+        if (speakWelsh != null) {
+            builder.add("speakWelsh", speakWelsh);
+        }
+
         return builder.build();
     }
 }

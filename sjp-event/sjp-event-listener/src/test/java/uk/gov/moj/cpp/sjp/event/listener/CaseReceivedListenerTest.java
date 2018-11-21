@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
-import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -182,11 +182,9 @@ public class CaseReceivedListenerTest {
                                         address2,
                                         address3,
                                         address4,
-                                        postcode
-                                ),
-                                null
-                        ),
-                        singleton(
+                                        postcode),
+                                null),
+                        singletonList(
                                 new OffenceDetail.OffenceDetailBuilder()
                                         .setId(offenceId)
                                         .setChargeDate(chargeDate)

@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptySet;
 import static org.apache.commons.lang.builder.EqualsBuilder.reflectionEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
@@ -12,12 +11,11 @@ import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaPersonalDetails;
-import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,8 +30,6 @@ import org.junit.runner.RunWith;
 @RunWith(CdiTestRunner.class)
 public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
 
-    private OnlinePlea insertedOnlinePlea;
-
     @Inject
     private OnlinePleaRepository.FinancialMeansOnlinePleaRepository onlinePleaRepository;
 
@@ -43,52 +39,56 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
     @Inject
     private Clock clock;
 
-    private CaseDetail caseDetail;
+    private UUID caseId;
 
     @Before
     public void set() {
-        caseDetail = getCaseWithDefendantOffences();
+        caseId = UUID.randomUUID();
+        final CaseDetail caseDetail = getCaseWithDefendant(caseId);
         caseRepository.save(caseDetail);
 
-        insertedOnlinePlea = buildOnlinePlea(caseDetail);
+        final OnlinePlea insertedOnlinePlea = buildOnlinePlea(caseDetail, clock.now());
         onlinePleaRepository.save(insertedOnlinePlea);
     }
 
     @Test
     public void shouldFindOnlinePleaWithoutFinances() {
-        // ASSUME:
-        assertThat(insertedOnlinePlea.getPleaDetails(), notNullValue());
-        assertThat(insertedOnlinePlea.getOutgoings(), notNullValue());
-        assertThat(insertedOnlinePlea.getEmployment(), notNullValue());
-        assertThat(insertedOnlinePlea.getEmployer(), notNullValue());
-
         // WHEN
-        OnlinePlea actualOnlinePlea = onlinePleaRepository.findOnlinePleaWithoutFinances(insertedOnlinePlea.getCaseId());
+        final OnlinePlea actualFullOnlinePlea = onlinePleaRepository.findBy(caseId);
+        final OnlinePlea actualOnlinePleaWithoutFinances = onlinePleaRepository.findOnlinePleaWithoutFinances(caseId);
+
+        // ASSUME: finances present on the stored object
+        assertThat(actualFullOnlinePlea.getPleaDetails(), notNullValue());
+        assertThat(actualFullOnlinePlea.getOutgoings(), notNullValue());
+        assertThat(actualFullOnlinePlea.getEmployment(), notNullValue());
+        assertThat(actualFullOnlinePlea.getEmployer(), notNullValue());
 
         // THEN
-        assertThat(actualOnlinePlea.getPleaDetails(), notNullValue());
-        assertThat(actualOnlinePlea.getOutgoings(), nullValue());
-        assertThat(actualOnlinePlea.getEmployment(), nullValue());
-        assertThat(actualOnlinePlea.getEmployer(), nullValue());
+        assertThat(actualOnlinePleaWithoutFinances.getPleaDetails(), notNullValue());
+        assertThat(actualOnlinePleaWithoutFinances.getOutgoings(), nullValue());
+        assertThat(actualOnlinePleaWithoutFinances.getEmployment(), nullValue());
+        assertThat(actualOnlinePleaWithoutFinances.getEmployer(), nullValue());
 
-        List<String> excludedFields = asList("pleaDetails", "personalDetails", "outgoings", "employment", "employer");
-        assertTrue(reflectionEquals(actualOnlinePlea, insertedOnlinePlea, excludedFields));
-        assertTrue(reflectionEquals(actualOnlinePlea.getPleaDetails(), insertedOnlinePlea.getPleaDetails()));
-        assertTrue(reflectionEquals(actualOnlinePlea.getPersonalDetails(), insertedOnlinePlea.getPersonalDetails()));
+        final List<String> excludedFields = asList("pleaDetails", "personalDetails", "outgoings", "employment", "employer");
+        assertTrue(reflectionEquals(actualOnlinePleaWithoutFinances, actualFullOnlinePlea, excludedFields));
+        assertTrue(reflectionEquals(actualOnlinePleaWithoutFinances.getPleaDetails(), actualFullOnlinePlea.getPleaDetails()));
+        assertTrue(reflectionEquals(actualOnlinePleaWithoutFinances.getPersonalDetails(), actualFullOnlinePlea.getPersonalDetails()));
+
+        // obfuscated fields
+        assertThat(actualOnlinePleaWithoutFinances.getOutgoings(), nullValue());
+        assertThat(actualOnlinePleaWithoutFinances.getEmployment(), nullValue());
+        assertThat(actualOnlinePleaWithoutFinances.getEmployer(), nullValue());
     }
 
-    private static CaseDetail getCaseWithDefendantOffences() {
-        CaseDetail caseDetail = new CaseDetail();
-        caseDetail.setId(UUID.randomUUID());
+    private static CaseDetail getCaseWithDefendant(final UUID caseId) {
+        final CaseDetail caseDetail = new CaseDetail(caseId);
         caseDetail.setOnlinePleaReceived(true);
-        caseDetail.setDefendant(
-                new DefendantDetail(UUID.randomUUID(), new PersonalDetails(), emptySet(), 1));
 
         return caseDetail;
     }
 
-    private OnlinePlea buildOnlinePlea(CaseDetail caseDetail) {
-        OnlinePleaPersonalDetails personalDetails = new OnlinePleaPersonalDetails();
+    private static OnlinePlea buildOnlinePlea(final CaseDetail caseDetail, final ZonedDateTime onlinePleaSubmittedOn) {
+        final OnlinePleaPersonalDetails personalDetails = new OnlinePleaPersonalDetails();
         personalDetails.setFirstName("first_name");
         personalDetails.setLastName("last_name");
         personalDetails.setAddress(new Address("address1", "address2", "address3", "address4", "postcode"));
@@ -97,23 +97,24 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
         personalDetails.setHomeTelephone("123456789");
         personalDetails.setMobile("987654321");
 
-        OnlinePlea.PleaDetails pleaDetails = new OnlinePlea.PleaDetails();
+        final OnlinePlea.PleaDetails pleaDetails = new OnlinePlea.PleaDetails();
         pleaDetails.setInterpreterLanguage("interpreter");
         pleaDetails.setUnavailability("unavailability");
         pleaDetails.setWitnessDetails("witnessDetails");
         pleaDetails.setWitnessDispute("witnessDispute");
+        pleaDetails.setSpeakWelsh(true);
 
-        OnlinePlea onlinePlea = new OnlinePlea(caseDetail.getId(), pleaDetails, caseDetail.getDefendant(), personalDetails, clock.now());
+        final OnlinePlea onlinePlea = new OnlinePlea(caseDetail.getId(), pleaDetails, caseDetail.getDefendant().getId(), personalDetails, onlinePleaSubmittedOn);
 
-        OnlinePlea.Employer employer = new OnlinePlea.Employer();
+        final OnlinePlea.Employer employer = new OnlinePlea.Employer();
         employer.setName("employer_name");
         onlinePlea.setEmployer(employer);
 
-        OnlinePlea.Employment employment = new OnlinePlea.Employment();
+        final OnlinePlea.Employment employment = new OnlinePlea.Employment();
         employment.setEmploymentStatus("employment_status");
         onlinePlea.setEmployment(employment);
 
-        OnlinePlea.Outgoings outgoings = new OnlinePlea.Outgoings();
+        final OnlinePlea.Outgoings outgoings = new OnlinePlea.Outgoings();
         outgoings.setAccommodationAmount(BigDecimal.TEN);
         onlinePlea.setOutgoings(outgoings);
 

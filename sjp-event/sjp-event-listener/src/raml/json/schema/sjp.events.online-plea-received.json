@@ -55,6 +55,9 @@
     "interpreterLanguage": {
       "type": "string"
     },
+    "speakWelsh": {
+      "type": "boolean"
+    },
     "unavailability": {
       "type": "string"
     },
@@ -100,11 +103,6 @@
           "type": "string"
         }
       },
-      "required": [
-        "income",
-        "benefits",
-        "employmentStatus"
-      ],
       "additionalProperties": false
     },
     "employer": {
@@ -149,8 +147,7 @@
     "urn",
     "caseId",
     "defendantId",
-    "personalDetails",
-    "financialMeans"
+    "personalDetails"
   ],
   "additionalProperties": false
 }

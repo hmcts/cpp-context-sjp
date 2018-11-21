@@ -135,11 +135,15 @@ public class DefendantUpdatedListenerTest {
                         previousTitle, "Joe", "Blogs", LocalDate.of(1965, 8, 6),
                         previousGender, previousNiNumber,
                         new uk.gov.moj.cpp.sjp.persistence.entity.Address(
-                                "address1", "address2", "address3", "address4", "postcode"
-                        ),
-                        new uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails("test@test.com", "0207 886432", "07563 489883")
-                )
-        );
+                                "address1",
+                                "address2",
+                                "address3",
+                                "address4",
+                                "postcode"),
+                        new uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails(
+                                "test@test.com",
+                                "0207 886432",
+                                "07563 489883")));
 
         when(caseRepository.findCaseDefendant(caseId)).thenReturn(caseDetail.getDefendant());
         when(caseSearchResultRepository.findByCaseId(caseId)).thenReturn(Lists.newArrayList(buildCaseSearchResult(caseDetail)));
@@ -306,8 +310,7 @@ public class DefendantUpdatedListenerTest {
                         defendantDetailsUpdated.getAddress().getAddress2(),
                         defendantDetailsUpdated.getAddress().getAddress3(),
                         defendantDetailsUpdated.getAddress().getAddress4(),
-                        defendantDetailsUpdated.getAddress().getPostcode()
-                ),
+                        defendantDetailsUpdated.getAddress().getPostcode()),
                 new uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails(
                         defendantDetailsUpdated.getContactDetails().getEmail(),
                         defendantDetailsUpdated.getContactDetails().getHome(),

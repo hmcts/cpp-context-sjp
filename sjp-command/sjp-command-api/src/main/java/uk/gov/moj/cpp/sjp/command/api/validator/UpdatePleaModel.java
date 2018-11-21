@@ -1,39 +1,47 @@
 package uk.gov.moj.cpp.sjp.command.api.validator;
 
+import uk.gov.justice.services.messaging.JsonObjects;
+
 import javax.json.JsonObject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.EnumUtils;
 
 public class UpdatePleaModel {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UpdatePleaModel.class);
+    private static final String FIELD_PLEA = "plea";
 
-    public static final String FIELD_PLEA = "plea";
+    static final String FIELD_INTERPRETER_REQUIRED = "interpreterRequired";
 
-    public static final String FIELD_INTERPRETER_REQUIRED = "interpreterRequired";
+    static final String FIELD_INTERPRETER_LANGUAGE = "interpreterLanguage";
 
-    public static final String FIELD_INTERPRETER_LANGUAGE = "interpreterLanguage";
+    static final String FIELD_SPEAK_WELSH = "speakWelsh";
+
+    private final PleaType pleaType;
 
     private final Boolean interpreterRequired;
 
     private final String interpreterLanguage;
 
-    private PleaType pleaType;
+    private final Boolean speakWelsh;
+
+    UpdatePleaModel(final PleaType pleaType, final Boolean interpreterRequired,
+                    final String interpreterLanguage, final Boolean speakWelsh) {
+        this.pleaType = pleaType;
+        this.interpreterRequired = interpreterRequired;
+        this.interpreterLanguage = interpreterLanguage;
+        this.speakWelsh = speakWelsh;
+    }
 
     public UpdatePleaModel(final JsonObject jsonObject) {
-        try {
-            this.pleaType = PleaType.valueOf(jsonObject.getString(FIELD_PLEA, ""));
-        }
-        catch (final IllegalArgumentException e) {
-           LOGGER.info("No pleaType provided", e);
-           this.pleaType = null;
-        }
+        this(
+                EnumUtils.getEnum(PleaType.class, jsonObject.getString(FIELD_PLEA, null)),
+                JsonObjects.getBoolean(jsonObject, FIELD_INTERPRETER_REQUIRED).orElse(null),
+                jsonObject.getString(FIELD_INTERPRETER_LANGUAGE, null),
+                JsonObjects.getBoolean(jsonObject, FIELD_SPEAK_WELSH).orElse(null));
+    }
 
-        this.interpreterLanguage = jsonObject.getString(FIELD_INTERPRETER_LANGUAGE, null);
-
-        this.interpreterRequired = jsonObject.containsKey(FIELD_INTERPRETER_REQUIRED) ?
-                jsonObject.getBoolean(FIELD_INTERPRETER_REQUIRED) : null;
+    PleaType getPleaType() {
+        return pleaType;
     }
 
     public Boolean getInterpreterRequired() {
@@ -44,7 +52,8 @@ public class UpdatePleaModel {
         return interpreterLanguage;
     }
 
-    public PleaType getPleaType() {
-        return pleaType;
+    public Boolean getSpeakWelsh() {
+        return speakWelsh;
     }
+
 }

@@ -77,16 +77,12 @@ public class InterpreterUpdatedListenerTest {
         when(caseDetail.getDefendant()).thenReturn(defendant);
     }
 
-    private JsonEnvelope commonSetupForInterpreter(String language, boolean updatedByOnlinePlea, ZonedDateTime now) {
-        final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant;
-        if (updatedByOnlinePlea) {
-            interpreterUpdatedForDefendant = InterpreterUpdatedForDefendant.createEventForOnlinePlea(
-                    caseId, defendantId, new Interpreter(language), now);
-        }
-        else {
-            interpreterUpdatedForDefendant = InterpreterUpdatedForDefendant.createEvent(
-                    caseId, defendantId, new Interpreter(language));
-        }
+    private JsonEnvelope commonSetupForInterpreter(final String language, final boolean updatedByOnlinePlea, final ZonedDateTime now) {
+        final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant =
+                updatedByOnlinePlea
+                        ? InterpreterUpdatedForDefendant.createEventForOnlinePlea(caseId, defendantId, language, now)
+                        : InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, language);
+
         final JsonEnvelope envelope = DefaultJsonEnvelope.envelope()
                 .with(metadataWithRandomUUID("sjp.events.interpreter-for-defendant-updated"))
                 .withPayloadOf(caseId, "caseId")
@@ -136,6 +132,7 @@ public class InterpreterUpdatedListenerTest {
         assertThat(captor.getValue().getNeeded(), is(Boolean.TRUE));
         assertThat(onlinePleaCaptor.getValue().getCaseId(), equalTo(caseId));
         assertThat(onlinePleaCaptor.getValue().getPleaDetails().getInterpreterLanguage(), equalTo(language));
+        assertThat(onlinePleaCaptor.getValue().getPleaDetails().isInterpreterRequired(), equalTo(Interpreter.isNeeded(language)));
         assertThat(onlinePleaCaptor.getValue().getSubmittedOn(), equalTo(now));
     }
 

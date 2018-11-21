@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
-import uk.gov.justice.json.schemas.domains.sjp.Language;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -24,28 +23,7 @@ public class Defendant extends Person {
 
     private final List<Offence> offences;
 
-    private final Language documentationLanguage;
-
-    private final Language hearingLanguageIndicator;
-
     private final String languageNeeds;
-
-    @SuppressWarnings("squid:S00107")
-    public Defendant(final UUID id,
-                     final String title,
-                     final String firstName,
-                     final String lastName,
-                     final LocalDate dateOfBirth,
-                     final Gender gender,
-                     final String nationalInsuranceNumber,
-                     final Address address,
-                     final ContactDetails contactDetails,
-                     final int numPreviousConvictions,
-                     final List<Offence> offences
-    ) {
-        this(id, title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber, null, address, contactDetails, numPreviousConvictions, offences,
-                null, null, null);
-    }
 
     @JsonCreator
     public Defendant(@JsonProperty("id") final UUID id,
@@ -60,15 +38,11 @@ public class Defendant extends Person {
                      @JsonProperty("contactDetails") final ContactDetails contactDetails,
                      @JsonProperty("numPreviousConvictions") final int numPreviousConvictions,
                      @JsonProperty("offences") final List<Offence> offences,
-                     @JsonProperty("documentationLanguage") final Language documentationLanguage,
-                     @JsonProperty("hearingLanguageIndicator") final Language hearingLanguageIndicator,
                      @JsonProperty("languageNeeds") final String languageNeeds) {
         super(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber, driverNumber, address, contactDetails);
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
         this.offences = Optional.ofNullable(offences).map(Collections::unmodifiableList).orElseGet(Collections::emptyList);
-        this.documentationLanguage = documentationLanguage;
-        this.hearingLanguageIndicator = hearingLanguageIndicator;
         this.languageNeeds = languageNeeds;
     }
 
@@ -82,14 +56,6 @@ public class Defendant extends Person {
 
     public List<Offence> getOffences() {
         return offences;
-    }
-
-    public Language getDocumentationLanguage() {
-        return documentationLanguage;
-    }
-
-    public Language getHearingLanguageIndicator() {
-        return hearingLanguageIndicator;
     }
 
     public String getLanguageNeeds() {
@@ -111,16 +77,13 @@ public class Defendant extends Person {
                 .append(id, defendant.id)
                 .append(numPreviousConvictions, defendant.numPreviousConvictions)
                 .append(offences, defendant.offences)
-                .append(documentationLanguage, defendant.documentationLanguage)
-                .append(hearingLanguageIndicator, defendant.hearingLanguageIndicator)
                 .append(languageNeeds, defendant.languageNeeds)
                 .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id, numPreviousConvictions, offences,
-                documentationLanguage, hearingLanguageIndicator, languageNeeds);
+        return Objects.hash(super.hashCode(), id, numPreviousConvictions, offences, languageNeeds);
     }
 
     public static class DefendantBuilder {
@@ -149,8 +112,6 @@ public class Defendant extends Person {
                     defendant.getContactDetails(),
                     defendant.getNumPreviousConvictions(),
                     defendant.getOffences(),
-                    defendant.getDocumentationLanguage(),
-                    defendant.getHearingLanguageIndicator(),
                     defendant.getLanguageNeeds());
         }
 

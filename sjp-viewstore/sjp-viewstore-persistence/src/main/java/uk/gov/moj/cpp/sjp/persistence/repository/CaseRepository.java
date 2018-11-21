@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.AwaitingCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 
@@ -71,27 +70,6 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
             "WHERE cdocs IS NULL AND cd.postingDate < :postedBefore AND cd.completed IS NOT true AND cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter")
     public abstract QueryResult<CaseDetail> findCasesMissingSjpn(@QueryParam("prosecutingAuthorityFilter") String prosecutingAuthorityFilter, @QueryParam("postedBefore") final LocalDate postedBefore);
 
-    @Query(value = "select new uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn" +
-            "(cd.id, cd.urn, cd.postingDate, res.firstName, res.lastName) " +
-            "from CaseDetail cd " +
-            "LEFT OUTER JOIN cd.caseDocuments cdocs " +
-            "ON cdocs.documentType = 'SJPN' " +
-            "LEFT OUTER JOIN cd.caseSearchResults res " +
-            "WHERE cdocs IS NULL " +
-            "AND cd.completed IS NOT true")
-    public abstract List<CaseDetailMissingSjpn> findCasesMissingSjpnWithDetails();
-
-    @Query(value = "select new uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn" +
-            "(cd.id, cd.urn, cd.postingDate, res.firstName, res.lastName) " +
-            "from CaseDetail cd " +
-            "LEFT OUTER JOIN cd.caseDocuments cdocs " +
-            "ON cdocs.documentType = 'SJPN' " +
-            "LEFT OUTER JOIN cd.caseSearchResults res " +
-            "WHERE cdocs IS NULL " +
-            "AND cd.postingDate < :postedBefore " +
-            "AND cd.completed IS NOT true")
-    public abstract List<CaseDetailMissingSjpn> findCasesMissingSjpnWithDetails(@QueryParam("postedBefore") final LocalDate postedBefore);
-
     @Query(value = "SELECT COUNT(cd) FROM CaseDetail cd LEFT OUTER JOIN cd.caseDocuments cdocs ON cdocs.documentType = 'SJPN' " +
             "WHERE cdocs IS NULL AND cd.completed IS NOT true AND cd.prosecutingAuthority LIKE :prosecutingAuthorityFilter")
     public abstract int countCasesMissingSjpn(@QueryParam("prosecutingAuthorityFilter") String prosecutingAuthorityFilter);
@@ -118,10 +96,6 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
             "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc) " +
             "ORDER BY cd.postingDate")
     public abstract List<AwaitingCase> findAwaitingSjpCases(@MaxResults final int limit);
-
-    @Query(value = "SELECT min(cd.postingDate) FROM CaseDetail cd " +
-            "WHERE cd.completed IS NOT true")
-    public abstract LocalDate findOldestUncompletedPostingDate();
 
     @Query(value = "SELECT cd.prosecutingAuthority FROM CaseDetail cd WHERE cd.id = :caseId", singleResult = SingleResultType.OPTIONAL)
     public abstract String getProsecutingAuthority(@QueryParam("caseId") final UUID caseId);

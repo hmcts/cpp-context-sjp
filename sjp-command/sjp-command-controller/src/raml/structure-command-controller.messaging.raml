@@ -39,8 +39,8 @@ version: v1
         example: !include json/sjp.command.cancel-plea.json
 
       application/vnd.sjp.command.plead-online+json:
-              schema: !include json/schema/sjp.command.plead-online.json
-              example: !include json/sjp.command.plead-online.json
+        schema: !include json/schema/sjp.command.plead-online.json
+        example: !include json/sjp.command.plead-online.json
 
       application/vnd.sjp.command.request-withdrawal-all-offences+json:
         schema: !include json/schema/sjp.command.request-withdrawal-all-offences.json
@@ -70,9 +70,9 @@ version: v1
         schema: !include json/schema/sjp.command.update-defendant-details.json
         example: !include json/sjp.command.update-defendant-details.json
 
-      application/vnd.sjp.command.update-interpreter+json:
-        schema: !include json/schema/sjp.command.update-interpreter.json
-        example: !include json/sjp.command.update-interpreter.json
+      application/vnd.sjp.command.update-hearing-requirements+json:
+        schema: !include json/schema/sjp.command.update-hearing-requirements.json
+        example: !include json/sjp.command.update-hearing-requirements.json
 
       application/vnd.sjp.command.update-defendant-national-insurance-number+json:
         schema: !include json/schema/sjp.command.update-defendant-national-insurance-number.json
@@ -101,3 +101,7 @@ version: v1
       application/vnd.sjp.command.add-dates-to-avoid+json:
         example: !include json/sjp.command.add-dates-to-avoid.json
         schema:  !include json/schema/sjp.command.add-dates-to-avoid.json
+
+      application/vnd.sjp.command.acknowledge-defendant-details-updates+json:
+        example: !include json/sjp.command.acknowledge-defendant-details-updates.json
+        schema:  !include json/schema/sjp.command.acknowledge-defendant-details-updates.json

@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.command.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZonedDateTime.now;
-import static java.util.Optional.of;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -45,7 +44,6 @@ import java.util.stream.Stream;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -87,17 +85,17 @@ public class EmployerHandlerTest {
         final UUID defendantId = caseAggregate.getOffenceIdsByDefendantId().keySet().iterator().next();
 
         final Address address = Address.address()
-                .withAddress1(of("123 High St"))
-                .withAddress2(of(""))
-                .withAddress3(of("London"))
-                .withAddress4(of("Croydon"))
-                .withPostcode(of("CR01XG"))
+                .withAddress1("123 High St")
+                .withAddress2("")
+                .withAddress3("London")
+                .withAddress4("Croydon")
+                .withPostcode("CR01XG")
                 .build();
         final Employer employer = Employer.employer()
-                .withName(of("Nando's"))
-                .withEmployeeReference(of("123"))
-                .withPhone(of("0208123123"))
-                .withAddress(of(address))
+                .withName("Nando's")
+                .withEmployeeReference("123")
+                .withPhone("0208123123")
+                .withAddress(address)
                 .build();
 
         final UpdateEmployer payload = updateEmployer()

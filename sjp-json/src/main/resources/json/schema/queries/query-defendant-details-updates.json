@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/defendant-details-updates.json",
+  "type": "object",
+  "properties": {
+    "total": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "defendantDetailsUpdates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "caseUrn": {
+            "type": "string"
+          },
+          "defendantId": {
+            "type": "string"
+          },
+          "caseId": {
+            "type": "string"
+          },
+          "dateOfBirth": {
+            "type": "string"
+          },
+          "nameUpdated": {
+            "type": "boolean"
+          },
+          "dateOfBirthUpdated": {
+            "type": "boolean"
+          },
+          "addressUpdated": {
+            "type": "boolean"
+          },
+          "updatedOn": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName",
+          "defendantId",
+          "caseId",
+          "caseUrn",
+          "dateOfBirth",
+          "nameUpdated",
+          "dateOfBirthUpdated",
+          "addressUpdated",
+          "updatedOn"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "total",
+    "defendantDetailsUpdates"
+  ],
+  "additionalProperties": false
+}

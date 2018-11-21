@@ -35,6 +35,10 @@ public class UpdatePleaValidator {
                     addError(validationErrors, UpdatePleaModel.FIELD_INTERPRETER_LANGUAGE, UpdatePleaValidationErrorMessages.INTERPRETER_LANGUAGE_NOT_ALLOWED);
                 }
             }
+
+            if (updatePleaModel.getSpeakWelsh() == null){
+                addError(validationErrors, UpdatePleaModel.FIELD_SPEAK_WELSH, UpdatePleaValidationErrorMessages.SPEAK_WELSH_NOT_SET);
+            }
         }
         // note that null/other pleas should be taken care of by the JSON schema validation
 

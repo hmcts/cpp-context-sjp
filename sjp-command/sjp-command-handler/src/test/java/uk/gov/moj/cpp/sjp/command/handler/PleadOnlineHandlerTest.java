@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
+import static java.lang.Boolean.TRUE;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.emptyList;
 import static org.mockito.Mockito.verify;
@@ -43,7 +44,7 @@ public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
         final Address address = new Address("l1", "l2", "l3", "l4", "l5", "postcode");
 
         final PleadOnline pleadOnline = new PleadOnline(
-                defendantId, emptyList(), "unavailability", "French", "witnessDetails", "witnessDispute",
+                defendantId, emptyList(), "unavailability", "French", TRUE, "witnessDetails", "witnessDispute",
                 new PersonalDetails("firstName", "lastName", address,
                         new ContactDetails("homeTelephone", "mobile", "business", "email1@aaa.bbb", "email2@aaa.bbb"),
                         null, "nationalInsuranceNumber"),

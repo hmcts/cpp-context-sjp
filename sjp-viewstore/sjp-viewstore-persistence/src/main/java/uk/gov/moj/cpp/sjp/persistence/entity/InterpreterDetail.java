@@ -1,11 +1,12 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import uk.gov.moj.cpp.sjp.domain.Interpreter;
+
 import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -17,10 +18,10 @@ public class InterpreterDetail implements Serializable{
     @Column(name="interpreter_language")
     private String language;
 
-    public InterpreterDetail(String language){
+    public InterpreterDetail(final String language){
         setLanguage(language);
     }
-    
+
     public InterpreterDetail(){
     }
 
@@ -29,7 +30,7 @@ public class InterpreterDetail implements Serializable{
     }
 
     public Boolean getNeeded() {
-        return ! StringUtils.isEmpty(language);
+        return Interpreter.isNeeded(language);
     }
 
     public void setLanguage(String language) {
@@ -40,5 +41,5 @@ public class InterpreterDetail implements Serializable{
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
-    
+
 }

@@ -3,20 +3,24 @@ package uk.gov.moj.cpp.sjp.domain.aggregate;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.emptyCollectionOf;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.StringContains.containsString;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateDefendantTest.DefendantData.defaultDefendantData;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
-import uk.gov.justice.json.schemas.domains.sjp.Language;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
+import uk.gov.moj.cpp.sjp.domain.Offence;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
@@ -24,6 +28,10 @@ import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceCancelledForDefendant;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
+import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
+import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -54,10 +62,10 @@ public class CaseAggregateDefendantTest {
     private static final String title = "Mr";
     private static final Address address = new Address("address1", "address2", "address3", "address4", "address5","CR02FW");
     private static final Clock clock = new UtcClock();
-    private static final Language documentationLanguage = Language.W;
-    private static final Language hearingLanguageIndicator = Language.E;
     private static final String languageNeeds = "languageNeeds_" + RandomStringUtils.randomAlphabetic(10);
     private static final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
+    private static final int numPreviousConvictions = 0;
+    private static final List<Offence> offences = emptyList();
 
     @Test
     public void updatesToValidTitle() {
@@ -69,13 +77,13 @@ public class CaseAggregateDefendantTest {
     }
 
     private void updatesToValidTitle(String validTitle) {
-        givenCaseWasReceivedWithDetaultDefendantData();
+        givenCaseWasReceivedWithDefaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 defaultDefendantData().withNewTitle(validTitle)
         );
 
-        assertThat(events.size(), greaterThan(0));
+        assertThat(events, not(emptyCollectionOf(Object.class)));
 
         final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(events.size() - 1);
         assertThat(defendantDetailsUpdated.getTitle(), is(validTitle));
@@ -83,13 +91,13 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void rejectsNullTitleIfPreviouslySet() {
-        givenCaseWasReceivedWithDetaultDefendantData();
+        givenCaseWasReceivedWithDefaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 defaultDefendantData().withNewTitle(null)
         );
 
-        assertThat(events.size(), is(1));
+        assertThat(events, hasSize(1));
 
         final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
         assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
@@ -99,13 +107,13 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void rejectsEmptyTitleIfPreviouslySet() {
-        givenCaseWasReceivedWithDetaultDefendantData();
+        givenCaseWasReceivedWithDefaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 defaultDefendantData().withNewTitle(" ")
         );
 
-        assertThat(events.size(), is(1));
+        assertThat(events, hasSize(1));
 
         final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
         assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
@@ -121,7 +129,7 @@ public class CaseAggregateDefendantTest {
                 defaultDefendantData().withNewTitle("")
         );
 
-        assertThat(events.size(), is(2));
+        assertThat(events, hasSize(2));
         final DefendantPersonalNameUpdated defendantPersonalNameUpdated = (DefendantPersonalNameUpdated) events.get(0);
         assertThat(defendantPersonalNameUpdated.getOldPersonalName().getTitle(), is(" "));
         assertThat(defendantPersonalNameUpdated.getNewPersonalName().getTitle(), is(""));
@@ -138,7 +146,7 @@ public class CaseAggregateDefendantTest {
                 defaultDefendantData().withNewDateOfBirth(null).withNewFirstName(newFirstName)
         );
 
-        assertThat(events.size(), is(2));
+        assertThat(events, hasSize(2));
 
         final DefendantPersonalNameUpdated personalNameUpdated = (DefendantPersonalNameUpdated) events.get(0);
         assertThat(personalNameUpdated.getNewPersonalName().getFirstName(), is(newFirstName));
@@ -155,7 +163,7 @@ public class CaseAggregateDefendantTest {
                 defaultDefendantData().withNewDateOfBirth(null).withNewLastName(newLastName)
         );
 
-        assertThat(events.size(), is(2));
+        assertThat(events, hasSize(2));
 
         final DefendantPersonalNameUpdated personalNameUpdated = (DefendantPersonalNameUpdated) events.get(0);
         assertThat(personalNameUpdated.getNewPersonalName().getLastName(), is(newLastName));
@@ -166,7 +174,7 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void acceptsNewDateOfBirth() {
-        givenCaseWasReceivedWithDetaultDefendantData();
+        givenCaseWasReceivedWithDefaultDefendantData();
 
         final LocalDate newDateOfBirth = LocalDates.from("1990-05-05");
         final List<Object> events = whenTheDefendantIsUpdated(
@@ -174,8 +182,7 @@ public class CaseAggregateDefendantTest {
         );
 
         assertThat("Event Types: " + events.stream().map(e -> e.getClass().getSimpleName()).collect(toList()),
-                events.size(),
-                is(2));
+                events, hasSize(2));
 
         final DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = (DefendantDateOfBirthUpdated) events.get(0);
         assertThat(defendantDateOfBirthUpdated.getOldDateOfBirth(), is(dateOfBirth));
@@ -187,14 +194,14 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void rejectsAddressWithMissingStreet() {
-        givenCaseWasReceivedWithDetaultDefendantData();
+        givenCaseWasReceivedWithDefaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 defaultDefendantData().withNewAddress(new Address(" ", "address2",
                         "address3", "address4", "CR02FW"))
         );
 
-        assertThat(events.size(), is(1));
+        assertThat(events, hasSize(1));
 
         final Object event = events.get(0);
         assertThat(event, instanceOf(DefendantDetailsUpdateFailed.class));
@@ -207,14 +214,14 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void rejectsAddressWithMissingTown() {
-        givenCaseWasReceivedWithDetaultDefendantData();
+        givenCaseWasReceivedWithDefaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 defaultDefendantData().withNewAddress(new Address("address1", "address2",
                         "address3", " ", "CR02FW"))
         );
 
-        assertThat(events.size(), is(1));
+        assertThat(events, hasSize(1));
 
         final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
         assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
@@ -224,14 +231,14 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void rejectsAddressWithMissingPostCode() {
-        givenCaseWasReceivedWithDetaultDefendantData();
+        givenCaseWasReceivedWithDefaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 defaultDefendantData().withNewAddress(new Address("address1", "address2",
                         "address3", "address4", " "))
         );
 
-        assertThat(events.size(), is(1));
+        assertThat(events, hasSize(1));
 
         final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
         assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
@@ -241,7 +248,7 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void acceptsNewAddress() {
-        givenCaseWasReceivedWithDetaultDefendantData();
+        givenCaseWasReceivedWithDefaultDefendantData();
 
         final Address newAddress = new Address("new street", "", "", "new town", "CR02FT");
         final List<Object> events = whenTheDefendantIsUpdated(
@@ -249,8 +256,7 @@ public class CaseAggregateDefendantTest {
         );
 
         assertThat("Event Types: " + events.stream().map(e -> e.getClass().getSimpleName()).collect(toList()),
-                events.size(),
-                is(2));
+                events, hasSize(2));
 
         final DefendantAddressUpdated defendantAddressUpdated = (DefendantAddressUpdated) events.get(0);
         assertThat(defendantAddressUpdated.getNewAddress(), is(newAddress));
@@ -260,44 +266,104 @@ public class CaseAggregateDefendantTest {
         assertThat(defendantDetailsUpdated.getAddress(), is(newAddress));
     }
 
-    static class DefendantData {
-        UUID id = CaseAggregateDefendantTest.id;
-        UUID caseId = CaseAggregateDefendantTest.caseId;
-        UUID defendantId = CaseAggregateDefendantTest.defendantId;
-        Gender gender = CaseAggregateDefendantTest.gender;
-        String title = CaseAggregateDefendantTest.title;
-        String firstName = CaseAggregateDefendantTest.firstName;
-        String lastName = CaseAggregateDefendantTest.lastName;
-        String nationalInsuranceNumber = CaseAggregateDefendantTest.nationalInsuranceNumber;
-        String driverNumber = CaseAggregateDefendantTest.driverNumber;
-        LocalDate dateOfBirth = CaseAggregateDefendantTest.dateOfBirth;
-        Address address = CaseAggregateDefendantTest.address;
-        Language documentationLanguage = CaseAggregateDefendantTest.documentationLanguage;
-        Language hearingLanguageIndicator = CaseAggregateDefendantTest.hearingLanguageIndicator;
-        String languageNeeds = CaseAggregateDefendantTest.languageNeeds;
-        ContactDetails contactDetails = CaseAggregateDefendantTest.contactDetails;
+    @Test
+    public void addsAndRemovesDefendantInterpreterLanguage() {
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
 
-        DefendantData withNewTitle(final String newTitle) {
+        final String newDefendantInterpreterLanguage = "French";
+        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantInterpreterLanguage));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), equalTo(newDefendantInterpreterLanguage));
+
+        // InterpreterUpdatedForDefendant with `null` value need to behave like InterpreterCancelledForDefendant
+        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, null));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+
+        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantInterpreterLanguage));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), equalTo(newDefendantInterpreterLanguage));
+
+        caseAggregate.apply(new InterpreterCancelledForDefendant(caseId, defendantId));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+    }
+
+    @Test
+    public void updateInterpreterAsEmptyShouldEqualToNullOrCancellation() {
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+
+        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, ""));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+
+        final String newDefendantInterpreterLanguage = "French";
+        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantInterpreterLanguage));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), equalTo(newDefendantInterpreterLanguage));
+
+        // InterpreterUpdatedForDefendant with `null` value need to behave like InterpreterCancelledForDefendant
+        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, ""));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+
+        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantInterpreterLanguage));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), equalTo(newDefendantInterpreterLanguage));
+
+        caseAggregate.apply(new InterpreterCancelledForDefendant(caseId, defendantId));
+        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+    }
+
+    @Test
+    public void addsAndRemovesDefendantSpeakWelsh() {
+        assertThat(caseAggregate.getDefendantSpeakWelsh(defendantId), nullValue());
+
+        final Boolean newDefendantSpeakWelsh = Boolean.TRUE;
+        caseAggregate.apply(HearingLanguagePreferenceUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantSpeakWelsh));
+        assertThat(caseAggregate.getDefendantSpeakWelsh(defendantId), equalTo(newDefendantSpeakWelsh));
+
+        // HearingLanguagePreferenceUpdatedForDefendant with `null` value need to behave like HearingLanguagePreferenceCancelledForDefendant
+        caseAggregate.apply(HearingLanguagePreferenceUpdatedForDefendant.createEvent(caseId, defendantId, null));
+        assertThat(caseAggregate.getDefendantSpeakWelsh(defendantId), nullValue());
+
+        caseAggregate.apply(HearingLanguagePreferenceUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantSpeakWelsh));
+        assertThat(caseAggregate.getDefendantSpeakWelsh(defendantId), equalTo(newDefendantSpeakWelsh));
+
+        caseAggregate.apply(new HearingLanguagePreferenceCancelledForDefendant(caseId, defendantId));
+        assertThat(caseAggregate.getDefendantSpeakWelsh(defendantId), nullValue());
+    }
+
+    static class DefendantData {
+        private UUID id = CaseAggregateDefendantTest.id;
+        private UUID caseId = CaseAggregateDefendantTest.caseId;
+        private UUID defendantId = CaseAggregateDefendantTest.defendantId;
+        private Gender gender = CaseAggregateDefendantTest.gender;
+        private String title = CaseAggregateDefendantTest.title;
+        private String firstName = CaseAggregateDefendantTest.firstName;
+        private String lastName = CaseAggregateDefendantTest.lastName;
+        private String nationalInsuranceNumber = CaseAggregateDefendantTest.nationalInsuranceNumber;
+        private String driverNumber = CaseAggregateDefendantTest.driverNumber;
+        private LocalDate dateOfBirth = CaseAggregateDefendantTest.dateOfBirth;
+        private Address address = CaseAggregateDefendantTest.address;
+        private String languageNeeds = CaseAggregateDefendantTest.languageNeeds;
+        private ContactDetails contactDetails = CaseAggregateDefendantTest.contactDetails;
+        private int numPreviousConvictions = CaseAggregateDefendantTest.numPreviousConvictions;
+        private List<Offence> offences = CaseAggregateDefendantTest.offences;
+
+        private DefendantData withNewTitle(final String newTitle) {
             this.title = newTitle;
             return this;
         }
 
-        DefendantData withNewFirstName(final String newFirstName) {
+        private DefendantData withNewFirstName(final String newFirstName) {
             this.firstName = newFirstName;
             return this;
         }
 
-        DefendantData withNewLastName(final String newLastName) {
+        private DefendantData withNewLastName(final String newLastName) {
             this.lastName = newLastName;
             return this;
         }
 
-        DefendantData withNewDateOfBirth(final LocalDate newDateOfBirth) {
+        private DefendantData withNewDateOfBirth(final LocalDate newDateOfBirth) {
             this.dateOfBirth = newDateOfBirth;
             return this;
         }
 
-        DefendantData withNewAddress(final Address newAddress) {
+        private DefendantData withNewAddress(final Address newAddress) {
             this.address = newAddress;
             return this;
         }
@@ -307,7 +373,7 @@ public class CaseAggregateDefendantTest {
         }
     }
 
-    private void givenCaseWasReceivedWithDetaultDefendantData() {
+    private void givenCaseWasReceivedWithDefaultDefendantData() {
         givenCaseWasReceivedWithDefendant(defaultDefendantData());
     }
 
@@ -324,10 +390,8 @@ public class CaseAggregateDefendantTest {
                         defendantData.driverNumber,
                         defendantData.address,
                         defendantData.contactDetails,
-                        0,
-                        emptyList(),
-                        defendantData.documentationLanguage,
-                        defendantData.hearingLanguageIndicator,
+                        defendantData.numPreviousConvictions,
+                        defendantData.offences,
                         defendantData.languageNeeds
                 )).build(),
                 clock.now()

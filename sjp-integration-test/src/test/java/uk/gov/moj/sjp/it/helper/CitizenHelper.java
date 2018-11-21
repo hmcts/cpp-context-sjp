@@ -40,11 +40,17 @@ public class CitizenHelper {
                                 withJsonPath("$.defendant.offences[0].wording", equalTo(offence(expected).getString("wording"))),
                                 offence(expected).containsKey("wordingWelsh") ?
                                         withJsonPath("$.defendant.offences[0].wordingWelsh", equalTo(offence(expected).getString("wordingWelsh")))
-                                        : withoutJsonPath("$.defendant.offences[0].wordingWelsh")
+                                        : withoutJsonPath("$.defendant.offences[0].wordingWelsh"),
+                                offence(expected).containsKey("titleWelsh") ?
+                                        withJsonPath("$.defendant.offences[0].titleWelsh", equalTo(offence(expected).getString("titleWelsh")))
+                                        : withoutJsonPath("$.defendant.offences[0].titleWelsh"),
+                                offence(expected).containsKey("legislationWelsh") ?
+                                        withJsonPath("$.defendant.offences[0].legislationWelsh", equalTo(offence(expected).getString("legislationWelsh")))
+                                        : withoutJsonPath("$.defendant.offences[0].legislationWelsh")
                         )));
     }
 
-    public void verifyCaseByPersonUrnWithoutPrefixAndPostcode(final JsonObject expected, final String urnWithoutPrefix, String urn, final String postcode) {
+    public void verifyCaseByPersonUrnWithoutPrefixAndPostcode(final String urnWithoutPrefix, final String urn, final String postcode) {
         pollWithDefaults(getCaseByUrnAndPostcode(urnWithoutPrefix, postcode))
                 .until(
                         status().is(OK),

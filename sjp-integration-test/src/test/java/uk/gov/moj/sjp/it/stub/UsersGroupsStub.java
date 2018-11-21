@@ -22,6 +22,7 @@ public class UsersGroupsStub {
     public static final String SJP_PROSECUTORS_GROUP = "SJP Prosecutors";
     public static final String LEGAL_ADVISERS_GROUP = "Legal Advisers";
     public static final String COURT_ADMINISTRATORS_GROUP = "Court Administrators";
+    public static final String ONLINE_PLEA_SYSTEM_USERS_GROUP = "Online Plea System Users";
 
     private static final String USER_GROUPS_ALL_USERS_QUERY_URL = "/usersgroups-service/query/api/rest/usersgroups/users/.*/groups";
     private static final String USER_GROUPS_USERS_QUERY_URL = "/usersgroups-service/query/api/rest/usersgroups/users/%s/groups";
@@ -29,7 +30,7 @@ public class UsersGroupsStub {
     private static final String USER_GROUPS_USER_DETAILS_QUERY_URL = "/usersgroups-service/query/api/rest/usersgroups/users/%s";
     private static final String USER_GROUPS_USER_DETAILS_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.user-details+json";
 
-    public static void stubAllGroupsForUser(final UUID userId) {
+    public static void stubAllGroupsForUser() {
         stubPayloadForAllUsers(getPayload("stub-data/usersgroups.get-groups-by-user-with-all-groups.json"), USER_GROUPS_ALL_USERS_QUERY_URL);
     }
 
@@ -54,7 +55,7 @@ public class UsersGroupsStub {
     }
 
     private static void stubPayloadForUserId(final String responsePayload, final UUID userId, final String queryUrl, final String mediaType) {
-        String url = format(queryUrl, userId);
+        final String url = format(queryUrl, userId);
 
         stubFor(get(urlEqualTo(url))
                 .willReturn(aResponse().withStatus(SC_OK)

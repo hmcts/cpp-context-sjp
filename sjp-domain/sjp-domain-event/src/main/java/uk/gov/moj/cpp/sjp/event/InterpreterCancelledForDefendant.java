@@ -10,23 +10,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Event("sjp.events.interpreter-for-defendant-cancelled")
 public class InterpreterCancelledForDefendant {
 
-    private UUID caseId;
-    private UUID defendantId;
+    private final UUID caseId;
+    private final UUID defendantId;
 
     @JsonCreator
     public InterpreterCancelledForDefendant(
-            @JsonProperty("caseId") UUID caseId,
-            @JsonProperty("defendantId") UUID defendantId) {
+            @JsonProperty("caseId") final UUID caseId,
+            @JsonProperty("defendantId") final UUID defendantId) {
         this.caseId = caseId;
         this.defendantId = defendantId;
     }
 
-    public UUID getDefendantId() {
-        return defendantId;
-    }
-
     public UUID getCaseId() {
         return caseId;
+    }
+
+    public UUID getDefendantId() {
+        return defendantId;
     }
 
 }

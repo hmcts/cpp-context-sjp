@@ -14,17 +14,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Event("sjp.events.online-plea-received")
 public class OnlinePleaReceived {
-    private String urn;
-    private UUID caseId;
-    private UUID defendantId;
-    private String unavailability;
-    private String interpreterLanguage;
-    private String witnessDetails;
-    private String witnessDispute;
-    private PersonalDetails personalDetails;
-    private FinancialMeans financialMeans;
-    private Employer employer;
-    private List<Outgoing> outgoings;
+
+    private final String urn;
+    private final UUID caseId;
+    private final UUID defendantId;
+    private final String unavailability;
+    private final String interpreterLanguage;
+    private final Boolean speakWelsh;
+    private final String witnessDetails;
+    private final String witnessDispute;
+    private final PersonalDetails personalDetails;
+    private final FinancialMeans financialMeans;
+    private final Employer employer;
+    private final List<Outgoing> outgoings;
 
     @JsonCreator
     public OnlinePleaReceived(@JsonProperty("urn") final String urn,
@@ -32,6 +34,7 @@ public class OnlinePleaReceived {
                               @JsonProperty("defendantId") final UUID defendantId,
                               @JsonProperty("unavailability") final String unavailability,
                               @JsonProperty("interpreterLanguage") final String interpreterLanguage,
+                              @JsonProperty("speakWelsh") final Boolean speakWelsh,
                               @JsonProperty("witnessDetails") final String witnessDetails,
                               @JsonProperty("witnessDispute") final String witnessDispute,
                               @JsonProperty("personalDetails") final PersonalDetails personalDetails,
@@ -43,6 +46,7 @@ public class OnlinePleaReceived {
         this.defendantId = defendantId;
         this.unavailability = unavailability;
         this.interpreterLanguage = interpreterLanguage;
+        this.speakWelsh = speakWelsh;
         this.witnessDetails = witnessDetails;
         this.witnessDispute = witnessDispute;
         this.personalDetails = personalDetails;
@@ -71,6 +75,10 @@ public class OnlinePleaReceived {
         return interpreterLanguage;
     }
 
+    public Boolean getSpeakWelsh() {
+        return speakWelsh;
+    }
+
     public String getWitnessDetails() {
         return witnessDetails;
     }
@@ -94,4 +102,5 @@ public class OnlinePleaReceived {
     public List<Outgoing> getOutgoings() {
         return outgoings;
     }
+
 }

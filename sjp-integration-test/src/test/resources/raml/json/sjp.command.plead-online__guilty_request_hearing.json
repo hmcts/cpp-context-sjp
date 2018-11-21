@@ -26,6 +26,7 @@
     }
   ],
   "interpreterLanguage": "French",
+  "speakWelsh": false,
   "financialMeans": {
     "income": {
       "amount": 200.25,

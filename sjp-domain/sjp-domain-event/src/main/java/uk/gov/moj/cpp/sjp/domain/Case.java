@@ -11,22 +11,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Case {
 
-    private UUID id;
-    private String urn;
-    private String enterpriseId;
-    private ProsecutingAuthority prosecutingAuthority;
-    private BigDecimal costs;
-    private LocalDate postingDate;
-    private Defendant defendant;
+    private final UUID id;
+    private final String urn;
+    private final String enterpriseId;
+    private final ProsecutingAuthority prosecutingAuthority;
+    private final BigDecimal costs;
+    private final LocalDate postingDate;
+    private final Defendant defendant;
 
     @JsonCreator
-    public Case(@JsonProperty("id") UUID id,
-                @JsonProperty("urn") String urn,
-                @JsonProperty("enterpriseId") String enterpriseId,
-                @JsonProperty("prosecutingAuthority") ProsecutingAuthority prosecutingAuthority,
-                @JsonProperty("costs") BigDecimal costs,
-                @JsonProperty("postingDate") LocalDate postingDate,
-                @JsonProperty("defendant") Defendant defendant) {
+    public Case(@JsonProperty("id") final UUID id,
+                @JsonProperty("urn") final String urn,
+                @JsonProperty("enterpriseId") final String enterpriseId,
+                @JsonProperty("prosecutingAuthority") final ProsecutingAuthority prosecutingAuthority,
+                @JsonProperty("costs") final BigDecimal costs,
+                @JsonProperty("postingDate") final LocalDate postingDate,
+                @JsonProperty("defendant") final Defendant defendant) {
         this.id = id;
         this.urn = urn;
         this.enterpriseId = enterpriseId;

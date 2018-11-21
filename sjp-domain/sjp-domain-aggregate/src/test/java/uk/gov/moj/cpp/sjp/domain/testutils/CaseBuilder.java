@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.testutils;
 
-
-import uk.gov.justice.json.schemas.domains.sjp.Language;
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
@@ -33,11 +32,15 @@ public class CaseBuilder {
     private static BigDecimal COSTS = BigDecimal.valueOf(33.33);
     private static LocalDate POSTING_DATE = LocalDate.of(2015, 12, 3);
 
+    private static final String TITLE = "Mr";
+    private static final String FIRST_NAME = "John";
+    private static final String LAST_NAME = "Smith";
+    private static final LocalDate DATE_OF_BIRTH = LocalDate.of(1980, 12, 3);
+    private static final Gender GENDER = Gender.MALE;
     private static final String NATIONAL_INSURANCE_NUMBER = RandomStringUtils.random(10);
-    private static final ContactDetails CONTACT_DETAILS = new ContactDetails("020734777", "020734888", "020734999", "email1§@bbb.ccc", "email2@bbb.ccc");
+    private static final String DRIVER_NUMBER = RandomStringUtils.random(10);
+    private static final ContactDetails CONTACT_DETAILS = new ContactDetails("020734777", "020734888", "020734999", "email1@bbb.ccc", "email2@bbb.ccc");
 
-    private static final Language DOCUMENTATION_LANGUAGE = Language.W;
-    private static final Language HEARING_LANGUAGE_INDICATOR = Language.E;
     private static final String LANGUAGE_NEEDS = RandomStringUtils.random(10);
 
     private UUID id;
@@ -51,12 +54,12 @@ public class CaseBuilder {
         urn = URN;
         enterpriseId = ENTERPRISE_ID;
         prosecutingAuthority = ProsecutingAuthority.TFL;
-        defendant = new Defendant(DefaultTestData.DEFENDANT_ID, null, null, null,null,
-                null, null, NATIONAL_INSURANCE_NUMBER, ADDRESS, CONTACT_DETAILS,NUM_PREVIOUS_CONVICTIONS, OFFENCES,
-                DOCUMENTATION_LANGUAGE, HEARING_LANGUAGE_INDICATOR, LANGUAGE_NEEDS);
+        defendant = new Defendant(DefaultTestData.DEFENDANT_ID, TITLE, FIRST_NAME, LAST_NAME,
+                DATE_OF_BIRTH, GENDER, NATIONAL_INSURANCE_NUMBER, DRIVER_NUMBER, ADDRESS,
+                CONTACT_DETAILS, NUM_PREVIOUS_CONVICTIONS, OFFENCES, LANGUAGE_NEEDS);
     }
 
-        public static CaseBuilder aDefaultSjpCase() {
+    public static CaseBuilder aDefaultSjpCase() {
         return new CaseBuilder();
     }
 

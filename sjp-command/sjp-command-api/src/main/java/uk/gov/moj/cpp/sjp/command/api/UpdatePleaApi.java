@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.command.api;
 
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.ObjectToJsonValueConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -15,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.ws.rs.BadRequestException;
 
 @ServiceComponent(COMMAND_API)
 public class UpdatePleaApi {

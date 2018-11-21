@@ -24,13 +24,13 @@ public class EmployerUpdated {
     private ZonedDateTime updatedDate;
 
     @JsonCreator
-    private EmployerUpdated(@JsonProperty ("defendantId") final UUID defendantId,
-                           @JsonProperty ("name") final String name,
-                           @JsonProperty ("employeeReference") final String employeeReference,
-                           @JsonProperty ("phone") final String phone,
-                           @JsonProperty ("address") final Address address,
-                           @JsonProperty ("updatedByOnlinePlea") final boolean updatedByOnlinePlea,
-                           @JsonProperty("updatedDate") final ZonedDateTime updatedDate) {
+    private EmployerUpdated(@JsonProperty("defendantId") final UUID defendantId,
+                            @JsonProperty("name") final String name,
+                            @JsonProperty("employeeReference") final String employeeReference,
+                            @JsonProperty("phone") final String phone,
+                            @JsonProperty("address") final Address address,
+                            @JsonProperty("updatedByOnlinePlea") final boolean updatedByOnlinePlea,
+                            @JsonProperty("updatedDate") final ZonedDateTime updatedDate) {
         this.defendantId = defendantId;
         this.name = name;
         this.employeeReference = employeeReference;

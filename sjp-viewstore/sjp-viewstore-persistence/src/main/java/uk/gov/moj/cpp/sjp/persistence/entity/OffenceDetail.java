@@ -7,6 +7,7 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -264,19 +265,17 @@ public class OffenceDetail implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof OffenceDetail)) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
 
-        OffenceDetail that = (OffenceDetail) o;
-
-        return id.equals(that.id);
-
+        final OffenceDetail that = (OffenceDetail) o;
+        return Objects.equals(this.id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return Objects.hash(id);
     }
 
     public static class OffenceDetailBuilder {

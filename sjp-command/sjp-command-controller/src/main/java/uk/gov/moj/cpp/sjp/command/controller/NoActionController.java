@@ -122,8 +122,8 @@ public class NoActionController {
         send(envelope);
     }
 
-    @Handles("sjp.command.update-interpreter")
-    public void updateInterpreter(final JsonEnvelope envelope) {
+    @Handles("sjp.command.update-hearing-requirements")
+    public void updateHearingRequirements(final JsonEnvelope envelope) {
         send(envelope);
     }
 
@@ -139,6 +139,11 @@ public class NoActionController {
 
     @Handles("sjp.command.upload-case-document")
     public void uploadCaseDocument(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
+    @Handles("sjp.command.acknowledge-defendant-details-updates")
+    public void acknowledgeDefendantDetailsUpdates(final JsonEnvelope envelope) {
         send(envelope);
     }
 

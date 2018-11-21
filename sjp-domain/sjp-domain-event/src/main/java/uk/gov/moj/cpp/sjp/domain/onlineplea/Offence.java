@@ -18,8 +18,6 @@ public class Offence implements Serializable {
     private String mitigation;
     private String notGuiltyBecause;
 
-    public Offence() {}
-
     @JsonCreator
     public Offence(@JsonProperty("id") final UUID id,
                    @JsonProperty("plea") final PleaType plea,

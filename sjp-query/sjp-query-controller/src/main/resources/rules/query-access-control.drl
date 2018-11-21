@@ -83,14 +83,6 @@ rule "sjp.query.cases-missing-sjpn"
     $outcome.setSuccess(true);
 end
 
-rule "sjp.query.cases-missing-sjpn-with-details"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.cases-missing-sjpn-with-details");
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "sjp.query.awaiting-cases"
   when
     $outcome: Outcome();
@@ -103,22 +95,6 @@ rule "sjp.query.cases-referred-to-court"
   when
     $outcome: Outcome();
     $action: Action(name == "sjp.query.cases-referred-to-court");
-  then
-    $outcome.setSuccess(true);
-end
-
-rule "sjp.query.not-ready-cases-grouped-by-age"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.not-ready-cases-grouped-by-age");
-  then
-    $outcome.setSuccess(true);
-end
-
-rule "sjp.query.oldest-case-age"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.oldest-case-age");
   then
     $outcome.setSuccess(true);
 end
@@ -155,14 +131,6 @@ rule "sjp.query.session"
     $outcome.setSuccess(true);
 end
 
-rule "sjp.query.ready-cases-reasons-counts"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.ready-cases-reasons-counts");
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "sjp.query.ready-cases"
   when
     $outcome: Outcome();
@@ -183,6 +151,14 @@ rule "sjp.query.case-prosecuting-authority"
   when
     $outcome: Outcome();
     $action: Action(name == "sjp.query.case-prosecuting-authority");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.defendant-details-updates"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.defendant-details-updates");
   then
     $outcome.setSuccess(true);
 end

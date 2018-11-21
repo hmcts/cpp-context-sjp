@@ -79,7 +79,7 @@ public final class RuleConstants {
         return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
-    public static List<String> getUpdateInterpreterGroups() {
+    public static List<String> getUpdateHearingRequirementsGroups() {
         return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
@@ -102,5 +102,10 @@ public final class RuleConstants {
     public static List<String> getAssignCaseGroups() {
         return singletonList(GROUP_LEGAL_ADVISERS);
     }
+
+    public static List<String> getAcknowledgeDefendantDetailsUpdatesGroups() {
+        return singletonList(GROUP_SJP_PROSECUTORS);
+    }
+
 }
 

@@ -4,13 +4,19 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Income implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     private final IncomeFrequency frequency;
     private final BigDecimal amount;
 
-    public Income(final IncomeFrequency frequency, final BigDecimal amount) {
+    @JsonCreator
+    public Income(@JsonProperty("frequency") final IncomeFrequency frequency,
+                  @JsonProperty("amount") final BigDecimal amount) {
         this.frequency = frequency;
         this.amount = amount;
     }

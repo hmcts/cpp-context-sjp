@@ -1,11 +1,12 @@
 package uk.gov.moj.cpp.sjp.persistence.builder;
 
 
-import static com.google.common.collect.Sets.newHashSet;
+import static java.util.Collections.singletonList;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.InterpreterDetail;
@@ -75,13 +76,23 @@ public class DefendantDetailBuilder {
         return this;
     }
 
+    public DefendantDetailBuilder withCaseDetail(final CaseDetail caseDetail) {
+        defendantDetail.setCaseDetail(caseDetail);
+        return this;
+    }
+
+    public DefendantDetailBuilder withPersonalDetails(final PersonalDetails personalDetails) {
+        defendantDetail.setPersonalDetails(personalDetails);
+        return this;
+    }
+
     public DefendantDetailBuilder withLastName(final String lastName) {
         defendantDetail.getPersonalDetails().setLastName(lastName);
         return this;
     }
 
     public DefendantDetail build() {
-        defendantDetail.setOffences(newHashSet(offenceBuilder.build()));
+        defendantDetail.setOffences(singletonList(offenceBuilder.build()));
         return defendantDetail;
     }
 

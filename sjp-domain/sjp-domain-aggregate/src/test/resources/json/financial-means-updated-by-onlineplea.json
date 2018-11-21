@@ -2,6 +2,7 @@
   "_metadata": {
     "name": "sjp.events.financial-means-updated"
   },
+  "defendantId": "50770ba9-37ea-4713-8cab-fe5bf1202716",
   "income": {
     "frequency": "MONTHLY",
     "amount": 200.25

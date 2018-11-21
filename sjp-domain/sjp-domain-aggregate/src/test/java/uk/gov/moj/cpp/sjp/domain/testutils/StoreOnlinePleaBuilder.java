@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.testutils;
 
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
@@ -21,7 +22,6 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class StoreOnlinePleaBuilder {
 
@@ -75,35 +75,35 @@ public class StoreOnlinePleaBuilder {
         final List<Offence> offences = singletonList(
                 new Offence(offenceId, GUILTY, false, MITIGATION, null)
         );
-        return generatePleadOnline(false, defendantId, offences, null);
+        return generatePleadOnline(false, defendantId, offences, null, null);
     }
 
-    public static PleadOnline defaultStoreOnlinePleaWithGuiltyRequestHearingPlea(final UUID offenceId, final UUID defendantId, final String interpreterLanguage) {
+    public static PleadOnline defaultStoreOnlinePleaWithGuiltyRequestHearingPlea(final UUID offenceId, final UUID defendantId, final String interpreterLanguage, final Boolean speakWelsh) {
         final List<Offence> offences = singletonList(
                 new Offence(offenceId, GUILTY, true, MITIGATION, null)
         );
-        return generatePleadOnline(false, defendantId, offences, interpreterLanguage);
+        return generatePleadOnline(false, defendantId, offences, interpreterLanguage, speakWelsh);
     }
 
-    public static PleadOnline defaultStoreOnlinePleaWithNotGuiltyPlea(UUID offenceId, UUID defendantId, String interpreterLanguage, boolean includeTrialRequestedFields) {
+    public static PleadOnline defaultStoreOnlinePleaWithNotGuiltyPlea(UUID offenceId, UUID defendantId, String interpreterLanguage, Boolean speakWelsh, boolean includeTrialRequestedFields) {
         final List<Offence> offences = singletonList(
                 new Offence(offenceId, NOT_GUILTY, true, null, NOT_GUILTY_BECAUSE)
         );
-        return generatePleadOnline(includeTrialRequestedFields, defendantId, offences, interpreterLanguage);
+        return generatePleadOnline(includeTrialRequestedFields, defendantId, offences, interpreterLanguage, speakWelsh);
     }
 
     public static PleadOnline defaultStoreOnlinePleaWithGuiltyPlea(final UUID offenceId, final UUID defendantId, final boolean newName, final boolean newAddress, final boolean newDob) {
         final List<Offence> offences = singletonList(
                 new Offence(offenceId, GUILTY, false, MITIGATION, null)
         );
-        return generatePleadOnline(false, defendantId, offences, null, newName, newAddress, newDob);
+        return generatePleadOnline(false, defendantId, offences, null, null, newName, newAddress, newDob);
     }
 
-    private static PleadOnline generatePleadOnline(final boolean includeTrialRequestedFields, final UUID defendantId, final List<Offence> offences, final String interpreterLanguage) {
-        return generatePleadOnline(includeTrialRequestedFields, defendantId, offences, interpreterLanguage, false, false, false);
+    private static PleadOnline generatePleadOnline(final boolean includeTrialRequestedFields, final UUID defendantId, final List<Offence> offences, final String interpreterLanguage, final Boolean speakWelsh) {
+        return generatePleadOnline(includeTrialRequestedFields, defendantId, offences, interpreterLanguage, speakWelsh, false, false, false);
     }
 
-    private static PleadOnline generatePleadOnline(final boolean includeTrialRequestedFields, final UUID defendantId, final List<Offence> offences, final String interpreterLanguage,
+    private static PleadOnline generatePleadOnline(final boolean includeTrialRequestedFields, final UUID defendantId, final List<Offence> offences, final String interpreterLanguage, final Boolean speakWelsh,
                                                    final boolean newName, final boolean newAddress, final boolean newDob) {
 
         final String firstName = newName ? "Norman" : PERSON_FIRST_NAME;
@@ -123,16 +123,16 @@ public class StoreOnlinePleaBuilder {
                 new Outgoing(OUTGOING_DESCRIPTION, OUTGOING_AMOUNT)
         );
         if (includeTrialRequestedFields) {
-            return new PleadOnline(defendantId, offences, UNAVAILABILITY, interpreterLanguage,
+            return new PleadOnline(defendantId, offences, UNAVAILABILITY, interpreterLanguage, speakWelsh,
                     WITNESS_DETAILS, WITNESS_DISPUTE, person, financialMeans, employer, outgoings);
         }
         else {
-            return new PleadOnline(defendantId, offences, null, interpreterLanguage,
+            return new PleadOnline(defendantId, offences, null, interpreterLanguage, speakWelsh,
                     null, null, person, financialMeans, employer, outgoings);
         }
     }
 
-    public static PleadOnline defaultStoreOnlinePleaForMultipleOffences(Object[][] pleaInformationArray, UUID defendantId, String interpreterLanguage) {
+    public static PleadOnline defaultStoreOnlinePleaForMultipleOffences(Object[][] pleaInformationArray, UUID defendantId, String interpreterLanguage, Boolean speakWelsh) {
         List<Offence> offences = Arrays.stream(pleaInformationArray)
                 .map(pleaInformation -> {
                     boolean comeToCourt = (Boolean) pleaInformation[2];
@@ -147,7 +147,7 @@ public class StoreOnlinePleaBuilder {
                     }
                     return null;
                 })
-                .collect(Collectors.toList());
+                .collect(toList());
 
         final PersonalDetails person = new PersonalDetails(PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_ADDRESS,
                 PERSON_CONTACT_DETAILS, PERSON_DOB, PERSON_NI_NUMBER);
@@ -158,7 +158,8 @@ public class StoreOnlinePleaBuilder {
         final List<Outgoing> outgoings = singletonList(
                 new Outgoing(OUTGOING_DESCRIPTION, OUTGOING_AMOUNT)
         );
-        return new PleadOnline(defendantId, offences, UNAVAILABILITY, interpreterLanguage,
+
+        return new PleadOnline(defendantId, offences, UNAVAILABILITY, interpreterLanguage, speakWelsh,
                 WITNESS_DETAILS, WITNESS_DISPUTE, person, financialMeans, employer, outgoings);
     }
 }

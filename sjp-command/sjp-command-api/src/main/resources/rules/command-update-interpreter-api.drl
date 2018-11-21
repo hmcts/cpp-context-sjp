@@ -6,11 +6,11 @@ import uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants;
 
 global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
 
-rule "Command API - Rule for update interpreter"
+rule "Command API - Rule for update hearing requirements"
   when
     $outcome: Outcome();
-    $action: Action(name == "sjp.update-interpreter");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getUpdateInterpreterGroups()));
+    $action: Action(name == "sjp.update-hearing-requirements");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getUpdateHearingRequirementsGroups()));
   then
     $outcome.setSuccess(true);
 end

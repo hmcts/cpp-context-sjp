@@ -10,7 +10,10 @@ import uk.gov.moj.cpp.sjp.UpdateEmployer;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class EmployerHandler extends CaseCommandHandler {
@@ -25,22 +28,20 @@ public class EmployerHandler extends CaseCommandHandler {
         final uk.gov.moj.cpp.sjp.Employer employer = employerPayload.getEmployer();
 
         final UUID defendantId = employerPayload.getDefendantId();
-        final String name = employer.getName().orElse(null);
-        final String employeeReference = employer.getEmployeeReference().orElse(null);
-        final String phone = employer.getPhone().orElse(null);
+        final String name = employer.getName();
+        final String employeeReference = employer.getEmployeeReference();
+        final String phone = employer.getPhone();
 
         final Address address =
-                employer.getAddress()
-                        .map(val ->
-                                new Address(
-                                        val.getAddress1().orElse(null),
-                                        val.getAddress2().orElse(null),
-                                        val.getAddress3().orElse(null),
-                                        val.getAddress4().orElse(null),
-                                        // val.getAddress5().orElse(null), TODO: add back this when framework fixed! Currently val.getAddress5() is null.
-                                        val.getPostcode().orElse(null)
-                                )
-                        )
+                Optional.ofNullable(employer.getAddress())
+                        .filter(a -> Stream.of(a.getAddress1(), a.getAddress2(), a.getAddress3(), a.getAddress4(), a.getAddress5(), a.getPostcode()).anyMatch(Objects::nonNull))
+                        .map(a -> new Address(
+                                a.getAddress1(),
+                                a.getAddress2(),
+                                a.getAddress3(),
+                                a.getAddress4(),
+                                a.getAddress5(),
+                                a.getPostcode()))
                         .orElse(Address.UNKNOWN);
 
         return new Employer(defendantId, name, employeeReference, phone, address);

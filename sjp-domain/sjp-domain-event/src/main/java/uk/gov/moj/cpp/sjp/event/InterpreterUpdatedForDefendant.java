@@ -14,18 +14,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InterpreterUpdatedForDefendant {
 
-    private UUID caseId;
-    private UUID defendantId;
-    private Interpreter interpreter;
-    private boolean updatedByOnlinePlea;
-    private ZonedDateTime updatedDate;
+    private final UUID caseId;
+    private final UUID defendantId;
+    private final Interpreter interpreter;
+    private final boolean updatedByOnlinePlea;
+    private final ZonedDateTime updatedDate;
 
     @JsonCreator
     private InterpreterUpdatedForDefendant(
-            @JsonProperty("caseId") UUID caseId,
-            @JsonProperty("defendantId") UUID defendantId,
-            @JsonProperty("interpreter") Interpreter interpreter,
-            @JsonProperty("updatedByOnlinePlea") boolean updatedByOnlinePlea,
+            @JsonProperty("caseId") final UUID caseId,
+            @JsonProperty("defendantId") final UUID defendantId,
+            @JsonProperty("interpreter") final Interpreter interpreter,
+            @JsonProperty("updatedByOnlinePlea") final boolean updatedByOnlinePlea,
             @JsonProperty("updatedDate") final ZonedDateTime updatedDate) {
         this.caseId = caseId;
         this.defendantId = defendantId;
@@ -34,12 +34,12 @@ public class InterpreterUpdatedForDefendant {
         this.updatedDate = updatedDate;
     }
 
-    public static InterpreterUpdatedForDefendant createEvent(final UUID caseId, UUID defendantId, Interpreter interpreter) {
-        return new InterpreterUpdatedForDefendant(caseId, defendantId, interpreter, false, null);
+    public static InterpreterUpdatedForDefendant createEvent(final UUID caseId, final UUID defendantId, final String interpreterLanguage) {
+        return new InterpreterUpdatedForDefendant(caseId, defendantId, Interpreter.of(interpreterLanguage), false, null);
     }
 
-    public static InterpreterUpdatedForDefendant createEventForOnlinePlea(final UUID caseId, UUID defendantId, Interpreter interpreter, final ZonedDateTime updatedDate) {
-        return new InterpreterUpdatedForDefendant(caseId, defendantId, interpreter, true, updatedDate);
+    public static InterpreterUpdatedForDefendant createEventForOnlinePlea(final UUID caseId, final UUID defendantId, final String interpreterLanguage, final ZonedDateTime updatedDate) {
+        return new InterpreterUpdatedForDefendant(caseId, defendantId, Interpreter.of(interpreterLanguage), true, updatedDate);
     }
 
     public UUID getDefendantId() {
@@ -61,6 +61,5 @@ public class InterpreterUpdatedForDefendant {
     public ZonedDateTime getUpdatedDate() {
         return updatedDate;
     }
-
 
 }

@@ -1,16 +1,15 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.ObjectToJsonValueConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -25,10 +24,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.BadRequestException;
-
 import com.google.common.collect.Lists;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -45,6 +44,9 @@ public class UpdatePleaApiTest {
 
     private static final String CANCEL_PLEA_COMMAND_NAME = "sjp.cancel-plea";
     private static final String CONTROLLER_CANCEL_PLEA_COMMAND_NAME = "sjp.command.cancel-plea";
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     @Mock
     private Sender sender;
@@ -101,11 +103,9 @@ public class UpdatePleaApiTest {
         map.put("interpreter", Lists.newArrayList("Interpreter cannot be empty"));
         when(updatePleaValidator.validate(any(UpdatePleaModel.class))).thenReturn(map);
 
-        try {
-            updatePleaApi.updatePlea(command);
-            fail();
-        } catch (final BadRequestException e) {
-            assertEquals("{\"interpreter\":[\"Interpreter cannot be empty\"]}", e.getMessage());
-        }
+        exception.expect(BadRequestException.class);
+        exception.expectMessage("{\"interpreter\":[\"Interpreter cannot be empty\"]}");
+
+        updatePleaApi.updatePlea(command);
     }
 }

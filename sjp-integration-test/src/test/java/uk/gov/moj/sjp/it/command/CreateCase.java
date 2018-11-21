@@ -34,8 +34,7 @@ public class CreateCase {
     }
 
     public static void createCaseForPayloadBuilder(CreateCasePayloadBuilder payloadBuilder) {
-        new CreateCase(payloadBuilder)
-                .createCase();
+        new CreateCase(payloadBuilder).createCase();
     }
 
     private void createCase() {

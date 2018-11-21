@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.event.listener.converter;
 
 import uk.gov.moj.cpp.sjp.domain.Outgoing;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaOutgoingOption;
 
@@ -20,9 +19,9 @@ public class OnlinePleaConverter {
         EMPLOYED, SELF_EMPLOYED, UNEMPLOYED, OTHER
     }
 
-    public OnlinePlea convertToOnlinePleaEntity(final DefendantDetail defendantDetail, final FinancialMeansUpdated financialMeansUpdated) {
+    public OnlinePlea convertToOnlinePleaEntity(final UUID caseId, final FinancialMeansUpdated financialMeansUpdated) {
         final OnlinePlea.Outgoings outgoings = generateOutgoings(financialMeansUpdated.getOutgoings());
-        return generateOnlinePleaWithEmploymentStatus(defendantDetail.getCaseDetail().getId(), financialMeansUpdated, outgoings);
+        return generateOnlinePleaWithEmploymentStatus(caseId, financialMeansUpdated, outgoings);
     }
 
     private OnlinePlea.Outgoings generateOutgoings(final List<Outgoing> outgoingList) {

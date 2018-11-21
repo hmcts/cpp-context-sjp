@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -15,7 +15,6 @@ import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.listener.converter.FinancialMeansConverter;
 import uk.gov.moj.cpp.sjp.event.listener.converter.OnlinePleaConverter;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.FinancialMeans;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.repository.DefendantRepository;
@@ -28,6 +27,7 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -68,51 +68,60 @@ public class FinancialMeansListenerTest {
     @Mock
     private DefendantRepository defendantRepository;
 
-    @Mock
-    private DefendantDetail defendantDetail;
-
     @InjectMocks
     private FinancialMeansListener financialMeansListener = new FinancialMeansListener();
 
     private Clock clock = new UtcClock();
     private ZonedDateTime now = clock.now();
 
+    private UUID caseId;
+    
+    private UUID defendantId;
+
+    @Before
+    public void init() {
+        caseId = UUID.randomUUID();
+        defendantId = UUID.randomUUID();
+    }
+
     @Test
     public void shouldSaveFinancialMeansUpdatedEvent() {
-        final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEvent(UUID.randomUUID(),
+        final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEvent(defendantId,
                 new Income(IncomeFrequency.WEEKLY, BigDecimal.valueOf(1000)), new Benefits(), "EMPLOYED");
-        when(eventEnvelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectConverter.convert(payload, FinancialMeansUpdated.class)).thenReturn(financialMeansUpdated);
-        when(financialMeansConverter.convertToFinancialMeansEntity(financialMeansUpdated)).thenReturn(financialMeans);
-        when(defendantRepository.findBy(financialMeansUpdated.getDefendantId())).thenReturn(defendantDetail);
-        when(onlinePleaConverter.convertToOnlinePleaEntity(defendantDetail, financialMeansUpdated)).thenReturn(onlinePlea);
+        setMocks(financialMeansUpdated);
 
         financialMeansListener.updateFinancialMeans(eventEnvelope);
 
         verify(financialMeansRepository).save(financialMeans);
         verify(jsonObjectConverter).convert(payload, FinancialMeansUpdated.class);
-        verify(defendantRepository, never()).findBy(financialMeansUpdated.getDefendantId());
-        verify(onlinePleaConverter, never()).convertToOnlinePleaEntity(defendantDetail, financialMeansUpdated);
-        verify(onlinePleaRepository, never()).saveOnlinePlea(eq(onlinePlea));
+
+        verifyZeroInteractions(defendantRepository);
+        verifyZeroInteractions(onlinePleaRepository);
+        verifyZeroInteractions(onlinePleaConverter);
     }
 
     @Test
     public void shouldSaveFinancialMeansUpdatedEventAndSaveOnlinePlea() {
-        final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEventForOnlinePlea(UUID.randomUUID(),
+        final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEventForOnlinePlea(defendantId,
                 new Income(IncomeFrequency.WEEKLY, BigDecimal.valueOf(1000)), new Benefits(), "EMPLOYED", null, now);
-        when(eventEnvelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectConverter.convert(payload, FinancialMeansUpdated.class)).thenReturn(financialMeansUpdated);
-        when(financialMeansConverter.convertToFinancialMeansEntity(financialMeansUpdated)).thenReturn(financialMeans);
-        when(defendantRepository.findBy(financialMeansUpdated.getDefendantId())).thenReturn(defendantDetail);
-        when(onlinePleaConverter.convertToOnlinePleaEntity(defendantDetail, financialMeansUpdated)).thenReturn(onlinePlea);
+        setMocks(financialMeansUpdated);
 
         financialMeansListener.updateFinancialMeans(eventEnvelope);
 
         verify(financialMeansRepository).save(financialMeans);
         verify(jsonObjectConverter).convert(payload, FinancialMeansUpdated.class);
-        verify(defendantRepository).findBy(financialMeansUpdated.getDefendantId());
-        verify(onlinePleaConverter).convertToOnlinePleaEntity(defendantDetail, financialMeansUpdated);
+
+        verify(defendantRepository).findCaseIdByDefendantId(defendantId);
+        verify(onlinePleaConverter).convertToOnlinePleaEntity(caseId, financialMeansUpdated);
         verify(onlinePleaRepository).saveOnlinePlea(eq(onlinePlea));
+    }
+
+    private void setMocks(final FinancialMeansUpdated financialMeansUpdated) {
+        when(financialMeansConverter.convertToFinancialMeansEntity(financialMeansUpdated)).thenReturn(financialMeans);
+        when(defendantRepository.findCaseIdByDefendantId(defendantId)).thenReturn(caseId);
+        when(onlinePleaConverter.convertToOnlinePleaEntity(caseId, financialMeansUpdated)).thenReturn(onlinePlea);
+        when(eventEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectConverter.convert(payload, FinancialMeansUpdated.class)).thenReturn(financialMeansUpdated);
     }
 
 }

@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -263,28 +262,6 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     }
 
     @Test
-    public void shouldFindOldestUncompletedPostingDate() {
-
-        final LocalDate oldestPostingDate = postingDate.minusDays(1);
-
-        final CaseDetail oldestUncompletedCase = getCase(randomUUID(), randomUrn());
-        oldestUncompletedCase.setCompleted(false);
-        oldestUncompletedCase.setPostingDate(oldestPostingDate);
-        caseRepository.save(oldestUncompletedCase);
-
-        final CaseDetail completedCase = getCase(randomUUID(), randomUrn());
-        completedCase.setCompleted(true);
-        completedCase.setPostingDate(postingDate.minusDays(2));
-        caseRepository.save(completedCase);
-
-        // for deletion after the test has run
-        CASES.put(completedCase.getId(), completedCase);
-        CASES.put(oldestUncompletedCase.getId(), oldestUncompletedCase);
-
-        assertThat(caseRepository.findOldestUncompletedPostingDate(), equalTo(oldestPostingDate));
-    }
-
-    @Test
     public void shouldFindCaseMatchingUrnWithPrefixAndPostcode() {
         final CaseDetail actualCase = caseRepository.findByUrnPostcode(VALID_URN_1, POSTCODE);
 
@@ -383,7 +360,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     }
 
     private void checkAllOffencesForACase(CaseDetail caseDetail, boolean withdrawn) {
-        final Set<OffenceDetail> offences = caseDetail.getDefendant().getOffences();
+        final List<OffenceDetail> offences = caseDetail.getDefendant().getOffences();
 
         assertThat(offences, not(empty()));
         offences.forEach(offence -> assertEquals(withdrawn, offence.getPendingWithdrawal()));

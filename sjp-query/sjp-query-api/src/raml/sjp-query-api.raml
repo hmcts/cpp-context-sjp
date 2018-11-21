@@ -101,28 +101,29 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
             schema: !include json/schema/sjp.query.cases-missing-sjpn.json
             example: !include json/sjp.query.cases-missing-sjpn.json
 
-/cases-missing-sjpn-with-details:
+/defendant-details-updates:
   get:
     description: |
-      Get cases missing the SJPN with defendant details
+      Retrieves the unacknowledged defendant details updates
       ...
       (mapping):
-          responseType: application/vnd.sjp.query.cases-missing-sjpn-with-details+json
-          name: sjp.query.cases-missing-sjpn-with-details
+          responseType: application/vnd.sjp.query.defendant-details-updates+json
+          name: sjp.query.defendant-details-updates
       ...
     queryParameters:
-      daysSincePosting:
+      limit:
         description: |
-          Returns cases that has posting date older than daysSincePosting.
+          Defines the number of updates to be returned.
         type: integer
-        required: false
+        required: true
 
     responses:
-      200:
-        body:
-          application/vnd.sjp.query.cases-missing-sjpn-with-details+json:
-            schema: !include json/schema/sjp.query.cases-missing-sjpn-with-details.json
-            example: !include json/sjp.query.cases-missing-sjpn-with-details.json
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.defendant-details-updates+json:
+                  schema: !include json/schema/sjp.query.defendant-details-updates.json
+                  example: !include json/sjp.query.defendant-details-updates.json
 
 /defendant/{defendantId}/financial-means:
   uriParameters:
@@ -294,36 +295,6 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
             schema: !include json/schema/sjp.query.cases-referred-to-court.json
             example: !include json/sjp.query.cases-referred-to-court.json
 
-/cases/not-ready-grouped-by-age:
-  get:
-    description: |
-      ...
-      (mapping):
-          responseType: application/vnd.sjp.query.not-ready-cases-grouped-by-age+json
-          name: sjp.query.not-ready-cases-grouped-by-age
-      ...
-    responses:
-      200:
-        body:
-          application/vnd.sjp.query.not-ready-cases-grouped-by-age+json:
-            schema: !include json/schema/sjp.query.not-ready-cases-grouped-by-age.json
-            example: !include json/sjp.query.not-ready-cases-grouped-by-age.json
-
-/cases/oldest-age:
-  get:
-    description: |
-      ...
-      (mapping):
-          responseType: application/vnd.sjp.query.oldest-case-age+json
-          name: sjp.query.oldest-case-age
-      ...
-    responses:
-      200:
-        body:
-          application/vnd.sjp.query.oldest-case-age+json:
-            schema: !include json/schema/sjp.query.oldest-case-age.json
-            example: !include json/sjp.query.oldest-case-age.json
-
 /cases-for-citizen:
   get:
     description: |
@@ -348,8 +319,8 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
           description: OK
           body:
                 application/vnd.sjp.query.case-by-urn-postcode+json:
-                  schema: !include json/schema/sjp.query.case-by-urn-postcode.json
-                  example: !include json/sjp.query.case-by-urn-postcode.json
+                  schema: !include json/schema/sjp.query.case-with-offence-reference-data.json
+                  example: !include json/sjp.query.case-with-offence-reference-data.json
 
 /cases/{caseId}/defendants-online-plea:
   get:
@@ -403,22 +374,6 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
                 application/vnd.sjp.query.pending-dates-to-avoid+json:
                   schema: !include json/schema/sjp.query.pending-dates-to-avoid.json
                   example: !include json/sjp.query.pending-dates-to-avoid.json
-
-/cases/ready-cases-reasons-counts:
-  get:
-    description: |
-      Get count of ready cases grouped by reason
-      ...
-      (mapping):
-          responseType: application/vnd.sjp.query.ready-cases-reasons-counts+json
-          name: sjp.query.ready-cases-reasons-counts
-      ...
-    responses:
-      200:
-        body:
-          application/vnd.sjp.query.ready-cases-reasons-counts+json:
-            schema: !include json/schema/sjp.query.ready-cases-reasons-counts.json
-            example: !include json/sjp.query.ready-cases-reasons-counts.json
 
 /cases/ready-cases:
   get:

@@ -5,16 +5,21 @@ import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
+import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
+import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
+import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -27,25 +32,20 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.commons.lang3.StringUtils;
 
 @Entity
 @Table(name = "online_plea")
 public class OnlinePlea {
     @Id
-    @Column(name = "case_id")
+    @Column(name = "case_id", updatable = false, nullable = false)
     private UUID caseId;
-    @ManyToOne
-    @JoinColumn(name = "defendant_id")
-    @JsonIgnore
-    private DefendantDetail defendantDetail;
-    @Column(name = "submitted_on")
+
+    @Column(name = "defendant_id", updatable = false, nullable = false)
+    private UUID defendantId;
+
+    @Column(name = "submitted_on", updatable = false, nullable = false)
     private ZonedDateTime submittedOn;
     @Embedded
     private OnlinePleaPersonalDetails personalDetails;
@@ -80,8 +80,12 @@ public class OnlinePlea {
         this(pleaUpdated.getCaseId(), new PleaDetails(pleaUpdated), pleaUpdated.getUpdatedDate());
     }
 
-    public OnlinePlea(final UUID caseId, final String interpreterLanguage, final ZonedDateTime updatedDate) {
-        this(caseId, new PleaDetails(interpreterLanguage), updatedDate);
+    public OnlinePlea(final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant) {
+        this(interpreterUpdatedForDefendant.getCaseId(), new PleaDetails(interpreterUpdatedForDefendant), interpreterUpdatedForDefendant.getUpdatedDate());
+    }
+
+    public OnlinePlea(final HearingLanguagePreferenceUpdatedForDefendant hearingLanguageUpdated) {
+        this(hearingLanguageUpdated.getCaseId(), new PleaDetails(hearingLanguageUpdated), hearingLanguageUpdated.getUpdatedDate());
     }
 
     public OnlinePlea(final DefendantDetailsUpdated defendantDetailsUpdated) {
@@ -89,19 +93,23 @@ public class OnlinePlea {
         this.personalDetails = new OnlinePleaPersonalDetails(defendantDetailsUpdated);
     }
 
-    public OnlinePlea(UUID caseId, PleaDetails pleaDetails, DefendantDetail defendantDetail, OnlinePleaPersonalDetails personalDetails, ZonedDateTime submittedOn) {
+    /**
+     * Used in {@link OnlinePleaRepository#findOnlinePleaWithoutFinances} to filter finances
+     * It must include every field apart finances (employment, employer, outgoings)
+     */
+    public OnlinePlea(final UUID caseId, final PleaDetails pleaDetails, final UUID defendantId, final OnlinePleaPersonalDetails personalDetails, final ZonedDateTime submittedOn) {
         this(caseId, pleaDetails, submittedOn);
-        this.defendantDetail = defendantDetail;
+        this.defendantId = defendantId;
         this.personalDetails = personalDetails;
     }
 
-    private OnlinePlea(UUID caseId, UUID defendantId, ZonedDateTime submittedOn) {
+    private OnlinePlea(final UUID caseId, final UUID defendantId, final ZonedDateTime submittedOn) {
         this.caseId = caseId;
-        this.defendantDetail = new DefendantDetail(defendantId);
+        this.defendantId = defendantId;
         this.submittedOn = submittedOn;
     }
 
-    private OnlinePlea(UUID caseId, PleaDetails pleaDetails, ZonedDateTime submittedOn) {
+    private OnlinePlea(final UUID caseId, final PleaDetails pleaDetails, final ZonedDateTime submittedOn) {
         this.caseId = caseId;
         this.pleaDetails = pleaDetails;
         this.submittedOn = submittedOn;
@@ -111,23 +119,23 @@ public class OnlinePlea {
         return caseId;
     }
 
-    public void setCaseId(UUID caseId) {
+    public void setCaseId(final UUID caseId) {
         this.caseId = caseId;
     }
 
     public UUID getDefendantId() {
-        return defendantDetail.getId();
+        return defendantId;
     }
 
-    public void setDefendantDetail(final DefendantDetail defendantDetail) {
-        this.defendantDetail = defendantDetail;
+    public void setDefendantId(final UUID defendantId) {
+        this.defendantId = defendantId;
     }
 
     public ZonedDateTime getSubmittedOn() {
         return submittedOn;
     }
 
-    public void setSubmittedOn(ZonedDateTime submittedOn) {
+    public void setSubmittedOn(final ZonedDateTime submittedOn) {
         this.submittedOn = submittedOn;
     }
 
@@ -135,7 +143,7 @@ public class OnlinePlea {
         return personalDetails;
     }
 
-    public void setPersonalDetails(OnlinePleaPersonalDetails personalDetails) {
+    public void setPersonalDetails(final OnlinePleaPersonalDetails personalDetails) {
         this.personalDetails = personalDetails;
     }
 
@@ -143,7 +151,7 @@ public class OnlinePlea {
         return pleaDetails;
     }
 
-    public void setPleaDetails(PleaDetails pleaDetails) {
+    public void setPleaDetails(final PleaDetails pleaDetails) {
         this.pleaDetails = pleaDetails;
     }
 
@@ -151,7 +159,7 @@ public class OnlinePlea {
         return employment;
     }
 
-    public void setEmployment(Employment employment) {
+    public void setEmployment(final Employment employment) {
         this.employment = employment;
     }
 
@@ -167,7 +175,7 @@ public class OnlinePlea {
         return outgoings;
     }
 
-    public void setOutgoings(Outgoings outgoings) {
+    public void setOutgoings(final Outgoings outgoings) {
         this.outgoings = outgoings;
     }
 
@@ -190,11 +198,19 @@ public class OnlinePlea {
         private String witnessDetails;
         @Column(name = "unavailability")
         private String unavailability;
+        @Column(name = "speak_welsh")
+        private Boolean speakWelsh;
 
         public PleaDetails() {}
 
-        public PleaDetails(final String interpreterLanguage) {
-            this.interpreterLanguage = interpreterLanguage;
+        public PleaDetails(final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant) {
+            this.interpreterLanguage = Optional.ofNullable(interpreterUpdatedForDefendant.getInterpreter())
+                    .map(Interpreter::getLanguage)
+                    .orElse(null);
+        }
+
+        public PleaDetails(final HearingLanguagePreferenceUpdatedForDefendant hearingLanguageUpdated) {
+            this.speakWelsh = hearingLanguageUpdated.getSpeakWelsh();
         }
 
         public PleaDetails(final TrialRequested trialRequested) {
@@ -230,13 +246,21 @@ public class OnlinePlea {
             return interpreterLanguage;
         }
 
-        public void setInterpreterLanguage(String interpreterLanguage) {
+        public void setInterpreterLanguage(final String interpreterLanguage) {
             this.interpreterLanguage = interpreterLanguage;
         }
 
         @Transient
         public boolean isInterpreterRequired() {
-            return !StringUtils.isEmpty(interpreterLanguage);
+            return Interpreter.isNeeded(interpreterLanguage);
+        }
+
+        public Boolean getSpeakWelsh() {
+            return speakWelsh;
+        }
+
+        public void setSpeakWelsh(final Boolean speakWelsh) {
+            this.speakWelsh = speakWelsh;
         }
 
         public String getWitnessDispute() {
@@ -251,7 +275,7 @@ public class OnlinePlea {
             return witnessDetails;
         }
 
-        public void setWitnessDetails(String witnessDetails) {
+        public void setWitnessDetails(final String witnessDetails) {
             this.witnessDetails = witnessDetails;
         }
 
@@ -259,7 +283,7 @@ public class OnlinePlea {
             return unavailability;
         }
 
-        public void setUnavailability(String unavailability) {
+        public void setUnavailability(final String unavailability) {
             this.unavailability = unavailability;
         }
     }
@@ -284,7 +308,7 @@ public class OnlinePlea {
 
         public Employment() {}
 
-        public Employment(final FinancialMeansUpdated financialMeansUpdated, String employmentStatus, String employmentStatusDetails) {
+        public Employment(final FinancialMeansUpdated financialMeansUpdated, final String employmentStatus, final String employmentStatusDetails) {
             this.incomePaymentFrequency = financialMeansUpdated.getIncome().getFrequency();
             this.incomePaymentAmount = financialMeansUpdated.getIncome().getAmount();
             this.employmentStatus = employmentStatus;
@@ -298,7 +322,7 @@ public class OnlinePlea {
             return incomePaymentFrequency;
         }
 
-        public void setIncomePaymentFrequency(IncomeFrequency incomePaymentFrequency) {
+        public void setIncomePaymentFrequency(final IncomeFrequency incomePaymentFrequency) {
             this.incomePaymentFrequency = incomePaymentFrequency;
         }
 
@@ -306,7 +330,7 @@ public class OnlinePlea {
             return incomePaymentAmount;
         }
 
-        public void setIncomePaymentAmount(BigDecimal incomePaymentAmount) {
+        public void setIncomePaymentAmount(final BigDecimal incomePaymentAmount) {
             this.incomePaymentAmount = incomePaymentAmount;
         }
 
@@ -314,7 +338,7 @@ public class OnlinePlea {
             return employmentStatus;
         }
 
-        public void setEmploymentStatus(String employmentStatus) {
+        public void setEmploymentStatus(final String employmentStatus) {
             this.employmentStatus = employmentStatus;
         }
 
@@ -330,7 +354,7 @@ public class OnlinePlea {
             return benefitsClaimed;
         }
 
-        public void setBenefitsClaimed(Boolean benefitsClaimed) {
+        public void setBenefitsClaimed(final Boolean benefitsClaimed) {
             this.benefitsClaimed = benefitsClaimed;
         }
 
@@ -338,7 +362,7 @@ public class OnlinePlea {
             return benefitsType;
         }
 
-        public void setBenefitsType(String benefitsType) {
+        public void setBenefitsType(final String benefitsType) {
             this.benefitsType = benefitsType;
         }
 
@@ -346,7 +370,7 @@ public class OnlinePlea {
             return benefitsDeductPenaltyPreference;
         }
 
-        public void setBenefitsDeductPenaltyPreference(Boolean benefitsDeductPenaltyPreference) {
+        public void setBenefitsDeductPenaltyPreference(final Boolean benefitsDeductPenaltyPreference) {
             this.benefitsDeductPenaltyPreference = benefitsDeductPenaltyPreference;
         }
     }
@@ -375,13 +399,14 @@ public class OnlinePlea {
             this.employeeReference = employerUpdated.getEmployeeReference();
             this.name = employerUpdated.getName();
             this.phone = employerUpdated.getPhone();
-            if (employerUpdated.getAddress() != null) {
-                this.address = new Address(employerUpdated.getAddress().getAddress1(), employerUpdated.getAddress().getAddress2(), employerUpdated.getAddress().getAddress3(),
-                        employerUpdated.getAddress().getAddress4(), employerUpdated.getAddress().getPostcode());
-            }
-            else {
-                this.address = new Address();
-            }
+            this.address = Optional.ofNullable(employerUpdated.getAddress())
+                    .map(employerAddress -> new Address(
+                            employerAddress.getAddress1(),
+                            employerAddress.getAddress2(),
+                            employerAddress.getAddress3(),
+                            employerAddress.getAddress4(),
+                            employerAddress.getPostcode()))
+                    .orElseGet(Address::new);
         }
 
         public String getEmployeeReference() {
@@ -416,7 +441,6 @@ public class OnlinePlea {
             this.address = address;
         }
 
-
     }
 
     @Embeddable
@@ -444,7 +468,7 @@ public class OnlinePlea {
                     childMaintenanceAmount,
                     otherAmount)
                     .filter(Objects::nonNull)
-                    .reduce(BigDecimal.valueOf(0), BigDecimal::add);
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
         }
 
         public BigDecimal getAccommodationAmount() {

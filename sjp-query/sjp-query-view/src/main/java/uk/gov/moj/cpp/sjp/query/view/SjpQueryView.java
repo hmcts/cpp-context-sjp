@@ -16,6 +16,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
+import uk.gov.moj.cpp.sjp.query.view.service.DefendantService;
 import uk.gov.moj.cpp.sjp.query.view.service.EmployerService;
 import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
 import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
@@ -47,6 +48,9 @@ public class SjpQueryView {
 
     @Inject
     private CaseService caseService;
+
+    @Inject
+    private DefendantService defendantService;
 
     @Inject
     private CaseRepository caseRepository;
@@ -112,15 +116,6 @@ public class SjpQueryView {
                 .apply(caseService.findCasesMissingSjpn(envelope, limit, postedBefore));
     }
 
-    @Handles("sjp.query.cases-missing-sjpn-with-details")
-    public JsonEnvelope findCasesMissingSjpnWithDetails(final JsonEnvelope envelope) {
-        final JsonObject payload = envelope.payloadAsJsonObject();
-        final Optional<LocalDate> postedBefore = payload.containsKey(FIELD_DAYS_SINCE_POSTING) ?
-                Optional.of(LocalDate.now().minusDays(payload.getInt(FIELD_DAYS_SINCE_POSTING))) : empty();
-        return enveloper.withMetadataFrom(envelope, "sjp.query.cases-missing-sjpn-with-details")
-                .apply(caseService.findCasesMissingSjpnWithDetails(postedBefore));
-    }
-
     @Handles("sjp.query.case-documents")
     public JsonEnvelope findCaseDocuments(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE_DOCUMENTS).apply(
@@ -169,18 +164,6 @@ public class SjpQueryView {
                 caseService.findCasesReferredToCourt());
     }
 
-    @Handles("sjp.query.not-ready-cases-grouped-by-age")
-    public JsonEnvelope findNotReadyCasesGroupedByAge(final JsonEnvelope envelope) {
-        return enveloper.withMetadataFrom(envelope, "sjp.query.not-ready-cases-grouped-by-age")
-                .apply(caseService.getNotReadyCasesGroupedByAge());
-    }
-
-    @Handles("sjp.query.oldest-case-age")
-    public JsonEnvelope findOldestCaseAge(final JsonEnvelope envelope) {
-        return enveloper.withMetadataFrom(envelope, "sjp.query.oldest-case-age")
-                .apply(caseService.getOldestCaseAge());
-    }
-
     @Handles("sjp.query.result-orders")
     public JsonEnvelope getResultOrders(final JsonEnvelope envelope) {
         final LocalDate fromDate = LocalDates.from(extract(envelope, "fromDate"));
@@ -221,6 +204,12 @@ public class SjpQueryView {
                 .orElse(null);
 
         return enveloper.withMetadataFrom(query, "sjp.query.case-prosecuting-authority").apply(prosecutingAuthorityPayload);
+    }
+
+    @Handles("sjp.query.defendant-details-updates")
+    public JsonEnvelope findDefendantDetailUpdates(JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, "sjp.query.defendant-details-updates")
+                .apply(defendantService.findDefendantDetailUpdates(envelope));
     }
 
     private static String extract(JsonEnvelope envelope, String fieldName) {

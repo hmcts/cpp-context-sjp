@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
+import static java.time.ZonedDateTime.now;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.junit.Assert.assertFalse;
@@ -45,7 +46,6 @@ import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -76,7 +76,7 @@ public class CompositeCaseAggregateStateMutatorTest {
     @Test
     public void shouldMutateStateOnCaseAssignedEvent() {
         UUID userId = UUID.randomUUID();
-        CaseAssigned caseAssigned = new CaseAssigned(UUID.randomUUID(), userId, ZonedDateTime.now(), CaseAssignmentType.MAGISTRATE_DECISION);
+        CaseAssigned caseAssigned = new CaseAssigned(UUID.randomUUID(), userId, now(), CaseAssignmentType.MAGISTRATE_DECISION);
 
         CaseAggregateState caseAggregateState = new CaseAggregateState();
         CompositeCaseAggregateStateMutator.INSTANCE.apply(caseAssigned, caseAggregateState);
@@ -117,7 +117,7 @@ public class CompositeCaseAggregateStateMutatorTest {
         CaseAggregateState caseAggregateState = new CaseAggregateState();
 
         CaseReadinessReason readinessReason = CaseReadinessReason.PLEADED_GUILTY;
-        CaseMarkedReadyForDecision caseMarkedReadyForDecision = new CaseMarkedReadyForDecision(UUID.randomUUID(), readinessReason, ZonedDateTime.now());
+        CaseMarkedReadyForDecision caseMarkedReadyForDecision = new CaseMarkedReadyForDecision(UUID.randomUUID(), readinessReason, now());
 
         CompositeCaseAggregateStateMutator.INSTANCE.apply(caseMarkedReadyForDecision, caseAggregateState);
 
@@ -250,7 +250,7 @@ public class CompositeCaseAggregateStateMutatorTest {
                 new Benefits(),
                 employmentStatus,
                 new ArrayList<>(),
-                ZonedDateTime.now());
+                now());
 
         CompositeCaseAggregateStateMutator.INSTANCE.apply(financialMeansUpdated, caseAggregateState);
 

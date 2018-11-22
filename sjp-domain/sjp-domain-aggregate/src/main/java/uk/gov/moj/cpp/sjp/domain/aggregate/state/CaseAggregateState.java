@@ -357,4 +357,5 @@ public class CaseAggregateState implements AggregateState {
     public boolean isCaseIdEqualTo(final UUID id) {
         return nonNull(caseId) && caseId.equals(id);
     }
+
 }

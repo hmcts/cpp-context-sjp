@@ -164,6 +164,17 @@ public class CaseAggregate implements Aggregate {
                 state));
     }
 
+    public Stream<Object> recordCaseReferralForCourtHearingRejection(final UUID caseId,
+                                                                     final String rejectionReason,
+                                                                     final ZonedDateTime rejectedAt) {
+
+        return apply(CourtReferralHandler.INSTANCE.recordCaseReferralForCourtHearingRejection(
+                caseId,
+                rejectionReason,
+                rejectedAt,
+                state));
+    }
+
     @Override
     public Object apply(Object event) {
         AGGREGATE_STATE_MUTATOR.apply(event, state);

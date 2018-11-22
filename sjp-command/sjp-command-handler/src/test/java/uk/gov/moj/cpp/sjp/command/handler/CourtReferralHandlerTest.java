@@ -21,7 +21,9 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.RecordCaseReferralForCourtHearingRejection.recordCaseReferralForCourtHearingRejection;
 import static uk.gov.moj.cpp.sjp.ReferCaseForCourtHearing.referCaseForCourtHearing;
+import static uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded.caseReferralForCourtHearingRejectionRecorded;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
 import uk.gov.justice.domain.annotation.Event;
@@ -31,10 +33,14 @@ import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.moj.cpp.sjp.RecordCaseReferralForCourtHearingRejection;
 import uk.gov.moj.cpp.sjp.ReferCaseForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 
+import java.time.ZonedDateTime;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.junit.Test;
@@ -60,7 +66,9 @@ public class CourtReferralHandlerTest {
     private CaseAggregate caseAggregate;
 
     @Spy
-    private Enveloper enveloper = createEnveloperWithEvents(CaseReferredForCourtHearing.class);
+    private Enveloper enveloper = createEnveloperWithEvents(
+            CaseReferredForCourtHearing.class,
+            CaseReferralForCourtHearingRejectionRecorded.class);
 
     @InjectMocks
     private CourtReferralHandler courtReferralHandler;
@@ -121,9 +129,57 @@ public class CourtReferralHandlerTest {
     }
 
     @Test
+    public void shouldAcknowledgeCaseCourtHearingReferral() throws EventStreamException {
+        String rejectionReason = "rejection reason";
+        UUID caseId = randomUUID();
+        ZonedDateTime rejectionTimestamp = now(UTC);
+
+        final RecordCaseReferralForCourtHearingRejection recordCaseReferralForCourtHearingRejection =
+                recordCaseReferralForCourtHearingRejection()
+                        .withCaseId(caseId)
+                        .withRejectionReason(rejectionReason)
+                        .withRejectedAt(rejectionTimestamp)
+                        .build();
+
+        final CaseReferralForCourtHearingRejectionRecorded caseReferralForCourtHearingRejectionRecorded =
+                caseReferralForCourtHearingRejectionRecorded()
+                        .withCaseId(caseId)
+                        .withRejectionReason(rejectionReason)
+                        .withRejectedAt(rejectionTimestamp)
+                        .build();
+
+        when(caseAggregate.recordCaseReferralForCourtHearingRejection(
+                caseId,
+                rejectionReason,
+                rejectionTimestamp
+        )).thenReturn(Stream.of(caseReferralForCourtHearingRejectionRecorded));
+
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        final Envelope<RecordCaseReferralForCourtHearingRejection> commandEnvelope =
+                envelopeFrom(
+                        metadataWithRandomUUID("sjp.command.record-refer-case-for-court-hearing-rejection"),
+                        recordCaseReferralForCourtHearingRejection);
+
+        courtReferralHandler.recordCaseReferralForCourtHearingRejection(commandEnvelope);
+
+        assertThat(eventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                metadata().envelopedWith(commandEnvelope.metadata()).withName(CaseReferralForCourtHearingRejectionRecorded.class.getAnnotation(Event.class).value()),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                        withJsonPath("$.rejectionReason", equalTo(rejectionReason)),
+                                        withJsonPath("$.rejectedAt", equalTo(rejectionTimestamp.toString()))
+                                ))))));
+    }
+
+    @Test
     public void shouldHandleCourtReferralRelatedCommands() {
         assertThat(CourtReferralHandler.class, isHandlerClass(COMMAND_HANDLER)
-                .with(method("referCaseForCourtHearing").thatHandles("sjp.command.refer-case-for-court-hearing")));
+                .with(method("referCaseForCourtHearing").thatHandles("sjp.command.refer-case-for-court-hearing"))
+                .with(method("recordCaseReferralForCourtHearingRejection").thatHandles("sjp.command.record-case-referral-for-court-hearing-rejection")));
     }
 
 }

@@ -194,6 +194,7 @@
                             <includes>
                                 <include>raml/json/schema/public.resulting.decision-to-refer-case-for-court-hearing-saved.json</include>
                                 <include>raml/json/schema/sjp.command.refer-case-for-court-hearing.json</include>
+                                <include>raml/json/schema/sjp.command.record-case-referral-for-court-hearing-rejection.json</include>
                                 <include>raml/json/schema/sjp.events.case-referred-for-court-hearing.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">

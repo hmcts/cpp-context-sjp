@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataOf;
 import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedWith;
@@ -24,10 +25,12 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.sjp.event.CaseDocumentUploadRejected;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentUploaded;
 import uk.gov.moj.cpp.sjp.event.CaseStarted;
 
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.json.JsonObjectBuilder;
 
@@ -47,6 +50,9 @@ public class UploadCaseDocumentHandlerTest {
     private static final String CASE_DOCUMENT_TYPE_PROPERTY = "caseDocumentType";
 
     @Mock
+    private Stream<Object> events;
+
+    @Mock
     private EventStream eventStream;
 
     @Mock
@@ -64,24 +70,25 @@ public class UploadCaseDocumentHandlerTest {
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
             CaseDocumentUploaded.class,
-            CaseStarted.class
+            CaseStarted.class,
+            CaseDocumentUploadRejected.class
     );
+
+    private static final UUID CASE_ID = randomUUID();
+    private static final UUID DOCUMENT_REFERENCE = randomUUID();
+    private static final String DOCUMENT_TYPE = "PLEA";
+
 
     @Before
     public void setUp() {
-        caseAggregate = new CaseAggregate();
         when(aggregateService.get(any(), any())).thenReturn(caseAggregate);
     }
 
     @Test
     public void shouldProcessAssociateEnterpriseIdCommandAndGenerateAppendExpectedEvent() throws EventStreamException {
-        final UUID caseId = randomUUID();
-        final UUID caseDocumentReference = randomUUID();
-        final String documentType = "PLEA";
 
-        final JsonEnvelope command = createCaseDocumentUploadCommand(caseId, caseDocumentReference, documentType);
-
-        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        final JsonEnvelope command = createCaseDocumentUploadCommand(CASE_ID, DOCUMENT_REFERENCE, DOCUMENT_TYPE);
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
 
         uploadCaseDocumentHandler.handle(command);
 
@@ -91,13 +98,40 @@ public class UploadCaseDocumentHandlerTest {
                                 withMetadataEnvelopedFrom(command)
                                         .withName("sjp.events.case-document-uploaded"),
                                 payloadIsJson(allOf(
-                                        withJsonPath("$.caseId", equalTo(caseId.toString())),
-                                        withJsonPath("$.documentReference", equalTo(caseDocumentReference.toString())),
-                                        withJsonPath("$.documentType", equalTo(documentType))
+                                        withJsonPath("$.caseId", equalTo(CASE_ID.toString())),
+                                        withJsonPath("$.documentReference", equalTo(DOCUMENT_REFERENCE.toString())),
+                                        withJsonPath("$.documentType", equalTo(DOCUMENT_TYPE))
 
                                 )))
                 )));
     }
+
+    @Test
+    public void shouldRejectUploadOfCaseDocumentWhenCaseIsInReferredToCourtState() throws EventStreamException {
+        final CaseAggregate caseAggregate1 = mock(CaseAggregate.class);
+        when(aggregateService.get(any(), any())).thenReturn(caseAggregate1);
+
+        final JsonEnvelope command = createCaseDocumentUploadCommand(CASE_ID, DOCUMENT_REFERENCE, DOCUMENT_TYPE);
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+
+        final CaseDocumentUploadRejected caseDocumentUploadRejected = new CaseDocumentUploadRejected(DOCUMENT_REFERENCE, "");
+        when(caseAggregate1.uploadCaseDocument(CASE_ID, DOCUMENT_REFERENCE, DOCUMENT_TYPE)).thenReturn(Stream.of(caseDocumentUploadRejected));
+
+        uploadCaseDocumentHandler.handle(command);
+
+        assertThat(eventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(command)
+                                        .withName("sjp.events.case-document-upload-rejected"),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.documentId", equalTo(DOCUMENT_REFERENCE.toString())),
+                                        withJsonPath("$.description", equalTo(""))
+
+                                )))
+                )));
+    }
+
 
     private JsonEnvelope createCaseDocumentUploadCommand(final UUID caseId, final UUID caseDocumentReference, final String documentType) {
         final JsonObjectBuilder payload = createObjectBuilder()
@@ -109,5 +143,4 @@ public class UploadCaseDocumentHandlerTest {
                 metadataOf(randomUUID(), "sjp.command.upload-case-document"),
                 payload.build());
     }
-
 }

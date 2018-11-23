@@ -14,6 +14,8 @@ public class Constants {
     public static final String EVENT_SELECTOR_CASE_DOCUMENT_ADDED = "sjp.events.case-document-added";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS = "public.sjp.case-document-already-exists";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED = "public.sjp.case-document-uploaded";
+    public static final String EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED = "sjp.events.case-document-upload-rejected";
+    public static final String PUBLIC_EVENT_SELECTOR_CASE_REFER_FOR_COURT_HEARING_IN_RESULTING = "public.resulting.decision-to-refer-case-for-court-hearing-saved";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED = "public.sjp.case-document-added";
     public static final String EVENT_SELECTOR_PLEA_UPDATED = PleaUpdated.EVENT_NAME;
     public static final String EVENT_SELECTOR_PLEA_CANCELLED = PleaCancelled.EVENT_NAME;

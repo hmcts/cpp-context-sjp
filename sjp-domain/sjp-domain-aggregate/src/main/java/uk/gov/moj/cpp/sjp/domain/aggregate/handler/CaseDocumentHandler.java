@@ -1,9 +1,12 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
+import static java.lang.String.format;
+
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAlreadyExists;
+import uk.gov.moj.cpp.sjp.event.CaseDocumentUploadRejected;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentUploaded;
 
 import java.util.UUID;
@@ -40,8 +43,14 @@ public class CaseDocumentHandler {
 
     public Stream<Object> uploadCaseDocument(final UUID caseId,
                                              final UUID documentReference,
-                                             final String documentType) {
+                                             final String documentType,
+                                             final CaseAggregateState state) {
 
+        if (state.isCaseReferredForCourtHearing()) {
+            LOGGER.warn("Case Document Upload rejected as case is referred to court for hearing: {}", documentReference);
+            final String description = format("Case Document %s Upload rejected as case %s is referred to court for hearing", documentReference, caseId);
+            return Stream.of(new CaseDocumentUploadRejected(documentReference, description));
+        }
         return Stream.of(new CaseDocumentUploaded(caseId, documentReference, documentType));
     }
 }

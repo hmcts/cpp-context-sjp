@@ -1,8 +1,5 @@
 package uk.gov.moj.sjp.it.helper;
 
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.test.utils.persistence.TestJdbcConnectionProvider;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseCourtReferralStatus;
@@ -22,29 +19,35 @@ public final class CaseReferralHelper {
 
     private static final TestJdbcConnectionProvider connectionProvider = new TestJdbcConnectionProvider();
 
-    public static Optional<CaseCourtReferralStatus> findReferralStatusForCase(UUID caseId) {
-
+    public static CaseCourtReferralStatus findReferralStatusForCase(UUID caseId) {
         try (final Connection connection = connectionProvider.getViewStoreConnection("sjp");
              final PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_CASE_REFERRAL_STATUS_FOR_CASE)) {
 
             preparedStatement.setObject(1, caseId);
 
-            final ResultSet resultSet = preparedStatement.executeQuery();
-
-            if (resultSet.next()) {
-
-                final ZonedDateTime receivedAt = ZonedDateTimes.fromSqlTimestamp(resultSet.getTimestamp("requested_at"));
-                final String rejectionReason = resultSet.getString("rejection_reason");
-                final ZonedDateTime rejectedAt = Optional.ofNullable(resultSet.getTimestamp("rejected_at"))
-                        .map(ZonedDateTimes::fromSqlTimestamp)
-                        .orElse(null);
-
-                return of(new CaseCourtReferralStatus(caseId, receivedAt, rejectedAt, rejectionReason));
-            }
+            return fetchReferralStatusForCase(preparedStatement, caseId);
         } catch (final SQLException e) {
             throw new RuntimeException("Failed to lookup CaseCourtReferralStatus", e);
         }
+    }
 
-        return empty();
+    private static CaseCourtReferralStatus fetchReferralStatusForCase(
+            PreparedStatement preparedStatement,
+            UUID caseId) throws SQLException {
+
+        final ResultSet resultSet = preparedStatement.executeQuery();
+
+        if (resultSet.next()) {
+
+            final ZonedDateTime receivedAt = ZonedDateTimes.fromSqlTimestamp(resultSet.getTimestamp("requested_at"));
+            final String rejectionReason = resultSet.getString("rejection_reason");
+            final ZonedDateTime rejectedAt = Optional.ofNullable(resultSet.getTimestamp("rejected_at"))
+                    .map(ZonedDateTimes::fromSqlTimestamp)
+                    .orElse(null);
+
+            return new CaseCourtReferralStatus(caseId, receivedAt, rejectedAt, rejectionReason);
+        }
+
+        return null;
     }
 }

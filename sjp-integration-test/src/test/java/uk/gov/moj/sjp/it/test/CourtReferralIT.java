@@ -1,5 +1,6 @@
 package uk.gov.moj.sjp.it.test;
 
+import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.now;
@@ -8,6 +9,7 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -32,9 +34,9 @@ import uk.gov.moj.sjp.it.producer.ReferToCourtHearingProducer;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -92,17 +94,19 @@ public class CourtReferralIT extends BaseIntegrationTest {
                                 withJsonPath("$.referredAt", CoreMatchers.equalTo(resultedOn.toString()))
                         ))));
 
-        final Optional<CaseCourtReferralStatus> referralStatusOptional = CaseReferralHelper.findReferralStatusForCase(caseId);
+        final CaseCourtReferralStatus referralStatus = await()
+                .atMost(10, TimeUnit.SECONDS)
+                .until(
+                        () -> CaseReferralHelper.findReferralStatusForCase(caseId),
+                        notNullValue());
 
-        assertThat(referralStatusOptional.isPresent(), is(true));
-        assertThat(referralStatusOptional.get().getRequestedAt(), notNullValue());
-        assertThat(referralStatusOptional.get().getRejectedAt(), nullValue());
-        assertThat(referralStatusOptional.get().getRejectionReason(), nullValue());
+        assertThat(referralStatus.getRequestedAt(), notNullValue());
+        assertThat(referralStatus.getRejectedAt(), nullValue());
+        assertThat(referralStatus.getRejectionReason(), nullValue());
     }
 
     @Test
     public void shouldRecordCaseReferralRejection() {
-
         final UUID sjpSessionId = randomUUID();
         final ZonedDateTime resultedOn = now(UTC);
         final UUID referralReasonId = randomUUID();
@@ -126,12 +130,15 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
         assertThat(hearingRejectionRecordedEvent.isPresent(), is(true));
 
-        final Optional<CaseCourtReferralStatus> referralStatusOptional = CaseReferralHelper.findReferralStatusForCase(caseId);
+        final CaseCourtReferralStatus referralStatus = await()
+                .atMost(10, TimeUnit.SECONDS)
+                .until(
+                        () -> CaseReferralHelper.findReferralStatusForCase(caseId),
+                        hasProperty("rejectedAt", notNullValue()));
 
-        assertThat(referralStatusOptional.isPresent(), is(true));
-        assertThat(referralStatusOptional.get().getRequestedAt(), notNullValue());
-        assertThat(referralStatusOptional.get().getRejectedAt(), notNullValue());
-        assertThat(referralStatusOptional.get().getRejectionReason(), is(referralRejectionReason));
+        assertThat(referralStatus.getRequestedAt(), notNullValue());
+        assertThat(referralStatus.getRejectedAt(), notNullValue());
+        assertThat(referralStatus.getRejectionReason(), is(referralRejectionReason));
     }
 
 }

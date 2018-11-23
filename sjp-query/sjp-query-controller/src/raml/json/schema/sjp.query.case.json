@@ -1,5 +1,63 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/case.json",
-  "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/queries/case.json"
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/case.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "urn": {
+      "type": "string"
+    },
+    "defendant": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/defendant.json"
+    },
+    "dateTimeCreated": {
+      "type": "string"
+    },
+    "caseDocuments": {
+      "type": "array",
+      "items": {
+        "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/document.json"
+      }
+    },
+    "prosecutingAuthority": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/prosecuting-authority.json"
+    },
+    "completed": {
+      "type": "boolean"
+    },
+    "assigned": {
+      "type": "boolean"
+    },
+    "costs": {
+      "type": "number"
+    },
+    "postingDate": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
+    "reopenedDate": {
+      "type": "string"
+    },
+    "libraCaseNumber": {
+      "type": "string"
+    },
+    "reopenedInLibraReason": {
+      "type": "string"
+    },
+    "enterpriseId": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/enterprise-id.json"
+    },
+    "status": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/case-status.json"
+    },
+    "listedInCriminalCourts": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "id",
+    "urn"
+  ]
 }

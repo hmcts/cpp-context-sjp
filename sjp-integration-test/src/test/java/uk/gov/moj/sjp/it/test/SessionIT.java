@@ -15,7 +15,6 @@ import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSessionAndWaitForEvent;
 
-import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.SessionProcessor;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
@@ -37,7 +36,6 @@ public class SessionIT extends BaseIntegrationTest {
     private final String courtHouseOUCode = "B01OK";
     private final String courtHouseName = "Wimbledon Magistrates' Court";
     private final String localJusticeAreaNationalCourtCode = "2577";
-    private final String startedAt = new UtcClock().now().minusMonths(6).toString();
 
     @Before
     public void init() {
@@ -65,6 +63,7 @@ public class SessionIT extends BaseIntegrationTest {
         assertThat(SessionHelper.getSession(sessionId, userId).toString(), isJson(allOf(
                 withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                 withJsonPath("$.userId", equalTo(userId.toString())),
+                withJsonPath("$.courtHouseCode", equalTo(courtHouseOUCode)),
                 withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                 withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                 withJsonPath("$.type", equalTo(DELEGATED_POWERS.name())),
@@ -98,6 +97,7 @@ public class SessionIT extends BaseIntegrationTest {
         assertThat(SessionHelper.getSession(sessionId, userId).toString(), isJson(allOf(
                 withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                 withJsonPath("$.userId", equalTo(userId.toString())),
+                withJsonPath("$.courtHouseCode", equalTo(courtHouseOUCode)),
                 withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                 withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                 withJsonPath("$.type", equalTo(MAGISTRATE.name())),

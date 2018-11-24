@@ -60,6 +60,7 @@ public class SessionListenerTest {
 
     private final UUID sessionId = randomUUID();
     private final UUID userId = randomUUID();
+    private final String courtHouseCode = "B01LY";
     private final String courtHouseName = "Hendon Magistrates' Court";
     private final String localJusticeAreaNationalCourtCode = "2571";
     private final String magistrate = "John Smith";
@@ -79,6 +80,7 @@ public class SessionListenerTest {
                 createObjectBuilder()
                         .add("sessionId", sessionId.toString())
                         .add("userId", userId.toString())
+                        .add("courtHouseCode", courtHouseCode)
                         .add("courtHouseName", courtHouseName)
                         .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
                         .add("startedAt", startedAt.format(ISO_DATE_TIME))
@@ -92,6 +94,7 @@ public class SessionListenerTest {
 
         assertThat(session.getSessionId(), equalTo(sessionId));
         assertThat(session.getUserId(), equalTo(userId));
+        assertThat(session.getCourtHouseCode(), equalTo(courtHouseCode));
         assertThat(session.getCourtHouseName(), equalTo(courtHouseName));
         assertThat(session.getLocalJusticeAreaNationalCourtCode(), equalTo(localJusticeAreaNationalCourtCode));
         assertThat(session.getStartedAt(), equalTo(startedAt));
@@ -107,6 +110,7 @@ public class SessionListenerTest {
                 createObjectBuilder()
                         .add("sessionId", sessionId.toString())
                         .add("userId", userId.toString())
+                        .add("courtHouseCode", courtHouseCode)
                         .add("courtHouseName", courtHouseName)
                         .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
                         .add("startedAt", startedAt.format(ISO_DATE_TIME))
@@ -121,6 +125,7 @@ public class SessionListenerTest {
 
         assertThat(session.getSessionId(), equalTo(sessionId));
         assertThat(session.getUserId(), equalTo(userId));
+        assertThat(session.getCourtHouseCode(), equalTo(courtHouseCode));
         assertThat(session.getCourtHouseName(), equalTo(courtHouseName));
         assertThat(session.getLocalJusticeAreaNationalCourtCode(), equalTo(localJusticeAreaNationalCourtCode));
         assertThat(session.getStartedAt(), equalTo(startedAt));

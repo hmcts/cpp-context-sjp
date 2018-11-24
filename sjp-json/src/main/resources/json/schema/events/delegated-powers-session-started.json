@@ -25,6 +25,7 @@
   "required": [
     "sessionId",
     "userId",
+    "courtHouseCode",
     "courtHouseName",
     "localJusticeAreaNationalCourtCode",
     "startedAt"

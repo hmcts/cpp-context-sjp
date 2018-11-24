@@ -7,7 +7,7 @@
     <changeSet id="27" author="ATCM/mojo" logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
 
         <addColumn tableName="session">
-            <column name="court_house_code" type="string"/>
+            <column name="court_house_code" type="TEXT"/>
         </addColumn>
 
     </changeSet>

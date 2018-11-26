@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 public class CaseConverter {
 
     private static final Logger LOGGER = getLogger(CaseConverter.class);
+    private static final String STATUS = "status";
 
     @Inject
     private ReferenceOffencesDataService referenceOffencesDataService;
@@ -92,13 +93,17 @@ public class CaseConverter {
     }
 
     private static JsonObject buildCaseObject(final JsonObject caseDetails, final JsonObject defendant) {
-        return createObjectBuilder()
+        final JsonObjectBuilder builder = createObjectBuilder()
                 .add("id", caseDetails.getString("id"))
                 .add("urn", caseDetails.getString("urn"))
                 .add("completed", caseDetails.getBoolean("completed", false))
                 .add("assigned", caseDetails.getBoolean("assigned", false))
-                .add("defendant", defendant)
-                .build();
+                .add("defendant", defendant);
+
+        Optional.ofNullable(caseDetails.getString(STATUS, null)).
+                ifPresent(status -> builder.add(STATUS, status));
+
+        return builder.build();
     }
 
 }

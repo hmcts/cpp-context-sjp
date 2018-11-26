@@ -41,6 +41,7 @@ public class CaseConverterTest {
         final UUID offenceId = UUID.randomUUID();
         final boolean completed = false;
         final boolean assigned = true;
+        final String status = "NO_PLEA_RECEIVED";
 
         final String firstName = "John";
         final String lastName = "Faceless";
@@ -72,6 +73,7 @@ public class CaseConverterTest {
                 .add("urn", urn)
                 .add("completed", completed)
                 .add("assigned", assigned)
+                .add("status", status)
                 .add("defendant", createObjectBuilder()
                         .add("id", defendantId.toString())
                         .add("personalDetails", createObjectBuilder()
@@ -114,6 +116,7 @@ public class CaseConverterTest {
                 .add("urn", urn)
                 .add("completed", completed)
                 .add("assigned", assigned)
+                .add("status", status)
                 .add("defendant", createObjectBuilder()
                         .add("id", defendantId.toString())
                         .add("personalDetails", createObjectBuilder()

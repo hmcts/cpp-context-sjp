@@ -15,6 +15,7 @@
 
     <modules>
         <module>sjp-domain-transformation-court-code</module>
+        <module>sjp-domain-transformation-postcode</module>
     </modules>
 
 </project>

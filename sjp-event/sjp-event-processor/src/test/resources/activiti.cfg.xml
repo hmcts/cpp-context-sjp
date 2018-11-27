@@ -38,6 +38,11 @@
 
   <bean id="datesToAvoidProcessedDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">
     <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.DatesToAvoidProcessedDelegate" />
+    <property name="variablesOnExecution">
+      <map>
+        <entry key="pleaReady" value="true" value-type="java.lang.Boolean"/>
+      </map>
+    </property>
   </bean>
 
   <bean id="withdrawalRequestCancelledDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">

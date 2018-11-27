@@ -2,9 +2,14 @@ package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.AllOf.allOf;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -68,4 +73,18 @@ public class PleaUpdatedDelegateTest extends AbstractCaseDelegateTest {
 
         verify(delegateExecution).setVariable(PLEA_READY_VARIABLE, false);
     }
+
+    @Test
+    public void shouldCalculatePleaReady() {
+        for (final PleaType pleaType : PleaType.values()) {
+            asList(TRUE, FALSE)
+                    .forEach(areDatesToAvoidSet -> {
+                        boolean expectedPleaReady = ! pleaType.equals(NOT_GUILTY) || areDatesToAvoidSet;
+                        assertThat(
+                                format("Assertion Error: PleaUpdatedDelegate.isPleaReady(%s, %s) != %s", pleaType, areDatesToAvoidSet, expectedPleaReady),
+                                PleaUpdatedDelegate.isPleaReady(pleaType, areDatesToAvoidSet), equalTo(expectedPleaReady));
+                    });
+        }
+    }
+
 }

@@ -51,9 +51,14 @@ public class MockedDelegate implements JavaDelegate {
 
     /**
      * Specify extra parameters to inject during execution
+     * WARNING: this is a singleton bean, once set it will affect all the executions, if required improve it
      */
     public void setVariablesOnExecution(final Map<String, Object> variablesOnExecution) {
         this.variablesOnExecution = variablesOnExecution;
+    }
+
+    public Map<String, Object> getVariablesOnExecution() {
+        return variablesOnExecution;
     }
 
     /**

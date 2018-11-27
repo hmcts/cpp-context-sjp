@@ -40,10 +40,14 @@ import static uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper.metadataTo
 
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate;
+import uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.PleaUpdatedDelegate;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -80,10 +84,9 @@ public class CaseStateProcessTest {
 
     private void resetExecutions() {
         // reset manipulated parameters - the ones injected from the XML should should be reset as they were
-        Stream.of(DATES_TO_AVOID_PROCESSED, PLEA_UPDATED)
+        Stream.of(PLEA_CANCELLED, PLEA_UPDATED)
                 .map(delegatesVerifier::getDelegateExecution)
                 .forEach(delegate -> delegate.setVariablesOnExecution(emptyMap()));
-        delegatesVerifier.getDelegateExecution(PLEA_CANCELLED).setVariablesOnExecution(singletonMap(PLEA_READY_VARIABLE, false));
     }
 
     @Test
@@ -109,6 +112,82 @@ public class CaseStateProcessTest {
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
 
         delegatesVerifier.assertProcessFinished(processInstanceId, false);
+    }
+
+    @Test
+    @Deployment(resources = PROCESS_PATH)
+    public void shouldPersistDatesToAvoidAfterWithdrawalRequestCancelled() {
+        final LocalDate postingDate = now().minusDays(1);
+        final UUID offenceId = randomUUID();
+        final PleaType pleaType = PleaType.NOT_GUILTY;
+        final String datesToAvoid = "my-dates-to-avoid";
+
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
+
+        callPleaUpdated(offenceId, pleaType, ZonedDateTime.now(), metadata);
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 0,
+                allOf(
+                        withoutProcessVariable(WITHDRAWAL_REQUESTED_VARIABLE),
+                        withoutProcessVariable(DATES_TO_AVOID_VARIABLE),
+                        withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
+                        withProcessVariable(PLEA_READY_VARIABLE, false)));
+
+        caseStateService.withdrawalRequested(caseId, metadata);
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 1,
+                allOf(
+                        withProcessVariable(WITHDRAWAL_REQUESTED_VARIABLE, true),
+                        withoutProcessVariable(DATES_TO_AVOID_VARIABLE),
+                        withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
+                        withProcessVariable(PLEA_READY_VARIABLE, false)));
+
+        caseStateService.withdrawalRequestCancelled(caseId, metadata);
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 2,
+                allOf(
+                        withoutProcessVariable(WITHDRAWAL_REQUESTED_VARIABLE),
+                        withoutProcessVariable(DATES_TO_AVOID_VARIABLE),
+                        withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
+                        withProcessVariable(PLEA_READY_VARIABLE, false)));
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(1));
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 2,
+                allOf(
+                        withoutProcessVariable(WITHDRAWAL_REQUESTED_VARIABLE),
+                        withoutProcessVariable(DATES_TO_AVOID_VARIABLE),
+                        withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
+                        withProcessVariable(PLEA_READY_VARIABLE, false)));
+
+        final Map<String, Object> variablesOnExecutionDatesToAvoid = delegatesVerifier.getDelegateExecution(DATES_TO_AVOID_PROCESSED).getVariablesOnExecution();
+        variablesOnExecutionDatesToAvoid.put(DATES_TO_AVOID_VARIABLE, datesToAvoid);
+        caseStateService.datesToAvoidAdded(caseId, datesToAvoid, metadata);
+        variablesOnExecutionDatesToAvoid.remove(DATES_TO_AVOID_VARIABLE);
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 3,
+                allOf(
+                        withoutProcessVariable(WITHDRAWAL_REQUESTED_VARIABLE),
+                        withProcessVariable(DATES_TO_AVOID_VARIABLE, datesToAvoid),
+                        withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
+                        withProcessVariable(PLEA_READY_VARIABLE, true)));
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+
+        callPleaUpdated(offenceId, pleaType, ZonedDateTime.now(), metadata);
+
+        // at this stage the Dates To avoid are considered already added - no possibility to add them again but plea is still ready as plea-non-guilty
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 4,
+                allOf(
+                        withoutProcessVariable(WITHDRAWAL_REQUESTED_VARIABLE),
+                        withProcessVariable(DATES_TO_AVOID_VARIABLE, datesToAvoid),
+                        withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
+                        withProcessVariable(PLEA_READY_VARIABLE, true)));
+
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 5);
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, READY_CASE, PLEA_UPDATED, WITHDRAWAL_REQUESTED, WITHDRAWAL_REQUEST_CANCELLED, DATES_TO_AVOID_PROCESSED);
     }
 
     @Test
@@ -254,7 +333,6 @@ public class CaseStateProcessTest {
         delegatesVerifier.verifyNumberOfExecution(READY_CASE, 1);
 
         final String datesToAvoid = "my-dates-to-avoid";
-        delegatesVerifier.getDelegateExecution(DATES_TO_AVOID_PROCESSED).setVariablesOnExecution(singletonMap(DATES_TO_AVOID_VARIABLE, datesToAvoid));
         caseStateService.datesToAvoidAdded(caseId, datesToAvoid, metadata);
         delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, READY_CASE, PLEA_UPDATED, DATES_TO_AVOID_PROCESSED);
 
@@ -490,9 +568,20 @@ public class CaseStateProcessTest {
                 withoutProcessVariable(WITHDRAWAL_REQUESTED_VARIABLE)));
     }
 
-    private void callPleaUpdated(final UUID offenceId, final PleaType pleaType, final ZonedDateTime pleaDatesToAvoidDays,
-                                 final Metadata metadata) {
-        delegatesVerifier.getDelegateExecution(PLEA_UPDATED).setVariablesOnExecution(singletonMap(PLEA_READY_VARIABLE, !PleaType.NOT_GUILTY.equals(pleaType)));
+    private void callPleaUpdated(final UUID offenceId, final PleaType pleaType,
+                                 final ZonedDateTime pleaDatesToAvoidDays, final Metadata metadata) {
+        final MockedDelegate readyCaseDelegate = delegatesVerifier.getDelegateExecution(READY_CASE);
+        final boolean areDatesToAvoidSet = Optional.of(readyCaseDelegate.getExecutionTimes())
+                .filter(l -> l > 0)
+                .map(l -> readyCaseDelegate.getDelegateExecutions().get(l - 1).hasVariable(DATES_TO_AVOID_VARIABLE))
+                .orElse(false);
+
+        final MockedDelegate delegateExecution = delegatesVerifier.getDelegateExecution(PLEA_UPDATED);
+        final Map<String, Object> variablesOnExecution = new HashMap<>(delegateExecution.getVariablesOnExecution());
+        variablesOnExecution.put(PLEA_TYPE_VARIABLE, pleaType.name());
+        variablesOnExecution.put(PLEA_READY_VARIABLE, PleaUpdatedDelegate.isPleaReady(pleaType, areDatesToAvoidSet));
+        delegateExecution.setVariablesOnExecution(variablesOnExecution);
+
         caseStateService.pleaUpdated(caseId, offenceId, pleaType, pleaDatesToAvoidDays, metadata);
     }
 

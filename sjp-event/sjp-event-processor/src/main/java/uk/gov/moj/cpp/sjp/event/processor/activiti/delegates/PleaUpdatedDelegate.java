@@ -5,6 +5,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.OFFENCE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.PLEA;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.DATES_TO_AVOID_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.OFFENCE_ID_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_READY_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_TYPE_VARIABLE;
@@ -53,7 +54,16 @@ public class PleaUpdatedDelegate extends AbstractCaseDelegate {
             LOGGER.warn("Process migration. Event {} not emitted", PLEA_UPDATED_PUBLIC_EVENT_NAME);
         }
 
-        execution.setVariable(PLEA_READY_VARIABLE, !PleaType.NOT_GUILTY.equals(pleaType));
+        final boolean areDatesToAvoidSet = execution.hasVariable(DATES_TO_AVOID_VARIABLE);
+
+        execution.setVariable(PLEA_READY_VARIABLE, isPleaReady(pleaType, areDatesToAvoidSet));
+    }
+
+    /**
+     * WARNING: if you change this condition update the same into the activity at flowNonGuilty
+     */
+    public static boolean isPleaReady(final PleaType pleaType, final boolean areDatesToAvoidSet) {
+        return !PleaType.NOT_GUILTY.equals(pleaType) || areDatesToAvoidSet;
     }
 
 }

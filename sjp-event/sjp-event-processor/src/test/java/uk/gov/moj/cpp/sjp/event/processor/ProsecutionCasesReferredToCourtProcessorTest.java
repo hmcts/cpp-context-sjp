@@ -48,7 +48,7 @@ public class ProsecutionCasesReferredToCourtProcessorTest {
     @Test
     public void shouldSendUpdateCaseListedInCriminalCourtsCommand() {
         final JsonEnvelope prosecutionCasesReferredToCourtEvent = envelopeFrom(metadataWithRandomUUID(ProsecutionCasesReferredToCourtProcessor.EVENT_NAME), createObjectBuilder()
-                .add(CASE_ID, caseId.toString())
+                .add("prosecutionCaseId", caseId.toString())
                 .build());
 
         prosecutionCasesReferredToCourtProcessor.handleProsecutionCasesReferredToCourtEvent(prosecutionCasesReferredToCourtEvent);

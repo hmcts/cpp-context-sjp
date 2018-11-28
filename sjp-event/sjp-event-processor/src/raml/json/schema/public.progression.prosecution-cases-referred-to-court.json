@@ -2,11 +2,11 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "caseId": {
+    "prosecutionCaseId": {
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     }
   },
   "required": [
-    "caseId"
+    "prosecutionCaseId"
   ]
 }

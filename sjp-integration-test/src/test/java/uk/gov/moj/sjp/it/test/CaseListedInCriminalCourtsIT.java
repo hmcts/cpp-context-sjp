@@ -1,6 +1,7 @@
 package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 
@@ -9,7 +10,6 @@ import uk.gov.moj.sjp.it.command.CreateCase;
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.Before;
@@ -29,13 +29,13 @@ public class CaseListedInCriminalCourtsIT extends BaseIntegrationTest{
     @Test
     public void shouldUpdateCaseListedCriminalCourts() {
 
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("caseId", caseId.toString())
+        final JsonObject payload = createObjectBuilder()
+                .add("prosecutionCaseId", caseId.toString())
                 .build();
 
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
             producerClient.startProducer("public.event");
-            producerClient.sendMessage("progression.events.prosecutionCasesReferredToCourt", payload);
+            producerClient.sendMessage("public.progression.prosecution-cases-referred-to-court", payload);
         }
 
         pollUntilCaseByIdIsOk(caseId, withJsonPath("$.listedInCriminalCourts", is(true)));

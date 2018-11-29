@@ -1,35 +1,40 @@
 package uk.gov.moj.sjp.it.producer;
 
-import static java.time.ZoneOffset.UTC;
-import static java.time.ZonedDateTime.now;
-import static java.util.UUID.randomUUID;
+import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
+
+import com.google.common.collect.ImmutableMap;
 
 public final class ReferToCourtHearingProducer {
 
-    private ReferToCourtHearingProducer() {
+    private final UUID caseId;
+    private final UUID hearingTypeId;
+    private final UUID referralReasonId;
+    private final String rejectionReason;
+
+    public ReferToCourtHearingProducer(
+            final UUID caseId,
+            final UUID referralReasonId,
+            final UUID hearingTypeId,
+            final String rejectionReason) {
+        this.caseId = caseId;
+        this.hearingTypeId = hearingTypeId;
+        this.referralReasonId = referralReasonId;
+        this.rejectionReason = rejectionReason;
     }
 
-    public static void rejectCaseReferral(UUID caseId, String rejectionReason) {
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("courtReferral", Json.createObjectBuilder()
-                        .add("sjpReferral", Json.createObjectBuilder()
-                                .add("noticeDate", now(UTC).minusDays(10).toString())
-                                .add("referralDate", now(UTC).minusDays(1).toString())
-                                .build())
-                        .add("prosecutionCases", Json.createArrayBuilder()
-                                .add(Json.createObjectBuilder()
-                                        .add("id", caseId.toString()))
-                                .build())
-                        .build())
-                .add("rejectedReason", rejectionReason)
-                .build();
+    public void rejectCaseReferral() {
+        final JsonObject payload = getFileContentAsJson("CourtReferralIT/public.progression.refer-prosecution-cases-to-court-rejected.json", ImmutableMap.<String, Object>builder()
+                .put("caseId", caseId)
+                .put("referralReasonId", referralReasonId)
+                .put("hearingTypeId", hearingTypeId)
+                .put("rejectionReason", rejectionReason)
+                .build());
 
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
             producerClient.startProducer("public.event");

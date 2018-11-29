@@ -22,6 +22,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.sjp.it.helper.CaseReferralHelper.findReferralStatusForCase;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.stub.ProgressionServiceStub.REFER_TO_COURT_COMMAND_CONTENT;
 import static uk.gov.moj.sjp.it.stub.ProgressionServiceStub.REFER_TO_COURT_COMMAND_URL;
@@ -35,7 +36,6 @@ import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseCourtReferralStatus;
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.helper.CaseReferralHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
@@ -54,7 +54,6 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import javax.json.JsonObject;
@@ -159,7 +158,10 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
     @Test
     public void shouldRecordCaseReferralRejection() {
+
+        final String referralRejectionReason = "Test referral rejection reason";
         final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
+        final ReferToCourtHearingProducer referToCourtHearingProducer = new ReferToCourtHearingProducer(caseId, REFERRAL_REASON_ID, HEARING_TYPE_ID, referralRejectionReason);
         final DecisionToReferCaseForCourtHearingSavedProducer decisionToReferCaseForCourtHearingSavedProducer = new DecisionToReferCaseForCourtHearingSavedProducer(
                 caseId,
                 sessionId,
@@ -169,23 +171,18 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 LISTING_NOTES,
                 RESULTED_ON);
 
-        final String referralRejectionReason = "Test referral rejection reason";
-
         String rejectionRecordedEventName = CaseReferralForCourtHearingRejectionRecorded.class.getAnnotation(Event.class).value();
         final Optional<JsonEnvelope> hearingRejectionRecordedEvent = new EventListener()
                 .subscribe(rejectionRecordedEventName)
                 .run(completeCaseProducer::completeCase)
                 .run(decisionToReferCaseForCourtHearingSavedProducer::saveDecisionToReferCaseForCourtHearing)
-                .run(() -> ReferToCourtHearingProducer.rejectCaseReferral(caseId, referralRejectionReason))
+                .run(referToCourtHearingProducer::rejectCaseReferral)
                 .popEvent(rejectionRecordedEventName);
 
         assertThat(hearingRejectionRecordedEvent.isPresent(), is(true));
 
         final CaseCourtReferralStatus referralStatus = await()
-                .atMost(10, TimeUnit.SECONDS)
-                .until(
-                        () -> CaseReferralHelper.findReferralStatusForCase(caseId),
-                        hasProperty("rejectedAt", notNullValue()));
+                .until(() -> findReferralStatusForCase(caseId), hasProperty("rejectedAt", notNullValue()));
 
         assertThat(referralStatus.getRequestedAt(), notNullValue());
         assertThat(referralStatus.getRejectedAt(), notNullValue());
@@ -253,7 +250,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
     private void assertReferralRecordedInCourtReferralStatus() {
         final CaseCourtReferralStatus referralStatus = await()
                 .until(
-                        () -> CaseReferralHelper.findReferralStatusForCase(caseId),
+                        () -> findReferralStatusForCase(caseId),
                         notNullValue());
 
         assertThat(referralStatus.getRequestedAt(), notNullValue());

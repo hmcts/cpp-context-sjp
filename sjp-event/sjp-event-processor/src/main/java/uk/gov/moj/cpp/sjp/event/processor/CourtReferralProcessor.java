@@ -31,12 +31,18 @@ import uk.gov.moj.cpp.sjp.event.processor.service.referral.SjpReferralDataSourci
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @ServiceComponent(EVENT_PROCESSOR)
 public class CourtReferralProcessor {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CourtReferralProcessor.class);
 
     @Inject
     private Enveloper enveloper;
@@ -85,23 +91,23 @@ public class CourtReferralProcessor {
     @Handles("public.progression.refer-prosecution-cases-to-court-rejected")
     public void referToCourtHearingRejected(final JsonEnvelope event) {
         final JsonObject rejectionEvent = event.payloadAsJsonObject();
-        final JsonObject rejectedCourtReferral = rejectionEvent.getJsonObject("courtReferral");
 
-        if (rejectedCourtReferral.containsKey("sjpReferral")) {
-
-            final JsonObject caseDetails = rejectedCourtReferral.getJsonArray("prosecutionCases").getJsonObject(0);
+        if (rejectionEvent.containsKey("sjpCourtReferral")) {
+            final JsonObject caseDetails = rejectionEvent.getJsonObject("sjpCourtReferral").getJsonArray("prosecutionCases").getJsonObject(0);
             final String rejectionReason = rejectionEvent.getString("rejectedReason");
 
             final JsonEnvelope command = enveloper.withMetadataFrom(
                     envelopeFrom(metadataFrom(event.metadata()), NULL),
                     "sjp.command.record-case-referral-for-court-hearing-rejection")
                     .apply(recordCaseReferralForCourtHearingRejection()
-                            .withCaseId(fromString(caseDetails.getString("id")))
+                            .withCaseId(UUID.fromString(caseDetails.getString("id")))
                             .withRejectionReason(rejectionReason)
                             .withRejectedAt(clock.now())
                             .build());
 
             sender.send(command);
+        } else {
+            LOGGER.debug("Event public.progression.refer-prosecution-cases-to-court-rejected ignored as not related to SJP court referral request");
         }
     }
 

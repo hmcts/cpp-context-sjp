@@ -28,6 +28,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 
 public abstract class CaseCommandHandlerTest {
 
@@ -97,6 +98,7 @@ public abstract class CaseCommandHandlerTest {
     public void verifyMocks() throws EventStreamException {
         verify(jsonEnvelope, atLeast(1)).payloadAsJsonObject();
         verify(jsonObject, atLeast(1)).getString(CaseCommandHandler.STREAM_ID);
+        verify(jsonObject, atLeast(0)).getString("pleaType", null);
         verify(eventSource).getStreamById(CASE_ID);
         verify(aggregateService).get(eventStream, CaseAggregate.class);
 

@@ -8,6 +8,9 @@
     },
     "datesToAvoid": {
       "type": "string"
+    },
+    "pleaType":{
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-type.json"
     }
   },
   "required": [

@@ -375,12 +375,14 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final String defendantId = response.getString("defendant.id");
         final String offenceId = response.getString("defendant.offences[0].id");
         final String pleaDate = response.getString("defendant.offences[0].pleaDate");
+        final String caseStatus = response.getString("status");
 
         final Map<String, String> params = new HashMap<>();
         params.put("dateTimeCreated", dateTimeCreated);
         params.put("offenceId", offenceId);
         params.put("defendantId", defendantId);
         params.put("pleaDate", pleaDate);
+        params.put("caseStatus", caseStatus);
 
         final JsonPath expectedResponse = fillTemplate(templatePath, params);
 

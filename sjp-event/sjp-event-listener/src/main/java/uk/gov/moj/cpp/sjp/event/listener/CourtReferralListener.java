@@ -5,10 +5,13 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseCourtReferralStatus;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseCourtReferralStatusRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
 import java.util.UUID;
 
@@ -22,6 +25,10 @@ public class CourtReferralListener {
 
     @Inject
     private CaseCourtReferralStatusRepository caseCourtReferralStatusRepository;
+
+    @Inject
+    private CaseRepository caseRepository;
+
 
     @Handles("sjp.events.case-referral-for-court-hearing-rejection-recorded")
     public void handleCaseReferredForCourtHearingRejectionRecorded(final Envelope<CaseReferralForCourtHearingRejectionRecorded> eventEnvelope) {
@@ -45,5 +52,8 @@ public class CourtReferralListener {
                 caseReferredForCourtHearing.getReferredAt());
 
         caseCourtReferralStatusRepository.save(caseCourtReferralStatus);
+        final CaseDetail caseDetail = caseRepository.findBy(caseReferredForCourtHearing.getCaseId());
+        caseDetail.setStatus(CaseStatus.REFERRED_FOR_COURT_HEARING);
+
     }
 }

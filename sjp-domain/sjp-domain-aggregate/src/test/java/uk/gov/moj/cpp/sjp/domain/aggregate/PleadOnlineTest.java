@@ -56,6 +56,7 @@ import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -651,7 +652,7 @@ public class PleadOnlineTest {
                 .collect(toList());
 
         return new Case(randomUUID(), "TFL123456", RandomStringUtils.randomAlphanumeric(12).toUpperCase(),
-                ProsecutingAuthority.TFL,  null, null,
+                ProsecutingAuthority.TFL,  null, LocalDate.now(),
                 new Defendant(randomUUID(), title, PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_DOB,
                         null, PERSON_NI_NUMBER, null, PERSON_ADDRESS, PERSON_CONTACT_DETAILS, 1, offences, null));
     }

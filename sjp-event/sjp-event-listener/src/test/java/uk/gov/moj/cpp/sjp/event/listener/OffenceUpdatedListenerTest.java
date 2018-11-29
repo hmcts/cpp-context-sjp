@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithDefaults;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.util.Clock;
@@ -15,19 +16,25 @@ import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,6 +47,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -57,6 +65,9 @@ public class OffenceUpdatedListenerTest {
 
     @Mock
     private CaseSearchResultRepository searchResultRepository;
+
+    @Mock
+    private CaseRepository caseRepository;
 
     @InjectMocks
     private OffenceUpdatedListener listener;
@@ -94,15 +105,30 @@ public class OffenceUpdatedListenerTest {
 
     @Test
     public void shouldUpdateGuiltyPleaOnline() {
-        final PleaUpdated pleaUpdated = new PleaUpdated(caseId, offenceId, PleaType.GUILTY,
-                "It was an accident", null, PleaMethod.ONLINE, clock.now());
+        final PleaUpdated pleaUpdated = givenPleaUpdatedWithPleaType(PleaType.GUILTY, clock.now());
+        CaseDetail caseDetail = Mockito.mock(CaseDetail.class);
+        when(caseDetail.getStatus()).thenReturn(CaseStatus.NO_PLEA_RECEIVED);
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
         assertExpectationsForPleaUpdate(true, true, pleaUpdated, false);
+        verify(caseDetail).setStatus(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
+    }
+
+    @Test
+    public void shouldUpdateCaseStatusPleaReceivedReadyForDecision() {
+        final PleaUpdated pleaUpdated = givenPleaUpdatedWithPleaType(GUILTY_REQUEST_HEARING, clock.now());
+        CaseDetail caseDetail = Mockito.mock(CaseDetail.class);
+        when(caseDetail.getStatus()).thenReturn(CaseStatus.NO_PLEA_RECEIVED);
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
+        assertExpectationsForPleaUpdate(true, true, pleaUpdated, true);
+        verify(caseDetail).setStatus(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
     }
 
     @Test
     public void shouldUpdateGuiltyRequestHearingPleaOnline() {
-        final PleaUpdated pleaUpdated = new PleaUpdated(caseId, offenceId, PleaType.GUILTY_REQUEST_HEARING,
-                "It was an accident", null, PleaMethod.ONLINE, clock.now());
+        final PleaUpdated pleaUpdated = givenPleaUpdatedWithPleaType(GUILTY_REQUEST_HEARING, clock.now());
+        CaseDetail caseDetail = new CaseDetail();
+        caseDetail.setStatus(CaseStatus.NO_PLEA_RECEIVED);
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
         assertExpectationsForPleaUpdate(true, true, pleaUpdated, true);
     }
 
@@ -110,6 +136,9 @@ public class OffenceUpdatedListenerTest {
     public void shouldUpdateNotGuiltyPleaOnlineWithUpdateDate() {
         final PleaUpdated pleaUpdated = new PleaUpdated(caseId, offenceId, PleaType.NOT_GUILTY,
                 null, "I was not there, they are lying", PleaMethod.ONLINE, clock.now());
+        CaseDetail caseDetail = new CaseDetail();
+        caseDetail.setStatus(CaseStatus.NO_PLEA_RECEIVED);
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
         assertExpectationsForPleaUpdate(true, true, pleaUpdated, true);
     }
 
@@ -117,6 +146,9 @@ public class OffenceUpdatedListenerTest {
     public void shouldUpdateNotGuiltyPleaOnlineWithoutUpdateDate() {
         final PleaUpdated pleaUpdated = new PleaUpdated(caseId, offenceId, PleaType.NOT_GUILTY,
                 null, "I was not there, they are lying", PleaMethod.ONLINE, null);
+        CaseDetail caseDetail = new CaseDetail();
+        caseDetail.setStatus(CaseStatus.NO_PLEA_RECEIVED);
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
         assertExpectationsForPleaUpdate(true, false, pleaUpdated, true);
     }
 
@@ -124,24 +156,93 @@ public class OffenceUpdatedListenerTest {
     public void shouldUpdateByPost() {
         final PleaUpdated pleaUpdated = new PleaUpdated(caseId, offenceId, PleaType.GUILTY,
                 null, null, PleaMethod.POSTAL, clock.now());
+        CaseDetail caseDetail = new CaseDetail();
+        caseDetail.setStatus(CaseStatus.NO_PLEA_RECEIVED);
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
         assertExpectationsForPleaUpdate(false, false, pleaUpdated, null);
     }
 
-    private void assertExpectationsForPleaUpdate(boolean onlinePlea, boolean pleaUpdatedEventHasUpdatedDate, PleaUpdated pleaUpdated, Boolean comeToCourt) {
-        Metadata metadataBuilder = metadataWithDefaults().build();
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(envelope.metadata().createdAt()).thenReturn(Optional.empty());
-        when(jsonObjectToObjectConverter.convert(payload, PleaUpdated.class)).thenReturn(pleaUpdated);
-        when(offenceRepository.findBy(offenceId)).thenReturn(offence);
-        when(offence.getDefendantDetail()).thenReturn(defendant);
-        when(searchResultRepository.findByCaseId(caseId)).thenReturn(singletonList(searchResult));
-        when(envelope.metadata()).thenReturn(metadataBuilder);
+    @Test
+    public void caseStatusPleaReceivedReadyForDecisionWhenNotGuiltyAndDatesToAvoidSet() {
+        final PleaUpdated pleaUpdated = givenPleaUpdatedWithPleaType(PleaType.NOT_GUILTY, clock.now());
+        CaseDetail caseDetail = Mockito.mock(CaseDetail.class);
+        when(caseDetail.getStatus()).thenReturn(CaseStatus.NO_PLEA_RECEIVED);
+        when(caseDetail.getDatesToAvoid()).thenReturn("2018-01-01");
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
+        whenUpdatePleaIsInvoked(pleaUpdated);
+        thenCaseStatusIsSetTo(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION, caseDetail);
+    }
 
-        listener.updatePlea(envelope);
+    @Test
+    public void caseStatusPleaReceivedNotReadyForDecisionWhenNotGuiltyAndDatesToAvoidNotSet() {
+        final PleaUpdated pleaUpdated = givenPleaUpdatedWithPleaType(PleaType.NOT_GUILTY, clock.now());
+        CaseDetail caseDetail = Mockito.mock(CaseDetail.class);
+        when(caseDetail.getStatus()).thenReturn(CaseStatus.NO_PLEA_RECEIVED);
+        when(caseDetail.getDatesToAvoid()).thenReturn("");
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
+        whenUpdatePleaIsInvoked(pleaUpdated);
+        thenCaseStatusIsSetTo(CaseStatus.PLEA_RECEIVED_NOT_READY_FOR_DECISION, caseDetail);
+    }
+    @Test
+    public void caseStatusNoPleaReceivedWhenPostingDateIsLessThan28DaysAndPleaIsCancelled() {
+        Boolean provedInAbsence = false;
+        CaseDetail caseDetail = Mockito.mock(CaseDetail.class);
+        when(caseDetail.getStatus()).thenReturn(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
+        when(caseDetail.getPostingDate()).thenReturn(LocalDate.now().minusDays(27));
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
+        whenPleaIsCancelled(provedInAbsence);
+        thenCaseStatusIsSetTo(CaseStatus.NO_PLEA_RECEIVED, caseDetail);
+    }
+
+    @Test
+    public void caseStatusNoPleaReceivedReadyForDecisionWhenPostingDateIsMoreThan28DaysAndPleaIsCancelled() {
+        Boolean provedInAbsence = true;
+        CaseDetail caseDetail = Mockito.mock(CaseDetail.class);
+        when(caseDetail.getStatus()).thenReturn(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
+        when(caseDetail.getPostingDate()).thenReturn(LocalDate.now().minusDays(29));
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
+        whenPleaIsCancelled(provedInAbsence);
+        thenCaseStatusIsSetTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION, caseDetail);
+    }
+
+    @Test
+    public void caseStatusPleaReceivedReadyForDecisionWhenGuilty(){
+        final PleaUpdated pleaUpdated = givenPleaUpdatedWithPleaType(PleaType.GUILTY, clock.now());
+        CaseDetail caseDetail = Mockito.mock(CaseDetail.class);
+        when(caseDetail.getStatus()).thenReturn(CaseStatus.NO_PLEA_RECEIVED);
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
+        whenUpdatePleaIsInvoked(pleaUpdated);
+        thenCaseStatusIsSetTo(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION, caseDetail);
+    }
+
+    @Test
+    public void caseStatusPleaReceivedReadyForDecisionWhenGuiltyRequestHearing(){
+        final PleaUpdated pleaUpdated = givenPleaUpdatedWithPleaType(PleaType.GUILTY_REQUEST_HEARING, clock.now());
+        CaseDetail caseDetail = Mockito.mock(CaseDetail.class);
+        when(caseDetail.getStatus()).thenReturn(CaseStatus.NO_PLEA_RECEIVED);
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
+        whenUpdatePleaIsInvoked(pleaUpdated);
+        thenCaseStatusIsSetTo(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION, caseDetail);
+    }
+    private PleaUpdated givenPleaUpdatedWithNotGuiltyAndPleaUpdatedDateIsMinus15DaysFromCurrentDate() {
+        return givenPleaUpdatedWithPleaType(PleaType.NOT_GUILTY, ZonedDateTime.of(2018, 9, 9, 05, 38, 45, 12, ZoneId.systemDefault()));
+    }
+
+    private PleaUpdated givenPleaUpdatedWithPleaType(PleaType pleaType, ZonedDateTime updatedDate) {
+        return new PleaUpdated(caseId, offenceId, pleaType,
+                "It was an accident", null, PleaMethod.ONLINE, updatedDate);
+    }
+
+    private void thenCaseStatusIsSetTo(CaseStatus pleaReceivedReadyForDecision, CaseDetail caseDetail) {
+        verify(caseDetail).setStatus(pleaReceivedReadyForDecision);
+    }
+
+    private void assertExpectationsForPleaUpdate(boolean onlinePlea, boolean pleaUpdatedEventHasUpdatedDate, PleaUpdated pleaUpdated, Boolean comeToCourt) {
+        Metadata metadataBuilder = whenUpdatePleaIsInvoked(pleaUpdated);
 
         verify(offence).setPlea(pleaUpdated.getPlea());
         verify(offence).setPleaMethod(pleaUpdated.getPleaMethod());
-        verify(offence).setPleaDate(Optional.ofNullable(pleaUpdated.getUpdatedDate()).orElse(null));
+        verify(offence).setPleaDate(Optional.ofNullable(pleaUpdated.getUpdatedDate()).orElseGet(() -> envelope.metadata().createdAt().orElse(null)));
         //TODO: should use a fixed clock for 100% test reliability
         verify(searchResult).setPleaDate(now());
 
@@ -162,21 +263,44 @@ public class OffenceUpdatedListenerTest {
         }
     }
 
-    @Test
-    public void shouldCancelPlea() {
+    private Metadata whenUpdatePleaIsInvoked(PleaUpdated pleaUpdated) {
+        Metadata metadataBuilder = metadataWithDefaults().build();
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(jsonObjectToObjectConverter.convert(payload, PleaCancelled.class)).thenReturn(pleaCancelled);
-        when(pleaCancelled.getOffenceId()).thenReturn(offenceId);
+        when(envelope.metadata().createdAt()).thenReturn(Optional.empty());
+        when(jsonObjectToObjectConverter.convert(payload, PleaUpdated.class)).thenReturn(pleaUpdated);
         when(offenceRepository.findBy(offenceId)).thenReturn(offence);
-        when(pleaCancelled.getCaseId()).thenReturn(caseId);
         when(offence.getDefendantDetail()).thenReturn(defendant);
         when(searchResultRepository.findByCaseId(caseId)).thenReturn(singletonList(searchResult));
+        when(envelope.metadata()).thenReturn(metadataBuilder);
 
-        listener.cancelPlea(envelope);
+        listener.updatePlea(envelope);
+        return metadataBuilder;
+    }
+
+    @Test
+    public void shouldCancelPlea() {
+        Boolean provedInAbsence = false;
+        CaseDetail caseDetail = new CaseDetail();
+        caseDetail.setPostingDate(LocalDate.now());
+        caseDetail.setStatus(CaseStatus.NO_PLEA_RECEIVED);
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
+        whenPleaIsCancelled(provedInAbsence);
 
         verify(offence).setPlea(null);
         verify(offence).setPleaMethod(null);
         verify(offence).setPleaDate(null);
         verify(searchResult).setPleaDate(null);
+    }
+
+    protected void whenPleaIsCancelled(final Boolean provedInAbsence) {
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, PleaCancelled.class)).thenReturn(pleaCancelled);
+        when(pleaCancelled.getOffenceId()).thenReturn(offenceId);
+        when(offenceRepository.findBy(offenceId)).thenReturn(offence);
+        when(pleaCancelled.getCaseId()).thenReturn(caseId);
+        when(pleaCancelled.getProvedInAbsence()).thenReturn(provedInAbsence);
+        when(offence.getDefendantDetail()).thenReturn(defendant);
+        when(searchResultRepository.findByCaseId(caseId)).thenReturn(singletonList(searchResult));
+        listener.cancelPlea(envelope);
     }
 }

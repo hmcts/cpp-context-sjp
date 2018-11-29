@@ -16,6 +16,7 @@ import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseDocumentAddedToCaseDocument;
@@ -88,7 +89,8 @@ public class CaseUpdatedListenerTest {
 
         when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId));
         when(readyCaseRepository.findBy(caseId)).thenReturn(readyCase);
-
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
+        when(caseDetail.getStatus()).thenReturn(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
         listener.caseCompleted(envelopeIn);
 
         verify(caseRepository).completeCase(caseId);
@@ -102,6 +104,8 @@ public class CaseUpdatedListenerTest {
 
         when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId));
         when(readyCaseRepository.findBy(caseId)).thenReturn(null);
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
+        when(caseDetail.getStatus()).thenReturn(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
 
         listener.caseCompleted(envelopeIn);
 

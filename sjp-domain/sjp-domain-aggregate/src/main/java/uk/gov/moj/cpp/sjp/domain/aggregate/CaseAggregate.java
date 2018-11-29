@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 7L;
+    private static final long serialVersionUID = 8L;
 
     @SuppressWarnings("squid:S1948")
     private final CaseAggregateState state = new CaseAggregateState();

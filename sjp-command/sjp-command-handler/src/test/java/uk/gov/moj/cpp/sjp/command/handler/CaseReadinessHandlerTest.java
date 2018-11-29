@@ -39,6 +39,7 @@ public class CaseReadinessHandlerTest extends CaseCommandHandlerTest {
 
     @Test
     public void shouldHandleUnmarkCaseReadyForDecisionCommand() throws EventStreamException {
+        when(jsonObject.getString("pleaType", null)).thenReturn("NOT_GUILTY");
         when(caseAggregate.unmarkCaseReadyForDecision()).thenReturn(events);
 
         caseReadinessHandler.unmarkCaseReadyForDecision(jsonEnvelope);

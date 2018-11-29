@@ -1,13 +1,21 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
+import uk.gov.moj.cpp.sjp.event.listener.converter.CaseReceivedToCase;
 import uk.gov.moj.cpp.sjp.event.listener.converter.SjpCaseCreatedToCase;
+import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
 import javax.json.JsonObject;
@@ -43,6 +51,15 @@ public class CaseCreatedListenerTest {
     @Mock
     private JsonObject payload;
 
+    @Mock
+    private CaseReceived caseReceived;
+
+    @Mock
+    private CaseReceivedToCase caseReceivedToCaseConverter;
+
+    @Mock
+    private CaseSearchResultService caseSearchResultService;
+
     @InjectMocks
     private CaseCreatedListener listener;
 
@@ -56,6 +73,32 @@ public class CaseCreatedListenerTest {
         listener.sjpCaseCreated(envelope);
 
         verify(caseRepository).save(caseDetail);
+    }
+
+    @Test
+    public void shouldHandleCaseReceivedEvent(){
+        givenCaseReceivedEventIsRaised();
+        whenTheListenerGetsTheEvent();
+        caseStatusIsSetTo(NO_PLEA_RECEIVED);
+    }
+
+    protected void caseStatusIsSetTo(CaseStatus noPleaReceived) {
+        verify(caseDetail).setStatus(noPleaReceived);
+        verify(caseRepository).save(caseDetail);
+    }
+
+    protected void whenTheListenerGetsTheEvent() {
+        listener.caseReceived(envelope);
+    }
+
+    protected void givenCaseReceivedEventIsRaised() {
+        DefendantDetail defendantDetail = mock(DefendantDetail.class);
+        PersonalDetails personalDetails = mock(PersonalDetails.class);
+        when(defendantDetail.getPersonalDetails()).thenReturn(personalDetails);
+        when(caseDetail.getDefendant()).thenReturn(defendantDetail);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, CaseReceived.class)).thenReturn(caseReceived);
+        when(caseReceivedToCaseConverter.convert(caseReceived)).thenReturn(caseDetail);
     }
 
 }

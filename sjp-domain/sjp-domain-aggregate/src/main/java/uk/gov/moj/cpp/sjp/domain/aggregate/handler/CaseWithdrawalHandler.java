@@ -1,13 +1,13 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
-import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
-
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
 
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
 
 public class CaseWithdrawalHandler {
 

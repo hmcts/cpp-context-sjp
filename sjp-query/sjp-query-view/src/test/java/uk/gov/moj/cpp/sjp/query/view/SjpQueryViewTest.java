@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.query.view;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.time.LocalDate.now;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -444,7 +445,7 @@ public class SjpQueryViewTest {
                 .with(metadataWithRandomUUID("sjp.query.defendant-details-updates"))
                 .build();
 
-        LocalDate dateOfBirth = LocalDate.now().minusYears(30);
+        LocalDate dateOfBirth = now().minusYears(30);
 
         PersonalDetails personalDetails = new PersonalDetails();
         personalDetails.setFirstName("firstName");

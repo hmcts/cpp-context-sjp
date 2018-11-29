@@ -71,7 +71,6 @@ public class CaseCoreHandler {
                     defendant,
                     createdOn);
         }
-
         return Stream.of(event);
     }
 
@@ -98,7 +97,7 @@ public class CaseCoreHandler {
                 null,
                 state
         ).orElse(Stream.of(state.getDatesToAvoid() == null ?
-                new DatesToAvoidAdded(state.getCaseId(), datesToAvoid) :
+                new DatesToAvoidAdded(state.getCaseId(), datesToAvoid, state.getPlea()) :
                 new DatesToAvoidUpdated(state.getCaseId(), datesToAvoid)));
     }
 
@@ -204,15 +203,15 @@ public class CaseCoreHandler {
                 : Stream.of();
     }
 
-    public Stream<Object> unmarkCaseReadyForDecision(CaseAggregateState state) {
+    public Stream<Object> unmarkCaseReadyForDecision(final CaseAggregateState state) {
         return state.getReadinessReason() != null
-                ? Stream.of(new CaseUnmarkedReadyForDecision(state.getCaseId()))
+                ? Stream.of(new CaseUnmarkedReadyForDecision(state.getCaseId(), state.getPlea()))
                 : Stream.of();
     }
 
     private Optional<Object> createCaseNotFoundEventForWrongCaseId(final UUID caseId,
-                                                                  final String action,
-                                                                  final CaseAggregateState state) {
+                                                                   final String action,
+                                                                   final CaseAggregateState state) {
         if (!state.isCaseIdEqualTo(caseId)) {
             LOGGER.error("Mismatch of IDs in aggregate: {} != {}", state.getCaseId(), caseId);
             return Optional.of(new CaseNotFound(caseId, action));

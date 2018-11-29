@@ -10,6 +10,7 @@ import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
@@ -23,14 +24,16 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
+import javax.inject.Inject;
+import javax.json.JsonObject;
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.transaction.Transactional;
+import static java.time.LocalDate.now;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 @ServiceComponent(EVENT_LISTENER)
 public class CaseUpdatedListener {
@@ -61,6 +64,9 @@ public class CaseUpdatedListener {
         final CaseCompleted caseCompletedEvent = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), CaseCompleted.class);
         caseRepository.completeCase(caseCompletedEvent.getCaseId());
 
+        final CaseDetail caseDetail = caseRepository.findBy(caseCompletedEvent.getCaseId());
+        caseDetail.setStatus(CaseStatus.COMPLETED);
+
         //Conditional removal needed in case of event replay of old cases which have CaseCompleted but not CaseMarkedReadyEvent
         Optional.ofNullable(readyCaseRepository.findBy(caseCompletedEvent.getCaseId()))
                 .ifPresent(readyCaseRepository::remove);
@@ -71,6 +77,9 @@ public class CaseUpdatedListener {
     public void allOffencesWithdrawalRequested(final JsonEnvelope envelope) {
         final AllOffencesWithdrawalRequested event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), AllOffencesWithdrawalRequested.class);
         caseRepository.requestWithdrawalAllOffences(event.getCaseId());
+
+        final CaseDetail caseDetail = caseRepository.findBy(event.getCaseId());
+        caseDetail.setStatus(CaseStatus.WITHDRAWAL_REQUEST_READY_FOR_DECISION);
 
         updateWithdrawalRequestedDate(event.getCaseId(), envelope.metadata().createdAt().map(ZonedDateTime::toLocalDate).orElse(now()));
     }
@@ -136,6 +145,7 @@ public class CaseUpdatedListener {
         caseDetail.setReopenedDate(LocalDates.from(payload.getString("reopenedDate")));
         caseDetail.setLibraCaseNumber(payload.getString("libraCaseNumber"));
         caseDetail.setReopenedInLibraReason(payload.getString("reason"));
+        caseDetail.setStatus(CaseStatus.REOPENED_IN_LIBRA);
     }
 
     private void updateWithdrawalRequestedDate(final UUID caseId, final LocalDate withdrawalRequestedDate) {

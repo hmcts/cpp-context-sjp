@@ -46,6 +46,7 @@ import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -115,6 +116,7 @@ public class CompositeCaseAggregateStateMutatorTest {
     @Test
     public void shouldMutateStateOnCaseMarkedReadyForDecisionEvent() {
         CaseAggregateState caseAggregateState = new CaseAggregateState();
+        caseAggregateState.setCaseReceived(true);
 
         CaseReadinessReason readinessReason = CaseReadinessReason.PLEADED_GUILTY;
         CaseMarkedReadyForDecision caseMarkedReadyForDecision = new CaseMarkedReadyForDecision(UUID.randomUUID(), readinessReason, now());
@@ -127,8 +129,9 @@ public class CompositeCaseAggregateStateMutatorTest {
     @Test
     public void shouldMutateStateOnCaseUnmarkedReadyForDecisionEvent() {
         CaseAggregateState caseAggregateState = new CaseAggregateState();
+        caseAggregateState.setCaseReceived(true);
 
-        CaseUnmarkedReadyForDecision caseUnmarkedReadyForDecision = new CaseUnmarkedReadyForDecision(UUID.randomUUID());
+        CaseUnmarkedReadyForDecision caseUnmarkedReadyForDecision = new CaseUnmarkedReadyForDecision(UUID.randomUUID(), PleaType.GUILTY);
 
         CompositeCaseAggregateStateMutator.INSTANCE.apply(caseUnmarkedReadyForDecision, caseAggregateState);
 
@@ -188,7 +191,7 @@ public class CompositeCaseAggregateStateMutatorTest {
 
         UUID caseId = UUID.randomUUID();
         String datesToAvoid = "datesToAvoid";
-        DatesToAvoidAdded datesToAvoidAdded = new DatesToAvoidAdded(caseId, datesToAvoid);
+        DatesToAvoidAdded datesToAvoidAdded = new DatesToAvoidAdded(caseId, datesToAvoid, PleaType.GUILTY);
 
         CompositeCaseAggregateStateMutator.INSTANCE.apply(datesToAvoidAdded, caseAggregateState);
 
@@ -328,9 +331,10 @@ public class CompositeCaseAggregateStateMutatorTest {
     @Test
     public void shouldMutateStateOnPleaUpdatedEvent() {
         CaseAggregateState caseAggregateState = new CaseAggregateState();
+        caseAggregateState.setCaseReceived(true);
 
         UUID offenceId = UUID.randomUUID();
-        PleaUpdated pleaUpdated = new PleaUpdated(UUID.randomUUID(), offenceId, PleaType.GUILTY, PleaMethod.ONLINE);
+        PleaUpdated pleaUpdated = new PleaUpdated(UUID.randomUUID(), offenceId, PleaType.GUILTY, PleaMethod.ONLINE, ZonedDateTime.now());
         CompositeCaseAggregateStateMutator.INSTANCE.apply(pleaUpdated, caseAggregateState);
 
         assertTrue(caseAggregateState.getOffenceIdsWithPleas().contains(offenceId));
@@ -338,10 +342,13 @@ public class CompositeCaseAggregateStateMutatorTest {
 
     @Test
     public void shouldMutateStateOnPleaCancelledEvent() {
+        Boolean provedInAbsence = true;
         CaseAggregateState caseAggregateState = new CaseAggregateState();
+        caseAggregateState.setCaseReceived(true);
+        caseAggregateState.setPostingDate(LocalDate.now());
 
         UUID offenceId = UUID.randomUUID();
-        PleaCancelled pleaCancelled = new PleaCancelled(UUID.randomUUID(), offenceId);
+        PleaCancelled pleaCancelled = new PleaCancelled(UUID.randomUUID(), offenceId, provedInAbsence);
         CompositeCaseAggregateStateMutator.INSTANCE.apply(pleaCancelled, caseAggregateState);
 
         assertFalse(caseAggregateState.getOffenceIdsWithPleas().contains(offenceId));

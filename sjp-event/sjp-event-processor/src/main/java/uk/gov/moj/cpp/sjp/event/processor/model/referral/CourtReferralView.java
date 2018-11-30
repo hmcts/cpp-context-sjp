@@ -8,14 +8,17 @@ public class CourtReferralView {
     private final SjpReferralView sjpReferral;
     private final List<ProsecutionCaseView> prosecutionCases;
     private final List<HearingRequestView> listHearingRequests;
+    private final List<CourtDocumentView> courtDocuments;
 
     public CourtReferralView(final SjpReferralView sjpReferral,
                              final List<ProsecutionCaseView> prosecutionCases,
-                             final List<HearingRequestView> listHearingRequests) {
+                             final List<HearingRequestView> listHearingRequests,
+                             final List<CourtDocumentView> courtDocuments) {
 
         this.sjpReferral = sjpReferral;
         this.prosecutionCases = prosecutionCases;
         this.listHearingRequests = listHearingRequests;
+        this.courtDocuments = courtDocuments;
     }
 
     public SjpReferralView getSjpReferral() {
@@ -30,5 +33,7 @@ public class CourtReferralView {
         return listHearingRequests;
     }
 
-
+    public List<CourtDocumentView> getCourtDocuments() {
+        return courtDocuments;
+    }
 }

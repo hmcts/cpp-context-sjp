@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.findAll;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.now;
@@ -31,11 +32,13 @@ import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseCourtReferralStatus;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
@@ -43,6 +46,7 @@ import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import uk.gov.moj.sjp.it.producer.DecisionToReferCaseForCourtHearingSavedProducer;
 import uk.gov.moj.sjp.it.producer.ReferToCourtHearingProducer;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
+import uk.gov.moj.sjp.it.stub.MaterialStub;
 import uk.gov.moj.sjp.it.stub.ProgressionServiceStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.stub.ResultingStub;
@@ -52,6 +56,7 @@ import uk.gov.moj.sjp.it.util.FileUtil;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -61,6 +66,7 @@ import javax.json.JsonObject;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.google.common.collect.ImmutableMap;
+import com.jayway.awaitility.Duration;
 import org.hamcrest.CoreMatchers;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -83,6 +89,15 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
     private static final UUID PROSECUTOR_ID = randomUUID();
     private static final String LIBRA_OFFENCE_CODE = "PS90010";
+
+    private static final UUID DOCUMENT_TYPE_ID = randomUUID();
+    private static final String DOCUMENT_TYPE = "SJPN";
+    private static final UUID MATERIAL_ID = randomUUID();
+    private static final UUID DOCUMENT_ID = randomUUID();
+    private static final String FILE_NAME = "Bank Statement";
+    private static final String MIME_TYPE = "pdf";
+    private static final ZonedDateTime ADDED_AT = now(UTC);
+    private static final String REFERENCE_DATA_DOCUMENT_TYPE = "Case Summary";
 
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private String defendantId;
@@ -109,7 +124,8 @@ public class CourtReferralIT extends BaseIntegrationTest {
         final EventListener eventListener = new EventListener();
         eventListener
                 .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
-                .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder));
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder))
+                .popEvent(CaseMarkedReadyForDecision.EVENT_NAME);
 
         defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
         prosecutingAuthorityName = createCasePayloadBuilder.getProsecutingAuthority().name();
@@ -118,9 +134,10 @@ public class CourtReferralIT extends BaseIntegrationTest {
         stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, "2572");
         startSession(sessionId, USER_ID, LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
 
-        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent(CaseMarkedReadyForDecision.EVENT_NAME);
-
-        assertThat(jsonEnvelope.isPresent(), equalTo(true));
+        new EventListener()
+                .subscribe(CaseDocumentAdded.EVENT_NAME)
+                .run(() -> new CaseDocumentHelper(caseId).addCaseDocument(USER_ID, DOCUMENT_ID, MATERIAL_ID, DOCUMENT_TYPE))
+                .popEvent(CaseDocumentAdded.EVENT_NAME);
 
         AssignmentStub.stubAddAssignmentCommand();
         AssignmentStub.stubRemoveAssignmentCommand();
@@ -129,8 +146,10 @@ public class CourtReferralIT extends BaseIntegrationTest {
         ReferenceDataServiceStub.stubHearingTypesQuery(HEARING_TYPE_ID.toString(), HEARING_DESCRIPTION);
         ReferenceDataServiceStub.stubProsecutorQuery(prosecutingAuthorityName, PROSECUTOR_ID);
         ReferenceDataServiceStub.stubQueryOffences("stub-data/referencedata.query.offences.json");
+        ReferenceDataServiceStub.stubReferralDocumentMetadataQuery(DOCUMENT_TYPE_ID.toString(), REFERENCE_DATA_DOCUMENT_TYPE);
         ResultingStub.stubGetCaseDecisionsWithDecision(caseId);
         UsersGroupsStub.stubForUserDetails(USER_ID);
+        MaterialStub.stubMaterialMetadata(MATERIAL_ID, FILE_NAME, MIME_TYPE, ADDED_AT);
         ProgressionServiceStub.stubReferCaseToCourtCommand();
     }
 
@@ -244,6 +263,10 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 .put("MAGISTRATE_ID", sessionId.toString())
                 .put("PLEA_DATE", LocalDate.now().toString())
                 .put("REFERRAL_DATE", LocalDate.now().toString())
+                .put("DOCUMENT_ID", DOCUMENT_ID.toString())
+                .put("DOCUMENT_TYPE_ID", DOCUMENT_TYPE_ID.toString())
+                .put("MATERIAL_ID", MATERIAL_ID.toString())
+                .put("UPLOAD_DATE_TIME", ADDED_AT.format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
                 .build());
     }
 

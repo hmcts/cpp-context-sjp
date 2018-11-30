@@ -2,6 +2,8 @@ package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
@@ -50,6 +52,21 @@ public class DatesToAvoidProcessedDelegateTest extends AbstractCaseDelegateTest 
         assertThat(sentEnvelope.metadata().name(), equalTo("public.sjp.dates-to-avoid-added"));
         assertThat(sentEnvelope.payloadAsJsonObject().getString(CASE_ID), equalTo(caseId.toString()));
         assertThat(sentEnvelope.payloadAsJsonObject().getString(DATES_TO_AVOID), equalTo(datesToAvoid));
+    }
+
+    @Test
+    public void shouldSetDatesToAvoidMessageWhenNeverSubmitted() {
+        // GIVEN
+        when(delegateExecution.hasVariable(DATES_TO_AVOID_VARIABLE)).thenReturn(false);
+        when(delegateExecution.getVariable(PLEA_TYPE_VARIABLE, String.class)).thenReturn(PleaType.NOT_GUILTY.name());
+
+        // WHEN
+        datesToAvoidAddedDelegate.execute(delegateExecution);
+
+        // THEN
+        verify(delegateExecution).setVariable(PLEA_READY_VARIABLE, true);
+        verify(delegateExecution).setVariable(DATES_TO_AVOID_VARIABLE, "DATES-TO-AVOID not submitted after 10 days.");
+        verify(sender, never()).send(any(JsonEnvelope.class));
     }
 
 }

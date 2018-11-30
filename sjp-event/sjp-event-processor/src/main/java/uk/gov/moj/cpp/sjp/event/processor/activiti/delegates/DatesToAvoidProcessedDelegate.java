@@ -16,6 +16,10 @@ import javax.inject.Named;
 
 import org.activiti.engine.delegate.DelegateExecution;
 
+/**
+ * This delegate is made to run just once.
+ * To verify this we ensure that the DATES_TO_AVOID_VARIABLE is set and verify the presence of this variable elsewhere.
+ */
 @Named
 public class DatesToAvoidProcessedDelegate extends AbstractCaseDelegate {
 
@@ -33,6 +37,9 @@ public class DatesToAvoidProcessedDelegate extends AbstractCaseDelegate {
                             .add(CASE_ID, caseId.toString())
                             .add(DATES_TO_AVOID, execution.getVariable(DATES_TO_AVOID_VARIABLE, String.class))
                             .build());
+        } else {
+            // this will prevent possibility of wait for dates-to-avoid ever again - one possibility to add them for the prosecutor.
+            execution.setVariable(DATES_TO_AVOID_VARIABLE, "DATES-TO-AVOID not submitted after 10 days.");
         }
 
         execution.setVariable(PLEA_READY_VARIABLE, true);

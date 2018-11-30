@@ -1,15 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xmlns:activiti="http://activiti.org/bpmn"
-             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
-             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
-             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
-             typeLanguage="http://www.w3.org/2001/XMLSchema"
-             expressionLanguage="http://www.w3.org/1999/XPath"
-             targetNamespace="http://www.activiti.org/test" id="m1479934344474"
-             exporter="org.eclipse.bpmn2.modeler.core"
-             exporterVersion="1.5.0.Final-v20180515-1642-B1" name="">
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test" id="m1479934344474" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="1.5.0.Final-v20180515-1642-B1" name="">
   <signal id="caseCompleted" name="caseCompleted"></signal>
   <signal id="datesToAvoidAdded" name="datesToAvoidAdded"></signal>
   <signal id="pleaUpdated" name="pleaUpdated"></signal>
@@ -128,8 +118,8 @@
       <sequenceFlow id="flow187" sourceRef="pleaUpdatedSignalReceived" targetRef="pleaUpdatedDelegate"></sequenceFlow>
       <sequenceFlow id="flow188" name="T/F" sourceRef="pleaUpdatedDelegate" targetRef="updateRequestedCatcherThrower"></sequenceFlow>
       <sequenceFlow id="flow189" sourceRef="pleaUpdatedDelegate" targetRef="pleaUpdatedEventGateway"></sequenceFlow>
-      <sequenceFlow id="flow190" name="pleaType=NOT_GUILTY" sourceRef="pleaUpdatedDelegate" targetRef="pleaUpdatedAsNotGuiltySubProcess">
-        <conditionExpression xsi:type="tFormalExpression"><![CDATA[${execution.getVariable('pleaType') == 'NOT_GUILTY'}]]></conditionExpression>
+      <sequenceFlow id="flowNonGuilty" name="pleaType=NOT_GUILTY and datesToAvoid never set" sourceRef="pleaUpdatedDelegate" targetRef="pleaUpdatedAsNotGuiltySubProcess">
+        <conditionExpression xsi:type="tFormalExpression"><![CDATA[${execution.getVariable('pleaType') == 'NOT_GUILTY' && !execution.hasVariable('datesToAvoid')}]]></conditionExpression>
       </sequenceFlow>
       <boundaryEvent id="boundarysignal1" name="Signal" attachedToRef="pleaUpdatedAsNotGuiltySubProcess" cancelActivity="true">
         <signalEventDefinition signalRef="pleaCancelled"></signalEventDefinition>
@@ -482,7 +472,7 @@
         <omgdi:waypoint x="566.0" y="1018.0"></omgdi:waypoint>
         <omgdi:waypoint x="600.0" y="1018.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="13.0" width="100.0" x="544.0" y="945.0"></omgdc:Bounds>
+          <omgdc:Bounds height="13.0" width="79.0" x="544.0" y="945.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow181" id="BPMNEdge_flow181">
@@ -495,7 +485,7 @@
         <omgdi:waypoint x="565.0" y="1018.0"></omgdi:waypoint>
         <omgdi:waypoint x="600.0" y="1018.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="13.0" width="100.0" x="544.0" y="1038.0"></omgdc:Bounds>
+          <omgdc:Bounds height="13.0" width="31.0" x="544.0" y="1038.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow175" id="BPMNEdge_flow175">
@@ -516,7 +506,7 @@
         <omgdi:waypoint x="827.0" y="781.0"></omgdi:waypoint>
         <omgdi:waypoint x="827.0" y="625.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="13.0" width="17.0" x="744.0" y="764.0"></omgdc:Bounds>
+          <omgdc:Bounds height="13.0" width="100.0" x="744.0" y="764.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow189" id="BPMNEdge_flow189">
@@ -525,12 +515,12 @@
         <omgdi:waypoint x="510.0" y="736.0"></omgdi:waypoint>
         <omgdi:waypoint x="510.0" y="760.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge bpmnElement="flow190" id="BPMNEdge_flow190">
+      <bpmndi:BPMNEdge bpmnElement="flowNonGuilty" id="BPMNEdge_flowNonGuilty">
         <omgdi:waypoint x="692.0" y="811.0"></omgdi:waypoint>
         <omgdi:waypoint x="692.0" y="875.0"></omgdi:waypoint>
         <omgdi:waypoint x="620.0" y="920.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="13.0" width="120.0" x="525.0" y="860.0"></omgdc:Bounds>
+          <omgdc:Bounds height="52.0" width="100.0" x="514.0" y="840.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow191" id="BPMNEdge_flow191">

@@ -19,6 +19,7 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
 
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.QueueUtil;
 
@@ -177,7 +178,8 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
                         withJsonPath("$.id", is(caseReopenDetails.getCaseId().toString())),
                         withJsonPath("$.reopenedDate", is(caseReopenDetails.getReopenedDate().toString())),
                         withJsonPath("$.libraCaseNumber", is(caseReopenDetails.getLibraCaseNumber())),
-                        withJsonPath("$.reopenedInLibraReason", is(caseReopenDetails.getReason()))
+                        withJsonPath("$.reopenedInLibraReason", is(caseReopenDetails.getReason())),
+                        withJsonPath("$.status", is(CaseStatus.REOPENED_IN_LIBRA.name()))
                 )
         );
     }

@@ -12,6 +12,7 @@ import static uk.gov.moj.sjp.it.helper.CaseProsecutingAuthorityHelper.getProsecu
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.sjp.it.commandclient.CreateCaseClient;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
@@ -55,6 +56,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCase.urn));
         assertThat(jsonResponse.get("enterpriseId"), equalTo(createCase.enterpriseId));
+        assertThat(jsonResponse.get("status"), equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name()));
         assertThat(jsonResponse.get("defendant.personalDetails.title"), equalTo(createCase.defendant.title));
         assertThat(jsonResponse.get("defendant.personalDetails.firstName"), equalTo(createCase.defendant.firstName));
         assertThat(jsonResponse.get("defendant.personalDetails.lastName"), equalTo(createCase.defendant.lastName));

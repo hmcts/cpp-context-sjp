@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -9,6 +10,8 @@ import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -34,6 +37,9 @@ public class CaseSummary implements Serializable {
     private LocalDate reopenedDate;
     @Column(name = "completed")
     private Boolean completed = Boolean.FALSE;
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private CaseStatus status;
     @Column(name = "listed_in_criminal_courts")
     private Boolean listedInCriminalCourts = Boolean.FALSE;
 
@@ -91,6 +97,14 @@ public class CaseSummary implements Serializable {
 
     public void setCompleted(Boolean completed) {
         this.completed = completed;
+    }
+
+    public CaseStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(CaseStatus status) {
+        this.status = status;
     }
 
     public Boolean getListedInCriminalCourts() {

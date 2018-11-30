@@ -1,13 +1,15 @@
 package uk.gov.moj.cpp.sjp.event.processor.activiti;
 
 import static java.time.LocalDate.now;
-import static java.time.ZoneOffset.UTC;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.AllOf.allOf;
+import static org.junit.Assert.assertThat;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.CASE_COMPLETED_SIGNAL_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.DATES_TO_AVOID_ADDED_SIGNAL_NAME;
@@ -69,7 +71,6 @@ public class CaseStateProcessTest {
 
     private UUID caseId;
     private Metadata metadata;
-
     private CaseStateService caseStateService;
 
     @Before
@@ -109,9 +110,48 @@ public class CaseStateProcessTest {
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, WITHDRAWAL_REQUEST_CANCELLED_SIGNAL_NAME, is(1));
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, is(1));
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, is(1));
-        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(1));
+        assertThat(delegatesVerifier.isActivitiItemRunning(processInstanceId, "waitForDatesToAvoidGateway"), equalTo(false));
 
         delegatesVerifier.assertProcessFinished(processInstanceId, false);
+    }
+
+    @Test
+    @Deployment(resources = PROCESS_PATH)
+    public void shouldAllowDatesToAvoidBeforePleaNotGuilty() {
+        final LocalDate postingDate = now().minusDays(1);
+        final UUID offenceId = randomUUID();
+        final PleaType pleaType = PleaType.NOT_GUILTY;
+        final String datesToAvoid = "my-dates-to-avoid";
+
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(1));
+
+        callAddDatesToAvoid(datesToAvoid);
+
+        assertNotPossibleToReAddDatesToAvoid(processInstanceId);
+
+        callPleaUpdated(offenceId, pleaType);
+
+        assertNotPossibleToReAddDatesToAvoid(processInstanceId);
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, CASE_COMPLETED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, WITHDRAWAL_REQUESTED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, WITHDRAWAL_REQUEST_CANCELLED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, is(1));
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 1,
+                allOf(
+                        withoutProcessVariable(WITHDRAWAL_REQUESTED_VARIABLE),
+                        withProcessVariable(DATES_TO_AVOID_VARIABLE, datesToAvoid),
+                        withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
+                        withProcessVariable(PLEA_READY_VARIABLE, true)));
+
+        delegatesVerifier.verifyNumberOfExecution(DATES_TO_AVOID_PROCESSED, 1);
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 2);
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, READY_CASE, PLEA_UPDATED, DATES_TO_AVOID_PROCESSED);
     }
 
     @Test
@@ -124,7 +164,10 @@ public class CaseStateProcessTest {
 
         final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
 
-        callPleaUpdated(offenceId, pleaType, ZonedDateTime.now(), metadata);
+        callPleaUpdated(offenceId, pleaType);
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(2));
+        assertThat(delegatesVerifier.isActivitiItemRunning(processInstanceId, "waitForDatesToAvoidGateway"), equalTo(true));
 
         delegatesVerifier.assertDelegateCalledWith(READY_CASE, 0,
                 allOf(
@@ -151,19 +194,7 @@ public class CaseStateProcessTest {
                         withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
                         withProcessVariable(PLEA_READY_VARIABLE, false)));
 
-        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(1));
-
-        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 2,
-                allOf(
-                        withoutProcessVariable(WITHDRAWAL_REQUESTED_VARIABLE),
-                        withoutProcessVariable(DATES_TO_AVOID_VARIABLE),
-                        withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
-                        withProcessVariable(PLEA_READY_VARIABLE, false)));
-
-        final Map<String, Object> variablesOnExecutionDatesToAvoid = delegatesVerifier.getDelegateExecution(DATES_TO_AVOID_PROCESSED).getVariablesOnExecution();
-        variablesOnExecutionDatesToAvoid.put(DATES_TO_AVOID_VARIABLE, datesToAvoid);
-        caseStateService.datesToAvoidAdded(caseId, datesToAvoid, metadata);
-        variablesOnExecutionDatesToAvoid.remove(DATES_TO_AVOID_VARIABLE);
+        callAddDatesToAvoid(datesToAvoid);
 
         delegatesVerifier.assertDelegateCalledWith(READY_CASE, 3,
                 allOf(
@@ -172,12 +203,12 @@ public class CaseStateProcessTest {
                         withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
                         withProcessVariable(PLEA_READY_VARIABLE, true)));
 
-        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+        assertThat(delegatesVerifier.isActivitiItemRunning(processInstanceId, "waitForDatesToAvoidGateway"), equalTo(false));
 
-        callPleaUpdated(offenceId, pleaType, ZonedDateTime.now(), metadata);
+        callPleaUpdated(offenceId, pleaType);
 
         // at this stage the Dates To avoid are considered already added - no possibility to add them again but plea is still ready as plea-non-guilty
-        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+        assertThat(delegatesVerifier.isActivitiItemRunning(processInstanceId, "waitForDatesToAvoidGateway"), equalTo(false));
 
         delegatesVerifier.assertDelegateCalledWith(READY_CASE, 4,
                 allOf(
@@ -277,9 +308,9 @@ public class CaseStateProcessTest {
 
         final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
 
-        callPleaUpdated(offenceId, pleaType, ZonedDateTime.now(UTC), metadata);
+        callPleaUpdated(offenceId, pleaType);
 
-        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+        assertThat(delegatesVerifier.isActivitiItemRunning(processInstanceId, "waitForDatesToAvoidGateway"), equalTo(false));
 
         delegatesVerifier.assertDelegateCalledWith(PLEA_UPDATED, 0, allOf(
                 withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
@@ -318,12 +349,21 @@ public class CaseStateProcessTest {
         final UUID offenceId = randomUUID();
         final LocalDate postingDate = LocalDate.now().plusDays(1);
         final PleaType pleaType = PleaType.NOT_GUILTY;
+        final String datesToAvoid = "my-dates-to-avoid";
 
         final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
 
-        callPleaUpdated(offenceId, pleaType, ZonedDateTime.now(), metadata);
-
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, is(1));
+        assertThat(delegatesVerifier.isActivitiItemRunning(processInstanceId, "waitForDatesToAvoidGateway"), equalTo(false));
+
+        callPleaUpdated(offenceId, pleaType);
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(2));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, is(2));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, is(2));
+        assertThat(delegatesVerifier.isActivitiItemRunning(processInstanceId, "waitForDatesToAvoidGateway"), equalTo(true));
 
         delegatesVerifier.assertDelegateCalledWith(PLEA_UPDATED, 0, allOf(
                 withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
@@ -332,8 +372,7 @@ public class CaseStateProcessTest {
 
         delegatesVerifier.verifyNumberOfExecution(READY_CASE, 1);
 
-        final String datesToAvoid = "my-dates-to-avoid";
-        caseStateService.datesToAvoidAdded(caseId, datesToAvoid, metadata);
+        callAddDatesToAvoid(datesToAvoid);
         delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, READY_CASE, PLEA_UPDATED, DATES_TO_AVOID_PROCESSED);
 
         delegatesVerifier.verifyNumberOfExecution(READY_CASE, 2);
@@ -342,7 +381,7 @@ public class CaseStateProcessTest {
                 withProcessVariable(OFFENCE_ID_VARIABLE, offenceId.toString()),
                 withProcessVariable(DATES_TO_AVOID_VARIABLE, datesToAvoid)));
 
-        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+        assertNotPossibleToReAddDatesToAvoid(processInstanceId);
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, is(1));
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, is(1));
 
@@ -356,13 +395,13 @@ public class CaseStateProcessTest {
 
         final String processInstanceId = caseStateService.caseReceived(caseId, LocalDate.now(), metadata);
 
-        callPleaUpdated(offenceId, PleaType.NOT_GUILTY, ZonedDateTime.now(), metadata);
+        callPleaUpdated(offenceId, PleaType.NOT_GUILTY);
 
-        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(1));
+        assertThat(delegatesVerifier.isActivitiItemRunning(processInstanceId, "waitForDatesToAvoidGateway"), equalTo(true));
 
-        callPleaUpdated(offenceId, PleaType.GUILTY_REQUEST_HEARING, ZonedDateTime.now(), metadata);
+        callPleaUpdated(offenceId, PleaType.GUILTY_REQUEST_HEARING);
 
-        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+        assertThat(delegatesVerifier.isActivitiItemRunning(processInstanceId, "waitForDatesToAvoidGateway"), equalTo(false));
 
         delegatesVerifier.verifyNumberOfExecution(READY_CASE, 2);
 
@@ -379,13 +418,21 @@ public class CaseStateProcessTest {
 
         final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
 
-        callPleaUpdated(offenceId, pleaType, pleaDatesToAvoidDays, metadata);
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, is(1));
+        assertThat(delegatesVerifier.isActivitiItemRunning(processInstanceId, "waitForDatesToAvoidGateway"), equalTo(false));
 
-        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(1));
+        callPleaUpdated(offenceId, pleaType, pleaDatesToAvoidDays);
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, is(2));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, is(2));
+        assertThat(delegatesVerifier.isActivitiItemRunning(processInstanceId, "waitForDatesToAvoidGateway"), equalTo(true));
 
         caseStateService.pleaCancelled(caseId, offenceId, metadata);
 
-        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, is(1));
+        assertThat(delegatesVerifier.isActivitiItemRunning(processInstanceId, "waitForDatesToAvoidGateway"), equalTo(false));
 
         delegatesVerifier.verifyNumberOfExecution(READY_CASE, 2);
 
@@ -402,7 +449,7 @@ public class CaseStateProcessTest {
 
         final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
 
-        callPleaUpdated(offenceId, pleaType, pleaDatesToAvoidDays, metadata);
+        callPleaUpdated(offenceId, pleaType, pleaDatesToAvoidDays);
         delegatesVerifier.tryProcessPendingJobs();
 
         delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, PLEA_UPDATED, DATES_TO_AVOID_PROCESSED, READY_CASE);
@@ -431,7 +478,7 @@ public class CaseStateProcessTest {
                 withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
                 withProcessVariable(PLEA_DEADLINE_ADD_DATES_TO_AVOID_VARIABLE, pleaDatesToAvoidDays.plusDays(10).format(ISO_LOCAL_DATE_TIME))));
 
-        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+        assertNotPossibleToReAddDatesToAvoid(processInstanceId);
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, is(1));
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, is(1));
 
@@ -510,12 +557,27 @@ public class CaseStateProcessTest {
 
         final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
 
-        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, CaseStateService.WITHDRAWAL_REQUESTED_SIGNAL_NAME, is(1));
+        assertThat(delegatesVerifier.isActivitiItemRunning(processInstanceId, "waitForDatesToAvoidGateway"), equalTo(false));
+        asList(
+                WITHDRAWAL_REQUESTED_SIGNAL_NAME,
+                WITHDRAWAL_REQUEST_CANCELLED_SIGNAL_NAME,
+                PLEA_CANCELLED_SIGNAL_NAME,
+                PLEA_UPDATED_SIGNAL_NAME,
+                DATES_TO_AVOID_ADDED_SIGNAL_NAME)
+                .forEach(signalName -> delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, signalName, is(1)));
+
 
         caseStateService.caseCompleted(caseId, metadata);
 
         delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, CASE_COMPLETED);
         delegatesVerifier.assertDelegateCalledWith(CASE_COMPLETED, 0, withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)));
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, CASE_COMPLETED_SIGNAL_NAME, is(0));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, WITHDRAWAL_REQUESTED_SIGNAL_NAME, is(0));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, WITHDRAWAL_REQUEST_CANCELLED_SIGNAL_NAME, is(0));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, is(0));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, is(0));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
 
         delegatesVerifier.assertProcessFinished(processInstanceId, true);
     }
@@ -534,7 +596,7 @@ public class CaseStateProcessTest {
 
         caseStateService.withdrawalRequested(caseId, metadata);
 
-        callPleaUpdated(offenceId, pleaType, ZonedDateTime.now(), metadata);
+        callPleaUpdated(offenceId, pleaType);
 
         caseStateService.pleaCancelled(caseId, offenceId, metadata);
 
@@ -568,8 +630,23 @@ public class CaseStateProcessTest {
                 withoutProcessVariable(WITHDRAWAL_REQUESTED_VARIABLE)));
     }
 
-    private void callPleaUpdated(final UUID offenceId, final PleaType pleaType,
-                                 final ZonedDateTime pleaDatesToAvoidDays, final Metadata metadata) {
+    private void assertNotPossibleToReAddDatesToAvoid(final String processInstanceId) {
+        assertThat(delegatesVerifier.isActivitiItemRunning(processInstanceId, "waitForDatesToAvoidGateway"), equalTo(false));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+    }
+
+    private void callAddDatesToAvoid(final String datesToAvoid) {
+        final Map<String, Object> variablesOnExecutionDatesToAvoid = delegatesVerifier.getDelegateExecution(DATES_TO_AVOID_PROCESSED).getVariablesOnExecution();
+        variablesOnExecutionDatesToAvoid.put(DATES_TO_AVOID_VARIABLE, datesToAvoid);
+        caseStateService.datesToAvoidAdded(caseId, datesToAvoid, metadata);
+        variablesOnExecutionDatesToAvoid.remove(DATES_TO_AVOID_VARIABLE);
+    }
+
+    private void callPleaUpdated(final UUID offenceId, final PleaType pleaType) {
+        callPleaUpdated(offenceId, pleaType, ZonedDateTime.now());
+    }
+
+    private void callPleaUpdated(final UUID offenceId, final PleaType pleaType, final ZonedDateTime pleaDatesToAvoidDays) {
         final MockedDelegate readyCaseDelegate = delegatesVerifier.getDelegateExecution(READY_CASE);
         final boolean areDatesToAvoidSet = Optional.of(readyCaseDelegate.getExecutionTimes())
                 .filter(l -> l > 0)

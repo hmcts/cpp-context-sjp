@@ -4,6 +4,7 @@ import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_UNDERSCORE;
 import static java.lang.String.format;
 import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
 import static org.activiti.engine.impl.test.JobTestHelper.waitForJobExecutorToProcessAllJobs;
 import static org.apache.commons.lang3.ArrayUtils.contains;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -15,8 +16,10 @@ import uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration;
+import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.test.ActivitiRule;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +70,23 @@ public class DelegatesVerifier {
                 delegateExecution.getExecutionTimes(),
                 greaterThan(index));
         assertThat(delegateExecution.getDelegateExecutions().get(index), matchers);
+    }
+
+    public boolean isActivitiItemRunning(final String processInstanceId, final String processName) {
+        LOGGER.info("Available processes: " + rule.getRuntimeService()
+                .createExecutionQuery()
+                .processInstanceId(processInstanceId)
+                .list()
+                .stream()
+                .map(Execution::getActivityId)
+                .filter(StringUtils::isNotEmpty)
+                .collect(toList()));
+
+        return rule.getRuntimeService()
+                .createExecutionQuery()
+                .processInstanceId(processInstanceId)
+                .activityId(processName)
+                .count() > 0;
     }
 
     public void assertNumberEventSubscriptions(final String processInstanceId, final String signalName, final Matcher<Integer> matcher) {

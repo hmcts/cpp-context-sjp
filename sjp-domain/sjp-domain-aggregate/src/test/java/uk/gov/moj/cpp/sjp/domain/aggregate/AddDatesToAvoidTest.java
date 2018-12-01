@@ -1,42 +1,26 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
-import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 
-import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
-import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseNotFound;
-import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Before;
 import org.junit.Test;
 
 public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
 
-    private CaseAggregate caseAggregate;
-    private UUID caseId;
     private static final String DATES_TO_AVOID = "12th July 2018";
     private static final String DATES_TO_AVOID_UPDATED = "13th August 2018";
-
-    @Before
-    public void initialiseCase() {
-        caseAggregate = new CaseAggregate();
-
-        final CaseReceived caseReceived = receiveCase();
-        caseId = caseReceived.getCaseId();
-    }
 
     @Test
     public void datesToAvoidAddedEvent() {
@@ -79,7 +63,7 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
     }
 
     @Test
-    public void caseCompleted() {
+    public void caseCompletedDoesNotAcceptDatesToAvoid() {
         //given a completed case
         caseAggregate.completeCase();
 
@@ -94,7 +78,7 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
     }
 
     @Test
-    public void caseAssigned() {
+    public void caseAssignedDoesNotAcceptDatesToAvoid() {
         //given an assigned case
         caseAggregate.assignCase(UUID.randomUUID(), clock.now(), CaseAssignmentType.DELEGATED_POWERS_DECISION);
 
@@ -121,13 +105,4 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
         assertThat(datesToAvoidReceived.getDescription(), equalTo("Add dates to avoid"));
     }
 
-    private CaseReceived receiveCase() {
-        final Case sjpCase = CaseBuilder.aDefaultSjpCase().build();
-
-        return caseAggregate.receiveCase(sjpCase, ZonedDateTime.now())
-                .filter(CaseReceived.class::isInstance)
-                .map(CaseReceived.class::cast)
-                .findFirst()
-                .orElseThrow(() -> new AssertionError(format("No event of type %s found.", CaseReceived.class.getSimpleName())));
-    }
 }

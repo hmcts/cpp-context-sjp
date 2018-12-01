@@ -4,10 +4,13 @@ import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 @Event(CaseMarkedReadyForDecision.EVENT_NAME)
 public class CaseMarkedReadyForDecision {
@@ -39,4 +42,30 @@ public class CaseMarkedReadyForDecision {
     public ZonedDateTime getMarkedAt() {
         return markedAt;
     }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof CaseMarkedReadyForDecision)) {
+            return false;
+        }
+
+        final CaseMarkedReadyForDecision that = (CaseMarkedReadyForDecision) o;
+        return Objects.equals(caseId, that.caseId) &&
+                reason == that.reason &&
+                Objects.equals(markedAt, that.markedAt);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(caseId, reason, markedAt);
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
 }

@@ -1,8 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static java.lang.String.format;
-import static java.time.ZoneOffset.UTC;
-import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
@@ -94,6 +92,6 @@ public class UploadCaseDocumentTest extends CaseAggregateBaseTest {
         final UUID hearingTypeId = randomUUID();
 
         caseAggregate.referCaseForCourtHearing(caseId, sessionId, referralReasonId, hearingTypeId,
-                nextInt(0, 999), randomAlphanumeric(100), now(UTC));
+                nextInt(0, 999), randomAlphanumeric(100), clock.now());
     }
 }

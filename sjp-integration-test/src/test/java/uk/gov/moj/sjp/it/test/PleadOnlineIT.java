@@ -29,7 +29,7 @@ import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.getOnlinePlea;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.stubNotifications;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.verifyNotification;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataStub.stubCountryByPostcodeQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostcodeQuery;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.COURT_ADMINISTRATORS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.LEGAL_ADVISERS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
@@ -37,7 +37,6 @@ import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
-import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -54,7 +53,6 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
-import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import uk.gov.moj.sjp.it.producer.DecisionToReferCaseForCourtHearingSavedProducer;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
@@ -68,7 +66,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -79,7 +76,6 @@ import org.hamcrest.Matcher;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class PleadOnlineIT extends BaseIntegrationTest {

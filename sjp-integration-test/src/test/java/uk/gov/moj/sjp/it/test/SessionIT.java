@@ -18,7 +18,7 @@ import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSessionAndWa
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.SessionProcessor;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
-import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
+import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 
 import java.util.Optional;
@@ -39,7 +39,7 @@ public class SessionIT extends BaseIntegrationTest {
 
     @Before
     public void init() {
-        ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery(courtHouseOUCode, localJusticeAreaNationalCourtCode, courtHouseName);
+        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(courtHouseOUCode, localJusticeAreaNationalCourtCode, courtHouseName);
         SchedulingStub.stubStartSjpSessionCommand();
         SchedulingStub.stubEndSjpSessionCommand();
         SchedulingStub.stubSessionQuery(existingSessionId);

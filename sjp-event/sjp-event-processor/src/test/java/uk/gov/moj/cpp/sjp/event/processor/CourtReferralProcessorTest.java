@@ -3,6 +3,8 @@ package uk.gov.moj.cpp.sjp.event.processor;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.now;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -15,6 +17,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
@@ -26,15 +29,31 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.resulting.event.DecisionToReferCaseForCourtHearingSaved.decisionToReferCaseForCourtHearingSaved;
+import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
+import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.resulting.event.DecisionToReferCaseForCourtHearingSaved;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingRequestView;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingTypeView;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseIdentifierView;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReferringJudicialDecisionView;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.SjpReferralView;
+import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
+import uk.gov.moj.cpp.sjp.event.processor.service.referral.HearingRequestsDataSourcingService;
+import uk.gov.moj.cpp.sjp.event.processor.service.referral.ProsecutionCasesDataSourcingService;
+import uk.gov.moj.cpp.sjp.event.processor.service.referral.SjpReferralDataSourcingService;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -54,6 +73,18 @@ public class CourtReferralProcessorTest {
 
     @Mock
     private Sender sender;
+
+    @Mock
+    private ProsecutionCasesDataSourcingService prosecutionCasesDataSourcingService;
+
+    @Mock
+    private SjpReferralDataSourcingService sjpReferralDataSourcingService;
+
+    @Mock
+    private HearingRequestsDataSourcingService hearingRequestsDataSourcingService;
+
+    @Mock
+    private SjpService sjpService;
 
     @Spy
     private Clock clock = new StoppedClock(now(UTC));
@@ -117,9 +148,7 @@ public class CourtReferralProcessorTest {
                 .add("courtReferral", createObjectBuilder()
                         .add("sjpReferral", createObjectBuilder().build())
                         .add("prosecutionCases", createArrayBuilder()
-                                .add(createObjectBuilder().add("id", caseId.toString()).build())
-                                .build())
-                        .build())
+                                .add(createObjectBuilder().add("id", caseId.toString()))))
                 .add("rejectedReason", rejectionDescription)
                 .build();
 
@@ -140,6 +169,62 @@ public class CourtReferralProcessorTest {
     }
 
     @Test
+    public void shouldSendCommandToProgressionWhenCaseReferredForCourtHearing() {
+        final UUID caseId = randomUUID();
+
+        final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
+                .withCaseId(caseId)
+                .build();
+
+        final Metadata caseReferredForCourtHearingMetadata = metadataWithRandomUUID("sjp.events.case-referred-for-court-hearing").build();
+        final Envelope<CaseReferredForCourtHearing> caseReferredForCourtHearingEnvelope = envelopeFrom(
+                caseReferredForCourtHearingMetadata,
+                caseReferredForCourtHearing);
+
+        final CaseDetails caseDetails = CaseDetails.caseDetails()
+                .withId(caseId.toString())
+                .withOnlinePleaReceived(true)
+                .build();
+        when(sjpService.getCaseDetails(any(), any(JsonEnvelope.class))).thenReturn(caseDetails);
+
+        final ProsecutionCaseView prosecutionCaseView = createDummyProsecutionCaseView(caseId);
+        when(prosecutionCasesDataSourcingService.createProsecutionCaseViews(any(), any(), any(), any())).thenReturn(singletonList(prosecutionCaseView));
+
+        final SjpReferralView sjpReferralView = createDummySjpReferralView();
+        when(sjpReferralDataSourcingService.createSjpReferralView(any(), any(), any())).thenReturn(sjpReferralView);
+
+        final HearingRequestView listHearingRequestView = createDummyHearingRequestView();
+        when(hearingRequestsDataSourcingService.createHearingRequestViews(any(), any(), any(), any())).thenReturn(singletonList(listHearingRequestView));
+
+        courtReferralProcessor.caseReferredForCourtHearing(caseReferredForCourtHearingEnvelope);
+
+        verify(sender).send(argThat(
+                jsonEnvelope(
+                        metadata().envelopedWith(caseReferredForCourtHearingMetadata).withName("progression.refer-cases-to-court"),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.courtReferral.listHearingRequests.length()", equalTo(1)),
+                                withJsonPath("$.courtReferral.listHearingRequests[0].jurisdictionType", equalTo(listHearingRequestView.getJurisdictionType())),
+                                withJsonPath("$.courtReferral.listHearingRequests[0].estimateMinutes", equalTo(listHearingRequestView.getEstimateMinutes())),
+                                withJsonPath("$.courtReferral.listHearingRequests[0].prosecutorDatesToAvoid", equalTo(listHearingRequestView.getProsecutorDatesToAvoid())),
+                                withJsonPath("$.courtReferral.listHearingRequests[0].listingDirections", equalTo(listHearingRequestView.getListingDirections())),
+                                withJsonPath("$.courtReferral.listHearingRequests[0].hearingType.id", equalTo(listHearingRequestView.getHearingType().getId().toString())),
+                                withJsonPath("$.courtReferral.listHearingRequests[0].listDefendantRequests.length()", equalTo(listHearingRequestView.getListDefendantRequests().size())),
+                                withJsonPath("$.courtReferral.prosecutionCases.length()", equalTo(1)),
+                                withJsonPath("$.courtReferral.prosecutionCases[0].id", equalTo(caseId.toString())),
+                                withJsonPath("$.courtReferral.prosecutionCases[0].initiationCode", equalTo(prosecutionCaseView.getInitiationCode())),
+                                withJsonPath("$.courtReferral.prosecutionCases[0].statementOfFacts", equalTo(prosecutionCaseView.getStatementOfFacts())),
+                                withJsonPath("$.courtReferral.prosecutionCases[0].prosecutionCaseIdentifier.prosecutionAuthorityId", equalTo(prosecutionCaseView.getProsecutionCaseIdentifier().getProsecutionAuthorityId().toString())),
+                                withJsonPath("$.courtReferral.prosecutionCases[0].prosecutionCaseIdentifier.prosecutionAuthorityCode", equalTo(prosecutionCaseView.getProsecutionCaseIdentifier().getProsecutionAuthorityCode())),
+                                withJsonPath("$.courtReferral.prosecutionCases[0].prosecutionCaseIdentifier.prosecutionAuthorityReference", equalTo(prosecutionCaseView.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())),
+                                withJsonPath("$.courtReferral.prosecutionCases[0].defendants.length()", equalTo(prosecutionCaseView.getDefendants().size())),
+                                withJsonPath("$.courtReferral.sjpReferral.noticeDate", equalTo(sjpReferralView.getNoticeDate().format(DateTimeFormatter.ISO_DATE))),
+                                withJsonPath("$.courtReferral.sjpReferral.referralDate", equalTo(sjpReferralView.getReferralDate().format(DateTimeFormatter.ISO_DATE))),
+                                withJsonPath("$.courtReferral.sjpReferral.referringJudicialDecision.location", equalTo(sjpReferralView.getReferringJudicialDecision().getLocation())),
+                                withJsonPath("$.courtReferral.sjpReferral.referringJudicialDecision.judiciary.length()", equalTo(sjpReferralView.getReferringJudicialDecision().getJudiciary().size()))
+                        )))));
+    }
+
+    @Test
     public void shouldHandleCourtReferralRelatedEvents() {
         assertThat(CourtReferralProcessor.class, isHandlerClass(EVENT_PROCESSOR)
                 .with(allOf(
@@ -149,4 +234,34 @@ public class CourtReferralProcessorTest {
                 )));
     }
 
+    private static HearingRequestView createDummyHearingRequestView() {
+        return new HearingRequestView(
+                "magistrates",
+                20,
+                "wednesdays",
+                "tricky defendant",
+                new HearingTypeView(UUID.randomUUID()),
+                emptyList());
+    }
+
+    private static SjpReferralView createDummySjpReferralView() {
+        return new SjpReferralView(
+                LocalDate.now(),
+                LocalDate.now().plusDays(2),
+                new ReferringJudicialDecisionView(
+                        "Lavender Hill Magistrates' Court",
+                        emptyList()));
+    }
+
+    private static ProsecutionCaseView createDummyProsecutionCaseView(UUID caseId) {
+        return new ProsecutionCaseView(
+                caseId,
+                "J",
+                "You did it",
+                new ProsecutionCaseIdentifierView(
+                        UUID.randomUUID(),
+                        "TFL",
+                        "TFL12345"),
+                emptyList());
+    }
 }

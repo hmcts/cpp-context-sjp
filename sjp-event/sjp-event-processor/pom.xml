@@ -146,6 +146,31 @@
                         </exclusions>
                     </dependency>
                     <dependency>
+                        <groupId>uk.gov.moj.cpp.resulting</groupId>
+                        <artifactId>resulting-query-api</artifactId>
+                        <version>${resulting.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.usersgroups</groupId>
+                        <artifactId>usersgroups-query-api</artifactId>
+                        <version>${usersgroups.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+
+                    <dependency>
                         <groupId>uk.gov.moj.cpp.sjp</groupId>
                         <artifactId>sjp-query-view</artifactId>
                         <version>${project.version}</version>
@@ -175,6 +200,18 @@
                         <version>${assignment.version}</version>
                         <classifier>raml</classifier>
                     </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.progression</groupId>
+                        <artifactId>progression-command-api</artifactId>
+                        <version>${progression.version}</version>
+                        <classifier>raml</classifier>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.referencedata.offences</groupId>
+                        <artifactId>referencedataoffences-query-api</artifactId>
+                        <version>${referencedata.offences.version}</version>
+                        <classifier>raml</classifier>
+                    </dependency>
                 </dependencies>
                 <configuration>
                     <generatorProperties>
@@ -196,6 +233,8 @@
                                 <include>raml/json/schema/sjp.command.refer-case-for-court-hearing.json</include>
                                 <include>raml/json/schema/sjp.command.record-case-referral-for-court-hearing-rejection.json</include>
                                 <include>raml/json/schema/sjp.events.case-referred-for-court-hearing.json</include>
+                                <include>raml/json/schema/sjp.query.case-details.json</include>
+                                <include>raml/json/schema/sjp.query.defendants-online-plea.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>
@@ -242,6 +281,17 @@
                         <artifactId>sjp-command-handler</artifactId>
                         <version>${project.version}</version>
                         <classifier>raml</classifier>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.sjp</groupId>
+                        <artifactId>sjp-query-view</artifactId>
+                        <version>${project.version}</version>
+                        <classifier>raml</classifier>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.justice.generators</groupId>
+                        <artifactId>pojo-generation-core</artifactId>
+                        <version>${pojo-generation.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>

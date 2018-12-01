@@ -5,6 +5,145 @@
   "properties": {
     "caseId": {
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "submittedOn": {
+      "type": "string"
+    },
+    "pleaDetails": {
+      "type": "object",
+      "properties": {
+        "plea": {
+          "type": "string"
+        },
+        "comeToCourt": {
+          "type": "boolean"
+        },
+        "mitigation": {
+          "type": "string"
+        },
+        "notGuiltyBecause": {
+          "type": "string"
+        },
+        "interpreterLanguage": {
+          "type": "string"
+        },
+        "interpreterRequired": {
+          "type": "boolean"
+        },
+        "witnessDispute": {
+          "type": "string"
+        },
+        "witnessDetails": {
+          "type": "string"
+        },
+        "unavailability": {
+          "type": "string"
+        },
+        "speakWelsh": {
+          "type": "boolean"
+        }
+      }
+    },
+    "personalDetails": {
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+        },
+        "homeTelephone": {
+          "type": "string"
+        },
+        "mobile": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "dateOfBirth": {
+          "type": "string"
+        },
+        "nationalInsuranceNumber": {
+          "type": "string"
+        }
+      }
+    },
+    "employment": {
+      "type": "object",
+      "properties": {
+        "incomePaymentFrequency": {
+          "type": "string"
+        },
+        "incomePaymentAmount": {
+          "type": "number"
+        },
+        "employmentStatus": {
+          "type": "number"
+        },
+        "employmentStatusDetails": {
+          "type": "number"
+        },
+        "benefitsClaimed": {
+          "type": "boolean"
+        },
+        "benefitsType": {
+          "type": "number"
+        },
+        "benefitsDeductPenaltyPreference": {
+          "type": "boolean"
+        }
+      }
+    },
+    "employer": {
+      "type": "object",
+      "properties": {
+        "employeeReference": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+        }
+      }
+    },
+    "outgoings": {
+      "type": "object",
+      "properties": {
+        "accommodationAmount": {
+          "type": "number"
+        },
+        "councilTaxAmount": {
+          "type": "number"
+        },
+        "householdBillsAmount": {
+          "type": "number"
+        },
+        "travelExpensesAmount": {
+          "type": "number"
+        },
+        "childMaintenanceAmount": {
+          "type": "number"
+        },
+        "otherDescription": {
+          "type": "string"
+        },
+        "otherAmount": {
+          "type": "number"
+        }
+      }
     }
   },
   "required": [ "caseId" ],

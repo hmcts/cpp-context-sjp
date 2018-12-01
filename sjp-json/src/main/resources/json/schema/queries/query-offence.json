@@ -28,10 +28,7 @@
       "type": "string"
     },
     "cjsCode": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
     "sequenceNumber": {
       "type": "integer"
@@ -40,6 +37,9 @@
       "type": "string"
     },
     "endDate": {
+      "type": "string"
+    },
+    "chargeDate": {
       "type": "string"
     },
     "pendingWithdrawal": {

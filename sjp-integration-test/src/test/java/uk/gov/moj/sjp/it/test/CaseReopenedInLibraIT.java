@@ -1,10 +1,12 @@
 package uk.gov.moj.sjp.it.test;
 
+import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseReopenedInLibraHelper;
 import uk.gov.moj.sjp.it.helper.CaseReopenedInLibraHelper.MarkCaseReopenedInLibraHelper;
 import uk.gov.moj.sjp.it.helper.CaseReopenedInLibraHelper.UndoCaseReopenedInLibraHelper;
 import uk.gov.moj.sjp.it.helper.CaseReopenedInLibraHelper.UpdateCaseReopenedInLibraHelper;
+import uk.gov.moj.sjp.it.helper.EventListener;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +18,10 @@ public class CaseReopenedInLibraIT extends BaseIntegrationTest {
     @Before
     public void setUp()  {
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
-        CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
+
+        new EventListener()
+                .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder));
     }
 
     @Test

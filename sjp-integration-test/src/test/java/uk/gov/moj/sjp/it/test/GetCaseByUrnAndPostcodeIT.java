@@ -23,7 +23,7 @@ public class GetCaseByUrnAndPostcodeIT extends BaseIntegrationTest {
 
         urn = createCasePayloadBuilder.getUrn();
 
-        ReferenceDataServiceStub.stubQueryOffences("/GetCaseByUrnAndPostcodeIT/referencedataoffences.offences-list.json");
+        ReferenceDataServiceStub.stubQueryOffences("GetCaseByUrnAndPostcodeIT/referencedataoffences.offences-list.json");
     }
 
     @Test

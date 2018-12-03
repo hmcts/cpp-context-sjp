@@ -92,7 +92,7 @@ public class CreateCase {
                 .add("title", payloadBuilder.defendantBuilder.title)
                 .add("firstName", payloadBuilder.defendantBuilder.firstName)
                 .add("lastName", payloadBuilder.defendantBuilder.lastName)
-
+                .add("nationalInsuranceNumber", payloadBuilder.defendantBuilder.nationalInsuranceNumber)
                 .add("gender", payloadBuilder.defendantBuilder.gender.toString())
                 .add("numPreviousConvictions", payloadBuilder.defendantBuilder.numPreviousConvictions)
                 .add("address", createObjectBuilder()
@@ -102,6 +102,11 @@ public class CreateCase {
                         .add("address4", payloadBuilder.defendantBuilder.addressBuilder.getAddress4())
                         .add("address5", payloadBuilder.defendantBuilder.addressBuilder.getAddress5())
                         .add("postcode", payloadBuilder.defendantBuilder.addressBuilder.getPostcode())
+                )
+                .add("contactDetails", createObjectBuilder()
+                        .add("home", payloadBuilder.defendantBuilder.contactDetailsBuilder.getHome())
+                        .add("mobile", payloadBuilder.defendantBuilder.contactDetailsBuilder.getMobile())
+                        .add("email", payloadBuilder.defendantBuilder.contactDetailsBuilder.getEmail())
                 )
                 .add("offences", createArrayBuilder().add(offence));
 
@@ -233,7 +238,7 @@ public class CreateCase {
             builder.dateOfBirth = LocalDates.from("1980-07-15");
             builder.gender = Gender.MALE;
             builder.numPreviousConvictions = 2;
-            builder.nationalInsuranceNumber = "NIN";
+            builder.nationalInsuranceNumber = "BB123456B";
             builder.addressBuilder = AddressBuilder.withDefaults();
             builder.contactDetailsBuilder = ContactDetailsBuilder.withDefaults();
 

@@ -2,15 +2,13 @@ package uk.gov.moj.sjp.it.util;
 
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.Map;
 
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
 
 import com.google.common.io.Resources;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,18 +23,18 @@ public class FileUtil {
                     Resources.getResource(path),
                     Charset.defaultCharset()
             );
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             LOGGER.error("Error consuming file from location {}", path, e);
             fail("Error consuming file from location " + path);
         }
         return request;
     }
 
-    public static JsonObject givenPayload(String filePath) throws IOException {
-        try (InputStream inputStream = FileUtil.class.getResourceAsStream(filePath)) {
-            JsonReader jsonReader = Json.createReader(inputStream);
-            return jsonReader.readObject();
-        }
+    public static String getFileContent(final String path, final Map<String, Object> namedPlaceholders) {
+        return new StrSubstitutor(namedPlaceholders).replace(getPayload(path));
+    }
+
+    public static JsonObject getFileContentAsJson(final String path, final Map<String, Object> namedPlaceholders) {
+        return JsonHelper.getJsonObject(getFileContent(path, namedPlaceholders));
     }
 }

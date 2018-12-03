@@ -4,7 +4,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.findAll;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.now;
@@ -43,11 +42,13 @@ import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import uk.gov.moj.sjp.it.producer.DecisionToReferCaseForCourtHearingSavedProducer;
 import uk.gov.moj.sjp.it.producer.ReferToCourtHearingProducer;
+import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.ProgressionServiceStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.stub.ResultingStub;
+import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
-import uk.gov.moj.sjp.it.util.JsonHelper;
+import uk.gov.moj.sjp.it.util.FileUtil;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -60,7 +61,7 @@ import javax.json.JsonObject;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.jayway.awaitility.Duration;
+import com.google.common.collect.ImmutableMap;
 import org.hamcrest.CoreMatchers;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -122,6 +123,9 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
         assertThat(jsonEnvelope.isPresent(), equalTo(true));
 
+        AssignmentStub.stubAddAssignmentCommand();
+        AssignmentStub.stubRemoveAssignmentCommand();
+        SchedulingStub.stubStartSjpSessionCommand();
         ReferenceDataServiceStub.stubReferralReasonsQuery(REFERRAL_REASON_ID.toString(), REFERRAL_REASON);
         ReferenceDataServiceStub.stubHearingTypesQuery(HEARING_TYPE_ID.toString(), HEARING_DESCRIPTION);
         ReferenceDataServiceStub.stubProsecutorQuery(prosecutingAuthorityName, PROSECUTOR_ID);
@@ -220,7 +224,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
         final JsonObject expectedCommandPayload = prepareExpectedCommandPayload(expectedCommandPayloadFile);
         final Predicate<JSONObject> commandPayloadPredicate = commandPayload -> commandPayload.toString().equals(expectedCommandPayload.toString());
 
-        waitAtMost(Duration.TEN_SECONDS).until(() ->
+        await().until(() ->
                 findAll(postRequestedFor(urlPathMatching(REFER_TO_COURT_COMMAND_URL + ".*"))
                         .withHeader(CONTENT_TYPE, WireMock.equalTo(REFER_TO_COURT_COMMAND_CONTENT)))
                         .stream()
@@ -230,21 +234,20 @@ public class CourtReferralIT extends BaseIntegrationTest {
     }
 
     private JsonObject prepareExpectedCommandPayload(String payloadFileLocation) {
-        final String stringifiedJsonObject =
-                getPayload(payloadFileLocation)
-                        .replace("OFFENCE_ID", offenceId.toString())
-                        .replace("CASE_ID", caseId.toString())
-                        .replace("DEFENDANT_ID", defendantId)
-                        .replace("PROSECUTING_AUTHORITY_REFERENCE", caseUrn)
-                        .replace("PROSECUTING_AUTHORITY_ID", PROSECUTOR_ID.toString())
-                        .replace("HEARING_TYPE_ID", HEARING_TYPE_ID.toString())
-                        .replace("REFERRAL_REASON_ID", REFERRAL_REASON_ID.toString())
-                        .replace("LISTING_NOTES", LISTING_NOTES)
-                        .replace("CONVICTION_DATE", RESULTED_ON.toLocalDate().toString())
-                        .replace("MAGISTRATE_ID", sessionId.toString())
-                        .replace("PLEA_DATE", LocalDate.now().toString());
-
-        return JsonHelper.getJsonObject(stringifiedJsonObject);
+        return FileUtil.getFileContentAsJson(payloadFileLocation, ImmutableMap.<String, Object>builder()
+                .put("OFFENCE_ID", offenceId.toString())
+                .put("CASE_ID", caseId.toString())
+                .put("DEFENDANT_ID", defendantId)
+                .put("PROSECUTING_AUTHORITY_REFERENCE", caseUrn)
+                .put("PROSECUTING_AUTHORITY_ID", PROSECUTOR_ID.toString())
+                .put("HEARING_TYPE_ID", HEARING_TYPE_ID.toString())
+                .put("REFERRAL_REASON_ID", REFERRAL_REASON_ID.toString())
+                .put("LISTING_NOTES", LISTING_NOTES)
+                .put("CONVICTION_DATE", RESULTED_ON.toLocalDate().toString())
+                .put("MAGISTRATE_ID", sessionId.toString())
+                .put("PLEA_DATE", LocalDate.now().toString())
+                .put("REFERRAL_DATE", LocalDate.now().toString())
+                .build());
     }
 
     private void assertReferralRecordedInCourtReferralStatus() {

@@ -7,23 +7,23 @@
             "offences":[
               {
                 "count": 1,
-                "convictionDate": "CONVICTION_DATE",
+                "convictionDate": "${CONVICTION_DATE}",
                 "orderIndex":1,
-                "id":"OFFENCE_ID",
+                "id":"${OFFENCE_ID}",
                 "wording":"Committed some offence",
                 "chargeDate":"2016-01-01",
                 "offenceDefinitionId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
                 "startDate":"2016-01-01",
                 "notifiedPlea":{
-                  "offenceId":"OFFENCE_ID",
+                  "offenceId":"${OFFENCE_ID}",
                   "notifiedPleaValue":"NOTIFIED_NOT_GUILTY",
-                  "notifiedPleaDate":"PLEA_DATE"
+                  "notifiedPleaDate":"${PLEA_DATE}"
                 }
               }
             ],
             "numberOfPreviousConvictionsCited":2,
-            "id":"DEFENDANT_ID",
-            "prosecutionCaseId":"CASE_ID",
+            "id":"${DEFENDANT_ID}",
+            "prosecutionCaseId":"${CASE_ID}",
             "personDefendant":{
               "personDetails":{
                 "firstName":"Testy",
@@ -50,10 +50,10 @@
           }
         ],
         "initiationCode":"J",
-        "id":"CASE_ID",
+        "id":"${CASE_ID}",
         "prosecutionCaseIdentifier":{
-          "prosecutionAuthorityReference":"PROSECUTING_AUTHORITY_REFERENCE",
-          "prosecutionAuthorityId":"PROSECUTING_AUTHORITY_ID",
+          "prosecutionAuthorityReference":"${PROSECUTING_AUTHORITY_REFERENCE}",
+          "prosecutionAuthorityId":"${PROSECUTING_AUTHORITY_ID}",
           "prosecutionAuthorityCode":"TFL"
         },
         "statementOfFacts":"No ticket at the gates, forgery"
@@ -61,7 +61,7 @@
     ],
     "sjpReferral":{
       "noticeDate":"2015-12-02",
-      "referralDate":"2015-08-04",
+      "referralDate":"${REFERRAL_DATE}",
       "referringJudicialDecision":{
         "location":"court house name",
         "judiciary":[
@@ -71,7 +71,7 @@
           },
           {
             "judicialRoleTypeSJP": "MAGISTRATE",
-            "judicialName": "John Smith MAGISTRATE_ID"
+            "judicialName": "John Smith ${MAGISTRATE_ID}"
           }
         ]
       }
@@ -79,7 +79,7 @@
     "listHearingRequests":[
       {
         "hearingType":{
-          "id":"HEARING_TYPE_ID"
+          "id":"${HEARING_TYPE_ID}"
         },
         "jurisdictionType":"MAGISTRATES",
         "estimateMinutes":10,
@@ -87,18 +87,18 @@
           {
             "referralReason":{
               "description":"referral reason",
-              "id":"REFERRAL_REASON_ID",
-              "defendantId":"DEFENDANT_ID"
+              "id":"${REFERRAL_REASON_ID}",
+              "defendantId":"${DEFENDANT_ID}"
             },
             "summonsRequired":"SJP_REFERRAL",
             "defendantOffences":[
-              "OFFENCE_ID"
+              "${OFFENCE_ID}"
             ],
-            "prosecutionCaseId":"CASE_ID",
+            "prosecutionCaseId":"${CASE_ID}",
             "datesToAvoid": "I'm on holiday November 17 to 19"
           }
         ],
-        "listingDirections":"LISTING_NOTES"
+        "listingDirections":"${LISTING_NOTES}"
       }
     ]
   }

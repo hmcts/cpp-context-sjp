@@ -10,7 +10,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>1.0.78-ATCM-SNAPSHOT</version>
+    <version>1.0.79-ATCM-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -20,7 +20,7 @@
         <assignment.version>2.0.99</assignment.version>
         <material.version>2.0.113</material.version>
         <notification.notify.version>0.0.26</notification.notify.version>
-        <referencedata.version>2.0.166</referencedata.version>
+        <referencedata.version>2.0.166-ATCM-SNAPSHOT</referencedata.version>
         <referencedata.offences.version>1.0.15-OPAMI-SNAPSHOT</referencedata.offences.version>
         <resulting.version>2.0.212-ATCM-SNAPSHOT</resulting.version>
         <scheduling.version>2.0.88</scheduling.version>

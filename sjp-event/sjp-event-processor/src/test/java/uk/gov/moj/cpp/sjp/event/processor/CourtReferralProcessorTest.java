@@ -127,12 +127,11 @@ public class CourtReferralProcessorTest {
     public void shouldIgnoreCourtReferralRejectionForNonSjpCase() {
 
         final JsonObject payload = createObjectBuilder()
-                .add("courtReferral", createObjectBuilder().build())
+                .add("prosecutorCourtReferral", createObjectBuilder().build())
+                .add("rejectedReason", "Rejection reason")
                 .build();
 
-        final JsonEnvelope event = createEnvelope(
-                "public.progression.referProsecutionCasesToCourtRejected",
-                payload);
+        final JsonEnvelope event = createEnvelope("public.progression.refer-prosecution-cases-to-court-rejected", payload);
 
         courtReferralProcessor.referToCourtHearingRejected(event);
 
@@ -145,16 +144,14 @@ public class CourtReferralProcessorTest {
         final UUID caseId = randomUUID();
 
         final JsonObject payload = createObjectBuilder()
-                .add("courtReferral", createObjectBuilder()
+                .add("sjpCourtReferral", createObjectBuilder()
                         .add("sjpReferral", createObjectBuilder().build())
                         .add("prosecutionCases", createArrayBuilder()
                                 .add(createObjectBuilder().add("id", caseId.toString()))))
                 .add("rejectedReason", rejectionDescription)
                 .build();
 
-        final JsonEnvelope event = createEnvelope(
-                "public.progression.refer-prosecution-cases-to-court-rejected",
-                payload);
+        final JsonEnvelope event = createEnvelope("public.progression.refer-prosecution-cases-to-court-rejected", payload);
 
         courtReferralProcessor.referToCourtHearingRejected(event);
 

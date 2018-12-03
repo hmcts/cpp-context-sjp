@@ -1,13 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/prosecutionCasesReferredToCourt.json",
   "type": "object",
   "properties": {
-    "courtReferral": {
+    "sjpCourtReferral": {
       "type": "object",
       "properties": {
-        "sjpReferral": {
-          "type": "object"
-        },
         "prosecutionCases": {
           "type": "array",
           "minItems": 1,
@@ -15,22 +13,24 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
               }
             },
-            "required": ["id"]
+            "required": [
+              "id"
+            ]
           }
         }
       },
-      "required": ["prosecutionCases"]
+      "required": [
+        "prosecutionCases"
+      ]
     },
     "rejectedReason": {
       "type": "string"
     }
   },
   "required": [
-    "courtReferral",
     "rejectedReason"
-  ],
-  "additionalProperties": false
+  ]
 }

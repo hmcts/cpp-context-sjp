@@ -18,9 +18,9 @@
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
         <assignment.version>2.0.99</assignment.version>
-        <material.version>2.0.112-ATCM-SNAPSHOT</material.version>
+        <material.version>2.0.113</material.version>
         <notification.notify.version>0.0.26</notification.notify.version>
-        <referencedata.version>2.0.165-ATCM-SNAPSHOT</referencedata.version>
+        <referencedata.version>2.0.166</referencedata.version>
         <referencedata.offences.version>1.0.15-OPAMI-SNAPSHOT</referencedata.offences.version>
         <resulting.version>2.0.212-ATCM-SNAPSHOT</resulting.version>
         <scheduling.version>2.0.88</scheduling.version>

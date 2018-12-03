@@ -1,70 +1,72 @@
 {
-  "courtReferral":{
-    "prosecutionCases":[
+  "courtReferral": {
+    "prosecutionCases": [
       {
-        "defendants":[
+        "defendants": [
           {
-            "offences":[
+            "offences": [
               {
                 "count": 1,
                 "convictionDate": "${CONVICTION_DATE}",
-                "orderIndex":1,
-                "id":"${OFFENCE_ID}",
-                "wording":"Committed some offence",
-                "chargeDate":"2016-01-01",
+                "orderIndex": 1,
+                "id": "${OFFENCE_ID}",
+                "wording": "Committed some offence",
+                "chargeDate": "2016-01-01",
                 "offenceDefinitionId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
-                "startDate":"2016-01-01",
-                "notifiedPlea":{
-                  "offenceId":"${OFFENCE_ID}",
-                  "notifiedPleaValue":"NO_NOTIFICATION",
-                  "notifiedPleaDate":"${PLEA_DATE}"
+                "startDate": "2016-01-01",
+                "notifiedPlea": {
+                  "offenceId": "${OFFENCE_ID}",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "notifiedPleaDate": "${PLEA_DATE}"
                 }
               }
             ],
-            "numberOfPreviousConvictionsCited":2,
-            "id":"${DEFENDANT_ID}",
-            "prosecutionCaseId":"${CASE_ID}",
-            "personDefendant":{
-              "personDetails":{
-                "firstName":"David",
-                "lastName":"LLOYD",
-                "address":{
-                  "address3":"England",
-                  "address2":"London",
-                  "address1":"14 Tottenham Court Road",
-                  "postcode":"W1T 1JY",
-                  "address5":"Greater London",
-                  "address4":"UK"
+            "numberOfPreviousConvictionsCited": 2,
+            "id": "${DEFENDANT_ID}",
+            "prosecutionCaseId": "${CASE_ID}",
+            "personDefendant": {
+              "personDetails": {
+                "firstName": "David",
+                "lastName": "LLOYD",
+                "address": {
+                  "address3": "England",
+                  "address2": "London",
+                  "address1": "14 Tottenham Court Road",
+                  "postcode": "W1T 1JY",
+                  "address5": "Greater London",
+                  "address4": "UK"
                 },
-                "gender":"MALE",
-                "contact":{
-
+                "gender": "MALE",
+                "contact": {
+                  "mobile": "07123456789",
+                  "primaryEmail": "email@email.com",
+                  "home": "02087654321"
                 },
-                "dateOfBirth":"1980-07-15",
-                "title":"MR"
+                "dateOfBirth": "1980-07-15",
+                "title": "MR"
               }
             }
           }
         ],
-        "initiationCode":"J",
-        "id":"${CASE_ID}",
-        "prosecutionCaseIdentifier":{
-          "prosecutionAuthorityReference":"${PROSECUTING_AUTHORITY_REFERENCE}",
-          "prosecutionAuthorityId":"${PROSECUTING_AUTHORITY_ID}",
-          "prosecutionAuthorityCode":"TFL"
+        "initiationCode": "J",
+        "id": "${CASE_ID}",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityReference": "${PROSECUTING_AUTHORITY_REFERENCE}",
+          "prosecutionAuthorityId": "${PROSECUTING_AUTHORITY_ID}",
+          "prosecutionAuthorityCode": "TFL"
         },
-        "statementOfFacts":"No ticket at the gates, forgery"
+        "statementOfFacts": "No ticket at the gates, forgery"
       }
     ],
-    "sjpReferral":{
-      "noticeDate":"2015-12-02",
-      "referralDate":"${REFERRAL_DATE}",
-      "referringJudicialDecision":{
-        "location":"court house name",
-        "judiciary":[
+    "sjpReferral": {
+      "noticeDate": "2015-12-02",
+      "referralDate": "${REFERRAL_DATE}",
+      "referringJudicialDecision": {
+        "location": "court house name",
+        "judiciary": [
           {
-            "judicialRoleTypeSJP":"LEGAL_ADVISER",
-            "judicialName":"IT No Prosecuting Access User"
+            "judicialRoleTypeSJP": "LEGAL_ADVISER",
+            "judicialName": "IT No Prosecuting Access User"
           },
           {
             "judicialRoleTypeSJP": "MAGISTRATE",
@@ -73,28 +75,28 @@
         ]
       }
     },
-    "listHearingRequests":[
+    "listHearingRequests": [
       {
-        "hearingType":{
-          "id":"${HEARING_TYPE_ID}"
+        "hearingType": {
+          "id": "${HEARING_TYPE_ID}"
         },
-        "jurisdictionType":"MAGISTRATES",
-        "estimateMinutes":10,
-        "listDefendantRequests":[
+        "jurisdictionType": "MAGISTRATES",
+        "estimateMinutes": 10,
+        "listDefendantRequests": [
           {
-            "referralReason":{
-              "description":"referral reason",
-              "id":"${REFERRAL_REASON_ID}",
-              "defendantId":"${DEFENDANT_ID}"
+            "referralReason": {
+              "description": "referral reason",
+              "id": "${REFERRAL_REASON_ID}",
+              "defendantId": "${DEFENDANT_ID}"
             },
-            "summonsRequired":"SJP_REFERRAL",
-            "defendantOffences":[
+            "summonsRequired": "SJP_REFERRAL",
+            "defendantOffences": [
               "${OFFENCE_ID}"
             ],
-            "prosecutionCaseId":"${CASE_ID}"
+            "prosecutionCaseId": "${CASE_ID}"
           }
         ],
-        "listingDirections":"${LISTING_NOTES}"
+        "listingDirections": "${LISTING_NOTES}"
       }
     ]
   }

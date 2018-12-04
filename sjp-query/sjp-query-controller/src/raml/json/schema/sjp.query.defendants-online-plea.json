@@ -86,16 +86,16 @@
           "type": "number"
         },
         "employmentStatus": {
-          "type": "number"
+          "type": "string"
         },
         "employmentStatusDetails": {
-          "type": "number"
+          "type": "string"
         },
         "benefitsClaimed": {
           "type": "boolean"
         },
         "benefitsType": {
-          "type": "number"
+          "type": "string"
         },
         "benefitsDeductPenaltyPreference": {
           "type": "boolean"

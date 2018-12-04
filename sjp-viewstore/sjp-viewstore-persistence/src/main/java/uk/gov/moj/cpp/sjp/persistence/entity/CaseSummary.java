@@ -1,7 +1,8 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
+
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
-import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -10,8 +11,6 @@ import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -37,11 +36,14 @@ public class CaseSummary implements Serializable {
     private LocalDate reopenedDate;
     @Column(name = "completed")
     private Boolean completed = Boolean.FALSE;
-    @Column(name = "status")
-    @Enumerated(EnumType.STRING)
-    private CaseStatus status;
     @Column(name = "listed_in_criminal_courts")
     private Boolean listedInCriminalCourts = Boolean.FALSE;
+
+    @Column(name = "dates_to_avoid")
+    private String datesToAvoid;
+
+    @Column(name = "referred_for_court_hearing")
+    private Boolean referredForCourtHearing;
 
     public UUID getId() {
         return id;
@@ -99,19 +101,31 @@ public class CaseSummary implements Serializable {
         this.completed = completed;
     }
 
-    public CaseStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(CaseStatus status) {
-        this.status = status;
-    }
-
     public Boolean getListedInCriminalCourts() {
         return listedInCriminalCourts;
     }
 
     public void setListedInCriminalCourts(Boolean listedInCriminalCourts) {
         this.listedInCriminalCourts = listedInCriminalCourts;
+    }
+
+    public String getDatesToAvoid() {
+        return datesToAvoid;
+    }
+
+    public void setDatesToAvoid(final String datesToAvoid) {
+        this.datesToAvoid = datesToAvoid;
+    }
+
+    public Boolean getReferredForCourtHearing() {
+        return referredForCourtHearing;
+    }
+
+    public void setReferredForCourtHearing(final Boolean referredForCourtHearing) {
+        this.referredForCourtHearing = referredForCourtHearing;
+    }
+
+    public boolean isReferredForCourtHearing() {
+        return isTrue(referredForCourtHearing);
     }
 }

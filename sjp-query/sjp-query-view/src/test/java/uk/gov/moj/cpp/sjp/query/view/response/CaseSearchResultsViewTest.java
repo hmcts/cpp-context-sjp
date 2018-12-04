@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
+import static java.time.LocalDate.now;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -112,7 +113,9 @@ public class CaseSearchResultsViewTest {
 
     private CaseSearchResult createCaseSearchResult() {
         CaseSearchResult caseSearchResult = new CaseSearchResult();
-        caseSearchResult.setCaseSummary(new CaseSummary());
+        final CaseSummary caseSummary = new CaseSummary();
+        caseSummary.setPostingDate(now());
+        caseSearchResult.setCaseSummary(caseSummary);
         return caseSearchResult;
     }
 }

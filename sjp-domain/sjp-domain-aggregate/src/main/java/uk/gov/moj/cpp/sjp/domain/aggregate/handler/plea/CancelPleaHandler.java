@@ -44,7 +44,7 @@ public class CancelPleaHandler {
                                                     final CaseAggregateState state) {
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(new PleaCancelled(cancelPlea.getCaseId(), cancelPlea.getOffenceId(), state.isProvedInAbsence()));
+        streamBuilder.add(new PleaCancelled(cancelPlea.getCaseId(), cancelPlea.getOffenceId()));
 
         if (state.isTrialRequested()) {
             streamBuilder.add(new TrialRequestCancelled(state.getCaseId()));

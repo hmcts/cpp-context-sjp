@@ -1,9 +1,11 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
+import uk.gov.moj.cpp.sjp.domain.common.PleaInformation;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 
 import java.time.LocalDate;
@@ -61,7 +63,12 @@ public class CaseSearchResultsView {
             this.reopenedDate = caseSearchResult.getCaseSummary().getReopenedDate();
             this.pleaDate = caseSearchResult.getPleaDate();
             this.withdrawalRequestedDate = caseSearchResult.getWithdrawalRequestedDate();
-            this.status = caseSearchResult.getCaseSummary().getStatus();
+            this.status = CaseStatus.calculateStatus(caseSearchResult.getCaseSummary().getPostingDate(),
+                    nonNull(caseSearchResult.getWithdrawalRequestedDate()),
+                    new PleaInformation(caseSearchResult.getPleaType(), caseSearchResult.getPleaDate()), caseSearchResult.getCaseSummary().getDatesToAvoid(),
+                    caseSearchResult.getCaseSummary().isCompleted(),
+                    caseSearchResult.getCaseSummary().isReferredForCourtHearing(),
+                    caseSearchResult.getCaseSummary().getReopenedDate());
             this.listedInCriminalCourts = caseSearchResult.getCaseSummary().getListedInCriminalCourts();
             this.defendant = new CaseSearchResultDefendantView(caseSearchResult);
         }

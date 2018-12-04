@@ -75,8 +75,7 @@ public class CaseAggregateStateStateTest {
     @Test
     public void shouldAddOffenceWithPlea() {
         UUID offenceId = UUID.randomUUID();
-        state.setCaseReceived(true);
-        state.updateOffenceWithPlea(offenceId, PleaType.GUILTY);
+        state.updateOffenceWithPlea(offenceId);
 
         assertThat(state.getOffenceIdsWithPleas(), contains(offenceId));
     }
@@ -84,11 +83,6 @@ public class CaseAggregateStateStateTest {
     @Test
     public void shouldRemoveOffenceIdWithPleas() {
         UUID offenceId = UUID.randomUUID();
-        Boolean provedInAbsence = true;
-        state.setCaseReceived(true);
-        state.setPostingDate(LocalDate.now());
-        state.getOffenceIdsWithPleas().add(offenceId);
-        state.removePleaFromOffence(offenceId, provedInAbsence);
 
         assertThat(state.getOffenceIdsWithPleas(), Matchers.iterableWithSize(0));
     }
@@ -207,152 +201,5 @@ public class CaseAggregateStateStateTest {
         state.setCaseId(caseId);
 
         assertTrue(state.isCaseIdEqualTo(caseId));
-    }
-
-    @Test
-    public void caseStatusShouldBeSetToNoPleaRecievedWhenTheCaseIsSubmitted() {
-        state.setCaseReceived(true);
-        assertThat(state.getStatus(), is(CaseStatus.NO_PLEA_RECEIVED));
-    }
-
-    @Test
-    public void caseStatusShouldBeSetToNoPleaRecievedReadyForDecision() {
-        state.setCaseReceived(true);
-        state.setReadinessReason(CaseReadinessReason.PIA);
-        assertThat(state.getStatus(), is(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION));
-    }
-
-    @Test
-    public void caseStatusShouldBeWithdrawalRequestReadyForDecision() {
-        state.setWithdrawalAllOffencesRequested(true);
-        assertThat(state.getStatus(), is(CaseStatus.WITHDRAWAL_REQUEST_READY_FOR_DECISION));
-    }
-
-    @Test
-    public void caseStatusShouldBePleaReceivedReadyForDecision() {
-        state.setCaseReceived(true);
-        state.setReadinessReason(CaseReadinessReason.PIA);
-        state.updateOffenceWithPlea(UUID.randomUUID(), PleaType.GUILTY);
-        assertThat(state.getStatus(), is(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION));
-    }
-
-    @Test
-    public void caseStatusShouldBePleaReceivedReadyForDecisionForGuiltyCourtHearingRequested() {
-        state.setCaseReceived(true);
-        state.setReadinessReason(CaseReadinessReason.PIA);
-        state.updateOffenceWithPlea(UUID.randomUUID(), PleaType.GUILTY_REQUEST_HEARING);
-        assertThat(state.getStatus(), is(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION));
-    }
-
-    @Test
-    public void caseStatusShouldBePleaReceivedNotReadyForDecisionForNotGuiltyAndNoDatesToAvoid() {
-        final UUID offenceId = UUID.randomUUID();
-        state.setCaseReceived(true);
-        state.updateOffenceWithPlea(offenceId, PleaType.GUILTY_REQUEST_HEARING);
-        state.setReadinessReason(CaseReadinessReason.PLEADED_GUILTY_REQUEST_HEARING);
-        state.updateOffenceWithPlea(offenceId, PleaType.NOT_GUILTY);
-        state.setReadinessReason(null);
-        assertThat(state.getStatus(), is(CaseStatus.PLEA_RECEIVED_NOT_READY_FOR_DECISION));
-    }
-
-    @Test
-    public void caseStatusShouldBePleaRecievedReadyForDecisionForNotGuiltyAndDatesToAvoidIsSet() {
-        final UUID offenceId = UUID.randomUUID();
-        state.setCaseReceived(true);
-        state.updateOffenceWithPlea(offenceId, PleaType.GUILTY_REQUEST_HEARING);
-        state.setReadinessReason(CaseReadinessReason.PLEADED_GUILTY_REQUEST_HEARING);
-        state.updateOffenceWithPlea(offenceId, PleaType.NOT_GUILTY);
-        state.setReadinessReason(null);
-        state.setDatesToAvoid("2018-11-20");
-        assertThat(state.getStatus(), is(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION));
-    }
-
-    @Test
-    public void caseStatusShouldBeNoPleaReceivedWhenPleaIsCancelled() {
-        Boolean provedInAbsence = false;
-        state.setPostingDate(LocalDate.now());
-        state.setCaseReceived(true);
-        state.removePleaFromOffence(UUID.randomUUID(), provedInAbsence);
-        assertThat(state.getStatus(), is(CaseStatus.NO_PLEA_RECEIVED));
-    }
-
-    @Test
-    public void caseStatusShouldBeNoPleaReceivedReadyForDecisionWhenPleaCancelled() {
-        Boolean provedInAbsence = true;
-        state.setCaseReceived(true);
-        state.setPostingDate(LocalDate.of(2018, 01, 01));
-        state.removePleaFromOffence(UUID.randomUUID(), provedInAbsence);
-        assertThat(state.getStatus(), is(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION));
-    }
-
-    @Test
-    public void caseStatusShouldRemainWithdrawalRequestEvenWhenPleaCancelled() {
-        Boolean provedInAbsence = true;
-        state.setWithdrawalAllOffencesRequested(true);
-        state.removePleaFromOffence(UUID.randomUUID(), provedInAbsence);
-        assertThat(state.getStatus(), is(CaseStatus.WITHDRAWAL_REQUEST_READY_FOR_DECISION));
-    }
-
-    @Test
-    public void caseStatusShouldChangeToNoPleaReadyForDecisionWhenWithdrawalRequestCancelled() {
-        state.setWithdrawalAllOffencesRequested(true);
-        state.setReadinessReason(CaseReadinessReason.PIA);
-        assertThat(state.getStatus(), is(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION));
-    }
-
-    @Test
-    public void caseStatusShouldChangeToPleaReceivedReadyForDecisionWhenWithdrawalRequestCancelled() {
-        state.setWithdrawalAllOffencesRequested(true);
-        state.setReadinessReason(CaseReadinessReason.PLEADED_GUILTY);
-        assertThat(state.getStatus(), is(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION));
-    }
-
-    @Test
-    public void caseStatusShouldChangeToPleaReceivedReadyForDecisionWhenWithdrawalRequestCancelledForGuiltyRequestHearing() {
-        state.setWithdrawalAllOffencesRequested(true);
-        state.setReadinessReason(CaseReadinessReason.PLEADED_GUILTY_REQUEST_HEARING);
-        assertThat(state.getStatus(), is(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION));
-    }
-
-    @Test
-    public void caseStatusShouldNoPleaReceivedWhenWithdrawalRequestCancelled() {
-        //Withdrawal Request is made
-        state.setWithdrawalAllOffencesRequested(true);
-        //When the plea is cancelled
-        state.updateOffenceWithPlea(UUID.randomUUID(), null);
-        //case unmark is invoked by the activiti, withdrawal request cancelled
-        state.setReadinessReason(null);
-        assertThat(state.getStatus(), is(CaseStatus.NO_PLEA_RECEIVED));
-    }
-
-    @Test
-    public void caseStatusShouldPleaReceivedNotReadyForDecisionWhenWithdrawalRequestCancelled() {
-        //Withdrawal Request is made
-        state.setWithdrawalAllOffencesRequested(true);
-        //When the plea is made not guilty
-        state.updateOffenceWithPlea(UUID.randomUUID(), PleaType.NOT_GUILTY);
-        //case unmark is invoked by the activiti, withdrawal request cancelled
-        state.setReadinessReason(null);
-        assertThat(state.getStatus(), is(CaseStatus.PLEA_RECEIVED_NOT_READY_FOR_DECISION));
-    }
-
-    @Test
-    public void caseStatusShouldPleaReceivedNotReadyForDecisionWhenNotGuiltySubmitted() {
-        state.setCaseReceived(true);
-        //When the plea is made not guilty
-        state.setReadinessReason(CaseReadinessReason.PIA);
-        state.updateOffenceWithPlea(UUID.randomUUID(), PleaType.NOT_GUILTY);
-        //case unmark is invoked by the activiti, not guilty plea
-        state.setReadinessReason(null);
-        assertThat(state.getStatus(), is(CaseStatus.PLEA_RECEIVED_NOT_READY_FOR_DECISION));
-
-    }
-
-    @Test
-    public void caseStatusShouldCompletedWhenCaseIsCompleted() {
-        state.markCaseCompleted();
-        ;
-        assertThat(state.getStatus(), is(CaseStatus.COMPLETED));
-        assertThat(state.isCaseCompleted(), is(true));
     }
 }

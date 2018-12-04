@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.query.view.response;
 
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
+import uk.gov.moj.cpp.sjp.domain.common.PleaInformation;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 
 import java.math.BigDecimal;
@@ -45,7 +46,7 @@ public class CaseView {
             caseDetail.getCaseDocuments().forEach(caseDocument -> caseDocuments.add(new CaseDocumentView(caseDocument)));
         }
 
-        completed = caseDetail.getCompleted();
+        completed = caseDetail.isCompleted();
         assigned = caseDetail.getAssigneeId() != null;
 
         this.costs = caseDetail.getCosts();
@@ -56,7 +57,14 @@ public class CaseView {
         this.enterpriseId = caseDetail.getEnterpriseId();
         this.onlinePleaReceived = Boolean.TRUE.equals(caseDetail.getOnlinePleaReceived());
         this.datesToAvoid = caseDetail.getDatesToAvoid();
-        this.status = caseDetail.getStatus();
+        //TODO SINGLE OFFENCE only implementation
+        this.status = CaseStatus.calculateStatus(caseDetail.getPostingDate(),
+                caseDetail.isAnyOffencePendingWithdrawal(),
+                new PleaInformation(caseDetail.getFirstOffencePlea(), caseDetail.getFirstOffencePleaDate()),
+                caseDetail.getDatesToAvoid(),
+                caseDetail.isCompleted(),
+                caseDetail.isReferredForCourtHearing(),
+                caseDetail.getReopenedDate());
         this.listedInCriminalCourts = caseDetail.getListedInCriminalCourts();
     }
 

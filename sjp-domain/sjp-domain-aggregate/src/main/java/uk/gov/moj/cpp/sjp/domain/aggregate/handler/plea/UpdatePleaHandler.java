@@ -1,6 +1,10 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea;
 
-import com.google.common.annotations.VisibleForTesting;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.PleaHandlerUtils.changePlea;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.PleaHandlerUtils.hasNeverRaisedTrialRequestedEventAndTrialRequired;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.PleaHandlerUtils.isTrialRequestCancellationRequired;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.PleaHandlerUtils.wasTrialRequestedThenCancelledAndIsTrialRequiredAgain;
+
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseLanguageHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.command.UpdatePlea;
@@ -13,10 +17,7 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.PleaHandlerUtils.changePlea;
-import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.PleaHandlerUtils.hasNeverRaisedTrialRequestedEventAndTrialRequired;
-import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.PleaHandlerUtils.isTrialRequestCancellationRequired;
-import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.PleaHandlerUtils.wasTrialRequestedThenCancelledAndIsTrialRequiredAgain;
+import com.google.common.annotations.VisibleForTesting;
 
 public class UpdatePleaHandler {
 

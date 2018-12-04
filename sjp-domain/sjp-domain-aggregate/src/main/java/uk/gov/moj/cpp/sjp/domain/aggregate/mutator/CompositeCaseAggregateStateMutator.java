@@ -51,9 +51,9 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
     private static final AggregateStateMutator<CaseCompleted, CaseAggregateState> CASE_COMPLETED_MUTATOR =
             (event, state) -> state.markCaseCompleted();
     private static final AggregateStateMutator<PleaUpdated, CaseAggregateState> PLEA_UPDATED_MUTATOR =
-            (event, state) -> state.updateOffenceWithPlea(event.getOffenceId(), event.getPlea());
+            (event, state) -> state.updateOffenceWithPlea(event.getOffenceId());
     private static final AggregateStateMutator<PleaCancelled, CaseAggregateState> PLEA_CANCELLED_MUTATOR =
-            (event, state) -> state.removePleaFromOffence(event.getOffenceId(), event.getProvedInAbsence());
+            (event, state) -> state.removePleaFromOffence(event.getOffenceId());
     private static final AggregateStateMutator<TrialRequestCancelled, CaseAggregateState> TRIAL_REQUEST_CANCELLED_MUTATOR =
             (event, state) -> state.setTrialRequested(false);
     private static final AggregateStateMutator<InterpreterUpdatedForDefendant, CaseAggregateState> UPDATE_INTERPRETER_MUTATOR =

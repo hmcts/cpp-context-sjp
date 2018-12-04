@@ -85,7 +85,7 @@ public class SjpCaseCreatedToCaseTest {
         assertThat(convertedCase.getAssigneeId(), nullValue());
         assertThat(convertedCase.getCaseDocuments(), empty());
         assertThat(convertedCase.getCaseSearchResults(), empty());
-        assertThat(convertedCase.getCompleted(), is(false));
+        assertThat(convertedCase.isCompleted(), is(false));
         assertThat(convertedCase.getOnlinePleaReceived(), is(false));
 
         // Defendant

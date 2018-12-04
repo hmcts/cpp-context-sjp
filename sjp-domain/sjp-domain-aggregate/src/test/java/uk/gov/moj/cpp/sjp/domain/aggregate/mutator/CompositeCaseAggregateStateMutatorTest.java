@@ -131,7 +131,7 @@ public class CompositeCaseAggregateStateMutatorTest {
         CaseAggregateState caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseReceived(true);
 
-        CaseUnmarkedReadyForDecision caseUnmarkedReadyForDecision = new CaseUnmarkedReadyForDecision(UUID.randomUUID(), PleaType.GUILTY);
+        CaseUnmarkedReadyForDecision caseUnmarkedReadyForDecision = new CaseUnmarkedReadyForDecision(UUID.randomUUID());
 
         CompositeCaseAggregateStateMutator.INSTANCE.apply(caseUnmarkedReadyForDecision, caseAggregateState);
 
@@ -182,7 +182,6 @@ public class CompositeCaseAggregateStateMutatorTest {
         CompositeCaseAggregateStateMutator.INSTANCE.apply(caseCompleted, caseAggregateState);
 
         assertTrue(caseAggregateState.isCaseCompleted());
-        assertThat(caseAggregateState.getStatus(), is(CaseStatus.COMPLETED));
     }
 
     @Test
@@ -191,7 +190,7 @@ public class CompositeCaseAggregateStateMutatorTest {
 
         UUID caseId = UUID.randomUUID();
         String datesToAvoid = "datesToAvoid";
-        DatesToAvoidAdded datesToAvoidAdded = new DatesToAvoidAdded(caseId, datesToAvoid, PleaType.GUILTY);
+        DatesToAvoidAdded datesToAvoidAdded = new DatesToAvoidAdded(caseId, datesToAvoid);
 
         CompositeCaseAggregateStateMutator.INSTANCE.apply(datesToAvoidAdded, caseAggregateState);
 
@@ -342,13 +341,11 @@ public class CompositeCaseAggregateStateMutatorTest {
 
     @Test
     public void shouldMutateStateOnPleaCancelledEvent() {
-        Boolean provedInAbsence = true;
         CaseAggregateState caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseReceived(true);
-        caseAggregateState.setPostingDate(LocalDate.now());
 
         UUID offenceId = UUID.randomUUID();
-        PleaCancelled pleaCancelled = new PleaCancelled(UUID.randomUUID(), offenceId, provedInAbsence);
+        PleaCancelled pleaCancelled = new PleaCancelled(UUID.randomUUID(), offenceId);
         CompositeCaseAggregateStateMutator.INSTANCE.apply(pleaCancelled, caseAggregateState);
 
         assertFalse(caseAggregateState.getOffenceIdsWithPleas().contains(offenceId));

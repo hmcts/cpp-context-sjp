@@ -98,7 +98,6 @@ public abstract class CaseCommandHandlerTest {
     public void verifyMocks() throws EventStreamException {
         verify(jsonEnvelope, atLeast(1)).payloadAsJsonObject();
         verify(jsonObject, atLeast(1)).getString(CaseCommandHandler.STREAM_ID);
-        verify(jsonObject, atLeast(0)).getString("pleaType", null);
         verify(eventSource).getStreamById(CASE_ID);
         verify(aggregateService).get(eventStream, CaseAggregate.class);
 

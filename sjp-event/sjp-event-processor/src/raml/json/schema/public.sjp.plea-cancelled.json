@@ -7,9 +7,6 @@
     },
     "offenceId": {
       "type": "string"
-    },
-    "createdDate":{
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
     }
   },
   "required": [

@@ -57,11 +57,11 @@ public class CaseCreatedListenerTest {
     @Mock
     private CaseReceivedToCase caseReceivedToCaseConverter;
 
-    @Mock
-    private CaseSearchResultService caseSearchResultService;
-
     @InjectMocks
     private CaseCreatedListener listener;
+
+    @Mock
+    private CaseSearchResultService caseSearchResultService;
 
     @Test
     @SuppressWarnings("deprecation")
@@ -79,12 +79,6 @@ public class CaseCreatedListenerTest {
     public void shouldHandleCaseReceivedEvent(){
         givenCaseReceivedEventIsRaised();
         whenTheListenerGetsTheEvent();
-        caseStatusIsSetTo(NO_PLEA_RECEIVED);
-    }
-
-    protected void caseStatusIsSetTo(CaseStatus noPleaReceived) {
-        verify(caseDetail).setStatus(noPleaReceived);
-        verify(caseRepository).save(caseDetail);
     }
 
     protected void whenTheListenerGetsTheEvent() {

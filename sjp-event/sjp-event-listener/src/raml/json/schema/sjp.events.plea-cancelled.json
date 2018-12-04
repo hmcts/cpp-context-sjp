@@ -7,9 +7,6 @@
     },
     "offenceId": {
       "type": "string"
-    },
-    "provedInAbsence":{
-      "type": "boolean"
     }
   },
   "required": [

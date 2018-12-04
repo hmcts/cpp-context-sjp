@@ -46,11 +46,14 @@ public class CourtReferralListenerTest {
     @Mock
     private CaseCourtReferralStatusRepository caseCourtReferralStatusRepository;
 
+    @InjectMocks
+    private CourtReferralListener courtReferralListener;
+
     @Mock
     private CaseRepository caseRepository;
 
-    @InjectMocks
-    private CourtReferralListener courtReferralListener;
+    @Mock
+    private CaseDetail caseDetail;
 
     @Test
     public void shouldMarkReferralStatusAsRejectedWhenCaseReferralRejected() {
@@ -85,13 +88,12 @@ public class CourtReferralListenerTest {
                 metadataWithRandomUUID("sjp.events.case-referred-for-court-hearing"),
                 caseReferredForCourtHearing);
 
-        final CaseDetail caseDetail = mock(CaseDetail.class);
         when(caseRepository.findBy(CASE_ID)).thenReturn(caseDetail);
-
         courtReferralListener.handleCaseReferredForCourtHearing(eventEnvelope);
 
         verify(caseCourtReferralStatusRepository).save(new CaseCourtReferralStatus(CASE_ID, RECEIVED_AT));
-        verify(caseDetail).setStatus(CaseStatus.REFERRED_FOR_COURT_HEARING);
+
+        verify(caseDetail).setReferredForCourtHearing(true);
     }
 
     @Test

@@ -90,7 +90,6 @@ public class CaseUpdatedListenerTest {
         when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId));
         when(readyCaseRepository.findBy(caseId)).thenReturn(readyCase);
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
-        when(caseDetail.getStatus()).thenReturn(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
         listener.caseCompleted(envelopeIn);
 
         verify(caseRepository).completeCase(caseId);
@@ -105,7 +104,6 @@ public class CaseUpdatedListenerTest {
         when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId));
         when(readyCaseRepository.findBy(caseId)).thenReturn(null);
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
-        when(caseDetail.getStatus()).thenReturn(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
 
         listener.caseCompleted(envelopeIn);
 

@@ -1,11 +1,12 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
 
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
 
 import java.io.Serializable;
@@ -23,8 +24,6 @@ import javax.persistence.ColumnResult;
 import javax.persistence.ConstructorResult;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
@@ -33,6 +32,7 @@ import javax.persistence.SqlResultSetMapping;
 import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @SqlResultSetMappings({
@@ -114,12 +114,11 @@ public class CaseDetail implements Serializable {
     @Column(name = "dates_to_avoid")
     private String datesToAvoid;
 
-    @Column(name = "status")
-    @Enumerated(EnumType.STRING)
-    private CaseStatus status;
-
     @Column(name = "listed_in_criminal_courts")
     private Boolean listedInCriminalCourts = Boolean.FALSE;
+
+    @Column(name = "referred_for_court_hearing")
+    private Boolean referredForCourtHearing;
 
     public CaseDetail() {
         defendant.setCaseDetail(this);
@@ -204,8 +203,8 @@ public class CaseDetail implements Serializable {
         this.prosecutingAuthority = prosecutingAuthority == null ? null : prosecutingAuthority.name();
     }
 
-    public Boolean getCompleted() {
-        return completed;
+    public boolean isCompleted() {
+        return isTrue(completed);
     }
 
     public void setCompleted(Boolean completed) {
@@ -300,14 +299,6 @@ public class CaseDetail implements Serializable {
         this.datesToAvoid = datesToAvoid;
     }
 
-    public CaseStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(CaseStatus status) {
-        this.status = status;
-    }
-
     public Boolean getListedInCriminalCourts() {
         return listedInCriminalCourts;
     }
@@ -328,9 +319,43 @@ public class CaseDetail implements Serializable {
         defendant.markDateOfBirthUpdated(updateDate);
     }
 
+    public boolean isReferredForCourtHearing() {
+        return isTrue(referredForCourtHearing);
+    }
+
+    public void setReferredForCourtHearing(final Boolean referredForCourtHearing) {
+        this.referredForCourtHearing = referredForCourtHearing;
+    }
+
+    public PleaType getFirstOffencePlea() {
+        return defendant.getOffences() == null ? null :
+                defendant
+                        .getOffences()
+                        .stream()
+                        .findFirst()
+                        .map(OffenceDetail::getPlea)
+                        .orElse(null);
+    }
+
+    public LocalDate getFirstOffencePleaDate() {
+        return defendant.getOffences() == null ? null :
+                defendant
+                        .getOffences()
+                        .stream()
+                        .findFirst()
+                        .map(OffenceDetail::getPleaDate)
+                        .map(ZonedDateTime::toLocalDate)
+                        .orElse(null);
+    }
+
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, SHORT_PREFIX_STYLE);
     }
 
+    public boolean isAnyOffencePendingWithdrawal() {
+        return defendant.getOffences().stream()
+                .map(OffenceDetail::getPendingWithdrawal)
+                .anyMatch(BooleanUtils::isTrue);
+    }
 }

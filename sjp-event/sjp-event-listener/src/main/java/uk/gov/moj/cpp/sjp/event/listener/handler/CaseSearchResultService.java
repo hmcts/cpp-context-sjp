@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.listener.handler;
 
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResultList;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 
@@ -40,8 +41,11 @@ public class CaseSearchResultService {
     }
 
     @Transactional
-    public void updatePleaReceivedDate(final UUID caseId, final LocalDate pleaReceived) {
-        repository.findByCaseId(caseId).forEach(searchResult -> searchResult.setPleaDate(pleaReceived));
+    public void updatePleaReceivedDate(final UUID caseId, final LocalDate pleaReceived, final PleaType plea) {
+        repository.findByCaseId(caseId).forEach(searchResult -> {
+            searchResult.setPleaDate(pleaReceived);
+            searchResult.setPleaType(plea);
+        });
     }
 
     private void updateCaseAssignment(final UUID caseId, boolean assigned) {

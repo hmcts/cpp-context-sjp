@@ -49,39 +49,4 @@ public class DatesToAvoidAddedListenerTest {
         verify(caseRepository).updateDatesToAvoid(caseId, datesToAvoid);
         verify(pendingDatesToAvoidRepository).removeByCaseId(caseId);
     }
-
-    @Test
-    public void caseStatusShouldBePleaReceivedReadyForDecisionWhenDatesToAvoidAdded() {
-        final UUID caseId = UUID.randomUUID();
-        final String datesToAvoid = "Away first two weeks of July 2018";
-        final JsonEnvelope event = envelope()
-                .withPayloadOf(caseId.toString(), "caseId")
-                .withPayloadOf(datesToAvoid, "datesToAvoid")
-                .withPayloadOf(NOT_GUILTY.name(), "pleaType")
-                .build();
-
-        final CaseDetail caseDetail = new CaseDetail();
-        caseDetail.setStatus(PLEA_RECEIVED_NOT_READY_FOR_DECISION);
-        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
-        datesToAvoidAddedListener.addDatesToAvoid(event);
-        assertThat(caseDetail.getStatus(), is(PLEA_RECEIVED_READY_FOR_DECISION));
-    }
-
-
-    @Test
-    public void caseStatusShouldBeWithdrawalReadyForDecisionWhenDatesToAvoidAddedAndCaseIsAlreadyWithdrawn() {
-        final UUID caseId = UUID.randomUUID();
-        final String datesToAvoid = "Away first two weeks of July 2018";
-        final JsonEnvelope event = envelope()
-                .withPayloadOf(caseId.toString(), "caseId")
-                .withPayloadOf(datesToAvoid, "datesToAvoid")
-                .withPayloadOf(NOT_GUILTY.name(), "pleaType")
-                .build();
-
-        final CaseDetail caseDetail = new CaseDetail();
-        caseDetail.setStatus(WITHDRAWAL_REQUEST_READY_FOR_DECISION);
-        when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
-        datesToAvoidAddedListener.addDatesToAvoid(event);
-        assertThat(caseDetail.getStatus(), is(WITHDRAWAL_REQUEST_READY_FOR_DECISION));
-    }
 }

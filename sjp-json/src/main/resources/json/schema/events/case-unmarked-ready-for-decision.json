@@ -5,9 +5,6 @@
   "properties": {
     "caseId": {
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
-    },
-    "pleaType":{
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-type.json"
     }
   },
   "required": [

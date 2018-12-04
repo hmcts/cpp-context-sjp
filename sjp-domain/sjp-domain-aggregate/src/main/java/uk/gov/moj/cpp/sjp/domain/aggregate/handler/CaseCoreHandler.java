@@ -97,7 +97,7 @@ public class CaseCoreHandler {
                 null,
                 state
         ).orElse(Stream.of(state.getDatesToAvoid() == null ?
-                new DatesToAvoidAdded(state.getCaseId(), datesToAvoid, state.getPlea()) :
+                new DatesToAvoidAdded(state.getCaseId(), datesToAvoid) :
                 new DatesToAvoidUpdated(state.getCaseId(), datesToAvoid)));
     }
 
@@ -205,7 +205,7 @@ public class CaseCoreHandler {
 
     public Stream<Object> unmarkCaseReadyForDecision(final CaseAggregateState state) {
         return state.getReadinessReason() != null
-                ? Stream.of(new CaseUnmarkedReadyForDecision(state.getCaseId(), state.getPlea()))
+                ? Stream.of(new CaseUnmarkedReadyForDecision(state.getCaseId()))
                 : Stream.of();
     }
 

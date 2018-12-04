@@ -15,16 +15,13 @@ public class PleaCancelled {
 
     private final UUID caseId;
     private final UUID offenceId;
-    private final Boolean provedInAbsence;
 
     @JsonCreator
     public PleaCancelled(
             @JsonProperty("caseId") final UUID caseId,
-            @JsonProperty("offenceId") final UUID offenceId,
-            final Boolean provedInAbsence) {
+            @JsonProperty("offenceId") final UUID offenceId) {
         this.caseId = caseId;
         this.offenceId = offenceId;
-        this.provedInAbsence = provedInAbsence;
     }
 
     public UUID getCaseId() {
@@ -33,9 +30,5 @@ public class PleaCancelled {
 
     public UUID getOffenceId() {
         return offenceId;
-    }
-
-    public Boolean getProvedInAbsence() {
-        return provedInAbsence;
     }
 }

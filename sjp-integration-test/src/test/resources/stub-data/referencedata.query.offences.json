@@ -1,8 +1,8 @@
 {
   "offences": [
     {
-      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
-      "cjsoffencecode": "PS90010",
+      "offenceId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "cjsOffenceCode": "PS90010",
       "title": "Public service vehicle - passenger use altered / defaced ticket",
       "pnldref": "H3188",
       "offencestartdate": "2006-01-27",

@@ -56,7 +56,7 @@ public class ReferenceDataServiceStub {
                                 .add("prosecutors", createArrayBuilder()
                                         .add(createObjectBuilder()
                                                 .add("id", prosecutorId.toString())
-                                                .add("prosecutorCode", prosecutingAuthorityCode)))
+                                                .add("shortName", prosecutingAuthorityCode)))
                                 .build()
                                 .toString())));
 

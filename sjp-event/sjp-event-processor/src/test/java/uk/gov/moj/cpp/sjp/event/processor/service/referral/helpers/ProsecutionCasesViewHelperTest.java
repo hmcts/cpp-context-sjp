@@ -152,7 +152,7 @@ public class ProsecutionCasesViewHelperTest {
                 .add("prosecutors", createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add("id", PROSECUTOR_ID)
-                                .add("prosecutorCode", PROSECUTOR_CODE)))
+                                .add("shortName", PROSECUTOR_CODE)))
                 .build();
     }
 
@@ -160,8 +160,8 @@ public class ProsecutionCasesViewHelperTest {
         return createObjectBuilder()
                 .add("offences", createArrayBuilder()
                         .add(createObjectBuilder()
-                                .add("cjsoffencecode", OFFENCE_CJS_CODE)
-                                .add("id", OFFENCE_DEFINITION_ID)))
+                                .add("cjsOffenceCode", OFFENCE_CJS_CODE)
+                                .add("offenceId", OFFENCE_DEFINITION_ID)))
                 .build();
     }
 

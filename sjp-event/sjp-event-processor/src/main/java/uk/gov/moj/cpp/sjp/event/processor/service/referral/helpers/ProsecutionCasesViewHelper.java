@@ -55,7 +55,7 @@ public class ProsecutionCasesViewHelper {
         final JsonObject prosecutor = prosecutors.getJsonArray("prosecutors").getJsonObject(0);
         final ProsecutionCaseIdentifierView prosecutionCaseIdentifier = new ProsecutionCaseIdentifierView(
                 UUID.fromString(prosecutor.getString("id")),
-                prosecutor.getString("prosecutorCode"),
+                prosecutor.getString("shortName"),
                 caseDetails.getUrn());
 
         final ProsecutionCaseView prosecutionCaseView = new ProsecutionCaseView(
@@ -119,8 +119,8 @@ public class ProsecutionCasesViewHelper {
             final NotifiedPleaView notifiedPleaView) {
 
         final Optional<String> offenceDefinitionIdOptional = referenceDataOffences.getJsonArray("offences").stream()
-                .filter(referenceDataOffence -> ((JsonObject) referenceDataOffence).getString("cjsoffencecode").equals(offenceDetails.getCjsCode()))
-                .map(referenceDataOffence -> ((JsonObject) referenceDataOffence).getString("id"))
+                .filter(referenceDataOffence -> ((JsonObject) referenceDataOffence).getString("cjsOffenceCode").equals(offenceDetails.getCjsCode()))
+                .map(referenceDataOffence -> ((JsonObject) referenceDataOffence).getString("offenceId"))
                 .findFirst();
 
         return new OffenceView(

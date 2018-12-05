@@ -10,6 +10,8 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.time.LocalDate;
+
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
@@ -45,4 +47,11 @@ public class ReferenceDataService {
         return response.payloadAsJsonObject();
     }
 
+    public JsonObject getDocumentMetadata(final LocalDate date, final JsonEnvelope envelope) {
+        final JsonObject payload = createObjectBuilder().add("date", date.toString()).build();
+        final JsonEnvelope request = enveloper.withMetadataFrom(
+                envelope, "referencedata.get-all-document-metadata").apply(payload);
+        final JsonEnvelope response = requester.requestAsAdmin(request);
+        return response.payloadAsJsonObject();
+    }
 }

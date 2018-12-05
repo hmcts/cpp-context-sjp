@@ -19,12 +19,14 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.resulting.event.DecisionToReferCaseForCourtHearingSaved;
 import uk.gov.moj.cpp.sjp.ReferCaseForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.CourtDocumentView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingRequestView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReferCaseForCourtHearingCommand;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.SjpReferralView;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
+import uk.gov.moj.cpp.sjp.event.processor.service.referral.CourtDocumentsDataSourcingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.HearingRequestsDataSourcingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.ProsecutionCasesDataSourcingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.SjpReferralDataSourcingService;
@@ -67,6 +69,9 @@ public class CourtReferralProcessor {
 
     @Inject
     private HearingRequestsDataSourcingService hearingRequestsDataSourcingService;
+
+    @Inject
+    private CourtDocumentsDataSourcingService courtDocumentsDataSourcingService;
 
     @Handles("public.resulting.decision-to-refer-case-for-court-hearing-saved")
     public void decisionToReferCaseForCourtHearingSaved(final Envelope<DecisionToReferCaseForCourtHearingSaved> event) {
@@ -136,6 +141,10 @@ public class CourtReferralProcessor {
                 caseReferredForCourtHearing,
                 defendantOnlinePleaDetails,
                 emptyEnvelope);
+        final List<CourtDocumentView> courtDocumentViews = courtDocumentsDataSourcingService.createCourtDocumentViews(
+                caseReferredForCourtHearing,
+                caseDetails,
+                emptyEnvelope);
 
         final JsonEnvelope command = enveloper.withMetadataFrom(
                 emptyEnvelope,
@@ -143,7 +152,8 @@ public class CourtReferralProcessor {
                 .apply(new ReferCaseForCourtHearingCommand(
                         sjpReferral,
                         prosecutionCasesView,
-                        listHearingRequestViews));
+                        listHearingRequestViews,
+                        courtDocumentViews));
 
         sender.send(command);
     }

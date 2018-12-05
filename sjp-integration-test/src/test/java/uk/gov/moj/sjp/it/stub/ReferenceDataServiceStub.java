@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.net.URLEncoder.encode;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
@@ -101,6 +102,26 @@ public class ReferenceDataServiceStub {
                                 .toString())));
 
         waitForStubToBeReady(urlPath, "application/vnd.reference-data.referral-reasons+json");
+    }
+
+    public static void stubReferralDocumentMetadataQuery(final String uuid, final String documentType) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/documents-metadata/.*";
+
+        stubFor(get(urlPathMatching(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, "application/vnd.referencedata.get-all-document-metadata+json")
+                        .withBody(createObjectBuilder()
+                                .add("documentsMetadata", createArrayBuilder()
+                                        .add(createObjectBuilder()
+                                                .add("documentType", documentType)
+                                                .add("uuid", uuid)))
+                                .build()
+                                .toString())));
+
+        waitForStubToBeReady("/referencedata-service/query/api/rest/referencedata/documents-metadata/2019-01-01", "application/vnd.reference-data.get-all-document-metadata+json");
     }
 
     public static void stubCourtByCourtHouseOUCodeQuery(final String courtHouseOUCode, final String localJusticeAreaNationalCourtCode, final String courtHouseName) {

@@ -8,16 +8,17 @@ public class ReferCaseForCourtHearingCommand {
 
     public ReferCaseForCourtHearingCommand(final SjpReferralView sjpReferral,
                                            final List<ProsecutionCaseView> prosecutionCases,
-                                           final List<HearingRequestView> listHearingRequests) {
+                                           final List<HearingRequestView> listHearingRequests,
+                                           final List<CourtDocumentView> courtDocuments) {
 
         this.courtReferral = new CourtReferralView(
                 sjpReferral,
                 prosecutionCases,
-                listHearingRequests);
+                listHearingRequests,
+                courtDocuments);
     }
 
     public CourtReferralView getCourtReferral() {
         return courtReferral;
     }
-
 }

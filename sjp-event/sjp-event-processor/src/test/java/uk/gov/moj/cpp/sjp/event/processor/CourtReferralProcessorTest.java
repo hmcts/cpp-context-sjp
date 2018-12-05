@@ -41,19 +41,27 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.resulting.event.DecisionToReferCaseForCourtHearingSaved;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.CourtDocumentView;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.DefendantDocumentView;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.DocumentCategoryView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingRequestView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingTypeView;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.MaterialView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseIdentifierView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReferringJudicialDecisionView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.SjpReferralView;
+import uk.gov.moj.cpp.sjp.event.processor.service.ResultingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
+import uk.gov.moj.cpp.sjp.event.processor.service.referral.CourtDocumentsDataSourcingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.HearingRequestsDataSourcingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.ProsecutionCasesDataSourcingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.SjpReferralDataSourcingService;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -85,6 +93,9 @@ public class CourtReferralProcessorTest {
 
     @Mock
     private SjpService sjpService;
+
+    @Mock
+    private CourtDocumentsDataSourcingService courtDocumentsDataSourcingService;
 
     @Spy
     private Clock clock = new StoppedClock(now(UTC));
@@ -193,6 +204,9 @@ public class CourtReferralProcessorTest {
         final HearingRequestView listHearingRequestView = createDummyHearingRequestView();
         when(hearingRequestsDataSourcingService.createHearingRequestViews(any(), any(), any(), any())).thenReturn(singletonList(listHearingRequestView));
 
+        final CourtDocumentView courtDocumentView = createDummyCourtDocumentView();
+        when(courtDocumentsDataSourcingService.createCourtDocumentViews(any(), any(), any())).thenReturn(singletonList(courtDocumentView));
+
         courtReferralProcessor.caseReferredForCourtHearing(caseReferredForCourtHearingEnvelope);
 
         verify(sender).send(argThat(
@@ -217,8 +231,66 @@ public class CourtReferralProcessorTest {
                                 withJsonPath("$.courtReferral.sjpReferral.noticeDate", equalTo(sjpReferralView.getNoticeDate().format(DateTimeFormatter.ISO_DATE))),
                                 withJsonPath("$.courtReferral.sjpReferral.referralDate", equalTo(sjpReferralView.getReferralDate().format(DateTimeFormatter.ISO_DATE))),
                                 withJsonPath("$.courtReferral.sjpReferral.referringJudicialDecision.location", equalTo(sjpReferralView.getReferringJudicialDecision().getLocation())),
-                                withJsonPath("$.courtReferral.sjpReferral.referringJudicialDecision.judiciary.length()", equalTo(sjpReferralView.getReferringJudicialDecision().getJudiciary().size()))
+                                withJsonPath("$.courtReferral.sjpReferral.referringJudicialDecision.judiciary.length()", equalTo(sjpReferralView.getReferringJudicialDecision().getJudiciary().size())),
+                                withJsonPath("$.courtReferral.courtDocuments.length()", equalTo(1)),
+                                withJsonPath("$.courtReferral.courtDocuments[0].courtDocumentId", equalTo(courtDocumentView.getCourtDocumentId().toString())),
+                                withJsonPath("$.courtReferral.courtDocuments[0].name", equalTo(courtDocumentView.getName())),
+                                withJsonPath("$.courtReferral.courtDocuments[0].documentTypeId", equalTo(courtDocumentView.getDocumentTypeId().toString())),
+                                withJsonPath("$.courtReferral.courtDocuments[0].mimeType", equalTo(courtDocumentView.getMimeType())),
+                                withJsonPath("$.courtReferral.courtDocuments[0].documentCategory.defendantDocument.prosecutionCaseId", equalTo(courtDocumentView.getDocumentCategory().getDefendantDocument().getProsecutionCaseId().toString())),
+                                withJsonPath("$.courtReferral.courtDocuments[0].materials[0].id", equalTo(courtDocumentView.getMaterials().get(0).getId().toString())),
+                                withJsonPath("$.courtReferral.courtDocuments[0].materials[0].name", equalTo(courtDocumentView.getMaterials().get(0).getName()))
                         )))));
+    }
+
+    private CourtDocumentView createDummyCourtDocumentView() {
+        return new CourtDocumentView(
+                randomUUID(),
+                new DocumentCategoryView(
+                        new DefendantDocumentView(
+                                randomUUID(),
+                                emptyList()
+                        )
+                ),
+                "Bank Statement",
+                randomUUID(),
+                "pdf",
+                Collections.singletonList(new MaterialView(randomUUID(),
+                        "BankStatment.pdf",
+                        ZonedDateTime.now(),
+                        "pdf"))
+        );
+    }
+
+    private HearingRequestView createDummyHearingRequestView() {
+        return new HearingRequestView(
+                "magistrates",
+                20,
+                "wednesdays",
+                "tricky defendant",
+                new HearingTypeView(randomUUID()),
+                emptyList());
+    }
+
+    private SjpReferralView createDummySjpReferralView() {
+        return new SjpReferralView(
+                LocalDate.now(),
+                LocalDate.now().plusDays(2),
+                new ReferringJudicialDecisionView(
+                        "Lavender Hill Magistrates' Court",
+                        emptyList()));
+    }
+
+    private ProsecutionCaseView createDummyProsecutionCaseView(UUID caseId) {
+        return new ProsecutionCaseView(
+                caseId,
+                "J",
+                "You did it",
+                new ProsecutionCaseIdentifierView(
+                        randomUUID(),
+                        "TFL",
+                        "TFL12345"),
+                emptyList());
     }
 
     @Test
@@ -231,34 +303,4 @@ public class CourtReferralProcessorTest {
                 )));
     }
 
-    private static HearingRequestView createDummyHearingRequestView() {
-        return new HearingRequestView(
-                "magistrates",
-                20,
-                "wednesdays",
-                "tricky defendant",
-                new HearingTypeView(UUID.randomUUID()),
-                emptyList());
-    }
-
-    private static SjpReferralView createDummySjpReferralView() {
-        return new SjpReferralView(
-                LocalDate.now(),
-                LocalDate.now().plusDays(2),
-                new ReferringJudicialDecisionView(
-                        "Lavender Hill Magistrates' Court",
-                        emptyList()));
-    }
-
-    private static ProsecutionCaseView createDummyProsecutionCaseView(UUID caseId) {
-        return new ProsecutionCaseView(
-                caseId,
-                "J",
-                "You did it",
-                new ProsecutionCaseIdentifierView(
-                        UUID.randomUUID(),
-                        "TFL",
-                        "TFL12345"),
-                emptyList());
-    }
 }

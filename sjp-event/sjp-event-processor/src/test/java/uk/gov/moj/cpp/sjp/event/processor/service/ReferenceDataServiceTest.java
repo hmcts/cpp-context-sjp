@@ -21,6 +21,8 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
+import java.time.LocalDate;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 
@@ -79,6 +81,26 @@ public class ReferenceDataServiceTest {
 
         final JsonObject referralReasons = referenceDataService.getReferralReasons(envelope);
         assertThat(referralReasons, is(responsePayload));
+    }
+
+    @Test
+    public void shouldReturnDocumentsMetaData() {
+        final JsonObject responsePayload = createObjectBuilder().add("date", Json.createArrayBuilder()).build();
+        final JsonEnvelope queryResponse = envelopeFrom(
+                metadataWithRandomUUID("referencedata.get-all-document-metadata"),
+                responsePayload);
+
+        final LocalDate date = LocalDate.now();
+        when(requestDocumentMetadata()).thenReturn(queryResponse);
+
+        final JsonObject documentsMetadata = referenceDataService.getDocumentMetadata(date, envelope);
+        assertThat(documentsMetadata, is(responsePayload));
+    }
+
+    private Object requestDocumentMetadata() {
+        return requester.requestAsAdmin(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(envelope).withName("referencedata.get-all-document-metadata"),
+                payloadIsJson(notNullValue()))));
     }
 
     private Object requestReferralReasons() {

@@ -1,13 +1,19 @@
 package uk.gov.moj.cpp.sjp.event.processor.model.referral;
 
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
+
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 public class CourtReferralView {
 
     private final SjpReferralView sjpReferral;
     private final List<ProsecutionCaseView> prosecutionCases;
     private final List<HearingRequestView> listHearingRequests;
+
+    @JsonInclude(NON_EMPTY)
     private final List<CourtDocumentView> courtDocuments;
 
     public CourtReferralView(final SjpReferralView sjpReferral,

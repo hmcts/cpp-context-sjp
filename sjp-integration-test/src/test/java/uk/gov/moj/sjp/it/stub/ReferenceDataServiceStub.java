@@ -104,7 +104,7 @@ public class ReferenceDataServiceStub {
         waitForStubToBeReady(urlPath, "application/vnd.reference-data.referral-reasons+json");
     }
 
-    public static void stubReferralDocumentMetadataQuery(final String uuid, final String documentType) {
+    public static void stubReferralDocumentMetadataQuery(final String id, final String documentType) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
 
         final String urlPath = "/referencedata-service/query/api/rest/referencedata/documents-metadata/.*";
@@ -117,7 +117,7 @@ public class ReferenceDataServiceStub {
                                 .add("documentsMetadata", createArrayBuilder()
                                         .add(createObjectBuilder()
                                                 .add("documentType", documentType)
-                                                .add("uuid", uuid)))
+                                                .add("id", id)))
                                 .build()
                                 .toString())));
 

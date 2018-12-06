@@ -82,7 +82,7 @@ public class CourtDocumentsDataSourcingService {
                 .stream()
                 .collect(toMap(
                         metadata -> metadata.getString("documentType"),
-                        metadata -> fromString(metadata.getString("uuid"))));
+                        metadata -> fromString(metadata.getString("id"))));
     }
 
     private Map<String, MaterialView> createDocumentIdToMaterialView(

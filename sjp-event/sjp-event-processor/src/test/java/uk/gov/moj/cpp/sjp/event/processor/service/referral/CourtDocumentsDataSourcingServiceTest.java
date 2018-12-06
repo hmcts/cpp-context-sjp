@@ -104,7 +104,7 @@ public class CourtDocumentsDataSourcingServiceTest {
                 .add("documentsMetadata", createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add("documentType", CC_DOCUMENT_TYPE)
-                                .add("uuid", DOCUMENT_TYPE_ID.toString())))
+                                .add("id", DOCUMENT_TYPE_ID.toString())))
                 .build();
     }
 

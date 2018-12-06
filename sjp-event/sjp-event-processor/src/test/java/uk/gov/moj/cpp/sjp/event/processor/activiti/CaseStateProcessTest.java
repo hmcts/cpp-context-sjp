@@ -441,11 +441,12 @@ public class CaseStateProcessTest {
 
     @Test
     @Deployment(resources = PROCESS_PATH)
-    public void shouldUpdatePleaWhenNotGuiltyAfter10Days() {
+    public void shouldUpdatePleaWhenNotGuiltyAfter10DaysAndBeAbleToAddDatesToAvoidAfter() {
         final UUID offenceId = randomUUID();
         final LocalDate postingDate = LocalDate.now().plusDays(1);
         final ZonedDateTime pleaDatesToAvoidDays = ZonedDateTime.now().minusDays(12);
         final PleaType pleaType = PleaType.NOT_GUILTY;
+        final String datesToAvoid = "my-dates-to-avoid";
 
         final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
 
@@ -478,9 +479,19 @@ public class CaseStateProcessTest {
                 withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
                 withProcessVariable(PLEA_DEADLINE_ADD_DATES_TO_AVOID_VARIABLE, pleaDatesToAvoidDays.plusDays(10).format(ISO_LOCAL_DATE_TIME))));
 
-        assertNotPossibleToReAddDatesToAvoid(processInstanceId);
+        assertThat(delegatesVerifier.isActivitiItemRunning(processInstanceId, "waitForDatesToAvoidGateway"), equalTo(false));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(1));
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, is(1));
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, is(1));
+
+        delegatesVerifier.verifyNumberOfExecution(DATES_TO_AVOID_PROCESSED, 1);
+
+        // the add-dates-to-avoid signal need to be listened also if the 10 days are passed - this to emit the public-event.
+        callAddDatesToAvoid(datesToAvoid);
+
+        delegatesVerifier.verifyNumberOfExecution(DATES_TO_AVOID_PROCESSED, 2);
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(0));
+
 
         delegatesVerifier.assertProcessFinished(processInstanceId, false);
     }

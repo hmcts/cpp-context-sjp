@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test" id="m1479934344474" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="1.5.0.Final-v20180515-1642-B1" name="">
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:activiti="http://activiti.org/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://www.activiti.org/test" id="m1479934344474"
+             exporter="org.eclipse.bpmn2.modeler.core"
+             exporterVersion="1.5.0.Final-v20180515-1642-B1" name="">
   <signal id="caseCompleted" name="caseCompleted"></signal>
   <signal id="datesToAvoidAdded" name="datesToAvoidAdded"></signal>
   <signal id="pleaUpdated" name="pleaUpdated"></signal>
@@ -103,10 +113,10 @@
         <intermediateCatchEvent id="signalintermediatecatchevent6" name="SignalCatchEvent">
           <signalEventDefinition signalRef="caseCompleted"></signalEventDefinition>
         </intermediateCatchEvent>
-        <intermediateThrowEvent id="signalintermediatethrowevent1" name="SignalThrowEvent">
-          <signalEventDefinition signalRef="datesToAvoidAdded"></signalEventDefinition>
-        </intermediateThrowEvent>
-        <sequenceFlow id="flow197" sourceRef="datesToAvoidNotReceived" targetRef="signalintermediatethrowevent1"></sequenceFlow>
+        <sequenceFlow id="flow201" sourceRef="datesToAvoidNotReceived" targetRef="terminateendevent1"></sequenceFlow>
+        <endEvent id="terminateendevent1" name="TerminateEndEvent">
+          <terminateEventDefinition></terminateEventDefinition>
+        </endEvent>
       </subProcess>
       <serviceTask id="pleaUpdatedDelegate" name="plea updated" activiti:delegateExpression="${pleaUpdatedDelegate}"></serviceTask>
       <sequenceFlow id="flow187" sourceRef="pleaUpdatedSignalReceived" targetRef="pleaUpdatedDelegate"></sequenceFlow>
@@ -137,6 +147,7 @@
         <signalEventDefinition signalRef="datesToAvoidAdded"></signalEventDefinition>
       </boundaryEvent>
       <sequenceFlow id="flow198" sourceRef="boundarysignal3" targetRef="endevent3"></sequenceFlow>
+      <sequenceFlow id="flow200" sourceRef="pleaUpdatedAsNotGuiltySubProcess" targetRef="datesToAvoidProcessedDelegate"></sequenceFlow>
       <textAnnotation id="textannotation1">
         <text>for plea NOT_GUILTY do both paths</text>
       </textAnnotation>
@@ -263,8 +274,8 @@
       <bpmndi:BPMNShape bpmnElement="signalintermediatecatchevent6" id="BPMNShape_signalintermediatecatchevent6">
         <omgdc:Bounds height="35.0" width="35.0" x="980.0" y="1100.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="signalintermediatethrowevent1" id="BPMNShape_signalintermediatethrowevent1">
-        <omgdc:Bounds height="35.0" width="35.0" x="670.0" y="1070.0"></omgdc:Bounds>
+      <bpmndi:BPMNShape bpmnElement="terminateendevent1" id="BPMNShape_terminateendevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="680.0" y="1070.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="boundarysignal1" id="BPMNShape_boundarysignal1">
         <omgdc:Bounds height="30.0" width="30.0" x="810.0" y="1072.0"></omgdc:Bounds>
@@ -472,9 +483,9 @@
         <omgdi:waypoint x="560.0" y="1087.0"></omgdi:waypoint>
         <omgdi:waypoint x="590.0" y="1087.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge bpmnElement="flow197" id="BPMNEdge_flow197">
+      <bpmndi:BPMNEdge bpmnElement="flow201" id="BPMNEdge_flow201">
         <omgdi:waypoint x="625.0" y="1087.0"></omgdi:waypoint>
-        <omgdi:waypoint x="670.0" y="1087.0"></omgdi:waypoint>
+        <omgdi:waypoint x="680.0" y="1087.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow187" id="BPMNEdge_flow187">
         <omgdi:waypoint x="605.0" y="930.0"></omgdi:waypoint>
@@ -533,6 +544,12 @@
       <bpmndi:BPMNEdge bpmnElement="flow198" id="BPMNEdge_flow198">
         <omgdi:waypoint x="840.0" y="1056.0"></omgdi:waypoint>
         <omgdi:waypoint x="887.0" y="1068.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow200" id="BPMNEdge_flow200">
+        <omgdi:waypoint x="625.0" y="1040.0"></omgdi:waypoint>
+        <omgdi:waypoint x="792.0" y="1013.0"></omgdi:waypoint>
+        <omgdi:waypoint x="792.0" y="921.0"></omgdi:waypoint>
+        <omgdi:waypoint x="692.0" y="888.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="association1" id="BPMNEdge_association1">
         <omgdi:waypoint x="692.0" y="901.0"></omgdi:waypoint>

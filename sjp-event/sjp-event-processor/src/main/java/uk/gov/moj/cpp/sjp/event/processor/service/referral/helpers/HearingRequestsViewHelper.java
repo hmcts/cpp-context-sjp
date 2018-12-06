@@ -21,10 +21,13 @@ import javax.json.JsonObject;
 
 public class HearingRequestsViewHelper {
 
+    private static final String WELSH_HEARING_LANGUAGE_CODE = "W";
+
     public List<HearingRequestView> createHearingRequestViews(
             final CaseDetails caseDetails,
             final JsonObject referralReasons,
             final DefendantsOnlinePlea defendantPleaDetails,
+            final JsonObject caseFileDefendantDetails,
             final CaseReferredForCourtHearing caseReferredForCourtHearingEvent) {
 
         final Optional<PleaDetails> defendantPleaDetailsOptional = Optional.ofNullable(defendantPleaDetails)
@@ -38,6 +41,7 @@ public class HearingRequestsViewHelper {
                 caseDetails,
                 referralReasons,
                 defendantUnavailability,
+                caseFileDefendantDetails,
                 caseReferredForCourtHearingEvent);
 
         final HearingRequestView listHearingRequestView = new HearingRequestView(
@@ -55,6 +59,7 @@ public class HearingRequestsViewHelper {
             final CaseDetails caseDetails,
             final JsonObject referralReasons,
             final String defendantUnavailability,
+            final JsonObject caseFileDefendantDetails,
             final CaseReferredForCourtHearing caseReferredForCourtHearingEvent) {
 
         final Defendant defendant = caseDetails.getDefendant();
@@ -72,11 +77,17 @@ public class HearingRequestsViewHelper {
                                 caseDetails.getId(),
                                 referralReasonId)));
 
+        final String hearingLanguage = Optional.ofNullable(caseFileDefendantDetails)
+                .map(details -> details.getString("hearingLanguage"))
+                .map(language -> WELSH_HEARING_LANGUAGE_CODE.equals(language) ? "WELSH" : "ENGLISH")
+                .orElse("ENGLISH");
+
         return new DefendantRequestView(
                 caseReferredForCourtHearingEvent.getCaseId(),
                 referralReasonView,
                 defendantUnavailability,
                 "SJP_REFERRAL",
+                hearingLanguage,
                 singletonList(defendant.getOffences().get(0).getId()));
     }
 

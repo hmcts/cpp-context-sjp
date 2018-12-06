@@ -21,6 +21,10 @@ public class ContactView {
         this.secondaryEmail = secondaryEmail;
     }
 
+    public ContactView(final String work) {
+        this(null, work, null, null, null);
+    }
+
     public String getHome() {
         return home;
     }

@@ -18,6 +18,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.query.DefendantsOnlinePlea;
+import uk.gov.justice.json.schemas.domains.sjp.query.EmployerDetails;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
@@ -65,6 +66,23 @@ public class SjpServiceTest {
     }
 
     @Test
+    public void shouldGetDefendantEmployerDetails() {
+        final UUID defendantId = randomUUID();
+
+        final EmployerDetails employer = EmployerDetails.employerDetails()
+                .withName("employerName")
+                .build();
+        final Envelope<EmployerDetails> employerEnvelope = Envelope.envelopeFrom(
+                metadataWithRandomUUID("sjp.query.employer").build(),
+                employer);
+        when(requestEmployerDetails(defendantId)).thenReturn(employerEnvelope);
+
+        final EmployerDetails result = sjpService.getEmployerDetails(defendantId, envelope);
+
+        assertThat(result, is(employer));
+    }
+
+    @Test
     public void shouldGetSessionDetails() {
         final UUID sessionId = randomUUID();
         final JsonObject responsePayload = createObjectBuilder().add("sessionId", sessionId.toString()).build();
@@ -96,6 +114,15 @@ public class SjpServiceTest {
         return requester.requestAsAdmin(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("sjp.query.session"),
                 payloadIsJson(withJsonPath("$.sessionId", equalTo(sessionId))))));
+    }
+
+    private Object requestEmployerDetails(final UUID defendantId) {
+        return requester.request(
+                argThat(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(envelope).withName("sjp.query.employer"),
+                                payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId.toString()))))),
+                eq(EmployerDetails.class));
     }
 
     private Object requestOnlinePleaDetails() {

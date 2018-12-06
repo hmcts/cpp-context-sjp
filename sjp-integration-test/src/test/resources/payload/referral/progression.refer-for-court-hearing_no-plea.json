@@ -2,10 +2,12 @@
   "courtReferral": {
     "prosecutionCases": [
       {
+        "statementOfFactsWelsh": "some facts in welsh",
         "defendants": [
           {
             "offences": [
               {
+                "endDate": "2019-01-10",
                 "count": 1,
                 "convictionDate": "${CONVICTION_DATE}",
                 "orderIndex": 1,
@@ -26,8 +28,8 @@
             "prosecutionCaseId": "${CASE_ID}",
             "personDefendant": {
               "personDetails": {
-                "firstName": "David",
                 "lastName": "LLOYD",
+                "occupation": "worker",
                 "address": {
                   "address3": "England",
                   "address2": "London",
@@ -37,13 +39,37 @@
                   "address4": "UK"
                 },
                 "gender": "MALE",
+                "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363",
+                "dateOfBirth": "1980-07-15",
+                "title": "MR",
+                "documentationLanguageNeeds": "WELSH",
+                "firstName": "David",
+                "occupationCode": "1",
+                "ethnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
+                "nationalInsuranceNumber": "NINO",
                 "contact": {
+                  "secondaryEmail": "secondary-email@abv.bg",
+                  "work": "+21312321312312",
                   "mobile": "07123456789",
                   "primaryEmail": "email@email.com",
                   "home": "02087654321"
                 },
-                "dateOfBirth": "1980-07-15",
-                "title": "MR"
+                "specificRequirements": "wobbling a bit, but I am fine"
+              },
+              "employerOrganisation": {
+                "address": {
+                  "address3": "Lant House",
+                  "address2": "Flat 8",
+                  "address1": "Foo",
+                  "postcode": "SE1 1PJ",
+                  "address5": "Greater London",
+                  "address4": "London"
+                },
+                "contact": {
+                  "work": "02020202020"
+                },
+                "name": "Test Org",
+                "id": "${DEFENDANT_ID}"
               }
             }
           }
@@ -84,6 +110,7 @@
         "estimateMinutes": 10,
         "listDefendantRequests": [
           {
+            "hearingLanguageNeeds": "WELSH",
             "referralReason": {
               "description": "referral reason",
               "id": "${REFERRAL_REASON_ID}",

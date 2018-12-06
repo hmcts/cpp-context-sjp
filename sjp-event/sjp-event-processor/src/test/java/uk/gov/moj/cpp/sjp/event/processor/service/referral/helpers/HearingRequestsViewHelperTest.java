@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers;
 
 import static java.util.Collections.singletonList;
+import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -43,7 +44,17 @@ public class HearingRequestsViewHelperTest {
 
     @Test
     public void shouldCreateHearingRequestViewIfAllDataPresent() {
+        createHearingRequestAndVerifyAllDataPresent(createObjectBuilder()
+                .add("hearingLanguage", "W")
+                .build());
+    }
 
+    @Test
+    public void shouldUseEnglishAsHearingLanguageNeedIfCaseFileDetailsNotPresent() {
+        createHearingRequestAndVerifyAllDataPresent(null);
+    }
+
+    private void createHearingRequestAndVerifyAllDataPresent(final JsonObject caseFileDefendantDetails) {
         final CaseDetails caseDetails = createCaseDetails();
         final String listingNotes = "listing notes";
         final CaseReferredForCourtHearing caseReferredForCourtHearingEvent = createCourtHearingEvent(listingNotes);
@@ -58,6 +69,7 @@ public class HearingRequestsViewHelperTest {
                 caseDetails,
                 referralReasons,
                 defendantPlea,
+                caseFileDefendantDetails,
                 caseReferredForCourtHearingEvent);
 
         assertThat(hearingRequestViews.size(), is(1));
@@ -79,6 +91,7 @@ public class HearingRequestsViewHelperTest {
         assertThat(defendantRequest.getDatesToAvoid(), is(DEFENDANT_UNAVAILABILITY));
         assertThat(defendantRequest.getSummonsRequired(), is("SJP_REFERRAL"));
         assertThat(defendantRequest.getDefendantOffences(), is(singletonList(OFFENCE_ID)));
+        assertThat(defendantRequest.getHearingLanguageNeeds(), is(nonNull(caseFileDefendantDetails) ? "WELSH" : "ENGLISH"));
     }
 
     private CaseDetails createCaseDetails() {

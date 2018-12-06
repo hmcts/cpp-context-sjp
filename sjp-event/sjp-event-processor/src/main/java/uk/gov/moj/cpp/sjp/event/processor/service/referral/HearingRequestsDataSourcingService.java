@@ -25,6 +25,7 @@ public class HearingRequestsDataSourcingService {
             final CaseReferredForCourtHearing caseReferredForCourtHearing,
             final CaseDetails caseDetails,
             final DefendantsOnlinePlea defendantPleaDetails,
+            final JsonObject caseFileDefendantDetails,
             final JsonEnvelope emptyEnvelopeWithReferralEventMetadata) {
 
         final JsonObject referralReasons = referenceDataService.getReferralReasons(
@@ -34,6 +35,7 @@ public class HearingRequestsDataSourcingService {
                 caseDetails,
                 referralReasons,
                 defendantPleaDetails,
+                caseFileDefendantDetails,
                 caseReferredForCourtHearing);
     }
 }

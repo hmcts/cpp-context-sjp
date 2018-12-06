@@ -10,6 +10,7 @@ import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.now;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -39,6 +40,7 @@ import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseCourtReferralStatus;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
+import uk.gov.moj.sjp.it.helper.EmployerHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
@@ -48,6 +50,7 @@ import uk.gov.moj.sjp.it.producer.ReferToCourtHearingProducer;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.MaterialStub;
 import uk.gov.moj.sjp.it.stub.ProgressionServiceStub;
+import uk.gov.moj.sjp.it.stub.ProsecutionCaseFileServiceStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.stub.ResultingStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
@@ -99,6 +102,9 @@ public class CourtReferralIT extends BaseIntegrationTest {
     private static final ZonedDateTime ADDED_AT = now(UTC);
     private static final String REFERENCE_DATA_DOCUMENT_TYPE = "Case Summary";
 
+    private static final JsonObject EMPLOYER_DETAILS = createEmployerDetails();
+    private static final EmployerHelper EMPLOYER_HELPER = new EmployerHelper();
+
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private String defendantId;
     private String prosecutingAuthorityName;
@@ -139,6 +145,8 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 .run(() -> new CaseDocumentHelper(caseId).addCaseDocument(USER_ID, DOCUMENT_ID, MATERIAL_ID, DOCUMENT_TYPE))
                 .popEvent(CaseDocumentAdded.EVENT_NAME);
 
+        EMPLOYER_HELPER.updateEmployer(caseId, defendantId, EMPLOYER_DETAILS);
+
         AssignmentStub.stubAddAssignmentCommand();
         AssignmentStub.stubRemoveAssignmentCommand();
         SchedulingStub.stubStartSjpSessionCommand();
@@ -146,11 +154,14 @@ public class CourtReferralIT extends BaseIntegrationTest {
         ReferenceDataServiceStub.stubHearingTypesQuery(HEARING_TYPE_ID.toString(), HEARING_DESCRIPTION);
         ReferenceDataServiceStub.stubProsecutorQuery(prosecutingAuthorityName, PROSECUTOR_ID);
         ReferenceDataServiceStub.stubQueryOffences("stub-data/referencedata.query.offences.json");
+        ReferenceDataServiceStub.stubCountryNationalities("stub-data/referencedata.query.country-nationality.json");
+        ReferenceDataServiceStub.stubEthnicities("stub-data/referencedata.query.ethnicities.json");
         ReferenceDataServiceStub.stubReferralDocumentMetadataQuery(DOCUMENT_TYPE_ID.toString(), REFERENCE_DATA_DOCUMENT_TYPE);
         ResultingStub.stubGetCaseDecisionsWithDecision(caseId);
         UsersGroupsStub.stubForUserDetails(USER_ID);
         MaterialStub.stubMaterialMetadata(MATERIAL_ID, FILE_NAME, MIME_TYPE, ADDED_AT);
         ProgressionServiceStub.stubReferCaseToCourtCommand();
+        ProsecutionCaseFileServiceStub.stubCaseDetails(caseId, "stub-data/prosecutioncasefile.query.case-details.json");
     }
 
     @Test
@@ -190,7 +201,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 LISTING_NOTES,
                 RESULTED_ON);
 
-        String rejectionRecordedEventName = CaseReferralForCourtHearingRejectionRecorded.class.getAnnotation(Event.class).value();
+        final String rejectionRecordedEventName = CaseReferralForCourtHearingRejectionRecorded.class.getAnnotation(Event.class).value();
         final Optional<JsonEnvelope> hearingRejectionRecordedEvent = new EventListener()
                 .subscribe(rejectionRecordedEventName)
                 .run(completeCaseProducer::completeCase)
@@ -238,7 +249,10 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 .run(decisionToReferCaseForCourtHearingSavedProducer::saveDecisionToReferCaseForCourtHearing);
 
         final JsonObject expectedCommandPayload = prepareExpectedCommandPayload(expectedCommandPayloadFile);
-        final Predicate<JSONObject> commandPayloadPredicate = commandPayload -> commandPayload.toString().equals(expectedCommandPayload.toString());
+        final Predicate<JSONObject> commandPayloadPredicate = commandPayload -> {
+            assertThat(commandPayload.toString(), is(expectedCommandPayload.toString()));
+            return commandPayload.toString().equals(expectedCommandPayload.toString());
+        };
 
         await().until(() ->
                 findAll(postRequestedFor(urlPathMatching(REFER_TO_COURT_COMMAND_URL + ".*"))
@@ -298,4 +312,19 @@ public class CourtReferralIT extends BaseIntegrationTest {
                         ))));
     }
 
+    private static JsonObject createEmployerDetails() {
+        final JsonObject address = createObjectBuilder()
+                .add("address1", "Foo")
+                .add("address2", "Flat 8")
+                .add("address3", "Lant House")
+                .add("address4", "London")
+                .add("address5", "Greater London")
+                .add("postcode", "SE1 1PJ").build();
+
+        return createObjectBuilder()
+                .add("name", "Test Org")
+                .add("employeeReference", "fooo")
+                .add("phone", "02020202020")
+                .add("address", address).build();
+    }
 }

@@ -9,17 +9,20 @@ public class ProsecutionCaseView {
     private final UUID id;
     private final String initiationCode;
     private final String statementOfFacts;
+    private final String statementOfFactsWelsh;
     private final ProsecutionCaseIdentifierView prosecutionCaseIdentifier;
     private final List<DefendantView> defendants;
 
     public ProsecutionCaseView(final UUID id,
                                final String initiationCode,
                                final String statementOfFacts,
+                               final String statementOfFactsWelsh,
                                final ProsecutionCaseIdentifierView prosecutionCaseIdentifier,
                                final List<DefendantView> defendants) {
         this.id = id;
         this.initiationCode = initiationCode;
         this.statementOfFacts = statementOfFacts;
+        this.statementOfFactsWelsh = statementOfFactsWelsh;
         this.prosecutionCaseIdentifier = prosecutionCaseIdentifier;
         this.defendants = defendants;
     }
@@ -34,6 +37,10 @@ public class ProsecutionCaseView {
 
     public String getStatementOfFacts() {
         return statementOfFacts;
+    }
+
+    public String getStatementOfFactsWelsh() {
+        return statementOfFactsWelsh;
     }
 
     public ProsecutionCaseIdentifierView getProsecutionCaseIdentifier() {

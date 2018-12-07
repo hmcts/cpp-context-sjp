@@ -6,12 +6,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
-import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
+import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
-import uk.gov.moj.sjp.it.util.QueueUtil;
+import uk.gov.moj.sjp.it.util.TopicUtil;
 
 import java.util.UUID;
 
@@ -34,7 +34,7 @@ public class CancelPleaHelper implements AutoCloseable {
     public CancelPleaHelper(final UUID caseId, final UUID offenceId, final String privateEvent, final String publicEvent) {
         this.caseId = caseId;
         this.offenceId = offenceId;
-        publicEventsConsumer = QueueUtil.publicEvents.createConsumer(publicEvent);
+        publicEventsConsumer = TopicUtil.publicEvents.createConsumer(publicEvent);
         writeUrl = String.format("/cases/%s/offences/%s/pleas", caseId, offenceId);
     }
 

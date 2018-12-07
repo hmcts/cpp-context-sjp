@@ -16,12 +16,12 @@ import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UPDATED;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
-import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
+import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
-import uk.gov.moj.sjp.it.util.QueueUtil;
+import uk.gov.moj.sjp.it.util.TopicUtil;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -140,8 +140,8 @@ public abstract class CaseReopenedInLibraHelper implements AutoCloseable {
                 "Optional reason"
         );
 
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer(privateSelector);
-        publicEventsConsumer = QueueUtil.publicEvents.createConsumer(publicSelector);
+        privateEventsConsumer = TopicUtil.privateEvents.createConsumer(privateSelector);
+        publicEventsConsumer = TopicUtil.publicEvents.createConsumer(publicSelector);
     }
 
     void verifyCaseReopenUndoneInLibraInActiveMQ(final MessageConsumer messageConsumer) {

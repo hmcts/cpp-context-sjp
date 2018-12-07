@@ -2,25 +2,38 @@ package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.SESSION_DOES_NOT_EXIST;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.SESSION_ENDED;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.SESSION_NOT_OWNED_BY_USER;
+import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.STALE_CANDIDATES;
+import static uk.gov.moj.sjp.it.Constants.COMMAND_HANDLE_ACTIVE_MQ_QUEUE;
+import static uk.gov.moj.sjp.it.Constants.EVENT_CASE_ASSIGNMENT_REJECTED;
+import static uk.gov.moj.sjp.it.Constants.EVENT_CASE_MARKED_READY_FOR_DECISION;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_CASE_ASSIGNMENT_REJECTED;
+import static uk.gov.moj.sjp.it.util.QueueUtil.sendToQueue;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.event.processor.AssignmentProcessor;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
+import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
+import uk.gov.moj.sjp.it.stub.SchedulingStub;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -39,6 +52,10 @@ public class AssignmentRejectionIT extends BaseIntegrationTest {
     public void init() {
         sessionId = randomUUID();
         userId = randomUUID();
+
+        AssignmentStub.stubAddAssignmentCommand();
+        AssignmentStub.stubRemoveAssignmentCommand();
+        SchedulingStub.stubStartSjpSessionCommand();
         ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
     }
 
@@ -62,6 +79,38 @@ public class AssignmentRejectionIT extends BaseIntegrationTest {
         startSession(sessionId, userId);
 
         requestAssignmentAndVerifyRejectionReason(sessionId, assignmentRequesterId, SESSION_NOT_OWNED_BY_USER);
+    }
+
+    @Test
+    public void shouldRejectAssignmentWhenAllCandidatesAreStale() {
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+
+        final JsonEnvelope assignCaseFromCandidatesListCommand = envelopeFrom(metadataWithRandomUUID("sjp.command.assign-case-from-candidates-list"), createObjectBuilder()
+                .add("sessionId", sessionId.toString())
+                .add("assignmentCandidates", createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("caseId", createCasePayloadBuilder.getId().toString())
+                                .add("caseStreamVersion", 10))
+                ).build());
+
+        new EventListener()
+                .subscribe(EVENT_CASE_MARKED_READY_FOR_DECISION)
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder))
+                .popEvent(EVENT_CASE_MARKED_READY_FOR_DECISION);
+
+        startSession(sessionId, userId);
+
+        final EventListener caseAssignmentRejectedListener = new EventListener()
+                .subscribe(EVENT_CASE_ASSIGNMENT_REJECTED, PUBLIC_EVENT_CASE_ASSIGNMENT_REJECTED)
+                .run(() -> sendToQueue(COMMAND_HANDLE_ACTIVE_MQ_QUEUE, assignCaseFromCandidatesListCommand));
+
+        final Optional<JsonEnvelope> caseAssignmentRejectedEvent = caseAssignmentRejectedListener.popEvent(EVENT_CASE_ASSIGNMENT_REJECTED);
+        final Optional<JsonEnvelope> caseAssignmentRejectedPublicEvent = caseAssignmentRejectedListener.popEvent(PUBLIC_EVENT_CASE_ASSIGNMENT_REJECTED);
+
+        assertThat(caseAssignmentRejectedEvent.isPresent(), is(true));
+        assertThat(caseAssignmentRejectedPublicEvent.isPresent(), is(true));
+        assertThat(caseAssignmentRejectedEvent.get().payloadAsJsonObject().getString("reason"), is(STALE_CANDIDATES.name()));
+        assertThat(caseAssignmentRejectedPublicEvent.get().payloadAsJsonObject().getString("reason"), is(STALE_CANDIDATES.name()));
     }
 
     private void requestAssignmentAndVerifyRejectionReason(final UUID sessionId, final UUID userId, final CaseAssignmentRejected.RejectReason rejectionReason) {

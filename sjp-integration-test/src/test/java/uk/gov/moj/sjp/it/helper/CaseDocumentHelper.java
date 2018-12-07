@@ -32,8 +32,8 @@ import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseDocumentsByCaseId;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeMultipartFormPostCall;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
-import static uk.gov.moj.sjp.it.util.QueueUtil.privateEvents;
-import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
+import static uk.gov.moj.sjp.it.util.TopicUtil.privateEvents;
+import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.messaging.Metadata;
@@ -44,7 +44,6 @@ import uk.gov.moj.sjp.it.Constants;
 import uk.gov.moj.sjp.it.stub.MaterialStub;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.JsonHelper;
-import uk.gov.moj.sjp.it.util.QueueUtil;
 
 import java.util.Map;
 import java.util.UUID;

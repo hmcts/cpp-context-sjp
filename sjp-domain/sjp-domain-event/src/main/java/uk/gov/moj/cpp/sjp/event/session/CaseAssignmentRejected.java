@@ -28,7 +28,8 @@ public class CaseAssignmentRejected {
         SESSION_ENDED,
         SESSION_NOT_OWNED_BY_USER,
         CASE_ASSIGNED_TO_OTHER_USER,
-        CASE_COMPLETED
+        CASE_COMPLETED,
+        STALE_CANDIDATES
     }
 
     @Override

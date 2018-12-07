@@ -3,10 +3,10 @@ package uk.gov.moj.sjp.it.helper;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
+import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
-import uk.gov.moj.sjp.it.util.QueueUtil;
+import uk.gov.moj.sjp.it.util.TopicUtil;
 
 import java.util.UUID;
 
@@ -25,8 +25,8 @@ public class CaseUpdateRejectedHelper implements AutoCloseable {
 
     public CaseUpdateRejectedHelper(UUID caseId, String privateEvent, String publicEvent) {
         this.caseId = caseId;
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer(privateEvent);
-        publicEventsConsumer = QueueUtil.publicEvents.createConsumer(publicEvent);
+        privateEventsConsumer = TopicUtil.privateEvents.createConsumer(privateEvent);
+        publicEventsConsumer = TopicUtil.publicEvents.createConsumer(publicEvent);
     }
 
     public void verifyCaseUpdateRejectedPrivateInActiveMQ(final String reasonExpected) {

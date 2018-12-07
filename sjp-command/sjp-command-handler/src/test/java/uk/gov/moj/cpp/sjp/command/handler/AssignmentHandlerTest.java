@@ -5,6 +5,7 @@ import static java.time.ZoneOffset.UTC;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.lang.math.RandomUtils.nextInt;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -26,6 +27,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
+import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.STALE_CANDIDATES;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -39,6 +41,7 @@ import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRequested;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
@@ -76,7 +79,7 @@ public class AssignmentHandlerTest {
     private CaseAggregate caseAggregate1, caseAggregate2, caseAggregate3;
 
     @Spy
-    private Enveloper enveloper = createEnveloperWithEvents(CaseAssigned.class, CaseAssignmentRequested.class);
+    private Enveloper enveloper = createEnveloperWithEvents(CaseAssigned.class, CaseAssignmentRequested.class, CaseAssignmentRejected.class);
 
     @Spy
     private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
@@ -134,6 +137,7 @@ public class AssignmentHandlerTest {
 
         assignmentHandler.assignCaseFromCandidatesList(assignCaseFromCandidatesListCommand);
 
+        verify(sessionEventStream, never()).append(any());
         verify(case1EventStream, never()).append(any());
         verify(case3EventStream, never()).append(any());
         verify(eventSource, never()).getStreamById(assignmentCandidate3Id);
@@ -149,6 +153,53 @@ public class AssignmentHandlerTest {
                                         withJsonPath("$.assignedAt", equalTo(assignedAt.toString())),
                                         withJsonPath("$.caseAssignmentType", equalTo(MAGISTRATE_DECISION.toString()))
                                 ))))));
+    }
+
+    @Test
+    public void shouldRejectAssignmentWhenAllCandidatesHaveDifferentVersionThanCorrespondingCaseEventStream() throws EventStreamException {
+        final UUID sessionId = randomUUID();
+
+        final UUID assignmentCandidate1Id = randomUUID();
+        final UUID assignmentCandidate2Id = randomUUID();
+
+        long assignmentCandidate1Version = nextInt();
+        long assignmentCandidate2Version = nextInt();
+
+        final JsonEnvelope assignCaseFromCandidatesListCommand = envelopeFrom(metadataWithRandomUUID(ASSIGN_CASE__FROM_CANDIDATES_LIST_COMMAND), createObjectBuilder()
+                .add("sessionId", sessionId.toString())
+                .add("assignmentCandidates", createArrayBuilder().add(
+                        createObjectBuilder()
+                                .add("caseId", assignmentCandidate1Id.toString())
+                                .add("caseStreamVersion", assignmentCandidate1Version))
+                        .add(createObjectBuilder()
+                                .add("caseId", assignmentCandidate2Id.toString())
+                                .add("caseStreamVersion", assignmentCandidate2Version))
+                )
+                .build());
+
+        when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);
+
+        when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
+        when(eventSource.getStreamById(assignmentCandidate1Id)).thenReturn(case1EventStream);
+        when(eventSource.getStreamById(assignmentCandidate2Id)).thenReturn(case2EventStream);
+        when(case1EventStream.getCurrentVersion()).thenReturn(assignmentCandidate1Version + 1);
+        when(case2EventStream.getCurrentVersion()).thenReturn(assignmentCandidate2Version + 1);
+
+        when(session.rejectCaseAssignment(STALE_CANDIDATES)).thenReturn(Stream.of(new CaseAssignmentRejected(STALE_CANDIDATES)));
+
+        assignmentHandler.assignCaseFromCandidatesList(assignCaseFromCandidatesListCommand);
+
+        verify(case1EventStream, never()).append(any());
+        verify(case2EventStream, never()).append(any());
+
+        assertThat(sessionEventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(assignCaseFromCandidatesListCommand)
+                                        .withName(CaseAssignmentRejected.EVENT_NAME),
+                                payloadIsJson(
+                                        withJsonPath("$.reason", equalTo(STALE_CANDIDATES.name())))
+                        ))));
     }
 
     @Test

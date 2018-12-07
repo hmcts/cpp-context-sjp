@@ -5,11 +5,11 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED;
 import static uk.gov.moj.sjp.it.Constants.SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUEST_CANCELLED;
-import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
+import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
-import uk.gov.moj.sjp.it.util.QueueUtil;
+import uk.gov.moj.sjp.it.util.TopicUtil;
 
 import java.util.UUID;
 
@@ -38,8 +38,8 @@ public class OffencesWithdrawalRequestCancelHelper implements AutoCloseable {
 
     public OffencesWithdrawalRequestCancelHelper(final UUID caseId, final String privateEvent, final String publicEvent) {
         this.caseId = caseId;
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer(privateEvent);
-        publicEventsConsumer = QueueUtil.publicEvents.createConsumer(publicEvent);
+        privateEventsConsumer = TopicUtil.privateEvents.createConsumer(privateEvent);
+        publicEventsConsumer = TopicUtil.publicEvents.createConsumer(publicEvent);
     }
 
     public void cancelRequestWithdrawalForAllOffences(final UUID userId) {

@@ -7,6 +7,7 @@ import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
 
 public class Constants {
     public static final String PUBLIC_EVENT_SELECTOR_CASE_CREATED = "public.sjp-case-created";
@@ -37,8 +38,13 @@ public class Constants {
     public static final String EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE = "sjp.events.case-reopened-in-libra-undone";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE = "public.sjp.case-reopened-in-libra-undone";
     public static final String EVENT_CASE_MARKED_READY_FOR_DECISION = CaseMarkedReadyForDecision.EVENT_NAME;
+    public static final String EVENT_CASE_ASSIGNMENT_REJECTED = CaseAssignmentRejected.EVENT_NAME;
+    public static final String PUBLIC_EVENT_CASE_ASSIGNMENT_REJECTED = "public.sjp.case-assignment-rejected";
+
     public static final String PUBLIC_ACTIVE_MQ_TOPIC = "public.event";
     public static final String PRIVATE_ACTIVE_MQ_TOPIC = "sjp.event";
+    public static final String COMMAND_HANDLE_ACTIVE_MQ_QUEUE = "sjp.handler.command";
+
     public static final Integer MESSAGE_QUEUE_TIMEOUT = 15000;
     public static final int NOTICE_PERIOD_IN_DAYS = 28;
 

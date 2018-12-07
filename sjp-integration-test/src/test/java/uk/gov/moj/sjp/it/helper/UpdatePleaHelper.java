@@ -9,14 +9,13 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_UPDATED;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
-import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
+import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
-import uk.gov.moj.sjp.it.util.QueueUtil;
+import uk.gov.moj.sjp.it.util.TopicUtil;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.jms.JMSException;
@@ -42,7 +41,7 @@ public class UpdatePleaHelper implements AutoCloseable {
     }
 
     public UpdatePleaHelper(String publicEvent) {
-        publicEventsConsumer = QueueUtil.publicEvents.createConsumer(publicEvent);
+        publicEventsConsumer = TopicUtil.publicEvents.createConsumer(publicEvent);
     }
 
     private String writeUrl(final UUID caseId, final UUID offenceId) {

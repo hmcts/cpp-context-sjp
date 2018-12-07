@@ -112,6 +112,18 @@ public class Session implements Aggregate {
         return apply(streamBuilder.build());
     }
 
+    public Stream<Object> rejectCaseAssignment(final CaseAssignmentRejected.RejectReason reason) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        if (sessionState == SessionState.ENDED) {
+            streamBuilder.add(new CaseAssignmentRejected(CaseAssignmentRejected.RejectReason.SESSION_ENDED));
+        } else {
+            streamBuilder.add(new CaseAssignmentRejected(reason));
+        }
+
+        return apply(streamBuilder.build());
+    }
+
     @Override
     public Object apply(final Object event) {
         return match(event).with(

@@ -4,7 +4,6 @@ import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
 
 import uk.gov.justice.domain.annotation.Event;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -38,26 +37,6 @@ public class DefendantsNationalInsuranceNumberUpdated {
 
     public String getNationalInsuranceNumber() {
         return nationalInsuranceNumber;
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof DefendantsNationalInsuranceNumberUpdated)) {
-            return false;
-        }
-        final DefendantsNationalInsuranceNumberUpdated that = (DefendantsNationalInsuranceNumberUpdated) o;
-
-        return Objects.equals(caseId, that.caseId) &&
-                Objects.equals(defendantId, that.defendantId) &&
-                Objects.equals(nationalInsuranceNumber, that.nationalInsuranceNumber);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(caseId, defendantId, nationalInsuranceNumber);
     }
 
     @Override

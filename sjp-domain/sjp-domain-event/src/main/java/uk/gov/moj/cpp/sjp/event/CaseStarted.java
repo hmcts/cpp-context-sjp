@@ -5,9 +5,6 @@ import uk.gov.justice.domain.annotation.Event;
 
 import java.util.UUID;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 @Event("sjp.events.case-started")
 public class CaseStarted {
 
@@ -25,13 +22,4 @@ public class CaseStarted {
         return id;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return EqualsBuilder.reflectionEquals(this, o);
-    }
-
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
 }

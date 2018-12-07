@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.session;
 
 import java.time.ZonedDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
 public abstract class SessionStarted {
@@ -53,25 +52,4 @@ public abstract class SessionStarted {
         return startedAt;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        final SessionStarted that = (SessionStarted) o;
-        return Objects.equals(sessionId, that.sessionId) &&
-                Objects.equals(userId, that.userId) &&
-                Objects.equals(courtHouseCode, that.courtHouseCode) &&
-                Objects.equals(courtHouseName, that.courtHouseName) &&
-                Objects.equals(localJusticeAreaNationalCourtCode, that.localJusticeAreaNationalCourtCode) &&
-                Objects.equals(startedAt, that.startedAt);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
-    }
 }

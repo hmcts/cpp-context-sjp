@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
 
-import java.util.Objects;
 import java.util.UUID;
 
 // Old event. Replaced by case-update-rejected
@@ -25,21 +24,4 @@ public class AllOffencesWithdrawalDenied {
         return reason;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        final AllOffencesWithdrawalDenied that = (AllOffencesWithdrawalDenied) o;
-        return Objects.equals(getCaseId(), that.getCaseId()) &&
-                Objects.equals(getReason(), that.getReason());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getCaseId(), getReason());
-    }
 }

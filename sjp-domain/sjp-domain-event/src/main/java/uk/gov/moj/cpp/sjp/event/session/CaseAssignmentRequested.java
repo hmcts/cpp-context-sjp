@@ -3,8 +3,6 @@ package uk.gov.moj.cpp.sjp.event.session;
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.Session;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Event(CaseAssignmentRequested.EVENT_NAME)
@@ -22,20 +20,4 @@ public class CaseAssignmentRequested {
         return session;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        final CaseAssignmentRequested that = (CaseAssignmentRequested) o;
-        return Objects.equals(session, that.session);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(session);
-    }
 }

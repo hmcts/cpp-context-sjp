@@ -7,7 +7,6 @@ import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -80,29 +79,6 @@ public class CaseReceived {
 
     public Defendant getDefendant() {
         return defendant;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        CaseReceived that = (CaseReceived) o;
-        return Objects.equals(caseId, that.caseId) &&
-                Objects.equals(urn, that.urn) &&
-                Objects.equals(prosecutingAuthority, that.prosecutingAuthority) &&
-                Objects.equals(costs, that.costs) &&
-                Objects.equals(postingDate, that.postingDate) &&
-                Objects.equals(defendant, that.defendant) &&
-                Objects.equals(createdOn, that.createdOn);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(caseId, urn, prosecutingAuthority, costs, postingDate, defendant, createdOn);
     }
 
     @Override

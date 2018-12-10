@@ -53,7 +53,7 @@ public class SjpServiceTest {
     @Test
     public void shouldGetCaseDetails() {
         final CaseDetails responseCaseDetails = CaseDetails.caseDetails()
-                .withId(CASE_ID.toString())
+                .withId(CASE_ID)
                 .build();
         final Envelope<CaseDetails> responseEnvelope = Envelope.envelopeFrom(
                 metadataWithRandomUUID("sjp.query.case").build(),

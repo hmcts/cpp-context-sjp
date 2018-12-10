@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
     "offenceCode": {
       "type": "string"

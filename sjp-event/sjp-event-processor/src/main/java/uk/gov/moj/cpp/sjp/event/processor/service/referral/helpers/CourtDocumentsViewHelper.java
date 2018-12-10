@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers;
 
 import static java.util.Collections.singletonList;
-import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
@@ -18,18 +17,18 @@ public class CourtDocumentsViewHelper {
 
     public List<CourtDocumentView> createCourtDocumentViews(
             final CaseDetails caseDetails,
-            final Map<String, MaterialView> documentIdToMaterialView,
-            final Map<String, UUID> documentIdToDocumentTypeId) {
+            final Map<UUID, MaterialView> documentIdToMaterialView,
+            final Map<UUID, UUID> documentIdToDocumentTypeId) {
 
         final DocumentCategoryView documentCategoryView =
                 new DocumentCategoryView(
                         new DefendantDocumentView(
-                                fromString(caseDetails.getId()),
-                                singletonList(fromString(caseDetails.getDefendant().getId()))));
+                                caseDetails.getId(),
+                                singletonList(caseDetails.getDefendant().getId())));
 
         return caseDetails.getCaseDocuments().stream()
                 .map(caseDocument -> new CourtDocumentView(
-                        fromString(caseDocument.getId()),
+                        caseDocument.getId(),
                         documentCategoryView,
                         documentIdToMaterialView.get(caseDocument.getId()).getName(),
                         documentIdToDocumentTypeId.get(caseDocument.getId()),

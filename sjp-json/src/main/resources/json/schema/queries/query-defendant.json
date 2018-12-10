@@ -4,10 +4,10 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
     "caseId": {
-      "type": "string"
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
     "personalDetails": {
       "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/personal-details.json"

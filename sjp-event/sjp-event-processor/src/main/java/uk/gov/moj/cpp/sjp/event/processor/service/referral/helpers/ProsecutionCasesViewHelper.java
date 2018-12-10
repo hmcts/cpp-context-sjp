@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers;
 
 import static com.google.common.collect.Iterables.getFirst;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.ofNullable;
 
 import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
@@ -29,6 +30,8 @@ import javax.json.JsonObject;
 
 public class ProsecutionCasesViewHelper {
 
+    private static final String NO_VERDICT = "NO_VERDICT";
+
     public List<ProsecutionCaseView> createProsecutionCaseViews(
             final CaseDetails caseDetails,
             final JsonObject referenceDataOffences,
@@ -38,17 +41,17 @@ public class ProsecutionCasesViewHelper {
             final NotifiedPleaView notifiedPleaView,
             final String pleaMitigation) {
 
-        final Offence offenceDetails = Optional.ofNullable(getFirst(caseDetails.getDefendant().getOffences(), null))
+        final Offence offenceDetails = ofNullable(getFirst(caseDetails.getDefendant().getOffences(), null))
                 .orElseThrow(() -> new IllegalStateException(String.format("Offence not found for case %s", caseDetails.getId())));
+
+        final String verdict = caseDecision.getString("verdict", NO_VERDICT);
+        final LocalDate convictionDate = NO_VERDICT.equals(verdict) ? null : referredAt;
 
         final DefendantView defendantView = createDefendantView(
                 caseDetails,
                 referenceDataOffences,
                 offenceDetails,
-                Optional.ofNullable(caseDecision)
-                        .map(decision -> decision.getString("verdict"))
-                        .map(verdict -> referredAt)
-                        .orElse(null),
+                convictionDate,
                 notifiedPleaView,
                 pleaMitigation);
 
@@ -59,7 +62,7 @@ public class ProsecutionCasesViewHelper {
                 caseDetails.getUrn());
 
         final ProsecutionCaseView prosecutionCaseView = new ProsecutionCaseView(
-                UUID.fromString(caseDetails.getId()),
+                caseDetails.getId(),
                 "J",
                 offenceDetails.getProsecutionFacts(),
                 prosecutionCaseIdentifier,
@@ -72,7 +75,7 @@ public class ProsecutionCasesViewHelper {
             final CaseDetails caseDetails,
             final JsonObject referenceDataOffences,
             final Offence offenceDetails,
-            final LocalDate referredAt,
+            final LocalDate convictionDate,
             final NotifiedPleaView notifiedPleaView,
             final String pleaMitigation) {
 
@@ -81,13 +84,13 @@ public class ProsecutionCasesViewHelper {
 
         final OffenceView offence = createOffenceView(
                 referenceDataOffences,
-                referredAt,
+                convictionDate,
                 offenceDetails,
                 notifiedPleaView);
 
         return new DefendantView(
-                UUID.fromString(defendantDetails.getId()),
-                UUID.fromString(caseDetails.getId()),
+                defendantDetails.getId(),
+                caseDetails.getId(),
                 defendantDetails.getNumPreviousConvictions(),
                 pleaMitigation,
                 singletonList(offence),
@@ -103,9 +106,9 @@ public class ProsecutionCasesViewHelper {
                 defendantPersonalDetails.getTitle().toUpperCase(),
                 defendantPersonalDetails.getFirstName(),
                 defendantPersonalDetails.getLastName(),
-                LocalDate.parse(defendantPersonalDetails.getDateOfBirth()),
+                defendantPersonalDetails.getDateOfBirth(),
                 defendantPersonalDetails.getGender().name(),
-                Optional.ofNullable(defendant.getInterpreter())
+                ofNullable(defendant.getInterpreter())
                         .map(Interpreter::getLanguage)
                         .orElse(null),
                 address,
@@ -114,23 +117,23 @@ public class ProsecutionCasesViewHelper {
 
     private static OffenceView createOffenceView(
             final JsonObject referenceDataOffences,
-            final LocalDate referredAt,
+            final LocalDate convictionDate,
             final Offence offenceDetails,
             final NotifiedPleaView notifiedPleaView) {
 
-        final Optional<String> offenceDefinitionIdOptional = referenceDataOffences.getJsonArray("offences").stream()
-                .filter(referenceDataOffence -> ((JsonObject) referenceDataOffence).getString("cjsOffenceCode").equals(offenceDetails.getCjsCode()))
-                .map(referenceDataOffence -> ((JsonObject) referenceDataOffence).getString("offenceId"))
+        final Optional<String> offenceDefinitionIdOptional = referenceDataOffences.getJsonArray("offences").getValuesAs(JsonObject.class).stream()
+                .filter(referenceDataOffence -> referenceDataOffence.getString("cjsOffenceCode").equals(offenceDetails.getCjsCode()))
+                .map(referenceDataOffence -> referenceDataOffence.getString("offenceId"))
                 .findFirst();
 
         return new OffenceView(
-                UUID.fromString(offenceDetails.getId()),
+                offenceDetails.getId(),
                 offenceDefinitionIdOptional.map(UUID::fromString).orElse(null),
                 offenceDetails.getWording(),
                 offenceDetails.getWordingWelsh(),
                 LocalDate.parse(offenceDetails.getStartDate()),
                 LocalDate.parse(offenceDetails.getChargeDate()),
-                referredAt,
+                convictionDate,
                 offenceDetails.getOffenceSequenceNumber(),
                 notifiedPleaView);
     }

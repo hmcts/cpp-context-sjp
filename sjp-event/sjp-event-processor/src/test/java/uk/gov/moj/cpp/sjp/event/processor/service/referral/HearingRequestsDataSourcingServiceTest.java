@@ -1,9 +1,11 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral;
 
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.json.JsonValue.NULL;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails.caseDetails;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
@@ -29,13 +31,14 @@ public class HearingRequestsDataSourcingServiceTest {
 
     @Mock
     private ReferenceDataService referenceDataService;
+
     @Mock
     private HearingRequestsViewHelper hearingRequestsViewHelper;
 
     @InjectMocks
     private HearingRequestsDataSourcingService hearingRequestsDataSourcingService;
 
-    private static final UUID CASE_ID = UUID.randomUUID();
+    private static final UUID CASE_ID = randomUUID();
 
     @Test
     public void shouldCreateHearingRequestViews() {
@@ -45,8 +48,8 @@ public class HearingRequestsDataSourcingServiceTest {
                 .withCaseId(CASE_ID)
                 .build();
 
-        final CaseDetails caseDetails = CaseDetails.caseDetails()
-                .withId(CASE_ID.toString())
+        final CaseDetails caseDetails = caseDetails()
+                .withId(CASE_ID)
                 .build();
 
         final JsonObject referralReasonsMock = createObjectBuilder().build();

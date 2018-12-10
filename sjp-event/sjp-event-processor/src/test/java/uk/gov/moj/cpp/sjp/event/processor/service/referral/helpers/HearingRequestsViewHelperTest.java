@@ -31,10 +31,10 @@ public class HearingRequestsViewHelperTest {
     private static final UUID CASE_ID = randomUUID();
     private static final UUID DEFENDANT_ID = randomUUID();
     private static final UUID REFERRAL_REASON_ID = randomUUID();
-    private static final String REFERRAL_REASON = "Some referral reason";
     private static final UUID OFFENCE_ID = randomUUID();
     private static final UUID HEARING_TYPE_ID = randomUUID();
-    private static final String HEARING_DESCRIPTION = "Some hearing description";
+    private static final String REFERRAL_REASON = "Equivocal plea";
+    private static final String REFERRAL_SUB_REASON = "For Trial";
     private static final int ESTIMATED_HEARING_DURATION = 10;
     private static final String DEFENDANT_UNAVAILABILITY = "defendant unavailability";
     private static final String PROSECUTOR_DATES_TO_AVOID = "prosecutor dates to avoid";
@@ -74,7 +74,7 @@ public class HearingRequestsViewHelperTest {
         assertThat(defendantRequest.getProsecutionCaseId(), is(CASE_ID));
         assertThat(defendantRequest.getReferralReason(), is(new ReferralReasonView(
                 REFERRAL_REASON_ID,
-                REFERRAL_REASON,
+                String.format("%s (%s)", REFERRAL_REASON, REFERRAL_SUB_REASON),
                 DEFENDANT_ID)));
         assertThat(defendantRequest.getDatesToAvoid(), is(DEFENDANT_UNAVAILABILITY));
         assertThat(defendantRequest.getSummonsRequired(), is("SJP_REFERRAL"));
@@ -84,11 +84,11 @@ public class HearingRequestsViewHelperTest {
     private CaseDetails createCaseDetails() {
         return CaseDetails.caseDetails()
                 .withDefendant(Defendant.defendant()
-                        .withId(DEFENDANT_ID.toString())
+                        .withId(DEFENDANT_ID)
                         .withOffences(
                                 singletonList(
                                         Offence.offence()
-                                                .withId(OFFENCE_ID.toString())
+                                                .withId(OFFENCE_ID)
                                                 .build()))
                         .build())
                 .withDatesToAvoid(PROSECUTOR_DATES_TO_AVOID)
@@ -101,20 +101,11 @@ public class HearingRequestsViewHelperTest {
                         .add(
                                 createObjectBuilder()
                                         .add("id", REFERRAL_REASON_ID.toString())
-                                        .add("reason", REFERRAL_REASON)))
+                                        .add("reason", REFERRAL_REASON)
+                                        .add("subReason", REFERRAL_SUB_REASON)
+                        ))
                 .build();
     }
-
-    private JsonObject createHearingTypesObject() {
-        return createObjectBuilder()
-                .add("hearingTypes", createArrayBuilder()
-                        .add(
-                                createObjectBuilder()
-                                        .add("id", HEARING_TYPE_ID.toString())
-                                        .add("hearingDescription", HEARING_DESCRIPTION)))
-                .build();
-    }
-
 
     private CaseReferredForCourtHearing createCourtHearingEvent(final String listingNotes) {
         return caseReferredForCourtHearing()

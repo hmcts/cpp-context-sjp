@@ -1,21 +1,22 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers;
 
-import java.util.Collections;
+import static org.apache.commons.lang3.StringUtils.trim;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class CaseDocumentTypeHelper {
 
-    private static final Map<String, String> documentMappingTypes = new HashMap<>();
+    private static final Map<String, String> DOCUMENT_MAPPING_TYPES = new HashMap<>();
 
     static {
-        documentMappingTypes.put("PLEA", "Basis of Plea");
-        documentMappingTypes.put("CITN", "Pre Cons");
-        documentMappingTypes.put("FINANCIAL_MEANS", "Sentence");
-        documentMappingTypes.put("SJPN", "Case Summary");
+        DOCUMENT_MAPPING_TYPES.put("PLEA", "Basis of Plea");
+        DOCUMENT_MAPPING_TYPES.put("CITN", "Pre Cons");
+        DOCUMENT_MAPPING_TYPES.put("FINANCIAL_MEANS", "Sentence");
+        DOCUMENT_MAPPING_TYPES.put("SJPN", "Case Summary");
     }
 
-    public String getDocumentType(String sjpDocumentType) {
-        return documentMappingTypes.getOrDefault(sjpDocumentType, "Private Section - Court Logs");
+    public String getDocumentType(final String sjpDocumentType) {
+        return DOCUMENT_MAPPING_TYPES.getOrDefault(trim(sjpDocumentType), "Private Section - Court Logs");
     }
 }

@@ -56,7 +56,7 @@ public class SjpReferralDataSourcingServiceTest {
                 .build();
 
         final CaseDetails caseDetails = CaseDetails.caseDetails()
-                .withId(CASE_ID.toString())
+                .withId(CASE_ID)
                 .build();
 
         final JsonObject sessionDetails = createObjectBuilder()

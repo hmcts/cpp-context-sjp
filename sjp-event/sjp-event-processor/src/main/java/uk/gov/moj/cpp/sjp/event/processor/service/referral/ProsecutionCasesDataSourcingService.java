@@ -53,9 +53,7 @@ public class ProsecutionCasesDataSourcingService {
         final JsonObject caseDecisions = resultingService.getCaseDecisions(caseDetails.getId(), emptyEnvelopeWithReferralEventMetadata);
 
         final NotifiedPleaView notifiedPleaView = notifiedPleaViewHelper.createNotifiedPleaView(
-                caseDetails,
                 caseReferredForCourtHearing,
-                defendantPleaDetails,
                 caseDetails.getDefendant().getOffences());
 
         final JsonObject caseDecision = (JsonObject) Optional.ofNullable(getFirst(caseDecisions.getJsonArray("caseDecisions"), null))

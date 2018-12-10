@@ -255,6 +255,11 @@
                                         <implementation>java.util.UUID</implementation>
                                     </typeMapping>
                                     <typeMapping>
+                                        <name>date</name>
+                                        <type>reference</type>
+                                        <implementation>java.time.LocalDate</implementation>
+                                    </typeMapping>
+                                    <typeMapping>
                                         <name>date-time</name>
                                         <type>reference</type>
                                         <implementation>java.time.ZonedDateTime</implementation>

@@ -42,15 +42,15 @@ public class CourtDocumentsDataSourcingService {
             final CaseDetails caseDetails,
             final JsonEnvelope emptyEnvelopeWithReferralEventMetadata) {
 
-        final Map<String, UUID> documentsMetadata =
-                getDocumentsMetadata(caseReferredForCourtHearing.getReferredAt().toLocalDate(),
+        final Map<String, UUID> documentTypeToDocumentTypeId =
+                getDocumentsTypes(caseReferredForCourtHearing.getReferredAt().toLocalDate(),
                         emptyEnvelopeWithReferralEventMetadata);
 
-        final Map<String, MaterialView> documentIdToMaterialView =
+        final Map<UUID, MaterialView> documentIdToMaterialView =
                 createDocumentIdToMaterialView(caseDetails, emptyEnvelopeWithReferralEventMetadata);
 
-        final Map<String, UUID> documentIdToDocumentTypeId =
-                createDocumentIdToDocumentTypeId(documentsMetadata, caseDetails);
+        final Map<UUID, UUID> documentIdToDocumentTypeId =
+                createDocumentIdToDocumentTypeId(documentTypeToDocumentTypeId, caseDetails);
 
         return courtDocumentsHelper.createCourtDocumentViews(
                 caseDetails,
@@ -58,7 +58,7 @@ public class CourtDocumentsDataSourcingService {
                 documentIdToDocumentTypeId);
     }
 
-    private Map<String, UUID> createDocumentIdToDocumentTypeId(
+    private Map<UUID, UUID> createDocumentIdToDocumentTypeId(
             final Map<String, UUID> documentsMetadata,
             final CaseDetails caseDetails) {
 
@@ -68,10 +68,10 @@ public class CourtDocumentsDataSourcingService {
                 .collect(
                         toMap(Document::getId,
                                 document -> documentsMetadata.get(caseDocumentTypeHelper
-                                        .getDocumentType(document.getDocumentType().trim()))));
+                                        .getDocumentType(document.getDocumentType()))));
     }
 
-    private Map<String, UUID> getDocumentsMetadata(
+    private Map<String, UUID> getDocumentsTypes(
             final LocalDate date,
             final JsonEnvelope emptyEnvelopeWithCourtDocumentsMetadata) {
 
@@ -85,7 +85,7 @@ public class CourtDocumentsDataSourcingService {
                         metadata -> fromString(metadata.getString("id"))));
     }
 
-    private Map<String, MaterialView> createDocumentIdToMaterialView(
+    private Map<UUID, MaterialView> createDocumentIdToMaterialView(
             final CaseDetails caseDetails,
             final JsonEnvelope emptyEnvelopeWithReferralEventMetadata) {
 
@@ -95,7 +95,7 @@ public class CourtDocumentsDataSourcingService {
                 .collect(
                         toMap(Document::getId,
                                 document -> createMaterialView(
-                                        fromString(document.getMaterialId()),
+                                        document.getMaterialId(),
                                         emptyEnvelopeWithReferralEventMetadata)));
     }
 

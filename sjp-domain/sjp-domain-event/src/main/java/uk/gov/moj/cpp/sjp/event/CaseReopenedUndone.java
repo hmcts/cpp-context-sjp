@@ -6,9 +6,6 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 /**
  * Event for case reopened undone
  */
@@ -34,13 +31,4 @@ public class CaseReopenedUndone implements Serializable {
         return oldReopenedDate;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return EqualsBuilder.reflectionEquals(this, o);
-    }
-
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
 }

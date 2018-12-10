@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.session;
 
 import java.time.ZonedDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
 public abstract class SessionEnded {
@@ -22,22 +21,4 @@ public abstract class SessionEnded {
         return endedAt;
     }
 
-    @Override
-    public boolean equals(Object o) {
-
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        final SessionEnded that = (SessionEnded) o;
-        return Objects.equals(sessionId, that.sessionId) &&
-                Objects.equals(endedAt, that.endedAt);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(sessionId, endedAt);
-    }
 }

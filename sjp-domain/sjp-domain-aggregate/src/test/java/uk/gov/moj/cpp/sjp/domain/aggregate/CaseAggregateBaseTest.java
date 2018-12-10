@@ -3,13 +3,8 @@ package uk.gov.moj.cpp.sjp.domain.aggregate;
 import static io.netty.util.internal.StringUtil.EMPTY_STRING;
 import static java.lang.String.format;
 import static java.lang.System.lineSeparator;
-import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.ArrayUtils.isEmpty;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import uk.gov.justice.services.common.util.Clock;
@@ -26,6 +21,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.junit.Before;
+import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
 public abstract class CaseAggregateBaseTest {
 
@@ -128,11 +124,10 @@ public abstract class CaseAggregateBaseTest {
         /**
          * List all the events after the aggregate execution
          */
-        <E> void thenExpect(E... items) {
-            assertThat(
-                    buildErrorMessage(), // TODO: avoid rebuild of this message each time
-                    events,
-                    isEmpty(items) ? equalTo(emptyList()) : contains(items));
+        void thenExpect(Object... items) {
+            if (!new ReflectionEquals(events.toArray()).matches(items)) {
+                fail(buildErrorMessage());
+            }
         }
 
         private String buildErrorMessage() {

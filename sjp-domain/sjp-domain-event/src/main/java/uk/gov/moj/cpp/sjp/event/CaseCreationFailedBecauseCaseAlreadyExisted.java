@@ -4,7 +4,6 @@ import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
 
 import uk.gov.justice.domain.annotation.Event;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,25 +29,6 @@ public class CaseCreationFailedBecauseCaseAlreadyExisted {
 
     public String getUrn() {
         return urn;
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof CaseCreationFailedBecauseCaseAlreadyExisted)) {
-            return false;
-        }
-        final CaseCreationFailedBecauseCaseAlreadyExisted that = (CaseCreationFailedBecauseCaseAlreadyExisted) o;
-
-        return Objects.equals(caseId, that.caseId) &&
-                Objects.equals(urn, that.urn);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(caseId, urn);
     }
 
     @Override

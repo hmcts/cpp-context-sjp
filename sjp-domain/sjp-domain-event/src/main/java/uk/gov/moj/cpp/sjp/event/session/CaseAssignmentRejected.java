@@ -4,8 +4,6 @@ import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
 
 import uk.gov.justice.domain.annotation.Event;
 
-import java.util.Objects;
-
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @Event(CaseAssignmentRejected.EVENT_NAME)
@@ -30,24 +28,6 @@ public class CaseAssignmentRejected {
         CASE_ASSIGNED_TO_OTHER_USER,
         CASE_COMPLETED,
         STALE_CANDIDATES
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof CaseAssignmentRejected)) {
-            return false;
-        }
-
-        final CaseAssignmentRejected that = (CaseAssignmentRejected) o;
-        return reason == that.reason;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(reason);
     }
 
     @Override

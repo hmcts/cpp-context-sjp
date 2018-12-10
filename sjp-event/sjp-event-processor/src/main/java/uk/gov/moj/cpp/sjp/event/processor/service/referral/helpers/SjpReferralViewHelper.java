@@ -7,7 +7,6 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.JudiciaryView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReferringJudicialDecisionView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.SjpReferralView;
 
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +36,8 @@ public class SjpReferralViewHelper {
                 sessionDetails.getString("courtHouseName"),
                 judiciaries);
 
-        return  new SjpReferralView(
-                LocalDate.parse(caseDetails.getPostingDate()),
+        return new SjpReferralView(
+                caseDetails.getPostingDate(),
                 decisionCreationDate.toLocalDate(),
                 referringJudicialDecisionView);
     }

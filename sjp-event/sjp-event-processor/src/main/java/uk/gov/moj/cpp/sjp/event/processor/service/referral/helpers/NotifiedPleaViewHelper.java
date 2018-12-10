@@ -1,37 +1,42 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers;
 
-import static com.google.common.collect.Iterables.getFirst;
-import static java.util.UUID.fromString;
+import static java.util.Optional.ofNullable;
 
-import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
+import uk.gov.justice.json.schemas.domains.sjp.PleaType;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
-import uk.gov.justice.json.schemas.domains.sjp.query.DefendantsOnlinePlea;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.NotifiedPleaView;
 
 import java.util.List;
-import java.util.Optional;
 
 public class NotifiedPleaViewHelper {
 
     public NotifiedPleaView createNotifiedPleaView(
-            final CaseDetails caseDetails,
-            final CaseReferredForCourtHearing eventPayload,
-            final DefendantsOnlinePlea defendantsOnlinePlea,
+            final CaseReferredForCourtHearing caseReferredForCourtHearing,
             final List<Offence> defendantOffences) {
 
-        final String offenceId = Optional.ofNullable(getFirst(defendantOffences, null))
-                .map(Offence::getId)
-                .orElseThrow(() -> new IllegalStateException("Offence not found"));
+        final Offence firstOffence = defendantOffences.get(0);
 
-        return Optional.ofNullable(defendantsOnlinePlea)
+        return ofNullable(firstOffence.getPlea())
                 .map(plea -> new NotifiedPleaView(
-                        fromString(offenceId),
-                        caseDetails.getDefendant().getOffences().get(0).getPleaDate().toLocalDate(),
-                        String.format("NOTIFIED_%s", plea.getPleaDetails().getPlea())))
+                        firstOffence.getId(),
+                        firstOffence.getPleaDate().toLocalDate(),
+                        getNotifiedPlea(plea)))
                 .orElseGet(() -> new NotifiedPleaView(
-                        fromString(offenceId),
-                        eventPayload.getReferredAt().toLocalDate(),
+                        firstOffence.getId(),
+                        caseReferredForCourtHearing.getReferredAt().toLocalDate(),
                         "NO_NOTIFICATION"));
+    }
+
+    private static String getNotifiedPlea(final PleaType pleaType) {
+        switch (pleaType) {
+            case NOT_GUILTY:
+                return "NOTIFIED_NOT_GUILTY";
+            case GUILTY:
+            case GUILTY_REQUEST_HEARING:
+                return "NOTIFIED_GUILTY";
+            default:
+                throw new UnsupportedOperationException("Notified plea not defined for " + pleaType);
+        }
     }
 }

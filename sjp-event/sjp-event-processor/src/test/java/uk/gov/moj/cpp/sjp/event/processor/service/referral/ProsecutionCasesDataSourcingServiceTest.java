@@ -1,16 +1,18 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral;
 
 import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.json.schemas.domains.sjp.queries.Defendant.defendant;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
+import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
 import uk.gov.justice.json.schemas.domains.sjp.ProsecutingAuthority;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
-import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
 import uk.gov.justice.json.schemas.domains.sjp.query.DefendantsOnlinePlea;
 import uk.gov.justice.json.schemas.domains.sjp.query.PleaDetails;
@@ -40,21 +42,21 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ProsecutionCasesDataSourcingServiceTest {
 
-    private static final UUID CASE_ID = UUID.randomUUID();
-    private static final UUID OFFENCE_ID = UUID.randomUUID();
+    private static final UUID CASE_ID = randomUUID();
+    private static final UUID OFFENCE_ID = randomUUID();
     private static final String PLEA_MITIGATION = "mitigation";
     private static final ZonedDateTime DECISION_DATE = ZonedDateTime.now();
     private static final JsonEnvelope EMPTY_ENVELOPE = envelopeFrom(metadataWithRandomUUIDAndName(), JsonValue.NULL);
     private static final JsonObject PROSECUTOR = createObjectBuilder().build();
     private static final Offence DEFENDANT_OFFENCE = Offence.offence().build();
     private static final CaseDetails CASE_DETAILS = CaseDetails.caseDetails()
-            .withId(CASE_ID.toString())
+            .withId(CASE_ID)
             .withProsecutingAuthority(ProsecutingAuthority.TFL)
-            .withDefendant(Defendant.defendant()
+            .withDefendant(defendant()
                     .withOffences(singletonList(DEFENDANT_OFFENCE))
                     .build())
             .build();
-    private static final CaseReferredForCourtHearing REFERRAL_EVEN_PAYLOAD = CaseReferredForCourtHearing.caseReferredForCourtHearing()
+    private static final CaseReferredForCourtHearing REFERRAL_EVEN_PAYLOAD = caseReferredForCourtHearing()
             .withReferredAt(DECISION_DATE)
             .build();
     private static final JsonObject REFERENCE_DATA_OFFENCES = createObjectBuilder().build();
@@ -90,10 +92,10 @@ public class ProsecutionCasesDataSourcingServiceTest {
                 .add("caseDecisions", createArrayBuilder().add(createObjectBuilder()))
                 .build();
 
-        when(resultingService.getCaseDecisions(CASE_ID.toString(), EMPTY_ENVELOPE)).thenReturn(caseDecisions);
+        when(resultingService.getCaseDecisions(CASE_ID, EMPTY_ENVELOPE)).thenReturn(caseDecisions);
 
         final NotifiedPleaView notifiedPleaView = new NotifiedPleaView(OFFENCE_ID, LocalDate.now(), "Plea value");
-        when(notifiedPleaViewHelper.createNotifiedPleaView(CASE_DETAILS, REFERRAL_EVEN_PAYLOAD, defendantPlea, singletonList(DEFENDANT_OFFENCE))).thenReturn(notifiedPleaView);
+        when(notifiedPleaViewHelper.createNotifiedPleaView(REFERRAL_EVEN_PAYLOAD, singletonList(DEFENDANT_OFFENCE))).thenReturn(notifiedPleaView);
 
         prosecutionCasesDataSourcingService.createProsecutionCaseViews(
                 CASE_DETAILS,
@@ -114,11 +116,11 @@ public class ProsecutionCasesDataSourcingServiceTest {
 
     @Test
     public void shouldUseNullForMitigationIfPleaNotPresent() {
-        final CaseReferredForCourtHearing referralEventPayload = CaseReferredForCourtHearing.caseReferredForCourtHearing()
+        final CaseReferredForCourtHearing referralEventPayload = caseReferredForCourtHearing()
                 .withReferredAt(DECISION_DATE)
                 .build();
 
-        when(resultingService.getCaseDecisions(CASE_ID.toString(), EMPTY_ENVELOPE)).thenReturn(createObjectBuilder().add("caseDecisions", createArrayBuilder()).build());
+        when(resultingService.getCaseDecisions(CASE_ID, EMPTY_ENVELOPE)).thenReturn(createObjectBuilder().add("caseDecisions", createArrayBuilder()).build());
 
         prosecutionCasesDataSourcingService.createProsecutionCaseViews(
                 CASE_DETAILS,
@@ -135,6 +137,5 @@ public class ProsecutionCasesDataSourcingServiceTest {
                 null,
                 null);
     }
-
 
 }

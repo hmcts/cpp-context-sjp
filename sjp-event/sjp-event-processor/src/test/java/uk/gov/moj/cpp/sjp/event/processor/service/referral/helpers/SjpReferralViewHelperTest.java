@@ -26,7 +26,7 @@ public class SjpReferralViewHelperTest {
     private static final String LEGAL_ADVISER_LAST_NAME = "Jameson";
     private static final ZonedDateTime CASE_DECISION_CREATION_DATE = ZonedDateTime.now();
     private static final String COURT_HOUSE_NAME = "Court house name";
-    private static final String CASE_POSTING_DATE = "2018-11-20";
+    private static final LocalDate CASE_POSTING_DATE = LocalDate.of(2018, 11, 20);
     private static final String MAGISTRATE_NAME = "magistrate name";
 
     private SjpReferralViewHelper sjpReferralViewHelper = new SjpReferralViewHelper();
@@ -70,7 +70,7 @@ public class SjpReferralViewHelperTest {
     public void shouldCreateSjpReferralViewWithLegalAdviserJudiciaryOnlyWhenNoMagistrate() {
 
         final CaseDetails caseDetails = CaseDetails.caseDetails()
-                .withPostingDate("2018-11-20")
+                .withPostingDate(CASE_POSTING_DATE)
                 .build();
         final JsonObject legalAdviserDetails = createLegalAdviserDetail();
 
@@ -92,7 +92,7 @@ public class SjpReferralViewHelperTest {
     }
 
     private void assertReferralViewMatchesExpected(final SjpReferralView sjpReferralView, List<JudiciaryView> judiciaryViews) {
-        assertThat(sjpReferralView.getNoticeDate(), is(LocalDate.parse(CASE_POSTING_DATE)));
+        assertThat(sjpReferralView.getNoticeDate(), is(CASE_POSTING_DATE));
         assertThat(sjpReferralView.getReferralDate(), is(CASE_DECISION_CREATION_DATE.toLocalDate()));
         assertThat(sjpReferralView.getReferringJudicialDecision(), is(
                 new ReferringJudicialDecisionView(

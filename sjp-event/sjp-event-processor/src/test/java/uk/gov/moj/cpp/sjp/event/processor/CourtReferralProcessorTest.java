@@ -51,7 +51,6 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseIdentifi
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReferringJudicialDecisionView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.SjpReferralView;
-import uk.gov.moj.cpp.sjp.event.processor.service.ResultingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.CourtDocumentsDataSourcingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.HearingRequestsDataSourcingService;
@@ -190,7 +189,7 @@ public class CourtReferralProcessorTest {
                 caseReferredForCourtHearing);
 
         final CaseDetails caseDetails = CaseDetails.caseDetails()
-                .withId(caseId.toString())
+                .withId(caseId)
                 .withOnlinePleaReceived(true)
                 .build();
         when(sjpService.getCaseDetails(any(), any(JsonEnvelope.class))).thenReturn(caseDetails);

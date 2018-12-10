@@ -53,7 +53,7 @@ public class ResultingServiceTest {
         final UUID caseId = randomUUID();
         when(requestCaseDecisions(caseId)).thenReturn(queryResponse);
 
-        final JsonObject caseDecisions = resultingService.getCaseDecisions(caseId.toString(), envelope);
+        final JsonObject caseDecisions = resultingService.getCaseDecisions(caseId, envelope);
         assertThat(caseDecisions, is(responsePayload));
     }
 

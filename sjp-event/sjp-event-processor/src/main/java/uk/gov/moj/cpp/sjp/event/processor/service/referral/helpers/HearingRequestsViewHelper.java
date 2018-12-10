@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers;
 
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
-import static java.util.UUID.fromString;
 
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
@@ -50,7 +49,6 @@ public class HearingRequestsViewHelper {
                 singletonList(defendantRequestView));
 
         return singletonList(listHearingRequestView);
-
     }
 
     private DefendantRequestView crateDefendantRequestView(
@@ -68,10 +66,9 @@ public class HearingRequestsViewHelper {
                 .map(referralDescription -> new ReferralReasonView(
                         referralReasonId,
                         referralDescription,
-                        fromString(defendant.getId())))
+                        defendant.getId()))
                 .orElseThrow(() -> new IllegalStateException(
-                        format(
-                                "Referral reason not found for case %s and offence %s",
+                        format("Referral reason not found for case %s and offence %s",
                                 caseDetails.getId(),
                                 referralReasonId)));
 
@@ -80,20 +77,22 @@ public class HearingRequestsViewHelper {
                 referralReasonView,
                 defendantUnavailability,
                 "SJP_REFERRAL",
-                singletonList(fromString(defendant.getOffences().get(0).getId())));
+                singletonList(defendant.getOffences().get(0).getId()));
     }
 
-    private static Optional<String> extractReferralReason(
-            final JsonObject descriptionParentContainer,
-            final UUID targetDescriptionFieldId) {
-
-        return descriptionParentContainer
+    private static Optional<String> extractReferralReason(final JsonObject allReferralReasons, final UUID referralReasonId) {
+        return allReferralReasons
                 .getJsonArray("referralReasons")
                 .getValuesAs(JsonObject.class)
                 .stream()
-                .filter(descriptionContainingObject -> descriptionContainingObject.getString("id")
-                        .equals(targetDescriptionFieldId.toString()))
+                .filter(reason -> reason.getString("id").equals(referralReasonId.toString()))
                 .findFirst()
-                .map(descriptionObject -> descriptionObject.getString("reason"));
+                .map(reason -> {
+                    if (reason.containsKey("subReason")) {
+                        return String.format("%s (%s)", reason.getString("reason"), reason.getString("subReason"));
+                    } else {
+                        return reason.getString("reason");
+                    }
+                });
     }
 }

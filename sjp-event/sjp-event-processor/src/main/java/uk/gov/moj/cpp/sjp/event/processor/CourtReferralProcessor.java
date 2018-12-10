@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import static java.util.UUID.fromString;
 import static javax.json.JsonValue.NULL;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
@@ -124,7 +123,7 @@ public class CourtReferralProcessor {
 
         final DefendantsOnlinePlea defendantOnlinePleaDetails = Optional.of(caseDetails.getOnlinePleaReceived())
                 .filter(Boolean::booleanValue)
-                .map(pleaReceived -> sjpService.getDefendantPleaDetails(fromString(caseDetails.getId()), emptyEnvelope))
+                .map(pleaReceived -> sjpService.getDefendantPleaDetails(caseDetails.getId(), emptyEnvelope))
                 .orElse(null);
 
         final List<HearingRequestView> listHearingRequestViews = hearingRequestsDataSourcingService.createHearingRequestViews(

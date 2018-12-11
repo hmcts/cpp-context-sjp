@@ -44,6 +44,7 @@ public class CourtReferralListener {
 
         final CaseCourtReferralStatus caseCourtReferralStatus = new CaseCourtReferralStatus(
                 caseReferredForCourtHearing.getCaseId(),
+                caseReferredForCourtHearing.getUrn(),
                 caseReferredForCourtHearing.getReferredAt());
 
         caseCourtReferralStatusRepository.save(caseCourtReferralStatus);

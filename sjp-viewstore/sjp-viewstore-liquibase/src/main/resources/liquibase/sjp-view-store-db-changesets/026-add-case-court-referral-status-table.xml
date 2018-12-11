@@ -10,6 +10,7 @@
             <column name="case_id" type="uuid">
                 <constraints primaryKey="true"/>
             </column>
+            <column name="urn" type="text"/>
             <column name="requested_at" type="timestamp with time zone"/>
             <column name="rejection_reason" type="text"/>
             <column name="rejected_at" type="timestamp with time zone"/>

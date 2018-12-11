@@ -44,8 +44,9 @@ public final class CaseReferralHelper {
             final ZonedDateTime rejectedAt = Optional.ofNullable(resultSet.getTimestamp("rejected_at"))
                     .map(ZonedDateTimes::fromSqlTimestamp)
                     .orElse(null);
+            final String urn = resultSet.getString("urn");
 
-            return new CaseCourtReferralStatus(caseId, receivedAt, rejectedAt, rejectionReason);
+            return new CaseCourtReferralStatus(caseId, urn, receivedAt, rejectedAt, rejectionReason);
         }
 
         return null;

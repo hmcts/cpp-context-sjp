@@ -5,6 +5,9 @@
     "caseId": {
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
+    "urn": {
+      "type": "string"
+    },
     "sessionId": {
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
@@ -28,6 +31,7 @@
   },
   "required": [
     "caseId",
+    "urn",
     "sessionId",
     "referralReasonId",
     "hearingTypeId",

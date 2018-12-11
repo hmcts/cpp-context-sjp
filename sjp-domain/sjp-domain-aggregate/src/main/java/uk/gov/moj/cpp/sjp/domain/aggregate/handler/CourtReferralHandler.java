@@ -39,6 +39,7 @@ public class CourtReferralHandler {
         } else {
             streamBuilder.add(caseReferredForCourtHearing()
                     .withCaseId(state.getCaseId())
+                    .withUrn(state.getUrn())
                     .withSessionId(sessionId)
                     .withReferralReasonId(referralReasonId)
                     .withHearingTypeId(hearingTypeId)

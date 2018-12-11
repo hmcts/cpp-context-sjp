@@ -5,7 +5,6 @@ import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
@@ -17,7 +16,6 @@ import static uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecor
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
 import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseCourtReferralStatus;
@@ -42,6 +40,7 @@ public class CourtReferralListenerTest {
     private static final String REJECTION_REASON = "Business validation failed";
     private static final ZonedDateTime RECEIVED_AT = now(UTC).minusDays(1);
     private static final ZonedDateTime REJECTED_AT = now(UTC);
+    private static final String URN = "22C22222222";
 
     @Mock
     private CaseCourtReferralStatusRepository caseCourtReferralStatusRepository;
@@ -69,6 +68,7 @@ public class CourtReferralListenerTest {
 
         final CaseCourtReferralStatus caseCourtReferralStatus = new CaseCourtReferralStatus(
                 CASE_ID,
+                URN,
                 RECEIVED_AT);
 
         when(caseCourtReferralStatusRepository.findBy(CASE_ID)).thenReturn(caseCourtReferralStatus);
@@ -90,8 +90,9 @@ public class CourtReferralListenerTest {
 
         when(caseRepository.findBy(CASE_ID)).thenReturn(caseDetail);
         courtReferralListener.handleCaseReferredForCourtHearing(eventEnvelope);
+        caseCourtReferralStatusRepository.save(new CaseCourtReferralStatus(CASE_ID, URN, RECEIVED_AT));
 
-        verify(caseCourtReferralStatusRepository).save(new CaseCourtReferralStatus(CASE_ID, RECEIVED_AT));
+        verify(caseCourtReferralStatusRepository).save(new CaseCourtReferralStatus(CASE_ID, URN, RECEIVED_AT));
 
         verify(caseDetail).setReferredForCourtHearing(true);
     }

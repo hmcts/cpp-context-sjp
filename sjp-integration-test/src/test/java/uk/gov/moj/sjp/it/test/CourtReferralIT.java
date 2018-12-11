@@ -4,7 +4,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.findAll;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.now;
@@ -18,7 +17,6 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
@@ -66,7 +64,6 @@ import javax.json.JsonObject;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.google.common.collect.ImmutableMap;
-import com.jayway.awaitility.Duration;
 import org.hamcrest.CoreMatchers;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -206,6 +203,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
         assertThat(referralStatus.getRequestedAt(), notNullValue());
         assertThat(referralStatus.getRejectedAt(), notNullValue());
         assertThat(referralStatus.getRejectionReason(), is(referralRejectionReason));
+        assertThat(referralStatus.getUrn(), is(caseUrn));
     }
 
     @Test

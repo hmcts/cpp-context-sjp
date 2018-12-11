@@ -15,6 +15,8 @@ import uk.gov.justice.json.schemas.domains.sjp.command.PersonalDetails;
 import uk.gov.justice.json.schemas.domains.sjp.command.Plea;
 import uk.gov.justice.json.schemas.domains.sjp.command.PleadOnline;
 
+import java.util.UUID;
+
 import javax.json.JsonObject;
 
 public class CommonObjectBuilderUtil {
@@ -35,9 +37,10 @@ public class CommonObjectBuilderUtil {
                 .build();
     }
 
-    public static PleadOnline buildPleadOnline(final Plea plea, final FinancialMeans financialMeans,
+    public static PleadOnline buildPleadOnline(final Plea plea, final UUID caseId, final FinancialMeans financialMeans,
                                                final PersonalDetails personalDetails, final Employer employer) {
         return pleadOnline()
+                .withCaseId(caseId)
                 .withOffences(singletonList(Offence.offence()
                         .withPlea(plea)
                         .build()))
@@ -47,8 +50,9 @@ public class CommonObjectBuilderUtil {
                 .build();
     }
 
-    public static PleadOnline buildPleadOnline(final Plea plea, final FinancialMeans financialMeans) {
+    public static PleadOnline buildPleadOnline(final Plea plea, final UUID caseId, final FinancialMeans financialMeans) {
         return pleadOnline()
+                .withCaseId(caseId)
                 .withOffences(singletonList(Offence.offence()
                         .withPlea(plea)
                         .build()))

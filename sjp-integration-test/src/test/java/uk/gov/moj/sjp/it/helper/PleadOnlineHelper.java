@@ -37,15 +37,6 @@ public class PleadOnlineHelper {
         writeUrl = String.format("/cases/%s/defendants/%s/plead-online", caseId, defendantId);
     }
 
-    private void pleadOnline(final String payload, final String contentType) {
-        LOGGER.info("Request payload: {}", new JsonPath(payload).prettify());
-        HttpClientUtil.makePostCall(writeUrl, contentType, payload);
-    }
-
-    public void pleadOnline(final String payload) {
-        pleadOnline(payload, "application/vnd.sjp.plead-online+json");
-    }
-
     public static Response getOnlinePlea(final String caseId, final UUID userId) {
         final String resource = format("/cases/%s/defendants-online-plea", caseId);
         final String contentType = "application/vnd.sjp.query.defendants-online-plea+json";
@@ -54,7 +45,7 @@ public class PleadOnlineHelper {
 
     public static String getOnlinePlea(final String caseId, final Matcher<Object> jsonMatcher, final UUID userId) {
         return await().atMost(20, TimeUnit.SECONDS).until(() -> {
-            Response onlinePlea = getOnlinePlea(caseId, userId);
+            final Response onlinePlea = getOnlinePlea(caseId, userId);
             if (onlinePlea.getStatus() != OK.getStatusCode()) {
                 fail("Polling interrupted, please fix the error before continue. Status code: " + onlinePlea.getStatus());
             }
@@ -73,6 +64,20 @@ public class PleadOnlineHelper {
                         )
                 );
 
+    }
+
+    private void pleadOnline(final String payload, final String contentType, final Response.Status httpStatus) {
+        LOGGER.info("Request payload: {}", new JsonPath(payload).prettify());
+        HttpClientUtil.makePostCall(writeUrl, contentType, payload, httpStatus);
+    }
+
+    public void pleadOnline(final String payload, final Response.Status httpStatus) {
+        LOGGER.info("Request payload: {}", new JsonPath(payload).prettify());
+        HttpClientUtil.makePostCall(writeUrl, "application/vnd.sjp.plead-online+json", payload, httpStatus);
+    }
+
+    public void pleadOnline(final String payload) {
+        pleadOnline(payload, "application/vnd.sjp.plead-online+json", Response.Status.ACCEPTED);
     }
 
     public UUID getCaseDefendantId() {

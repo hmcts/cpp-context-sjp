@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import static java.util.Objects.isNull;
+
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -23,7 +25,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "offence")
-public class OffenceDetail implements Serializable {
+public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
 
     private static final long serialVersionUID = 1L;
 
@@ -278,6 +280,11 @@ public class OffenceDetail implements Serializable {
         return Objects.hash(id);
     }
 
+    @Override
+    public int compareTo(OffenceDetail other) {
+        return isNull(other) ? 1 : orderIndex - other.orderIndex;
+    }
+
     public static class OffenceDetailBuilder {
 
         private UUID id;
@@ -313,7 +320,7 @@ public class OffenceDetail implements Serializable {
         }
 
         public OffenceDetailBuilder setPlea(PleaType plea) {
-            if(plea != null) {
+            if (plea != null) {
                 this.plea = plea.name();
             }
 

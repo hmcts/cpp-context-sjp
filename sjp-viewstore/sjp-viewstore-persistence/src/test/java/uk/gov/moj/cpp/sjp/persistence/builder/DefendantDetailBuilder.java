@@ -91,6 +91,11 @@ public class DefendantDetailBuilder {
         return this;
     }
 
+    public DefendantDetailBuilder withNumberOfPreviousConvictions(final int numberOfPreviousConvictions) {
+        defendantDetail.setNumPreviousConvictions(numberOfPreviousConvictions);
+        return this;
+    }
+
     public DefendantDetail build() {
         defendantDetail.setOffences(singletonList(offenceBuilder.build()));
         return defendantDetail;

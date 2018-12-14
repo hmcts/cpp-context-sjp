@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
-import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -38,7 +40,7 @@ public class DefendantDetail implements Serializable {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "defendantDetail", orphanRemoval = true)
     @OrderBy("orderIndex ASC")
-    private List<OffenceDetail> offences;
+    private Set<OffenceDetail> offences;
 
     @Embedded
     private PersonalDetails personalDetails;
@@ -113,11 +115,11 @@ public class DefendantDetail implements Serializable {
     }
 
     public List<OffenceDetail> getOffences() {
-        return offences;
+        return new ArrayList(offences);
     }
 
     public void setOffences(final List<OffenceDetail> offences) {
-        this.offences = offences == null ? emptyList() : new ArrayList<>(offences);
+        this.offences = offences == null ? emptySet() : new TreeSet<>(offences);
         this.offences.forEach(offence -> offence.setDefendantDetail(this));
     }
 

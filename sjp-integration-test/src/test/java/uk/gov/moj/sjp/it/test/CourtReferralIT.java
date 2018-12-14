@@ -247,10 +247,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 .run(decisionToReferCaseForCourtHearingSavedProducer::saveDecisionToReferCaseForCourtHearing);
 
         final JsonObject expectedCommandPayload = prepareExpectedCommandPayload(expectedCommandPayloadFile);
-        final Predicate<JSONObject> commandPayloadPredicate = commandPayload -> {
-            assertThat(commandPayload.toString(), is(expectedCommandPayload.toString()));
-            return commandPayload.toString().equals(expectedCommandPayload.toString());
-        };
+        final Predicate<JSONObject> commandPayloadPredicate = commandPayload -> commandPayload.toString().equals(expectedCommandPayload.toString());
 
         await().until(() ->
                 findAll(postRequestedFor(urlPathMatching(REFER_TO_COURT_COMMAND_URL + ".*"))

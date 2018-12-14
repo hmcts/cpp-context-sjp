@@ -14,6 +14,7 @@ public class OffenceView {
     private final LocalDate startDate;
     private final LocalDate chargeDate;
     private final LocalDate convictionDate;
+    private final LocalDate endDate;
     private final Integer orderIndex;
     private final NotifiedPleaView notifiedPlea;
 
@@ -25,6 +26,7 @@ public class OffenceView {
                        final LocalDate startDate,
                        final LocalDate chargeDate,
                        final LocalDate convictionDate,
+                       final LocalDate endDate,
                        final Integer orderIndex,
                        final NotifiedPleaView notifiedPlea) {
 
@@ -35,6 +37,7 @@ public class OffenceView {
         this.startDate = startDate;
         this.chargeDate = chargeDate;
         this.convictionDate = convictionDate;
+        this.endDate = endDate;
         this.orderIndex = orderIndex;
         this.notifiedPlea = notifiedPlea;
     }
@@ -64,6 +67,10 @@ public class OffenceView {
         return chargeDate;
     }
 
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
     public Integer getOrderIndex() {
         return orderIndex;
     }
@@ -78,5 +85,87 @@ public class OffenceView {
 
     public LocalDate getConvictionDate() {
         return convictionDate;
+    }
+
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private UUID id;
+        private UUID offenceDefinitionId;
+        private String wording;
+        private String wordingWelsh;
+        private LocalDate startDate;
+        private LocalDate chargeDate;
+        private LocalDate convictionDate;
+        private LocalDate endDate;
+        private Integer orderIndex;
+        private NotifiedPleaView notifiedPlea;
+
+        public Builder withId(final UUID id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder withOffenceDefinitionId(final UUID offenceDefinitionId) {
+            this.offenceDefinitionId = offenceDefinitionId;
+            return this;
+        }
+
+        public Builder withWording(final String wording) {
+            this.wording = wording;
+            return this;
+        }
+
+        public Builder withWordingWelsh(final String wordingWelsh) {
+            this.wordingWelsh = wordingWelsh;
+            return this;
+        }
+
+        public Builder withStartDate(final LocalDate startDate) {
+            this.startDate = startDate;
+            return this;
+        }
+
+        public Builder withChargeDate(final LocalDate chargeDate) {
+            this.chargeDate = chargeDate;
+            return this;
+        }
+
+        public Builder withConvictionDate(final LocalDate convictionDate) {
+            this.convictionDate = convictionDate;
+            return this;
+        }
+
+        public Builder withEndDate(final LocalDate endDate) {
+            this.endDate = endDate;
+            return this;
+        }
+
+        public Builder withOrderIndex(final Integer orderIndex) {
+            this.orderIndex = orderIndex;
+            return this;
+        }
+
+        public Builder withNotifiedPlea(final NotifiedPleaView notifiedPlea) {
+            this.notifiedPlea = notifiedPlea;
+            return this;
+        }
+
+        public OffenceView build() {
+            return new OffenceView(
+                    id,
+                    offenceDefinitionId,
+                    wording,
+                    wordingWelsh,
+                    startDate,
+                    chargeDate,
+                    convictionDate,
+                    endDate,
+                    orderIndex,
+                    notifiedPlea);
+        }
     }
 }

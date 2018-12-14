@@ -23,6 +23,7 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingRequestView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReferCaseForCourtHearingCommand;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.SjpReferralView;
+import uk.gov.moj.cpp.sjp.event.processor.service.ProsecutionCaseFileService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.CourtDocumentsDataSourcingService;
@@ -62,6 +63,9 @@ public class CourtReferralProcessor {
 
     @Inject
     private ProsecutionCasesDataSourcingService prosecutionCasesDataSourcingService;
+
+    @Inject
+    private ProsecutionCaseFileService prosecutionCaseFileService;
 
     @Inject
     private SjpReferralDataSourcingService sjpReferralDataSourcingService;
@@ -126,10 +130,13 @@ public class CourtReferralProcessor {
                 .map(pleaReceived -> sjpService.getDefendantPleaDetails(caseDetails.getId(), emptyEnvelope))
                 .orElse(null);
 
+        final JsonObject caseFileDefendantDetails = prosecutionCaseFileService.getCaseFileDefendantDetails(caseDetails.getId(), emptyEnvelope).orElse(null);
+
         final List<HearingRequestView> listHearingRequestViews = hearingRequestsDataSourcingService.createHearingRequestViews(
                 caseReferredForCourtHearing,
                 caseDetails,
                 defendantOnlinePleaDetails,
+                caseFileDefendantDetails,
                 emptyEnvelope);
         final SjpReferralView sjpReferral = sjpReferralDataSourcingService.createSjpReferralView(
                 caseReferredForCourtHearing,
@@ -139,6 +146,7 @@ public class CourtReferralProcessor {
                 caseDetails,
                 caseReferredForCourtHearing,
                 defendantOnlinePleaDetails,
+                caseFileDefendantDetails,
                 emptyEnvelope);
         final List<CourtDocumentView> courtDocumentViews = courtDocumentsDataSourcingService.createCourtDocumentViews(
                 caseReferredForCourtHearing,

@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor.service;
 
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.query.DefendantsOnlinePlea;
+import uk.gov.justice.json.schemas.domains.sjp.query.EmployerDetails;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -44,6 +45,14 @@ public class SjpService {
         final JsonObject payload = Json.createObjectBuilder().add("caseId", caseId.toString()).build();
         final JsonEnvelope request = enveloper.withMetadataFrom(envelope, "sjp.query.defendants-online-plea").apply(payload);
         final Envelope<DefendantsOnlinePlea> defendantsOnlinePleaEnvelope = requester.request(request, DefendantsOnlinePlea.class);
+
+        return defendantsOnlinePleaEnvelope.payload();
+    }
+
+    public EmployerDetails getEmployerDetails(final UUID defendantId, final JsonEnvelope envelope) {
+        final JsonObject payload = Json.createObjectBuilder().add("defendantId", defendantId.toString()).build();
+        final JsonEnvelope request = enveloper.withMetadataFrom(envelope, "sjp.query.employer").apply(payload);
+        final Envelope<EmployerDetails> defendantsOnlinePleaEnvelope = requester.request(request, EmployerDetails.class);
 
         return defendantsOnlinePleaEnvelope.payload();
     }

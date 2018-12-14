@@ -7,6 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static java.lang.String.format;
 import static java.net.URLEncoder.encode;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
@@ -14,6 +15,7 @@ import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.commons.io.Charsets.UTF_8;
+import static org.apache.http.HttpHeaders.ACCEPT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
@@ -146,20 +148,54 @@ public class ReferenceDataServiceStub {
         waitForStubToBeReady(urlPath + "?oucode=" + courtHouseOUCode, "application/vnd.referencedata.query.organisationunits+json");
     }
 
-    public static void stubCountryByPostcodeQuery(final String postcode, final String country) throws UnsupportedEncodingException {
+    public static void stubCountryByPostcodeQuery(final String postcode, final String country) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
 
         final String urlPath = "/referencedata-service/query/api/rest/referencedata/country-by-postcode";
-        final String encodedPostcode = encode(postcode, UTF_8.name());
+
+        final String encodedPostcode;
+        try {
+            encodedPostcode = encode(postcode, UTF_8.name());
+
+            stubFor(get(urlPathEqualTo(urlPath))
+                    .withQueryParam("postCode", equalTo(encodedPostcode))
+                    .willReturn(aResponse().withStatus(SC_OK)
+                            .withHeader(ID, randomUUID().toString())
+                            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                            .withBody(createObjectBuilder().add("country", country).build().toString())));
+            waitForStubToBeReady(urlPath + "?postCode=" + encodedPostcode, "application/vnd.reference-data.country-by-postcode+json");
+
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException(format("Not able to URL encode postcode: %s", postcode), e);
+        }
+    }
+
+    public static void stubCountryNationalities(String resourceName) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/country-nationality";
+
         stubFor(get(urlPathEqualTo(urlPath))
-                .withQueryParam("postCode", equalTo(encodedPostcode))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                        .withBody(createObjectBuilder().add("country", country).build().toString())));
-        waitForStubToBeReady(urlPath + "?postCode=" + encodedPostcode, "application/vnd.reference-data.country-by-postcode+json");
+                        .withBody(getPayload(resourceName))));
+        waitForStubToBeReady(urlPath, "application/vnd.reference-data.country-nationality+json");
+    }
 
+    public static void stubEthnicities(String resourceName) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
 
+        final String query = "application/vnd.reference-data.ethnicities+json";
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/ethnicities";
+
+        stubFor(get(urlPathEqualTo(urlPath))
+                .withHeader(ACCEPT, equalTo(query))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(getPayload(resourceName))));
+        waitForStubToBeReady(urlPath, query);
     }
 
     private static String getOrganisationUnit(final String localJusticeAreaNationalCourtCode, final String courtHouseName) {

@@ -170,6 +170,18 @@
                         </exclusions>
                     </dependency>
                     <dependency>
+                        <groupId>uk.gov.moj.cpp.prosecution.casefile</groupId>
+                        <artifactId>prosecutioncasefile-query-api</artifactId>
+                        <version>${prosecutioncasefile.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
                         <groupId>uk.gov.moj.cpp.material</groupId>
                         <artifactId>material-query-api</artifactId>
                         <version>${material.version}</version>
@@ -240,6 +252,7 @@
                                 <include>raml/json/schema/sjp.events.case-referred-for-court-hearing.json</include>
                                 <include>raml/json/schema/sjp.query.case-details.json</include>
                                 <include>raml/json/schema/sjp.query.defendants-online-plea.json</include>
+                                <include>raml/json/schema/sjp.query.employer.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>

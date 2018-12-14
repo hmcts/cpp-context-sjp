@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -51,6 +52,7 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseIdentifi
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReferringJudicialDecisionView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.SjpReferralView;
+import uk.gov.moj.cpp.sjp.event.processor.service.ProsecutionCaseFileService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.CourtDocumentsDataSourcingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.HearingRequestsDataSourcingService;
@@ -61,6 +63,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -86,6 +89,9 @@ public class CourtReferralProcessorTest {
 
     @Mock
     private SjpReferralDataSourcingService sjpReferralDataSourcingService;
+
+    @Mock
+    private ProsecutionCaseFileService prosecutionCaseFileService;
 
     @Mock
     private HearingRequestsDataSourcingService hearingRequestsDataSourcingService;
@@ -195,13 +201,18 @@ public class CourtReferralProcessorTest {
         when(sjpService.getCaseDetails(any(), any(JsonEnvelope.class))).thenReturn(caseDetails);
 
         final ProsecutionCaseView prosecutionCaseView = createDummyProsecutionCaseView(caseId);
-        when(prosecutionCasesDataSourcingService.createProsecutionCaseViews(any(), any(), any(), any())).thenReturn(singletonList(prosecutionCaseView));
+        when(prosecutionCasesDataSourcingService.createProsecutionCaseViews(any(), any(), any(), any(), any())).thenReturn(singletonList(prosecutionCaseView));
 
         final SjpReferralView sjpReferralView = createDummySjpReferralView();
         when(sjpReferralDataSourcingService.createSjpReferralView(any(), any(), any())).thenReturn(sjpReferralView);
 
+        final Optional<JsonObject> caseFileDefendantDetails = Optional.of(createObjectBuilder()
+                .add("defendants", createArrayBuilder().add(createObjectBuilder()))
+                .build());
+        when(prosecutionCaseFileService.getCaseFileDefendantDetails(eq(caseId), any())).thenReturn(caseFileDefendantDetails);
+
         final HearingRequestView listHearingRequestView = createDummyHearingRequestView();
-        when(hearingRequestsDataSourcingService.createHearingRequestViews(any(), any(), any(), any())).thenReturn(singletonList(listHearingRequestView));
+        when(hearingRequestsDataSourcingService.createHearingRequestViews(any(), any(), any(), any(), any())).thenReturn(singletonList(listHearingRequestView));
 
         final CourtDocumentView courtDocumentView = createDummyCourtDocumentView();
         when(courtDocumentsDataSourcingService.createCourtDocumentViews(any(), any(), any())).thenReturn(singletonList(courtDocumentView));
@@ -285,6 +296,7 @@ public class CourtReferralProcessorTest {
                 caseId,
                 "J",
                 "You did it",
+                "Some facts in welsh",
                 new ProsecutionCaseIdentifierView(
                         randomUUID(),
                         "TFL",

@@ -1,6 +1,9 @@
 package uk.gov.moj.cpp.sjp.event.processor.service;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -22,8 +25,11 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
 import java.time.LocalDate;
+import java.util.Optional;
+import java.util.UUID;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -56,6 +62,63 @@ public class ReferenceDataServiceTest {
         when(requestCountryByPostcode(outwardCode)).thenReturn(queryResponse);
         final String country = referenceDataService.getCountryByPostcode(outwardCode, envelope);
         assertThat(actualCountry, is(country));
+    }
+
+    @Test
+    public void shouldReturnNationalityForCodeWhenFound() {
+        final String nationalityCode = "nationalityCode";
+        final JsonObject nationality = createObjectBuilder()
+                .add("isoCode", "nationalityCode")
+                .build();
+
+        final JsonArray nationalities = createArrayBuilder()
+                .add(nationality)
+                .build();
+        final JsonObject responsePayload = createObjectBuilder().add("countryNationality", nationalities).build();
+        final JsonEnvelope queryResponse = envelopeFrom(metadataWithRandomUUIDAndName(), responsePayload);
+
+        when(requestCountryNationalities()).thenReturn(queryResponse);
+
+        final Optional<JsonObject> nationalityResult = referenceDataService.getNationality(nationalityCode, envelope);
+        assertThat(nationalityResult, is(of(nationality)));
+    }
+
+    @Test
+    public void shouldReturnEmptyOptionalWhenNationalityNotFoundForCode() {
+        final JsonObject nationality = createObjectBuilder()
+                .add("isoCode", "foo")
+                .build();
+
+        final JsonArray nationalities = createArrayBuilder()
+                .add(nationality)
+                .build();
+        final JsonObject responsePayload = createObjectBuilder().add("countryNationality", nationalities).build();
+        final JsonEnvelope queryResponse = envelopeFrom(metadataWithRandomUUIDAndName(), responsePayload);
+
+        when(requestCountryNationalities()).thenReturn(queryResponse);
+
+        final Optional<JsonObject> nationalityResult = referenceDataService.getNationality("nationalityCode", envelope);
+        assertThat(nationalityResult, is(empty()));
+    }
+
+    @Test
+    public void shouldReturnEthnicity() {
+        final String ethnicityCode = "code";
+        final JsonArray ethnicity = createArrayBuilder()
+                .add(createObjectBuilder()
+                        .add("id", UUID.randomUUID().toString())
+                        .add("code", ethnicityCode))
+                .build();
+
+        final JsonObject responsePayload = createObjectBuilder()
+                .add("ethnicities", ethnicity)
+                .build();
+        final JsonEnvelope queryResponse = envelopeFrom(metadataWithRandomUUIDAndName(), responsePayload);
+
+        when(requestEthnicity(ethnicityCode)).thenReturn(queryResponse);
+
+        final Optional<JsonObject> ethnicityResult = referenceDataService.getEthnicity(ethnicityCode, envelope);
+        assertThat(ethnicityResult.get(), is(ethnicity.getJsonObject(0)));
     }
 
     @Test
@@ -97,6 +160,12 @@ public class ReferenceDataServiceTest {
         assertThat(documentsMetadata, is(responsePayload));
     }
 
+    private Object requestEthnicity(final String ethnicityCode) {
+        return requester.requestAsAdmin(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(envelope).withName("referencedata.query.ethnicities"),
+                payloadIsJson(withJsonPath("$.code", equalTo(ethnicityCode))))));
+    }
+
     private Object requestDocumentMetadata() {
         return requester.requestAsAdmin(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("referencedata.get-all-document-metadata"),
@@ -113,6 +182,12 @@ public class ReferenceDataServiceTest {
         return requester.requestAsAdmin(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("referencedata.query.prosecutors"),
                 payloadIsJson(withJsonPath("$.prosecutorCode", equalTo(prosecutingAuthority.name()))))));
+    }
+
+    private Object requestCountryNationalities() {
+        return requester.requestAsAdmin(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(envelope).withName("referencedata.query.country-nationality"),
+                payloadIsJson(notNullValue()))));
     }
 
     private JsonEnvelope requestCountryByPostcode(final String postCode) {

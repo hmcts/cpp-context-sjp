@@ -9,18 +9,21 @@ public class DefendantRequestView {
     private final ReferralReasonView referralReason;
     private final String datesToAvoid;
     private final String summonsRequired;
+    private final String hearingLanguageNeeds;
     private final List<UUID> defendantOffences;
 
     public DefendantRequestView(final UUID prosecutionCaseId,
                                 final ReferralReasonView referralReason,
                                 final String datesToAvoid,
                                 final String summonsRequired,
+                                final String hearingLanguageNeeds,
                                 final List<UUID> defendantOffences) {
 
         this.prosecutionCaseId = prosecutionCaseId;
         this.referralReason = referralReason;
         this.datesToAvoid = datesToAvoid;
         this.summonsRequired = summonsRequired;
+        this.hearingLanguageNeeds = hearingLanguageNeeds;
         this.defendantOffences = defendantOffences;
     }
 
@@ -44,4 +47,7 @@ public class DefendantRequestView {
         return defendantOffences;
     }
 
+    public String getHearingLanguageNeeds() {
+        return hearingLanguageNeeds;
+    }
 }

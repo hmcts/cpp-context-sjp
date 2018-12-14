@@ -51,15 +51,26 @@ public class HearingRequestsDataSourcingServiceTest {
         final CaseDetails caseDetails = caseDetails()
                 .withId(CASE_ID)
                 .build();
+        final JsonObject caseFileDefendantDetails = createObjectBuilder().build();
 
         final JsonObject referralReasonsMock = createObjectBuilder().build();
         when(referenceDataService.getReferralReasons(emptyEnvelopeWithReferralEventMetadata)).thenReturn(referralReasonsMock);
 
         final DefendantsOnlinePlea defendantPlea = DefendantsOnlinePlea.defendantsOnlinePlea().build();
 
-        hearingRequestsDataSourcingService.createHearingRequestViews(caseReferredForCourtHearing, caseDetails, defendantPlea, emptyEnvelopeWithReferralEventMetadata);
+        hearingRequestsDataSourcingService.createHearingRequestViews(
+                caseReferredForCourtHearing,
+                caseDetails,
+                defendantPlea,
+                caseFileDefendantDetails,
+                emptyEnvelopeWithReferralEventMetadata);
 
-        verify(hearingRequestsViewHelper).createHearingRequestViews(caseDetails, referralReasonsMock, defendantPlea, caseReferredForCourtHearing);
+        verify(hearingRequestsViewHelper).createHearingRequestViews(
+                caseDetails,
+                referralReasonsMock,
+                defendantPlea,
+                caseFileDefendantDetails,
+                caseReferredForCourtHearing);
     }
 
 }

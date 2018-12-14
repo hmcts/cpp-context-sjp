@@ -11,6 +11,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -29,6 +30,28 @@ public class ReferenceDataService {
         final JsonEnvelope request = enveloper.withMetadataFrom(envelope, "referencedata.query.country-by-postcode").apply(payload);
         final JsonEnvelope response = requester.requestAsAdmin(request);
         return response.payloadAsJsonObject().getString("country");
+    }
+
+    public Optional<JsonObject> getNationality(final String nationalityCode, final JsonEnvelope envelope) {
+        final JsonEnvelope request = enveloper.withMetadataFrom(envelope, "referencedata.query.country-nationality").apply(createObjectBuilder().build());
+        final JsonEnvelope response = requester.requestAsAdmin(request);
+
+        return response.payloadAsJsonObject().getJsonArray("countryNationality")
+                .getValuesAs(JsonObject.class).stream()
+                .filter(nationality -> nationality.getString("isoCode").equals(nationalityCode))
+                .findFirst();
+    }
+
+    public Optional<JsonObject> getEthnicity(final String ethnicityCode, final JsonEnvelope envelope) {
+        final JsonObject payload = createObjectBuilder().add("code", ethnicityCode).build();
+        final JsonEnvelope request = enveloper.withMetadataFrom(envelope, "referencedata.query.ethnicities").apply(payload);
+        final JsonEnvelope response = requester.requestAsAdmin(request);
+
+        return response.payloadAsJsonObject()
+                .getJsonArray("ethnicities")
+                .getValuesAs(JsonObject.class)
+                .stream()
+                .findFirst();
     }
 
     public JsonObject getProsecutor(final ProsecutingAuthority prosecutingAuthority, final JsonEnvelope envelope) {

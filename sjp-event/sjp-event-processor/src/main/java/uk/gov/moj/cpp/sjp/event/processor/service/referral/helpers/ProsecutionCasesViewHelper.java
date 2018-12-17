@@ -167,11 +167,12 @@ public class ProsecutionCasesViewHelper {
                         .withAddress(createAddressView(defendantPersonalDetails.getAddress()))
                         .withContact(createDefendantContactView(defendantPersonalDetails, caseFileDefendantDetails))
                         .build(),
-                new EmployerOrganisationView(
-                        defendant.getId(),
-                        employer.getName(),
-                        createAddressView(employer.getAddress()),
-                        new ContactView(employer.getPhone())));
+                ofNullable(employer.getName())
+                        .map(employerName -> new EmployerOrganisationView(
+                                employerName,
+                                createAddressView(employer.getAddress()),
+                                new ContactView(employer.getPhone())))
+                        .orElse(null));
 
     }
 

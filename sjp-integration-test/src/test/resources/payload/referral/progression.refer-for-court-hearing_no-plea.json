@@ -68,8 +68,7 @@
                 "contact": {
                   "work": "02020202020"
                 },
-                "name": "Test Org",
-                "id": "${DEFENDANT_ID}"
+                "name": "Test Org"
               }
             }
           }

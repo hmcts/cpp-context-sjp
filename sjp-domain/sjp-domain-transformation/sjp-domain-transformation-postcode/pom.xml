@@ -12,7 +12,7 @@
     <artifactId>sjp-domain-transformation-postcode</artifactId>
 
     <properties>
-        <stream-transformation-tool.version>3.0.0</stream-transformation-tool.version>
+        <stream-transformation-tool.version>4.2.0</stream-transformation-tool.version>
     </properties>
 
     <dependencies>

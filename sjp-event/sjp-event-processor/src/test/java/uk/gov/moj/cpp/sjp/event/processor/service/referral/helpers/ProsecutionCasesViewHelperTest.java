@@ -186,7 +186,7 @@ public class ProsecutionCasesViewHelperTest {
 
         assertThat(personalDetailsView.getDocumentationLanguageNeeds(), is(nonNull(caseFileDefendantDetails) ? "WELSH" : "ENGLISH"));
         assertThat(personalDetailsView.getNationalityId(), is(nonNull(caseFileDefendantDetails) ? DEFENDANT_NATIONALITY_ID : null));
-        assertThat(personalDetailsView.getNationalInsuranceNumber(), is(nonNull(caseFileDefendantDetails) ? NATIONAL_INSURANCE_NUMBER : null));
+        assertThat(personalDetailsView.getNationalInsuranceNumber(), is(NATIONAL_INSURANCE_NUMBER));
         assertThat(personalDetailsView.getEthnicityId(), is(DEFENDANT_ETHNICITY_ID));
         assertThat(personalDetailsView.getOccupation(), is(nonNull(caseFileDefendantDetails) ? DEFENDANT_OCCUPATION : null));
         assertThat(personalDetailsView.getOccupationCode(), is(nonNull(caseFileDefendantDetails) ? valueOf(DEFENDANT_OCCUPATION_CODE) : null));
@@ -278,6 +278,7 @@ public class ProsecutionCasesViewHelperTest {
                         .withMobile("+6214132514")
                         .build())
                 .withTitle("Mr")
+                .withNationalInsuranceNumber(NATIONAL_INSURANCE_NUMBER)
                 .build();
     }
 

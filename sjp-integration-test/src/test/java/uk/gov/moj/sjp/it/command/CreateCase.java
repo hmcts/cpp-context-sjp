@@ -250,6 +250,11 @@ public class CreateCase {
             return this;
         }
 
+        public DefendantBuilder withNationalInsuranceNumber(final String nationalInsuranceNumber) {
+            this.nationalInsuranceNumber = nationalInsuranceNumber;
+            return this;
+        }
+
         public String getTitle() {
             return title;
         }

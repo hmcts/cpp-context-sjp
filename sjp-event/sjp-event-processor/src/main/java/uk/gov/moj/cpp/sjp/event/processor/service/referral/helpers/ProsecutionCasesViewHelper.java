@@ -35,6 +35,7 @@ public class ProsecutionCasesViewHelper {
 
     private static final String WELSH_LANGUAGE_CODE = "W";
     private static final String NO_VERDICT = "NO_VERDICT";
+    private static final String OFFENCES_KEY = "offences";
 
     @SuppressWarnings("squid:S00107")
     public List<ProsecutionCaseView> createProsecutionCaseViews(
@@ -75,7 +76,7 @@ public class ProsecutionCasesViewHelper {
                 caseDetails.getUrn());
 
         final String statementOfFactsWelsh = Optional.ofNullable(caseFileDefendantDetails)
-                .map(defendantDetails -> defendantDetails.getJsonArray("offences"))
+                .map(defendantDetails -> defendantDetails.getJsonArray(OFFENCES_KEY))
                 .map(defendantOffences -> defendantOffences.getJsonObject(0).getString("statementOfFactsWelsh", null))
                 .orElse(null);
 
@@ -154,9 +155,7 @@ public class ProsecutionCasesViewHelper {
                                 .map(defendantDetails -> defendantDetails.getString("documentationLanguage", null))
                                 .map(documentationLanguage -> WELSH_LANGUAGE_CODE.equals(documentationLanguage) ? "WELSH" : "ENGLISH")
                                 .orElse("ENGLISH"))
-                        .withNationalInsuranceNumber(ofNullable(caseFileDefendantDetails)
-                                .map(defendantDetails -> defendantDetails.getString("nationalInsuranceNumber", null))
-                                .orElse(null))
+                        .withNationalInsuranceNumber(defendant.getPersonalDetails().getNationalInsuranceNumber())
                         .withOccupation(defendantPersonalInformationOptional.map(personalInformation -> personalInformation.getString("occupation", null)).orElse(null))
                         .withOccupationCode(defendantPersonalInformationOptional.map(personalInformation -> personalInformation.getInt("occupationCode", 0))
                                 .map(String::valueOf)
@@ -183,13 +182,13 @@ public class ProsecutionCasesViewHelper {
             final JsonObject caseFileDefendantDetails,
             final NotifiedPleaView notifiedPleaView) {
 
-        final Optional<String> offenceDefinitionIdOptional = referenceDataOffences.getJsonArray("offences").getValuesAs(JsonObject.class).stream()
+        final Optional<String> offenceDefinitionIdOptional = referenceDataOffences.getJsonArray(OFFENCES_KEY).getValuesAs(JsonObject.class).stream()
                 .filter(referenceDataOffence -> referenceDataOffence.getString("cjsOffenceCode").equals(offenceDetails.getCjsCode()))
                 .map(referenceDataOffence -> referenceDataOffence.getString("offenceId"))
                 .findFirst();
 
         final Optional<JsonObject> caseFileOffenceDetailsOptional = ofNullable(caseFileDefendantDetails)
-                .map(defendantDetails -> defendantDetails.getJsonArray("offences").getJsonObject(0));
+                .map(defendantDetails -> defendantDetails.getJsonArray(OFFENCES_KEY).getJsonObject(0));
 
         return OffenceView.builder()
                 .withId(offenceDetails.getId())

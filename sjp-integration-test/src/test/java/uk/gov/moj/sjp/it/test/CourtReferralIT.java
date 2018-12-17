@@ -99,6 +99,8 @@ public class CourtReferralIT extends BaseIntegrationTest {
     private static final ZonedDateTime ADDED_AT = now(UTC);
     private static final String REFERENCE_DATA_DOCUMENT_TYPE = "Case Summary";
 
+    private static final String NATIONAL_INSURANCE_NUMBER = "BB333333B";
+
     private static final JsonObject EMPLOYER_DETAILS = createEmployerDetails();
     private static final EmployerHelper EMPLOYER_HELPER = new EmployerHelper();
 
@@ -122,6 +124,8 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 .withOffenceBuilder(CreateCase.OffenceBuilder.withDefaults()
                         .withId(offenceId)
                         .withLibraOffenceCode(LIBRA_OFFENCE_CODE))
+                .withDefendantBuilder(CreateCase.DefendantBuilder.withDefaults()
+                        .withNationalInsuranceNumber(NATIONAL_INSURANCE_NUMBER))
                 .withId(caseId);
 
         final EventListener eventListener = new EventListener();
@@ -225,7 +229,8 @@ public class CourtReferralIT extends BaseIntegrationTest {
     @Test
     public void shouldSendReferToCourtHearingCommandToProgressionContext_WithPlea() {
         new PleadOnlineHelper(caseId).pleadOnline(getPayload("raml/json/sjp.command.plead-online__not-guilty.json")
-                .replace("ecf30a03-8a17-4fc5-81d2-b72ac0a13d17", offenceId.toString()));
+                .replace("ecf30a03-8a17-4fc5-81d2-b72ac0a13d17", offenceId.toString())
+                .replace("AB123456A", NATIONAL_INSURANCE_NUMBER));
 
         referCaseToCourtAndVerifyCommandSendToProgressionMatchesExpected("payload/referral/progression.refer-for-court-hearing_plea-present.json");
     }
@@ -276,6 +281,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 .put("DOCUMENT_TYPE_ID", DOCUMENT_TYPE_ID.toString())
                 .put("MATERIAL_ID", MATERIAL_ID.toString())
                 .put("UPLOAD_DATE_TIME", ADDED_AT.format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
+                .put("NINO", NATIONAL_INSURANCE_NUMBER)
                 .build());
     }
 

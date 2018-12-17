@@ -10,6 +10,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
+import static org.hamcrest.Matchers.nullValue;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails.caseDetails;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.Defendant.defendant;
 
@@ -35,7 +36,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -74,7 +74,7 @@ public class ProsecutionCasesViewHelperTest {
     @Test
     public void shouldCreateProsecutionCaseViewsWithoutConvictionDateWhenVerdictNotPresent() {
         final JsonObject decision = createObjectBuilder().build();
-        createProsecutionCaseViewsAndVerifyResultCorrect(decision, null, createCaseFileDefendantDetails());
+        createProsecutionCaseViewsAndVerifyResultCorrect(decision, null, createCaseFileDefendantDetails(), createEmployer());
     }
 
     @Test
@@ -82,7 +82,7 @@ public class ProsecutionCasesViewHelperTest {
         final JsonObject decision = createObjectBuilder()
                 .add("verdict", "NO_VERDICT")
                 .build();
-        createProsecutionCaseViewsAndVerifyResultCorrect(decision, null, createCaseFileDefendantDetails());
+        createProsecutionCaseViewsAndVerifyResultCorrect(decision, null, createCaseFileDefendantDetails(), createEmployer());
     }
 
     @Test
@@ -90,7 +90,7 @@ public class ProsecutionCasesViewHelperTest {
         final JsonObject decision = createObjectBuilder()
                 .add("verdict", "Proved SJP")
                 .build();
-        createProsecutionCaseViewsAndVerifyResultCorrect(decision, DECISION_DATE, createCaseFileDefendantDetails());
+        createProsecutionCaseViewsAndVerifyResultCorrect(decision, DECISION_DATE, createCaseFileDefendantDetails(), createEmployer());
     }
 
     @Test
@@ -98,10 +98,19 @@ public class ProsecutionCasesViewHelperTest {
         final JsonObject decision = createObjectBuilder()
                 .add("verdict", "Proved SJP")
                 .build();
-        createProsecutionCaseViewsAndVerifyResultCorrect(decision, DECISION_DATE, null);
+        createProsecutionCaseViewsAndVerifyResultCorrect(decision, DECISION_DATE, null, createEmployer());
     }
 
-    private void createProsecutionCaseViewsAndVerifyResultCorrect(final JsonObject decision, final LocalDate expectedConvictionDate, final JsonObject caseFileDefendantDetails) {
+    @Test
+    public void shouldNotIncludeEmployerDetailsIfEmployerNameNotPresent() {
+        final JsonObject decision = createObjectBuilder()
+                .add("verdict", "Proved SJP")
+                .build();
+
+        createProsecutionCaseViewsAndVerifyResultCorrect(decision, DECISION_DATE, null, EmployerDetails.employerDetails().build());
+    }
+
+    private void createProsecutionCaseViewsAndVerifyResultCorrect(final JsonObject decision, final LocalDate expectedConvictionDate, final JsonObject caseFileDefendantDetails, final EmployerDetails employer) {
         final Offence offence = createOffence();
         final NotifiedPleaView notifiedPleaView = new NotifiedPleaView(
                 offence.getId(),
@@ -112,7 +121,6 @@ public class ProsecutionCasesViewHelperTest {
 
         final JsonObject referenceDataOffences = createReferenceDataOffences();
         final JsonObject prosecutor = createProsecutor();
-        final EmployerDetails employer = createEmployer();
 
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
@@ -142,7 +150,7 @@ public class ProsecutionCasesViewHelperTest {
 
         final DefendantView defendantView = prosecutionCaseView.getDefendants().get(0);
 
-        assertDefendantDetailsMatch(defendantPersonalDetails, defendantView, employer, caseFileDefendantDetails);
+        assertDefendantDetailsMatch(defendantPersonalDetails, defendantView, employer, caseFileDefendantDetails, employer);
 
         final OffenceView offenceView = defendantView.getOffences().get(0);
         assertThat(offenceView.getId(), is(offence.getId()));
@@ -157,16 +165,11 @@ public class ProsecutionCasesViewHelperTest {
         assertThat(offenceView.getCount(), is(1));
     }
 
-    private JsonObject createEthnicity() {
-        return createObjectBuilder()
-                .add("id", DEFENDANT_ETHNICITY_ID)
-                .build();
-    }
-
     private void assertDefendantDetailsMatch(final PersonalDetails defendantPersonalDetails,
                                              final DefendantView defendantView,
                                              final EmployerDetails employer,
-                                             final JsonObject caseFileDefendantDetails) {
+                                             final JsonObject caseFileDefendantDetails,
+                                             final EmployerDetails employerDetails) {
 
         assertThat(defendantView.getId(), is(DEFENDANT_ID));
         assertThat(defendantView.getProsecutionCaseId(), is(CASE_ID));
@@ -204,15 +207,18 @@ public class ProsecutionCasesViewHelperTest {
         assertThat(contactView.getSecondaryEmail(), is(nonNull(caseFileDefendantDetails) ? DEFENDANT_SECONDARY_EMAIL : null));
 
         final EmployerOrganisationView employerOrganisationDetails = defendantView.getPersonDefendant().getEmployerOrganisation();
-        assertThat(employerOrganisationDetails.getAddress().getAddress1(), is(employer.getAddress().getAddress1()));
-        assertThat(employerOrganisationDetails.getAddress().getAddress2(), is(employer.getAddress().getAddress2()));
-        assertThat(employerOrganisationDetails.getAddress().getAddress3(), is(employer.getAddress().getAddress3()));
-        assertThat(employerOrganisationDetails.getAddress().getAddress4(), is(employer.getAddress().getAddress4()));
-        assertThat(employerOrganisationDetails.getAddress().getAddress5(), is(employer.getAddress().getAddress5()));
-        assertThat(employerOrganisationDetails.getAddress().getPostcode(), is(employer.getAddress().getPostcode()));
-        assertThat(employerOrganisationDetails.getContact().getWork(), is(employer.getPhone()));
-        assertThat(employerOrganisationDetails.getName(), is(employer.getName()));
-        assertThat(employerOrganisationDetails.getId(), is(DEFENDANT_ID));
+        if (nonNull(employerDetails.getName())) {
+            assertThat(employerOrganisationDetails.getAddress().getAddress1(), is(employer.getAddress().getAddress1()));
+            assertThat(employerOrganisationDetails.getAddress().getAddress2(), is(employer.getAddress().getAddress2()));
+            assertThat(employerOrganisationDetails.getAddress().getAddress3(), is(employer.getAddress().getAddress3()));
+            assertThat(employerOrganisationDetails.getAddress().getAddress4(), is(employer.getAddress().getAddress4()));
+            assertThat(employerOrganisationDetails.getAddress().getAddress5(), is(employer.getAddress().getAddress5()));
+            assertThat(employerOrganisationDetails.getAddress().getPostcode(), is(employer.getAddress().getPostcode()));
+            assertThat(employerOrganisationDetails.getContact().getWork(), is(employer.getPhone()));
+            assertThat(employerOrganisationDetails.getName(), is(employer.getName()));
+        } else {
+            assertThat(employerOrganisationDetails, nullValue());
+        }
     }
 
     private JsonObject createProsecutor() {

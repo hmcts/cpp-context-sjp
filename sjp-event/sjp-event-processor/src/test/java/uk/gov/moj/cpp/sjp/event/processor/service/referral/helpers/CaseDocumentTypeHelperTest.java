@@ -13,7 +13,7 @@ public class CaseDocumentTypeHelperTest {
     private static final String SJP_DOCUMENT_TYPE = "SJPN";
     private static final String CC_DOCUMENT_TYPE = "Case Summary";
     private static final String OTHER_TYPE = "OTHER";
-    private static final String CC_DEFAULT_TYPE = "Private Section - Court Logs";
+    private static final String CC_DEFAULT_TYPE = "Private section - Court logs";
 
     private CaseDocumentTypeHelper caseDocumentTypeHelper = new CaseDocumentTypeHelper();
 

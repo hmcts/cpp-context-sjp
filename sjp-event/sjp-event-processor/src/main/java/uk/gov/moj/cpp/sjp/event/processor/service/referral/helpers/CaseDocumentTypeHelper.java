@@ -17,6 +17,6 @@ public class CaseDocumentTypeHelper {
     }
 
     public String getDocumentType(final String sjpDocumentType) {
-        return DOCUMENT_MAPPING_TYPES.getOrDefault(trim(sjpDocumentType), "Private Section - Court Logs");
+        return DOCUMENT_MAPPING_TYPES.getOrDefault(trim(sjpDocumentType), "Private section - Court logs");
     }
 }

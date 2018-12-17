@@ -2,6 +2,8 @@ package uk.gov.moj.cpp.sjp.event.processor.service.referral;
 
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toMap;
+import static org.apache.commons.lang3.StringUtils.normalizeSpace;
+import static org.apache.commons.lang3.StringUtils.upperCase;
 
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Document;
@@ -67,8 +69,9 @@ public class CourtDocumentsDataSourcingService {
                 .stream()
                 .collect(
                         toMap(Document::getId,
-                                document -> documentsMetadata.get(caseDocumentTypeHelper
-                                        .getDocumentType(document.getDocumentType()))));
+                                document -> documentsMetadata.getOrDefault(
+                                        normalizedDocumentType(caseDocumentTypeHelper.getDocumentType(document.getDocumentType())), null
+                                )));
     }
 
     private Map<String, UUID> getDocumentsTypes(
@@ -81,8 +84,9 @@ public class CourtDocumentsDataSourcingService {
                 .getValuesAs(JsonObject.class)
                 .stream()
                 .collect(toMap(
-                        metadata -> metadata.getString("documentType"),
-                        metadata -> fromString(metadata.getString("id"))));
+                        metadata -> normalizedDocumentType(metadata.getString("documentType")),
+                        metadata -> fromString(metadata.getString("id"))
+                ));
     }
 
     private Map<UUID, MaterialView> createDocumentIdToMaterialView(
@@ -112,5 +116,9 @@ public class CourtDocumentsDataSourcingService {
                 materialMetadata.getString("fileName"),
                 ZonedDateTime.parse(materialMetadata.getString("materialAddedDate")),
                 materialMetadata.getString("mimeType"));
+    }
+
+    private String normalizedDocumentType(final String documentType) {
+        return normalizeSpace(upperCase(documentType));
     }
 }

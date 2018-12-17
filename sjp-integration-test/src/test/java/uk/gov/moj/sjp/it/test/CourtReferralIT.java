@@ -18,6 +18,8 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.skyscreamer.jsonassert.JSONCompare.compareJSON;
+import static org.skyscreamer.jsonassert.JSONCompareMode.LENIENT;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
@@ -247,7 +249,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 .run(decisionToReferCaseForCourtHearingSavedProducer::saveDecisionToReferCaseForCourtHearing);
 
         final JsonObject expectedCommandPayload = prepareExpectedCommandPayload(expectedCommandPayloadFile);
-        final Predicate<JSONObject> commandPayloadPredicate = commandPayload -> commandPayload.toString().equals(expectedCommandPayload.toString());
+        final Predicate<JSONObject> commandPayloadPredicate = commandPayload -> compareJSON(commandPayload.toString(), expectedCommandPayload.toString(), LENIENT).passed();
 
         await().until(() ->
                 findAll(postRequestedFor(urlPathMatching(REFER_TO_COURT_COMMAND_URL + ".*"))

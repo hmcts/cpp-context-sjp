@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.service;
 
 
+import static java.util.Objects.nonNull;
 import static javax.json.Json.createObjectBuilder;
 
 import uk.gov.justice.json.schemas.domains.sjp.ProsecutingAuthority;
@@ -38,6 +39,7 @@ public class ReferenceDataService {
 
         return response.payloadAsJsonObject().getJsonArray("countryNationality")
                 .getValuesAs(JsonObject.class).stream()
+                .filter(nationality -> nonNull(nationality.getString("isoCode", null)))
                 .filter(nationality -> nationality.getString("isoCode").equals(nationalityCode))
                 .findFirst();
     }

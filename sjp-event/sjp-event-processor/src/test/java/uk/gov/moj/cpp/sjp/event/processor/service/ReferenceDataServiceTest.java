@@ -32,6 +32,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
+import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -66,28 +67,34 @@ public class ReferenceDataServiceTest {
 
     @Test
     public void shouldReturnNationalityForCodeWhenFound() {
-        final String nationalityCode = "nationalityCode";
         final JsonObject nationality = createObjectBuilder()
                 .add("isoCode", "nationalityCode")
                 .build();
+        mockCountryNationalityResponseAndAssertOnResult(
+                nationality,
+                is(of(nationality)));
+    }
 
-        final JsonArray nationalities = createArrayBuilder()
-                .add(nationality)
-                .build();
-        final JsonObject responsePayload = createObjectBuilder().add("countryNationality", nationalities).build();
-        final JsonEnvelope queryResponse = envelopeFrom(metadataWithRandomUUIDAndName(), responsePayload);
-
-        when(requestCountryNationalities()).thenReturn(queryResponse);
-
-        final Optional<JsonObject> nationalityResult = referenceDataService.getNationality(nationalityCode, envelope);
-        assertThat(nationalityResult, is(of(nationality)));
+    @Test
+    public void shouldHandleNationalitiesWithEmptyIsoCode() {
+        mockCountryNationalityResponseAndAssertOnResult(
+                createObjectBuilder()
+                        .add("id", "22ef7a73-df50-4349-8c72-ca3b9ace6363")
+                        .add("cjsCode", 0)
+                        .build(),
+                is(empty()));
     }
 
     @Test
     public void shouldReturnEmptyOptionalWhenNationalityNotFoundForCode() {
-        final JsonObject nationality = createObjectBuilder()
-                .add("isoCode", "foo")
-                .build();
+        mockCountryNationalityResponseAndAssertOnResult(
+                createObjectBuilder()
+                        .add("isoCode", "foo")
+                        .build(),
+                is(empty()));
+    }
+
+    private void mockCountryNationalityResponseAndAssertOnResult(final JsonObject nationality, final Matcher nationalityMatcher) {
 
         final JsonArray nationalities = createArrayBuilder()
                 .add(nationality)
@@ -98,7 +105,7 @@ public class ReferenceDataServiceTest {
         when(requestCountryNationalities()).thenReturn(queryResponse);
 
         final Optional<JsonObject> nationalityResult = referenceDataService.getNationality("nationalityCode", envelope);
-        assertThat(nationalityResult, is(empty()));
+        assertThat(nationalityResult, nationalityMatcher);
     }
 
     @Test

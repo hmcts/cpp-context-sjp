@@ -47,7 +47,7 @@
                 "interpreterLanguageNeeds": "French",
                 "occupationCode": "1",
                 "ethnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
-                "nationalInsuranceNumber": "NINO",
+                "nationalInsuranceNumber": "${NINO}",
                 "contact": {
                   "secondaryEmail": "secondary-email@abv.bg",
                   "work": "+21312321312312",

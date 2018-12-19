@@ -31,7 +31,8 @@
   "required": [
     "plea",
     "caseId",
-    "offenceId"
+    "offenceId",
+    "updatedDate"
   ],
   "additionalProperties": false
 }

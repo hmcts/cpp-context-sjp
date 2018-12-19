@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
-import static java.time.LocalDate.now;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -19,7 +18,6 @@ import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -45,7 +43,7 @@ public class OffenceUpdatedListener {
     public void updatePlea(final JsonEnvelope envelope) {
         final PleaUpdated event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), PleaUpdated.class);
 
-        final ZonedDateTime pleaUpdatedDataTime = Optional.ofNullable(event.getUpdatedDate()).orElseGet(() -> envelope.metadata().createdAt().orElse(null));
+        final ZonedDateTime pleaUpdatedDataTime = event.getUpdatedDate();
         final OffenceDetail offenceDetail = offenceRepository.findBy(event.getOffenceId());
 
         offenceDetail.setPlea(event.getPlea());
@@ -54,10 +52,7 @@ public class OffenceUpdatedListener {
         offenceDetail.setMitigation(event.getMitigation());
         offenceDetail.setNotGuiltyBecause(event.getNotGuiltyBecause());
 
-
-        updatePleaReceivedDate(event.getCaseId(),
-                envelope.metadata().createdAt().map(ZonedDateTime::toLocalDate)
-                        .orElse(now()), event.getPlea());
+        updatePleaReceivedDate(event.getCaseId(), LocalDate.from(event.getUpdatedDate()), event.getPlea());
 
         if (PleaMethod.ONLINE.equals(event.getPleaMethod())) {
             final OnlinePlea onlinePlea = new OnlinePlea(event);

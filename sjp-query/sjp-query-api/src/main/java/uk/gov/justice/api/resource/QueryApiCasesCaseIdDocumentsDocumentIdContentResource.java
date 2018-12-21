@@ -25,6 +25,7 @@ public interface QueryApiCasesCaseIdDocumentsDocumentIdContentResource {
     @Path("{filename}")
     @GET
     @Produces({"application/vnd.sjp.query.case-document-content+json"})
+    // TODO remove when the client code is removed
     Response getDocumentContent(
             @PathParam("caseId") UUID caseId,
             @PathParam("filename") String filename,

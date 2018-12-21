@@ -76,6 +76,7 @@ public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResource implem
         ideally this should be fixed in material and by returning the inline content disposition,
         but it is inline what was implement in past
      */
+    // TODO remove this when there UI reference to this code is removed
     public Response getDocumentContent(final UUID caseId, final String filename, final UUID documentId, final UUID userId) {
         return this.getDocumentContent(caseId, documentId, userId);
     }
@@ -88,7 +89,7 @@ public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResource implem
                     .orElseThrow(() -> new WebApplicationException("System user for sjp context not found"));
 
             final UUID materialId = UUID.fromString(document.payloadAsJsonObject().getJsonObject("caseDocument").getString("materialId"));
-            final Response documentContentResponse = materialClient.getMaterial(materialId, systemUser);
+            final Response documentContentResponse = materialClient.getMaterialWithHeader(materialId, systemUser);
 
             return Response.fromResponse(documentContentResponse)
                     .entity(documentContentResponse.readEntity(InputStream.class))

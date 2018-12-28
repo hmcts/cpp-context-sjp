@@ -60,20 +60,15 @@ public class CaseDetail implements Serializable {
     public static final String RESULT_SET_MAPPING_ASSIGNMENT_CANDIDATES = "assignmentCandidates";
 
     private static final long serialVersionUID = -5400670786416162433L;
-
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "caseId")
+    private final Set<CaseDocument> caseDocuments = new LinkedHashSet<>();
     @Column(name = "id")
     @Id
     private UUID id;
-
     @Column(name = "enterprise_id")
     private String enterpriseId;
-
     @Column(name = "urn")
     private String urn;
-
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "caseId")
-    private Set<CaseDocument> caseDocuments = new LinkedHashSet<>();
-
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "caseId")
     private Set<CaseSearchResult> caseSearchResults = new LinkedHashSet<>();
 
@@ -120,6 +115,12 @@ public class CaseDetail implements Serializable {
     @Column(name = "referred_for_court_hearing")
     private Boolean referredForCourtHearing;
 
+    @Column(name = "hearing_court_name")
+    private String hearingCourtName;
+
+    @Column(name = "hearing_time")
+    private ZonedDateTime hearingTime;
+
     public CaseDetail() {
         defendant.setCaseDetail(this);
     }
@@ -148,7 +149,7 @@ public class CaseDetail implements Serializable {
         this.postingDate = postingDate;
     }
 
-    public void acknowledgeDefendantDetailsUpdates(ZonedDateTime acknowledgedAt) {
+    public void acknowledgeDefendantDetailsUpdates(final ZonedDateTime acknowledgedAt) {
         defendant.acknowledgeDetailsUpdates(acknowledgedAt);
     }
 
@@ -156,7 +157,7 @@ public class CaseDetail implements Serializable {
         return urn;
     }
 
-    public void setUrn(String urn) {
+    public void setUrn(final String urn) {
         this.urn = urn;
     }
 
@@ -164,7 +165,7 @@ public class CaseDetail implements Serializable {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(final UUID id) {
         this.id = id;
     }
 
@@ -172,7 +173,7 @@ public class CaseDetail implements Serializable {
         return caseDocuments;
     }
 
-    public void addCaseDocuments(CaseDocument caseDocument) {
+    public void addCaseDocuments(final CaseDocument caseDocument) {
         this.caseDocuments.add(caseDocument);
         caseDocument.setCaseId(this.id);
     }
@@ -181,7 +182,7 @@ public class CaseDetail implements Serializable {
         return defendant;
     }
 
-    public void setDefendant(DefendantDetail defendantDetail) {
+    public void setDefendant(final DefendantDetail defendantDetail) {
         Objects.requireNonNull(defendantDetail);
         defendantDetail.setCaseDetail(this);
         this.defendant = defendantDetail;
@@ -191,7 +192,7 @@ public class CaseDetail implements Serializable {
         return dateTimeCreated;
     }
 
-    public void setDateTimeCreated(ZonedDateTime dateTimeCreated) {
+    public void setDateTimeCreated(final ZonedDateTime dateTimeCreated) {
         this.dateTimeCreated = dateTimeCreated;
     }
 
@@ -199,7 +200,7 @@ public class CaseDetail implements Serializable {
         return this.prosecutingAuthority == null ? null : ProsecutingAuthority.valueOf(prosecutingAuthority);
     }
 
-    public void setProsecutingAuthority(ProsecutingAuthority prosecutingAuthority) {
+    public void setProsecutingAuthority(final ProsecutingAuthority prosecutingAuthority) {
         this.prosecutingAuthority = prosecutingAuthority == null ? null : prosecutingAuthority.name();
     }
 
@@ -207,7 +208,7 @@ public class CaseDetail implements Serializable {
         return isTrue(completed);
     }
 
-    public void setCompleted(Boolean completed) {
+    public void setCompleted(final Boolean completed) {
         this.completed = completed;
     }
 
@@ -223,7 +224,7 @@ public class CaseDetail implements Serializable {
         return costs;
     }
 
-    public void setCosts(BigDecimal costs) {
+    public void setCosts(final BigDecimal costs) {
         this.costs = costs;
     }
 
@@ -231,7 +232,7 @@ public class CaseDetail implements Serializable {
         return postingDate;
     }
 
-    public void setPostingDate(LocalDate postingDate) {
+    public void setPostingDate(final LocalDate postingDate) {
         this.postingDate = postingDate;
     }
 
@@ -239,7 +240,7 @@ public class CaseDetail implements Serializable {
         return reopenedDate;
     }
 
-    public CaseDetail setReopenedDate(LocalDate reopenedDate) {
+    public CaseDetail setReopenedDate(final LocalDate reopenedDate) {
         this.reopenedDate = reopenedDate;
         return this;
     }
@@ -257,7 +258,7 @@ public class CaseDetail implements Serializable {
         return reopenedInLibraReason;
     }
 
-    public void setReopenedInLibraReason(String reopenedInLibraReason) {
+    public void setReopenedInLibraReason(final String reopenedInLibraReason) {
         this.reopenedInLibraReason = reopenedInLibraReason;
     }
 
@@ -279,7 +280,7 @@ public class CaseDetail implements Serializable {
         return enterpriseId;
     }
 
-    public void setEnterpriseId(String enterpriseId) {
+    public void setEnterpriseId(final String enterpriseId) {
         this.enterpriseId = enterpriseId;
     }
 
@@ -287,7 +288,7 @@ public class CaseDetail implements Serializable {
         return caseSearchResults;
     }
 
-    public void setCaseSearchResults(Set<CaseSearchResult> caseSearchResults) {
+    public void setCaseSearchResults(final Set<CaseSearchResult> caseSearchResults) {
         this.caseSearchResults = caseSearchResults;
     }
 
@@ -303,19 +304,19 @@ public class CaseDetail implements Serializable {
         return listedInCriminalCourts;
     }
 
-    public void setListedInCriminalCourts(Boolean listedInCriminalCourts) {
+    public void setListedInCriminalCourts(final Boolean listedInCriminalCourts) {
         this.listedInCriminalCourts = listedInCriminalCourts;
     }
 
-    public void markDefendantNameUpdated(ZonedDateTime updateDate) {
+    public void markDefendantNameUpdated(final ZonedDateTime updateDate) {
         defendant.markNameUpdated(updateDate);
     }
 
-    public void markDefendantAddressUpdated(ZonedDateTime updateDate) {
+    public void markDefendantAddressUpdated(final ZonedDateTime updateDate) {
         defendant.markAddressUpdated(updateDate);
     }
 
-    public void markDefendantDateOfBirthUpdated(ZonedDateTime updateDate) {
+    public void markDefendantDateOfBirthUpdated(final ZonedDateTime updateDate) {
         defendant.markDateOfBirthUpdated(updateDate);
     }
 
@@ -325,6 +326,22 @@ public class CaseDetail implements Serializable {
 
     public void setReferredForCourtHearing(final Boolean referredForCourtHearing) {
         this.referredForCourtHearing = referredForCourtHearing;
+    }
+
+    public String getHearingCourtName() {
+        return hearingCourtName;
+    }
+
+    public void setHearingCourtName(final String hearingCourtName) {
+        this.hearingCourtName = hearingCourtName;
+    }
+
+    public ZonedDateTime getHearingTime() {
+        return hearingTime;
+    }
+
+    public void setHearingTime(final ZonedDateTime hearingTime) {
+        this.hearingTime = hearingTime;
     }
 
     public PleaType getFirstOffencePlea() {

@@ -24,6 +24,8 @@
         <skip.integration.tests>true</skip.integration.tests>
         <!-- Increase default wildfly timeout from 60s, some of our infrastructure is *really* slow -->
         <wildfly.timeout>120</wildfly.timeout>
+
+        <jsonpath.version>2.4.0</jsonpath.version>
     </properties>
 
     <dependencies>
@@ -164,6 +166,7 @@
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
             <scope>test</scope>
+            <version>${jsonpath.version}</version><!-- allows usage of -1 in array to get last element of array-->
         </dependency>
         <dependency>
             <groupId>joda-time</groupId>

@@ -87,13 +87,13 @@ public class CaseUpdatedListener {
     @Handles(CaseDocumentAdded.EVENT_NAME)
     @Transactional
     public void addCaseDocument(final JsonEnvelope envelope) {
-        CaseDocumentAdded caseDocumentAdded = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), CaseDocumentAdded.class);
+        final CaseDocumentAdded caseDocumentAdded = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), CaseDocumentAdded.class);
 
-        CaseDocument caseDocument = caseDocumentAddedConverter.convert(caseDocumentAdded);
+        final CaseDocument caseDocument = caseDocumentAddedConverter.convert(caseDocumentAdded);
         caseDocumentRepository.save(caseDocument);
     }
 
-    private CaseDetail findCaseById(UUID caseId) {
+    private CaseDetail findCaseById(final UUID caseId) {
         return caseRepository.findBy(caseId);
     }
 
@@ -121,11 +121,13 @@ public class CaseUpdatedListener {
     @Handles(CaseListedInCriminalCourts.EVENT_NAME)
     @Transactional
     public void updateCaseListedInCriminalCourts(final JsonEnvelope envelope) {
-
+        final JsonObject payload = envelope.payloadAsJsonObject();
         final CaseDetail caseDetail = findCaseById(
-                UUID.fromString(envelope.payloadAsJsonObject().getString(CASE_ID))
+                UUID.fromString(payload.getString(CASE_ID))
         );
         caseDetail.setListedInCriminalCourts(TRUE);
+        caseDetail.setHearingCourtName(Optional.ofNullable(payload.getString("hearingCourtName")).orElse(null));
+        caseDetail.setHearingTime(ZonedDateTime.parse(payload.getString("hearingTime")));
     }
 
     private void handleCaseReopened(final JsonEnvelope envelope) {

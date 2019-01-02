@@ -5,10 +5,18 @@
   "properties": {
     "caseId": {
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "hearingCourtName": {
+      "type": "string"
+    },
+    "hearingTime": {
+      "type": "string",
+      "format": "date-time"
     }
   },
   "additionalProperties": false,
   "required": [
-    "caseId"
+    "caseId",
+    "hearingTime"
   ]
 }

@@ -34,10 +34,9 @@ import java.util.stream.Stream;
 public class CaseAggregate implements Aggregate {
 
     private static final long serialVersionUID = 8L;
-
+    private static final AggregateStateMutator<Object, CaseAggregateState> AGGREGATE_STATE_MUTATOR = AggregateStateMutator.compositeCaseAggregateStateMutator();
     @SuppressWarnings("squid:S1948")
     private final CaseAggregateState state = new CaseAggregateState();
-    private static final AggregateStateMutator<Object, CaseAggregateState> AGGREGATE_STATE_MUTATOR = AggregateStateMutator.compositeCaseAggregateStateMutator();
 
     public Stream<Object> receiveCase(final Case aCase, final ZonedDateTime createdOn) {
         return apply(CaseCoreHandler.INSTANCE.receiveCase(aCase, createdOn, state));
@@ -47,8 +46,10 @@ public class CaseAggregate implements Aggregate {
         return apply(CaseCoreHandler.INSTANCE.completeCase(state));
     }
 
-    public Stream<Object> updateCaseListedInCriminalCourts(final UUID caseId) {
-        return apply(CaseCoreHandler.INSTANCE.updateCaseListedInCriminalCourts(caseId));
+    public Stream<Object> updateCaseListedInCriminalCourts(final UUID caseId,
+                                                           final String hearingCourtName,
+                                                           final ZonedDateTime hearingTime) {
+        return apply(CaseCoreHandler.INSTANCE.updateCaseListedInCriminalCourts(caseId, hearingCourtName, hearingTime));
     }
 
     public Stream<Object> markCaseReopened(final CaseReopenDetails caseReopenDetails) {
@@ -180,7 +181,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     @Override
-    public Object apply(Object event) {
+    public Object apply(final Object event) {
         AGGREGATE_STATE_MUTATOR.apply(event, state);
         return event;
     }

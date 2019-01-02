@@ -84,8 +84,9 @@ public class CaseCoreHandler {
         return Stream.of(new CaseUnassigned(caseId), new CaseCompleted(caseId));
     }
 
-    public Stream<Object> updateCaseListedInCriminalCourts(final UUID caseId) {
-        return Stream.of(new CaseListedInCriminalCourts(caseId));
+    public Stream<Object> updateCaseListedInCriminalCourts(final UUID caseId, final String hearingCourtName,
+                                                           final ZonedDateTime hearingTime) {
+        return Stream.of(new CaseListedInCriminalCourts(caseId, hearingCourtName, hearingTime));
     }
 
     public Stream<Object> addDatesToAvoid(final String datesToAvoid,

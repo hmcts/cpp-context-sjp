@@ -14,9 +14,9 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseDocumentAddedToCaseDocument;
@@ -28,6 +28,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
 import java.lang.reflect.Method;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -46,7 +47,7 @@ public class CaseUpdatedListenerTest {
     private static final String EVENTS_CASE_LISTED_IN_CRIMINAL_COURTS = "sjp.events.case-listed-in-criminal-courts";
     private static final String METHOD_CASE_LISTED_IN_CRIMINAL_COURTS = "updateCaseListedInCriminalCourts";
 
-    private UUID caseId = randomUUID();
+    private final UUID caseId = randomUUID();
 
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -140,25 +141,30 @@ public class CaseUpdatedListenerTest {
 
     @Test
     public void shouldHandleCaseListedInCriminalCourtsEvent() throws NoSuchMethodException {
-        Class<CaseUpdatedListener> caseUpdatedListenerClass = CaseUpdatedListener.class;
+        final Class<CaseUpdatedListener> caseUpdatedListenerClass = CaseUpdatedListener.class;
 
-        Method m = caseUpdatedListenerClass.getDeclaredMethod(METHOD_CASE_LISTED_IN_CRIMINAL_COURTS, JsonEnvelope.class);
-        Handles handles = m.getAnnotation(Handles.class);
+        final Method m = caseUpdatedListenerClass.getDeclaredMethod(METHOD_CASE_LISTED_IN_CRIMINAL_COURTS, JsonEnvelope.class);
+        final Handles handles = m.getAnnotation(Handles.class);
 
         assertThat(EVENTS_CASE_LISTED_IN_CRIMINAL_COURTS, equalTo(handles.value()));
     }
 
     @Test
     public void shouldUpdateCaseListedInCriminalCourts() {
-
+        final String hearingCourtName = "Carmarthen Magistrates' Court";
+        final ZonedDateTime hearingTime = ZonedDateTime.parse("2018-12-28T11:53:04.693Z");
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(payload.getString("caseId")).thenReturn(caseId.toString());
+        when(payload.getString("hearingCourtName")).thenReturn(hearingCourtName);
+        when(payload.getString("hearingTime")).thenReturn(ZonedDateTimes.toString(hearingTime));
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
 
         listener.updateCaseListedInCriminalCourts(envelope);
 
         verify(caseRepository).findBy(caseId);
         verify(caseDetail).setListedInCriminalCourts(TRUE);
+        verify(caseDetail).setHearingCourtName(hearingCourtName);
+        verify(caseDetail).setHearingTime(hearingTime);
 
     }
 

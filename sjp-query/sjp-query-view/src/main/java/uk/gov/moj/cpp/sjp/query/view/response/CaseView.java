@@ -21,18 +21,20 @@ public class CaseView {
     private final ProsecutingAuthority prosecutingAuthority;
     private final Boolean completed;
     private final Boolean assigned;
-    private BigDecimal costs;
-    private LocalDate postingDate;
-    private LocalDate reopenedDate;
-    private String libraCaseNumber;
     private final String reopenedInLibraReason;
-    private String enterpriseId;
-    private boolean onlinePleaReceived;
-    private String datesToAvoid;
-    private CaseStatus status;
-    private Boolean listedInCriminalCourts;
+    private final BigDecimal costs;
+    private final LocalDate postingDate;
+    private final LocalDate reopenedDate;
+    private final String libraCaseNumber;
+    private final String enterpriseId;
+    private final boolean onlinePleaReceived;
+    private final String datesToAvoid;
+    private final CaseStatus status;
+    private final Boolean listedInCriminalCourts;
+    private final String hearingCourtName;
+    private final ZonedDateTime hearingTime;
 
-    public CaseView(CaseDetail caseDetail) {
+    public CaseView(final CaseDetail caseDetail) {
 
         this.id = caseDetail.getId().toString();
         this.urn = caseDetail.getUrn();
@@ -66,6 +68,8 @@ public class CaseView {
                 caseDetail.isReferredForCourtHearing(),
                 caseDetail.getReopenedDate());
         this.listedInCriminalCourts = caseDetail.getListedInCriminalCourts();
+        this.hearingCourtName = caseDetail.getHearingCourtName();
+        this.hearingTime = caseDetail.getHearingTime();
     }
 
     public String getId() {
@@ -139,4 +143,13 @@ public class CaseView {
     public Boolean getListedInCriminalCourts() {
         return listedInCriminalCourts;
     }
+
+    public String getHearingCourtName() {
+        return hearingCourtName;
+    }
+
+    public ZonedDateTime getHearingTime() {
+        return hearingTime;
+    }
+
 }

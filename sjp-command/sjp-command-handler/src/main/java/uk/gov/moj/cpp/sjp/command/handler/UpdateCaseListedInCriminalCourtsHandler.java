@@ -6,6 +6,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -21,8 +22,11 @@ public class UpdateCaseListedInCriminalCourtsHandler extends CaseCommandHandler 
         final JsonObject payload = updateCaseListedInCriminalCourtsCommand.payloadAsJsonObject();
 
         final UUID caseId = getCaseId(payload);
+        final String hearingCourtName = payload.getString("hearingCourtName");
+        final ZonedDateTime hearingTime = ZonedDateTime.parse(payload.getString("hearingTime"));
 
-        applyToCaseAggregate(updateCaseListedInCriminalCourtsCommand, aCase -> aCase.updateCaseListedInCriminalCourts(caseId));
+        applyToCaseAggregate(updateCaseListedInCriminalCourtsCommand,
+                aCase -> aCase.updateCaseListedInCriminalCourts(caseId, hearingCourtName, hearingTime));
     }
 
 }

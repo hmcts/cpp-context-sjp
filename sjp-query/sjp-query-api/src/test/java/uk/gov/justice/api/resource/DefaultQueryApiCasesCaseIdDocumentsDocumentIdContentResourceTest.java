@@ -4,6 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_DISPOSITION;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -55,6 +56,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResourceTest {
 
     private static final String PDF_CONTENT_TYPE = "application/pdf";
+    private static final String CONTENT_DISPOSITION_INLINE = "inline; filename=test.pdf";
 
     @Mock
     private MaterialClient materialClient;
@@ -90,10 +92,12 @@ public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResourceTest {
     public void shouldRunAllInterceptorsAndFetchAndStreamDocument() {
         final JsonEnvelope documentDetails = documentDetails(materialId);
 
-        final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, PDF_CONTENT_TYPE, HeaderConstants.ID, randomUUID()));
+        final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, PDF_CONTENT_TYPE,
+                HeaderConstants.ID, randomUUID(),
+                CONTENT_DISPOSITION, CONTENT_DISPOSITION_INLINE));
 
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(Optional.ofNullable(documentDetails));
-        when(materialClient.getMaterial(materialId, systemUserId)).thenReturn(documentContentResponse);
+        when(materialClient.getMaterialWithHeader(materialId, systemUserId)).thenReturn(documentContentResponse);
         when(documentContentResponse.readEntity(InputStream.class)).thenReturn(documentStream);
         when(documentContentResponse.getHeaders()).thenReturn(headers);
         when(documentContentResponse.getStatus()).thenReturn(SC_OK);
@@ -127,7 +131,7 @@ public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResourceTest {
         final JsonEnvelope documentDetails = documentDetails(materialId);
 
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(Optional.ofNullable(documentDetails));
-        when(materialClient.getMaterial(materialId, systemUserId)).thenReturn(documentContentResponse);
+        when(materialClient.getMaterialWithHeader(materialId, systemUserId)).thenReturn(documentContentResponse);
         when(documentContentResponse.getHeaders()).thenReturn(new MultivaluedHashMap());
         when(documentContentResponse.getStatus()).thenReturn(SC_NOT_FOUND);
 

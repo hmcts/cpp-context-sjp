@@ -158,12 +158,11 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
         updatePleaToNotGuilty(caseId, tflCaseBuilder.getOffenceId(), updatePleaHelper);
 
-        //when
-        addDatesToAvoid(caseId, DATE_TO_AVOID);
-
-        //then
         final EventListener datesToAvoidAddedListener = new EventListener()
                 .subscribe(DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME)
+                //when
+                .run(() -> addDatesToAvoid(caseId, DATE_TO_AVOID))
+                //then
                 .run(() -> assertThatCaseHasDatesToAvoid(DATE_TO_AVOID));
 
         assertThatDatesToAvoidPublicEventWasRaised(datesToAvoidAddedListener,
@@ -179,12 +178,12 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
         addDatesToAvoid(caseId, DATE_TO_AVOID);
 
-        //when
-        addDatesToAvoid(caseId, DATE_TO_AVOID_UPDATE);
-
         //then
         EventListener datesToAvoidListener = new EventListener()
                 .subscribe(DATES_TO_AVOID_UPDATED_PUBLIC_EVENT_NAME)
+                //when
+                .run(() -> addDatesToAvoid(caseId, DATE_TO_AVOID_UPDATE))
+                //then
                 .run(() -> assertThatCaseHasDatesToAvoidUpdated(DATE_TO_AVOID_UPDATE));
 
         assertThatDatesToAvoidPublicEventWasRaised(datesToAvoidListener,
@@ -231,20 +230,9 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     }
 
     private void assertThatDatesToAvoidIsPendingSubmissionForCase(final UUID userId, final CreateCase.CreateCasePayloadBuilder aCase) {
-        final Matcher<? super ReadContext> pendingDatesToAvoidMatcher = allOf(
-                withJsonPath("$.cases[0].caseId"),
-                withJsonPath("$.cases[0].pleaEntry"),
-                withJsonPath("$.cases[0].firstName"),
-                withJsonPath("$.cases[0].lastName"),
-                withJsonPath("$.cases[0].address.address1"),
-                withJsonPath("$.cases[0].address.address2"),
-                withJsonPath("$.cases[0].address.address3"),
-                withJsonPath("$.cases[0].address.address4"),
+        final Matcher<? super ReadContext> pendingDatesToAvoidMatcher =
+                withJsonPath("$.cases[-1].caseId", equalTo(aCase.getId().toString()));
 
-                withJsonPath("$.cases[0].address.postcode"),
-                withJsonPath("$.cases[0].referenceNumber"),
-                withJsonPath("$.cases[0].dateOfBirth")
-        );
         final JsonPath path = pollUntilPendingDatesToAvoidIsOk(userId.toString(), pendingDatesToAvoidMatcher);
         final List<Map> pendingDatesToAvoid = path.getList("cases");
         final Integer datesToAvoidCount = path.get("count");

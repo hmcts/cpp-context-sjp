@@ -70,17 +70,6 @@ public class DefaultQueryApiCasesCaseIdDocumentsDocumentIdContentResource implem
                 .orElse(status(NOT_FOUND).build());
     }
 
-    @Override
-    /*
-        THIS is a bit of hack to enforce browser to save the filename as passed by the browser
-        ideally this should be fixed in material and by returning the inline content disposition,
-        but it is inline what was implement in past
-     */
-    // TODO remove this when there UI reference to this code is removed
-    public Response getDocumentContent(final UUID caseId, final String filename, final UUID documentId, final UUID userId) {
-        return this.getDocumentContent(caseId, documentId, userId);
-    }
-
     private Response getDocumentContent(final JsonEnvelope document) {
         if (JsonValue.NULL.equals(document.payload())) {
             return null;

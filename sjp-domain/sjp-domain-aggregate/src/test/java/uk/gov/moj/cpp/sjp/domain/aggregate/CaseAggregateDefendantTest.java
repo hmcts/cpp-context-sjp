@@ -43,9 +43,6 @@ import org.junit.Test;
 
 public class CaseAggregateDefendantTest {
 
-    private CaseAggregate caseAggregate;
-
-    private final UUID id = UUID.randomUUID();
     private final UUID caseId = UUID.randomUUID();
     private final UUID defendantId = UUID.randomUUID();
     private final Gender gender = Gender.MALE;
@@ -66,6 +63,7 @@ public class CaseAggregateDefendantTest {
     private final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
     private final int numPreviousConvictions = 0;
     private final List<Offence> offences = emptyList();
+    private CaseAggregate caseAggregate;
 
     @Before
     public void setUp() {
@@ -83,7 +81,7 @@ public class CaseAggregateDefendantTest {
         updatesToValidTitle("Co");
     }
 
-    private void updatesToValidTitle(String validTitle) {
+    private void updatesToValidTitle(final String validTitle) {
         final List<Object> events = whenTheDefendantIsUpdated(
                 new DefendantData().withNewTitle(validTitle)
         );
@@ -102,12 +100,7 @@ public class CaseAggregateDefendantTest {
                 new DefendantData().withNewTitle(null)
         );
 
-        assertThat(events, hasSize(1));
-
-        final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
-        assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("title parameter can not be null as previous value is : Mr"));
+        doRejectAssertions(events, "title parameter can not be null as previous value is : Mr");
     }
 
     @Test
@@ -118,12 +111,7 @@ public class CaseAggregateDefendantTest {
                 new DefendantData().withNewTitle(" ")
         );
 
-        assertThat(events, hasSize(1));
-
-        final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
-        assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("title parameter can not be null as previous value is : Mr"));
+        doRejectAssertions(events, "title parameter can not be null as previous value is : Mr");
     }
 
     @Test
@@ -206,15 +194,8 @@ public class CaseAggregateDefendantTest {
                         "address3", "address4", "address5", "CR02FW"))
         );
 
-        assertThat(events, hasSize(1));
+        doRejectAssertions(events, "street (address1) can not be blank as previous value is: address1");
 
-        final Object event = events.get(0);
-        assertThat(event, instanceOf(DefendantDetailsUpdateFailed.class));
-
-        final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) event;
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
-        assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("street (address1) can not be blank as previous value is: address1"));
     }
 
     @Test
@@ -226,12 +207,7 @@ public class CaseAggregateDefendantTest {
                         "", "address4", "", "CR02FW"))
         );
 
-        assertThat(events, hasSize(1));
-
-        final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
-        assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("town (address3) can not be blank as previous value is: address3"));
+        doRejectAssertions(events, "town (address3) can not be blank as previous value is: address3");
     }
 
     @Test
@@ -263,12 +239,7 @@ public class CaseAggregateDefendantTest {
                         "address3", "address4", "address5", ""))
         );
 
-        assertThat(events, hasSize(1));
-
-        final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
-        assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("postcode can not be blank as previous value is: CR02FW"));
+        doRejectAssertions(events, "postcode can not be blank as previous value is: CR02FW");
     }
 
     @Test
@@ -295,7 +266,7 @@ public class CaseAggregateDefendantTest {
     public void shouldUpdateInterpreterLanguage() {
         final UUID assigneeId = UUID.randomUUID();
 
-        DefendantData defendantData = new DefendantData();
+        final DefendantData defendantData = new DefendantData();
         final CaseReceived caseReceivedEvent = givenCaseWasReceivedWithDefendant(defendantData);
 
         caseAggregate.assignCase(assigneeId, clock.now(), CaseAssignmentType.MAGISTRATE_DECISION);
@@ -303,13 +274,13 @@ public class CaseAggregateDefendantTest {
         final List<Object> eventsRaised = caseAggregate.updateHearingRequirements(assigneeId, caseReceivedEvent.getDefendant().getId(), "welsh", true)
                 .collect(toList());
 
-        InterpreterUpdatedForDefendant interpreterUpdatedEvent = (InterpreterUpdatedForDefendant) eventsRaised.get(0);
+        final InterpreterUpdatedForDefendant interpreterUpdatedEvent = (InterpreterUpdatedForDefendant) eventsRaised.get(0);
 
         assertThat(interpreterUpdatedEvent.getInterpreter(), is(Interpreter.of("welsh")));
         assertThat(interpreterUpdatedEvent.getCaseId(), is(caseId));
         assertThat(interpreterUpdatedEvent.getDefendantId(), is(caseReceivedEvent.getDefendant().getId()));
 
-        HearingLanguagePreferenceUpdatedForDefendant hearingUpdatedEvent = (HearingLanguagePreferenceUpdatedForDefendant) eventsRaised.get(1);
+        final HearingLanguagePreferenceUpdatedForDefendant hearingUpdatedEvent = (HearingLanguagePreferenceUpdatedForDefendant) eventsRaised.get(1);
 
         assertThat(hearingUpdatedEvent.getSpeakWelsh(), is(true));
     }
@@ -318,7 +289,7 @@ public class CaseAggregateDefendantTest {
     public void shouldCancelInterpreterLanguage() {
         final UUID assigneeId = UUID.randomUUID();
 
-        DefendantData defendantData = new DefendantData();
+        final DefendantData defendantData = new DefendantData();
         final CaseReceived caseReceivedEvent = givenCaseWasReceivedWithDefendant(defendantData);
 
         caseAggregate.assignCase(assigneeId, clock.now(), CaseAssignmentType.MAGISTRATE_DECISION);
@@ -327,17 +298,29 @@ public class CaseAggregateDefendantTest {
         final List<Object> eventsRaised = caseAggregate.updateHearingRequirements(assigneeId, caseReceivedEvent.getDefendant().getId(), "", false)
                 .collect(toList());
 
-        InterpreterCancelledForDefendant interpreterCancelledForDefendant = (InterpreterCancelledForDefendant) eventsRaised.get(0);
+        final InterpreterCancelledForDefendant interpreterCancelledForDefendant = (InterpreterCancelledForDefendant) eventsRaised.get(0);
 
         assertThat(interpreterCancelledForDefendant.getCaseId(), is(caseId));
         assertThat(interpreterCancelledForDefendant.getDefendantId(), is(caseReceivedEvent.getDefendant().getId()));
+    }
+
+    private void doRejectAssertions(final List<Object> events, final String descriptionContains) {
+        assertThat(events, hasSize(1));
+
+        final Object event = events.get(0);
+        assertThat(event, instanceOf(DefendantDetailsUpdateFailed.class));
+
+        final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) event;
+        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
+        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
+        assertThat(defendantDetailsUpdateFailed.getDescription(), containsString(descriptionContains));
     }
 
     private void givenCaseWasReceivedWithDefaultDefendantData() {
         givenCaseWasReceivedWithDefendant(new DefendantData());
     }
 
-    private CaseReceived givenCaseWasReceivedWithDefendant(DefendantData defendantData) {
+    private CaseReceived givenCaseWasReceivedWithDefendant(final DefendantData defendantData) {
         return (CaseReceived) caseAggregate.receiveCase(
                 CaseBuilder.aDefaultSjpCase()
                         .withId(caseId)
@@ -382,20 +365,20 @@ public class CaseAggregateDefendantTest {
     }
 
     private class DefendantData {
-        private UUID caseId = CaseAggregateDefendantTest.this.caseId;
-        private UUID defendantId = CaseAggregateDefendantTest.this.defendantId;
-        private Gender gender = CaseAggregateDefendantTest.this.gender;
+        private final UUID caseId = CaseAggregateDefendantTest.this.caseId;
+        private final UUID defendantId = CaseAggregateDefendantTest.this.defendantId;
+        private final Gender gender = CaseAggregateDefendantTest.this.gender;
+        private final String nationalInsuranceNumber = CaseAggregateDefendantTest.this.nationalInsuranceNumber;
+        private final String driverNumber = CaseAggregateDefendantTest.this.driverNumber;
+        private final String languageNeeds = CaseAggregateDefendantTest.this.languageNeeds;
+        private final ContactDetails contactDetails = CaseAggregateDefendantTest.this.contactDetails;
+        private final int numPreviousConvictions = CaseAggregateDefendantTest.this.numPreviousConvictions;
+        private final List<Offence> offences = CaseAggregateDefendantTest.this.offences;
         private String title = CaseAggregateDefendantTest.this.title;
         private String firstName = CaseAggregateDefendantTest.this.firstName;
         private String lastName = CaseAggregateDefendantTest.this.lastName;
-        private String nationalInsuranceNumber = CaseAggregateDefendantTest.this.nationalInsuranceNumber;
-        private String driverNumber = CaseAggregateDefendantTest.this.driverNumber;
         private LocalDate dateOfBirth = CaseAggregateDefendantTest.this.dateOfBirth;
         private Address address = CaseAggregateDefendantTest.this.address;
-        private String languageNeeds = CaseAggregateDefendantTest.this.languageNeeds;
-        private ContactDetails contactDetails = CaseAggregateDefendantTest.this.contactDetails;
-        private int numPreviousConvictions = CaseAggregateDefendantTest.this.numPreviousConvictions;
-        private List<Offence> offences = CaseAggregateDefendantTest.this.offences;
 
         private DefendantData withNewTitle(final String newTitle) {
             this.title = newTitle;

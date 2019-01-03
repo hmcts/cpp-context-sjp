@@ -9,10 +9,8 @@ import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.Case;
-import uk.gov.moj.cpp.sjp.domain.util.DefaultTestData;
 import uk.gov.moj.cpp.sjp.event.CaseCreationFailedBecauseCaseAlreadyExisted;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
-import uk.gov.moj.cpp.sjp.event.CaseStarted;
 
 import java.time.ZonedDateTime;
 import java.util.stream.Stream;
@@ -32,12 +30,25 @@ public class CaseStartedTest {
 
     @Test
     public void shouldCreateCaseReceivedEvent() {
-        Case aCase = aDefaultSjpCase().build();
-        ZonedDateTime createdOn = clock.now();
+        final Case aCase = aDefaultSjpCase().build();
+        final ZonedDateTime createdOn = clock.now();
         final Stream<Object> events = caseAggregate.receiveCase(aCase, createdOn);
 
-        CaseReceived caseReceivedEvent = (CaseReceived) events.findFirst().get();
+        final CaseReceived caseReceivedEvent = (CaseReceived) events.findFirst().get();
         assertThat("Sets defendant", caseReceivedEvent.getDefendant(), notNullValue());
+        assertThat("Sets defendant id", caseReceivedEvent.getDefendant().getId(), equalTo(aCase.getDefendant().getId()));
+        assertThat("Sets defendant language needs", caseReceivedEvent.getDefendant().getLanguageNeeds(), equalTo(aCase.getDefendant().getLanguageNeeds()));
+        assertThat("Sets defendant number of previous convictions", caseReceivedEvent.getDefendant().getNumPreviousConvictions(), equalTo(aCase.getDefendant().getNumPreviousConvictions()));
+        assertThat("Sets defendant date of birth", caseReceivedEvent.getDefendant().getDateOfBirth(), equalTo(aCase.getDefendant().getDateOfBirth()));
+        assertThat("Sets defendant driver number", caseReceivedEvent.getDefendant().getDriverNumber(), equalTo(aCase.getDefendant().getDriverNumber()));
+        assertThat("Sets defendant title", caseReceivedEvent.getDefendant().getTitle(), equalTo(aCase.getDefendant().getTitle()));
+        assertThat("Sets defendant first name", caseReceivedEvent.getDefendant().getFirstName(), equalTo(aCase.getDefendant().getFirstName()));
+        assertThat("Sets defendant last name", caseReceivedEvent.getDefendant().getLastName(), equalTo(aCase.getDefendant().getLastName()));
+        assertThat("Sets defendant gender", caseReceivedEvent.getDefendant().getGender(), equalTo(aCase.getDefendant().getGender()));
+        assertThat("Sets defendant national insurance number", caseReceivedEvent.getDefendant().getNationalInsuranceNumber(), equalTo(aCase.getDefendant().getNationalInsuranceNumber()));
+        assertThat("Sets defendant offences", caseReceivedEvent.getDefendant().getOffences(), equalTo(aCase.getDefendant().getOffences()));
+        assertThat("Sets defendant address", caseReceivedEvent.getDefendant().getAddress(), equalTo(aCase.getDefendant().getAddress()));
+        assertThat("Sets defendant contact details", caseReceivedEvent.getDefendant().getContactDetails(), equalTo(aCase.getDefendant().getContactDetails()));
         assertThat("Sets case id", caseReceivedEvent.getCaseId(), equalTo(aCase.getId()));
         assertThat("Sets urn", caseReceivedEvent.getUrn(), equalTo(aCase.getUrn()));
         assertThat("Sets enterprise id", caseReceivedEvent.getEnterpriseId(), equalTo(aCase.getEnterpriseId()));
@@ -49,7 +60,7 @@ public class CaseStartedTest {
 
     @Test
     public void shouldCreateCaseCreationFailedEventWhenCaseAlreadyReceived() {
-        Case aCase = aDefaultSjpCase().build();
+        final Case aCase = aDefaultSjpCase().build();
         caseAggregate.receiveCase(aCase, clock.now());
 
         final Stream<Object> events = caseAggregate.receiveCase(aCase, clock.now());

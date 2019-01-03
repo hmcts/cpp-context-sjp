@@ -29,11 +29,11 @@ public class CreateCase {
     private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.create-sjp-case+json";
     private final CreateCasePayloadBuilder payloadBuilder;
 
-    private CreateCase(CreateCasePayloadBuilder payloadBuilder) {
+    private CreateCase(final CreateCasePayloadBuilder payloadBuilder) {
         this.payloadBuilder = payloadBuilder;
     }
 
-    public static void createCaseForPayloadBuilder(CreateCasePayloadBuilder payloadBuilder) {
+    public static void createCaseForPayloadBuilder(final CreateCasePayloadBuilder payloadBuilder) {
         new CreateCase(payloadBuilder).createCase();
     }
 
@@ -89,6 +89,7 @@ public class CreateCase {
                 .ifPresent(offenceWordingWelsh -> offence.add("offenceWordingWelsh", offenceWordingWelsh));
 
         final JsonObjectBuilder defendantBuilder = createObjectBuilder()
+                .add("id", payloadBuilder.defendantBuilder.id.toString())
                 .add("title", payloadBuilder.defendantBuilder.title)
                 .add("firstName", payloadBuilder.defendantBuilder.firstName)
                 .add("lastName", payloadBuilder.defendantBuilder.lastName)
@@ -119,11 +120,11 @@ public class CreateCase {
     }
 
     public static class CreateCasePayloadBuilder {
+        private final String enterpriseId;
+        private final BigDecimal costs;
         private UUID id;
         private String urn;
-        private String enterpriseId;
         private ProsecutingAuthority prosecutingAuthority;
-        private BigDecimal costs;
         private LocalDate postingDate;
         private DefendantBuilder defendantBuilder;
         private List<OffenceBuilder> offenceBuilders;
@@ -151,6 +152,11 @@ public class CreateCase {
 
         public CreateCasePayloadBuilder withUrn(final String urn) {
             this.urn = urn;
+            return this;
+        }
+
+        public CreateCasePayloadBuilder withDefendantId(final UUID defendantId) {
+            this.defendantBuilder.withId(defendantId);
             return this;
         }
 
@@ -214,6 +220,7 @@ public class CreateCase {
     }
 
     public static class DefendantBuilder {
+        UUID id;
         String title;
         String firstName;
         String lastName;
@@ -232,6 +239,7 @@ public class CreateCase {
         public static DefendantBuilder withDefaults() {
             final DefendantBuilder builder = new DefendantBuilder();
 
+            builder.id = UUID.randomUUID();
             builder.title = "Mr";
             builder.firstName = "David";
             builder.lastName = "LLOYD";
@@ -245,6 +253,11 @@ public class CreateCase {
             return builder;
         }
 
+        public DefendantBuilder withId(final UUID id) {
+            this.id = id;
+            return this;
+        }
+
         public DefendantBuilder withLastName(final String lastName) {
             this.lastName = lastName;
             return this;
@@ -253,6 +266,10 @@ public class CreateCase {
         public DefendantBuilder withNationalInsuranceNumber(final String nationalInsuranceNumber) {
             this.nationalInsuranceNumber = nationalInsuranceNumber;
             return this;
+        }
+
+        public UUID getId() {
+            return id;
         }
 
         public String getTitle() {
@@ -290,7 +307,6 @@ public class CreateCase {
         public ContactDetailsBuilder getContactDetailsBuilder() {
             return contactDetailsBuilder;
         }
-
     }
 
     public static class OffenceBuilder {

@@ -10,12 +10,85 @@
       "type": "array",
       "minItems": 1,
       "items": {
-        "$ref": "http://justice.gov.uk/core/courts/hearingDay.json"
+        "sittingDay": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "listingSequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "listedDurationMinutes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "sittingDay",
+        "listedDurationMinutes"
+      ]
+    }
+  },
+  "courtCentre": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      },
+      "name": {
+        "type": "string"
+      },
+      "welshName": {
+        "type": "string"
+      },
+      "roomId": {
+        "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      },
+      "roomName": {
+        "type": "string"
+      },
+      "welshRoomName": {
+        "type": "string"
+      },
+      "address": {
+        "type": "object",
+        "properties": {
+          "address1": {
+            "description": "The address1",
+            "type": "string"
+          },
+          "address2": {
+            "description": "The address2",
+            "type": "string"
+          },
+          "address3": {
+            "description": "The address3",
+            "type": "string"
+          },
+          "address4": {
+            "description": "The address4",
+            "type": "string"
+          },
+          "address5": {
+            "description": "The address5",
+            "type": "string"
+          },
+          "postcode": {
+            "description": "The post code",
+            "type": "string",
+            "pattern": "^(([gG][iI][rR] {0,}0[aA]{2})|(([aA][sS][cC][nN]|[sS][tT][hH][lL]|[tT][dD][cC][uU]|[bB][bB][nN][dD]|[bB][iI][qQ][qQ]|[fF][iI][qQ][qQ]|[pP][cC][rR][nN]|[sS][iI][qQ][qQ]|[iT][kK][cC][aA]) {0,}1[zZ]{2})|((([a-pr-uwyzA-PR-UWYZ][a-hk-yxA-HK-XY]?[0-9][0-9]?)|(([a-pr-uwyzA-PR-UWYZ][0-9][a-hjkstuwA-HJKSTUW])|([a-pr-uwyzA-PR-UWYZ][a-hk-yA-HK-Y][0-9][abehmnprv-yABEHMNPRV-Y]))) [0-9][abd-hjlnp-uw-zABD-HJLNP-UW-Z]{2}))$",
+            "maxLength": 8
+          }
+        },
+        "required": [
+          "address1"
+        ],
+        "additionalProperties": false
       }
     },
-    "courtCentre": {
-      "$ref": "http://justice.gov.uk/core/courts/courtCentre.json"
-    }
+    "required": [
+      "id"
+    ]
   },
   "required": [
     "prosecutionCaseId",

@@ -1,6 +1,8 @@
 package uk.gov.moj.sjp.it.producer;
 
 import static uk.gov.moj.cpp.resulting.event.DecisionToReferCaseForCourtHearingSaved.decisionToReferCaseForCourtHearingSaved;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_ACTIVE_MQ_TOPIC;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_REFER_FOR_COURT_HEARING_IN_RESULTING;
 import static uk.gov.moj.sjp.it.util.JsonHelper.toJsonObject;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
@@ -48,8 +50,8 @@ public class DecisionToReferCaseForCourtHearingSavedProducer {
                 .build();
 
         try (final MessageProducerClient messageProducer = new MessageProducerClient()) {
-            messageProducer.startProducer("public.event");
-            messageProducer.sendMessage("public.resulting.decision-to-refer-case-for-court-hearing-saved", toJsonObject(decisionToReferCaseForCourtHearingSaved));
+            messageProducer.startProducer(PUBLIC_ACTIVE_MQ_TOPIC);
+            messageProducer.sendMessage(PUBLIC_EVENT_SELECTOR_CASE_REFER_FOR_COURT_HEARING_IN_RESULTING, toJsonObject(decisionToReferCaseForCourtHearingSaved));
         }
     }
 }

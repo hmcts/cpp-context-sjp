@@ -11,9 +11,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Event("sjp.events.employer-updated")
+@Event(EmployerUpdated.EVENT_NAME)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EmployerUpdated {
+
+    public static final String EVENT_NAME = "sjp.events.employer-updated";
 
     private UUID defendantId;
     private String name;

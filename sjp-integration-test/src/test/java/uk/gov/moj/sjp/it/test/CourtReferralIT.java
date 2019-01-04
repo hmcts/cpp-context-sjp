@@ -28,15 +28,16 @@ import static uk.gov.moj.sjp.it.helper.CaseReferralHelper.findReferralStatusForC
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.stub.ProgressionServiceStub.REFER_TO_COURT_COMMAND_CONTENT;
 import static uk.gov.moj.sjp.it.stub.ProgressionServiceStub.REFER_TO_COURT_COMMAND_URL;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseCourtReferralStatus;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
@@ -104,11 +105,10 @@ public class CourtReferralIT extends BaseIntegrationTest {
     private static final String NATIONAL_INSURANCE_NUMBER = "BB333333B";
 
     private static final JsonObject EMPLOYER_DETAILS = createEmployerDetails();
-    private static final EmployerHelper EMPLOYER_HELPER = new EmployerHelper();
 
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private String defendantId;
-    private String prosecutingAuthorityName;
+    private ProsecutingAuthority prosecutingAuthority;
     private String caseUrn;
 
     private UUID sessionId;
@@ -120,42 +120,15 @@ public class CourtReferralIT extends BaseIntegrationTest {
         sessionId = randomUUID();
         caseId = randomUUID();
         offenceId = randomUUID();
-
-        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
-                .withOffenceId(offenceId)
-                .withOffenceBuilder(CreateCase.OffenceBuilder.withDefaults()
-                        .withId(offenceId)
-                        .withLibraOffenceCode(LIBRA_OFFENCE_CODE))
-                .withDefendantBuilder(CreateCase.DefendantBuilder.withDefaults()
-                        .withNationalInsuranceNumber(NATIONAL_INSURANCE_NUMBER))
-                .withId(caseId);
-
-        final EventListener eventListener = new EventListener();
-        eventListener
-                .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
-                .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder))
-                .popEvent(CaseMarkedReadyForDecision.EVENT_NAME);
-
-        defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
-        prosecutingAuthorityName = createCasePayloadBuilder.getProsecutingAuthority().name();
-        caseUrn = createCasePayloadBuilder.getUrn();
-
-        stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, "2572");
-        startSession(sessionId, USER_ID, LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
-
-        new EventListener()
-                .subscribe(CaseDocumentAdded.EVENT_NAME)
-                .run(() -> new CaseDocumentHelper(caseId).addCaseDocument(USER_ID, DOCUMENT_ID, MATERIAL_ID, DOCUMENT_TYPE))
-                .popEvent(CaseDocumentAdded.EVENT_NAME);
-
-        EMPLOYER_HELPER.updateEmployer(caseId, defendantId, EMPLOYER_DETAILS);
+        prosecutingAuthority = ProsecutingAuthority.TFL;
 
         AssignmentStub.stubAddAssignmentCommand();
         AssignmentStub.stubRemoveAssignmentCommand();
         SchedulingStub.stubStartSjpSessionCommand();
+        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, "2572");
         ReferenceDataServiceStub.stubReferralReasonsQuery(REFERRAL_REASON_ID.toString(), REFERRAL_REASON);
         ReferenceDataServiceStub.stubHearingTypesQuery(HEARING_TYPE_ID.toString(), HEARING_DESCRIPTION);
-        ReferenceDataServiceStub.stubProsecutorQuery(prosecutingAuthorityName, PROSECUTOR_ID);
+        ReferenceDataServiceStub.stubProsecutorQuery(prosecutingAuthority.name(), PROSECUTOR_ID);
         ReferenceDataServiceStub.stubQueryOffences("stub-data/referencedata.query.offences.json");
         ReferenceDataServiceStub.stubCountryNationalities("stub-data/referencedata.query.country-nationality.json");
         ReferenceDataServiceStub.stubEthnicities("stub-data/referencedata.query.ethnicities.json");
@@ -165,6 +138,35 @@ public class CourtReferralIT extends BaseIntegrationTest {
         MaterialStub.stubMaterialMetadata(MATERIAL_ID, FILE_NAME, MIME_TYPE, ADDED_AT);
         ProgressionServiceStub.stubReferCaseToCourtCommand();
         ProsecutionCaseFileServiceStub.stubCaseDetails(caseId, "stub-data/prosecutioncasefile.query.case-details.json");
+
+        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
+                .withProsecutingAuthority(prosecutingAuthority)
+                .withOffenceId(offenceId)
+                .withOffenceBuilder(CreateCase.OffenceBuilder.withDefaults()
+                        .withId(offenceId)
+                        .withLibraOffenceCode(LIBRA_OFFENCE_CODE))
+                .withDefendantBuilder(CreateCase.DefendantBuilder.withDefaults()
+                        .withNationalInsuranceNumber(NATIONAL_INSURANCE_NUMBER))
+                .withId(caseId);
+
+        new EventListener()
+                .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder))
+                .popEvent(CaseMarkedReadyForDecision.EVENT_NAME);
+
+        defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
+        caseUrn = createCasePayloadBuilder.getUrn();
+
+        startSession(sessionId, USER_ID, LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
+
+        final EventListener eventListener = new EventListener();
+        eventListener
+                .subscribe(CaseDocumentAdded.EVENT_NAME, EmployerUpdated.EVENT_NAME)
+                .run(() -> new CaseDocumentHelper(caseId).addCaseDocument(USER_ID, DOCUMENT_ID, MATERIAL_ID, DOCUMENT_TYPE))
+                .run(() -> new EmployerHelper().updateEmployer(caseId, defendantId, EMPLOYER_DETAILS));
+
+        eventListener.popEvent(CaseDocumentAdded.EVENT_NAME);
+        eventListener.popEvent(EmployerUpdated.EVENT_NAME);
     }
 
     @Test

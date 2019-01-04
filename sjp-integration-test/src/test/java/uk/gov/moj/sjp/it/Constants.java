@@ -39,6 +39,8 @@ public class Constants {
     public static final String PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE = "public.sjp.case-reopened-in-libra-undone";
     public static final String EVENT_CASE_MARKED_READY_FOR_DECISION = CaseMarkedReadyForDecision.EVENT_NAME;
     public static final String EVENT_CASE_ASSIGNMENT_REJECTED = CaseAssignmentRejected.EVENT_NAME;
+    public static final String EVENT_CASE_REFERRED_FOR_COURT_HEARING = "sjp.events.case-referred-for-court-hearing";
+
     public static final String PUBLIC_EVENT_CASE_ASSIGNMENT_REJECTED = "public.sjp.case-assignment-rejected";
 
     public static final String PUBLIC_ACTIVE_MQ_TOPIC = "public.event";

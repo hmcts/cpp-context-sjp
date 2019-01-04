@@ -3,7 +3,6 @@ package uk.gov.moj.sjp.it.helper;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Duration.TEN_SECONDS;
 import static com.jayway.jsonassert.JsonAssert.with;
 import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.JsonPath.compile;
@@ -25,21 +24,18 @@ import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_RE
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED;
-import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_REFER_FOR_COURT_HEARING_IN_RESULTING;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseDocumentsByCaseId;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeMultipartFormPostCall;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 import static uk.gov.moj.sjp.it.util.TopicUtil.privateEvents;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
-import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
-import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
-import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.sjp.it.Constants;
 import uk.gov.moj.sjp.it.stub.MaterialStub;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
@@ -94,7 +90,6 @@ public class CaseDocumentHelper implements AutoCloseable {
 
     private MessageConsumerClient publicCaseDocumentAlreadyExistsConsumer = new MessageConsumerClient();
     private MessageConsumerClient publicCaseDocumentUploaded = new MessageConsumerClient();
-    private MessageConsumerClient publicReferredToCourtHearing = new MessageConsumerClient();
 
     private MessageConsumerClient publicConsumer = new MessageConsumerClient();
     private MessageConsumer privateEventsConsumer;
@@ -113,7 +108,6 @@ public class CaseDocumentHelper implements AutoCloseable {
 
         publicCaseDocumentAlreadyExistsConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
         publicCaseDocumentUploaded.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
-        publicReferredToCourtHearing.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_REFER_FOR_COURT_HEARING_IN_RESULTING, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
     }
 
     private void addCaseDocument(UUID userId, String payload, String documentType) {
@@ -202,29 +196,11 @@ public class CaseDocumentHelper implements AutoCloseable {
                 .assertThat("$.materialId", is(materialId));
     }
 
-    public void verifyInPublicTopicCaseRefered() {
-        final String caseDocumentAddedEvent = publicReferredToCourtHearing.retrieveMessage().orElse(null);
-
-        assertThat(caseDocumentAddedEvent, notNullValue());
-
-        with(caseDocumentAddedEvent)
-                .assertThat("$.caseId", is(caseId.toString()));
-    }
-
-
-    public static void sendPublicEvent(final JsonObject publicEventPayload, final Metadata publicEventMetadata, final String publicEventName) {
-        MessageProducerClient messageProducerClient = new MessageProducerClient();
-        messageProducerClient.startProducer("public.event");
-        messageProducerClient.sendMessage(publicEventName, publicEventPayload);
-    }
-
-
     public void assertCaseMaterialAdded(final String documentReference) {
         UrlMatchingStrategy url = new UrlMatchingStrategy();
         url.setUrlPath(MaterialStub.COMMAND_URL);
 
-        System.out.println("documentReference: " + documentReference);
-        await().atMost(TEN_SECONDS).until(() -> WireMock.findAll(new RequestPatternBuilder(RequestMethod.POST, url)
+        await().until(() -> WireMock.findAll(new RequestPatternBuilder(RequestMethod.POST, url)
                         .withHeader("Content-Type", equalTo(MaterialStub.COMMAND_MEDIA_TYPE))
                         .withRequestBody(containing("\"fileServiceId\":\"" + documentReference + "\""))
                 ).size() > 0

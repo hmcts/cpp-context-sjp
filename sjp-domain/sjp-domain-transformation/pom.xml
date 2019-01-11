@@ -17,6 +17,7 @@
         <module>sjp-domain-transformation-court-code</module>
         <module>sjp-domain-transformation-postcode</module>
         <module>sjp-domain-transformation-plea-updated</module>
+        <module>sjp-domain-transformation-defendant-updated-date</module>
     </modules>
 
 </project>

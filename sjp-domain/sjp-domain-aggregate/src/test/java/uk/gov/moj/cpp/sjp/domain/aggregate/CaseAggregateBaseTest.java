@@ -43,7 +43,6 @@ public abstract class CaseAggregateBaseTest {
         caseId = caseReceivedEvent.getCaseId();
         defendantId = caseReceivedEvent.getDefendant().getId();
         offenceId = caseReceivedEvent.getDefendant().getOffences().stream().findFirst().map(Offence::getId).orElse(null);
-        // FIXME: NOTE that as the defendantId is generated during case-receive so it will be different than aCase.getDefendant().getId()
     }
 
     /**
@@ -124,7 +123,7 @@ public abstract class CaseAggregateBaseTest {
         /**
          * List all the events after the aggregate execution
          */
-        void thenExpect(Object... items) {
+        void thenExpect(final Object... items) {
             if (!new ReflectionEquals(events.toArray()).matches(items)) {
                 fail(buildErrorMessage());
             }

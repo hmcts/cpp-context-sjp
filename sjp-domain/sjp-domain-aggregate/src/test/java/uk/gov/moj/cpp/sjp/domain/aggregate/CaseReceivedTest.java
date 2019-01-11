@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.sjp.domain.aggregate;
 import static java.util.Collections.singleton;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang.builder.EqualsBuilder.reflectionEquals;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest.AggregateTester.when;
 
@@ -30,7 +30,7 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
                 caseReceivedEvent.getDefendant(),
                 expectedCaseReceived.getDefendant(),
                 singleton("id")), is(true));
-        assertThat(caseReceivedEvent.getDefendant().getId(), notNullValue());
+        assertThat(caseReceivedEvent.getDefendant().getId(), equalTo(defendantId));
     }
 
     @Test
@@ -65,7 +65,7 @@ public class CaseReceivedTest extends CaseAggregateBaseTest {
      * To ensure backward compatibility
      */
     @SuppressWarnings("deprecation")
-    private SjpCaseCreated buildSjpCaseCreated(Case aCase) {
+    private SjpCaseCreated buildSjpCaseCreated(final Case aCase) {
         return new SjpCaseCreated(aCase.getId(), aCase.getUrn(), aCase.getProsecutingAuthority(),
                 aCase.getDefendant().getId(), aCase.getDefendant().getNumPreviousConvictions(), aCase.getCosts(),
                 aCase.getPostingDate(), aCase.getDefendant().getOffences(), clock.now());

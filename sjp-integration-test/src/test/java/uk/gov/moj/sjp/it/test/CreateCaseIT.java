@@ -26,11 +26,16 @@ public class CreateCaseIT extends BaseIntegrationTest {
     @Test
     public void shouldAssociateEnterpriseIdWithCase() {
         final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
         final ProsecutingAuthority prosecutingAuthority = TFL;
 
-        CreateCase.CreateCasePayloadBuilder createCase = CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseId).withProsecutingAuthority(prosecutingAuthority);
-        CreateCase.DefendantBuilder defendant = createCase.getDefendantBuilder();
-        CreateCase.OffenceBuilder offence = createCase.getOffenceBuilder();
+        final CreateCase.CreateCasePayloadBuilder createCase = CreateCase.CreateCasePayloadBuilder
+                .withDefaults()
+                .withId(caseId)
+                .withProsecutingAuthority(prosecutingAuthority)
+                .withDefendantId(defendantId);
+        final CreateCase.DefendantBuilder defendant = createCase.getDefendantBuilder();
+        final CreateCase.OffenceBuilder offence = createCase.getOffenceBuilder();
 
         new EventListener()
                 .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
@@ -42,6 +47,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
         assertThat(jsonResponse.get("enterpriseId"), equalTo(createCase.getEnterpriseId()));
         assertThat(jsonResponse.get("status"), equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name()));
+        assertThat(jsonResponse.get("defendant.id"), equalTo(defendant.getId().toString()));
         assertThat(jsonResponse.get("defendant.personalDetails.title"), equalTo(defendant.getTitle()));
         assertThat(jsonResponse.get("defendant.personalDetails.firstName"), equalTo(defendant.getFirstName()));
         assertThat(jsonResponse.get("defendant.personalDetails.lastName"), equalTo(defendant.getLastName()));

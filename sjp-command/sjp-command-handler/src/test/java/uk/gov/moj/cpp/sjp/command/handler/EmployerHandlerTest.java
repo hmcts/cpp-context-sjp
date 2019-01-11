@@ -32,13 +32,11 @@ import uk.gov.moj.cpp.sjp.UpdateEmployer;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
-import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,22 +55,17 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class EmployerHandlerTest {
 
+    @Spy
+    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(EmployerUpdated.class,
+            EmploymentStatusUpdated.class, EmployerDeleted.class);
     @InjectMocks
     private EmployerHandler employerHandler;
-
     @Mock
     private EventSource eventSource;
-
     @Mock
     private EventStream eventStream;
-
     @Mock
     private AggregateService aggregateService;
-
-    @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(EmployerUpdated.class,
-            EmploymentStatusUpdated.class, EmployerDeleted.class);
-
     @Captor
     private ArgumentCaptor<Stream<JsonEnvelope>> argumentCaptor;
 
@@ -80,10 +73,8 @@ public class EmployerHandlerTest {
     public void shouldUpdateEmployer() throws EventStreamException, NoSuchFieldException, IllegalAccessException {
         final CaseAggregate caseAggregate = new CaseAggregate();
         final Case aCase = CaseBuilder.aDefaultSjpCase().build();
-        CaseReceived caseReceivedEvent = (CaseReceived) caseAggregate.receiveCase(aCase, now()).findFirst().get();
 
-        // Note that the defendantId created by the builder is overwritten by the aggregate
-        final UUID defendantId = caseReceivedEvent.getDefendant().getId();
+        caseAggregate.receiveCase(aCase, now());
 
         final Address address = Address.address()
                 .withAddress1("123 High St")
@@ -102,7 +93,7 @@ public class EmployerHandlerTest {
 
         final UpdateEmployer payload = updateEmployer()
                 .withCaseId(aCase.getId())
-                .withDefendantId(defendantId)
+                .withDefendantId(aCase.getDefendant().getId())
                 .withEmployer(employer)
                 .build();
 
@@ -124,7 +115,7 @@ public class EmployerHandlerTest {
                         withMetadataEnvelopedFrom(jsonEnvelope)
                                 .withName("sjp.events.employer-updated"),
                         payloadIsJson(allOf(
-                                withJsonPath("$.defendantId", equalTo(defendantId.toString())),
+                                withJsonPath("$.defendantId", equalTo(aCase.getDefendant().getId().toString())),
                                 withJsonPath("$.name", equalTo("Nando's")),
                                 withJsonPath("$.employeeReference", equalTo("123")),
                                 withJsonPath("$.phone", equalTo("0208123123")),
@@ -136,10 +127,10 @@ public class EmployerHandlerTest {
                                 withJsonPath("$.address.postcode", equalTo("CR01XG"))
 
                         ))),
-                        jsonEnvelope(withMetadataEnvelopedFrom(jsonEnvelope)
+                jsonEnvelope(withMetadataEnvelopedFrom(jsonEnvelope)
                                 .withName("sjp.events.employment-status-updated"),
                         payloadIsJson(allOf(
-                                withJsonPath("$.defendantId", equalTo(defendantId.toString())),
+                                withJsonPath("$.defendantId", equalTo(aCase.getDefendant().getId().toString())),
                                 withJsonPath("$.employmentStatus", equalTo("EMPLOYED"))
 
                         ))))
@@ -151,16 +142,14 @@ public class EmployerHandlerTest {
     public void shouldDeleteEmployer() throws EventStreamException {
         final CaseAggregate caseAggregate = new CaseAggregate();
         final Case aCase = CaseBuilder.aDefaultSjpCase().build();
-        CaseReceived caseReceivedEvent = (CaseReceived) caseAggregate.receiveCase(aCase, now()).findFirst().get();
 
-        // Note that the defendantId created by the builder is overwritten by the aggregate
-        final UUID defendantId = caseReceivedEvent.getDefendant().getId();
+        caseAggregate.receiveCase(aCase, now());
 
-        caseAggregate.apply(new EmploymentStatusUpdated(defendantId, "EMPLOYED"));
+        caseAggregate.apply(new EmploymentStatusUpdated(aCase.getDefendant().getId(), "EMPLOYED"));
 
         final JsonObject payload = createObjectBuilder()
                 .add("caseId", aCase.getId().toString())
-                .add("defendantId", defendantId.toString())
+                .add("defendantId", aCase.getDefendant().getId().toString())
                 .build();
 
         when(eventSource.getStreamById(aCase.getId())).thenReturn(eventStream);
@@ -177,7 +166,7 @@ public class EmployerHandlerTest {
                         withMetadataEnvelopedFrom(envelope)
                                 .withName("sjp.events.employer-deleted"),
                         payloadIsJson(
-                                withJsonPath("$.defendantId", equalTo(defendantId.toString()))
+                                withJsonPath("$.defendantId", equalTo(aCase.getDefendant().getId().toString()))
 
                         ))
         )));

@@ -63,7 +63,7 @@ public class Defendant extends Person {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) {
             return true;
         }
@@ -100,7 +100,7 @@ public class Defendant extends Person {
          */
         public Defendant buildBasedFrom(final Defendant defendant) {
             return new Defendant(
-                    Optional.ofNullable(id).orElse(defendant.getId()),
+                    Optional.ofNullable(defendant.getId()).orElse(id),
                     defendant.getTitle(),
                     defendant.getFirstName(),
                     defendant.getLastName(),

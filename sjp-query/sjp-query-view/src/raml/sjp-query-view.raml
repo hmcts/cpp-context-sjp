@@ -272,6 +272,22 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
             schema: !include json/schema/sjp.query.case-document.json
             example: !include json/sjp.query.case-document.json
 
+/cases/pending:
+  description: return the pending SJP cases for the PDF export
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.pending-cases+json
+          name: sjp.query.pending-cases
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.pending-cases+json:
+            schema: !include json/schema/sjp.query.pending-cases.json
+            example: !include json/sjp.query.pending-cases.json
+
 /cases/{caseId}/defendants-online-plea:
   get:
     description: |

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="31.1" author="team/ATCM/Mojo/juraj.kucera"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+        <createTable tableName="case_publish_status">
+            <column name="case_id" type="UUID">
+                <constraints unique="true" nullable="false" primaryKey="true"/>
+            </column>
+            <column name="first_published" type="date"/>
+            <column name="number_of_publishes" type="integer"/>
+            <column name="total_number_of_publishes" type="integer"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="31.2" author="team/ATCM/Mojo/juraj.kucera"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <createTable tableName="transparency_report_metadata">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="english_file_service_id" type="uuid"/>
+            <column name="english_number_of_pages" type="integer"/>
+            <column name="english_size_in_bytes" type="integer"/>
+            <column name="welsh_file_service_id" type="uuid"/>
+            <column name="welsh_number_of_pages" type="integer"/>
+            <column name="welsh_size_in_bytes" type="integer"/>
+            <column name="generated_at" type="datetime"/>
+        </createTable>
+
+    </changeSet>
+
+</databaseChangeLog>

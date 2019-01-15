@@ -102,5 +102,9 @@ public final class RuleConstants {
         return singletonList(GROUP_SJP_PROSECUTORS);
     }
 
+    public static List<String> getRequestTransparencyReportGroups() {
+        return singletonList(GROUP_SYSTEM_USERS);
+    }
+
 }
 

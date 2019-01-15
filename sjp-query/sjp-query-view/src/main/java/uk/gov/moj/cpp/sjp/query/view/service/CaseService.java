@@ -3,7 +3,11 @@ package uk.gov.moj.cpp.sjp.query.view.service;
 import static com.google.common.collect.Iterables.isEmpty;
 import static java.util.Arrays.asList;
 import static java.util.UUID.fromString;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
@@ -11,6 +15,7 @@ import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
+import uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
@@ -28,6 +33,7 @@ import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -36,6 +42,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 
@@ -203,6 +212,18 @@ public class CaseService {
         return new CaseSearchResultsView(searchResults);
     }
 
+    public JsonObject findPendingCasesToPublish() {
+        final Map<String, List<PendingCaseToPublishPerOffence>> pendingCasesToPublishPerOffenceGroupedByCaseIdMap =
+                caseRepository.findPendingCasesToPublish().stream()
+                        .collect(groupingBy(pendingCaseToPublish -> pendingCaseToPublish.getCaseId().toString()));
+
+        final JsonArrayBuilder pendingCasesArrayBuilder = createArrayBuilder();
+        pendingCasesToPublishPerOffenceGroupedByCaseIdMap
+                .forEach((key, value) -> populatePendingCasesArrayBuilder(value, pendingCasesArrayBuilder));
+
+        return createObjectBuilder().add("pendingCases", pendingCasesArrayBuilder).build();
+    }
+
     public ResultOrdersView findResultOrders(LocalDate fromDate, LocalDate toDate) {
 
         final ResultOrdersView resultOrdersView = new ResultOrdersView();
@@ -239,4 +260,49 @@ public class CaseService {
                 documentView -> !documentsTypeToRetain.contains(documentView.getDocumentType())
         );
     }
+
+    private void populatePendingCasesArrayBuilder(final List<PendingCaseToPublishPerOffence> pendingCaseToPublishPerOffenceList,
+                                                  final JsonArrayBuilder pendingCasesArrayBuilder) {
+
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWithAnyOffence = getAnyOffenceForDefendantDetails(pendingCaseToPublishPerOffenceList);
+
+        final String town = isNotEmpty(pendingCaseToPublishWithAnyOffence.getAddressLine5())
+                ? pendingCaseToPublishWithAnyOffence.getAddressLine4() : pendingCaseToPublishWithAnyOffence.getAddressLine3();
+
+        final String county = isNotEmpty(pendingCaseToPublishWithAnyOffence.getAddressLine5())
+                ? pendingCaseToPublishWithAnyOffence.getAddressLine5() : pendingCaseToPublishWithAnyOffence.getAddressLine4();
+
+        final String postcode = isNotEmpty(pendingCaseToPublishWithAnyOffence.getPostcode()) && pendingCaseToPublishWithAnyOffence.getPostcode().length() > 2
+                ? pendingCaseToPublishWithAnyOffence.getPostcode().substring(0, 2) : pendingCaseToPublishWithAnyOffence.getPostcode();
+
+        final JsonArrayBuilder offenceArrayBuilder = createArrayBuilder();
+        pendingCaseToPublishPerOffenceList
+                .forEach(casePerOffence -> offenceArrayBuilder.add(createObjectBuilder()
+                        .add("offenceCode", casePerOffence.getOffenceCode())
+                        .add("offenceStartDate", casePerOffence.getOffenceStartDate().toString())
+                ));
+
+        final JsonObjectBuilder objectBuilder = createObjectBuilder()
+                .add("caseId", pendingCaseToPublishWithAnyOffence.getCaseId().toString())
+                .add("defendantName", formatName(pendingCaseToPublishWithAnyOffence.getFirstName(), pendingCaseToPublishWithAnyOffence.getLastName()))
+                .add("town", town)
+                .add("county", county)
+                .add("postcode", postcode)
+                .add("offences", offenceArrayBuilder)
+                .add("prosecutorName", pendingCaseToPublishWithAnyOffence.getProsecutor());
+
+        pendingCasesArrayBuilder.add(objectBuilder);
+    }
+
+    private PendingCaseToPublishPerOffence getAnyOffenceForDefendantDetails(final List<PendingCaseToPublishPerOffence> pendingCaseToPublish) {
+        return pendingCaseToPublish.get(0);
+    }
+
+    private String formatName(final String firstName, final String lastName) {
+        if (firstName == null || firstName.length() < 2) {
+            return lastName;
+        }
+        return firstName.substring(0, 1) + " " + lastName;
+    }
+
 }

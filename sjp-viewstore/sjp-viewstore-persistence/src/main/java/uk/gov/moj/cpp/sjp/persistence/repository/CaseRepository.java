@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -89,6 +90,18 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
 
     @Query(value = "SELECT cd.prosecutingAuthority FROM CaseDetail cd WHERE cd.id = :caseId", singleResult = SingleResultType.OPTIONAL)
     public abstract String getProsecutingAuthority(@QueryParam("caseId") final UUID caseId);
+
+    @Query(value = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
+            "(d.personalDetails.firstName, d.personalDetails.lastName, cd.id," +
+            "d.personalDetails.address.address3, d.personalDetails.address.address4, d.personalDetails.address.address5," +
+            "d.personalDetails.address.postcode, o.code, o.startDate, cd.prosecutingAuthority) " +
+            "FROM CaseDetail cd " +
+            "LEFT OUTER JOIN cd.defendant d " +
+            "LEFT OUTER JOIN d.offences o " +
+            "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc) " +
+            "AND cd.id IN (SELECT cps.caseId FROM CasePublishStatus cps WHERE cps.numberOfPublishes < 5)" +
+            "ORDER BY cd.postingDate")
+    public abstract List<PendingCaseToPublishPerOffence> findPendingCasesToPublish();
 
     public void updateDatesToAvoid(final UUID caseId, final String datesToAvoid) {
         findBy(caseId).setDatesToAvoid(datesToAvoid);

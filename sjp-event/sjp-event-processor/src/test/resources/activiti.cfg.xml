@@ -22,6 +22,14 @@
     <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.PleaUpdatedDelegate" />
   </bean>
 
+  <bean id="caseAdjournmentElapsedDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">
+    <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.adjournment.CaseAdjournmentElapsedDelegate" />
+  </bean>
+
+  <bean id="caseAdjournedDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">
+    <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.adjournment.CaseAdjournedDelegate" />
+  </bean>
+
   <bean id="pleaCancelledDelegate" class="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate">
     <constructor-arg value="uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.PleaCancelledDelegate" />
     <property name="variablesToRemoveOnExecution">

@@ -112,6 +112,11 @@ baseUri: message://event/processor/message/sjp
         schema: !include json/schema/sjp.events.case-referred-for-court-hearing.json
         example: !include json/sjp.events.case-referred-for-court-hearing.json
 
+      application/vnd.sjp.events.case-adjourned-for-later-sjp-hearing-recorded+json:
+        schema: !include json/schema/sjp.events.case-adjourned-for-later-hearing-recorded.json
+        example: !include json/sjp.events.case-adjourned-for-later-hearing-recorded.json
+
+
 /public.event:
   post:
     body:
@@ -134,3 +139,6 @@ baseUri: message://event/processor/message/sjp
       application/vnd.public.progression.refer-prosecution-cases-to-court-rejected+json:
         schema: !include json/schema/public.progression.refer-prosecution-cases-to-court-rejected.json
         example: !include json/public.progression.refer-prosecution-cases-to-court-rejected.json
+      application/vnd.public.resulting.case-adjourned-to-later-sjp-hearing+json:
+        schema: !include json/schema/public.resulting.case-adjourned-to-later-sjp-hearing.json
+        example: !include json/public.resulting.case-adjourned-to-later-sjp-hearing.json

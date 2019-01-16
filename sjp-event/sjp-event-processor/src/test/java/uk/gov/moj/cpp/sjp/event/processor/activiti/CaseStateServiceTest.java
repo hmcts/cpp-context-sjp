@@ -12,6 +12,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.CASE_ADJOURNED_DATE;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.CASE_ADJOURNED_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.CASE_COMPLETED_SIGNAL_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.METADATA_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.NOTICE_ENDED_DATE_VARIABLE;
@@ -30,6 +32,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -159,5 +162,21 @@ public class CaseStateServiceTest {
                 eq(processId),
                 eq(CASE_COMPLETED_SIGNAL_NAME),
                 (Map) argThat(hasEntry(METADATA_VARIABLE, metadataAsString)));
+    }
+
+    @Test
+    public void shouldSendCaseAdjournedForLaterHearing() {
+        when(activitiService.getProcessInstanceId(PROCESS_NAME, caseId.toString())).thenReturn(Optional.of(processId));
+
+        final LocalDateTime adjournedTo = LocalDateTime.now();
+        caseStateService.caseAdjournedForLaterHearing(caseId, adjournedTo, metadata);
+
+        final Matcher<Map<String, Object>> paramsMatcher = allOf(
+                hasEntry(CASE_ADJOURNED_DATE, adjournedTo.format(ISO_DATE_TIME)));
+
+        verify(activitiService).signalProcess(
+                eq(processId),
+                eq(CASE_ADJOURNED_VARIABLE),
+                argThat(paramsMatcher));
     }
 }

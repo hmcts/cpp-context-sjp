@@ -234,7 +234,7 @@ public class PleadOnlineApiTest {
 
         final JsonEnvelope caseDetailResponseEnvelope = getCaseDetailResponseEnvelope(caseDetail);
 
-        when(requester.request(queryEnvelopeCaptor.capture())).thenReturn(caseDetailResponseEnvelope);
+        when(requester.requestAsAdmin(queryEnvelopeCaptor.capture())).thenReturn(caseDetailResponseEnvelope);
 
         pleadOnline.pleadOnline(envelope);
 

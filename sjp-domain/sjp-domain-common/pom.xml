@@ -7,7 +7,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-domain</artifactId>
-        <version>1.0.80-ATCM-SNAPSHOT</version>
+        <version>1.0.81-ATCM-SNAPSHOT</version>
     </parent>
 
     <artifactId>sjp-domain-common</artifactId>

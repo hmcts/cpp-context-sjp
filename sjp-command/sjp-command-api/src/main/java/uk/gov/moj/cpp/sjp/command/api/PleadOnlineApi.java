@@ -17,6 +17,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.command.api.validator.PleadOnlineValidator;
 
 import java.util.List;
@@ -93,12 +94,12 @@ public class PleadOnlineApi {
                 .add("caseId", envelope.payload().getCaseId().toString())
                 .build();
 
-        final Envelope queryCaseEnvelope = envelopeFrom(
+        final JsonEnvelope queryCaseEnvelope = JsonEnvelope.envelopeFrom(
                 metadataFrom(envelope.metadata())
                         .withName("sjp.query.case").build(),
                 queryCasePayload);
 
-        return requester.request(queryCaseEnvelope).payloadAsJsonObject();
+        return requester.requestAsAdmin(queryCaseEnvelope).payloadAsJsonObject();
     }
 
 

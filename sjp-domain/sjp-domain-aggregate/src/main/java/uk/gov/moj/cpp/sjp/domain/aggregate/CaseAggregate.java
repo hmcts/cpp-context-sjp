@@ -9,6 +9,7 @@ import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Person;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseAdjournmentHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseCoreHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseDefendantHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseDocumentHandler;
@@ -26,6 +27,7 @@ import uk.gov.moj.cpp.sjp.domain.command.CancelPlea;
 import uk.gov.moj.cpp.sjp.domain.command.UpdatePlea;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -177,6 +179,17 @@ public class CaseAggregate implements Aggregate {
                 caseId,
                 rejectionReason,
                 rejectedAt,
+                state));
+    }
+
+    public Stream<Object> recordCaseAdjournedToLaterSjpHearing(final UUID caseId,
+                                                               final UUID sessionId,
+                                                               final LocalDate adjournedTo) {
+
+        return apply(CaseAdjournmentHandler.INSTANCE.recordCaseAdjournedToLaterSjpHearing(
+                caseId,
+                sessionId,
+                adjournedTo,
                 state));
     }
 

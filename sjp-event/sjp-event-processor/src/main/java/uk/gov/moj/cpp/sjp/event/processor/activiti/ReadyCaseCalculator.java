@@ -36,22 +36,39 @@ public class ReadyCaseCalculator {
      * @param withdrawalRequested user has withdraw the case
      * @param pleaReady           specify if the plea is complete - NOT_GUILTY need to wait for dates-to-avoid to be added
      * @param pleaType            null when plea not sent
+     * @param caseAdjourned       defines if the case has been adjourned for a later SJP hearing
      * @return                    decision of readiness or empty when case not ready
      */
     public Optional<CaseReadinessReason> getReasonIfReady(
             final boolean provedInAbsence,
             final boolean withdrawalRequested,
             final boolean pleaReady,
-            final PleaType pleaType
-    ) {
+            final PleaType pleaType,
+            final boolean caseAdjourned) {
+
         final CaseReadinessReason caseReadinessReason;
+
+        if (withdrawalRequested) {
+            caseReadinessReason = WITHDRAWAL_REQUESTED;
+        } else if (caseAdjourned) {
+            caseReadinessReason = null;
+        } else {
+            caseReadinessReason = computeReadinessReason(provedInAbsence, pleaReady, pleaType);
+        }
+
+        return Optional.ofNullable(caseReadinessReason);
+    }
+
+    private CaseReadinessReason computeReadinessReason(final boolean provedInAbsence,
+                                                       final boolean pleaReady,
+                                                       final PleaType pleaType) {
 
         final boolean isPleaCompleted = pleaReady && pleaType != null;
         final boolean isPleaWaitingForDatesToAvoid = !isPleaCompleted && PleaType.NOT_GUILTY.equals(pleaType);
 
-        if (withdrawalRequested) {
-            caseReadinessReason = WITHDRAWAL_REQUESTED;
-        } else if (isPleaCompleted) {
+        final CaseReadinessReason caseReadinessReason;
+
+        if (isPleaCompleted) {
             caseReadinessReason = READINESS_REASON_BY_PLEA_TYPE.get(pleaType);
         } else if (provedInAbsence && !isPleaWaitingForDatesToAvoid) {
             caseReadinessReason = PIA;
@@ -59,7 +76,7 @@ public class ReadyCaseCalculator {
             caseReadinessReason = null;
         }
 
-        return Optional.ofNullable(caseReadinessReason);
+        return caseReadinessReason;
     }
 
 }

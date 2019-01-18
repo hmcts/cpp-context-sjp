@@ -10,6 +10,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +39,7 @@ public class CaseStateService {
     public static final String WITHDRAWAL_REQUEST_CANCELLED_SIGNAL_NAME = "withdrawalRequestCancelled";
     public static final String DATES_TO_AVOID_ADDED_SIGNAL_NAME = "datesToAvoidAdded";
     public static final String CASE_COMPLETED_SIGNAL_NAME = "caseCompleted";
+    public static final String CASE_ADJOURNED_SIGNAL_NAME = "caseAdjourned";
 
     public static final String NOTICE_ENDED_DATE_VARIABLE = "noticeEndedDate";
     public static final String DATES_TO_AVOID_VARIABLE = "datesToAvoid";
@@ -51,6 +53,8 @@ public class CaseStateService {
     public static final String METADATA_VARIABLE = "metadata";
     public static final String PROCESS_MIGRATION_VARIABLE = "processMigration";
     public static final String CREATE_BY_PROCESS_MIGRATION_VARIABLE = "createdByProcessMigration";
+    public static final String CASE_ADJOURNED_VARIABLE = "caseAdjourned";
+    static final String CASE_ADJOURNED_DATE = "adjournedTo";
 
     private ActivitiService activitiService;
 
@@ -107,6 +111,13 @@ public class CaseStateService {
 
     public void caseCompleted(final UUID caseId, final Metadata metadata) {
         signalProcess(caseId, CASE_COMPLETED_SIGNAL_NAME, getCommonParams(metadata));
+    }
+
+    public void caseAdjournedForLaterHearing(final UUID caseId, final LocalDateTime adjournedTo, final Metadata metadata) {
+        final Map<String, Object> params = getCommonParams(metadata);
+        params.put(CASE_ADJOURNED_DATE, adjournedTo.format(ISO_LOCAL_DATE_TIME));
+
+        signalProcess(caseId, CASE_ADJOURNED_SIGNAL_NAME, params);
     }
 
     private void signalProcess(final UUID caseId, final String signalName, final Map<String, Object> params) {

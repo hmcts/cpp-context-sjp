@@ -38,6 +38,8 @@ public class DelegatesVerifier {
         WITHDRAWAL_REQUESTED,
         WITHDRAWAL_REQUEST_CANCELLED,
         ASSIGNMENT_TIMED_OUT,
+        CASE_ADJOURNED,
+        CASE_ADJOURNMENT_ELAPSED,
         CASE_COMPLETED;
 
         /**

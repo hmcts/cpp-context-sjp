@@ -54,7 +54,7 @@ public class ReadyCaseDelegateTest extends AbstractCaseDelegateTest {
     @Test
     public void shouldSendUnmarkCaseReadyCommandWhenCaseIsNotReady() {
         // GIVEN
-        when(readyCaseCalculator.getReasonIfReady(anyBoolean(), anyBoolean(), anyBoolean(), any(PleaType.class)))
+        when(readyCaseCalculator.getReasonIfReady(anyBoolean(), anyBoolean(), anyBoolean(), any(PleaType.class), anyBoolean()))
                 .thenReturn(Optional.empty());
 
         // WHEN
@@ -75,7 +75,7 @@ public class ReadyCaseDelegateTest extends AbstractCaseDelegateTest {
     public void shouldMarkCaseAsReadyWhenThereIsDecision() {
         // GIVEN
         final CaseReadinessReason expectedCaseReadinessReason = CaseReadinessReason.PIA;
-        when(readyCaseCalculator.getReasonIfReady(anyBoolean(), anyBoolean(), anyBoolean(), any(PleaType.class)))
+        when(readyCaseCalculator.getReasonIfReady(anyBoolean(), anyBoolean(), anyBoolean(), any(PleaType.class), anyBoolean()))
                 .thenReturn(Optional.of(expectedCaseReadinessReason));
 
         // WHEN
@@ -107,7 +107,7 @@ public class ReadyCaseDelegateTest extends AbstractCaseDelegateTest {
 
     private void callDelegateWithoutPleaReadyAndWith(final PleaType pleaType) {
         // GIVEN
-        when(readyCaseCalculator.getReasonIfReady(anyBoolean(), anyBoolean(), anyBoolean(), any(PleaType.class)))
+        when(readyCaseCalculator.getReasonIfReady(anyBoolean(), anyBoolean(), anyBoolean(), any(PleaType.class), anyBoolean()))
                 .thenReturn(Optional.empty());
         when(delegateExecution.getVariable(PLEA_READY_VARIABLE)).thenReturn(null);
         when(delegateExecution.getVariable(PLEA_TYPE_VARIABLE, String.class))
@@ -117,7 +117,7 @@ public class ReadyCaseDelegateTest extends AbstractCaseDelegateTest {
         readyCaseDelegate.execute(delegateExecution);
 
         // THEN
-        verify(readyCaseCalculator).getReasonIfReady(any(Boolean.class), any(Boolean.class), booleanArgumentCaptor.capture(), pleaTypeArgumentCaptor.capture());
+        verify(readyCaseCalculator).getReasonIfReady(anyBoolean(), anyBoolean(), booleanArgumentCaptor.capture(), pleaTypeArgumentCaptor.capture(), anyBoolean());
 
         assertThat(booleanArgumentCaptor.getValue(), equalTo(pleaType != null));
         assertThat(pleaTypeArgumentCaptor.getValue(), equalTo(pleaType));

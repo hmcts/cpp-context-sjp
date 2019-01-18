@@ -11,6 +11,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertThat;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.CASE_ADJOURNED_DATE;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.CASE_ADJOURNED_SIGNAL_NAME;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.CASE_ADJOURNED_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.CASE_COMPLETED_SIGNAL_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.DATES_TO_AVOID_ADDED_SIGNAL_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.DATES_TO_AVOID_VARIABLE;
@@ -26,6 +29,8 @@ import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PROVE
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.WITHDRAWAL_REQUESTED_SIGNAL_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.WITHDRAWAL_REQUESTED_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.WITHDRAWAL_REQUEST_CANCELLED_SIGNAL_NAME;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.CASE_ADJOURNED;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.CASE_ADJOURNMENT_ELAPSED;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.CASE_COMPLETED;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.CASE_STARTED;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.DATES_TO_AVOID_PROCESSED;
@@ -46,6 +51,7 @@ import uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.MockedDelegate;
 import uk.gov.moj.cpp.sjp.event.processor.activiti.delegates.PleaUpdatedDelegate;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,6 +60,7 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.google.common.collect.ImmutableMap;
 import org.activiti.engine.test.ActivitiRule;
 import org.activiti.engine.test.Deployment;
 import org.junit.Before;
@@ -111,6 +118,7 @@ public class CaseStateProcessTest {
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, is(1));
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, is(1));
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, CASE_ADJOURNED_SIGNAL_NAME, is(1));
         assertThat(delegatesVerifier.isActivitiItemRunning(processInstanceId, "waitForDatesToAvoidGateway"), equalTo(false));
 
         delegatesVerifier.assertProcessFinished(processInstanceId, false);
@@ -384,6 +392,42 @@ public class CaseStateProcessTest {
         assertNotPossibleToReAddDatesToAvoid(processInstanceId);
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_CANCELLED_SIGNAL_NAME, is(1));
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, PLEA_UPDATED_SIGNAL_NAME, is(1));
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
+    }
+
+    @Test
+    @Deployment(resources = PROCESS_PATH)
+    public void shouldExecuteAdjournmentDelegates() {
+        final LocalDate postingDate = LocalDate.now().minusDays(1);
+        final LocalDateTime adjournedTo = LocalDateTime.now().plusSeconds(2);
+
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
+
+        callCaseAdjournedForLaterHearing(caseId, adjournedTo, metadata);
+
+        delegatesVerifier.tryProcessPendingJobs();
+
+        delegatesVerifier.assertDelegateCalledWith(DelegatesVerifier.Delegate.CASE_ADJOURNED, 0, allOf(
+                withProcessVariable(CASE_ADJOURNED_DATE, adjournedTo.format(ISO_LOCAL_DATE_TIME))));
+
+        delegatesVerifier.verifyNumberOfExecution(CASE_ADJOURNMENT_ELAPSED, 1);
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 0, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(OFFENCE_ID_VARIABLE, null),
+                withProcessVariable(PLEA_TYPE_VARIABLE, null),
+                withProcessVariable(CASE_ADJOURNED_VARIABLE, true)
+        ));
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 1, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(OFFENCE_ID_VARIABLE, null),
+                withProcessVariable(PLEA_TYPE_VARIABLE, null),
+                withProcessVariable(CASE_ADJOURNED_VARIABLE, false)
+        ));
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, CASE_ADJOURNED_SIGNAL_NAME, is(1));
 
         delegatesVerifier.assertProcessFinished(processInstanceId, false);
     }
@@ -673,4 +717,10 @@ public class CaseStateProcessTest {
         caseStateService.pleaUpdated(caseId, offenceId, pleaType, pleaDatesToAvoidDays, metadata);
     }
 
+    private void callCaseAdjournedForLaterHearing(final UUID caseId, final LocalDateTime adjournedTo, final Metadata metadata) {
+        delegatesVerifier.getDelegateExecution(CASE_ADJOURNED).setVariablesOnExecution(ImmutableMap.of(CASE_ADJOURNED_VARIABLE, true));
+        delegatesVerifier.getDelegateExecution(CASE_ADJOURNMENT_ELAPSED).setVariablesOnExecution(ImmutableMap.of(CASE_ADJOURNED_VARIABLE, false));
+
+        caseStateService.caseAdjournedForLaterHearing(caseId, adjournedTo, metadata);
+    }
 }

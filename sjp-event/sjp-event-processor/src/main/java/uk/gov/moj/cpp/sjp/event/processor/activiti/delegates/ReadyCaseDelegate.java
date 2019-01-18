@@ -5,6 +5,7 @@ import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.MARKED_AT;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.REASON;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.CASE_ADJOURNED_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_READY_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_TYPE_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PROVED_IN_ABSENCE_VARIABLE;
@@ -42,8 +43,9 @@ public class ReadyCaseDelegate extends AbstractCaseDelegate {
         final boolean withdrawalRequested = isTrue(execution.getVariable(WITHDRAWAL_REQUESTED_VARIABLE, Boolean.class));
         final PleaType pleaType = EnumUtils.getEnum(PleaType.class, execution.getVariable(PLEA_TYPE_VARIABLE, String.class));
         final boolean pleaReady = isPleaReady(pleaType, execution.getVariable(PLEA_READY_VARIABLE, Boolean.class));
+        final boolean caseAdjourned = isTrue(execution.getVariable(CASE_ADJOURNED_VARIABLE, Boolean.class));
 
-        final Optional<CaseReadinessReason> readyReason = readyCaseCalculator.getReasonIfReady(provedInAbsence, withdrawalRequested, pleaReady, pleaType);
+        final Optional<CaseReadinessReason> readyReason = readyCaseCalculator.getReasonIfReady(provedInAbsence, withdrawalRequested, pleaReady, pleaType, caseAdjourned);
 
         LOGGER.debug("{} called with {} and responded with a reason of {}", ReadyCaseDelegate.class.getSimpleName(), execution.getVariables(), readyReason);
 

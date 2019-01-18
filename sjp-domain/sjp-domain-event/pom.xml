@@ -59,6 +59,7 @@
                                 <include>json/schema/fragments/gender.json</include>
                                 <include>json/schema/events/sjp.events.case-referred-for-court-hearing.json</include>
                                 <include>json/schema/events/sjp.events.case-referral-for-court-hearing-rejection-recorded.json</include>
+                                <include>json/schema/events/sjp.events.case-adjourned-for-later-sjp-hearing-recorded.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>

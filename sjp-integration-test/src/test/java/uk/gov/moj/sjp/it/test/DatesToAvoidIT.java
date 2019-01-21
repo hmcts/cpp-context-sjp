@@ -16,6 +16,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
+import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_DATES_TO_AVOID_ADDED;
 import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
@@ -31,6 +32,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
@@ -176,7 +178,10 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
         final UUID caseId = tflCaseBuilder.getId();
 
-        addDatesToAvoid(caseId, DATE_TO_AVOID);
+        new EventListener()
+                .subscribe(EVENT_SELECTOR_DATES_TO_AVOID_ADDED)
+                .run(() -> addDatesToAvoid(caseId, DATE_TO_AVOID))
+                .popEvent(EVENT_SELECTOR_DATES_TO_AVOID_ADDED);
 
         //then
         EventListener datesToAvoidListener = new EventListener()

@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-parent</artifactId>
-        <version>1.0.81-ATCM-SNAPSHOT</version>
+        <version>1.0.82-ATCM-SNAPSHOT</version>
     </parent>
     <artifactId>sjp-service</artifactId>
     <packaging>war</packaging>
@@ -14,12 +14,6 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.sjp</groupId>
             <artifactId>sjp-command-api</artifactId>
-            <version>${project.version}</version>
-            <classifier>classes</classifier>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.moj.cpp.sjp</groupId>
-            <artifactId>sjp-command-controller</artifactId>
             <version>${project.version}</version>
             <classifier>classes</classifier>
         </dependency>

@@ -2,18 +2,24 @@ package uk.gov.moj.sjp.it.test;
 
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.assertCaseUnassigned;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseNotReady;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.producer.CaseAdjournmentProducer;
+import uk.gov.moj.sjp.it.stub.AssignmentStub;
+import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
+import uk.gov.moj.sjp.it.stub.SchedulingStub;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -28,12 +34,22 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
 
     private UUID caseId;
     private UUID sessionId;
+    private UUID userId;
     private LocalDate ADJOURNMENT_DATE = LocalDate.now().plusDays(6);
+
+    private static final String LONDON_LJA_NATIONAL_COURT_CODE = "2572";
+    private static final String LONDON_COURT_HOUSE_OU_CODE = "B01OK";
 
     @Before
     public void setUp() {
         caseId = randomUUID();
         sessionId = randomUUID();
+        userId = randomUUID();
+
+        AssignmentStub.stubAddAssignmentCommand();
+        AssignmentStub.stubRemoveAssignmentCommand();
+        SchedulingStub.stubStartSjpSessionCommand();
+        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
 
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
                 .withDefaults()
@@ -44,15 +60,17 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
                 .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
                 .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder));
 
-        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent(CaseMarkedReadyForDecision.EVENT_NAME);
+        startSession(sessionId, userId,LONDON_COURT_HOUSE_OU_CODE, SessionType.MAGISTRATE);
 
-        assertThat(jsonEnvelope.isPresent(), equalTo(true));//this is to ensure the subscriber didn't time out
+        Optional<JsonEnvelope> caseAssignmentEvent = AssignmentHelper.requestCaseAssignment(sessionId, userId);
+        assertThat(caseAssignmentEvent.isPresent(), is(true));
     }
 
     @Test
     public void shouldRecordCaseAdjournmentAndChangeCaseStatusToNotReady() {
         caseAdjournedRecordedPrivateEventCreated();
         pollUntilCaseNotReady(caseId);
+        assertCaseUnassigned(caseId);
     }
 
     @Test
@@ -62,6 +80,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
         try(OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(caseId)) {
             offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(USER_ID);
             pollUntilCaseReady(caseId);
+            assertCaseUnassigned(caseId);
         }
     }
 

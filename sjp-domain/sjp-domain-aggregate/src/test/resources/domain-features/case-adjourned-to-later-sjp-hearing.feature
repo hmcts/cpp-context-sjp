@@ -5,3 +5,4 @@ Feature: Case adjourned to later sjp hearing
     Given case is created
     When you recordCaseAdjournedToLaterSjpHearing to a CaseAggregate using a record case adjourned to later sjp hearing
     Then case adjourned to later sjp hearing recorded
+    And case is unassigned

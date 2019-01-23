@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.CaseAdjournedForLaterSjpHearingRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseNotFound;
+import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -14,7 +15,6 @@ import org.slf4j.LoggerFactory;
 public class CaseAdjournmentHandler {
 
     public static final CaseAdjournmentHandler INSTANCE = new CaseAdjournmentHandler();
-
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseAdjournmentHandler.class);
 
     private CaseAdjournmentHandler() {
@@ -25,18 +25,15 @@ public class CaseAdjournmentHandler {
                                                                final LocalDate adjournedTo,
                                                                final CaseAggregateState state) {
 
-        final Object event;
-
         if (!state.isCaseIdEqualTo(caseId)) {
             LOGGER.error("Mismatch of IDs in aggregate: {} != {}", state.getCaseId(), caseId);
-            event = new CaseNotFound(null, "Record case adjournment to later date");
-        } else {
-            event = new CaseAdjournedForLaterSjpHearingRecorded(
-                    adjournedTo,
-                    caseId,
-                    sessionId);
+            return Stream.of(new CaseNotFound(null, "Record case adjournment to later date"));
         }
-
-        return Stream.of(event);
+        return Stream.of(
+                new CaseAdjournedForLaterSjpHearingRecorded(
+                        adjournedTo,
+                        caseId,
+                        sessionId),
+                new CaseUnassigned(caseId));
     }
 }

@@ -26,6 +26,8 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -71,11 +73,8 @@ public class ActivitiHelper {
                 .add("variables", parametersMapToJsonArray(parameters))
                 .build();
 
-        final Response createProcessInstanceResponse = ResteasyClientBuilderFactory.clientBuilder().build()
-                .target(ACTIVITI_BASE_PATH + "runtime/process-instances")
-                .request()
-                .headers(headers())
-                .post(entity(createProcessPayload.toString(), APPLICATION_JSON));
+        final Response createProcessInstanceResponse = sendPostRequest(
+                ACTIVITI_BASE_PATH + "runtime/process-instances", createProcessPayload);
 
         return new JsonPath(createProcessInstanceResponse.readEntity(String.class)).getString("id");
     }
@@ -134,6 +133,15 @@ public class ActivitiHelper {
                 .delete();
     }
 
+    public static void executeTimerJobs(final String processInstanceId) {
+        getTimerJobs(processInstanceId)
+                .getJsonArray("data")
+                .getValuesAs(JsonObject.class)
+                .stream()
+                .map(job -> job.getString("id"))
+                .forEach(ActivitiHelper::executeJob);
+    }
+
     private static JsonArray parametersMapToJsonArray(final Map<String, Object> parameters) {
         final JsonArrayBuilder arrayOfParameters = Json.createArrayBuilder();
         parameters.entrySet().stream()
@@ -170,9 +178,23 @@ public class ActivitiHelper {
 
     private static JsonObject runQuery(final String url) {
         final RestClient restClient = new RestClient();
-        final String contentType = "application/json";
-        final Response response = restClient.query(url, contentType);
+        final Response response = restClient.query(url, APPLICATION_JSON);
         return createReader(new StringReader(response.readEntity(String.class))).readObject();
+    }
+
+    private static JsonObject getTimerJobs(final String processInstanceId) {
+        final String url = ACTIVITI_BASE_PATH + "management/jobs?timersOnly=true&processInstanceId=" + processInstanceId;
+        return runQuery(url);
+    }
+
+    private static void executeJob(final String jobId) {
+        final String url = ACTIVITI_BASE_PATH + "management/jobs/" + jobId;
+        sendPostRequest(url, Json.createObjectBuilder().add("action", "execute").build());
+    }
+
+    private static Response sendPostRequest(final String url, final JsonObject payload) {
+        final Entity<String> entity = Entity.entity(payload.toString(), MediaType.valueOf(APPLICATION_JSON));
+        return ResteasyClientBuilderFactory.clientBuilder().build().target(url).request().post(entity);
     }
 
 }

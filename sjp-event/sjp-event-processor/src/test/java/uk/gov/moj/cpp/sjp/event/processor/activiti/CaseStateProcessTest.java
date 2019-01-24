@@ -434,6 +434,117 @@ public class CaseStateProcessTest {
 
     @Test
     @Deployment(resources = PROCESS_PATH)
+    public void shouldConsiderAdjournToDateForAdjournedCaseAfterWithdrawalAndCancellation() {
+        final LocalDate postingDate = LocalDate.now().minusDays(1);
+        final LocalDateTime adjournedTo = LocalDateTime.now().plusDays(1);
+
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
+
+        callCaseAdjournedForLaterHearing(caseId, adjournedTo, metadata);
+
+        delegatesVerifier.tryProcessPendingJobs();
+
+        caseStateService.withdrawalRequested(caseId, metadata);
+
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, CASE_ADJOURNED, WITHDRAWAL_REQUESTED, READY_CASE);
+        delegatesVerifier.assertDelegateCalledWith(WITHDRAWAL_REQUESTED, 0, withProcessVariable(
+                METADATA_VARIABLE, metadataToString(metadata)));
+        delegatesVerifier.verifyNumberOfExecution(WITHDRAWAL_REQUESTED, 1);
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 2);
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
+
+        caseStateService.withdrawalRequestCancelled(caseId, metadata);
+
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, CASE_ADJOURNED, WITHDRAWAL_REQUESTED, WITHDRAWAL_REQUEST_CANCELLED, READY_CASE);
+
+        delegatesVerifier.assertDelegateCalledWith(WITHDRAWAL_REQUEST_CANCELLED, 0, withProcessVariable(
+                METADATA_VARIABLE, metadataToString(metadata)));
+        delegatesVerifier.verifyNumberOfExecution(READY_CASE, 3);
+
+        delegatesVerifier.assertDelegateCalledWith(DelegatesVerifier.Delegate.CASE_ADJOURNED, 0, allOf(
+                withProcessVariable(CASE_ADJOURNED_DATE, adjournedTo.format(ISO_LOCAL_DATE_TIME))));
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 0, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(OFFENCE_ID_VARIABLE, null),
+                withProcessVariable(PLEA_TYPE_VARIABLE, null),
+                withProcessVariable(CASE_ADJOURNED_VARIABLE, true)
+        ));
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 1, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(OFFENCE_ID_VARIABLE, null),
+                withProcessVariable(PLEA_TYPE_VARIABLE, null),
+                withProcessVariable(CASE_ADJOURNED_VARIABLE, true),
+                withProcessVariable(WITHDRAWAL_REQUESTED_VARIABLE, true)
+        ));
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 2, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(OFFENCE_ID_VARIABLE, null),
+                withProcessVariable(PLEA_TYPE_VARIABLE, null),
+                withProcessVariable(CASE_ADJOURNED_VARIABLE, true),
+                withoutProcessVariable(WITHDRAWAL_REQUESTED_VARIABLE)
+        ));
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, CASE_ADJOURNED_SIGNAL_NAME, is(0));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, WITHDRAWAL_REQUESTED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, WITHDRAWAL_REQUEST_CANCELLED_SIGNAL_NAME, is(1));
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, CASE_COMPLETED_SIGNAL_NAME, is(1));
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
+    }
+
+    @Test
+    @Deployment(resources = PROCESS_PATH)
+    public void shouldRespectAdjournmentEvenAfterPleaUpdated() {
+        final LocalDate postingDate = LocalDate.now().minusDays(1);
+        final LocalDateTime adjournedTo = LocalDateTime.now().plusDays(1);
+        final UUID offenceId = randomUUID();
+        final PleaType pleaType = PleaType.GUILTY;
+
+        final String processInstanceId = caseStateService.caseReceived(caseId, postingDate, metadata);
+
+        callCaseAdjournedForLaterHearing(caseId, adjournedTo, metadata);
+
+        delegatesVerifier.tryProcessPendingJobs();
+
+        callPleaUpdated(offenceId, pleaType);
+
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, CASE_ADJOURNED, PLEA_UPDATED, READY_CASE);
+
+        delegatesVerifier.assertDelegateCalledWith(DelegatesVerifier.Delegate.CASE_ADJOURNED, 0, allOf(
+                withProcessVariable(CASE_ADJOURNED_DATE, adjournedTo.format(ISO_LOCAL_DATE_TIME))));
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 0, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(OFFENCE_ID_VARIABLE, null),
+                withProcessVariable(PLEA_TYPE_VARIABLE, null),
+                withProcessVariable(CASE_ADJOURNED_VARIABLE, true)
+        ));
+
+        delegatesVerifier.assertDelegateCalledWith(READY_CASE, 1, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(OFFENCE_ID_VARIABLE, offenceId.toString()),
+                withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
+                withProcessVariable(CASE_ADJOURNED_VARIABLE, true)
+        ));
+
+        delegatesVerifier.assertDelegateCalledWith(PLEA_UPDATED, 0, allOf(
+                withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)),
+                withProcessVariable(OFFENCE_ID_VARIABLE, offenceId.toString()),
+                withProcessVariable(PLEA_TYPE_VARIABLE, pleaType.name()),
+                withProcessVariable(PLEA_READY_VARIABLE, true)
+        ));
+
+        delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, CASE_ADJOURNED_SIGNAL_NAME, is(0));
+
+        delegatesVerifier.assertProcessFinished(processInstanceId, false);
+    }
+
+    @Test
+    @Deployment(resources = PROCESS_PATH)
     public void shouldKillDatesToAvoidSubProcessWhenReceivePleaUpdatedAction() {
         final UUID offenceId = randomUUID();
 

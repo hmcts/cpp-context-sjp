@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
+import static java.util.Objects.nonNull;
+
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.common.PleaInformation;
@@ -33,6 +35,7 @@ public class CaseView {
     private final Boolean listedInCriminalCourts;
     private final String hearingCourtName;
     private final ZonedDateTime hearingTime;
+    private final LocalDate adjournedTo;
 
     public CaseView(final CaseDetail caseDetail) {
 
@@ -59,6 +62,7 @@ public class CaseView {
         this.enterpriseId = caseDetail.getEnterpriseId();
         this.onlinePleaReceived = Boolean.TRUE.equals(caseDetail.getOnlinePleaReceived());
         this.datesToAvoid = caseDetail.getDatesToAvoid();
+        this.adjournedTo = caseDetail.getAdjournedTo();
         //TODO SINGLE OFFENCE only implementation
         this.status = CaseStatus.calculateStatus(caseDetail.getPostingDate(),
                 caseDetail.isAnyOffencePendingWithdrawal(),
@@ -66,7 +70,8 @@ public class CaseView {
                 caseDetail.getDatesToAvoid(),
                 caseDetail.isCompleted(),
                 caseDetail.isReferredForCourtHearing(),
-                caseDetail.getReopenedDate());
+                caseDetail.getReopenedDate(),
+                nonNull(caseDetail.getAdjournedTo()));
         this.listedInCriminalCourts = caseDetail.getListedInCriminalCourts();
         this.hearingCourtName = caseDetail.getHearingCourtName();
         this.hearingTime = caseDetail.getHearingTime();
@@ -152,4 +157,7 @@ public class CaseView {
         return hearingTime;
     }
 
+    public LocalDate getAdjournedTo() {
+        return adjournedTo;
+    }
 }

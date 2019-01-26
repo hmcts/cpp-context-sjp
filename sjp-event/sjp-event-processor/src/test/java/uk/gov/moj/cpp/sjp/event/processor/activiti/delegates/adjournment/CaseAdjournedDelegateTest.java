@@ -17,7 +17,7 @@ public class CaseAdjournedDelegateTest extends AbstractCaseDelegateTest {
     private CaseAdjournedDelegate caseAdjournedDelegate;
 
     @Test
-    public void shouldSendUnmarkCaseReadyStatusCommand() {
+    public void shouldSetCaseAdjournmentVariable() {
         caseAdjournedDelegate.execute(delegateExecution);
 
         verify(delegateExecution).setVariable(CASE_ADJOURNED_VARIABLE, true);

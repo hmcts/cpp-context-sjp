@@ -41,7 +41,7 @@ public class CaseAdjournmentProcessor {
         sender.send(recordCaseAdjournedCommand);
     }
 
-    @Handles("sjp.events.case-adjourned-for-later-sjp-hearing-recorded")
+    @Handles("sjp.events.case-adjourned-to-later-sjp-hearing-recorded")
     public void caseAdjournedForLaterSjpHearingRecorded(final JsonEnvelope event) {
         final JsonObject adjournmentDetails = event.payloadAsJsonObject();
 

@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-domain</artifactId>
-        <version>1.0.82-ATCM-SNAPSHOT</version>
+        <version>1.0.83-ATCM-SNAPSHOT</version>
     </parent>
 
     <artifactId>sjp-domain-event</artifactId>
@@ -59,13 +59,15 @@
                                 <include>json/schema/fragments/gender.json</include>
                                 <include>json/schema/events/sjp.events.case-referred-for-court-hearing.json</include>
                                 <include>json/schema/events/sjp.events.case-referral-for-court-hearing-rejection-recorded.json</include>
-                                <include>json/schema/events/sjp.events.case-adjourned-for-later-sjp-hearing-recorded.json</include>
+                                <include>json/schema/events/sjp.events.case-adjourned-to-later-sjp-hearing-recorded.json</include>
+                                <include>json/schema/events/sjp.events.case-adjournment-to-later-sjp-hearing-elapsed.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>
                                     <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin</plugin>
                                     <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin</plugin>
                                     <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddToStringMethodToClassPlugin</plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddHashcodeAndEqualsPlugin</plugin>
                                     <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddEventAnnotationToClassPlugin</plugin>
                                 </plugins>
                                 <typeMappings>

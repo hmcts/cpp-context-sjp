@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://cpp.moj.gov.uk/sjp/event/case-adjourned-for-later-sjp-hearing-recorded.json",
+  "id": "http://cpp.moj.gov.uk/sjp/event/case-adjourned-to-later-sjp-hearing-recorded.json",
   "type": "object",
   "properties": {
     "caseId": {

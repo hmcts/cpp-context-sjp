@@ -45,6 +45,9 @@ public class CaseSummary implements Serializable {
     @Column(name = "referred_for_court_hearing")
     private Boolean referredForCourtHearing;
 
+    @Column(name = "adjourned_to")
+    private LocalDate adjournedTo;
+
     public UUID getId() {
         return id;
     }
@@ -127,5 +130,9 @@ public class CaseSummary implements Serializable {
 
     public boolean isReferredForCourtHearing() {
         return isTrue(referredForCourtHearing);
+    }
+
+    public LocalDate getAdjournedTo() {
+        return adjournedTo;
     }
 }

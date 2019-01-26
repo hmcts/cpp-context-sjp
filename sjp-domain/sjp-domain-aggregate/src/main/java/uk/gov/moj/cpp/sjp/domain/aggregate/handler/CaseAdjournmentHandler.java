@@ -1,11 +1,13 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
-import uk.gov.moj.cpp.sjp.event.CaseAdjournedForLaterSjpHearingRecorded;
+import uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded;
+import uk.gov.moj.cpp.sjp.event.CaseAdjournmentToLaterSjpHearingElapsed;
 import uk.gov.moj.cpp.sjp.event.CaseNotFound;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -27,13 +29,24 @@ public class CaseAdjournmentHandler {
 
         if (!state.isCaseIdEqualTo(caseId)) {
             LOGGER.error("Mismatch of IDs in aggregate: {} != {}", state.getCaseId(), caseId);
-            return Stream.of(new CaseNotFound(null, "Record case adjournment to later date"));
+            return Stream.of(new CaseNotFound(caseId, "Record case adjourned to later sjp hearing"));
         }
         return Stream.of(
-                new CaseAdjournedForLaterSjpHearingRecorded(
+                new CaseAdjournedToLaterSjpHearingRecorded(
                         adjournedTo,
                         caseId,
                         sessionId),
                 new CaseUnassigned(caseId));
     }
+
+    public Stream<Object> recordCaseAdjournmentToLaterSjpHearingElapsed(final UUID caseId, final ZonedDateTime elapsedAt, final CaseAggregateState state) {
+
+        if (!state.isCaseIdEqualTo(caseId)) {
+            LOGGER.error("Mismatch of IDs in aggregate: {} != {}", state.getCaseId(), caseId);
+            return Stream.of(new CaseNotFound(caseId, "Record case adjournment to later sjp hearing elapsed"));
+        }
+        return Stream.of(new CaseAdjournmentToLaterSjpHearingElapsed(caseId, elapsedAt));
+    }
+
+
 }

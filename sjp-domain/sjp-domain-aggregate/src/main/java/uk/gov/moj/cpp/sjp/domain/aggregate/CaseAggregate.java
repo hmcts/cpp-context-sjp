@@ -193,6 +193,14 @@ public class CaseAggregate implements Aggregate {
                 state));
     }
 
+    public Stream<Object> recordCaseAdjournmentToLaterSjpHearingElapsed(final UUID caseId, final ZonedDateTime elapsedAt) {
+
+        return apply(CaseAdjournmentHandler.INSTANCE.recordCaseAdjournmentToLaterSjpHearingElapsed(
+                caseId,
+                elapsedAt,
+                state));
+    }
+
     @Override
     public Object apply(final Object event) {
         AGGREGATE_STATE_MUTATOR.apply(event, state);

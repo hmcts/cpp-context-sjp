@@ -69,7 +69,7 @@ public class CaseAdjournmentProcessorTest {
     @Test
     public void shouldInvokeActivityFlowWhenCaseAdjournmentRecorder() {
         final JsonEnvelope caseAdjournmentRecordedEvent = EnvelopeFactory
-                .createEnvelope("sjp.events.case-adjourned-for-later-sjp-hearing-recorded",
+                .createEnvelope("sjp.events.case-adjourned-to-later-sjp-hearing-recorded",
                         Json.createObjectBuilder()
                                 .add("caseId", CASE_ID.toString())
                                 .add("adjournedTo", ADJOURNED_TO.toString())

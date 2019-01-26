@@ -121,6 +121,9 @@ public class CaseDetail implements Serializable {
     @Column(name = "hearing_time")
     private ZonedDateTime hearingTime;
 
+    @Column(name = "adjourned_to")
+    private LocalDate adjournedTo;
+
     public CaseDetail() {
         defendant.setCaseDetail(this);
     }
@@ -334,6 +337,14 @@ public class CaseDetail implements Serializable {
 
     public void setHearingCourtName(final String hearingCourtName) {
         this.hearingCourtName = hearingCourtName;
+    }
+
+    public LocalDate getAdjournedTo() {
+        return adjournedTo;
+    }
+
+    public void setAdjournedTo(LocalDate adjournedTo) {
+        this.adjournedTo = adjournedTo;
     }
 
     public ZonedDateTime getHearingTime() {

@@ -68,7 +68,8 @@ public class CaseSearchResultsView {
                     new PleaInformation(caseSearchResult.getPleaType(), caseSearchResult.getPleaDate()), caseSearchResult.getCaseSummary().getDatesToAvoid(),
                     caseSearchResult.getCaseSummary().isCompleted(),
                     caseSearchResult.getCaseSummary().isReferredForCourtHearing(),
-                    caseSearchResult.getCaseSummary().getReopenedDate());
+                    caseSearchResult.getCaseSummary().getReopenedDate(),
+                    nonNull(caseSearchResult.getCaseSummary().getAdjournedTo()));
             this.listedInCriminalCourts = caseSearchResult.getCaseSummary().getListedInCriminalCourts();
             this.defendant = new CaseSearchResultDefendantView(caseSearchResult);
         }

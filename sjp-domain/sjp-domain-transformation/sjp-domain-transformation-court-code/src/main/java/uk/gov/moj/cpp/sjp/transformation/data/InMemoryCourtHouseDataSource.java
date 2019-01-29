@@ -17,7 +17,7 @@ public class InMemoryCourtHouseDataSource implements CourtHouseDataSource {
     private static final Map<String, String> COURT_NAME_TO_CODE = ImmutableMap.<String, String>builder()
             .put("Lavender Hill Magistrates' Court", "B01LY")
             .put("Barkingside Magistrates' Court", "B01KR")
-            .put("Bexley Magistrates' Court' Court", "B01BH")
+            .put("Bexley Magistrates' Court", "B01BH")
             .put("Bromley Magistrates' Court", "B01CN")
             .put("Camberwell Green Magistrates' Court", "B01CX")
             .put("City of London Magistrates' Court", "B01DU")
@@ -35,6 +35,7 @@ public class InMemoryCourtHouseDataSource implements CourtHouseDataSource {
             .put("Westminster Magistrates' Court", "B01IX")
             .put("Willesden Magistrates' Court", "B01CE")
             .put("Wimbledon Magistrates' Court", "B01OK")
+            .put("Battersea", "B01LY")
             .build();
 
     private InMemoryCourtHouseDataSource() {

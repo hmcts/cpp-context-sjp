@@ -16,6 +16,7 @@ import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
+import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaultsUntilResponseIsJson;
 
@@ -31,6 +32,7 @@ import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestCancelHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
+import uk.gov.moj.sjp.it.stub.AssignmentStub;
 
 import java.time.LocalDate;
 import java.util.UUID;

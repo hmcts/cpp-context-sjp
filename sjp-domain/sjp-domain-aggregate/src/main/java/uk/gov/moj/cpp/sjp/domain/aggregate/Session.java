@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 public class Session implements Aggregate {
 
-    private static final long serialVersionUID = 4L;
+    private static final long serialVersionUID = 5L;
     private static final Logger LOGGER = LoggerFactory.getLogger(Session.class);
 
     private UUID id;

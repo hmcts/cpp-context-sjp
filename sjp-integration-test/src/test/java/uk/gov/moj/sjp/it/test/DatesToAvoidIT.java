@@ -21,6 +21,7 @@ import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.pollingquery.PendingDatesToAvoidPoller.pollUntilPendingDatesToAvoidIsOk;
+import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
@@ -32,7 +33,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
@@ -77,6 +77,8 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
     @Before
     public void setUp() {
+        stubRemoveAssignmentCommand();
+
         tflUserId = randomUUID();
         stubGroupForUser(tflUserId, SJP_PROSECUTORS_GROUP);
         stubForUserDetails(tflUserId, TFL);

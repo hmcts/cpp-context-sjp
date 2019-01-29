@@ -18,6 +18,9 @@
         "courtHouseCode": {
           "type": "string"
         },
+        "courtHouseCode": {
+          "type": "string"
+        },
         "localJusticeAreaNationalCourtCode": {
           "description": "backward compatibility",
           "type": "string"

@@ -10,7 +10,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>1.0.83-ATCM-SNAPSHOT</version>
+    <version>1.0.84-ATCM-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -21,8 +21,8 @@
         <material.version>2.0.114-ATCM-SNAPSHOT</material.version>
         <notification.notify.version>0.0.26</notification.notify.version>
         <referencedata.version>2.0.167-ATCM-SNAPSHOT</referencedata.version>
-        <referencedata.offences.version>1.0.15-OPAMI-SNAPSHOT</referencedata.offences.version>
-        <resulting.version>2.0.212-ATCM-SNAPSHOT</resulting.version>
+        <referencedata.offences.version>1.0.17</referencedata.offences.version>
+        <resulting.version>2.0.221-ATCM-SNAPSHOT</resulting.version>
         <scheduling.version>2.0.88</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>2.0.106</usersgroups.version>
@@ -53,38 +53,12 @@
     </modules>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>external.atlassian.jgitflow</groupId>
-                    <artifactId>jgitflow-maven-plugin</artifactId>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-
         <plugins>
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
                     <archiveClasses>true</archiveClasses>
                     <attachClasses>true</attachClasses>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>external.atlassian.jgitflow</groupId>
-                <artifactId>jgitflow-maven-plugin</artifactId>
-                <configuration>
-                    <flowInitContext>
-                        <masterBranchName>dev/sjp-release</masterBranchName>
-                        <developBranchName>master</developBranchName>
-                        <featureBranchPrefix>dev/sjp-feature-</featureBranchPrefix>
-                        <releaseBranchPrefix>dev/sjp-release-</releaseBranchPrefix>
-                        <hotfixBranchPrefix>dev/sjp-hotfix-</hotfixBranchPrefix>
-                        <versionTagPrefix>sjp-tag-</versionTagPrefix>
-                    </flowInitContext>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <enableSshAgent>true</enableSshAgent>
-                    <pushReleases>true</pushReleases>
                 </configuration>
             </plugin>
         </plugins>

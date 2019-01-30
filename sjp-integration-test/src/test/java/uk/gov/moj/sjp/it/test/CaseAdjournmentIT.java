@@ -1,6 +1,7 @@
 package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.allOf;
@@ -19,6 +20,7 @@ import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
@@ -27,6 +29,7 @@ import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestCancelHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.producer.CaseAdjournmentProducer;
+import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
@@ -40,6 +43,7 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
@@ -97,7 +101,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldPutCaseInReadyStateWhenWithdrawalReceivedAfterCaseAdjournment() {
+    public void shouldRemoveAdjournToDateWhenWithdrawalReceivedAndCaseCompleted() {
         requestCaseAssignment(sessionId, userId);
         pollUntilCaseByIdIsOk(caseId, caseAssigned(true));
 
@@ -108,6 +112,14 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
             pollUntilCaseReady(caseId);
             pollUntilCaseByIdIsOk(caseId, allOf(caseAssigned(false), caseAdjourned(adjournmentDate)));
         }
+
+        new CompleteCaseProducer(caseId).completeCase();
+
+        pollUntilCaseByIdIsOk(caseId, CoreMatchers.allOf(
+                withJsonPath("$.completed", CoreMatchers.is(true)),
+                withJsonPath("$.status", CoreMatchers.is(CaseStatus.COMPLETED.name())),
+                withoutJsonPath("$.adjournedTo")
+        ));
     }
 
     @Test

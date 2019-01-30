@@ -28,6 +28,7 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
 
         if (caseDetail != null) {
             caseDetail.setCompleted(true);
+            caseDetail.setAdjournedTo(null);
         }
     }
 

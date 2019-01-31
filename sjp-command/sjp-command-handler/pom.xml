@@ -78,19 +78,18 @@
                     <execution>
                         <id>pojo-generation</id>
                         <configuration>
-                            <basePackageName>uk.gov.moj.cpp.events.people</basePackageName>
                             <sourceDirectory>${project.basedir}/src/raml/json/schema</sourceDirectory>
-                            <includes>**/sjp.command.update-employer.json</includes>
+                            <includes>
+                                <include>**/sjp.command.update-employer.json</include>
+                                <include>**/sjp.command.refer-case-for-court-hearing.json</include>
+                                <include>**/sjp.command.record-case-referral-for-court-hearing-rejection.json</include>
+                            </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>
                                     <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin</plugin>
                                     <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin</plugin>
                                     <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddHashcodeAndEqualsPlugin</plugin>
                                     <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddToStringMethodToClassPlugin</plugin>
-                                    <!--
-                                     TODO this needs to be disabled because of pojo generation problems with the optional
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.SupportJavaOptionalsPlugin</plugin>
-                                    -->
                                 </plugins>
                                 <typeMappings>
                                     <typeMapping>
@@ -119,6 +118,11 @@
                     </execution>
                 </executions>
                 <dependencies>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.core.domain</groupId>
+                        <artifactId>coredomain-common-definitions-schema</artifactId>
+                        <version>${coredomain.version}</version>
+                    </dependency>
                     <dependency>
                         <groupId>${project.groupId}</groupId>
                         <artifactId>sjp-json</artifactId>

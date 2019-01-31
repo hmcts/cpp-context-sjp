@@ -57,10 +57,6 @@ public final class RuleConstants {
         return asList(GROUP_COURT_ADMINISTRATORS);
     }
 
-    public static List<String> getQueryCasesReferredToCourtActionGroups() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
-    }
-
     public static List<String> getQueryResultOrders() {
         return asList(GROUP_COURT_ADMINISTRATORS);
     }

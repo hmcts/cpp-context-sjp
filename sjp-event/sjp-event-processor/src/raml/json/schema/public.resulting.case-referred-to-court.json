@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/resulting_public/events/case-referred-to-court.json",
   "type": "object",
   "properties": {
     "caseId": {

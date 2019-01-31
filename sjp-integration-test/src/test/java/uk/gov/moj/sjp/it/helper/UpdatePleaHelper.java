@@ -5,15 +5,16 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_UPDATED;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
-import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
+import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
-import uk.gov.moj.sjp.it.util.QueueUtil;
+import uk.gov.moj.sjp.it.util.TopicUtil;
 
 import java.util.UUID;
 
@@ -40,7 +41,7 @@ public class UpdatePleaHelper implements AutoCloseable {
     }
 
     public UpdatePleaHelper(String publicEvent) {
-        publicEventsConsumer = QueueUtil.publicEvents.createConsumer(publicEvent);
+        publicEventsConsumer = TopicUtil.publicEvents.createConsumer(publicEvent);
     }
 
     private String writeUrl(final UUID caseId, final UUID offenceId) {
@@ -83,6 +84,7 @@ public class UpdatePleaHelper implements AutoCloseable {
                 allOf(
                         withJsonPath("defendant.offences[0].plea", is(pleaType.name())),
                         withJsonPath("defendant.offences[0].pleaMethod", is(pleaMethod.name())),
+                        withJsonPath("defendant.offences[0].pleaDate", notNullValue()),
                         withJsonPath("onlinePleaReceived", is(PleaMethod.ONLINE.equals(pleaMethod)))
                 )
         );

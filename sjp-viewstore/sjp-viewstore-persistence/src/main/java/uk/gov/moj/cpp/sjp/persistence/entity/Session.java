@@ -28,6 +28,9 @@ public class Session {
     @Column(name = "user_id")
     private UUID userId;
 
+    @Column(name = "court_house_code")
+    private String courtHouseCode;
+
     @Column(name = "court_house_name")
     private String courtHouseName;
 
@@ -51,9 +54,10 @@ public class Session {
         //for JPA
     }
 
-    public Session(final UUID sessionId, final UUID userId, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final String magistrate, final ZonedDateTime startedAt) {
+    public Session(final UUID sessionId, final UUID userId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final String magistrate, final ZonedDateTime startedAt) {
         this.sessionId = sessionId;
         this.userId = userId;
+        this.courtHouseCode = courtHouseCode;
         this.courtHouseName = courtHouseName;
         this.localJusticeAreaNationalCourtCode = localJusticeAreaNationalCourtCode;
         this.startedAt = startedAt;
@@ -61,8 +65,8 @@ public class Session {
         this.type = Objects.isNull(magistrate) ? DELEGATED_POWERS : MAGISTRATE;
     }
 
-    public Session(final UUID sessionId, final UUID userId, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final ZonedDateTime startedAt) {
-        this(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, null, startedAt);
+    public Session(final UUID sessionId, final UUID userId, final String courtHouseCode, final String courtHouseName, final String localJusticeAreaNationalCourtCode, final ZonedDateTime startedAt) {
+        this(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, null, startedAt);
     }
 
     public UUID getSessionId() {
@@ -71,6 +75,10 @@ public class Session {
 
     public UUID getUserId() {
         return userId;
+    }
+
+    public String getCourtHouseCode() {
+        return courtHouseCode;
     }
 
     public String getCourtHouseName() {

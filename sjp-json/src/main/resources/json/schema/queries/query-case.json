@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
     "urn": {
       "type": "string"
@@ -36,6 +36,9 @@
     "postingDate": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
     },
+    "adjournedTo": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
     "reopenedDate": {
       "type": "string"
     },
@@ -47,6 +50,12 @@
     },
     "enterpriseId": {
       "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/enterprise-id.json"
+    },
+    "status": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/case-status.json"
+    },
+    "listedInCriminalCourts": {
+      "type": "boolean"
     }
   },
   "additionalProperties": true,

@@ -11,6 +11,11 @@ import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY_REQUE
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.WITHDRAWAL_REQUESTED;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.METADATA_VARIABLE;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.NOTICE_ENDED_DATE_VARIABLE;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.POSTING_DATE_VARIABLE;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PROCESS_MIGRATION_VARIABLE;
+import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PROCESS_NAME;
 import static uk.gov.moj.sjp.it.Constants.EVENT_CASE_MARKED_READY_FOR_DECISION;
 import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_COMPLETED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_CREATED;
@@ -44,13 +49,12 @@ import java.util.UUID;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 //TODO ATCM-3133 - remove
 public class CaseStateProcessMigrationIT extends BaseIntegrationTest {
 
-    private final static String PROCESS_NAME = "caseState";
-    private final static String PROCESS_MIGRATION_VARIABLE = "processMigration";
     private final UUID caseId = UUID.randomUUID();
     private final UUID offenceId = UUID.randomUUID();
     private final EventListener eventListener = new EventListener().withMaxWaitTime(5000);
@@ -71,16 +75,16 @@ public class CaseStateProcessMigrationIT extends BaseIntegrationTest {
     }
 
     @Test
+    @Ignore("Migration to be removed")
     public void shouldCreateExactCaseStateProcessUsingActivitiRestApiSoThatCaseCanBeProgressedTillCompletion() {
 
         final LocalDate postingDate = LocalDate.now().minusDays(30);
 
         final Map<String, Object> processParameters = new HashMap<>();
-        processParameters.put("postingDate", postingDate.toString());
-        processParameters.put("noticeEndedDate", postingDate.plusDays(28).toString());
-        processParameters.put("metadata", metadataBuilder().withName("migration").withId(UUID.randomUUID()).build().asJsonObject().toString());
-        processParameters.put("processMigration", true);
-
+        processParameters.put(POSTING_DATE_VARIABLE, postingDate.toString());
+        processParameters.put(NOTICE_ENDED_DATE_VARIABLE, postingDate.plusDays(28).toString());
+        processParameters.put(METADATA_VARIABLE, metadataBuilder().withName("migration").withId(UUID.randomUUID()).build().asJsonObject().toString());
+        processParameters.put(PROCESS_MIGRATION_VARIABLE, true);
 
         final String processInstanceId = createProcessUsingActivitiApi(processParameters);
 

@@ -11,7 +11,7 @@ import uk.gov.moj.sjp.it.commandclient.CreateCaseClient;
 import uk.gov.moj.sjp.it.commandclient.StartSessionClient;
 import uk.gov.moj.sjp.it.commandclient.UnassignCaseClient;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
-import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
+import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
@@ -42,7 +42,7 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
         SchedulingStub.stubEndSjpSessionCommand();
         AssignmentStub.stubAddAssignmentCommand();
         AssignmentStub.stubRemoveAssignmentCommand();
-        ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery(COURT_HOUSE_OU_CODE, "2572");
+        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(COURT_HOUSE_OU_CODE, "2572");
         cleaner.cleanAll();
 
         CreateCaseClient createCase = CreateCaseClient.builder().id(CASE_ID).build();

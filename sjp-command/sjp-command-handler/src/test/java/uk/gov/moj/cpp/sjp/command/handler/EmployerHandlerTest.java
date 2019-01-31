@@ -37,7 +37,6 @@ import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,39 +55,33 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class EmployerHandlerTest {
 
+    @Spy
+    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(EmployerUpdated.class,
+            EmploymentStatusUpdated.class, EmployerDeleted.class);
     @InjectMocks
     private EmployerHandler employerHandler;
-
     @Mock
     private EventSource eventSource;
-
     @Mock
     private EventStream eventStream;
-
     @Mock
     private AggregateService aggregateService;
-
-    @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(EmployerUpdated.class,
-            EmploymentStatusUpdated.class, EmployerDeleted.class);
-
     @Captor
     private ArgumentCaptor<Stream<JsonEnvelope>> argumentCaptor;
 
     @Test
-    public void shouldUpdateEmployer() throws EventStreamException {
+    public void shouldUpdateEmployer() throws EventStreamException, NoSuchFieldException, IllegalAccessException {
         final CaseAggregate caseAggregate = new CaseAggregate();
         final Case aCase = CaseBuilder.aDefaultSjpCase().build();
-        caseAggregate.receiveCase(aCase, now());
 
-        // Note that the defendantId created by the builder is overwritten by the aggregate
-        final UUID defendantId = caseAggregate.getOffenceIdsByDefendantId().keySet().iterator().next();
+        caseAggregate.receiveCase(aCase, now());
 
         final Address address = Address.address()
                 .withAddress1("123 High St")
                 .withAddress2("")
                 .withAddress3("London")
                 .withAddress4("Croydon")
+                .withAddress5("Greater London")
                 .withPostcode("CR01XG")
                 .build();
         final Employer employer = Employer.employer()
@@ -100,7 +93,7 @@ public class EmployerHandlerTest {
 
         final UpdateEmployer payload = updateEmployer()
                 .withCaseId(aCase.getId())
-                .withDefendantId(defendantId)
+                .withDefendantId(aCase.getDefendant().getId())
                 .withEmployer(employer)
                 .build();
 
@@ -122,7 +115,7 @@ public class EmployerHandlerTest {
                         withMetadataEnvelopedFrom(jsonEnvelope)
                                 .withName("sjp.events.employer-updated"),
                         payloadIsJson(allOf(
-                                withJsonPath("$.defendantId", equalTo(defendantId.toString())),
+                                withJsonPath("$.defendantId", equalTo(aCase.getDefendant().getId().toString())),
                                 withJsonPath("$.name", equalTo("Nando's")),
                                 withJsonPath("$.employeeReference", equalTo("123")),
                                 withJsonPath("$.phone", equalTo("0208123123")),
@@ -130,35 +123,33 @@ public class EmployerHandlerTest {
                                 withJsonPath("$.address.address2", equalTo("")),
                                 withJsonPath("$.address.address3", equalTo("London")),
                                 withJsonPath("$.address.address4", equalTo("Croydon")),
+                                withJsonPath("$.address.address5", equalTo("Greater London")),
                                 withJsonPath("$.address.postcode", equalTo("CR01XG"))
 
                         ))),
-//                        .thatMatchesSchema() Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648"                jsonEnvelope(
-                        jsonEnvelope(withMetadataEnvelopedFrom(jsonEnvelope)
+                jsonEnvelope(withMetadataEnvelopedFrom(jsonEnvelope)
                                 .withName("sjp.events.employment-status-updated"),
                         payloadIsJson(allOf(
-                                withJsonPath("$.defendantId", equalTo(defendantId.toString())),
+                                withJsonPath("$.defendantId", equalTo(aCase.getDefendant().getId().toString())),
                                 withJsonPath("$.employmentStatus", equalTo("EMPLOYED"))
 
                         ))))
-//                        .thatMatchesSchema() Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648"
         ));
     }
+
 
     @Test
     public void shouldDeleteEmployer() throws EventStreamException {
         final CaseAggregate caseAggregate = new CaseAggregate();
         final Case aCase = CaseBuilder.aDefaultSjpCase().build();
+
         caseAggregate.receiveCase(aCase, now());
 
-        // Note that the defendantId created by the builder is overwritten by the aggregate
-        final UUID defendantId = caseAggregate.getOffenceIdsByDefendantId().keySet().iterator().next();
-
-        caseAggregate.apply(new EmploymentStatusUpdated(defendantId, "EMPLOYED"));
+        caseAggregate.apply(new EmploymentStatusUpdated(aCase.getDefendant().getId(), "EMPLOYED"));
 
         final JsonObject payload = createObjectBuilder()
                 .add("caseId", aCase.getId().toString())
-                .add("defendantId", defendantId.toString())
+                .add("defendantId", aCase.getDefendant().getId().toString())
                 .build();
 
         when(eventSource.getStreamById(aCase.getId())).thenReturn(eventStream);
@@ -175,10 +166,9 @@ public class EmployerHandlerTest {
                         withMetadataEnvelopedFrom(envelope)
                                 .withName("sjp.events.employer-deleted"),
                         payloadIsJson(
-                                withJsonPath("$.defendantId", equalTo(defendantId.toString()))
+                                withJsonPath("$.defendantId", equalTo(aCase.getDefendant().getId().toString()))
 
                         ))
-//                        .thatMatchesSchema() Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648"
         )));
     }
 }

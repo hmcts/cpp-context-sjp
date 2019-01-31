@@ -30,6 +30,17 @@ public class UpdateDefendantSchemaTest {
     }
 
     @Test
+    public void acceptsValidEnvelopeWithLowercasePostcodeDoesNotContainingSpace() {
+        //given
+        final JsonObject payload = readPayloadFromResource("/updateDefendantPayload/validLowercasePostcodeWithoutSpace.json");
+        JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID("sjp.update-defendant-details"),
+                payload);
+
+        //then
+        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+    }
+
+    @Test
     public void acceptsValidEnvelopeWithMrsTitle() {
         //given
         final JsonObject payload = readPayloadFromResource("/updateDefendantPayload/validWithMrsTitle.json");

@@ -399,21 +399,6 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
-/cases/{caseId}/court-referral:
-  post:
-    description: |
-      Action court referral
-      ...
-      (mapping):
-          requestType: application/vnd.sjp.action-court-referral+json
-          name: sjp.action-court-referral
-      ...
-    body:
-      application/vnd.sjp.action-court-referral+json: !!null
-    responses:
-      202:
-        description: Accepted
-
 /cases/{caseId}/unassign:
   post:
     description: |
@@ -443,9 +428,6 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       (mapping):
           requestType: application/vnd.sjp.assign-case+json
           name: sjp.assign-case
-      (mapping):
-          requestType: application/vnd.sjp.migrate-session+json
-          name: sjp.migrate-session
       ...
     body:
       application/vnd.sjp.start-session+json:
@@ -453,11 +435,6 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
           !include json/sjp.start-session.json
         schema:
           !include json/schema/sjp.start-session.json
-      application/vnd.sjp.migrate-session+json:
-        example:
-          !include json/sjp.migrate-session.json
-        schema:
-          !include json/schema/sjp.migrate-session.json
       application/vnd.sjp.end-session+json: !!null
       application/vnd.sjp.assign-case+json: !!null
     responses:

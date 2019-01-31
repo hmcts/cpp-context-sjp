@@ -1,115 +1,38 @@
 package uk.gov.moj.sjp.it.util;
 
-import static java.util.stream.Collectors.joining;
-import static org.apache.commons.lang3.StringUtils.wrap;
-import static uk.gov.moj.sjp.it.util.OptionalPresent.ifPresent;
+import static javax.jms.Session.AUTO_ACKNOWLEDGE;
+import static uk.gov.justice.services.test.utils.core.messaging.QueueUriProvider.queueUri;
 
-import java.io.StringReader;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.function.Function;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.json.Json;
-import javax.json.JsonObject;
 
-import com.jayway.restassured.path.json.JsonPath;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
-import org.apache.activemq.artemis.jms.client.ActiveMQTopic;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class QueueUtil implements  AutoCloseable {
+public class QueueUtil {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(QueueUtil.class);
+    public static void sendToQueue(final String queueName, final JsonEnvelope jsonEnvelope) {
 
-    private static final String EVENT_SELECTOR_TEMPLATE = "CPPNAME IN ('%s')";
+        try (final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(queueUri());
+             final Connection connection = factory.createConnection()) {
 
-    private static final String QUEUE_URI = System.getProperty("queueUri", "tcp://localhost:61616");
-
-    private static final long RETRIEVE_TIMEOUT = 20000;
-
-    private Connection connection;
-
-    private Session session;
-
-    private Topic topic;
-
-    public static final QueueUtil privateEvents = new QueueUtil("sjp.event");
-    public static final QueueUtil publicEvents = new QueueUtil("public.event");
-
-    private QueueUtil(final String topicName) {
-        try {
-            LOGGER.info("Artemis URI: {}", QUEUE_URI);
-            ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(QUEUE_URI);
-            connection = factory.createConnection();
             connection.start();
-            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            topic = new ActiveMQTopic(topicName);
-        } catch (JMSException e) {
-            LOGGER.error("Fatal error initialising Artemis", e);
-            throw new RuntimeException(e);
-        }
-    }
 
-    public MessageConsumer createConsumer(final String eventSelector) {
-        try {
-            return session.createConsumer(topic, String.format(EVENT_SELECTOR_TEMPLATE, eventSelector));
-        } catch (JMSException e) {
-            throw new RuntimeException(e);
-        }
-    }
+            try (Session session = connection.createSession(false, AUTO_ACKNOWLEDGE);
+                 MessageProducer messageProducer = session.createProducer(session.createQueue(queueName))) {
 
-    public MessageConsumer createConsumerForMultipleSelectors(final String... eventSelectors) {
-        final Function<String, String> wrapInQuotes = (str) -> wrap(str, "'");
-        
-        final String eventSelectorsExpression = Arrays.stream(eventSelectors)
-                .map(wrapInQuotes)
-                .collect(joining(",", "CPPNAME IN (", ")"));
-
-        try {
-            return session.createConsumer(topic, eventSelectorsExpression);
-        } catch (JMSException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static JsonPath retrieveMessage(final MessageConsumer consumer) {
-        return retrieveMessage(consumer, RETRIEVE_TIMEOUT).orElse(null);
-    }
-
-    public static Optional<JsonPath> retrieveMessage(final MessageConsumer consumer, long customTimeOutInMillis) {
-        return ifPresent(retrieveMessageAsString(consumer, customTimeOutInMillis),
-                (x) -> Optional.of(new JsonPath(x))
-        ).orElse(Optional::<JsonPath>empty);
-    }
-
-    public static Optional<JsonObject> retrieveMessageAsJsonObject(final MessageConsumer consumer) {
-        return ifPresent(retrieveMessageAsString(consumer, RETRIEVE_TIMEOUT),
-                (x) -> Optional.of(Json.createReader(new StringReader(x)).readObject())
-        ).orElse(Optional::<JsonObject>empty);
-    }
-
-    public static Optional<String> retrieveMessageAsString(final MessageConsumer consumer, long customTimeOutInMillis) {
-        try {
-            TextMessage message = (TextMessage) consumer.receive(customTimeOutInMillis);
-            if (message == null) {
-                LOGGER.error("No message retrieved using consumer with selector {}", consumer.getMessageSelector());
-                return Optional.empty();
+                final TextMessage message = session.createTextMessage();
+                message.setText(jsonEnvelope.asJsonObject().toString());
+                message.setStringProperty("CPPNAME", jsonEnvelope.metadata().name());
+                messageProducer.send(message);
             }
-            return Optional.of(message.getText());
-        } catch (JMSException e) {
+        } catch (final JMSException e) {
             throw new RuntimeException(e);
         }
     }
 
-    @Override
-    public void close() throws Exception {
-        connection.close();
-    }
 }

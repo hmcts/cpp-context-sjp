@@ -43,6 +43,9 @@
           "withdrawalRequestedDate": {
             "type": "string"
           },
+          "status": {
+            "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/case-status.json"
+          },
           "defendant": {
             "type": "object",
             "properties": {
@@ -64,6 +67,9 @@
               "firstName",
               "lastName"
             ]
+          },
+          "listedInCriminalCourts": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false,

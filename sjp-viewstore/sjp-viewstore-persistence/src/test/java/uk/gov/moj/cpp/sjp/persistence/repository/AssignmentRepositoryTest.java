@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
+import static java.time.LocalDate.now;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
@@ -16,6 +17,11 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static uk.gov.moj.cpp.sjp.domain.AssignmentRuleType.ALLOW;
 import static uk.gov.moj.cpp.sjp.domain.AssignmentRuleType.DISALLOW;
+import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
+import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY_REQUEST_HEARING;
+import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_NOT_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.WITHDRAWAL_REQUESTED;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
@@ -25,6 +31,7 @@ import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
+import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
@@ -33,11 +40,14 @@ import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
+import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.StreamStatus;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -49,7 +59,6 @@ import javax.persistence.EntityManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -57,6 +66,8 @@ import org.junit.runner.RunWith;
 public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     private int NO_LIMIT = Integer.MAX_VALUE;
+
+    private static final ZonedDateTime TODAY_MIDNIGHT = ZonedDateTime.now(UTC).truncatedTo(ChronoUnit.DAYS);
 
     @Inject
     private AssignmentRepository assignmentRepository;
@@ -66,15 +77,15 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     private UUID assigneeId;
 
-    @Before
-    public void init() {
+    @Override
+    public void setUpBefore() {
         assigneeId = UUID.randomUUID();
     }
 
     @Test
     public void shouldLimitResultsForMagistrateSession() {
-        CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(1).plea(GUILTY).save(em);
-        CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(2).plea(GUILTY).save(em);
+        CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(1).plea(GUILTY).save(em, PLEADED_GUILTY);
+        CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(2).plea(GUILTY).save(em, PLEADED_GUILTY);
 
         assertThat(assignmentRepository.getAssignmentCandidatesForMagistrateSession(assigneeId, prosecutingAuthorities(), DISALLOW, 3), hasSize(2));
         assertThat(assignmentRepository.getAssignmentCandidatesForMagistrateSession(assigneeId, prosecutingAuthorities(), DISALLOW, 2), hasSize(2));
@@ -84,8 +95,8 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldLimitResultsForDelegatePowersSession() {
-        CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(1).plea(NOT_GUILTY).save(em);
-        CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(2).plea(NOT_GUILTY).save(em);
+        CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(1).notGuiltyWithDatesToAvoid().save(em, PLEADED_NOT_GUILTY);
+        CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(2).notGuiltyWithDatesToAvoid().save(em, PLEADED_NOT_GUILTY);
 
         assertThat(assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities(), DISALLOW, 3), hasSize(2));
         assertThat(assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities(), DISALLOW, 2), hasSize(2));
@@ -95,9 +106,9 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldExcludeProsecutorsForMagistrateSession() {
-        final CaseDetail tflCase = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(3).plea(GUILTY).save(em);
-        final CaseDetail tvlCase = CaseSaver.prosecutingAuthority(TVL).postedDaysAgo(2).plea(GUILTY).save(em);
-        final CaseDetail dvlaCase = CaseSaver.prosecutingAuthority(DVLA).postedDaysAgo(1).plea(GUILTY).save(em);
+        final CaseDetail tflCase = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(3).plea(GUILTY).save(em, PLEADED_GUILTY);
+        final CaseDetail tvlCase = CaseSaver.prosecutingAuthority(TVL).postedDaysAgo(2).plea(GUILTY).save(em, PLEADED_GUILTY);
+        final CaseDetail dvlaCase = CaseSaver.prosecutingAuthority(DVLA).postedDaysAgo(1).plea(GUILTY).save(em, PLEADED_GUILTY);
 
         List<AssignmentCandidate> magistrateSessionCandidates = assignmentRepository.getAssignmentCandidatesForMagistrateSession(assigneeId, prosecutingAuthorities(TFL), DISALLOW, NO_LIMIT);
         assertThat(getIds(magistrateSessionCandidates), contains(getIds(tvlCase, dvlaCase)));
@@ -114,9 +125,9 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldIncludeProsecutorsForMagistrateSession() {
-        final CaseDetail tflCase = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(3).plea(GUILTY).save(em);
-        final CaseDetail tvlCase = CaseSaver.prosecutingAuthority(TVL).postedDaysAgo(2).plea(GUILTY).save(em);
-        final CaseDetail dvlaCase = CaseSaver.prosecutingAuthority(DVLA).postedDaysAgo(1).plea(GUILTY).save(em);
+        final CaseDetail tflCase = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(3).plea(GUILTY).save(em, PLEADED_GUILTY);
+        final CaseDetail tvlCase = CaseSaver.prosecutingAuthority(TVL).postedDaysAgo(2).plea(GUILTY).save(em, PLEADED_GUILTY);
+        final CaseDetail dvlaCase = CaseSaver.prosecutingAuthority(DVLA).postedDaysAgo(1).plea(GUILTY).save(em, PLEADED_GUILTY);
 
         List<AssignmentCandidate> magistrateSessionCandidates = assignmentRepository.getAssignmentCandidatesForMagistrateSession(assigneeId, prosecutingAuthorities(), ALLOW, NO_LIMIT);
         assertThat(getIds(magistrateSessionCandidates), hasSize(0));
@@ -133,11 +144,13 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldExcludeProsecutorsInDelegatedPowersSession() {
-        final CaseDetail tflCase = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(3).plea(NOT_GUILTY).save(em);
-        final CaseDetail tvlCase = CaseSaver.prosecutingAuthority(TVL).postedDaysAgo(2).plea(NOT_GUILTY).save(em);
-        final CaseDetail dvlaCase = CaseSaver.prosecutingAuthority(DVLA).postedDaysAgo(1).plea(NOT_GUILTY).save(em);
+        final CaseDetail tflCase = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(3).notGuiltyWithDatesToAvoid().save(em, PLEADED_NOT_GUILTY);
+        final CaseDetail tvlCase = CaseSaver.prosecutingAuthority(TVL).postedDaysAgo(2).pendingWithdrawal(true).save(em, WITHDRAWAL_REQUESTED);
+        final CaseDetail dvlaCase = CaseSaver.prosecutingAuthority(DVLA).postedDaysAgo(1).notGuiltyWithDatesToAvoid().save(em, PLEADED_NOT_GUILTY);
 
-        List<AssignmentCandidate> delegatedPowersSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities(TFL), DISALLOW, NO_LIMIT);
+        List<AssignmentCandidate> delegatedPowersSessionCandidates;
+
+        delegatedPowersSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities(TFL), DISALLOW, NO_LIMIT);
         assertThat(getIds(delegatedPowersSessionCandidates), contains(getIds(tvlCase, dvlaCase)));
 
         delegatedPowersSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities(TVL), DISALLOW, NO_LIMIT);
@@ -152,9 +165,9 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldIncludeProsecutorsInDelegatedPowersSession() {
-        final CaseDetail tflCase = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(3).plea(NOT_GUILTY).save(em);
-        final CaseDetail tvlCase = CaseSaver.prosecutingAuthority(TVL).postedDaysAgo(2).plea(NOT_GUILTY).save(em);
-        final CaseDetail dvlaCase = CaseSaver.prosecutingAuthority(DVLA).postedDaysAgo(1).plea(NOT_GUILTY).save(em);
+        final CaseDetail tflCase = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(3).notGuiltyWithDatesToAvoid().save(em, PLEADED_NOT_GUILTY);
+        final CaseDetail tvlCase = CaseSaver.prosecutingAuthority(TVL).postedDaysAgo(2).notGuiltyWithDatesToAvoid().save(em, PLEADED_NOT_GUILTY);
+        final CaseDetail dvlaCase = CaseSaver.prosecutingAuthority(DVLA).postedDaysAgo(1).notGuiltyWithDatesToAvoid().save(em, PLEADED_NOT_GUILTY);
 
         List<AssignmentCandidate> delegatedPowersSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities(), ALLOW, NO_LIMIT);
         assertThat(getIds(delegatedPowersSessionCandidates), hasSize(0));
@@ -171,11 +184,11 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldReturnCasesReadyForDecisionBasedOnSessionType() {
-        final CaseDetail guiltyPleaded = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(3).plea(GUILTY).save(em);
-        final CaseDetail pia = CaseSaver.prosecutingAuthority(TVL).postedDaysAgo(30).save(em);
-        final CaseDetail notGuiltyPleaded = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(3).plea(NOT_GUILTY).save(em);
-        final CaseDetail guiltyPleadedCourtHearingRequested = CaseSaver.prosecutingAuthority(TVL).postedDaysAgo(2).plea(GUILTY_REQUEST_HEARING).save(em);
-        final CaseDetail withdrawalRequested = CaseSaver.prosecutingAuthority(DVLA).postedDaysAgo(1).pendingWithdrawal(true).save(em);
+        final CaseDetail guiltyPleaded = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(3).plea(GUILTY).save(em, PLEADED_GUILTY);
+        final CaseDetail pia = CaseSaver.prosecutingAuthority(TVL).postedDaysAgo(30).save(em, PIA);
+        final CaseDetail notGuiltyPleaded = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(3).notGuiltyWithDatesToAvoid().save(em, PLEADED_NOT_GUILTY);
+        final CaseDetail guiltyPleadedCourtHearingRequested = CaseSaver.prosecutingAuthority(TVL).postedDaysAgo(2).plea(GUILTY_REQUEST_HEARING).save(em, PLEADED_GUILTY_REQUEST_HEARING);
+        final CaseDetail withdrawalRequested = CaseSaver.prosecutingAuthority(DVLA).postedDaysAgo(1).pendingWithdrawal(true).save(em, WITHDRAWAL_REQUESTED);
 
         final List<AssignmentCandidate> magistrateSessionCandidates = assignmentRepository.getAssignmentCandidatesForMagistrateSession(assigneeId, prosecutingAuthorities(), DISALLOW, NO_LIMIT);
         assertThat(getIds(magistrateSessionCandidates), contains(getIds(guiltyPleaded, pia)));
@@ -190,10 +203,10 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldPrioritizeCasesForMagistrateSession() {
-        final CaseDetail guiltyPleaded10DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(10).plea(GUILTY).save(em);
-        final CaseDetail guiltyPleaded20DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(20).plea(GUILTY).save(em);
-        final CaseDetail pia30DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(30).save(em);
-        final CaseDetail pia40DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(40).save(em);
+        final CaseDetail guiltyPleaded10DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(10).plea(GUILTY).save(em, PLEADED_GUILTY);
+        final CaseDetail guiltyPleaded20DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(20).plea(GUILTY).save(em, PLEADED_GUILTY);
+        final CaseDetail pia30DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(30).save(em, PIA);
+        final CaseDetail pia40DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(40).save(em, PIA);
 
         final List<AssignmentCandidate> magistrateSessionCandidates = assignmentRepository.getAssignmentCandidatesForMagistrateSession(assigneeId, prosecutingAuthorities(), DISALLOW, NO_LIMIT);
         assertThat(getIds(magistrateSessionCandidates), contains(getIds(
@@ -206,14 +219,14 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldPrioritizeCasesForDelegatedPowersSession() {
-        final CaseDetail pleadedNotGuilty10DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(10).plea(NOT_GUILTY).save(em);
-        final CaseDetail pleadedNotGuilty20DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(20).plea(NOT_GUILTY).save(em);
+        final CaseDetail pleadedNotGuilty10DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(10).notGuiltyWithDatesToAvoid().save(em, PLEADED_NOT_GUILTY);
+        final CaseDetail pleadedNotGuilty20DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(20).notGuiltyWithDatesToAvoid().save(em, PLEADED_NOT_GUILTY);
 
-        final CaseDetail courtHearingRequested15DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(15).plea(GUILTY_REQUEST_HEARING).save(em);
-        final CaseDetail courtHearingRequested25DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(25).plea(GUILTY_REQUEST_HEARING).save(em);
+        final CaseDetail courtHearingRequested15DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(15).plea(GUILTY_REQUEST_HEARING).save(em, PLEADED_GUILTY_REQUEST_HEARING);
+        final CaseDetail courtHearingRequested25DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(25).plea(GUILTY_REQUEST_HEARING).save(em, PLEADED_GUILTY_REQUEST_HEARING);
 
-        final CaseDetail pendingWithdrawal10DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(10).pendingWithdrawal(true).save(em);
-        final CaseDetail pendingWithdrawal20DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(20).pendingWithdrawal(true).save(em);
+        final CaseDetail pendingWithdrawal10DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(10).pendingWithdrawal(true).save(em, WITHDRAWAL_REQUESTED);
+        final CaseDetail pendingWithdrawal20DaysOld = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(20).pendingWithdrawal(true).save(em, WITHDRAWAL_REQUESTED);
 
         final List<AssignmentCandidate> delegatedPowersSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities(), DISALLOW, NO_LIMIT);
         assertThat(getIds(delegatedPowersSessionCandidates), contains(getIds(
@@ -228,9 +241,9 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldTopPrioritizeCasesAlreadyAssignedInMagistrateSession() {
-        final CaseDetail guiltyPleaded = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(3).plea(GUILTY).save(em);
-        final CaseDetail piaAfter40Days = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(40).save(em);
-        final CaseDetail assigned = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(30).assigneeId(assigneeId).save(em);
+        final CaseDetail guiltyPleaded = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(3).plea(GUILTY).save(em, PLEADED_GUILTY);
+        final CaseDetail piaAfter40Days = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(40).save(em, PIA);
+        final CaseDetail assigned = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(30).assigneeId(assigneeId).save(em, PIA);
 
         final List<AssignmentCandidate> magistrateSessionCandidates = assignmentRepository.getAssignmentCandidatesForMagistrateSession(assigneeId, prosecutingAuthorities(), DISALLOW, NO_LIMIT);
         assertThat(getIds(magistrateSessionCandidates), contains(getIds(
@@ -242,10 +255,10 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldTopPrioritizeCasesAlreadyAssignedInDelegatedPowersSession() {
-        final CaseDetail pleadedNotGuiltyAssigned = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(10).plea(NOT_GUILTY).assigneeId(assigneeId).save(em);
-        final CaseDetail pleadedNotGuilty = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(10).plea(NOT_GUILTY).save(em);
-        final CaseDetail courtHearingRequested = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(11).plea(GUILTY_REQUEST_HEARING).pendingWithdrawal(false).save(em);
-        final CaseDetail pendingWithdrawal = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(11).pendingWithdrawal(true).save(em);
+        final CaseDetail pleadedNotGuiltyAssigned = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(10).notGuiltyWithDatesToAvoid().assigneeId(assigneeId).save(em, PLEADED_NOT_GUILTY);
+        final CaseDetail pleadedNotGuilty = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(10).notGuiltyWithDatesToAvoid().save(em, PLEADED_NOT_GUILTY);
+        final CaseDetail courtHearingRequested = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(11).plea(GUILTY_REQUEST_HEARING).pendingWithdrawal(false).save(em, PLEADED_GUILTY_REQUEST_HEARING);
+        final CaseDetail pendingWithdrawal = CaseSaver.prosecutingAuthority(TFL).postedDaysAgo(11).pendingWithdrawal(true).save(em, WITHDRAWAL_REQUESTED);
 
         final List<AssignmentCandidate> delegatedPowersSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities(), DISALLOW, NO_LIMIT);
 
@@ -259,11 +272,11 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldIgnoreAlreadyCompletedCases() {
-        CaseSaver.prosecutingAuthority(TFL).plea(GUILTY).completed(true).save(em);
-        final CaseDetail pleadedGuilty = CaseSaver.prosecutingAuthority(TFL).plea(GUILTY).save(em);
+        CaseSaver.prosecutingAuthority(TFL).plea(GUILTY).completed(true).save(em, CaseSaver.EXPECT_NOT_TO_BE_READY);
+        final CaseDetail pleadedGuilty = CaseSaver.prosecutingAuthority(TFL).plea(GUILTY).save(em, PLEADED_GUILTY);
 
-        CaseSaver.prosecutingAuthority(TFL).plea(NOT_GUILTY).completed(true).save(em);
-        final CaseDetail pleadedNotGuilty = CaseSaver.prosecutingAuthority(TFL).plea(NOT_GUILTY).save(em);
+        CaseSaver.prosecutingAuthority(TFL).plea(NOT_GUILTY).completed(true).save(em, CaseSaver.EXPECT_NOT_TO_BE_READY);
+        final CaseDetail pleadedNotGuilty = CaseSaver.prosecutingAuthority(TFL).notGuiltyWithDatesToAvoid().save(em, PLEADED_NOT_GUILTY);
 
         final List<AssignmentCandidate> magistrateSessionCandidates = assignmentRepository.getAssignmentCandidatesForMagistrateSession(assigneeId, prosecutingAuthorities(), DISALLOW, NO_LIMIT);
         assertThat(getIds(magistrateSessionCandidates), contains(getIds(pleadedGuilty)));
@@ -274,28 +287,29 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldReturnCaseVersion() {
-        CaseSaver.prosecutingAuthority(TFL).plea(GUILTY).version(2).completed(false).save(em);
-        CaseSaver.prosecutingAuthority(TFL).plea(NOT_GUILTY).version(3).save(em);
+        CaseSaver.prosecutingAuthority(TFL).version(2).plea(GUILTY).completed(false).save(em, PLEADED_GUILTY);
+        CaseSaver.prosecutingAuthority(TFL).version(3).notGuiltyWithDatesToAvoid().save(em, PLEADED_NOT_GUILTY);
 
         final List<AssignmentCandidate> magistrateSessionCandidates = assignmentRepository.getAssignmentCandidatesForMagistrateSession(assigneeId, prosecutingAuthorities(), DISALLOW, NO_LIMIT);
         assertThat(magistrateSessionCandidates, hasSize(1));
         assertThat(magistrateSessionCandidates.get(0).getCaseStreamVersion(), equalTo(2));
 
         final List<AssignmentCandidate> delegatedPowersSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities(), DISALLOW, NO_LIMIT);
+        assertThat(delegatedPowersSessionCandidates, hasSize(1));
         assertThat(delegatedPowersSessionCandidates.get(0).getCaseStreamVersion(), equalTo(3));
     }
 
     @Test
     public void shouldReturnRightAssignmentWhenCaseDetailsDatesToAvoidIsNull() {
         // GIVEN - all of them will be returned as datesToAvoid IS NULL
-        Function<Integer, CaseDetail> saveCaseDetails = pastDaysFromNow -> CaseSaver.prosecutingAuthority(TFL)
+        final Function<Integer, CaseDetail> saveCaseDetails = pastDaysFromNow -> CaseSaver.prosecutingAuthority(TFL)
                 .plea(NOT_GUILTY)
                 .datesToAvoid(null)
-                .pendingDatesToAvoid(ZonedDateTime.now(UTC).minusDays(pastDaysFromNow))
-                .save(em);
+                .pendingDatesToAvoid(TODAY_MIDNIGHT.minusDays(pastDaysFromNow))
+                .save(em, pastDaysFromNow > 10 ? PLEADED_NOT_GUILTY : CaseSaver.EXPECT_NOT_TO_BE_READY);
 
         // dates to avoid is not set -> return only older than 10 days
-        AssignmentCandidate[] expectedAssignments = Stream.of(0, 1, 9, 10, 11, 20, 100)
+        final AssignmentCandidate[] expectedAssignments = Stream.of(0, 1, 9, 10, 11, 20, 100)
                 .map(pastDaysFromNow -> Pair.of(pastDaysFromNow, saveCaseDetails.apply(pastDaysFromNow).getId()))
                 .filter(p -> p.getKey() > 10)
                 .map(Pair::getValue)
@@ -303,7 +317,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
                 .toArray(AssignmentCandidate[]::new);
 
         // WHEN
-        List<AssignmentCandidate> delegatedPowersSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities(), DISALLOW, NO_LIMIT);
+        final List<AssignmentCandidate> delegatedPowersSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities(), DISALLOW, NO_LIMIT);
 
         assertThat(delegatedPowersSessionCandidates, not(emptyList()));
         assertThat(delegatedPowersSessionCandidates, containsInAnyOrder(expectedAssignments));
@@ -311,23 +325,22 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldReturnRightAssignmentWhenCaseDetailsDatesToAvoidIsNotNull() {
-
         // GIVEN - all of them will be returned as datesToAvoid IS NOT NULL
-        Function<Integer, CaseDetail> saveCaseDetails = (notGuiltyPleaDaysAgo) -> CaseSaver.prosecutingAuthority(TFL)
+        final Function<Integer, CaseDetail> saveCaseDetails = notGuiltyPleaDaysAgo -> CaseSaver.prosecutingAuthority(TFL)
                 .plea(NOT_GUILTY)
-                .pendingDatesToAvoid(ZonedDateTime.now(UTC).minusDays(notGuiltyPleaDaysAgo))
+                .pendingDatesToAvoid(TODAY_MIDNIGHT.minusDays(notGuiltyPleaDaysAgo))
                 .datesToAvoid("dates-to-avoid" + notGuiltyPleaDaysAgo)
-                .save(em);
+                .save(em, PLEADED_NOT_GUILTY);
 
         // dates to avoid is set -> return all of them
-        AssignmentCandidate[] expectedAssignments = Stream.of(9, 10, 11)
+        final AssignmentCandidate[] expectedAssignments = Stream.of(9, 10, 11)
                 .map(saveCaseDetails)
                 .map(CaseDetail::getId)
                 .map(caseId -> new AssignmentCandidate(caseId, 1))
                 .toArray(AssignmentCandidate[]::new);
 
         // WHEN
-        List<AssignmentCandidate> delegatedPowersSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities(), DISALLOW, NO_LIMIT);
+        final List<AssignmentCandidate> delegatedPowersSessionCandidates = assignmentRepository.getAssignmentCandidatesForDelegatedPowersSession(assigneeId, prosecutingAuthorities(), DISALLOW, NO_LIMIT);
 
         assertThat(delegatedPowersSessionCandidates, not(emptyList()));
         assertThat(delegatedPowersSessionCandidates, containsInAnyOrder(expectedAssignments));
@@ -348,6 +361,9 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
     }
 
     private static class CaseSaver {
+
+        static final CaseReadinessReason EXPECT_NOT_TO_BE_READY = null;
+
         private ProsecutingAuthority prosecutingAuthority;
         private LocalDate postingDate;
         private boolean completed;
@@ -366,8 +382,14 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
             this.prosecutingAuthority = prosecutingAuthority;
         }
 
+        private CaseSaver notGuiltyWithDatesToAvoid() {
+            return plea(NOT_GUILTY)
+                    .datesToAvoid("dates-to-avoid")
+                    .pendingDatesToAvoid(TODAY_MIDNIGHT);
+        }
+
         private CaseSaver postedDaysAgo(int daysAgo) {
-            this.postingDate = LocalDate.now().minusDays(daysAgo);
+            this.postingDate = TODAY_MIDNIGHT.minusDays(daysAgo).toLocalDate();
             return this;
         }
 
@@ -406,7 +428,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
             return this;
         }
 
-        CaseDetail save(EntityManager em) {
+        CaseDetail save(EntityManager em, CaseReadinessReason expectedCaseReadinessReason) {
             final UUID caseId = randomUUID();
             final UUID defendantId = randomUUID();
             final UUID offenceId = randomUUID();
@@ -434,16 +456,53 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
             em.persist(caseStreamStatus);
 
             //If the dates to avoid are provided, the case shouldn't be added to pending dates to avoid table
-            if (datesToAvoidPleaDate != null && StringUtils.isEmpty(datesToAvoid)) {
+            final boolean datesToAvoidPresent = datesToAvoidPleaDate != null && StringUtils.isEmpty(datesToAvoid);
+            if (datesToAvoidPresent) {
                 em.persist(buildPendingDatesToAvoid(caseDetail, datesToAvoidPleaDate));
             } else {
                 assertThat(em.find(PendingDatesToAvoid.class, caseDetail.getId()), nullValue());
             }
 
+            CaseReadinessReason caseReadinessReason = EXPECT_NOT_TO_BE_READY;
+            if (!completed && expectedCaseReadinessReason != EXPECT_NOT_TO_BE_READY) {
+                // TODO: this business logic should come from prod
+
+                if (pendingWithdrawal) {
+                    caseReadinessReason = CaseReadinessReason.WITHDRAWAL_REQUESTED;
+                } else if(plea != null &&
+                        (! PleaType.NOT_GUILTY.equals(plea) ||
+                                (!StringUtils.isEmpty(datesToAvoid) ||
+                                        Optional.ofNullable(datesToAvoidPleaDate)
+                                                .map(TODAY_MIDNIGHT.minusDays(10)::isAfter)
+                                                .orElse(false)))) {
+                    caseReadinessReason = caseReadinessReasonForPlea(plea);
+                } else if (postingDate != null && postingDate.isBefore(now().minusDays(28))) {
+                    caseReadinessReason = PIA;
+                }
+
+                assertThat(caseReadinessReason, equalTo(expectedCaseReadinessReason));
+
+                em.persist(new ReadyCase(caseId, caseReadinessReason, assigneeId));
+            }
+
             return caseDetail;
         }
 
-        private static PendingDatesToAvoid buildPendingDatesToAvoid(CaseDetail caseDetail, ZonedDateTime datesToAvoidPleaDate) {
+        private static CaseReadinessReason caseReadinessReasonForPlea(final PleaType pleaType) {
+            switch (pleaType) {
+                case GUILTY:
+                    return PLEADED_GUILTY;
+                case NOT_GUILTY:
+                    return PLEADED_NOT_GUILTY;
+                case GUILTY_REQUEST_HEARING:
+                    return PLEADED_GUILTY_REQUEST_HEARING;
+                default:
+                    throw new AssertionError("PleaType not mapped!");
+            }
+        }
+
+        private static PendingDatesToAvoid buildPendingDatesToAvoid(final CaseDetail caseDetail,
+                                                                    final ZonedDateTime datesToAvoidPleaDate) {
             PendingDatesToAvoid pendingDatesToAvoid = new PendingDatesToAvoid(caseDetail);
             pendingDatesToAvoid.setPleaDate(datesToAvoidPleaDate);
 

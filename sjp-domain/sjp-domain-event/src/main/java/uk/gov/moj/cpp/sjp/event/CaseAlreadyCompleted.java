@@ -5,6 +5,9 @@ import uk.gov.justice.domain.annotation.Event;
 import java.io.Serializable;
 import java.util.UUID;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 @Event("sjp.events.case-completion-failed")
 public class CaseAlreadyCompleted implements Serializable {
 
@@ -25,4 +28,10 @@ public class CaseAlreadyCompleted implements Serializable {
     public String getDescription() {
         return description;
     }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
 }

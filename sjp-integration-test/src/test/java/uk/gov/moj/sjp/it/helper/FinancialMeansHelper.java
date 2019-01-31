@@ -3,10 +3,10 @@ package uk.gov.moj.sjp.it.helper;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.lang.String.format;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessageAsJsonObject;
+import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessageAsJsonObject;
 
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
-import uk.gov.moj.sjp.it.util.QueueUtil;
+import uk.gov.moj.sjp.it.util.TopicUtil;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -22,7 +22,7 @@ public class FinancialMeansHelper implements AutoCloseable {
     private MessageConsumer messageConsumer;
 
     public FinancialMeansHelper() {
-        messageConsumer = QueueUtil.publicEvents.createConsumerForMultipleSelectors(
+        messageConsumer = TopicUtil.publicEvents.createConsumerForMultipleSelectors(
                 "public.sjp.financial-means-updated", "public.sjp.case-update-rejected");
     }
 

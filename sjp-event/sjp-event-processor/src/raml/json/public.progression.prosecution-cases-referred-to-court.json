@@ -1,0 +1,23 @@
+{
+  "prosecutionCaseId": "${prosecutionCaseId}",
+  "defendantId": "0baecac5-222b-402d-9047-84803679edae",
+  "defendantOffences": [
+    "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+  ],
+  "hearingId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+  "hearingDays": [
+    {
+      "listedDurationMinutes": 1531791578,
+      "listingSequence": 810249414,
+      "sittingDay": "${sittingDay}"
+    }
+  ],
+  "courtCentre": {
+    "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+    "name": "${name}",
+    "roomId": "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a",
+    "roomName": "JK2Y7hu0Tc",
+    "welshName": "${welshName}",
+    "welshRoomName": "hm60SAXokc"
+  }
+}

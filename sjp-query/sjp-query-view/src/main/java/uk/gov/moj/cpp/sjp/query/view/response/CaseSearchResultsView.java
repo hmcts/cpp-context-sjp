@@ -1,8 +1,11 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
+import uk.gov.moj.cpp.sjp.domain.common.PleaInformation;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 
 import java.time.LocalDate;
@@ -46,6 +49,8 @@ public class CaseSearchResultsView {
         private final LocalDate pleaDate;
         private final LocalDate withdrawalRequestedDate;
         private final CaseSearchResultDefendantView defendant;
+        private final CaseStatus status;
+        private final Boolean listedInCriminalCourts;
 
         public CaseSearchResultView(CaseSearchResult caseSearchResult) {
             this.caseId = caseSearchResult.getCaseId();
@@ -58,6 +63,14 @@ public class CaseSearchResultsView {
             this.reopenedDate = caseSearchResult.getCaseSummary().getReopenedDate();
             this.pleaDate = caseSearchResult.getPleaDate();
             this.withdrawalRequestedDate = caseSearchResult.getWithdrawalRequestedDate();
+            this.status = CaseStatus.calculateStatus(caseSearchResult.getCaseSummary().getPostingDate(),
+                    nonNull(caseSearchResult.getWithdrawalRequestedDate()),
+                    new PleaInformation(caseSearchResult.getPleaType(), caseSearchResult.getPleaDate()), caseSearchResult.getCaseSummary().getDatesToAvoid(),
+                    caseSearchResult.getCaseSummary().isCompleted(),
+                    caseSearchResult.getCaseSummary().isReferredForCourtHearing(),
+                    caseSearchResult.getCaseSummary().getReopenedDate(),
+                    nonNull(caseSearchResult.getCaseSummary().getAdjournedTo()));
+            this.listedInCriminalCourts = caseSearchResult.getCaseSummary().getListedInCriminalCourts();
             this.defendant = new CaseSearchResultDefendantView(caseSearchResult);
         }
 
@@ -101,8 +114,16 @@ public class CaseSearchResultsView {
             return withdrawalRequestedDate;
         }
 
+        public Boolean getListedInCriminalCourts() {
+            return listedInCriminalCourts;
+        }
+
         public CaseSearchResultDefendantView getDefendant() {
             return defendant;
+        }
+
+        public CaseStatus getStatus() {
+            return status;
         }
 
         public static class CaseSearchResultDefendantView {

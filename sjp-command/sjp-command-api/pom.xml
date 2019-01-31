@@ -76,7 +76,19 @@
                 <dependencies>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.sjp</groupId>
-                        <artifactId>sjp-command-controller</artifactId>
+                        <artifactId>sjp-command-handler</artifactId>
+                        <version>${project.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.sjp</groupId>
+                        <artifactId>sjp-query-api</artifactId>
                         <version>${project.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>

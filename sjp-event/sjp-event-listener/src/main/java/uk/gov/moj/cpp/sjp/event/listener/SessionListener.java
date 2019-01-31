@@ -33,6 +33,7 @@ public class SessionListener {
         final Session session = new Session(
                 UUID.fromString(delegatedPowersSessionStarted.getString("sessionId"))
                 , UUID.fromString(delegatedPowersSessionStarted.getString("userId"))
+                , delegatedPowersSessionStarted.getString("courtHouseCode")
                 , delegatedPowersSessionStarted.getString("courtHouseName")
                 , delegatedPowersSessionStarted.getString("localJusticeAreaNationalCourtCode")
                 , ZonedDateTime.parse(delegatedPowersSessionStarted.getString("startedAt"))
@@ -49,6 +50,7 @@ public class SessionListener {
         final Session session = new Session(
                 UUID.fromString(magistrateSessionStarted.getString("sessionId"))
                 , UUID.fromString(magistrateSessionStarted.getString("userId"))
+                , magistrateSessionStarted.getString("courtHouseCode")
                 , magistrateSessionStarted.getString("courtHouseName")
                 , magistrateSessionStarted.getString("localJusticeAreaNationalCourtCode")
                 , magistrateSessionStarted.getString("magistrate")

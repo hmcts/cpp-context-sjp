@@ -42,7 +42,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import org.junit.Before;
@@ -139,6 +138,7 @@ public class DefendantUpdatedListenerTest {
                                 "address2",
                                 "address3",
                                 "address4",
+                                "address5",
                                 "postcode"),
                         new uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails(
                                 "test@test.com",
@@ -218,13 +218,14 @@ public class DefendantUpdatedListenerTest {
             assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getAddress().getAddress2(), equalTo(defendantDetailsUpdated.getAddress().getAddress2()));
             assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getAddress().getAddress3(), equalTo(defendantDetailsUpdated.getAddress().getAddress3()));
             assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getAddress().getAddress4(), equalTo(defendantDetailsUpdated.getAddress().getAddress4()));
+            assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getAddress().getAddress5(), equalTo(defendantDetailsUpdated.getAddress().getAddress5()));
             assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getAddress().getPostcode(), equalTo(defendantDetailsUpdated.getAddress().getPostcode()));
             assertThat(onlinePleaCaptor.getValue().getSubmittedOn().toEpochSecond(), equalTo(defendantDetailsUpdated.getUpdatedDate().toEpochSecond()));
         }
     }
 
     @Test
-    public void shouldUpdateDefendantNationalInsuranceNumberUpdated() throws JsonProcessingException {
+    public void shouldUpdateDefendantNationalInsuranceNumberUpdated() {
         DefendantsNationalInsuranceNumberUpdated event = new DefendantsNationalInsuranceNumberUpdated(
                 caseDetail.getId(),
                 caseDetail.getDefendant().getId(),
@@ -236,7 +237,7 @@ public class DefendantUpdatedListenerTest {
     }
 
     @Test
-    public void shouldListenerUpdateDefendantNotUpdatedFromOnlinePlea() throws JsonProcessingException {
+    public void shouldListenerUpdateDefendantNotUpdatedFromOnlinePlea() {
         // GIVEN
         final boolean updateByOnlinePlea = false;
         final boolean nationalInsuranceNumberSuppliedInRequest = true;
@@ -250,7 +251,7 @@ public class DefendantUpdatedListenerTest {
     }
 
     @Test
-    public void shouldListenerUpdateDefendantUpdatedFromOnlinePlea() throws JsonProcessingException {
+    public void shouldListenerUpdateDefendantUpdatedFromOnlinePlea() {
         // GIVEN
         final boolean updateByOnlinePlea = true;
         final boolean nationalInsuranceNumberSuppliedInRequest = true;
@@ -264,7 +265,7 @@ public class DefendantUpdatedListenerTest {
     }
 
     @Test
-    public void shouldListenerUpdateDefendantUpdatedFromOnlinePleaWithoutNationalInsuranceNumber() throws JsonProcessingException {
+    public void shouldListenerUpdateDefendantUpdatedFromOnlinePleaWithoutNationalInsuranceNumber() {
         // GIVEN
         final boolean updateByOnlinePlea = true;
         final boolean nationalInsuranceNumberSuppliedInRequest = false;
@@ -310,6 +311,7 @@ public class DefendantUpdatedListenerTest {
                         defendantDetailsUpdated.getAddress().getAddress2(),
                         defendantDetailsUpdated.getAddress().getAddress3(),
                         defendantDetailsUpdated.getAddress().getAddress4(),
+                        defendantDetailsUpdated.getAddress().getAddress5(),
                         defendantDetailsUpdated.getAddress().getPostcode()),
                 new uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails(
                         defendantDetailsUpdated.getContactDetails().getEmail(),

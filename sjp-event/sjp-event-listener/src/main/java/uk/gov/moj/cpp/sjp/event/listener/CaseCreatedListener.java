@@ -61,7 +61,6 @@ public class CaseCreatedListener {
                         envelope.payloadAsJsonObject(), CaseReceived.class
                 )
         );
-
         caseRepository.save(caseDetail);
 
         caseSearchResultService.onDefendantDetailsUpdated(

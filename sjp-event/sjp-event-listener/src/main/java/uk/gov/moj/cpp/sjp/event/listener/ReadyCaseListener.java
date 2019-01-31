@@ -31,6 +31,7 @@ public class ReadyCaseListener {
                 UUID.fromString(caseMarkedReadyForDecision.getString("caseId")),
                 CaseReadinessReason.valueOf(caseMarkedReadyForDecision.getString("reason"))
         );
+
         readyCaseRepository.save(readyCase);
     }
 

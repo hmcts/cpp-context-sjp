@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 public class Session implements Aggregate {
 
-    private static final long serialVersionUID = 4L;
+    private static final long serialVersionUID = 5L;
     private static final Logger LOGGER = LoggerFactory.getLogger(Session.class);
 
     private UUID id;
@@ -107,6 +107,18 @@ public class Session implements Aggregate {
             streamBuilder.add(new CaseAssignmentRejected(CaseAssignmentRejected.RejectReason.SESSION_NOT_OWNED_BY_USER));
         } else {
             streamBuilder.add(new CaseAssignmentRequested(new uk.gov.moj.cpp.sjp.domain.Session(id, userId, sessionType, courtHouseCode)));
+        }
+
+        return apply(streamBuilder.build());
+    }
+
+    public Stream<Object> rejectCaseAssignment(final CaseAssignmentRejected.RejectReason reason) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        if (sessionState == SessionState.ENDED) {
+            streamBuilder.add(new CaseAssignmentRejected(CaseAssignmentRejected.RejectReason.SESSION_ENDED));
+        } else {
+            streamBuilder.add(new CaseAssignmentRejected(reason));
         }
 
         return apply(streamBuilder.build());

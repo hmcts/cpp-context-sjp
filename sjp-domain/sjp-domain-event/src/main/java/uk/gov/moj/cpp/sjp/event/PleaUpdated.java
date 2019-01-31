@@ -22,14 +22,15 @@ public class PleaUpdated {
 
     public PleaUpdated() {
         //default constructor
-        this(null, null, null, null);
+        this(null, null, null, null, null);
     }
 
     public PleaUpdated(final UUID caseId,
                        final UUID offenceId,
                        final PleaType plea,
-                       final PleaMethod pleaMethod) {
-        this(caseId, offenceId, plea, null, null, pleaMethod, null);
+                       final PleaMethod pleaMethod,
+                       final ZonedDateTime updatedDate) {
+        this(caseId, offenceId, plea, null, null, pleaMethod, updatedDate);
     }
 
     public PleaUpdated(final UUID caseId,

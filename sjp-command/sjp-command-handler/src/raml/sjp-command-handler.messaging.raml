@@ -70,14 +70,6 @@ version: v1
         schema: !include json/schema/sjp.command.update-defendant-details.json
         example: !include json/sjp.command.update-defendant-details.json
 
-      application/vnd.sjp.command.create-court-referral+json:
-        schema: !include json/schema/sjp.command.create-court-referral.json
-        example: !include json/sjp.command.create-court-referral.json
-
-      application/vnd.sjp.command.action-court-referral+json:
-        schema: !include json/schema/sjp.command.action-court-referral.json
-        example: !include json/sjp.command.action-court-referral.json
-
       application/vnd.sjp.command.update-hearing-requirements+json:
         schema: !include json/schema/sjp.command.update-hearing-requirements.json
         example: !include json/sjp.command.update-hearing-requirements.json
@@ -93,10 +85,6 @@ version: v1
       application/vnd.sjp.command.end-session+json:
         schema: !include json/schema/sjp.command.end-session.json
         example: !include json/sjp.command.end-session.json
-
-      application/vnd.sjp.command.migrate-session+json:
-        schema: !include json/schema/sjp.command.migrate-session.json
-        example: !include json/sjp.command.migrate-session.json
 
       application/vnd.sjp.command.assign-case+json:
         schema: !include json/schema/sjp.command.assign-case.json
@@ -125,3 +113,23 @@ version: v1
       application/vnd.sjp.command.acknowledge-defendant-details-updates+json:
         schema: !include json/schema/sjp.command.acknowledge-defendant-details-updates.json
         example: !include json/sjp.command.acknowledge-defendant-details-updates.json
+
+      application/vnd.sjp.command.refer-case-for-court-hearing+json:
+        schema: !include json/schema/sjp.command.refer-case-for-court-hearing.json
+        example: !include json/sjp.command.refer-case-for-court-hearing.json
+
+      application/vnd.sjp.command.update-case-listed-in-criminal-courts+json:
+        schema: !include json/schema/sjp.command.update-case-listed-in-criminal-courts.json
+        example: !include json/sjp.command.update-case-listed-in-criminal-courts.json
+
+      application/vnd.sjp.command.record-case-referral-for-court-hearing-rejection+json:
+        schema: !include json/schema/sjp.command.record-case-referral-for-court-hearing-rejection.json
+        example: !include json/sjp.command.record-case-referral-for-court-hearing-rejection.json
+
+      application/vnd.sjp.command.record-case-adjourned-to-later-sjp-hearing+json:
+        example: !include json/sjp.command.record-case-adjourned-to-later-sjp-hearing.json
+        schema:  !include json/schema/sjp.command.record-case-adjourned-to-later-sjp-hearing.json
+
+      application/vnd.sjp.command.record-case-adjournment-to-later-sjp-hearing-elapsed+json:
+        example: !include json/sjp.command.record-case-adjournment-to-later-sjp-hearing-elapsed.json
+        schema:  !include json/schema/sjp.command.record-case-adjournment-to-later-sjp-hearing-elapsed.json

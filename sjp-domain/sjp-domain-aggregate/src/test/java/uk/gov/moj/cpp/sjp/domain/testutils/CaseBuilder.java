@@ -68,6 +68,11 @@ public class CaseBuilder {
         return this;
     }
 
+    public CaseBuilder withId(UUID id) {
+        this.id = id;
+        return this;
+    }
+
     public Case build() {
         return new Case(id,
                 urn,

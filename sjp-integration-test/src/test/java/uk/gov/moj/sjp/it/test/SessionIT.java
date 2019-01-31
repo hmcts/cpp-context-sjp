@@ -13,17 +13,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.migrateSession;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSessionAndWaitForEvent;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.verifyStartSessionIsNotCalled;
 
-import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.SessionProcessor;
-import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionStarted;
-import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
-import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
+import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 
 import java.util.Optional;
@@ -41,11 +36,10 @@ public class SessionIT extends BaseIntegrationTest {
     private final String courtHouseOUCode = "B01OK";
     private final String courtHouseName = "Wimbledon Magistrates' Court";
     private final String localJusticeAreaNationalCourtCode = "2577";
-    private final String startedAt = new UtcClock().now().minusMonths(6).toString();
 
     @Before
     public void init() {
-        ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery(courtHouseOUCode, localJusticeAreaNationalCourtCode, courtHouseName);
+        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(courtHouseOUCode, localJusticeAreaNationalCourtCode, courtHouseName);
         SchedulingStub.stubStartSjpSessionCommand();
         SchedulingStub.stubEndSjpSessionCommand();
         SchedulingStub.stubSessionQuery(existingSessionId);
@@ -69,6 +63,7 @@ public class SessionIT extends BaseIntegrationTest {
         assertThat(SessionHelper.getSession(sessionId, userId).toString(), isJson(allOf(
                 withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                 withJsonPath("$.userId", equalTo(userId.toString())),
+                withJsonPath("$.courtHouseCode", equalTo(courtHouseOUCode)),
                 withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                 withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                 withJsonPath("$.type", equalTo(DELEGATED_POWERS.name())),
@@ -102,6 +97,7 @@ public class SessionIT extends BaseIntegrationTest {
         assertThat(SessionHelper.getSession(sessionId, userId).toString(), isJson(allOf(
                 withJsonPath("$.sessionId", equalTo(sessionId.toString())),
                 withJsonPath("$.userId", equalTo(userId.toString())),
+                withJsonPath("$.courtHouseCode", equalTo(courtHouseOUCode)),
                 withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                 withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                 withJsonPath("$.type", equalTo(MAGISTRATE.name())),
@@ -114,29 +110,4 @@ public class SessionIT extends BaseIntegrationTest {
         SessionHelper.getSession(sessionId, userId, withJsonPath("$.endedAt", notNullValue()));
         SchedulingStub.verifySessionEnded(sessionId);
     }
-
-    @Test
-    public void shouldMigrateSessionAndCreatePrivateEvent() {
-        final String magistrate = "John Smith";
-
-        final JsonEnvelope sessionStartedEvent = new EventListener()
-                .subscribe(MagistrateSessionStarted.EVENT_NAME)
-                .run(() -> migrateSession(existingSessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, magistrate))
-                .popEvent(MagistrateSessionStarted.EVENT_NAME)
-                .get();
-
-        assertThat(sessionStartedEvent, jsonEnvelope(metadata().withName(MagistrateSessionStarted.EVENT_NAME),
-                payloadIsJson(allOf(
-                        withJsonPath("$.magistrate", equalTo(magistrate)),
-                        withJsonPath("$.sessionId", equalTo(existingSessionId.toString())),
-                        withJsonPath("$.userId", equalTo(userId.toString())),
-                        withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
-                        withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
-                        withJsonPath("$.startedAt", equalTo(startedAt))
-                ))));
-
-        SessionHelper.getSession(existingSessionId, userId, withJsonPath("$.startedAt", equalTo(startedAt)));
-        verifyStartSessionIsNotCalled(existingSessionId);
-    }
-
 }

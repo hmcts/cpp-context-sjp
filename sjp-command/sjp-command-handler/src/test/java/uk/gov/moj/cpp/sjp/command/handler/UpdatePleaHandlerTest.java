@@ -47,11 +47,11 @@ public class UpdatePleaHandlerTest extends CaseCommandHandlerTest {
         final CancelPlea cancelPlea = new CancelPlea(UUID.randomUUID(), UUID.randomUUID());
 
         when(converter.convert(jsonObject, CancelPlea.class)).thenReturn(cancelPlea);
-        when(caseAggregate.cancelPlea(userId, cancelPlea, clock.now())).thenReturn(events);
+        when(caseAggregate.cancelPlea(userId, cancelPlea)).thenReturn(events);
 
         updatePleaHandler.cancelPlea(jsonEnvelope);
 
         verify(converter).convert(jsonObject, CancelPlea.class);
-        verify(caseAggregate).cancelPlea(userId, cancelPlea, clock.now());
+        verify(caseAggregate).cancelPlea(userId, cancelPlea);
     }
 }

@@ -16,6 +16,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
+import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_DATES_TO_AVOID_ADDED;
 import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
@@ -40,8 +41,7 @@ import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
-import uk.gov.moj.sjp.it.stub.AssignmentStub;
-import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
+import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -91,7 +91,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         stubForUserDetails(tvlUserId, TVL);
         this.tvlInitialPendingDatesToAvoidCount = pollForPendingDatesToAvoidCount(tvlUserId);
 
-        ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_COURT_HOUSE_LJA_NATIONAL_COURT_CODE);
+        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_COURT_HOUSE_LJA_NATIONAL_COURT_CODE);
         updatePleaHelper = new UpdatePleaHelper();
     }
 
@@ -160,12 +160,13 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
         final UUID caseId = tflCaseBuilder.getId();
 
-        //when
-        addDatesToAvoid(caseId, DATE_TO_AVOID);
+        updatePleaToNotGuilty(caseId, tflCaseBuilder.getOffenceId(), updatePleaHelper);
 
-        //then
-        EventListener datesToAvoidAddedListener = new EventListener()
+        final EventListener datesToAvoidAddedListener = new EventListener()
                 .subscribe(DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME)
+                //when
+                .run(() -> addDatesToAvoid(caseId, DATE_TO_AVOID))
+                //then
                 .run(() -> assertThatCaseHasDatesToAvoid(DATE_TO_AVOID));
 
         assertThatDatesToAvoidPublicEventWasRaised(datesToAvoidAddedListener,
@@ -179,14 +180,17 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
         final UUID caseId = tflCaseBuilder.getId();
 
-        addDatesToAvoid(caseId, DATE_TO_AVOID);
-
-        //when
-        addDatesToAvoid(caseId, DATE_TO_AVOID_UPDATE);
+        new EventListener()
+                .subscribe(EVENT_SELECTOR_DATES_TO_AVOID_ADDED)
+                .run(() -> addDatesToAvoid(caseId, DATE_TO_AVOID))
+                .popEvent(EVENT_SELECTOR_DATES_TO_AVOID_ADDED);
 
         //then
         EventListener datesToAvoidListener = new EventListener()
                 .subscribe(DATES_TO_AVOID_UPDATED_PUBLIC_EVENT_NAME)
+                //when
+                .run(() -> addDatesToAvoid(caseId, DATE_TO_AVOID_UPDATE))
+                //then
                 .run(() -> assertThatCaseHasDatesToAvoidUpdated(DATE_TO_AVOID_UPDATE));
 
         assertThatDatesToAvoidPublicEventWasRaised(datesToAvoidListener,
@@ -233,19 +237,9 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     }
 
     private void assertThatDatesToAvoidIsPendingSubmissionForCase(final UUID userId, final CreateCase.CreateCasePayloadBuilder aCase) {
-        final Matcher<? super ReadContext> pendingDatesToAvoidMatcher = allOf(
-                withJsonPath("$.cases[0].caseId"),
-                withJsonPath("$.cases[0].pleaEntry"),
-                withJsonPath("$.cases[0].firstName"),
-                withJsonPath("$.cases[0].lastName"),
-                withJsonPath("$.cases[0].address.address1"),
-                withJsonPath("$.cases[0].address.address2"),
-                withJsonPath("$.cases[0].address.address3"),
-                withJsonPath("$.cases[0].address.address4"),
-                withJsonPath("$.cases[0].address.postcode"),
-                withJsonPath("$.cases[0].referenceNumber"),
-                withJsonPath("$.cases[0].dateOfBirth")
-        );
+        final Matcher<? super ReadContext> pendingDatesToAvoidMatcher =
+                withJsonPath("$.cases[-1].caseId", equalTo(aCase.getId().toString()));
+
         final JsonPath path = pollUntilPendingDatesToAvoidIsOk(userId.toString(), pendingDatesToAvoidMatcher);
         final List<Map> pendingDatesToAvoid = path.getList("cases");
         final Integer datesToAvoidCount = path.get("count");
@@ -259,6 +253,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getAddress2(), ((Map) map.get("address")).get("address2"));
         assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getAddress3(), ((Map) map.get("address")).get("address3"));
         assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getAddress4(), ((Map) map.get("address")).get("address4"));
+        assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getAddress5(), ((Map) map.get("address")).get("address5"));
         assertEquals(aCase.getDefendantBuilder().getAddressBuilder().getPostcode(), ((Map) map.get("address")).get("postcode"));
         assertEquals(aCase.getUrn(), map.get("referenceNumber"));
         assertEquals(aCase.getDefendantBuilder().getDateOfBirth().toString(), map.get("dateOfBirth"));

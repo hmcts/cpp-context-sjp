@@ -1,15 +1,28 @@
 package uk.gov.moj.sjp.it.test;
 
+import static java.time.ZonedDateTime.now;
+import static java.util.UUID.randomUUID;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.sjp.it.Constants.EVENT_CASE_REFERRED_FOR_COURT_HEARING;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.stub.MaterialStub.stubAddCaseMaterial;
 
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
+import uk.gov.moj.sjp.it.helper.EventListener;
+import uk.gov.moj.sjp.it.producer.DecisionToReferCaseForCourtHearingSavedProducer;
+import uk.gov.moj.sjp.it.stub.ProgressionServiceStub;
+import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
+import uk.gov.moj.sjp.it.stub.ResultingStub;
+import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 
 import java.util.UUID;
 
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -82,6 +95,50 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
             caseDocumentHelper.uploadPleaCaseDocument();
             final String documentReference = caseDocumentHelper.verifyCaseDocumentUploadedEventRaised();
             caseDocumentHelper.assertCaseMaterialAdded(documentReference);
+        }
+    }
+
+    @Test
+    public void addCaseDocumentRejectsWhenCaseIsInReferToCourtHearingStatus() {
+
+        final UUID caseId = createCasePayloadBuilder.getId();
+        final UUID sessionId = randomUUID();
+        final UUID prosecutorId = randomUUID();
+        final UUID referralReasonId = randomUUID();
+        final UUID hearingTypeId = randomUUID();
+        final String courtHouseOUCode = "B01OK";
+        final String listingNotes = RandomStringUtils.randomAlphanumeric(20);
+        final int estimatedHearingDuration = RandomUtils.nextInt(1, 999);
+
+        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(courtHouseOUCode, "2572");
+        ReferenceDataServiceStub.stubReferralReasonsQuery(referralReasonId.toString(), "");
+        ReferenceDataServiceStub.stubHearingTypesQuery(hearingTypeId.toString(), "");
+        ReferenceDataServiceStub.stubProsecutorQuery(createCasePayloadBuilder.getProsecutingAuthority().name(), prosecutorId);
+        ReferenceDataServiceStub.stubQueryOffences("stub-data/referencedata.query.offences.json");
+        ReferenceDataServiceStub.stubReferralDocumentMetadataQuery(randomUUID().toString(), "SJPN");
+        ResultingStub.stubGetCaseDecisionsWithDecision(caseId);
+        SchedulingStub.stubStartSjpSessionCommand();
+        ProgressionServiceStub.stubReferCaseToCourtCommand();
+
+        final DecisionToReferCaseForCourtHearingSavedProducer decisionToReferCaseForCourtHearingSavedProducer = new DecisionToReferCaseForCourtHearingSavedProducer(
+                caseId,
+                sessionId,
+                referralReasonId,
+                hearingTypeId,
+                estimatedHearingDuration,
+                listingNotes,
+                now());
+
+        startSession(sessionId, USER_ID, courtHouseOUCode, MAGISTRATE);
+
+        new EventListener()
+                .subscribe(EVENT_CASE_REFERRED_FOR_COURT_HEARING)
+                .run(decisionToReferCaseForCourtHearingSavedProducer::saveDecisionToReferCaseForCourtHearing)
+                .popEvent(EVENT_CASE_REFERRED_FOR_COURT_HEARING);
+
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
+            caseDocumentHelper.uploadPleaCaseDocument();
+            caseDocumentHelper.verifyInActiveMQCaseUploadRejected();
         }
     }
 

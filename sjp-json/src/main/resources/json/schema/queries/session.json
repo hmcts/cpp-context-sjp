@@ -4,10 +4,13 @@
   "type": "object",
   "properties": {
     "sessionId": {
-      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
     "userId": {
-      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "courtHouseCode": {
+      "type": "string"
     },
     "courtHouseName": {
       "type": "string"
@@ -31,6 +34,7 @@
   "required": [
     "sessionId",
     "userId",
+    "courtHouseCode",
     "courtHouseName",
     "localJusticeAreaNationalCourtCode",
     "type",

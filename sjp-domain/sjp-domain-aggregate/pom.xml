@@ -69,6 +69,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>uk.gov.moj.cpp.sjp</groupId>
+            <artifactId>sjp-domain-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>uk.gov.justice.framework-api</groupId>
             <artifactId>framework-api-domain</artifactId>
             <scope>provided</scope>

@@ -4,16 +4,19 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
     "offenceCode": {
       "type": "string"
     },
     "plea": {
-      "type": "string"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-type.json"
     },
     "pleaMethod": {
-      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/plea-method.json"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-method.json"
+    },
+    "pleaDate": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
     },
     "offenceSequenceNumber": {
       "type": "integer"
@@ -25,10 +28,7 @@
       "type": "string"
     },
     "cjsCode": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
     "sequenceNumber": {
       "type": "integer"
@@ -37,6 +37,9 @@
       "type": "string"
     },
     "endDate": {
+      "type": "string"
+    },
+    "chargeDate": {
       "type": "string"
     },
     "pendingWithdrawal": {

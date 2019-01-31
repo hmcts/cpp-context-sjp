@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/case-status.json",
+  "enum": [
+    "NO_PLEA_RECEIVED",
+    "NO_PLEA_RECEIVED_READY_FOR_DECISION",
+    "WITHDRAWAL_REQUEST_READY_FOR_DECISION",
+    "PLEA_RECEIVED_READY_FOR_DECISION",
+    "PLEA_RECEIVED_NOT_READY_FOR_DECISION",
+    "REFERRED_FOR_COURT_HEARING",
+    "COMPLETED",
+    "REOPENED_IN_LIBRA",
+    "APPEALED",
+    "RE_LISTED"
+  ]
+}

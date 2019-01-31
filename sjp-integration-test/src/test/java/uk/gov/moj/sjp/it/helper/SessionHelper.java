@@ -124,33 +124,4 @@ public class SessionHelper {
         final String url = String.format("/sessions/%s", sessionId);
         return HttpClientUtil.makePostCall(userId, url, contentType, payload.toString(), ACCEPTED);
     }
-
-    public static UUID migrateSession(final UUID sessionId, final UUID userId, final String courthouseName, final String localJusticeAreaNationalCourtCode, final String startedAt) {
-        return migrateSession(sessionId, userId, courthouseName, localJusticeAreaNationalCourtCode, startedAt, "");
-    }
-
-    public static UUID migrateSession(final UUID sessionId,
-                                      final UUID userId,
-                                      final String courtHouseName,
-                                      final String localJusticeAreaNationalCourtCode,
-                                      final String startedAt,
-                                      final String magistrate) {
-
-        final JsonObjectBuilder sessionBuilder = createObjectBuilder()
-                .add("userId", userId.toString())
-                .add("courtHouseName", courtHouseName)
-                .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
-                .add("startedAt", startedAt);
-
-        if (!Strings.isNullOrEmpty(magistrate)) {
-            sessionBuilder.add("magistrate", magistrate);
-        }
-
-        final JsonObject payload = sessionBuilder.build();
-
-        final String contentType = "application/vnd.sjp.migrate-session+json";
-        final String url = String.format("/sessions/%s", sessionId);
-        return HttpClientUtil.makePostCall(userId, url, contentType, payload.toString(), ACCEPTED);
-    }
-
 }

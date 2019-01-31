@@ -1,6 +1,10 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
+import static java.util.Objects.nonNull;
+
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
+import uk.gov.moj.cpp.sjp.domain.common.PleaInformation;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 
 import java.math.BigDecimal;
@@ -19,16 +23,21 @@ public class CaseView {
     private final ProsecutingAuthority prosecutingAuthority;
     private final Boolean completed;
     private final Boolean assigned;
-    private BigDecimal costs;
-    private LocalDate postingDate;
-    private LocalDate reopenedDate;
-    private String libraCaseNumber;
     private final String reopenedInLibraReason;
-    private String enterpriseId;
-    private boolean onlinePleaReceived;
-    private String datesToAvoid;
+    private final BigDecimal costs;
+    private final LocalDate postingDate;
+    private final LocalDate reopenedDate;
+    private final String libraCaseNumber;
+    private final String enterpriseId;
+    private final boolean onlinePleaReceived;
+    private final String datesToAvoid;
+    private final CaseStatus status;
+    private final Boolean listedInCriminalCourts;
+    private final String hearingCourtName;
+    private final ZonedDateTime hearingTime;
+    private final LocalDate adjournedTo;
 
-    public CaseView(CaseDetail caseDetail) {
+    public CaseView(final CaseDetail caseDetail) {
 
         this.id = caseDetail.getId().toString();
         this.urn = caseDetail.getUrn();
@@ -42,7 +51,7 @@ public class CaseView {
             caseDetail.getCaseDocuments().forEach(caseDocument -> caseDocuments.add(new CaseDocumentView(caseDocument)));
         }
 
-        completed = caseDetail.getCompleted();
+        completed = caseDetail.isCompleted();
         assigned = caseDetail.getAssigneeId() != null;
 
         this.costs = caseDetail.getCosts();
@@ -53,6 +62,19 @@ public class CaseView {
         this.enterpriseId = caseDetail.getEnterpriseId();
         this.onlinePleaReceived = Boolean.TRUE.equals(caseDetail.getOnlinePleaReceived());
         this.datesToAvoid = caseDetail.getDatesToAvoid();
+        this.adjournedTo = caseDetail.getAdjournedTo();
+        //TODO SINGLE OFFENCE only implementation
+        this.status = CaseStatus.calculateStatus(caseDetail.getPostingDate(),
+                caseDetail.isAnyOffencePendingWithdrawal(),
+                new PleaInformation(caseDetail.getFirstOffencePlea(), caseDetail.getFirstOffencePleaDate()),
+                caseDetail.getDatesToAvoid(),
+                caseDetail.isCompleted(),
+                caseDetail.isReferredForCourtHearing(),
+                caseDetail.getReopenedDate(),
+                nonNull(caseDetail.getAdjournedTo()));
+        this.listedInCriminalCourts = caseDetail.getListedInCriminalCourts();
+        this.hearingCourtName = caseDetail.getHearingCourtName();
+        this.hearingTime = caseDetail.getHearingTime();
     }
 
     public String getId() {
@@ -117,5 +139,25 @@ public class CaseView {
 
     public String getDatesToAvoid() {
         return datesToAvoid;
+    }
+
+    public CaseStatus getStatus() {
+        return status;
+    }
+
+    public Boolean getListedInCriminalCourts() {
+        return listedInCriminalCourts;
+    }
+
+    public String getHearingCourtName() {
+        return hearingCourtName;
+    }
+
+    public ZonedDateTime getHearingTime() {
+        return hearingTime;
+    }
+
+    public LocalDate getAdjournedTo() {
+        return adjournedTo;
     }
 }

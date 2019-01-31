@@ -12,7 +12,6 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
 
-import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -56,23 +55,6 @@ public class SessionHandler {
     public void endSession(final JsonEnvelope endSessionCommand) throws EventStreamException {
         final UUID sessionId = UUID.fromString(endSessionCommand.payloadAsJsonObject().getString("sessionId"));
         applyToSessionAggregate(endSessionCommand, (session) -> session.endSession(sessionId, clock.now()));
-    }
-
-    @Handles("sjp.command.migrate-session")
-    public void migrateSession(final JsonEnvelope migrateSessionCommand) throws EventStreamException {
-        final JsonObject migrateSession = migrateSessionCommand.payloadAsJsonObject();
-
-        final UUID userId = UUID.fromString(migrateSession.getString("userId"));
-        final UUID sessionId = UUID.fromString(migrateSession.getString("sessionId"));
-        final ZonedDateTime startedAt = ZonedDateTime.parse(migrateSession.getString("startedAt"));
-        final String courtHouseCode = null;   // No value required - Property created after migration run in production
-        final String courtHouseName = migrateSession.getString("courtHouseName");
-        final String localJusticeAreaNationalCourtCode = migrateSession.getString("localJusticeAreaNationalCourtCode");
-        final Optional<String> magistrate = Optional.ofNullable(migrateSession.getString("magistrate", null));
-
-        applyToSessionAggregate(migrateSessionCommand, (session) -> magistrate
-                .map(providedMagistrate -> session.startMagistrateSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt, providedMagistrate))
-                .orElseGet(() -> session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt)));
     }
 
     private void applyToSessionAggregate(JsonEnvelope sessionCommand, final Function<Session, Stream<Object>> function) throws EventStreamException {

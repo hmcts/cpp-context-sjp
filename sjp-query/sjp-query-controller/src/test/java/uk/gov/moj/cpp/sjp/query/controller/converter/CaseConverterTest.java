@@ -41,6 +41,7 @@ public class CaseConverterTest {
         final UUID offenceId = UUID.randomUUID();
         final boolean completed = false;
         final boolean assigned = true;
+        final String status = "NO_PLEA_RECEIVED";
 
         final String firstName = "John";
         final String lastName = "Faceless";
@@ -50,6 +51,7 @@ public class CaseConverterTest {
         final String address2 = "Landsowne";
         final String address3 = "Oxford";
         final String address4 = "Surrey";
+        final String address5 = "Greater London";
         final String postcode = "OX4GF1";
 
         final String offenceCode = "OF611";
@@ -71,6 +73,7 @@ public class CaseConverterTest {
                 .add("urn", urn)
                 .add("completed", completed)
                 .add("assigned", assigned)
+                .add("status", status)
                 .add("defendant", createObjectBuilder()
                         .add("id", defendantId.toString())
                         .add("personalDetails", createObjectBuilder()
@@ -82,6 +85,7 @@ public class CaseConverterTest {
                                         .add("address2", address2)
                                         .add("address3", address3)
                                         .add("address4", address4)
+                                        .add("address5", address5)
                                         .add("postcode", postcode)
                                 )
                         )
@@ -112,6 +116,7 @@ public class CaseConverterTest {
                 .add("urn", urn)
                 .add("completed", completed)
                 .add("assigned", assigned)
+                .add("status", status)
                 .add("defendant", createObjectBuilder()
                         .add("id", defendantId.toString())
                         .add("personalDetails", createObjectBuilder()
@@ -123,6 +128,7 @@ public class CaseConverterTest {
                                         .add("address2", address2)
                                         .add("address3", address3)
                                         .add("address4", address4)
+                                        .add("address5", address5)
                                         .add("postcode", postcode)
                                 )
                         )

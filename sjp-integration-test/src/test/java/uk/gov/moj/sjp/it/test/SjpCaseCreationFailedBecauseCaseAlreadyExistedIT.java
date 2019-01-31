@@ -6,7 +6,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.util.QueueUtil;
+import uk.gov.moj.sjp.it.util.TopicUtil;
 
 import java.util.Optional;
 
@@ -21,10 +21,10 @@ import org.junit.Test;
 public class SjpCaseCreationFailedBecauseCaseAlreadyExistedIT extends BaseIntegrationTest{
 
     private MessageConsumer sjpCaseCreated =
-            QueueUtil.publicEvents.createConsumer("public.sjp.sjp-case-created");
+            TopicUtil.publicEvents.createConsumer("public.sjp.sjp-case-created");
 
     private MessageConsumer caseCreationFailedBecauseCaseAlreadyExisted =
-            QueueUtil.publicEvents.createConsumer(
+            TopicUtil.publicEvents.createConsumer(
                     "public.sjp.case-creation-failed-because-case-already-existed");
 
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
@@ -38,13 +38,13 @@ public class SjpCaseCreationFailedBecauseCaseAlreadyExistedIT extends BaseIntegr
 
     @Test
     public void publishesCaseCreationFailedBecauseCaseAlreadyExisted() {
-        Optional<JsonObject> message1 = QueueUtil.retrieveMessageAsJsonObject(sjpCaseCreated);
+        Optional<JsonObject> message1 = TopicUtil.retrieveMessageAsJsonObject(sjpCaseCreated);
         assertTrue(message1.isPresent());
         assertThat(message1.get(), isJson(withJsonPath("$.id", Matchers.hasToString(
                 Matchers.containsString(createCasePayloadBuilder.getId().toString())))
         ));
 
-        Optional<JsonObject> message2 = QueueUtil.retrieveMessageAsJsonObject(caseCreationFailedBecauseCaseAlreadyExisted);
+        Optional<JsonObject> message2 = TopicUtil.retrieveMessageAsJsonObject(caseCreationFailedBecauseCaseAlreadyExisted);
         assertTrue(message2.isPresent());
         assertThat(message2.get(), isJson(withJsonPath("$.caseId", Matchers.hasToString(
                 Matchers.containsString(createCasePayloadBuilder.getId().toString())))

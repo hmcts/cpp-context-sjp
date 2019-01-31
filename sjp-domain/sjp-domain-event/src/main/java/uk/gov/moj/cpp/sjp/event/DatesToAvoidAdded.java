@@ -15,7 +15,7 @@ public class DatesToAvoidAdded {
 
     @JsonCreator
     public DatesToAvoidAdded(final @JsonProperty("caseId") UUID caseId,
-                                final @JsonProperty("datesToAvoid") String datesToAvoid) {
+                             final @JsonProperty("datesToAvoid") String datesToAvoid) {
         this.caseId = caseId;
         this.datesToAvoid = datesToAvoid;
     }

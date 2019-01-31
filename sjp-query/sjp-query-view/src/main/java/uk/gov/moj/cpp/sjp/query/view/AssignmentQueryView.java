@@ -27,6 +27,8 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
+import org.apache.commons.lang3.StringUtils;
+
 @ServiceComponent(Component.QUERY_VIEW)
 public class AssignmentQueryView {
 
@@ -69,7 +71,7 @@ public class AssignmentQueryView {
 
         final Set<String> prosecutingAuthorities = Stream.of(prosecutingAuthoritiesAsString.split(","))
                 .map(String::trim)
-                .filter(prosecutor -> !prosecutor.isEmpty())
+                .filter(StringUtils::isNotEmpty)
                 .collect(toSet());
 
         final List<AssignmentCandidate> assignmentCandidatesList = assignmentService.getAssignmentCandidates(assigneeId, sessionType, prosecutingAuthorities, assignmentRule, limit);

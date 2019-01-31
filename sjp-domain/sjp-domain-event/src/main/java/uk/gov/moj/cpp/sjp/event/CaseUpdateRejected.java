@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
 
-import java.util.Objects;
 import java.util.UUID;
 
 //generic event used to indicate to the front-end the update to a case couldn't be applied due to business rules
@@ -15,6 +14,7 @@ public class CaseUpdateRejected {
         WITHDRAWAL_PENDING,
         CASE_ASSIGNED,
         CASE_COMPLETED,
+        CASE_REFERRED_FOR_COURT_HEARING,
         //below applies to online-plea only
         PLEA_ALREADY_SUBMITTED
     }
@@ -39,21 +39,4 @@ public class CaseUpdateRejected {
         return reason;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        final CaseUpdateRejected that = (CaseUpdateRejected) o;
-        return Objects.equals(this.caseId, that.caseId) &&
-                Objects.equals(this.reason, that.reason);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(caseId, reason);
-    }
 }

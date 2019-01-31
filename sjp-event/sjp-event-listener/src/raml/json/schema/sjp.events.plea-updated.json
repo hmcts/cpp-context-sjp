@@ -10,7 +10,7 @@
       "type": "string"
     },
     "plea": {
-      "enum": ["NOT_GUILTY", "GUILTY", "GUILTY_REQUEST_HEARING"]
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-type.json"
     },
     "pleaMethod": {
       "enum": ["ONLINE", "POSTAL"]
@@ -31,7 +31,8 @@
   "required": [
     "plea",
     "caseId",
-    "offenceId"
+    "offenceId",
+    "updatedDate"
   ],
   "additionalProperties": false
 }

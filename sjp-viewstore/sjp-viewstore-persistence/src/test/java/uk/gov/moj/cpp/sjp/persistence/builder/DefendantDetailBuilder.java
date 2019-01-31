@@ -35,7 +35,7 @@ public class DefendantDetailBuilder {
                         LocalDate.of(1960, 10, 8),
                         Gender.FEMALE,
                         null,
-                        new Address("10 Downing St", "Westminster", "London", "England", DEFAULT_POSTCODE),
+                        new Address("10 Downing St", "Westminster", "London", "Greater London", "England", DEFAULT_POSTCODE),
                         new ContactDetails()
                 )
         );
@@ -72,7 +72,7 @@ public class DefendantDetailBuilder {
     }
 
     public DefendantDetailBuilder withPostcode(final String postcode) {
-        defendantDetail.getPersonalDetails().setAddress(new Address("addr1", "addr2", "addr3", "addr4", postcode));
+        defendantDetail.getPersonalDetails().setAddress(new Address("addr1", "addr2", "addr3", "addr4", "addr5", postcode));
         return this;
     }
 

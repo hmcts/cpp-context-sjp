@@ -28,6 +28,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 
 public abstract class CaseCommandHandlerTest {
 

@@ -29,8 +29,8 @@
     "magistrate",
     "sessionId",
     "userId",
-    "courtHouseName",
     "courtHouseCode",
+    "courtHouseName",
     "localJusticeAreaNationalCourtCode",
     "startedAt"
   ],

@@ -2,6 +2,8 @@ package uk.gov.moj.cpp.sjp.persistence.entity;
 
 import static javax.persistence.ConstraintMode.NO_CONSTRAINT;
 
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -10,6 +12,8 @@ import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.Id;
@@ -57,6 +61,10 @@ public class CaseSearchResult implements Serializable {
     private ZonedDateTime dateAdded;
     @Column(name = "deprecated")
     private Boolean deprecated = false;
+
+    @Column(name = "plea_type")
+    @Enumerated(value = EnumType.STRING)
+    private PleaType pleaType;
 
     public CaseSearchResult() {
         this.id = UUID.randomUUID();
@@ -179,5 +187,13 @@ public class CaseSearchResult implements Serializable {
 
     public LocalDate getDateOfBirth() {
         return dateOfBirth;
+    }
+
+    public PleaType getPleaType() {
+        return pleaType;
+    }
+
+    public void setPleaType(final PleaType pleaType) {
+        this.pleaType = pleaType;
     }
 }

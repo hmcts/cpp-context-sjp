@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
+
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
 
 import java.io.Serializable;
@@ -34,6 +36,17 @@ public class CaseSummary implements Serializable {
     private LocalDate reopenedDate;
     @Column(name = "completed")
     private Boolean completed = Boolean.FALSE;
+    @Column(name = "listed_in_criminal_courts")
+    private Boolean listedInCriminalCourts = Boolean.FALSE;
+
+    @Column(name = "dates_to_avoid")
+    private String datesToAvoid;
+
+    @Column(name = "referred_for_court_hearing")
+    private Boolean referredForCourtHearing;
+
+    @Column(name = "adjourned_to")
+    private LocalDate adjournedTo;
 
     public UUID getId() {
         return id;
@@ -89,5 +102,37 @@ public class CaseSummary implements Serializable {
 
     public void setCompleted(Boolean completed) {
         this.completed = completed;
+    }
+
+    public Boolean getListedInCriminalCourts() {
+        return listedInCriminalCourts;
+    }
+
+    public void setListedInCriminalCourts(Boolean listedInCriminalCourts) {
+        this.listedInCriminalCourts = listedInCriminalCourts;
+    }
+
+    public String getDatesToAvoid() {
+        return datesToAvoid;
+    }
+
+    public void setDatesToAvoid(final String datesToAvoid) {
+        this.datesToAvoid = datesToAvoid;
+    }
+
+    public Boolean getReferredForCourtHearing() {
+        return referredForCourtHearing;
+    }
+
+    public void setReferredForCourtHearing(final Boolean referredForCourtHearing) {
+        this.referredForCourtHearing = referredForCourtHearing;
+    }
+
+    public boolean isReferredForCourtHearing() {
+        return isTrue(referredForCourtHearing);
+    }
+
+    public LocalDate getAdjournedTo() {
+        return adjournedTo;
     }
 }

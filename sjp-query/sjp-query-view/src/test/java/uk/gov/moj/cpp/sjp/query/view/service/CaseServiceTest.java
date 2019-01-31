@@ -36,7 +36,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.CaseReferredToCourtRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
@@ -60,7 +59,6 @@ import javax.json.JsonObject;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 
-import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -102,9 +100,6 @@ public class CaseServiceTest {
 
     @Mock
     private JsonEnvelope envelope;
-
-    @Mock
-    private CaseReferredToCourtRepository caseReferredToCourtRepository;
 
     @InjectMocks
     private CaseService service;
@@ -533,18 +528,6 @@ public class CaseServiceTest {
         assertThat(result.getDefendant().getFirstName(), equalTo(FIRST_NAME));
         assertThat(result.getDefendant().getLastName(), equalTo(LAST_NAME));
         assertThat(result.getDefendant().getDateOfBirth(), equalTo(DATE_OF_BIRTH));
-    }
-
-    @Test
-    public void findCasesReferredToCourtTest() {
-        // given
-        when(caseReferredToCourtRepository.findUnactionedCases()).thenReturn(Lists.newArrayList());
-
-        // when
-        final JsonObject result = service.findCasesReferredToCourt();
-
-        // then
-        assertThat(result.getJsonArray("cases"), hasSize(0));
     }
 
     @Test

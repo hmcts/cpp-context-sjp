@@ -15,12 +15,13 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSession;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.common.converter.LocalDates;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 
 import java.time.LocalDate;
@@ -84,17 +85,19 @@ public class CaseSearchResultHelper {
                 ));
     }
 
-    public void verifyWithdrawalRequestedDate() {
+    public void verifyWithdrawalRequestedDateAndCaseStatus() {
         pollWithDefaults(searchCases(urn, searchUserId))
-                .until(status().is(OK), payload().isJson(
-                        withJsonPath("$.results[0].withdrawalRequestedDate", notNullValue())
+                .until(status().is(OK), payload().isJson(allOf(
+                        withJsonPath("$.results[0].withdrawalRequestedDate", notNullValue()),
+                        withJsonPath("$.results[0].status", is(CaseStatus.WITHDRAWAL_REQUEST_READY_FOR_DECISION.name())))
                 ));
     }
 
-    public void verifyNoWithdrawalRequestedDate() {
+    public void verifyNoWithdrawalRequestedDateAndCaseStatus() {
         pollWithDefaults(searchCases(urn, searchUserId))
-                .until(status().is(OK), payload().isJson(
-                        withoutJsonPath("$.results[0].withdrawalRequestedDate")
+                .until(status().is(OK), payload().isJson(allOf(
+                        withoutJsonPath("$.results[0].withdrawalRequestedDate"),
+                        withJsonPath("$.results[0].status", is(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())))
                 ));
     }
 
@@ -154,5 +157,11 @@ public class CaseSearchResultHelper {
 
     public LocalDate getDateOfBirth() {
         return dateOfBirth;
+    }
+
+    public void verifyCaseStatus(final CaseStatus caseStatus) {
+        pollWithDefaults(searchCases(urn, searchUserId))
+                .until(status().is(OK), payload().isJson(
+                        withJsonPath("$.results[0].status", is(caseStatus.name()))));
     }
 }

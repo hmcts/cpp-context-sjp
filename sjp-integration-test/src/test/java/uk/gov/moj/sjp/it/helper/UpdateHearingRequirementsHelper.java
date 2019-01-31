@@ -13,7 +13,7 @@ import static org.hamcrest.CoreMatchers.is;
 
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
-import uk.gov.moj.sjp.it.util.QueueUtil;
+import uk.gov.moj.sjp.it.util.TopicUtil;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +31,7 @@ public class UpdateHearingRequirementsHelper implements AutoCloseable {
     private MessageConsumer messageConsumer;
 
     public UpdateHearingRequirementsHelper() {
-        messageConsumer = QueueUtil.publicEvents.createConsumer("public.sjp.case-update-rejected");
+        messageConsumer = TopicUtil.publicEvents.createConsumer("public.sjp.case-update-rejected");
     }
 
     /**

@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.command.handler;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.DELEGATED_POWERS_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
+import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.STALE_CANDIDATES;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -102,6 +103,7 @@ public class AssignmentHandler {
                 LOGGER.warn("Assignment candidate {} qualified based on stale data. Used case version: {}, actual version: {}", assignmentCandidate.getCaseId(), assignmentCandidate.getCaseStreamVersion(), actualCaseStreamVersion);
             }
         }
-        //TODO ATCM-2558 rise event that assignment failed or retry assignment attempts
+
+        sessionEventStream.append(session.rejectCaseAssignment(STALE_CANDIDATES).map(enveloper.withMetadataFrom(command)));
     }
 }

@@ -4,41 +4,52 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.persistence.entity.CourtReferral;
-import uk.gov.moj.cpp.sjp.persistence.repository.CourtReferralRepository;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseCourtReferralStatus;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseCourtReferralStatusRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.JsonObject;
 
 @ServiceComponent(EVENT_LISTENER)
 public class CourtReferralListener {
 
     @Inject
-    private CourtReferralRepository repository;
+    private CaseCourtReferralStatusRepository caseCourtReferralStatusRepository;
 
-    @Handles("sjp.events.court-referral-created")
-    public void courtReferralCreated(final JsonEnvelope envelope) {
+    @Inject
+    private CaseRepository caseRepository;
 
-        final JsonObject payload = envelope.payloadAsJsonObject();
+    @Handles("sjp.events.case-referral-for-court-hearing-rejection-recorded")
+    public void handleCaseReferredForCourtHearingRejectionRecorded(final Envelope<CaseReferralForCourtHearingRejectionRecorded> eventEnvelope) {
+        final CaseReferralForCourtHearingRejectionRecorded caseReferralForCourtHearingRejectionRecorded = eventEnvelope.payload();
 
-        final CourtReferral courtReferral = new CourtReferral(
-                UUID.fromString(payload.getString("caseId")),
-                LocalDate.parse(payload.getString("hearingDate")));
-        repository.save(courtReferral);
+        final UUID caseId = caseReferralForCourtHearingRejectionRecorded.getCaseId();
+
+        final CaseCourtReferralStatus caseCourtReferralStatus = caseCourtReferralStatusRepository.findBy(caseId);
+
+        caseCourtReferralStatus.markRejected(
+                caseReferralForCourtHearingRejectionRecorded.getRejectedAt(),
+                caseReferralForCourtHearingRejectionRecorded.getRejectionReason());
     }
 
-    @Handles("sjp.events.court-referral-actioned")
-    public void courtReferralActioned(final JsonEnvelope envelope) {
+    @Handles("sjp.events.case-referred-for-court-hearing")
+    public void handleCaseReferredForCourtHearing(final Envelope<CaseReferredForCourtHearing> envelope) {
+        final CaseReferredForCourtHearing caseReferredForCourtHearing = envelope.payload();
 
-        final JsonObject payload = envelope.payloadAsJsonObject();
+        final CaseCourtReferralStatus caseCourtReferralStatus = new CaseCourtReferralStatus(
+                caseReferredForCourtHearing.getCaseId(),
+                caseReferredForCourtHearing.getUrn(),
+                caseReferredForCourtHearing.getReferredAt());
 
-        final CourtReferral courtReferral = repository.findBy(UUID.fromString(payload.getString("caseId")));
-        courtReferral.setActioned(ZonedDateTime.parse(payload.getString("actioned")));
-        repository.save(courtReferral);
+        caseCourtReferralStatusRepository.save(caseCourtReferralStatus);
+
+        final CaseDetail caseDetail = caseRepository.findBy(caseReferredForCourtHearing.getCaseId());
+        caseDetail.setReferredForCourtHearing(true);
     }
 }

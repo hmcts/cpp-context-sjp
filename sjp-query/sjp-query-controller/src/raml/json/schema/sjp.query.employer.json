@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/employer.json",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/employer-details.json",
   "type": "object",
   "properties": {
     "defendantId": {
-      "$ref": "http://justice.gov.uk/json/schemas/core/data-types.json#/definitions/uuid"
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
     "employeeReference": {
       "type": "string",

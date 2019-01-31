@@ -1,13 +1,17 @@
 package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 
+import static java.time.ZoneOffset.UTC;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.METADATA_VARIABLE;
+import static uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper.metadataToString;
 
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper;
+import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import org.activiti.engine.delegate.DelegateExecution;
@@ -28,17 +32,16 @@ public abstract class AbstractCaseDelegateTest {
     protected DelegateExecution delegateExecution;
 
     @Spy
-    private MetadataHelper metadataHelper = new MetadataHelper();
+    protected Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
 
     @Before
     public void init() {
         caseId = UUID.randomUUID();
         metadata = metadataWithRandomUUIDAndName().build();
 
-        final String metadataAsString = metadataHelper.metadataToString(metadata);
-
         when(delegateExecution.getProcessBusinessKey()).thenReturn(caseId.toString());
-        when(delegateExecution.getVariable(METADATA_VARIABLE, String.class)).thenReturn(metadataAsString);
+        when(delegateExecution.getVariable(METADATA_VARIABLE, String.class))
+                .thenReturn(metadataToString(metadata));
     }
 
 }

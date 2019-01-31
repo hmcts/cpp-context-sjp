@@ -18,9 +18,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>uk.gov.moj.cpp.support</groupId>
-            <artifactId>support-json</artifactId>
-            <version>${support.json.version}</version>
+            <groupId>uk.gov.moj.cpp.core.domain</groupId>
+            <artifactId>coredomain-common-definitions-schema</artifactId>
+            <version>${coredomain.version}</version>
         </dependency>
     </dependencies>
 

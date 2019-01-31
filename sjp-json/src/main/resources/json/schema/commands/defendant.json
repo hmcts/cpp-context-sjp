@@ -3,6 +3,9 @@
   "id": "http://justice.gov.uk/json/schemas/domains/sjp/commands/defendant.json",
   "type": "object",
   "properties": {
+    "id": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
     "title": {
       "type": "string"
     },

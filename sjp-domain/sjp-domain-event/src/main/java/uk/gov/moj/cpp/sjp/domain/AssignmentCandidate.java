@@ -1,10 +1,13 @@
 package uk.gov.moj.cpp.sjp.domain;
 
 
+import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
+
 import java.util.UUID;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 public class AssignmentCandidate {
 
@@ -33,4 +36,10 @@ public class AssignmentCandidate {
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this, SHORT_PREFIX_STYLE);
+    }
+
 }

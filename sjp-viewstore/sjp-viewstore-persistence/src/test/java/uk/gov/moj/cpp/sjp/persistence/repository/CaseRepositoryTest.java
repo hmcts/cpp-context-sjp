@@ -11,8 +11,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 
@@ -197,12 +197,12 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldCompleteCaseSuccessfully() {
-        assertNull("CaseAggregate should not be completed",
-                CASES.get(VALID_CASE_ID_1).getCompleted());
+        assertFalse("CaseAggregate should not be completed",
+                CASES.get(VALID_CASE_ID_1).isCompleted());
 
         caseRepository.completeCase(VALID_CASE_ID_1);
         CaseDetail actualCase = caseRepository.findBy(VALID_CASE_ID_1);
-        assertTrue("CaseAggregate should be completed", actualCase.getCompleted());
+        assertTrue("CaseAggregate should be completed", actualCase.isCompleted());
     }
 
     @Test
@@ -378,9 +378,9 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         assertThat(awaitingSjpCases.get(1).getOffenceCode(), equalTo(OFFENCE_CODE));
     }
 
-
     private void isCaseNotPendingWithdrawal(CaseDetail caseDetail) {
         checkAllOffencesForACase(caseDetail, false);
+        assertFalse(caseDetail.isAnyOffencePendingWithdrawal());
     }
 
     private void checkAllOffencesForACase(CaseDetail caseDetail, boolean withdrawn) {
@@ -392,6 +392,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     private void isCasePendingWithdrawal(CaseDetail caseDetail) {
         checkAllOffencesForACase(caseDetail, true);
+        assertTrue(caseDetail.isAnyOffencePendingWithdrawal());
     }
 
     private CaseDetail getCase(UUID caseId, String urn) {

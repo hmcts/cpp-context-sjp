@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.update-case-listed-in-criminal-courts.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "hearingCourtName": {
+      "type": "string"
+    },
+    "hearingTime": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "caseId",
+    "hearingTime"
+  ]
+}

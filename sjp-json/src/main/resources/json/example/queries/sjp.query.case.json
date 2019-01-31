@@ -34,6 +34,7 @@
         "address2": " Armageddon House",
         "address3": "Giggleswick",
         "address4": "Merton",
+        "address5": "Greater London",
         "postcode": "L32 1AB"
       },
       "contactDetails": {
@@ -58,5 +59,7 @@
   "assigned": false,
   "costs": 20,
   "postingDate": "2018-01-05",
-  "enterpriseId": "FNHMNHBQNV7L"
+  "enterpriseId": "FNHMNHBQNV7L",
+  "status": "NO_PLEA_RECEIVED_READY_FOR_DECISION",
+  "listedInCriminalCourts": true
 }

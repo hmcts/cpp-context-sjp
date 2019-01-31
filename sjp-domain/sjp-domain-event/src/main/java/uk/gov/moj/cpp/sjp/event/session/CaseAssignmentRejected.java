@@ -1,6 +1,10 @@
 package uk.gov.moj.cpp.sjp.event.session;
 
+import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
+
 import uk.gov.justice.domain.annotation.Event;
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @Event(CaseAssignmentRejected.EVENT_NAME)
 public class CaseAssignmentRejected {
@@ -22,6 +26,13 @@ public class CaseAssignmentRejected {
         SESSION_ENDED,
         SESSION_NOT_OWNED_BY_USER,
         CASE_ASSIGNED_TO_OTHER_USER,
-        CASE_COMPLETED
+        CASE_COMPLETED,
+        STALE_CANDIDATES
     }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, SHORT_PREFIX_STYLE);
+    }
+
 }

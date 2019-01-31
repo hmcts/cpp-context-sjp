@@ -5,12 +5,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
 import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_TRIAL_REQUESTED;
-import static uk.gov.moj.sjp.it.util.QueueUtil.retrieveMessage;
+import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
-import uk.gov.moj.sjp.it.util.QueueUtil;
+import uk.gov.moj.sjp.it.util.TopicUtil;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -30,7 +30,7 @@ public class TrialRequestedProducer {
 
     public TrialRequestedProducer(final UUID caseId) {
         this.caseId = caseId;
-        privateEventsConsumer = QueueUtil.privateEvents.createConsumer(EVENT_SELECTOR_TRIAL_REQUESTED);
+        privateEventsConsumer = TopicUtil.privateEvents.createConsumer(EVENT_SELECTOR_TRIAL_REQUESTED);
     }
 
     public void verifyInActiveMQ() {

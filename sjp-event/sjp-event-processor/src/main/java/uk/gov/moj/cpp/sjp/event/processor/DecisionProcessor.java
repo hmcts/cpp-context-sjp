@@ -32,11 +32,4 @@ public class DecisionProcessor {
         caseStateService.caseCompleted(caseId, envelope.metadata());
     }
 
-    @Handles("public.resulting.case-referred-to-court")
-    public void caseReferredToCourt(final JsonEnvelope envelope) {
-
-        sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.create-court-referral")
-                .apply(envelope.payloadAsJsonObject()));
-    }
-
 }

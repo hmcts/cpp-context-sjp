@@ -9,6 +9,8 @@ public class EventProcessorConstants {
     public static final String USER_ID = "userId";
     public static final String ASSIGNEE_ID = "assigneeId";
     public static final String PLEA = "plea";
+    public static final String PLEA_METHOD = "pleaMethod";
+    public static final String UPDATED_DATE = "updatedDate";
     public static final String POSTING_DATE = "postingDate";
     public static final String CASE_DOCUMENT = "caseDocument";
     public static final String MATERIAL_ID = "materialId";
@@ -17,9 +19,7 @@ public class EventProcessorConstants {
     public static final String REASON = "reason";
     public static final String MARKED_AT = "markedAt";
     public static final String CASE_ASSIGNMENT_TYPE = "caseAssignmentType";
-    public static final String ASSIGNMENT_DOMAIN_OBJECT_ID = "domainObjectId";
-    public static final String ASSIGNMENT_NATURE_TYPE = "assignmentNatureType";
-    public static final String ASSIGNMENT_ASSIGNEE = "assignee";
+    public static final String DATES_TO_AVOID = "datesToAvoid";
 
     private EventProcessorConstants() {
     }

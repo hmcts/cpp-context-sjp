@@ -43,7 +43,7 @@ import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
-import uk.gov.moj.sjp.it.stub.ReferenceDataStub;
+import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
@@ -75,8 +75,8 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
     @Before
     public void setUp() throws Exception {
 
-        ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
-        ReferenceDataStub.stubCourtByCourtHouseOUCodeQuery(NON_LONDON_COURT_HOUSE_OU_CODE, NON_LONDON_LJA_NATIONAL_COURT_CODE);
+        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
+        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(NON_LONDON_COURT_HOUSE_OU_CODE, NON_LONDON_LJA_NATIONAL_COURT_CODE);
         AssignmentStub.stubAddAssignmentCommand();
         AssignmentStub.stubRemoveAssignmentCommand();
         SchedulingStub.stubStartSjpSessionCommand();

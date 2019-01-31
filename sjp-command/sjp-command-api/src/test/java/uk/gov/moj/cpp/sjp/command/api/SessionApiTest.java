@@ -148,34 +148,6 @@ public class SessionApiTest {
                 payloadIsJson(withJsonPath("$.caseId", equalTo(caseId.toString()))))));
     }
 
-
-    @Test
-    public void shouldRenameMigrateSessionCommand() {
-        final SessionCourt sessionCourt = new SessionCourt("Wimbledon Magistrates' Court", "2577");
-        ZonedDateTime now = clock.now();
-        String startedAt = now.toString();
-
-        final JsonEnvelope migrateSessionCommand = envelope().with(metadataWithRandomUUID("sjp.migrate-session"))
-                .withPayloadOf(sessionId.toString(), "sessionId")
-                .withPayloadOf(userId.toString(), "userId")
-                .withPayloadOf(startedAt, "startedAt")
-                .withPayloadOf(sessionCourt.getLocalJusticeAreaNationalCourtCode(), "localJusticeAreaNationalCourtCode")
-                .withPayloadOf(sessionCourt.getCourtHouseName(), "courtHouseName")
-                .build();
-
-        sessionApi.migrateSession(migrateSessionCommand);
-
-        verify(sender).send(argThat(jsonEnvelope(withMetadataEnvelopedFrom(migrateSessionCommand).withName("sjp.command.migrate-session"),
-                payloadIsJson(allOf(
-                        withJsonPath("$.sessionId", equalTo(sessionId.toString())),
-                        withJsonPath("$.userId", equalTo(userId.toString())),
-                        withJsonPath("$.startedAt", equalTo(startedAt)),
-                        withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(sessionCourt.getLocalJusticeAreaNationalCourtCode())),
-                        withJsonPath("$.courtHouseName", equalTo(sessionCourt.getCourtHouseName()))
-                )))));
-    }
-
-
     @Test
     public void shouldHandleSessionCommands() {
         assertThat(SessionApi.class, isHandlerClass(COMMAND_API)

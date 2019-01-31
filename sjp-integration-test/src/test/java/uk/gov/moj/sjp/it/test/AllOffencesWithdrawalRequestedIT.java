@@ -80,7 +80,7 @@ public class AllOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
                     payload(isJson(withJsonPath("caseId", equalTo(caseId.toString()))))
             ));
 
-            caseSearchResultHelper.verifyWithdrawalRequestedDate();
+            caseSearchResultHelper.verifyWithdrawalRequestedDateAndCaseStatus();
 
             //check successful cancel withdrawal request
             eventListener
@@ -104,7 +104,7 @@ public class AllOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
                     payload(isJson(withJsonPath("caseId", equalTo(caseId.toString()))))
             ));
 
-            caseSearchResultHelper.verifyNoWithdrawalRequestedDate();
+            caseSearchResultHelper.verifyNoWithdrawalRequestedDateAndCaseStatus();
         }
     }
 
@@ -145,7 +145,7 @@ public class AllOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
                     payload(isJson(withJsonPath("caseId", equalTo(caseId.toString()))))
             ));
 
-            caseSearchResultHelper.verifyWithdrawalRequestedDate();
+            caseSearchResultHelper.verifyWithdrawalRequestedDateAndCaseStatus();
 
             //check successful cancel withdrawal request
             eventListener
@@ -169,7 +169,7 @@ public class AllOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
                     payload(isJson(withJsonPath("caseId", equalTo(caseId.toString()))))
             ));
 
-            caseSearchResultHelper.verifyNoWithdrawalRequestedDate();
+            caseSearchResultHelper.verifyNoWithdrawalRequestedDateAndCaseStatus();
         }
     }
 

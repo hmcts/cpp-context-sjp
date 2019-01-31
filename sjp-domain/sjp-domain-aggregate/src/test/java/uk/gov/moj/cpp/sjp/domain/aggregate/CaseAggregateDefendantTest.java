@@ -4,31 +4,30 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyCollectionOf;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.StringContains.containsString;
-import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateDefendantTest.DefendantData.defaultDefendantData;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.moj.cpp.sjp.domain.Address;
+import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
+import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.Offence;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
-import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
@@ -39,36 +38,42 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 public class CaseAggregateDefendantTest {
 
-    private CaseAggregate caseAggregate = new CaseAggregate();
+    private final UUID caseId = UUID.randomUUID();
+    private final UUID defendantId = UUID.randomUUID();
+    private final Gender gender = Gender.MALE;
+    private final String firstName = "Random";
+    private final String lastName = "Guy";
+    private final String nationalInsuranceNumber = "valid nino";
+    private final String driverNumber = "valid_driverNumber";
+    private final LocalDate dateOfBirth = LocalDates.from("2000-01-01");
+    private final String email = "test_email1@example.com";
+    private final String email2 = "test_email2@example.com";
+    private final String homeNumber = "10";
+    private final String mobileNumber = "mobileNumber";
+    private final String businessNumber = "businessNumber";
+    private final String title = "Mr";
+    private final Address address = new Address("address1", "address2", "address3", "address4", "address5", "CR02FW");
+    private final Clock clock = new UtcClock();
+    private final String languageNeeds = "languageNeeds_" + RandomStringUtils.randomAlphabetic(10);
+    private final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
+    private final int numPreviousConvictions = 0;
+    private final List<Offence> offences = emptyList();
+    private CaseAggregate caseAggregate;
 
-    private static final UUID id = UUID.randomUUID();
-    private static final UUID caseId = UUID.randomUUID();
-    private static final UUID defendantId = UUID.randomUUID();
-    private static final Gender gender = Gender.MALE;
-    private static final String firstName = "Random";
-    private static final String lastName = "Guy";
-    private static final String nationalInsuranceNumber = "valid nino";
-    private static final String driverNumber = "valid_driverNumber";
-    private static final LocalDate dateOfBirth = LocalDates.from("2000-01-01");
-    private static final String email = "test_email1@example.com";
-    private static final String email2 = "test_email2@example.com";
-    private static final String homeNumber = "10";
-    private static final String mobileNumber = "mobileNumber";
-    private static final String businessNumber = "businessNumber";
-    private static final String title = "Mr";
-    private static final Address address = new Address("address1", "address2", "address3", "address4", "address5","CR02FW");
-    private static final Clock clock = new UtcClock();
-    private static final String languageNeeds = "languageNeeds_" + RandomStringUtils.randomAlphabetic(10);
-    private static final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
-    private static final int numPreviousConvictions = 0;
-    private static final List<Offence> offences = emptyList();
+    @Before
+    public void setUp() {
+        caseAggregate = new CaseAggregate();
+    }
 
     @Test
     public void updatesToValidTitle() {
+        givenCaseWasReceivedWithDefaultDefendantData();
+
         updatesToValidTitle("Mr");
         updatesToValidTitle("Mrs");
         updatesToValidTitle("Ms");
@@ -76,11 +81,9 @@ public class CaseAggregateDefendantTest {
         updatesToValidTitle("Co");
     }
 
-    private void updatesToValidTitle(String validTitle) {
-        givenCaseWasReceivedWithDefaultDefendantData();
-
+    private void updatesToValidTitle(final String validTitle) {
         final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewTitle(validTitle)
+                new DefendantData().withNewTitle(validTitle)
         );
 
         assertThat(events, not(emptyCollectionOf(Object.class)));
@@ -94,15 +97,10 @@ public class CaseAggregateDefendantTest {
         givenCaseWasReceivedWithDefaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewTitle(null)
+                new DefendantData().withNewTitle(null)
         );
 
-        assertThat(events, hasSize(1));
-
-        final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
-        assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("title parameter can not be null as previous value is : Mr"));
+        doRejectAssertions(events, "title parameter can not be null as previous value is : Mr");
     }
 
     @Test
@@ -110,23 +108,18 @@ public class CaseAggregateDefendantTest {
         givenCaseWasReceivedWithDefaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewTitle(" ")
+                new DefendantData().withNewTitle(" ")
         );
 
-        assertThat(events, hasSize(1));
-
-        final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
-        assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("title parameter can not be null as previous value is : Mr"));
+        doRejectAssertions(events, "title parameter can not be null as previous value is : Mr");
     }
 
     @Test
     public void acceptsEmptyTitleIfPreviouslyNotSet() {
-        givenCaseWasReceivedWithDefendant(defaultDefendantData().withNewTitle(" "));
+        givenCaseWasReceivedWithDefendant(new DefendantData().withNewTitle(" "));
 
         final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewTitle("")
+                new DefendantData().withNewTitle("")
         );
 
         assertThat(events, hasSize(2));
@@ -143,7 +136,7 @@ public class CaseAggregateDefendantTest {
 
         final String newFirstName = "Newname";
         final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewDateOfBirth(null).withNewFirstName(newFirstName)
+                new DefendantData().withNewDateOfBirth(null).withNewFirstName(newFirstName)
         );
 
         assertThat(events, hasSize(2));
@@ -160,7 +153,7 @@ public class CaseAggregateDefendantTest {
 
         final String newLastName = "Newname";
         final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewDateOfBirth(null).withNewLastName(newLastName)
+                new DefendantData().withNewDateOfBirth(null).withNewLastName(newLastName)
         );
 
         assertThat(events, hasSize(2));
@@ -178,7 +171,7 @@ public class CaseAggregateDefendantTest {
 
         final LocalDate newDateOfBirth = LocalDates.from("1990-05-05");
         final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewDateOfBirth(newDateOfBirth)
+                new DefendantData().withNewDateOfBirth(newDateOfBirth)
         );
 
         assertThat("Event Types: " + events.stream().map(e -> e.getClass().getSimpleName()).collect(toList()),
@@ -197,19 +190,12 @@ public class CaseAggregateDefendantTest {
         givenCaseWasReceivedWithDefaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewAddress(new Address(" ", "address2",
-                        "address3", "address4", "CR02FW"))
+                new DefendantData().withNewAddress(new Address(" ", "address2",
+                        "address3", "address4", "address5", "CR02FW"))
         );
 
-        assertThat(events, hasSize(1));
+        doRejectAssertions(events, "street (address1) can not be blank as previous value is: address1");
 
-        final Object event = events.get(0);
-        assertThat(event, instanceOf(DefendantDetailsUpdateFailed.class));
-
-        final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) event;
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
-        assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("street (address1) can not be blank as previous value is: address1"));
     }
 
     @Test
@@ -217,16 +203,31 @@ public class CaseAggregateDefendantTest {
         givenCaseWasReceivedWithDefaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewAddress(new Address("address1", "address2",
-                        "address3", " ", "CR02FW"))
+                new DefendantData().withNewAddress(new Address("address1", "address2",
+                        "", "address4", "", "CR02FW"))
         );
 
-        assertThat(events, hasSize(1));
+        doRejectAssertions(events, "town (address3) can not be blank as previous value is: address3");
+    }
 
-        final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
-        assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("town (address4) can not be blank as previous value is: address4"));
+    @Test
+    public void acceptsAddressWithMissingAddressLine5() {
+        givenCaseWasReceivedWithDefaultDefendantData();
+
+        final List<Object> events = whenTheDefendantIsUpdated(
+                new DefendantData().withNewAddress(new Address("address1", "address2",
+                        "address3", "address4", "", "CR02FW"))
+        );
+
+        assertThat(events, hasSize(2));
+
+        final DefendantAddressUpdated defendantAddressUpdated = (DefendantAddressUpdated) events.get(0);
+        assertThat(defendantAddressUpdated.getCaseId(), is(caseId));
+        assertThat(defendantAddressUpdated.getNewAddress().getAddress5(), is(""));
+
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(1);
+        assertThat(defendantDetailsUpdated.getCaseId(), is(caseId));
+        assertThat(defendantDetailsUpdated.getAddress().getAddress5(), is(""));
     }
 
     @Test
@@ -234,25 +235,20 @@ public class CaseAggregateDefendantTest {
         givenCaseWasReceivedWithDefaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewAddress(new Address("address1", "address2",
-                        "address3", "address4", " "))
+                new DefendantData().withNewAddress(new Address("address1", "address2",
+                        "address3", "address4", "address5", ""))
         );
 
-        assertThat(events, hasSize(1));
-
-        final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) events.get(0);
-        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
-        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
-        assertThat(defendantDetailsUpdateFailed.getDescription(), containsString("postcode can not be blank as previous value is: CR02FW"));
+        doRejectAssertions(events, "postcode can not be blank as previous value is: CR02FW");
     }
 
     @Test
     public void acceptsNewAddress() {
         givenCaseWasReceivedWithDefaultDefendantData();
 
-        final Address newAddress = new Address("new street", "", "", "new town", "CR02FT");
+        final Address newAddress = new Address("new street", "", "new town", "", "", "CR02FT");
         final List<Object> events = whenTheDefendantIsUpdated(
-                defaultDefendantData().withNewAddress(newAddress)
+                new DefendantData().withNewAddress(newAddress)
         );
 
         assertThat("Event Types: " + events.stream().map(e -> e.getClass().getSimpleName()).collect(toList()),
@@ -267,81 +263,122 @@ public class CaseAggregateDefendantTest {
     }
 
     @Test
-    public void addsAndRemovesDefendantInterpreterLanguage() {
-        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+    public void shouldUpdateInterpreterLanguage() {
+        final UUID assigneeId = UUID.randomUUID();
 
-        final String newDefendantInterpreterLanguage = "French";
-        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantInterpreterLanguage));
-        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), equalTo(newDefendantInterpreterLanguage));
+        final DefendantData defendantData = new DefendantData();
+        final CaseReceived caseReceivedEvent = givenCaseWasReceivedWithDefendant(defendantData);
 
-        // InterpreterUpdatedForDefendant with `null` value need to behave like InterpreterCancelledForDefendant
-        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, null));
-        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+        caseAggregate.assignCase(assigneeId, clock.now(), CaseAssignmentType.MAGISTRATE_DECISION);
 
-        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantInterpreterLanguage));
-        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), equalTo(newDefendantInterpreterLanguage));
+        final List<Object> eventsRaised = caseAggregate.updateHearingRequirements(assigneeId, caseReceivedEvent.getDefendant().getId(), "welsh", true)
+                .collect(toList());
 
-        caseAggregate.apply(new InterpreterCancelledForDefendant(caseId, defendantId));
-        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+        final InterpreterUpdatedForDefendant interpreterUpdatedEvent = (InterpreterUpdatedForDefendant) eventsRaised.get(0);
+
+        assertThat(interpreterUpdatedEvent.getInterpreter(), is(Interpreter.of("welsh")));
+        assertThat(interpreterUpdatedEvent.getCaseId(), is(caseId));
+        assertThat(interpreterUpdatedEvent.getDefendantId(), is(caseReceivedEvent.getDefendant().getId()));
+
+        final HearingLanguagePreferenceUpdatedForDefendant hearingUpdatedEvent = (HearingLanguagePreferenceUpdatedForDefendant) eventsRaised.get(1);
+
+        assertThat(hearingUpdatedEvent.getSpeakWelsh(), is(true));
     }
 
     @Test
-    public void updateInterpreterAsEmptyShouldEqualToNullOrCancellation() {
-        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+    public void shouldCancelInterpreterLanguage() {
+        final UUID assigneeId = UUID.randomUUID();
 
-        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, ""));
-        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+        final DefendantData defendantData = new DefendantData();
+        final CaseReceived caseReceivedEvent = givenCaseWasReceivedWithDefendant(defendantData);
 
-        final String newDefendantInterpreterLanguage = "French";
-        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantInterpreterLanguage));
-        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), equalTo(newDefendantInterpreterLanguage));
+        caseAggregate.assignCase(assigneeId, clock.now(), CaseAssignmentType.MAGISTRATE_DECISION);
 
-        // InterpreterUpdatedForDefendant with `null` value need to behave like InterpreterCancelledForDefendant
-        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, ""));
-        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+        caseAggregate.updateHearingRequirements(assigneeId, caseReceivedEvent.getDefendant().getId(), "welsh", true);
+        final List<Object> eventsRaised = caseAggregate.updateHearingRequirements(assigneeId, caseReceivedEvent.getDefendant().getId(), "", false)
+                .collect(toList());
 
-        caseAggregate.apply(InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantInterpreterLanguage));
-        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), equalTo(newDefendantInterpreterLanguage));
+        final InterpreterCancelledForDefendant interpreterCancelledForDefendant = (InterpreterCancelledForDefendant) eventsRaised.get(0);
 
-        caseAggregate.apply(new InterpreterCancelledForDefendant(caseId, defendantId));
-        assertThat(caseAggregate.getDefendantInterpreterLanguage(defendantId), nullValue());
+        assertThat(interpreterCancelledForDefendant.getCaseId(), is(caseId));
+        assertThat(interpreterCancelledForDefendant.getDefendantId(), is(caseReceivedEvent.getDefendant().getId()));
     }
 
-    @Test
-    public void addsAndRemovesDefendantSpeakWelsh() {
-        assertThat(caseAggregate.getDefendantSpeakWelsh(defendantId), nullValue());
+    private void doRejectAssertions(final List<Object> events, final String descriptionContains) {
+        assertThat(events, hasSize(1));
 
-        final Boolean newDefendantSpeakWelsh = Boolean.TRUE;
-        caseAggregate.apply(HearingLanguagePreferenceUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantSpeakWelsh));
-        assertThat(caseAggregate.getDefendantSpeakWelsh(defendantId), equalTo(newDefendantSpeakWelsh));
+        final Object event = events.get(0);
+        assertThat(event, instanceOf(DefendantDetailsUpdateFailed.class));
 
-        // HearingLanguagePreferenceUpdatedForDefendant with `null` value need to behave like HearingLanguagePreferenceCancelledForDefendant
-        caseAggregate.apply(HearingLanguagePreferenceUpdatedForDefendant.createEvent(caseId, defendantId, null));
-        assertThat(caseAggregate.getDefendantSpeakWelsh(defendantId), nullValue());
-
-        caseAggregate.apply(HearingLanguagePreferenceUpdatedForDefendant.createEvent(caseId, defendantId, newDefendantSpeakWelsh));
-        assertThat(caseAggregate.getDefendantSpeakWelsh(defendantId), equalTo(newDefendantSpeakWelsh));
-
-        caseAggregate.apply(new HearingLanguagePreferenceCancelledForDefendant(caseId, defendantId));
-        assertThat(caseAggregate.getDefendantSpeakWelsh(defendantId), nullValue());
+        final DefendantDetailsUpdateFailed defendantDetailsUpdateFailed = (DefendantDetailsUpdateFailed) event;
+        assertThat(defendantDetailsUpdateFailed.getCaseId(), is(caseId));
+        assertThat(defendantDetailsUpdateFailed.getDefendantId(), is(defendantId));
+        assertThat(defendantDetailsUpdateFailed.getDescription(), containsString(descriptionContains));
     }
 
-    static class DefendantData {
-        private UUID id = CaseAggregateDefendantTest.id;
-        private UUID caseId = CaseAggregateDefendantTest.caseId;
-        private UUID defendantId = CaseAggregateDefendantTest.defendantId;
-        private Gender gender = CaseAggregateDefendantTest.gender;
-        private String title = CaseAggregateDefendantTest.title;
-        private String firstName = CaseAggregateDefendantTest.firstName;
-        private String lastName = CaseAggregateDefendantTest.lastName;
-        private String nationalInsuranceNumber = CaseAggregateDefendantTest.nationalInsuranceNumber;
-        private String driverNumber = CaseAggregateDefendantTest.driverNumber;
-        private LocalDate dateOfBirth = CaseAggregateDefendantTest.dateOfBirth;
-        private Address address = CaseAggregateDefendantTest.address;
-        private String languageNeeds = CaseAggregateDefendantTest.languageNeeds;
-        private ContactDetails contactDetails = CaseAggregateDefendantTest.contactDetails;
-        private int numPreviousConvictions = CaseAggregateDefendantTest.numPreviousConvictions;
-        private List<Offence> offences = CaseAggregateDefendantTest.offences;
+    private void givenCaseWasReceivedWithDefaultDefendantData() {
+        givenCaseWasReceivedWithDefendant(new DefendantData());
+    }
+
+    private CaseReceived givenCaseWasReceivedWithDefendant(final DefendantData defendantData) {
+        return (CaseReceived) caseAggregate.receiveCase(
+                CaseBuilder.aDefaultSjpCase()
+                        .withId(caseId)
+                        .withDefendant(new Defendant(
+                                defendantData.defendantId,
+                                defendantData.title,
+                                defendantData.firstName,
+                                defendantData.lastName,
+                                defendantData.dateOfBirth,
+                                defendantData.gender,
+                                defendantData.nationalInsuranceNumber,
+                                defendantData.driverNumber,
+                                defendantData.address,
+                                defendantData.contactDetails,
+                                defendantData.numPreviousConvictions,
+                                defendantData.offences,
+                                defendantData.languageNeeds
+                        )).build(),
+                clock.now()
+        ).findFirst().get();
+    }
+
+    private List<Object> whenTheDefendantIsUpdated(final DefendantData updatedDefendantData) {
+        final Person person = new Person(
+                updatedDefendantData.title,
+                updatedDefendantData.firstName,
+                updatedDefendantData.lastName,
+                updatedDefendantData.dateOfBirth,
+                updatedDefendantData.gender,
+                updatedDefendantData.nationalInsuranceNumber,
+                updatedDefendantData.driverNumber,
+                updatedDefendantData.address,
+                updatedDefendantData.contactDetails);
+
+        final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(
+                updatedDefendantData.caseId,
+                updatedDefendantData.defendantId,
+                person,
+                clock.now());
+
+        return eventStream.collect(toList());
+    }
+
+    private class DefendantData {
+        private final UUID caseId = CaseAggregateDefendantTest.this.caseId;
+        private final UUID defendantId = CaseAggregateDefendantTest.this.defendantId;
+        private final Gender gender = CaseAggregateDefendantTest.this.gender;
+        private final String nationalInsuranceNumber = CaseAggregateDefendantTest.this.nationalInsuranceNumber;
+        private final String driverNumber = CaseAggregateDefendantTest.this.driverNumber;
+        private final String languageNeeds = CaseAggregateDefendantTest.this.languageNeeds;
+        private final ContactDetails contactDetails = CaseAggregateDefendantTest.this.contactDetails;
+        private final int numPreviousConvictions = CaseAggregateDefendantTest.this.numPreviousConvictions;
+        private final List<Offence> offences = CaseAggregateDefendantTest.this.offences;
+        private String title = CaseAggregateDefendantTest.this.title;
+        private String firstName = CaseAggregateDefendantTest.this.firstName;
+        private String lastName = CaseAggregateDefendantTest.this.lastName;
+        private LocalDate dateOfBirth = CaseAggregateDefendantTest.this.dateOfBirth;
+        private Address address = CaseAggregateDefendantTest.this.address;
 
         private DefendantData withNewTitle(final String newTitle) {
             this.title = newTitle;
@@ -368,54 +405,6 @@ public class CaseAggregateDefendantTest {
             return this;
         }
 
-        static DefendantData defaultDefendantData() {
-            return new DefendantData();
-        }
     }
 
-    private void givenCaseWasReceivedWithDefaultDefendantData() {
-        givenCaseWasReceivedWithDefendant(defaultDefendantData());
-    }
-
-    private void givenCaseWasReceivedWithDefendant(DefendantData defendantData) {
-        caseAggregate.receiveCase(
-                CaseBuilder.aDefaultSjpCase().withDefendant(new Defendant(
-                        defendantData.id,
-                        defendantData.title,
-                        defendantData.firstName,
-                        defendantData.lastName,
-                        defendantData.dateOfBirth,
-                        defendantData.gender,
-                        defendantData.nationalInsuranceNumber,
-                        defendantData.driverNumber,
-                        defendantData.address,
-                        defendantData.contactDetails,
-                        defendantData.numPreviousConvictions,
-                        defendantData.offences,
-                        defendantData.languageNeeds
-                )).build(),
-                clock.now()
-        );
-    }
-
-    private List<Object> whenTheDefendantIsUpdated(final DefendantData updatedDefendantData) {
-        final Person person = new Person(
-                updatedDefendantData.title,
-                updatedDefendantData.firstName,
-                updatedDefendantData.lastName,
-                updatedDefendantData.dateOfBirth,
-                updatedDefendantData.gender,
-                updatedDefendantData.nationalInsuranceNumber,
-                updatedDefendantData.driverNumber,
-                updatedDefendantData.address,
-                updatedDefendantData.contactDetails);
-
-        final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(
-                updatedDefendantData.caseId,
-                updatedDefendantData.defendantId,
-                person,
-                clock.now());
-
-        return eventStream.collect(toList());
-    }
 }

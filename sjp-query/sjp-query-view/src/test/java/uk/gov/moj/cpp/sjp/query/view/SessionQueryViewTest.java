@@ -52,6 +52,7 @@ public class SessionQueryViewTest {
 
         final UUID sessionId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
+        final String courtHouseCode = "B01LY";
         final String courtHouseName = "Wimbledon Magistrates' Court";
         final String localJusticeAreaNationalCourtCode = "2577";
         final String magistrate = "John Smith";
@@ -62,7 +63,7 @@ public class SessionQueryViewTest {
                 .withPayloadOf(sessionId.toString(), "sessionId")
                 .build();
 
-        final Session session = new Session(sessionId, userId, courtHouseName, localJusticeAreaNationalCourtCode, magistrate, startedAt);
+        final Session session = new Session(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, magistrate, startedAt);
 
         when(sessionRepository.findBy(sessionId)).thenReturn(session);
 
@@ -72,6 +73,7 @@ public class SessionQueryViewTest {
                 payload().isJson(allOf(
                         withJsonPath("$.sessionId", is(sessionId.toString())),
                         withJsonPath("$.userId", is(userId.toString())),
+                        withJsonPath("$.courtHouseCode", equalTo(courtHouseCode)),
                         withJsonPath("$.courtHouseName", equalTo(courtHouseName)),
                         withJsonPath("$.localJusticeAreaNationalCourtCode", is(localJusticeAreaNationalCourtCode)),
                         withJsonPath("$.type", is(MAGISTRATE.name())),

@@ -1,6 +1,10 @@
 package uk.gov.moj.cpp.sjp.event.session;
 
+import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
+
 import uk.gov.justice.domain.annotation.Event;
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @Event(CaseUnassignmentRejected.EVENT_NAME)
 public class CaseUnassignmentRejected {
@@ -20,4 +24,10 @@ public class CaseUnassignmentRejected {
     public enum RejectReason {
         CASE_NOT_ASSIGNED
     }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, SHORT_PREFIX_STYLE);
+    }
+
 }

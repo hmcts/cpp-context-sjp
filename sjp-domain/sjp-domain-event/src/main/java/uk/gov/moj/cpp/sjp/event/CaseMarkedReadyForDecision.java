@@ -8,6 +8,8 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 @Event(CaseMarkedReadyForDecision.EVENT_NAME)
 public class CaseMarkedReadyForDecision {
@@ -39,4 +41,10 @@ public class CaseMarkedReadyForDecision {
     public ZonedDateTime getMarkedAt() {
         return markedAt;
     }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
 }

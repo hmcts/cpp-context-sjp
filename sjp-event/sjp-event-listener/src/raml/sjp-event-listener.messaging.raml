@@ -30,14 +30,6 @@ version: v1
         schema: !include json/schema/sjp.events.case-completed.json
         example: !include json/sjp.events.case-completed.json
 
-      application/vnd.sjp.events.court-referral-created+json:
-        schema: !include json/schema/sjp.events.court-referral-created.json
-        example: !include json/sjp.events.court-referral-created.json
-
-      application/vnd.sjp.events.court-referral-actioned+json:
-        schema: !include json/schema/sjp.events.court-referral-actioned.json
-        example: !include json/sjp.events.court-referral-actioned.json
-
       application/vnd.sjp.events.financial-means-updated+json:
         schema: !include json/schema/sjp.events.financial-means-updated.json
         example: !include json/sjp.events.financial-means-updated.json
@@ -173,3 +165,23 @@ version: v1
       application/vnd.sjp.events.defendant-details-updates-acknowledged+json:
         schema: !include json/schema/sjp.events.defendant-details-updates-acknowledged.json
         example: !include json/sjp.events.defendant-details-updates-acknowledged.json
+
+      application/vnd.sjp.events.case-referred-for-court-hearing+json:
+        schema: !include json/schema/sjp.events.case-referred-for-court-hearing.json
+        example: !include json/sjp.events.case-referred-for-court-hearing.json
+
+      application/vnd.sjp.events.case-referral-for-court-hearing-rejection-recorded+json:
+        schema: !include json/schema/sjp.events.case-referral-for-court-hearing-rejection-recorded.json
+        example: !include json/sjp.events.case-referral-for-court-hearing-rejection-recorded.json
+
+      application/vnd.sjp.events.case-listed-in-criminal-courts+json:
+        schema: !include json/schema/sjp.events.case-listed-in-criminal-courts.json
+        example: !include json/sjp.events.case-listed-in-criminal-courts.json
+
+      application/vnd.sjp.events.case-adjourned-to-later-sjp-hearing-recorded+json:
+        schema: !include json/schema/sjp.events.case-adjourned-to-later-sjp-hearing-recorded.json
+        example: !include json/sjp.events.case-adjourned-to-later-sjp-hearing-recorded.json
+
+      application/vnd.sjp.events.case-adjournment-to-later-sjp-hearing-elapsed+json:
+        schema: !include json/schema/sjp.events.case-adjournment-to-later-sjp-hearing-elapsed.json
+        example: !include json/sjp.events.case-adjournment-to-later-sjp-hearing-elapsed.json

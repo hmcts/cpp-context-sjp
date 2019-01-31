@@ -52,12 +52,14 @@ public class UpdatePleaApiTest {
     private Sender sender;
 
     @Spy
+    @SuppressWarnings("unused")
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
 
     @Spy
+    @SuppressWarnings("unused")
     private ObjectToJsonValueConverter objectToJsonValueConverter =
             new ObjectToJsonValueConverter(new ObjectMapperProducer().objectMapper());
 
@@ -80,7 +82,20 @@ public class UpdatePleaApiTest {
         final JsonEnvelope newCommand = envelopeCaptor.getValue();
         assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName(CONTROLLER_UPDATE_PLEA_COMMAND_NAME));
         assertThat(newCommand.payloadAsJsonObject(), equalTo(command.payloadAsJsonObject()));
+    }
 
+    @Test
+    public void shouldUpdatePleaWithPersonalAndEmployerAddresses() {
+        when(updatePleaValidator.validate(any())).thenReturn(Collections.emptyMap());
+        final JsonEnvelope command = envelope().with(metadataWithRandomUUID(UPDATE_PLEA_COMMAND_NAME)).build();
+
+
+        updatePleaApi.updatePlea(command);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        final JsonEnvelope newCommand = envelopeCaptor.getValue();
+        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName(CONTROLLER_UPDATE_PLEA_COMMAND_NAME));
     }
 
     @Test

@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;

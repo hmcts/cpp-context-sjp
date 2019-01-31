@@ -4,6 +4,11 @@ import uk.gov.justice.domain.annotation.Event;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 /**
  * Event for rejecting an update of a reopened case if it hasn't been yet reopened
  */
@@ -15,7 +20,10 @@ public class CaseNotReopened {
     private final UUID caseId;
     private final String description;
 
-    public CaseNotReopened(UUID caseId, String description) {
+    @JsonCreator
+    public CaseNotReopened(
+            @JsonProperty("caseId") final UUID caseId,
+            @JsonProperty("description") final String description) {
         this.caseId = caseId;
         this.description = description;
     }
@@ -27,4 +35,10 @@ public class CaseNotReopened {
     public String getDescription() {
         return description;
     }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
 }

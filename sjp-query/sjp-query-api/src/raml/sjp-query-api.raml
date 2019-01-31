@@ -22,8 +22,8 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
       200:
         body:
           application/vnd.sjp.query.case+json:
-            schema: !include json/schema/sjp.query.case.json
-            example: !include json/sjp.query.case.json
+            schema: !include json/schema/sjp.query.case-details.json
+            example: !include json/sjp.query.case-details.json
 
 /cases:
   get:
@@ -44,8 +44,8 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
           description: OK
           body:
                 application/vnd.sjp.query.case-by-urn+json:
-                  schema: !include json/schema/sjp.query.case.json
-                  example: !include json/sjp.query.case.json
+                  schema: !include json/schema/sjp.query.case-details.json
+                  example: !include json/sjp.query.case-details.json
 
 /result-orders:
   get:
@@ -278,22 +278,6 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
           application/vnd.sjp.query.awaiting-cases+json:
             schema: !include json/schema/sjp.query.awaiting-cases.json
             example: !include json/sjp.query.awaiting-cases.json
-
-/cases/referred-to-court:
-  description: return the SJP cases which have been referred to court
-  get:
-    description: |
-      ...
-      (mapping):
-          responseType: application/vnd.sjp.query.cases-referred-to-court+json
-          name: sjp.query.cases-referred-to-court
-      ...
-    responses:
-      200:
-        body:
-          application/vnd.sjp.query.cases-referred-to-court+json:
-            schema: !include json/schema/sjp.query.cases-referred-to-court.json
-            example: !include json/sjp.query.cases-referred-to-court.json
 
 /cases-for-citizen:
   get:

@@ -9,6 +9,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @SuppressWarnings("WeakerAccess")
@@ -18,6 +19,7 @@ public class OffenceView {
     private final String offenceCode;
     private final PleaType plea;
     private final PleaMethod pleaMethod;
+    private final ZonedDateTime pleaDate;
     private final Integer offenceSequenceNumber;
     private final String wording;
     private final String wordingWelsh;
@@ -41,6 +43,7 @@ public class OffenceView {
 
         this.plea = offence.getPlea();
         this.pleaMethod = offence.getPleaMethod();
+        this.pleaDate = offence.getPleaDate();
         this.wording = offence.getWording();
         this.wordingWelsh = offence.getWordingWelsh();
         this.startDate = offence.getStartDate();
@@ -65,6 +68,8 @@ public class OffenceView {
     public PleaMethod getPleaMethod() {
         return pleaMethod;
     }
+
+    public ZonedDateTime getPleaDate() { return pleaDate; }
 
     public Integer getOffenceSequenceNumber() {
         return offenceSequenceNumber;

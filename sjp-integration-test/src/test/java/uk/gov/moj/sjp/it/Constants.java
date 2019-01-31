@@ -7,6 +7,7 @@ import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
+import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
 
 public class Constants {
     public static final String PUBLIC_EVENT_SELECTOR_CASE_CREATED = "public.sjp-case-created";
@@ -14,12 +15,16 @@ public class Constants {
     public static final String EVENT_SELECTOR_CASE_DOCUMENT_ADDED = "sjp.events.case-document-added";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS = "public.sjp.case-document-already-exists";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED = "public.sjp.case-document-uploaded";
+    public static final String EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED = "sjp.events.case-document-upload-rejected";
+    public static final String PUBLIC_EVENT_SELECTOR_CASE_REFER_FOR_COURT_HEARING_IN_RESULTING = "public.resulting.decision-to-refer-case-for-court-hearing-saved";
+    public static final String PUBLIC_EVENT_SELECTOR_CASE_ADJOURNED_TO_LATER_HEARING_IN_RESULTING = "public.resulting.case-adjourned-to-later-sjp-hearing";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED = "public.sjp.case-document-added";
     public static final String EVENT_SELECTOR_PLEA_UPDATED = PleaUpdated.EVENT_NAME;
     public static final String EVENT_SELECTOR_PLEA_CANCELLED = PleaCancelled.EVENT_NAME;
     public static final String PUBLIC_EVENT_SELECTOR_PLEA_UPDATED = "public.sjp.plea-updated";
     public static final String PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED = "public.sjp.plea-cancelled";
     public static final String EVENT_SELECTOR_TRIAL_REQUESTED = "sjp.events.trial-requested";
+    public static final String EVENT_SELECTOR_DATES_TO_AVOID_ADDED = "sjp.events.dates-to-avoid-added";
     public static final String EVENT_SELECTOR_CASE_RECEIVED = CaseReceived.EVENT_NAME;
     public static final String PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED = "public.sjp.all-offences-withdrawal-requested";
     public static final String SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED = AllOffencesWithdrawalRequested.EVENT_NAME;
@@ -34,8 +39,15 @@ public class Constants {
     public static final String EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE = "sjp.events.case-reopened-in-libra-undone";
     public static final String PUBLIC_EVENT_SELECTOR_CASE_REOPENED_IN_LIBRA_UNDONE = "public.sjp.case-reopened-in-libra-undone";
     public static final String EVENT_CASE_MARKED_READY_FOR_DECISION = CaseMarkedReadyForDecision.EVENT_NAME;
+    public static final String EVENT_CASE_ASSIGNMENT_REJECTED = CaseAssignmentRejected.EVENT_NAME;
+    public static final String EVENT_CASE_REFERRED_FOR_COURT_HEARING = "sjp.events.case-referred-for-court-hearing";
+
+    public static final String PUBLIC_EVENT_CASE_ASSIGNMENT_REJECTED = "public.sjp.case-assignment-rejected";
+
     public static final String PUBLIC_ACTIVE_MQ_TOPIC = "public.event";
     public static final String PRIVATE_ACTIVE_MQ_TOPIC = "sjp.event";
+    public static final String COMMAND_HANDLE_ACTIVE_MQ_QUEUE = "sjp.handler.command";
+
     public static final Integer MESSAGE_QUEUE_TIMEOUT = 15000;
     public static final int NOTICE_PERIOD_IN_DAYS = 28;
 

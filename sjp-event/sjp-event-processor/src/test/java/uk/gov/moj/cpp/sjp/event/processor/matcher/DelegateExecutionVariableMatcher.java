@@ -16,6 +16,10 @@ public class DelegateExecutionVariableMatcher extends TypeSafeDiagnosingMatcher<
         return new DelegateExecutionVariableMatcher(variableName, variableValue);
     }
 
+    public static DelegateExecutionVariableMatcher withoutProcessVariable(final String variableName) {
+        return new DelegateExecutionVariableMatcher(variableName, null);
+    }
+
     private DelegateExecutionVariableMatcher(final String variableName, final Object variableValue) {
         this.variableName = variableName;
         this.variableValue = variableValue;
@@ -23,11 +27,16 @@ public class DelegateExecutionVariableMatcher extends TypeSafeDiagnosingMatcher<
 
     @Override
     protected boolean matchesSafely(final DelegateExecution delegateExecution, final Description mismatchDescription) {
-        if (!delegateExecution.hasVariable(variableName)) {
+        boolean variableNotPresent = !delegateExecution.hasVariable(variableName);
+        if (variableValue == null && variableNotPresent) {
+            return true;
+        }
+
+        if (variableNotPresent) {
             mismatchDescription.appendText("but variable ").appendValue(variableName).appendText(" was missing");
             return false;
         } else {
-            final Object actualVariableValue = delegateExecution.getVariables().get(variableName);
+            final Object actualVariableValue = delegateExecution.getVariable(variableName);
             if (Objects.equals(variableValue, actualVariableValue)) {
                 return true;
             } else {

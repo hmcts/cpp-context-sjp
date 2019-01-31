@@ -18,22 +18,27 @@
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
         <assignment.version>2.0.99</assignment.version>
-        <material.version>2.0.112</material.version>
-        <notification.notify.version>0.0.25</notification.notify.version>
-        <referencedata.version>2.0.166</referencedata.version>
-        <referencedata.offences.version>1.0.13</referencedata.offences.version>
+        <material.version>2.0.114</material.version>
+        <notification.notify.version>0.0.26</notification.notify.version>
+        <referencedata.version>2.0.169</referencedata.version>
+        <referencedata.offences.version>1.0.17</referencedata.offences.version>
+        <resulting.version>2.0.216</resulting.version>
         <scheduling.version>2.0.88</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
-        <usersgroups.version>2.0.105</usersgroups.version>
+        <usersgroups.version>2.0.106</usersgroups.version>
+        <progression.version>2.4.5-R2-SNAPSHOT</progression.version>
+        <prosecutioncasefile.version>1.0.21-ATCM-SNAPSHOT</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
-        <support.json.version>1.1.3</support.json.version>
+        <coredomain.version>0.1.0</coredomain.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>
-        <lombok.version>1.18.0</lombok.version>
+        <lombok.version>1.18.2</lombok.version>
         <activiti.library.version>1.3.0</activiti.library.version>
+        <coredomain.version>0.1.0</coredomain.version>
+        <pojo-generation.version>1.6.0-M1</pojo-generation.version>
     </properties>
 
     <modules>
@@ -69,6 +74,7 @@
             <artifactId>commons-collections</artifactId>
         </dependency>
     </dependencies>
+
     <distributionManagement>
         <site>
             <id>site</id>

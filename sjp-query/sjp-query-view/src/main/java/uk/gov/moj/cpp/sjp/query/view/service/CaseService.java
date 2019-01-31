@@ -14,9 +14,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.AwaitingCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
-import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseReferredToCourt;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.CaseReferredToCourtRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
@@ -43,7 +41,6 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 
@@ -64,9 +61,6 @@ public class CaseService {
 
     @Inject
     private CaseSearchResultRepository caseSearchResultRepository;
-
-    @Inject
-    private CaseReferredToCourtRepository caseReferredToCourtRepository;
 
     @Inject
     private ProsecutingAuthorityProvider prosecutingAuthorityProvider;
@@ -225,24 +219,6 @@ public class CaseService {
                     .add("lastName", awaitingCase.getDefendantLastName())
                     .add("offenceCode", awaitingCase.getOffenceCode())));
         return createObjectBuilder().add("awaitingCases", arrayBuilder).build();
-    }
-
-    public JsonObject findCasesReferredToCourt() {
-        final List<CaseReferredToCourt> unactionedCases = caseReferredToCourtRepository.findUnactionedCases();
-        final JsonArrayBuilder arrayBuilder = createArrayBuilder();
-        unactionedCases.forEach(sjpCase -> {
-            final JsonObjectBuilder objectBuilder = createObjectBuilder()
-                    .add("caseId", sjpCase.getCaseId().toString())
-                    .add("urn", sjpCase.getUrn())
-                    .add("firstName", sjpCase.getFirstName())
-                    .add("lastName", sjpCase.getLastName())
-                    .add("hearingDate", sjpCase.getHearingDate().toString());
-            if (sjpCase.getInterpreterLanguage() != null) {
-                objectBuilder.add("interpreterLanguage", sjpCase.getInterpreterLanguage());
-            }
-            arrayBuilder.add(objectBuilder);
-        });
-        return createObjectBuilder().add("cases", arrayBuilder).build();
     }
 
     public ResultOrdersView findResultOrders(LocalDate fromDate, LocalDate toDate) {

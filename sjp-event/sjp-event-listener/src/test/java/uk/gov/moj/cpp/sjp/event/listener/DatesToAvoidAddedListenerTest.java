@@ -1,9 +1,17 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.PLEA_RECEIVED_NOT_READY_FOR_DECISION;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.WITHDRAWAL_REQUEST_READY_FOR_DECISION;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.PendingDatesToAvoidRepository;
 
@@ -40,6 +48,5 @@ public class DatesToAvoidAddedListenerTest {
 
         verify(caseRepository).updateDatesToAvoid(caseId, datesToAvoid);
         verify(pendingDatesToAvoidRepository).removeByCaseId(caseId);
-
     }
 }

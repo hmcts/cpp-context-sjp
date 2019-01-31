@@ -1,31 +1,50 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
-import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
-import static uk.gov.justice.json.schemas.domains.sjp.command.PleadOnline.pleadOnline;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.json.schemas.domains.sjp.command.FinancialMeans.financialMeans;
+import static uk.gov.justice.json.schemas.domains.sjp.command.Plea.GUILTY;
+import static uk.gov.justice.json.schemas.domains.sjp.command.Plea.NOT_GUILTY;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildAddressObjectWithPostcode;
+import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildEmployerWithAddress;
+import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildPersonalDetailsWithAddress;
+import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildPleadOnline;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION;
 
 import uk.gov.justice.json.schemas.domains.sjp.command.Benefits;
 import uk.gov.justice.json.schemas.domains.sjp.command.FinancialMeans;
 import uk.gov.justice.json.schemas.domains.sjp.command.Frequency;
 import uk.gov.justice.json.schemas.domains.sjp.command.Income;
-import uk.gov.justice.json.schemas.domains.sjp.command.Offence;
 import uk.gov.justice.json.schemas.domains.sjp.command.Plea;
 import uk.gov.justice.json.schemas.domains.sjp.command.PleadOnline;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonValueConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.sjp.command.api.validator.PleadOnlineValidator;
 
 import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.UUID;
 
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -42,17 +61,34 @@ public class PleadOnlineApiTest {
 
     private static final String PLEAD_ONLINE_COMMAND_NAME = "sjp.plead-online";
     private static final String CONTROLLER_PLEAD_ONLINE_COMMAND_NAME = "sjp.command.plead-online";
+    private static final String CASE_HAS_BEEN_REVIEWED_EXCEPTION_MESSAGE = "{\"CaseAlreadyReviewed\":[\"Your case has already been reviewed - Contact the Contact Centre if you need to discuss it\"]}";
+    private static final String PLEA_ALREADY_SUBMITTED_EXCEPTION_MESSAGE = "{\"PleaAlreadySubmitted\":[\"Plea already submitted - Contact the Contact Centre if you need to change or discuss it\"]}";
 
     @Mock
     private Sender sender;
 
+    @Mock
+    private Requester requester;
+
     @Captor
     private ArgumentCaptor<Envelope<PleadOnline>> envelopeCaptor;
+
+    @Captor
+    private ArgumentCaptor<JsonEnvelope> queryEnvelopeCaptor;
 
     @Spy
     @SuppressWarnings("unused")
     private ObjectToJsonValueConverter objectToJsonValueConverter =
             new ObjectToJsonValueConverter(new ObjectMapperProducer().objectMapper());
+
+    @Spy
+    @InjectMocks
+    @SuppressWarnings("unused")
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+
+    @Spy
+    @SuppressWarnings("unused")
+    private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
     @Spy
     @InjectMocks
@@ -65,17 +101,42 @@ public class PleadOnlineApiTest {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
-    @Test
-    public void shouldPleadOnlineNotGuiltyWithoutFinances() {
-        final PleadOnline pleadOnline = buildPleadOnline(
-                Plea.NOT_GUILTY,
-                null);
+    private final UUID caseId = UUID.randomUUID();
 
-        pleadOnlineWith(pleadOnline);
+    @Test
+    public void shouldPleaNotGuiltyWithLowerCasePostcodeInPersonalDetailsAndInEmployer() {
+        final PleadOnline pleadOnline = buildPleadOnline(
+                NOT_GUILTY,
+                caseId,
+                null,
+                buildPersonalDetailsWithAddress(buildAddressObjectWithPostcode("se11pj")),
+                buildEmployerWithAddress(buildAddressObjectWithPostcode(" w1t1jy ")));
+
+        pleadOnlineWith(pleadOnline, getValidCaseDetail());
 
         final Envelope<PleadOnline> newCommand = envelopeCaptor.getValue();
         assertThat(newCommand.metadata().name(), equalTo(CONTROLLER_PLEAD_ONLINE_COMMAND_NAME));
-        assertThat(newCommand.payload(), is(pleadOnline));
+
+        assertThat(newCommand.payload(), is(objectToJsonObjectConverter.convert(buildPleadOnline(
+                NOT_GUILTY,
+                caseId,
+                null,
+                buildPersonalDetailsWithAddress(buildAddressObjectWithPostcode("SE1 1PJ")),
+                buildEmployerWithAddress(buildAddressObjectWithPostcode("W1T 1JY"))))));
+    }
+
+    @Test
+    public void shouldPleadOnlineNotGuiltyWithoutFinances() {
+        final PleadOnline pleadOnline = buildPleadOnline(
+                NOT_GUILTY,
+                caseId,
+                null);
+
+        pleadOnlineWith(pleadOnline, getValidCaseDetail());
+
+        final Envelope<PleadOnline> newCommand = envelopeCaptor.getValue();
+        assertThat(newCommand.metadata().name(), equalTo(CONTROLLER_PLEAD_ONLINE_COMMAND_NAME));
+        assertThat(newCommand.payload(), is(objectToJsonObjectConverter.convert(pleadOnline)));
 
         verifyZeroInteractions(objectToJsonValueConverter);
     }
@@ -83,65 +144,97 @@ public class PleadOnlineApiTest {
     @Test
     public void shouldPleadOnlineNotGuiltyAndWithFinances() {
         final PleadOnline pleadOnline = buildPleadOnline(
-                Plea.NOT_GUILTY,
-                FinancialMeans.financialMeans().build());
+                NOT_GUILTY,
+                caseId,
+                financialMeans().build());
 
-        pleadOnlineWith(pleadOnline);
+        pleadOnlineWith(pleadOnline, getValidCaseDetail());
 
         final Envelope<PleadOnline> newCommand = envelopeCaptor.getValue();
         assertThat(newCommand.metadata().name(), equalTo(CONTROLLER_PLEAD_ONLINE_COMMAND_NAME));
-        assertThat(newCommand.payload(), is(pleadOnline));
-
-        verifyZeroInteractions(objectToJsonValueConverter);
+        assertThat(newCommand.payload(), is(objectToJsonValueConverter.convert(pleadOnline)));
     }
 
     @Test
     public void shouldPleadOnlineGuiltyAndWithoutFinances() {
-        final PleadOnline pleadOnline = buildPleadOnline(
-                Plea.GUILTY,
-                null);
-
-        exception.expect(BadRequestException.class);
-        exception.expectMessage("{\"financialMeans\":[\"Financial Means are required when you are pleading GUILTY\"]}");
-
-        pleadOnlineWith(pleadOnline);
+        shouldPleadOnlineGuilty(null);
     }
 
     @Test
     public void shouldPleadOnlineGuiltyAndWithEmptyFinances() {
+        shouldPleadOnlineGuilty(financialMeans().build());
+    }
+
+    @Test
+    public void shouldNotPleadOnlineWhenAlreadyPleaded() {
         final PleadOnline pleadOnline = buildPleadOnline(
-                Plea.GUILTY,
-                FinancialMeans.financialMeans().build());
+                NOT_GUILTY,
+                caseId,
+                financialMeans().build());
 
         exception.expect(BadRequestException.class);
-        exception.expectMessage("{\"financialMeans\":[\"Financial Means are required when you are pleading GUILTY\"]}");
+        exception.expectMessage(PLEA_ALREADY_SUBMITTED_EXCEPTION_MESSAGE);
 
-        pleadOnlineWith(pleadOnline);
+        pleadOnlineWith(pleadOnline, getCaseDetail(NOT_GUILTY, JsonValue.FALSE));
+    }
+
+    @Test
+    public void shouldNotPleadOnlineWhenCaseReviewed() {
+        final PleadOnline pleadOnline = buildPleadOnline(
+                NOT_GUILTY,
+                caseId,
+                financialMeans().build());
+
+        exception.expect(BadRequestException.class);
+        exception.expectMessage(CASE_HAS_BEEN_REVIEWED_EXCEPTION_MESSAGE);
+
+        pleadOnlineWith(pleadOnline, getCaseDetail(GUILTY, JsonValue.TRUE));
+    }
+
+    private void shouldPleadOnlineGuilty(final FinancialMeans financialMeans) {
+        final PleadOnline pleadOnline = buildPleadOnline(
+                GUILTY,
+                caseId,
+                financialMeans);
+
+        exception.expect(BadRequestException.class);
+        exception.expectMessage("{\"FinancialMeansRequiredWhenPleadingGuilty\":[\"Financial Means are required when you are pleading GUILTY\"]}");
+
+        pleadOnlineWith(pleadOnline, getValidCaseDetail());
     }
 
     @Test
     public void shouldPleadOnlineGuiltyAndWithFinances() {
-        final PleadOnline pleadOnline = buildPleadOnline(
-                Plea.GUILTY,
-                FinancialMeans.financialMeans()
-                        .withBenefits(new Benefits(true, true, "Universal Credit"))
-                        .withEmploymentStatus("EMPLOYED")
-                        .withIncome(new Income(BigDecimal.TEN, Frequency.FORTNIGHTLY))
-                        .build());
+        final PleadOnline pleadOnline = getPleadOnlineGuiltyAndWithFinances();
 
-        pleadOnlineWith(pleadOnline);
+        pleadOnlineWith(pleadOnline, getValidCaseDetail());
 
         final Envelope<PleadOnline> newCommand = envelopeCaptor.getValue();
         assertThat(newCommand.metadata().name(), equalTo(CONTROLLER_PLEAD_ONLINE_COMMAND_NAME));
-        assertThat(newCommand.payload(), is(pleadOnline));
+        assertThat(newCommand.payload(), is(objectToJsonObjectConverter.convert(pleadOnline)));
 
         verifyZeroInteractions(objectToJsonValueConverter);
     }
 
-    private void pleadOnlineWith(final PleadOnline envelopePayload) {
+    private PleadOnline getPleadOnlineGuiltyAndWithFinances() {
+        return buildPleadOnline(
+                GUILTY,
+                caseId,
+                financialMeans()
+                        .withBenefits(new Benefits(true, true, "Universal Credit"))
+                        .withEmploymentStatus("EMPLOYED")
+                        .withIncome(new Income(BigDecimal.TEN, Frequency.FORTNIGHTLY))
+                        .build());
+    }
+
+    private void pleadOnlineWith(final PleadOnline envelopePayload, final JsonObject caseDetail) {
         final Envelope<PleadOnline> envelope = envelopeFrom(
                 metadataWithRandomUUID(PLEAD_ONLINE_COMMAND_NAME),
                 envelopePayload);
+
+        final JsonEnvelope caseDetailResponseEnvelope = getCaseDetailResponseEnvelope(caseDetail);
+
+        when(requester.requestAsAdmin(queryEnvelopeCaptor.capture())).thenReturn(caseDetailResponseEnvelope);
 
         pleadOnline.pleadOnline(envelope);
 
@@ -150,12 +243,35 @@ public class PleadOnlineApiTest {
         verifyZeroInteractions(objectToJsonValueConverter);
     }
 
-    private static PleadOnline buildPleadOnline(final Plea plea, final FinancialMeans financialMeans) {
-        return pleadOnline()
-                .withOffences(singletonList(Offence.offence()
-                        .withPlea(plea)
-                        .build()))
-                .withFinancialMeans(financialMeans)
+    private JsonObject getValidCaseDetail() {
+        return getCaseDetail(null, JsonValue.FALSE);
+    }
+
+    private JsonObject getCaseDetail(final Plea plea, final JsonValue completed) {
+        final JsonObjectBuilder caseDetailBuilder = Json.createObjectBuilder()
+                .add("id", caseId.toString())
+                .add("completed", completed)
+                .add("assigned", JsonValue.FALSE)
+                .add("status", NO_PLEA_RECEIVED_READY_FOR_DECISION.name());
+
+        final JsonObjectBuilder offenceObjectBuilder = Json.createObjectBuilder();
+        offenceObjectBuilder.add("pendingWithdrawal", JsonValue.FALSE);
+
+        Optional.ofNullable(plea)
+                .ifPresent(value -> offenceObjectBuilder.add("plea", plea.name()));
+
+        final JsonArray offences = Json.createArrayBuilder().add(offenceObjectBuilder.build()).build();
+
+        final JsonObject defendant = Json.createObjectBuilder()
+                .add("offences", offences)
                 .build();
+
+        caseDetailBuilder.add("defendant", defendant);
+
+        return caseDetailBuilder.build();
+    }
+
+    private JsonEnvelope getCaseDetailResponseEnvelope(final JsonObject caseDetail) {
+        return JsonEnvelope.envelopeFrom(MetadataBuilderFactory.metadataWithRandomUUID("sjp.query.case"), caseDetail);
     }
 }

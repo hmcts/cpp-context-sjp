@@ -35,6 +35,7 @@ public class CaseDetailBuilder {
     private CaseDetailBuilder() {
         this.defendant = new DefendantDetail();
         this.prosecutingAuthority = ProsecutingAuthority.CPS;
+        this.postingDate = createdOn.toLocalDate();
     }
 
     public static CaseDetailBuilder aCase() {

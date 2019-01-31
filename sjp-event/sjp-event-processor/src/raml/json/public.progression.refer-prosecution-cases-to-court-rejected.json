@@ -1,0 +1,150 @@
+{
+  "rejectedReason": "Reference data not for Ethinicity with id d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+  "sjpCourtReferral": {
+    "listHearingRequests": [
+      {
+        "estimateMinutes": 20,
+        "hearingType": {
+          "id": "5d980a3f-4eb5-4b5d-ac0d-5cf76c7bf5eb"
+        },
+        "jurisdictionType": "MAGISTRATES",
+        "listDefendantRequests": [
+          {
+            "datesToAvoid": "thursdays",
+            "defendantOffences": [
+              "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+            ],
+            "hearingLanguageNeeds": "WELSH",
+            "prosecutionCaseId": "eaf71329-1afe-423c-9e51-334c1213ece3",
+            "referralReason": {
+              "defendantId": "761e4ae8-baa1-43f2-a71d-d9cf12067086",
+              "description": "forTrial",
+              "id": "04e0915a-5759-4bd3-a3c2-35c5206d4e3b"
+            },
+            "summonsRequired": "SJP_REFERRAL"
+          }
+        ],
+        "listingDirections": "tricky defendant",
+        "prosecutorDatesToAvoid": "wednesdays",
+        "reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992"
+      }
+    ],
+    "prosecutionCases": [
+      {
+        "defendants": [
+          {
+            "id": "761e4ae8-baa1-43f2-a71d-d9cf12067086",
+            "mitigation": "Low income",
+            "mitigationWelsh": "I was not there in Welsh",
+            "numberOfPreviousConvictionsCited": 5,
+            "offences": [
+              {
+                "arrestDate": "2018-01-01",
+                "chargeDate": "2018-01-01",
+                "convictionDate": "2018-11-11",
+                "count": 0,
+                "endDate": "2018-01-01",
+                "id": "062cedf4-b495-3a6c-9148-cec6bef362ed",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2018-04-01",
+                  "notifiedPleaValue": "NOTIFIED_GUILTY",
+                  "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+                },
+                "offenceDefinitionId": "062cedf4-b495-3a6c-9148-cec6bef362ed",
+                "offenceFacts": {
+                  "alcoholReadingAmount": "40mg",
+                  "alcoholReadingMethod": "Breathalyzer",
+                  "vehicleRegistration": "AA12345"
+                },
+                "orderIndex": 1,
+                "startDate": "2018-01-01",
+                "wording": "On 02/07/2015 At thread needle street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction ",
+                "wordingWelsh": "No Travel Card In Welsh"
+              }
+            ],
+            "personDefendant": {
+              "aliases": [
+                "johnny robber",
+                "jack the knife"
+              ],
+              "arrestSummonsNumber": "AR4235",
+              "bailStatus": "IN_CUSTODY",
+              "custodyTimeLimit": "2018-01-01",
+              "driverNumber": "AACC12345",
+              "employerPayrollReference": "payyou1234",
+              "observedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+              "perceivedBirthYear": 2015,
+              "personDetails": {
+                "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+                "address": {
+                  "address1": "22",
+                  "address2": "Acacia Avenue",
+                  "address3": "Acacia Town",
+                  "address4": "Acacia City",
+                  "address5": "Acacia Country",
+                  "postcode": "CR7 0AA"
+                },
+                "contact": {
+                  "fax": "3425678",
+                  "home": "123456",
+                  "mobile": "45678910",
+                  "primaryEmail": "pers.defendant@spurs.co.uk",
+                  "secondaryEmail": "perssecond.defendant@hotmail.com",
+                  "work": "7891011"
+                },
+                "dateOfBirth": "2010-01-01",
+                "disabilityStatus": "a",
+                "documentationLanguageNeeds": "WELSH",
+                "ethnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+                "firstName": "Deffirst",
+                "gender": "MALE",
+                "interpreterLanguageNeeds": "Welsh",
+                "lastName": "Deflast",
+                "middleName": "Defmiddle",
+                "nationalInsuranceNumber": "NH323232B",
+                "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+                "occupation": "Kid",
+                "occupationCode": "F",
+                "specificRequirements": "Screen",
+                "title": "MR"
+              },
+              "pncId": "1234567",
+              "selfDefinedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c"
+            },
+            "prosecutionAuthorityReference": "TFL12345-ABC",
+            "prosecutionCaseId": "eaf71329-1afe-423c-9e51-334c1213ece3",
+            "witnessStatement": "No",
+            "witnessStatementWelsh": "he did not do it in Welsh"
+          }
+        ],
+        "id": "eaf71329-1afe-423c-9e51-334c1213ece3",
+        "initiationCode": "J",
+        "originatingOrganisation": "G01FT01AB",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "TFL",
+          "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c3ce85",
+          "prosecutionAuthorityReference": "TFL22349"
+        },
+        "statementOfFacts": "An incident took place at GREEN PARK station whereby you were spoken to by a member of London Underground staff  regarding your train journey and the associated fare.The facts of this incidents are now being considered and I must advise you that legal proceedings may be initiated against you regarding this matter in accordance with the LU prosecution policy",
+        "statementOfFactsWelsh": "You did it in Welsh"
+      }
+    ],
+    "sjpReferral": {
+      "noticeDate": "2018-01-01",
+      "referralDate": "2018-02-15",
+      "referringJudicialDecision": {
+        "judiciary": [
+          {
+            "judicialName": "Mrs Theresa Mary May",
+            "judicialRoleTypeSJP": "MAGISTRATE"
+          },
+          {
+            "judicialName": "Mr Michel Bernard Barnier",
+            "judicialRoleTypeSJP": "MAGISTRATE"
+          }
+        ],
+        "location": "Lavender Hill Magistrates' Court"
+      }
+    }
+  }
+}

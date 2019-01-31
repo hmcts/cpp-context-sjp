@@ -9,6 +9,7 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,6 +43,9 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
     @Column(name = "plea_method")
     @Enumerated(EnumType.STRING)
     private PleaMethod pleaMethod;
+
+    @Column(name = "plea_date")
+    private ZonedDateTime pleaDate;
 
     @Column(name = "seq_no")
     private Integer sequenceNumber;
@@ -97,6 +101,7 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         this.code = builder.code;
         this.plea = builder.plea;
         this.pleaMethod = builder.pleaMethod;
+        this.pleaDate = builder.pleaDate;
         this.sequenceNumber = builder.sequenceNumber;
         this.wording = builder.wording;
         this.wordingWelsh = builder.wordingWelsh;
@@ -140,6 +145,14 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
 
     public void setPlea(PleaType plea) {
         this.plea = plea == null ? null : plea.name();
+    }
+
+    public ZonedDateTime getPleaDate() {
+        return pleaDate;
+    }
+
+    public void setPleaDate(ZonedDateTime pleaDate) {
+        this.pleaDate = pleaDate;
     }
 
     public PleaMethod getPleaMethod() {
@@ -291,6 +304,7 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         private String code;
         private String plea;
         private PleaMethod pleaMethod;
+        private ZonedDateTime pleaDate;
         private Integer sequenceNumber;
         private String wording;
         private String wordingWelsh;
@@ -329,6 +343,11 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
 
         public OffenceDetailBuilder setPleaMethod(PleaMethod pleaMethod) {
             this.pleaMethod = pleaMethod;
+            return this;
+        }
+
+        public OffenceDetailBuilder setPleaDate(ZonedDateTime pleaDate) {
+            this.pleaDate = pleaDate;
             return this;
         }
 

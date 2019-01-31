@@ -12,6 +12,7 @@
         "offenceCode": "PS00001",
         "cjsCode": "PS00001",
         "pleaMethod": "ONLINE",
+        "pleaDate": "${pleaDate}",
         "compensation": 2.34,
         "id": "${offenceId}",
         "plea": "NOT_GUILTY",
@@ -27,11 +28,12 @@
       "firstName": "Testy",
       "lastName": "Testerson",
       "address": {
-        "address3": "England",
-        "address2": "London",
         "address1": "14 Tottenham Court Road",
-        "postcode": "W1T 1JY",
-        "address4": "UK"
+        "address2": "London",
+        "address3": "England",
+        "address4": "UK",
+        "address5": "Greater London",
+        "postcode": "W1T 1JY"
       },
       "gender": "Male",
       "nationalInsuranceNumber": "AB123456A",
@@ -55,10 +57,12 @@
   "caseDocuments": [
 
   ],
+  "listedInCriminalCourts": false,
   "assigned": false,
   "id": "${caseId}",
   "completed": false,
   "postingDate": "2015-12-02",
   "enterpriseId": "${enterpriseId}",
-  "onlinePleaReceived": true
+  "onlinePleaReceived": true,
+  "status": "${caseStatus}"
 }

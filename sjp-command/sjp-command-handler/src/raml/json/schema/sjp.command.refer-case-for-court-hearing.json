@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/refer-case-for-court-hearing",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "sessionId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "referralReasonId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "hearingTypeId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "estimatedHearingDuration": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 999
+    },
+    "listingNotes": {
+      "type": "string"
+    },
+    "requestedAt": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/date-time"
+    }
+  },
+  "required": [
+    "caseId",
+    "sessionId",
+    "referralReasonId",
+    "hearingTypeId",
+    "estimatedHearingDuration",
+    "requestedAt"
+  ]
+}

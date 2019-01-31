@@ -51,6 +51,7 @@ public class PersonInfoVerifier {
                         defendantBuilder.getAddressBuilder().getAddress2(),
                         defendantBuilder.getAddressBuilder().getAddress3(),
                         defendantBuilder.getAddressBuilder().getAddress4(),
+                        defendantBuilder.getAddressBuilder().getAddress5(),
                         defendantBuilder.getAddressBuilder().getPostcode()
                 ),
                 new ContactDetails(
@@ -76,6 +77,7 @@ public class PersonInfoVerifier {
                         payloadBuilder.getAddressBuilder().getAddress2(),
                         payloadBuilder.getAddressBuilder().getAddress3(),
                         payloadBuilder.getAddressBuilder().getAddress4(),
+                        payloadBuilder.getAddressBuilder().getAddress5(),
                         payloadBuilder.getAddressBuilder().getPostcode()
                 ),
                 new ContactDetails(
@@ -116,6 +118,7 @@ public class PersonInfoVerifier {
                 withJsonPath("$.defendant.personalDetails.address.address2", equalTo(personalDetails.getAddress().getAddress2())),
                 withJsonPath("$.defendant.personalDetails.address.address3", equalTo(personalDetails.getAddress().getAddress3())),
                 withJsonPath("$.defendant.personalDetails.address.address4", equalTo(personalDetails.getAddress().getAddress4())),
+                withJsonPath("$.defendant.personalDetails.address.address5", equalTo(personalDetails.getAddress().getAddress5())),
                 withJsonPath("$.defendant.personalDetails.address.postcode", equalTo(personalDetails.getAddress().getPostcode()))
         );
     }

@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.query.view;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.time.LocalDate.now;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -315,6 +316,7 @@ public class SjpQueryViewTest {
                         withJsonPath("$.address.address2", is(address.getAddress2())),
                         withJsonPath("$.address.address3", is(address.getAddress3())),
                         withJsonPath("$.address.address4", is(address.getAddress4())),
+                        withJsonPath("$.address.address5", is(address.getAddress5())),
                         withJsonPath("$.address.postcode", is(address.getPostcode()))
                 ))
                 )
@@ -348,19 +350,6 @@ public class SjpQueryViewTest {
         when(caseService.findAwaitingCases()).thenReturn(payload);
 
         final JsonEnvelope result = sjpQueryView.getAwaitingCases(envelope);
-
-        verify(function).apply(payload);
-        assertThat(result, is(outputEnvelope));
-    }
-
-    @Test
-    public void shouldGetCasesReferredToCourt() {
-        setupExpectations();
-        when(envelope.metadata()).thenReturn(metadata);
-        final JsonObject payload = createObjectBuilder().build();
-        when(caseService.findCasesReferredToCourt()).thenReturn(payload);
-
-        final JsonEnvelope result = sjpQueryView.getCasesReferredToCourt(envelope);
 
         verify(function).apply(payload);
         assertThat(result, is(outputEnvelope));
@@ -456,7 +445,7 @@ public class SjpQueryViewTest {
                 .with(metadataWithRandomUUID("sjp.query.defendant-details-updates"))
                 .build();
 
-        LocalDate dateOfBirth = LocalDate.now().minusYears(30);
+        LocalDate dateOfBirth = now().minusYears(30);
 
         PersonalDetails personalDetails = new PersonalDetails();
         personalDetails.setFirstName("firstName");

@@ -29,7 +29,6 @@ import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDocumentBuilder;
-import uk.gov.moj.cpp.sjp.persistence.entity.AwaitingCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
@@ -55,7 +54,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.JsonObject;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 
@@ -409,21 +407,6 @@ public class CaseServiceTest {
 
         final CaseDocumentsView caseDocumentsView = service.findCaseDocumentsFilterOtherAndFinancialMeans(CASE_ID);
         assertThat(caseDocumentsView.getCaseDocuments().size(), is(1));
-    }
-
-    @Test
-    public void shouldFindAwaitingCases() {
-
-        final AwaitingCase awaitingCase = new AwaitingCase("Andrew", "Baker", "PS0001");
-        when(caseRepository.findAwaitingSjpCases(600)).thenReturn(singletonList(awaitingCase));
-
-        final JsonObject awaitingCases = service.findAwaitingCases();
-
-        final JsonObject awaitingCase1 = awaitingCases.getJsonArray("awaitingCases")
-                .getValuesAs(JsonObject.class).get(0);
-        assertEquals(awaitingCase1.getString("firstName"), awaitingCase.getDefendantFirstName());
-        assertEquals(awaitingCase1.getString("lastName"), awaitingCase.getDefendantLastName());
-        assertEquals(awaitingCase1.getString("offenceCode"), awaitingCase.getOffenceCode());
     }
 
     @Test

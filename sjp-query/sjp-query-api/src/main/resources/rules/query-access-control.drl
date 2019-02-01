@@ -120,15 +120,6 @@ rule "sjp.query.employer"
     $outcome.setSuccess(true);
 end
 
-rule "sjp.query.awaiting-cases"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.awaiting-cases");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryAwaitingCasesActionGroups()))
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "sjp - Query - API - Get result orders"
   when
     $outcome: Outcome();

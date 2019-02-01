@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
-import uk.gov.moj.cpp.sjp.persistence.entity.AwaitingCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -10,7 +9,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.deltaspike.data.api.AbstractEntityRepository;
-import org.apache.deltaspike.data.api.MaxResults;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.QueryResult;
@@ -87,15 +85,6 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     @Query(value = "select cd from CaseDetail cd JOIN cd.caseDocuments cdocs " +
             "WHERE cdocs.materialId = :materialId")
     public abstract CaseDetail findByMaterialId(@QueryParam("materialId") final UUID materialId);
-
-    @Query(value = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.AwaitingCase" +
-            "(d.personalDetails.firstName, d.personalDetails.lastName, o.code) " +
-            "FROM CaseDetail cd " +
-            "LEFT OUTER JOIN cd.defendant d " +
-            "LEFT OUTER JOIN d.offences o " +
-            "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc) " +
-            "ORDER BY cd.postingDate")
-    public abstract List<AwaitingCase> findAwaitingSjpCases(@MaxResults final int limit);
 
     @Query(value = "SELECT cd.prosecutingAuthority FROM CaseDetail cd WHERE cd.id = :caseId", singleResult = SingleResultType.OPTIONAL)
     public abstract String getProsecutingAuthority(@QueryParam("caseId") final UUID caseId);

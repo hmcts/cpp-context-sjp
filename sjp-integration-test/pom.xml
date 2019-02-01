@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-parent</artifactId>
-        <version>1.0.84-ATCM-SNAPSHOT</version>
+        <version>1.0.85-ATCM-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -426,6 +426,17 @@
                                 <configuration>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>sjp-command-api</artifactId>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>deploy-command-controller</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>deploy-artifact</goal>
+                                </goals>
+                                <configuration>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>sjp-command-controller</artifactId>
                                 </configuration>
                             </execution>
                             <execution>

@@ -1,0 +1,37 @@
+package uk.gov.moj.cpp.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+
+rule "Command - Rule for start session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.start-session");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for end session"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.end-session");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for assigning case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.assign-case");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for unassigning case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.unassign-case");
+  then
+    $outcome.setSuccess(true);
+end
+

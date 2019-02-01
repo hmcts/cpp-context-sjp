@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-command</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>1.0.84-ATCM-SNAPSHOT</version>
+        <version>1.0.85-ATCM-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -76,7 +76,7 @@
                 <dependencies>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.sjp</groupId>
-                        <artifactId>sjp-command-handler</artifactId>
+                        <artifactId>sjp-command-controller</artifactId>
                         <version>${project.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>

@@ -146,3 +146,11 @@ rule "sjp.query.defendant-details-updates"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp.query.case-notes"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-notes");
+  then
+    $outcome.setSuccess(true);
+end

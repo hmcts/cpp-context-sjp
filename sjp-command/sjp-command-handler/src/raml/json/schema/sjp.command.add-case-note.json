@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/add-case-note",
+  "properties": {
+    "caseId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "note": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/note.json"
+    },
+    "author": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/note-author.json"
+    },
+    "decisionId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "caseId",
+    "note",
+    "author"
+  ],
+  "additionalProperties": false
+}

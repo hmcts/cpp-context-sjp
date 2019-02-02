@@ -191,3 +191,12 @@ rule "sjp - Query - API - Get defendant details updates"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp - Query - API - Get case notes"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-notes");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getCaseNotesGroups()))
+  then
+    $outcome.setSuccess(true);
+end

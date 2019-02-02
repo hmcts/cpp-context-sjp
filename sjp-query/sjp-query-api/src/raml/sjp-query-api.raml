@@ -395,3 +395,19 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
           application/vnd.sjp.query.case-prosecuting-authority+json:
             schema: !include json/schema/sjp.query.case-prosecuting-authority.json
             example: !include json/sjp.query.case-prosecuting-authority.json
+
+/cases/{caseId}/notes:
+  get:
+    description: |
+      get case notes
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-notes+json
+          name: sjp.query.case-notes
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case-notes+json:
+            schema: !include json/schema/sjp.query.case-notes.json
+            example: !include json/sjp.query.case-notes.json

@@ -1,0 +1,13 @@
+{
+  "caseId": "f1c7ab7e-22db-4d18-a865-23cb495ec435",
+  "note": {
+    "noteId": "test note",
+    "noteText": "test note",
+    "noteType": "CASE"
+  },
+  "author": {
+    "userId": "d9b38b48-2aae-4e40-9c4b-9613bf38d2da",
+    "firstName": "John",
+    "lastName": "Smith"
+  }
+}

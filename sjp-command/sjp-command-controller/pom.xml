@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-command</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>1.0.86-ATCM-SNAPSHOT</version>
+        <version>1.0.87-ATCM-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -24,24 +24,12 @@
                         <artifactId>sjp-command-handler</artifactId>
                         <version>${project.version}</version>
                         <classifier>raml</classifier>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
                     </dependency>
                     <dependency>
-                        <groupId>uk.gov.moj.cpp.referencedata</groupId>
-                        <artifactId>referencedata-query-api</artifactId>
-                        <version>${referencedata.version}</version>
+                        <groupId>uk.gov.moj.cpp.usersgroups</groupId>
+                        <artifactId>usersgroups-query-api</artifactId>
+                        <version>${usersgroups.version}</version>
                         <classifier>raml</classifier>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
                     </dependency>
                 </dependencies>
                 <configuration>
@@ -67,7 +55,6 @@
             <artifactId>javaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
-
 
         <dependency>
             <groupId>uk.gov.moj.cpp.access-control</groupId>

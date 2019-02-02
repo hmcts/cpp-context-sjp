@@ -136,4 +136,8 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.case-notes")
+    public JsonEnvelope getCaseNotes(final JsonEnvelope query) {
+        return requester.request(query);
+    }
 }

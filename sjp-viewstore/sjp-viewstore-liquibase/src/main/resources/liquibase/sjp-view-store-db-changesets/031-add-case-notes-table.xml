@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="31" author="tomaszp" logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <createTable tableName="case_note">
+            <column name="note_id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="case_id" type="uuid"></column>
+            <column name="note_text" type="text"/>
+            <column name="note_type" type="text"/>
+            <column name="author_user_id" type="uuid"></column>
+            <column name="author_first_name" type="text"/>
+            <column name="author_last_name" type="text"/>
+            <column name="decision_id" type="uuid"/>
+            <column name="added_at" type="timestamp without time zone"/>
+        </createTable>
+
+        <createIndex tableName="case_note" indexName="case_notes_case_id_idx">
+            <column name="case_id" type="uuid"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>

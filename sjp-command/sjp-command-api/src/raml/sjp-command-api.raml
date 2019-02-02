@@ -481,3 +481,27 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
     responses:
       202:
         description: Accepted
+
+
+/cases/{caseId}/notes:
+  uriParameters:
+    caseId:
+      description: The ID of the case to which note is added
+      type: string
+  post:
+    description: |
+      Add case note
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.add-case-note+json
+          name: sjp.add-case-note
+      ...
+    body:
+          application/vnd.sjp.add-case-note+json:
+            example:
+              !include json/sjp.add-case-note.json
+            schema:
+              !include json/schema/sjp.add-case-note.json
+    responses:
+      202:
+        description: Accepted

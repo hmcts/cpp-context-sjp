@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/case-notes.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "decisionId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "noteId": {
+            "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+          },
+          "noteText": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/note-text.json"
+          },
+          "noteType": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/note-type.json"
+          },
+          "addedAt": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+          },
+          "authorFirstName": {
+            "type": "string"
+          },
+          "authorLastName": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "noteId",
+        "noteText",
+        "noteType",
+        "addedAt",
+        "authorFirstName",
+        "authorLastName"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "caseId",
+    "notes"
+  ]
+}

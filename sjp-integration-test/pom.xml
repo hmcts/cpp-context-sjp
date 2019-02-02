@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-parent</artifactId>
-        <version>1.0.86-ATCM-SNAPSHOT</version>
+        <version>1.0.87-ATCM-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -50,6 +50,13 @@
                     <artifactId>commons-beanutils-core</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- Once the common bom (version 2.1.4-SNAPSHOT) is upgraded in sjp parent, the version number can be removed. -->
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>2.1</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>

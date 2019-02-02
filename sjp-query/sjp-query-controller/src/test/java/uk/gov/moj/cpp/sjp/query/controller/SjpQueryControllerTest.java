@@ -70,7 +70,8 @@ public class SjpQueryControllerTest {
                         method("getReadyCases").thatHandles("sjp.query.ready-cases").withRequesterPassThrough(),
                         method("getCaseAssignment").thatHandles("sjp.query.case-assignment").withRequesterPassThrough(),
                         method("getProsecutingAuthority").thatHandles("sjp.query.case-prosecuting-authority").withRequesterPassThrough(),
-                        method("getDefendantDetailsUpdates").thatHandles("sjp.query.defendant-details-updates").withRequesterPassThrough()
+                        method("getDefendantDetailsUpdates").thatHandles("sjp.query.defendant-details-updates").withRequesterPassThrough(),
+                        method("getCaseNotes").thatHandles("sjp.query.case-notes").withRequesterPassThrough()
                 )));
     }
 

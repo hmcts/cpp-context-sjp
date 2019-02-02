@@ -16,7 +16,6 @@ import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaultsUntilResponseIsJson;
 
@@ -32,13 +31,13 @@ import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestCancelHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
-import uk.gov.moj.sjp.it.stub.AssignmentStub;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
+import javax.json.JsonObject;
+
 import com.jayway.jsonpath.ReadContext;
-import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 
@@ -189,7 +188,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
         ))));
     }
 
-    private static JsonPath pollReadyCasesUntilResponseIsJson(final Matcher<? super ReadContext> matcher) {
+    private static JsonObject pollReadyCasesUntilResponseIsJson(final Matcher<? super ReadContext> matcher) {
         final RequestParamsBuilder requestParams = requestParams(getReadUrl(QUERY_READY_CASES_RESOURCE), QUERY_READY_CASES)
                 .withHeader(HeaderConstants.USER_ID, USER_ID);
         return pollWithDefaultsUntilResponseIsJson(requestParams.build(), matcher);

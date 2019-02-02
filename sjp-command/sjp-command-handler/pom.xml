@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-command</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>1.0.86-ATCM-SNAPSHOT</version>
+        <version>1.0.87-ATCM-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -83,6 +83,7 @@
                                 <include>**/sjp.command.update-employer.json</include>
                                 <include>**/sjp.command.refer-case-for-court-hearing.json</include>
                                 <include>**/sjp.command.record-case-referral-for-court-hearing-rejection.json</include>
+                                <include>**/sjp.command.add-case-note.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>

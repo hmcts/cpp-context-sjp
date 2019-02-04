@@ -7,7 +7,6 @@ import static java.time.LocalDate.now;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
@@ -340,19 +339,6 @@ public class SjpQueryViewTest {
         assertThat(result, jsonEnvelope(metadata().withName("sjp.query.employer"),
                 payload().isJson(hasJsonPath("$.*", empty()))
         ));
-    }
-
-    @Test
-    public void shouldGetAwaitingCases() {
-        setupExpectations();
-        when(envelope.metadata()).thenReturn(metadata);
-        final JsonObject payload = createObjectBuilder().build();
-        when(caseService.findAwaitingCases()).thenReturn(payload);
-
-        final JsonEnvelope result = sjpQueryView.getAwaitingCases(envelope);
-
-        verify(function).apply(payload);
-        assertThat(result, is(outputEnvelope));
     }
 
     @Test

@@ -4,13 +4,10 @@ import static com.google.common.collect.Iterables.isEmpty;
 import static java.util.Arrays.asList;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.persistence.entity.AwaitingCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
@@ -39,8 +36,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 
@@ -206,19 +201,6 @@ public class CaseService {
             searchResults = caseSearchResultRepository.findByLastName(prosecutingAuthorityFilterValue, query);
         }
         return new CaseSearchResultsView(searchResults);
-    }
-
-    public JsonObject findAwaitingCases() {
-
-        final List<AwaitingCase> awaitingSjpCases = caseRepository.findAwaitingSjpCases(600);
-
-        final JsonArrayBuilder arrayBuilder = createArrayBuilder();
-        awaitingSjpCases.forEach(awaitingCase ->
-            arrayBuilder.add(createObjectBuilder()
-                    .add("firstName", awaitingCase.getDefendantFirstName())
-                    .add("lastName", awaitingCase.getDefendantLastName())
-                    .add("offenceCode", awaitingCase.getOffenceCode())));
-        return createObjectBuilder().add("awaitingCases", arrayBuilder).build();
     }
 
     public ResultOrdersView findResultOrders(LocalDate fromDate, LocalDate toDate) {

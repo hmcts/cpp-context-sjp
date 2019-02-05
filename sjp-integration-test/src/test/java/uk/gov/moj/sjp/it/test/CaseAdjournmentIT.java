@@ -8,20 +8,29 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseNotReady;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
+import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
+import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
+import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestCancelHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
+import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.producer.CaseAdjournmentProducer;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
+import uk.gov.moj.sjp.it.util.ActivitiHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.sql.SQLException;
@@ -42,15 +51,20 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
     private UUID userId;
     private LocalDate adjournmentDate = now().plusDays(7);
     private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
+    private UUID offenceId;
+    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
     private static final String LONDON_LJA_NATIONAL_COURT_CODE = "2572";
     private static final String LONDON_COURT_HOUSE_OU_CODE = "B01OK";
+    private static final String PROCESS_NAME = "caseState";
+    final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
 
     @Before
     public void setUp() throws SQLException {
         caseId = randomUUID();
         sessionId = randomUUID();
         userId = randomUUID();
+        offenceId = randomUUID();
 
         databaseCleaner.cleanAll();
 
@@ -59,33 +73,93 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
         SchedulingStub.stubStartSjpSessionCommand();
         ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
 
-        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
+        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
                 .withDefaults()
-                .withId(caseId);
+                .withId(caseId)
+                .withOffenceId(offenceId)
+                .withPostingDate(postingDate);
 
         CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
         pollUntilCaseReady(caseId);
 
         startSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
-        requestCaseAssignment(sessionId, userId);
-
-        pollUntilCaseByIdIsOk(caseId, caseAssigned(true));
     }
 
     @Test
     public void shouldRecordCaseAdjournmentAndChangeCaseStatusToNotReady() {
+        requestCaseAssignment(sessionId, userId);
+        pollUntilCaseByIdIsOk(caseId, caseAssigned(true));
+
         caseAdjournedRecordedPrivateEventCreated();
+
         pollUntilCaseNotReady(caseId);
         pollUntilCaseByIdIsOk(caseId, allOf(caseAssigned(false), caseAdjourned(adjournmentDate)));
     }
 
     @Test
     public void shouldPutCaseInReadyStateWhenWithdrawalReceivedAfterCaseAdjournment() {
+        requestCaseAssignment(sessionId, userId);
+        pollUntilCaseByIdIsOk(caseId, caseAssigned(true));
+
         caseAdjournedRecordedPrivateEventCreated();
 
         try (OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(caseId)) {
             offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(USER_ID);
             pollUntilCaseReady(caseId);
+            pollUntilCaseByIdIsOk(caseId, allOf(caseAssigned(false), caseAdjourned(adjournmentDate)));
+        }
+    }
+
+    @Test
+    public void shouldChangeCaseReadinessStateWhenAdjournmentDateElapsed() {
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper();
+             final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(caseId);
+             final OffencesWithdrawalRequestCancelHelper offencesWithdrawalRequestCancelHelper = new OffencesWithdrawalRequestCancelHelper(caseId)) {
+
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseId,
+                    createCasePayloadBuilder.getUrn(),
+                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
+
+            updatePleaHelper.updatePlea(caseId, offenceId, getPleaPayload(PleaType.GUILTY));
+            caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
+            pollUntilCaseReady(caseId);
+
+            caseAdjournedRecordedPrivateEventCreated();
+            pollUntilCaseNotReady(caseId);
+
+            offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(USER_ID);
+            caseSearchResultHelper.verifyCaseStatus(CaseStatus.WITHDRAWAL_REQUEST_READY_FOR_DECISION);
+            pollUntilCaseReady(caseId);
+
+            offencesWithdrawalRequestCancelHelper.cancelRequestWithdrawalForAllOffences(USER_ID);
+            pollUntilCaseNotReady(caseId);
+
+            final String pendingAdjournmentProcess = ActivitiHelper.pollUntilProcessExists(PROCESS_NAME, caseId.toString());
+            ActivitiHelper.executeTimerJobs(pendingAdjournmentProcess);
+            pollUntilCaseReady(caseId);
+        }
+    }
+
+    @Test
+    public void shouldNotChangeCaseReadinessStateForAdjournedCaseWhen28DaysElapsed() {
+        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper();
+             final CancelPleaHelper cancelPleaHelper = new CancelPleaHelper(caseId, offenceId)) {
+
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseId,
+                    createCasePayloadBuilder.getUrn(),
+                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
+
+            updatePleaHelper.updatePlea(caseId, offenceId, getPleaPayload(PleaType.GUILTY));
+            caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
+            pollUntilCaseReady(caseId);
+
+            caseAdjournedRecordedPrivateEventCreated();
+            pollUntilCaseNotReady(caseId);
+
+            cancelPleaHelper.cancelPlea();
+            pollUntilCaseNotReady(caseId);
             pollUntilCaseByIdIsOk(caseId, allOf(caseAssigned(false), caseAdjourned(adjournmentDate)));
         }
     }
@@ -114,5 +188,4 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
     private Matcher caseAdjourned(final LocalDate adjournedTo) {
         return withJsonPath("$.adjournedTo", is(adjournedTo.toString()));
     }
-
 }

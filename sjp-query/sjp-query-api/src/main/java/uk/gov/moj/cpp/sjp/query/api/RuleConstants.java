@@ -92,4 +92,9 @@ public final class RuleConstants {
     public static List<String> getCaseNotesGroups() {
         return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
+
+    public static List<String> getAllowedGroupsForTransparencyReport() {
+        return asList(GROUP_COURT_ADMINISTRATORS);
+    }
+
 }

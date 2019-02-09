@@ -86,6 +86,10 @@
             <groupId>uk.gov.moj.cpp.system.authorisation</groupId>
             <artifactId>authorisation-interceptor</artifactId>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>file-service-persistence</artifactId>
+        </dependency>
         <!-- Unit Test Dependencies -->
         <dependency>
             <groupId>uk.gov.moj.cpp.access-control</groupId>

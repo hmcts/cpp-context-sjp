@@ -200,3 +200,21 @@ rule "sjp - Query - API - Get case notes"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp - Query - API - Get Transparency Report Metadata"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.transparency-report-metadata");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAllowedGroupsForTransparencyReport()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get Transparency Report Content"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.transparency-report-content");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAllowedGroupsForTransparencyReport()))
+  then
+    $outcome.setSuccess(true);
+end

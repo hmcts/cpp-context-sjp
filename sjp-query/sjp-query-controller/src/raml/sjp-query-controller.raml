@@ -383,3 +383,19 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
           application/vnd.sjp.query.case-notes+json:
             schema: !include json/schema/sjp.query.case-notes.json
             example: !include json/sjp.query.case-notes.json
+
+/transparency-report/metadata:
+  get:
+    description: |
+      fetch the latest transparency reports metadata
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.transparency-report-metadata+json
+          name: sjp.query.transparency-report-metadata
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.transparency-report-metadata+json:
+            schema: !include json/schema/sjp.query.transparency-report-metadata.json
+            example: !include json/sjp.query.transparency-report-metadata.json

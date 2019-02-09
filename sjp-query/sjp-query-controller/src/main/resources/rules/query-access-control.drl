@@ -154,3 +154,11 @@ rule "sjp.query.case-notes"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp.query.transparency-report-metadata"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.transparency-report-metadata");
+  then
+    $outcome.setSuccess(true);
+end

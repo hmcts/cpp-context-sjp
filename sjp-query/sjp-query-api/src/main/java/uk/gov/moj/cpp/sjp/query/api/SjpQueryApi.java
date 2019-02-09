@@ -95,4 +95,9 @@ public class SjpQueryApi {
     public JsonEnvelope getCaseNotes(final JsonEnvelope query) {
         return requester.request(query);
     }
+
+    @Handles("sjp.query.transparency-report-metadata")
+    public JsonEnvelope getTransparencyReportMetadata(final JsonEnvelope query) {
+        return requester.request(query);
+    }
 }

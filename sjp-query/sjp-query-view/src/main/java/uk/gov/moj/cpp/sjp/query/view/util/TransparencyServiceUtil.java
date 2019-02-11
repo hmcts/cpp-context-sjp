@@ -1,8 +1,16 @@
 package uk.gov.moj.cpp.sjp.query.view.util;
 
+import static java.time.format.DateTimeFormatter.ofPattern;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 public class TransparencyServiceUtil {
 
     private static final Integer UNIT_SIZE = 1024;
+    private static final String DATE_TIME_PATTERN = "d MMMM YYYY 'at' h:mma";
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = ofPattern(DATE_TIME_PATTERN);
+
 
     private TransparencyServiceUtil() {
     }
@@ -20,6 +28,13 @@ public class TransparencyServiceUtil {
         }
 
         return formattedValue;
+    }
+
+    public static String format(final LocalDateTime localDateTime) {
+        return localDateTime
+                .format(DATE_TIME_FORMATTER)
+                .replace("AM", "am")
+                .replace("PM", "pm");
     }
 
 }

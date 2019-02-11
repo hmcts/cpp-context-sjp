@@ -14,7 +14,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Before;
+import javax.persistence.NoResultException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -38,8 +39,49 @@ public class TransparencyReportServiceTest {
 
     private final LocalDateTime generatedAt = LocalDateTime.of(2018, 12, 25, 4, 1, 35);
 
-    @Before
-    public void setUp() {
+
+    @Test
+    public void shouldReturnMetadata() {
+        // given
+        setUpMetadata();
+        final TransparencyReportsMetadataView transparencyReportsMetaDataView = transparencyReportService.getMetaData();
+
+        // when
+        final List<TransparencyReportMetaDataView> reportsMetadata = transparencyReportsMetaDataView.getReportsMetadata();
+
+        // then
+        assertThat(reportsMetadata.size(), is(2));
+
+        final TransparencyReportMetaDataView englishTransparencyReportMetaDataView = reportsMetadata.get(0);
+        final TransparencyReportMetaDataView welshTransparencyReportMetaDataView = reportsMetadata.get(1);
+
+        validateReportMetadata(englishTransparencyReportMetaDataView, false);
+        validateReportMetadata(welshTransparencyReportMetaDataView, true);
+    }
+
+    @Test
+    public void shouldReturnEmptyMetadata() {
+        // given
+        when(transparencyReportMetadataRepository.findLatestTransparencyReportMetadata()).thenThrow(new NoResultException());
+        final TransparencyReportsMetadataView transparencyReportsMetaDataView = transparencyReportService.getMetaData();
+
+        // when
+        final List<TransparencyReportMetaDataView> reportsMetadata = transparencyReportsMetaDataView.getReportsMetadata();
+
+        // then
+        assertThat(reportsMetadata.size(), is(0));
+    }
+
+    private void validateReportMetadata(final TransparencyReportMetaDataView transparencyReportMetaDataView, boolean welsh) {
+        final int index = welsh ? 1 : 0;
+        assertThat(transparencyReportMetaDataView.getFileId(), is(fileServiceIds.get(index).toString()));
+        assertThat(transparencyReportMetaDataView.getPages(), is(numberOfPages.get(index)));
+        assertThat(transparencyReportMetaDataView.getReportIn(), is(welsh ? "Welsh" : "English"));
+        assertThat(transparencyReportMetaDataView.getSize(), is("22MB"));
+        assertThat(transparencyReportMetaDataView.getGeneratedAt(), is("25 December 2018 at 4:01am"));
+    }
+
+    private void setUpMetadata() {
         final TransparencyReportMetadata metadata = new TransparencyReportMetadata();
 
         metadata.setEnglishFileServiceId(fileServiceIds.get(0));
@@ -56,30 +98,4 @@ public class TransparencyReportServiceTest {
         when(transparencyReportMetadataRepository.findLatestTransparencyReportMetadata()).thenReturn(metadata);
     }
 
-    @Test
-    public void shouldReturnMetadata() {
-        // given
-        final TransparencyReportsMetadataView transparencyReportsMetaDataView = transparencyReportService.getMetaData();
-
-        // when
-        final List<TransparencyReportMetaDataView> reportsMetadata = transparencyReportsMetaDataView.getReportsMetadata();
-
-        // then
-        assertThat(reportsMetadata.size(), is(2));
-
-        final TransparencyReportMetaDataView englishTransparencyReportMetaDataView = reportsMetadata.get(0);
-        final TransparencyReportMetaDataView welshTransparencyReportMetaDataView = reportsMetadata.get(1);
-
-        validateReportMetadata(englishTransparencyReportMetaDataView, false);
-        validateReportMetadata(welshTransparencyReportMetaDataView, true);
-    }
-
-    private void validateReportMetadata(final TransparencyReportMetaDataView transparencyReportMetaDataView, boolean welsh) {
-        final int index = welsh ? 1 : 0;
-        assertThat(transparencyReportMetaDataView.getFileId(), is(fileServiceIds.get(index).toString()));
-        assertThat(transparencyReportMetaDataView.getPages(), is(numberOfPages.get(index)));
-        assertThat(transparencyReportMetaDataView.getReportIn(), is(welsh ? "Welsh" : "English"));
-        assertThat(transparencyReportMetaDataView.getSize(), is("22MB"));
-        assertThat(transparencyReportMetaDataView.getGeneratedAt(), is("25 December 2018 at 4:01am"));
-    }
 }

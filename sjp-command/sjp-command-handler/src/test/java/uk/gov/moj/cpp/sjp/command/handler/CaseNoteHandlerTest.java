@@ -13,8 +13,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.json.schemas.domains.sjp.AddCaseNote.addCaseNote;
 import static uk.gov.justice.json.schemas.domains.sjp.Note.note;
-import static uk.gov.justice.json.schemas.domains.sjp.NoteAuthor.noteAuthor;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.DECISION;
+import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
@@ -28,7 +28,7 @@ import static uk.gov.moj.cpp.sjp.event.CaseNoteAdded.caseNoteAdded;
 
 import uk.gov.justice.json.schemas.domains.sjp.AddCaseNote;
 import uk.gov.justice.json.schemas.domains.sjp.Note;
-import uk.gov.justice.json.schemas.domains.sjp.NoteAuthor;
+import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -94,7 +94,7 @@ public class CaseNoteHandlerTest {
                 .withAddedAt(now())
                 .build();
 
-        final NoteAuthor author = noteAuthor()
+        final User author = user()
                 .withUserId(randomUUID())
                 .withFirstName("John")
                 .withLastName("Smith")

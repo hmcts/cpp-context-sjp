@@ -57,6 +57,7 @@
                             <sourceDirectory>CLASSPATH</sourceDirectory>
                             <includes>
                                 <include>json/schema/fragments/gender.json</include>
+                                <include>json/schema/fragments/listing-details.json</include>
                                 <include>json/schema/events/sjp.events.case-note-added.json</include>
                                 <include>json/schema/events/sjp.events.case-referred-for-court-hearing.json</include>
                                 <include>json/schema/events/sjp.events.case-referral-for-court-hearing-rejection-recorded.json</include>

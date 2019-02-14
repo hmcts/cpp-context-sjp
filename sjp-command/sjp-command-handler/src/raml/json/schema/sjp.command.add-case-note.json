@@ -10,7 +10,7 @@
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/note.json"
     },
     "author": {
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/note-author.json"
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/user.json"
     },
     "decisionId": {
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"

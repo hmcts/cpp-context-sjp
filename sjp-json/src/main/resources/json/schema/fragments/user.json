@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/note-author.json",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/user.json",
   "type": "object",
   "properties": {
     "userId": {

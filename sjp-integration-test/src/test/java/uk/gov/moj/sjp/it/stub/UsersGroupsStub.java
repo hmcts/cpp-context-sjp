@@ -14,7 +14,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
-import uk.gov.justice.json.schemas.domains.sjp.NoteAuthor;
+import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 
 import java.util.UUID;
@@ -59,8 +59,8 @@ public class UsersGroupsStub {
         return stubForUserDetails(userId, prosecutingAuthority);
     }
 
-    public static JsonObject stubForUserDetails(final NoteAuthor noteAuthor) {
-        return stubForUserDetails(noteAuthor.getUserId(), noteAuthor.getFirstName(), noteAuthor.getLastName(), null);
+    public static JsonObject stubForUserDetails(final User user) {
+        return stubForUserDetails(user.getUserId(), user.getFirstName(), user.getLastName(), null);
     }
 
     public static JsonObject stubForUserDetails(final UUID userId, final String firstName, final String lastName, final String prosecutingAuthority) {

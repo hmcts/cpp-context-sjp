@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.findAll;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.now;
@@ -14,14 +15,18 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static uk.gov.justice.json.schemas.domains.sjp.NoteType.LISTING;
+import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.sjp.it.helper.CaseNoteHelper.pollForCaseNotes;
 import static uk.gov.moj.sjp.it.helper.CaseReferralHelper.findReferralStatusForCase;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.stub.ProgressionServiceStub.REFER_TO_COURT_COMMAND_CONTENT;
@@ -31,6 +36,7 @@ import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.JsonHelper.lenientCompare;
 
 import uk.gov.justice.domain.annotation.Event;
+import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
@@ -111,14 +117,22 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
     private UUID sessionId;
     private UUID caseId;
+    private UUID decisionId;
     private UUID offenceId;
+    private User legalAdviser;
 
     @Before
     public void setUp() {
         sessionId = randomUUID();
         caseId = randomUUID();
+        decisionId = randomUUID();
         offenceId = randomUUID();
         prosecutingAuthority = ProsecutingAuthority.TFL;
+        legalAdviser = user()
+                .withUserId(randomUUID())
+                .withFirstName("IT")
+                .withLastName("User without prosecuting access")
+                .build();
 
         AssignmentStub.stubAddAssignmentCommand();
         AssignmentStub.stubRemoveAssignmentCommand();
@@ -132,7 +146,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
         ReferenceDataServiceStub.stubEthnicities("stub-data/referencedata.query.ethnicities.json");
         ReferenceDataServiceStub.stubReferralDocumentMetadataQuery(DOCUMENT_TYPE_ID.toString(), REFERENCE_DATA_DOCUMENT_TYPE);
         ResultingStub.stubGetCaseDecisionsWithDecision(caseId);
-        UsersGroupsStub.stubForUserDetails(USER_ID);
+        UsersGroupsStub.stubForUserDetails(legalAdviser);
         MaterialStub.stubMaterialMetadata(MATERIAL_ID, FILE_NAME, MIME_TYPE, ADDED_AT);
         ProgressionServiceStub.stubReferCaseToCourtCommand();
         ProsecutionCaseFileServiceStub.stubCaseDetails(caseId, "stub-data/prosecutioncasefile.query.case-details.json");
@@ -155,7 +169,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
         defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
         caseUrn = createCasePayloadBuilder.getUrn();
 
-        startSession(sessionId, USER_ID, LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
+        startSession(sessionId, legalAdviser.getUserId(), LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
 
         final EventListener eventListener = new EventListener();
         eventListener
@@ -172,6 +186,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
         final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
         final DecisionToReferCaseForCourtHearingSavedProducer decisionToReferCaseForCourtHearingSavedProducer = new DecisionToReferCaseForCourtHearingSavedProducer(
                 caseId,
+                decisionId,
                 sessionId,
                 REFERRAL_REASON_ID,
                 HEARING_TYPE_ID,
@@ -187,6 +202,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
         assertCaseReferredForCourtHearingEventContentsMatch(caseReferredForCourtHearingEnvelope);
         assertReferralRecordedInCourtReferralStatus();
+        assertListingNotesAdded();
     }
 
     @Test
@@ -197,6 +213,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
         final ReferToCourtHearingProducer referToCourtHearingProducer = new ReferToCourtHearingProducer(caseId, REFERRAL_REASON_ID, HEARING_TYPE_ID, referralRejectionReason);
         final DecisionToReferCaseForCourtHearingSavedProducer decisionToReferCaseForCourtHearingSavedProducer = new DecisionToReferCaseForCourtHearingSavedProducer(
                 caseId,
+                decisionId,
                 sessionId,
                 REFERRAL_REASON_ID,
                 HEARING_TYPE_ID,
@@ -241,6 +258,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
         final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
         final DecisionToReferCaseForCourtHearingSavedProducer decisionToReferCaseForCourtHearingSavedProducer = new DecisionToReferCaseForCourtHearingSavedProducer(
                 caseId,
+                decisionId,
                 sessionId,
                 REFERRAL_REASON_ID,
                 HEARING_TYPE_ID,
@@ -312,6 +330,26 @@ public class CourtReferralIT extends BaseIntegrationTest {
                                 withJsonPath("$.listingNotes", CoreMatchers.equalTo(LISTING_NOTES)),
                                 withJsonPath("$.referredAt", CoreMatchers.equalTo(RESULTED_ON.toString()))
                         ))));
+    }
+
+    private void assertListingNotesAdded() {
+        final JsonObject notes = pollForCaseNotes(caseId, withJsonPath("$.notes.length()", is(1)));
+
+        assertThat(notes.toString(), isJson(allOf(
+                withJsonPath("$.caseId", is(caseId.toString())),
+                withJsonPath("$.notes", allOf(
+                        hasItem(
+                                isJson(allOf(
+                                        withJsonPath("$.noteId", notNullValue()),
+                                        withJsonPath("$.addedAt", notNullValue()),
+                                        withJsonPath("$.noteText", is(LISTING_NOTES)),
+                                        withJsonPath("$.noteType", is(LISTING.toString())),
+                                        withJsonPath("$.authorFirstName", is(legalAdviser.getFirstName())),
+                                        withJsonPath("$.authorLastName", is(legalAdviser.getLastName())),
+                                        withJsonPath("$.decisionId", is(decisionId.toString()))
+                                ))
+                        ))
+                ))));
     }
 
     private static JsonObject createEmployerDetails() {

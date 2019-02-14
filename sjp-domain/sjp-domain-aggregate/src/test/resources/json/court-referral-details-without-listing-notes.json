@@ -11,12 +11,6 @@
     "referralReasonId": "8cda35cc-8073-41d7-a160-609bfe362f47",
     "hearingTypeId": "1b5fbb45-fe56-4405-ac53-d13802394150",
     "estimatedHearingDuration": 30,
-    "requestedAt": "2018-06-01T09:00:00.000Z",
-    "listingNotes": {
-      "id": "19201bd7-ae14-4664-96eb-0cbe8e883260",
-      "text": "wheelchair access required",
-      "type": "LISTING",
-      "addedAt": "2018-06-01T09:00:00.000Z"
-    }
+    "requestedAt": "2018-06-01T09:00:00.000Z"
   }
 }

@@ -14,10 +14,10 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.text.MatchesPattern.matchesPattern;
 import static org.junit.Assert.assertThat;
-import static uk.gov.justice.json.schemas.domains.sjp.NoteAuthor.noteAuthor;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.ADJOURNMENT;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.CASE;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.DECISION;
+import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 import static uk.gov.moj.sjp.it.helper.CaseNoteHelper.addCaseNote;
 import static uk.gov.moj.sjp.it.helper.CaseNoteHelper.getCaseNotes;
 import static uk.gov.moj.sjp.it.helper.CaseNoteHelper.pollForCaseNotes;
@@ -25,7 +25,7 @@ import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 
-import uk.gov.justice.json.schemas.domains.sjp.NoteAuthor;
+import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.moj.sjp.it.command.CreateCase;
 
 import java.util.UUID;
@@ -39,26 +39,26 @@ public class CaseNotesIT extends BaseIntegrationTest {
 
     public static final String TIMESTAMP_WITHOUT_ZONE_REGEX = "\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d(?:\\.\\d+)?Z?";
     private UUID caseId, decisionId;
-    private NoteAuthor legalAdviser, courtAdmin, prosecutor;
+    private User legalAdviser, courtAdmin, prosecutor;
 
     @Before
     public void setUp() {
         caseId = randomUUID();
         decisionId = randomUUID();
 
-        legalAdviser = noteAuthor()
+        legalAdviser = user()
                 .withUserId(randomUUID())
                 .withFirstName("John")
                 .withLastName("Smith")
                 .build();
 
-        courtAdmin = noteAuthor()
+        courtAdmin = user()
                 .withUserId(randomUUID())
                 .withFirstName("Trevor")
                 .withLastName("Wall")
                 .build();
 
-        prosecutor = noteAuthor()
+        prosecutor = user()
                 .withUserId(randomUUID())
                 .withFirstName("David")
                 .withLastName("Brick")

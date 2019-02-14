@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 import static uk.gov.moj.cpp.sjp.event.CaseNoteAdded.caseNoteAdded;
 
 import uk.gov.justice.json.schemas.domains.sjp.Note;
-import uk.gov.justice.json.schemas.domains.sjp.NoteAuthor;
+import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.CaseNotFound;
 import uk.gov.moj.cpp.sjp.event.CaseNoteRejected;
@@ -24,7 +24,7 @@ public class CaseNoteHandler {
 
     public Stream<Object> addCaseNote(final UUID caseId,
                                       final Note note,
-                                      final NoteAuthor author,
+                                      final User author,
                                       final UUID decisionId,
                                       final CaseAggregateState state) {
 

@@ -6,8 +6,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.json.schemas.domains.sjp.Note.note;
-import static uk.gov.justice.json.schemas.domains.sjp.NoteAuthor.noteAuthor;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.DECISION;
+import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
@@ -59,7 +59,7 @@ public class CaseNoteListenerTest {
                         .withType(DECISION)
                         .withAddedAt(now())
                         .build())
-                .withAuthor(noteAuthor()
+                .withAuthor(user()
                         .withUserId(randomUUID())
                         .withFirstName("John")
                         .withLastName("Smith")

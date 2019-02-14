@@ -4,6 +4,7 @@
   "enum": [
     "ADJOURNMENT",
     "DECISION",
+    "LISTING",
     "CASE"
   ]
 }

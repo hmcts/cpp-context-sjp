@@ -14,6 +14,7 @@ import java.util.UUID;
 public class DecisionToReferCaseForCourtHearingSavedProducer {
 
     private final UUID caseId;
+    private final UUID decisionId;
     private final UUID sessionId;
     private final UUID referralReasonId;
     private final UUID hearingTypeId;
@@ -22,6 +23,7 @@ public class DecisionToReferCaseForCourtHearingSavedProducer {
     private final ZonedDateTime savedAt;
 
     public DecisionToReferCaseForCourtHearingSavedProducer(final UUID caseId,
+                                                           final UUID decisionId,
                                                            final UUID sessionId,
                                                            final UUID referralReasonId,
                                                            final UUID hearingTypeId,
@@ -29,6 +31,7 @@ public class DecisionToReferCaseForCourtHearingSavedProducer {
                                                            final String listingNotes,
                                                            final ZonedDateTime savedAt) {
         this.caseId = caseId;
+        this.decisionId = decisionId;
         this.sessionId = sessionId;
         this.referralReasonId = referralReasonId;
         this.hearingTypeId = hearingTypeId;
@@ -41,6 +44,7 @@ public class DecisionToReferCaseForCourtHearingSavedProducer {
 
         final DecisionToReferCaseForCourtHearingSaved decisionToReferCaseForCourtHearingSaved = decisionToReferCaseForCourtHearingSaved()
                 .withCaseId(caseId)
+                .withDecisionId(decisionId)
                 .withSessionId(sessionId)
                 .withReferralReasonId(referralReasonId)
                 .withHearingTypeId(hearingTypeId)

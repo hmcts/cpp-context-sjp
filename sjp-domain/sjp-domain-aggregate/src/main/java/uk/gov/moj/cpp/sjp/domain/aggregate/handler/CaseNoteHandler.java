@@ -6,6 +6,7 @@ import uk.gov.justice.json.schemas.domains.sjp.Note;
 import uk.gov.justice.json.schemas.domains.sjp.NoteAuthor;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.CaseNotFound;
+import uk.gov.moj.cpp.sjp.event.CaseNoteRejected;
 
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -30,6 +31,9 @@ public class CaseNoteHandler {
         if (!state.isCaseIdEqualTo(caseId)) {
             LOGGER.error("Mismatch of IDs in aggregate: {} != {}", state.getCaseId(), caseId);
             return Stream.of(new CaseNotFound(caseId, "Add notes to case"));
+        }
+        if (state.isCaseReferredForCourtHearing()) {
+            return Stream.of(new CaseNoteRejected(caseId, "Case referred for court hearing"));
         }
         return Stream.of(caseNoteAdded()
                 .withCaseId(caseId)

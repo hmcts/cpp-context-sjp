@@ -55,7 +55,7 @@ public class TransparencyReportHelper {
         try {
             payload = IOUtils.toString(TransparencyReportHelper.class
                     .getClassLoader()
-                    .getResourceAsStream("TransparencyReportIt/report-content.txt"));
+                    .getResourceAsStream("TransparencyReportIT/report-content.txt"));
         } catch (final IOException ioException) {
             throw new UncheckedIOException(ioException);
         }

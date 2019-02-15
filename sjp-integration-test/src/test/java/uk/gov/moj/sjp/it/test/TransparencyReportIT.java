@@ -16,7 +16,6 @@ import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
 import static uk.gov.moj.sjp.it.helper.TransparencyReportDBHelper.checkIfFileExists;
-import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffences;
 import static uk.gov.moj.sjp.it.stub.SystemDocumentGeneratorStub.pollDocumentGenerationRequests;
@@ -24,10 +23,8 @@ import static uk.gov.moj.sjp.it.stub.SystemDocumentGeneratorStub.stubDocumentGen
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.TransparencyReportHelper;
-import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -75,9 +72,7 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         final String case1defendantLastName = randomUUID().toString() + "_LastName";
         createCase(caseId1, offenceId1, case1defendantLastName);
         // put the case in ready  status
-        final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper();
         pollUntilCaseReady(caseId1);
-        updatePleaHelper.updatePlea(caseId1, offenceId1, getPleaPayload(PleaType.GUILTY));
 
         // CASE2
         final UUID caseId2 = randomUUID();
@@ -86,10 +81,9 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         createCase(caseId2, offenceId2, case2defendantLastName);
         // put the case in ready  status
         pollUntilCaseReady(caseId2);
-        updatePleaHelper.updatePlea(caseId2, offenceId2, getPleaPayload(PleaType.GUILTY));
 
         // make a request to generate the file
-        final EventListener eventListener = new EventListener();
+        final EventListener eventListener = new EventListener().withMaxWaitTime(25000);
         eventListener
                 .subscribe(SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED)
                 .subscribe(SJP_EVENTS_TRANSPARENCY_REPORT_GENERATED)
@@ -113,8 +107,8 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         // check the cases that are created are in the transparency report generated event payload
         final List filteredCaseIDs = caseIds.getValuesAs(JsonString.class)
                 .stream()
-                .map(e -> e.getString())
-                .filter((e) -> savedCaseIds.contains(e))
+                .map(JsonString::getString)
+                .filter(savedCaseIds::contains)
                 .collect(toList());
 
         assertThat(filteredCaseIDs.size(), is(2));

@@ -20,7 +20,7 @@ public class Offence {
     private final String libraOffenceCode;
     private final LocalDate chargeDate;
     private final int libraOffenceDateCode;
-    private final LocalDate offenceDate;
+    private final LocalDate offenceCommittedDate;
     private final String offenceWording;
     private final String prosecutionFacts;
     private final String witnessStatement;
@@ -32,9 +32,9 @@ public class Offence {
 
     @SuppressWarnings("squid:S00107")
     public Offence(UUID id, int offenceSequenceNo, String libraOffenceCode, LocalDate chargeDate,
-                   int libraOffenceDateCode, LocalDate offenceDate, String offenceWording,
+                   int libraOffenceDateCode, LocalDate offenceCommittedDate, String offenceWording,
                    String prosecutionFacts, String witnessStatement, BigDecimal compensation) {
-        this(id, offenceSequenceNo, libraOffenceCode, chargeDate, libraOffenceDateCode, null, offenceDate,
+        this(id, offenceSequenceNo, libraOffenceCode, chargeDate, libraOffenceDateCode, null, offenceCommittedDate,
                 offenceWording, prosecutionFacts, witnessStatement, compensation,
                 null, null, null, null);
     }
@@ -60,7 +60,7 @@ public class Offence {
         this.libraOffenceCode = libraOffenceCode;
         this.chargeDate = chargeDate;
         this.libraOffenceDateCode = libraOffenceDateCode;
-        this.offenceDate = firstNonNull(offenceCommittedDate, offenceDate);
+        this.offenceCommittedDate = firstNonNull(offenceCommittedDate, offenceDate);
         this.offenceWording = offenceWording;
         this.prosecutionFacts = prosecutionFacts;
         this.witnessStatement = witnessStatement;
@@ -85,8 +85,8 @@ public class Offence {
         return chargeDate;
     }
 
-    public LocalDate getOffenceDate() {
-        return offenceDate;
+    public LocalDate getOffenceCommittedDate() {
+        return offenceCommittedDate;
     }
 
     public int getLibraOffenceDateCode() {
@@ -133,7 +133,7 @@ public class Offence {
                 Objects.equals(id, that.id) &&
                 Objects.equals(libraOffenceCode, that.libraOffenceCode) &&
                 Objects.equals(chargeDate, that.chargeDate) &&
-                Objects.equals(offenceDate, that.offenceDate) &&
+                Objects.equals(offenceCommittedDate, that.offenceCommittedDate) &&
                 Objects.equals(offenceWording, that.offenceWording) &&
                 Objects.equals(prosecutionFacts, that.prosecutionFacts) &&
                 Objects.equals(witnessStatement, that.witnessStatement) &&
@@ -145,7 +145,7 @@ public class Offence {
     @Override
     public int hashCode() {
         return Objects.hash(id, offenceSequenceNo, libraOffenceCode, chargeDate,
-                libraOffenceDateCode, offenceDate, offenceWording, prosecutionFacts,
+                libraOffenceDateCode, offenceCommittedDate, offenceWording, prosecutionFacts,
                 witnessStatement, compensation, offenceWordingWelsh, backDuty);
     }
 }

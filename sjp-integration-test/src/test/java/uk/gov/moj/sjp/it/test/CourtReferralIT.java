@@ -18,8 +18,6 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.skyscreamer.jsonassert.JSONCompare.compareJSON;
-import static org.skyscreamer.jsonassert.JSONCompareMode.LENIENT;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
@@ -28,7 +26,9 @@ import static uk.gov.moj.sjp.it.helper.CaseReferralHelper.findReferralStatusForC
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.stub.ProgressionServiceStub.REFER_TO_COURT_COMMAND_CONTENT;
 import static uk.gov.moj.sjp.it.stub.ProgressionServiceStub.REFER_TO_COURT_COMMAND_URL;
+import static uk.gov.moj.sjp.it.util.DateUtils.CPP_ZONED_DATE_TIME_FORMATTER;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
+import static uk.gov.moj.sjp.it.util.JsonHelper.lenientCompare;
 
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -57,13 +57,12 @@ import uk.gov.moj.sjp.it.stub.ResultingStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 import uk.gov.moj.sjp.it.util.FileUtil;
+import uk.gov.moj.sjp.it.util.JsonHelper;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Predicate;
 
 import javax.json.JsonObject;
 
@@ -71,7 +70,6 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.google.common.collect.ImmutableMap;
 import org.hamcrest.CoreMatchers;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -256,15 +254,14 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 .run(decisionToReferCaseForCourtHearingSavedProducer::saveDecisionToReferCaseForCourtHearing);
 
         final JsonObject expectedCommandPayload = prepareExpectedCommandPayload(expectedCommandPayloadFile);
-        final Predicate<JSONObject> commandPayloadPredicate = commandPayload -> compareJSON(commandPayload.toString(), expectedCommandPayload.toString(), LENIENT).passed();
 
         await().until(() ->
                 findAll(postRequestedFor(urlPathMatching(REFER_TO_COURT_COMMAND_URL + ".*"))
                         .withHeader(CONTENT_TYPE, WireMock.equalTo(REFER_TO_COURT_COMMAND_CONTENT)))
                         .stream()
                         .map(LoggedRequest::getBodyAsString)
-                        .map(JSONObject::new)
-                        .anyMatch(commandPayloadPredicate));
+                        .map(JsonHelper::getJsonObject)
+                        .anyMatch(commandPayload -> lenientCompare(commandPayload, expectedCommandPayload)));
     }
 
     private JsonObject prepareExpectedCommandPayload(String payloadFileLocation) {
@@ -284,7 +281,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 .put("DOCUMENT_ID", DOCUMENT_ID.toString())
                 .put("DOCUMENT_TYPE_ID", DOCUMENT_TYPE_ID.toString())
                 .put("MATERIAL_ID", MATERIAL_ID.toString())
-                .put("UPLOAD_DATE_TIME", ADDED_AT.format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
+                .put("UPLOAD_DATE_TIME", ADDED_AT.format(CPP_ZONED_DATE_TIME_FORMATTER))
                 .put("NINO", NATIONAL_INSURANCE_NUMBER)
                 .build());
     }

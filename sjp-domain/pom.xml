@@ -16,6 +16,7 @@
         <module>sjp-domain-aggregate</module>
         <module>sjp-domain-transformation</module>
         <module>sjp-domain-common</module>
+        <module>sjp-domain-event-processor</module>
     </modules>
 
 </project>

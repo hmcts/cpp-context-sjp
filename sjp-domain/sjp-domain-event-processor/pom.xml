@@ -1,99 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>sjp-command</artifactId>
+        <artifactId>sjp-domain</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <version>1.0.91-FRAMEWORK-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>sjp-command-api</artifactId>
-    <packaging>war</packaging>
+    <artifactId>sjp-domain-event-processor</artifactId>
 
     <properties>
-        <cpp.service-component>COMMAND_API</cpp.service-component>
         <skip.schema.pojo.generation>false</skip.schema.pojo.generation>
     </properties>
 
     <dependencies>
-
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.sjp</groupId>
             <artifactId>sjp-domain-event</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
-            <groupId>uk.gov.moj.cpp.common</groupId>
-            <artifactId>command-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>uk.gov.justice.framework-generators</groupId>
-            <artifactId>rest-adapter-file-service</artifactId>
-            <version>${framework-generators.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>uk.gov.justice.services</groupId>
-            <artifactId>file-service-persistence</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>uk.gov.moj.cpp.system.authorisation</groupId>
-            <artifactId>authorisation-interceptor</artifactId>
-        </dependency>
-
-        <!-- JUnit regression testing framework. -->
-        <dependency>
-            <groupId>uk.gov.justice.services</groupId>
-            <artifactId>test-utils-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>uk.gov.moj.cpp.access-control</groupId>
-            <artifactId>access-control-test-utils</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.trajano.commons</groupId>
-            <artifactId>commons-testing</artifactId>
-            <scope>test</scope>
+            <groupId>uk.gov.moj.cpp.core.domain</groupId>
+            <artifactId>coredomain-common-definitions-schema</artifactId>
+            <version>${coredomain.version}</version>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>uk.gov.justice.maven.generator</groupId>
                 <artifactId>generator-plugin</artifactId>
+                <groupId>uk.gov.justice.maven.generator</groupId>
                 <executions>
                     <execution>
                         <id>pojo-generation</id>
                         <configuration>
-                            <skip>${skip.schema.pojo.generation}</skip>
-
                             <sourceDirectory>CLASSPATH</sourceDirectory>
+                            <outputDirectory>${project.build.directory}/generated-sources
+                            </outputDirectory>
                             <includes>
-                                <include>raml/json/schema/sjp.command.plead-online.json</include>
+                                <include>raml/json/schema/public.resulting.decision-to-refer-case-for-court-hearing-saved.json</include>
+                                <include>raml/json/schema/sjp.command.refer-case-for-court-hearing.json</include>
+                                <include>raml/json/schema/sjp.command.record-case-referral-for-court-hearing-rejection.json</include>
+                                <include>raml/json/schema/sjp.events.case-referred-for-court-hearing.json</include>
+                                <include>raml/json/schema/sjp.query.case-details.json</include>
+                                <include>raml/json/schema/sjp.query.defendants-online-plea.json</include>
+                                <include>raml/json/schema/sjp.query.employer.json</include>
                             </includes>
-                            <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
+                            <generatorProperties
+                                    implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>
                                     <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin</plugin>
                                     <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin</plugin>
                                     <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddHashcodeAndEqualsPlugin</plugin>
                                     <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddToStringMethodToClassPlugin</plugin>
-                                    <!--
-                                     TODO this needs to be disabled because of pojo generation problems with the optional
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.SupportJavaOptionalsPlugin</plugin>
-                                    -->
                                 </plugins>
                                 <typeMappings>
                                     <typeMapping>
@@ -107,9 +73,9 @@
                                         <implementation>java.time.LocalDate</implementation>
                                     </typeMapping>
                                     <typeMapping>
-                                        <name>date</name>
-                                        <type>format</type>
-                                        <implementation>java.time.LocalDate</implementation>
+                                        <name>date-time</name>
+                                        <type>reference</type>
+                                        <implementation>java.time.ZonedDateTime</implementation>
                                     </typeMapping>
                                     <typeMapping>
                                         <name>date-time</name>
@@ -123,15 +89,21 @@
                 </executions>
                 <dependencies>
                     <dependency>
-                        <groupId>uk.gov.moj.cpp.sjp</groupId>
-                        <artifactId>sjp-json</artifactId>
-                        <version>${project.version}</version>
+                        <groupId>uk.gov.moj.cpp.core.domain</groupId>
+                        <artifactId>coredomain-common-definitions-schema</artifactId>
+                        <version>${coredomain.version}</version>
                     </dependency>
                     <dependency>
-                        <groupId>uk.gov.moj.cpp.sjp</groupId>
-                        <artifactId>sjp-command-handler</artifactId>
-                        <version>${project.version}</version>
+                        <groupId>uk.gov.moj.cpp.resulting</groupId>
+                        <artifactId>resulting-event-processor</artifactId>
+                        <version>${resulting.version}</version>
                         <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
                     </dependency>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.sjp</groupId>
@@ -147,24 +119,18 @@
                     </dependency>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.sjp</groupId>
-                        <artifactId>sjp-query-api</artifactId>
+                        <artifactId>sjp-query-view</artifactId>
                         <version>${project.version}</version>
                         <classifier>raml</classifier>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
                     </dependency>
                     <dependency>
-                        <groupId>uk.gov.moj.cpp.referencedata</groupId>
-                        <artifactId>referencedata-query-api</artifactId>
-                        <version>${referencedata.version}</version>
-                        <classifier>raml</classifier>
+                        <groupId>uk.gov.justice.generators</groupId>
+                        <artifactId>pojo-generation-core</artifactId>
+                        <version>${pojo-generation.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
         </plugins>
     </build>
+
 </project>

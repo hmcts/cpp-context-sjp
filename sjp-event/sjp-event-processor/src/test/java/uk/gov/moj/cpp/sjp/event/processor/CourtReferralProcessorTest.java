@@ -7,7 +7,6 @@ import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.now;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static java.util.Objects.isNull;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -75,6 +74,7 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.ReadContext;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -121,12 +121,20 @@ public class CourtReferralProcessorTest {
 
     @Test
     public void shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSavedWithListingNotes() {
-        shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSaved(true);
+        final String listingNote = randomAlphanumeric(100);
+        shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSaved(listingNote);
     }
 
     @Test
     public void shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSavedWithoutListingNote() {
-        shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSaved(false);
+        final String listingNote = null;
+        shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSaved(listingNote);
+    }
+
+    @Test
+    public void shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSavedWithEmptyListingNote() {
+        final String listingNote = "";
+        shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSaved(listingNote);
     }
 
     @Test
@@ -243,11 +251,10 @@ public class CourtReferralProcessorTest {
                         )))));
     }
 
-    private void shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSaved(final boolean withNote) {
+    private void shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSaved(final String listingNote) {
 
         final UUID sessionId = randomUUID();
         final UUID userId = randomUUID();
-        final String listingNote = withNote ? randomAlphanumeric(100) : null;
 
         final DecisionToReferCaseForCourtHearingSaved decisionToReferCaseForCourtHearingSaved = decisionToReferCaseForCourtHearingSaved()
                 .withCaseId(randomUUID())
@@ -278,7 +285,7 @@ public class CourtReferralProcessorTest {
 
         courtReferralProcessor.decisionToReferCaseForCourtHearingSaved(event);
 
-        final Matcher<? super ReadContext> noteMatcher = isNull(listingNote) ?
+        final Matcher<? super ReadContext> noteMatcher = StringUtils.isEmpty(listingNote) ?
                 withoutJsonPath("listingNotes")
                 :
                 withJsonPath("listingNotes", isJson(allOf(

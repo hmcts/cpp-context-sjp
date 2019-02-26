@@ -46,6 +46,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,12 +102,14 @@ public class CourtReferralProcessor {
                 UUID.fromString(sessionDetails.getString("userId")),
                 emptyEnvelope);
 
-        final Optional<Note> listingNote = ofNullable(decisionToReferCaseForCourtHearingSaved.getListingNotes()).map(note -> note()
-                .withId(randomUUID())
-                .withText(note)
-                .withType(LISTING)
-                .withAddedAt(decisionToReferCaseForCourtHearingSaved.getDecisionSavedAt())
-                .build());
+        final Optional<Note> listingNote = ofNullable(decisionToReferCaseForCourtHearingSaved.getListingNotes())
+                .filter(StringUtils::isNotEmpty)
+                .map(note -> note()
+                        .withId(randomUUID())
+                        .withText(note)
+                        .withType(LISTING)
+                        .withAddedAt(decisionToReferCaseForCourtHearingSaved.getDecisionSavedAt())
+                        .build());
 
         final ReferCaseForCourtHearing commandPayload = ReferCaseForCourtHearing.referCaseForCourtHearing()
                 .withCaseId(decisionToReferCaseForCourtHearingSaved.getCaseId())

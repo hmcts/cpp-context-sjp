@@ -1,0 +1,15 @@
+{
+  "caseId": "%s",
+  "note": {
+    "id": "ab73f106-ec06-48a3-8cf4-f329891ba548",
+    "text": "%s",
+    "type": "%s",
+    "addedAt": "%s"
+  },
+  "author": {
+    "userId": "%s",
+    "firstName": "Jonathan",
+    "lastName": "Smith"
+  },
+  "decisionId": "%s"
+}

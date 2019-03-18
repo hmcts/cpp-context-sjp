@@ -1,11 +1,16 @@
 package uk.gov.moj.sjp.it.test;
 
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.LocalDate.now;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToCompressingWhiteSpace;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -40,6 +45,7 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 
 import com.google.common.collect.Sets;
+import org.hamcrest.Matcher;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -83,7 +89,7 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         pollUntilCaseReady(caseId2);
 
         // make a request to generate the file
-        final EventListener eventListener = new EventListener().withMaxWaitTime(25000);
+        final EventListener eventListener = new EventListener().withMaxWaitTime(40000);
         eventListener
                 .subscribe(SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED)
                 .subscribe(SJP_EVENTS_TRANSPARENCY_REPORT_GENERATED)
@@ -127,10 +133,16 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         validateDocumentGenerationRequest(documentGenerationRequests.get(1), case2defendantLastName, "PendingCasesWelsh");
 
         // get the report metadata
-        final JSONObject reportsMetadata = transparencyReportHelper.requestToGetTransparencyReportMetadata();
-        final JSONArray reportsArray = reportsMetadata.getJSONArray("reportsMetadata");
-        final JSONObject englishReport = reportsArray.getJSONObject(0);
-        final JSONObject welshReport = reportsArray.getJSONObject(1);
+        final Matcher matcher = withJsonPath("reportsMetadata.*", hasItem(
+                isJson(allOf(
+                        withJsonPath("fileId", equalTo(englishReportMetadata.getString("fileId")))
+                ))));
+
+        final JsonObject reportsMetadata = transparencyReportHelper.pollForTransparencyReportMetadata(matcher);
+        final JsonArray reportsArray = reportsMetadata.getJsonArray("reportsMetadata");
+        final JsonObject englishReport = reportsArray.getJsonObject(0);
+        final JsonObject welshReport = reportsArray.getJsonObject(1);
+
 
         validateMetadata(englishReport, englishReportMetadata, false);
         validateMetadata(welshReport, welshReportMetadata, true);
@@ -143,7 +155,7 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         validateThePdfContent(welshContent);
     }
 
-    private void validateMetadata(final JSONObject reportObject,
+    private void validateMetadata(final JsonObject reportObject,
                                   final JsonObject reportMetadata,
                                   final boolean welsh) {
         assertThat(reportObject.getString("fileId"), is(reportMetadata.getString("fileId")));

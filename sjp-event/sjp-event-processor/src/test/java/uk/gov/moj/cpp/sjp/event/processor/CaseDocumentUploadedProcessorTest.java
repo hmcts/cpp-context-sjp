@@ -1,35 +1,48 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
-import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.MATERIAL_ID;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.event.processor.activiti.SjpProcessManagerService;
 import uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper;
 
+import java.util.List;
 import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -38,104 +51,131 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class CaseDocumentUploadedProcessorTest {
 
-    private final String DOCUMENT_TYPE = "PLEA";
-    private final String SJP_ID_METADATA_FIELD = "sjpId";
+    private static final String DOCUMENT_TYPE = "PLEA";
+    private final UUID caseId = randomUUID();
+    private final UUID documentReference = randomUUID();
+    private final UUID materialId = randomUUID();
+    private Metadata materialAddedMetadata;
+    private JsonObject materialAddedPayload;
 
-    @InjectMocks
-    private CaseDocumentProcessor processor = new CaseDocumentProcessor();
+    @Captor
+    private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
+
+    @Mock
+    private Sender sender;
 
     @Mock
     private SjpProcessManagerService sjpProcessManagerService;
 
     @Spy
+    private Enveloper enveloper = EnveloperFactory.createEnveloper();
+
+    @Spy
     private MetadataHelper metadataHelper = new MetadataHelper();
 
-    @Test
-    public void publishes() {
-        //given
-        String caseId = UUID.randomUUID().toString();
-        UUID documentReference = UUID.randomUUID();
+    @InjectMocks
+    private CaseDocumentProcessor caseDocumentProcessor = new CaseDocumentProcessor();
 
-        //when
+    @Before
+    public void setup() {
+        materialAddedMetadata = metadataWithRandomUUID("material.material-added").build();
+        materialAddedPayload = createObjectBuilder().add("materialId", materialId.toString()).build();
+    }
+
+    @Test
+    public void shouldHandleCaseDocumentUploadedEvent() {
         final JsonEnvelope envelope = prepareCaseDocumentUploadedEnvelope(caseId, documentReference, DOCUMENT_TYPE);
 
-        processor.handleCaseDocumentUploaded(envelope);
+        caseDocumentProcessor.handleCaseDocumentUploaded(envelope);
 
-        //then
-        ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor = ArgumentCaptor.forClass(JsonEnvelope.class);
+        verify(sender, times(2)).send(envelopeCaptor.capture());
 
-        verify(sjpProcessManagerService).startUploadFileProcess(envelopeArgumentCaptor.capture(),
-                argThat(is(UUID.fromString(caseId))),
-                argThat(is(documentReference)),
-                argThat(is(DOCUMENT_TYPE))
-        );
+        final List<JsonEnvelope> envelopesSent = envelopeCaptor.getAllValues();
 
-        final JsonEnvelope capturedEnvelope = envelopeArgumentCaptor.getValue();
+        final JsonEnvelope firstEnvelope = envelopesSent.get(0);
+        final JsonEnvelope secondEnvelope = envelopesSent.get(1);
 
-        assertThat(capturedEnvelope,
-                jsonEnvelope(
-                        metadata().of(envelope.metadata()),
-                        payload().isJson(allOf(
-                                withJsonPath("$.caseId", equalTo(caseId)),
-                                withJsonPath("$.documentReference", equalTo(documentReference.toString())),
+        assertThat(firstEnvelope, jsonEnvelope(
+                withMetadataEnvelopedFrom(envelope).withName("public.sjp.case-document-uploaded"),
+                payloadIsJson(allOf(
+                        withJsonPath("$.caseId", equalTo(caseId.toString())),
+                        withJsonPath("$.documentId", equalTo(documentReference.toString())))
+                )));
+
+        assertThat(secondEnvelope.metadata(), metadata().of(envelope.metadata()).withName("material.command.upload-file")
+                .isJson(withJsonPath("sjpMetadata", isJson(allOf(
+                        withJsonPath("caseId", equalTo(caseId.toString())),
+                        withJsonPath("documentId", equalTo(documentReference.toString())),
+                        withJsonPath("documentType", equalTo(DOCUMENT_TYPE)))
+                ))));
+
+        assertThat(secondEnvelope.payloadAsJsonObject().toString(), isJson(allOf(
+                withJsonPath("materialId", notNullValue()),
+                withJsonPath("fileServiceId", is(documentReference.toString())))
+        ));
+    }
+
+    @Test
+    public void shouldHandleMaterialAddedEventWithSjpMetadata() {
+        final Metadata enrichedMaterialAddedMetadata = metadataFrom(
+                JsonObjects.createObjectBuilder(materialAddedMetadata.asJsonObject())
+                        .add("sjpMetadata", createObjectBuilder()
+                                .add("caseId", caseId.toString())
+                                .add("documentId", documentReference.toString())
+                                .add("documentType", DOCUMENT_TYPE)
+                                .build()).build())
+                .build();
+
+        final JsonEnvelope materialAddedEnvelopedEvent = envelopeFrom(enrichedMaterialAddedMetadata, materialAddedPayload);
+
+        caseDocumentProcessor.handleMaterialAdded(materialAddedEnvelopedEvent);
+
+        verify(sender).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(materialAddedEnvelopedEvent).withName("sjp.command.add-case-document"),
+                payloadIsJson(
+                        allOf(
+                                withJsonPath("$.id", equalTo(documentReference.toString())),
+                                withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                withJsonPath("$.materialId", equalTo(materialId.toString())),
                                 withJsonPath("$.documentType", equalTo(DOCUMENT_TYPE))
-                                )
                         )
-                ));
+                ))));
     }
 
     @Test
-    public void handlesMaterialAddedForDocumentsUploadedThroughSjpContext() {
+    public void shouldHandleMaterialAddedEventWithSjpProcessId() {
+        final String sjpProcessId = randomAlphanumeric(10);
 
-        final String sjpIdValue = "test";
-        final Metadata metadata = metadataFrom(createObjectBuilder()
-                .add(SJP_ID_METADATA_FIELD, sjpIdValue)
-                .add("id", UUID.randomUUID().toString())
-                .add("name", "material.material-added")
-                .build());
-
-        final UUID materialId = UUID.randomUUID();
-
-        final JsonObject payload = createObjectBuilder()
-                .add(MATERIAL_ID, materialId.toString())
+        final Metadata enrichedMaterialAddedMetadata = metadataFrom(
+                JsonObjects.createObjectBuilder(materialAddedMetadata.asJsonObject())
+                        .add("sjpId", sjpProcessId).build())
                 .build();
 
-        final JsonEnvelope materialAddedEnvelopedEvent = envelopeFrom(metadata, payload);
-        processor.handleMaterialAdded(materialAddedEnvelopedEvent);
+        final JsonEnvelope materialAddedEnvelopedEvent = envelopeFrom(enrichedMaterialAddedMetadata, materialAddedPayload);
 
-        verify(sjpProcessManagerService).signalUploadFileProcess(materialAddedEnvelopedEvent, sjpIdValue, materialId);
+        caseDocumentProcessor.handleMaterialAdded(materialAddedEnvelopedEvent);
+
+        verify(sender, never()).send(any());
+        verify(sjpProcessManagerService).signalUploadFileProcess(materialAddedEnvelopedEvent, sjpProcessId, materialId);
     }
 
     @Test
-    public void ignoresMaterialAddedForDocumentsUploadedRaisedFromDifferentOrigin() {
-        final Metadata metadata = metadataFrom(createObjectBuilder()
-                .add("id", UUID.randomUUID().toString())
-                .add("name", "material.material-added")
-                .build());
+    public void shouldIgnoreMaterialAddedEventNotInitiatedBySjp() {
+        final JsonEnvelope materialAddedEnvelopedEvent = envelopeFrom(materialAddedMetadata, materialAddedPayload);
 
-        final UUID materialId = UUID.randomUUID();
+        caseDocumentProcessor.handleMaterialAdded(materialAddedEnvelopedEvent);
 
-        final JsonObject payload = createObjectBuilder()
-                .add(MATERIAL_ID, materialId.toString())
-                .build();
-
-        final JsonEnvelope materialAddedEnvelopedEvent = envelopeFrom(metadata, payload);
-        processor.handleMaterialAdded(materialAddedEnvelopedEvent);
-
+        verify(sender, never()).send(any());
         verify(sjpProcessManagerService, never()).signalUploadFileProcess(any(), any(), any());
     }
 
-
-
-    private JsonEnvelope prepareCaseDocumentUploadedEnvelope(String caseId, UUID documentReference, String documentType) {
+    private JsonEnvelope prepareCaseDocumentUploadedEnvelope(final UUID caseId, final UUID documentReference, final String documentType) {
         JsonObject payload = createObjectBuilder()
-                .add("caseId", caseId)
+                .add("caseId", caseId.toString())
                 .add("documentReference", documentReference.toString())
                 .add("documentType", documentType).build();
 
         return createEnvelope("sjp.events.case-document-uploaded",
                 payload);
     }
-
-
 }

@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.activiti;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.processor.CaseDocumentProcessor;
 import uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper;
 
 import java.util.HashMap;
@@ -17,6 +18,12 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//TODO remove - ATCM-4293
+
+/**
+ * @deprecated required for legacy public events, replaced by {@link CaseDocumentProcessor}
+ */
+@Deprecated
 @Startup
 @ApplicationScoped
 public class SjpProcessManagerService {

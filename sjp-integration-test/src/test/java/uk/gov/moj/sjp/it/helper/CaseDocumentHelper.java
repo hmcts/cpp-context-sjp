@@ -1,16 +1,15 @@
 package uk.gov.moj.sjp.it.helper;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.containing;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.jsonassert.JsonAssert.with;
 import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.JsonPath.compile;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -37,7 +36,6 @@ import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.moj.sjp.it.Constants;
-import uk.gov.moj.sjp.it.stub.MaterialStub;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.JsonHelper;
 
@@ -48,10 +46,6 @@ import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
-import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
-import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.jayway.jsonpath.Filter;
 import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matchers;
@@ -196,18 +190,7 @@ public class CaseDocumentHelper implements AutoCloseable {
                 .assertThat("$.materialId", is(materialId));
     }
 
-    public void assertCaseMaterialAdded(final String documentReference) {
-        UrlMatchingStrategy url = new UrlMatchingStrategy();
-        url.setUrlPath(MaterialStub.COMMAND_URL);
-
-        await().until(() -> WireMock.findAll(new RequestPatternBuilder(RequestMethod.POST, url)
-                        .withHeader("Content-Type", equalTo(MaterialStub.COMMAND_MEDIA_TYPE))
-                        .withRequestBody(containing("\"fileServiceId\":\"" + documentReference + "\""))
-                ).size() > 0
-        );
-    }
-
-    public String verifyCaseDocumentUploadedEventRaised() {
+    public UUID verifyCaseDocumentUploadedEventRaised() {
         final String caseDocumentUploadedEvent = publicCaseDocumentUploaded.retrieveMessage().orElse(null);
 
         assertThat(caseDocumentUploadedEvent, notNullValue());
@@ -217,7 +200,7 @@ public class CaseDocumentHelper implements AutoCloseable {
         with(caseDocumentUploadedEvent)
                 .assertThat("$.caseId", isAUuid());
 
-        return new JsonPath(caseDocumentUploadedEvent).getString("documentId");
+        return UUID.fromString(new JsonPath(caseDocumentUploadedEvent).getString("documentId"));
     }
 
     public void assertDocumentAdded() {
@@ -226,17 +209,18 @@ public class CaseDocumentHelper implements AutoCloseable {
 
     public void assertDocumentAdded(final UUID userId) {
         final JsonPath jsonRequest = new JsonPath(request);
+        assertDocumentAdded(userId, caseId, UUID.fromString(jsonRequest.getString(MATERIAL_ID_PROPERTY)), UUID.fromString(id), jsonRequest.getString(DOCUMENT_TYPE_PROPERTY));
+    }
 
-        final Filter caseDocumentFilter = Filter.filter(where("id").is(id));
+    public static void assertDocumentAdded(final UUID userId, final UUID caseId, final UUID materialId, final UUID documentId, final String documentType) {
         pollWithDefaults(getCaseDocumentsByCaseId(caseId, userId))
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath(compile("$.caseDocuments[?]", caseDocumentFilter), hasSize(1)),
-                                withJsonPath(compile("$.caseDocuments[?].materialId", caseDocumentFilter), hasItem(jsonRequest.getString(MATERIAL_ID_PROPERTY))),
-                                withJsonPath(compile("$.caseDocuments[?].documentType", caseDocumentFilter), hasItem(jsonRequest.getString(DOCUMENT_TYPE_PROPERTY)))
-                        ))
-                );
+                .until(payload().isJson(
+                        withJsonPath("$.caseDocuments[*]", hasItem(isJson(
+                                allOf(
+                                        withJsonPath("id", equalTo(documentId.toString())),
+                                        withJsonPath("materialId", equalTo(materialId.toString())),
+                                        withJsonPath("documentType", equalTo(documentType))
+                                ))))));
     }
 
     public JsonObject findDocument(final UUID userId, final int index, final String documentType, final int documentNumber) {

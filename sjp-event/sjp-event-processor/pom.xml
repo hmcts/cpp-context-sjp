@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-event</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>1.0.91-C2I-SNAPSHOT</version>
+        <version>1.0.94-C2I-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -253,7 +253,6 @@
                                 <include>raml/json/schema/sjp.query.case-details.json</include>
                                 <include>raml/json/schema/sjp.query.defendants-online-plea.json</include>
                                 <include>raml/json/schema/sjp.query.employer.json</include>
-                                <include>json/schema/fragments/verdict.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>

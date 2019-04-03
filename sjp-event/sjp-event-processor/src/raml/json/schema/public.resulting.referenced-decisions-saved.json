@@ -3,77 +3,16 @@
   "type": "object",
   "properties": {
     "caseId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "type": "string"
     },
     "resultedOn": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "verdict": {
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/verdict.json"
+      "type": "string"
     },
     "sjpSessionId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "type": "string"
     },
-    "accountDivisionCode": {
-      "type": "integer"
-    },
-    "enforcingCourtCode": {
-      "type": "integer"
-    }
-  },
-  "offences": {
-    "type": "array",
-    "items": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "results": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "code": {
-                "type": "string"
-              },
-              "resultTypeId": {
-                "type": "string"
-              },
-              "terminalEntries": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "index": {
-                      "type": "integer"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "index",
-                    "value"
-                  ]
-                }
-              }
-            },
-            "required": [
-              "code",
-              "resultTypeId",
-              "terminalEntries"
-            ]
-          }
-        }
-      },
-      "required": [
-        "results"
-      ]
+    "hearingDate": {
+      "type": "string"
     }
   },
   "required": [

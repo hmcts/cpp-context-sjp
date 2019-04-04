@@ -43,4 +43,25 @@ public class CompleteCaseProducer {
                 )));
     }
 
+    public void completeCaseResults() {
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .add("resultedOn", now().toString())
+                .add("sjpSessionId", randomUUID().toString())
+                .build();
+
+        try (final MessageProducerClient producerClient = new MessageProducerClient()) {
+            producerClient.startProducer("public.event");
+            producerClient.sendMessage("public.resulting.referenced-decisions-saved", payload);
+        }
+    }
+
+    public void assertCaseResults() {
+        pollUntilCaseByIdIsOk(caseId, allOf(
+                withJsonPath("$.completed", is(true)),
+                withJsonPath("$.status", is(CaseStatus.COMPLETED.name())
+                )));
+    }
+
+
 }

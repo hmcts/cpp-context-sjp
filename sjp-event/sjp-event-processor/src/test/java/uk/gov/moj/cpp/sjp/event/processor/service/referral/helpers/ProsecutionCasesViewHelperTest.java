@@ -38,6 +38,7 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 public class ProsecutionCasesViewHelperTest {
@@ -110,13 +111,42 @@ public class ProsecutionCasesViewHelperTest {
         createProsecutionCaseViewsAndVerifyResultCorrect(decision, DECISION_DATE, null, EmployerDetails.employerDetails().build());
     }
 
-    private void createProsecutionCaseViewsAndVerifyResultCorrect(final JsonObject decision, final LocalDate expectedConvictionDate, final JsonObject caseFileDefendantDetails, final EmployerDetails employer) {
+    @Test
+    public void shouldReplaceEmailAndPhoneNumberWithNullsWhenBlank() {
+        final JsonObject decision = createObjectBuilder()
+                .add("verdict", "Proved SJP")
+                .build();
+
+        createProsecutionCaseViewsAndVerifyResultCorrect(decision, DECISION_DATE, null, createEmployer(), createDefendantPersonalDetails()
+                .withContactDetails(ContactDetails.contactDetails()
+                        .withBusiness(null)
+                        .withHome("")
+                        .withEmail("")
+                        .withEmail2(null)
+                        .withMobile("")
+                        .build()
+                )
+        );
+    }
+
+    private void createProsecutionCaseViewsAndVerifyResultCorrect(final JsonObject decision,
+                                                                  final LocalDate expectedConvictionDate,
+                                                                  final JsonObject caseFileDefendantDetails,
+                                                                  final EmployerDetails employer) {
+        createProsecutionCaseViewsAndVerifyResultCorrect(decision, expectedConvictionDate, caseFileDefendantDetails, employer, createDefendantPersonalDetails());
+    }
+
+    private void createProsecutionCaseViewsAndVerifyResultCorrect(final JsonObject decision,
+                                                                  final LocalDate expectedConvictionDate,
+                                                                  final JsonObject caseFileDefendantDetails,
+                                                                  final EmployerDetails employer,
+                                                                  final PersonalDetails.Builder personailDetailsBuilder) {
         final Offence offence = createOffence();
         final NotifiedPleaView notifiedPleaView = new NotifiedPleaView(
                 offence.getId(),
                 now(),
                 "NOTIFIED_GUILTY");
-        final PersonalDetails defendantPersonalDetails = createDefendantPersonalDetails();
+        final PersonalDetails defendantPersonalDetails = personailDetailsBuilder.build();
         final CaseDetails caseDetails = createCaseDetails(defendantPersonalDetails, offence);
 
         final JsonObject referenceDataOffences = createReferenceDataOffences();
@@ -200,11 +230,7 @@ public class ProsecutionCasesViewHelperTest {
         assertThat(addressView.getAddress5(), is(defendantPersonalDetails.getAddress().getAddress5()));
         assertThat(addressView.getPostcode(), is(defendantPersonalDetails.getAddress().getPostcode()));
 
-        final ContactView contactView = personalDetailsView.getContact();
-        assertThat(contactView.getHome(), is(defendantPersonalDetails.getContactDetails().getHome()));
-        assertThat(contactView.getWork(), is(nonNull(caseFileDefendantDetails) ? DEFENDANT_WORK_PHONE : null));
-        assertThat(contactView.getPrimaryEmail(), is(defendantPersonalDetails.getContactDetails().getEmail()));
-        assertThat(contactView.getSecondaryEmail(), is(nonNull(caseFileDefendantDetails) ? DEFENDANT_SECONDARY_EMAIL : null));
+        assertContactDetails(defendantPersonalDetails, caseFileDefendantDetails, personalDetailsView);
 
         final EmployerOrganisationView employerOrganisationDetails = defendantView.getPersonDefendant().getEmployerOrganisation();
         if (nonNull(employerDetails.getName())) {
@@ -219,6 +245,22 @@ public class ProsecutionCasesViewHelperTest {
         } else {
             assertThat(employerOrganisationDetails, nullValue());
         }
+    }
+
+    private void assertContactDetails(final PersonalDetails defendantPersonalDetails,
+                                      final JsonObject caseFileDefendantDetails,
+                                      final PersonDetailsView personalDetailsView) {
+        final ContactView contactView = personalDetailsView.getContact();
+        assertThatNullIfBlankOrGivenValue(contactView.getHome(), defendantPersonalDetails.getContactDetails().getHome());
+        assertThatNullIfBlankOrGivenValue(contactView.getHome(), defendantPersonalDetails.getContactDetails().getHome());
+        assertThatNullIfBlankOrGivenValue(contactView.getWork(), nonNull(caseFileDefendantDetails) ? DEFENDANT_WORK_PHONE : null);
+        assertThatNullIfBlankOrGivenValue(contactView.getMobile(), defendantPersonalDetails.getContactDetails().getMobile());
+        assertThatNullIfBlankOrGivenValue(contactView.getPrimaryEmail(), defendantPersonalDetails.getContactDetails().getEmail());
+        assertThatNullIfBlankOrGivenValue(contactView.getSecondaryEmail(), nonNull(caseFileDefendantDetails) ? DEFENDANT_SECONDARY_EMAIL : null);
+    }
+
+    private void assertThatNullIfBlankOrGivenValue(final String actual, final String expected) {
+        assertThat(actual, is(StringUtils.isBlank(expected) ? null : expected));
     }
 
     private JsonObject createProsecutor() {
@@ -255,7 +297,7 @@ public class ProsecutionCasesViewHelperTest {
                 .build();
     }
 
-    private PersonalDetails createDefendantPersonalDetails() {
+    private PersonalDetails.Builder createDefendantPersonalDetails() {
         return PersonalDetails.personalDetails()
                 .withFirstName("Boris")
                 .withLastName("Becker")
@@ -278,8 +320,7 @@ public class ProsecutionCasesViewHelperTest {
                         .withMobile("+6214132514")
                         .build())
                 .withTitle("Mr")
-                .withNationalInsuranceNumber(NATIONAL_INSURANCE_NUMBER)
-                .build();
+                .withNationalInsuranceNumber(NATIONAL_INSURANCE_NUMBER);
     }
 
     private Offence createOffence() {

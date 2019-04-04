@@ -117,6 +117,10 @@ baseUri: message://event/processor/message/sjp
         example: !include json/sjp.events.case-adjourned-to-later-sjp-hearing-recorded.json
 
 
+      application/vnd.sjp.events.case-completed+json:
+        schema: !include json/schema/sjp.events.case-completed.json
+        example: !include json/sjp.events.case-completed.json
+
 /public.event:
   post:
     body:

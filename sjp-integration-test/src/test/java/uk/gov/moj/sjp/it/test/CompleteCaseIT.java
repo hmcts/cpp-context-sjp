@@ -50,7 +50,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
     public void shouldCompleteCaseAndGenerateResultsEvent() {
         final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
         new EventListener()
-                .subscribe("public.sjp.case-results")
+                .subscribe("public.sjp.case-resulted")
                 .run(completeCaseProducer::completeCaseResults);
 
         completeCaseProducer.assertCaseResults();

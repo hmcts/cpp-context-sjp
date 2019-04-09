@@ -43,7 +43,7 @@ public class DecisionProcessor {
                 .add("sharedTime", now().toString())
                 .build();
 
-        final JsonEnvelope command = enveloper.withMetadataFrom(envelopeFrom(metadataFrom(envelope.metadata()),NULL), "public.sjp.case-results")
+        final JsonEnvelope command = enveloper.withMetadataFrom(envelopeFrom(metadataFrom(envelope.metadata()),NULL), "public.sjp.case-resulted")
                 .apply(payload);
 
         sender.send(command);

@@ -135,7 +135,7 @@ public class DecisionProcessorTest {
         JsonEnvelope publicEvent = captor.getValue();
         assertNotNull(publicEvent);
         assertThat(publicEvent, jsonEnvelope(
-                metadata().withName("public.sjp.case-results"),
+                metadata().withName("public.sjp.case-resulted"),
                 payloadIsJson(allOf(withJsonPath("$.caseId", equalTo(caseId.toString()))))));
 
     }

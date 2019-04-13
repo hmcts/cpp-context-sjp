@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
 import static java.time.ZonedDateTime.now;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.junit.Assert.assertFalse;
@@ -17,12 +18,12 @@ import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
-import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
+import uk.gov.moj.cpp.sjp.event.CaseExpectedDateReadyChanged;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.CaseReopenedUpdated;
@@ -54,11 +55,17 @@ import org.junit.Test;
 
 public class CompositeCaseAggregateStateMutatorTest {
 
+    private final UUID caseId = randomUUID();
+    private final UUID userId = randomUUID();
+    private final UUID defendantId = randomUUID();
+    private final UUID offenceId = randomUUID();
+    private final CaseAggregateState caseAggregateState = new CaseAggregateState();
+    private final CompositeCaseAggregateStateMutator compositeCaseAggregateStateMutator = CompositeCaseAggregateStateMutator.INSTANCE;
+
     @Test
     public void shouldMutateStateOnAllOffencesWithdrawalRequestedEvent() {
-        AllOffencesWithdrawalRequested allOffencesWithdrawalRequested = new AllOffencesWithdrawalRequested(UUID.randomUUID());
+        final AllOffencesWithdrawalRequested allOffencesWithdrawalRequested = new AllOffencesWithdrawalRequested(caseId);
 
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
         CompositeCaseAggregateStateMutator.INSTANCE.apply(allOffencesWithdrawalRequested, caseAggregateState);
 
         assertTrue(caseAggregateState.isWithdrawalAllOffencesRequested());
@@ -66,187 +73,170 @@ public class CompositeCaseAggregateStateMutatorTest {
 
     @Test
     public void shouldMutateStateOnAllOffencesWithdrawalRequestCancelledEvent() {
-        AllOffencesWithdrawalRequestCancelled allOffencesWithdrawalRequestCancelled = new AllOffencesWithdrawalRequestCancelled(UUID.randomUUID());
+        final AllOffencesWithdrawalRequestCancelled allOffencesWithdrawalRequestCancelled = new AllOffencesWithdrawalRequestCancelled(caseId);
 
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(allOffencesWithdrawalRequestCancelled, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(allOffencesWithdrawalRequestCancelled, caseAggregateState);
 
         assertFalse(caseAggregateState.isWithdrawalAllOffencesRequested());
     }
 
     @Test
     public void shouldMutateStateOnCaseAssignedEvent() {
-        UUID userId = UUID.randomUUID();
-        CaseAssigned caseAssigned = new CaseAssigned(UUID.randomUUID(), userId, now(), CaseAssignmentType.MAGISTRATE_DECISION);
+        final CaseAssigned caseAssigned = new CaseAssigned(caseId, userId, now(), CaseAssignmentType.MAGISTRATE_DECISION);
 
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(caseAssigned, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(caseAssigned, caseAggregateState);
 
         assertTrue(caseAggregateState.isAssignee(userId));
     }
 
     @Test
     public void shouldMutateStateOnCaseUnassignedEvent() {
-        UUID userId = UUID.randomUUID();
-
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
         caseAggregateState.setAssigneeId(userId);
 
-        CaseUnassigned caseUnassigned = new CaseUnassigned(UUID.randomUUID());
+        final CaseUnassigned caseUnassigned = new CaseUnassigned(caseId);
 
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(caseUnassigned, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(caseUnassigned, caseAggregateState);
 
         assertFalse(caseAggregateState.isAssignee(userId));
     }
 
     @Test
     public void shouldMutateStateOnCaseAssignmentDeletedEvent() {
-        UUID userId = UUID.randomUUID();
-
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
         caseAggregateState.setAssigneeId(userId);
 
-        CaseAssignmentDeleted caseAssignmentDeleted = new CaseAssignmentDeleted(UUID.randomUUID(), CaseAssignmentType.MAGISTRATE_DECISION);
+        final CaseAssignmentDeleted caseAssignmentDeleted = new CaseAssignmentDeleted(caseId, CaseAssignmentType.MAGISTRATE_DECISION);
 
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(caseAssignmentDeleted, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(caseAssignmentDeleted, caseAggregateState);
 
         assertFalse(caseAggregateState.isAssignee(userId));
     }
 
     @Test
     public void shouldMutateStateOnCaseMarkedReadyForDecisionEvent() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseReceived(true);
 
-        CaseReadinessReason readinessReason = CaseReadinessReason.PLEADED_GUILTY;
-        CaseMarkedReadyForDecision caseMarkedReadyForDecision = new CaseMarkedReadyForDecision(UUID.randomUUID(), readinessReason, now());
+        final CaseReadinessReason readinessReason = CaseReadinessReason.PLEADED_GUILTY;
+        final CaseMarkedReadyForDecision caseMarkedReadyForDecision = new CaseMarkedReadyForDecision(caseId, readinessReason, now());
 
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(caseMarkedReadyForDecision, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(caseMarkedReadyForDecision, caseAggregateState);
 
         assertThat(caseAggregateState.getReadinessReason(), is(readinessReason));
     }
 
     @Test
     public void shouldMutateStateOnCaseUnmarkedReadyForDecisionEvent() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseReceived(true);
 
-        CaseUnmarkedReadyForDecision caseUnmarkedReadyForDecision = new CaseUnmarkedReadyForDecision(UUID.randomUUID());
+        final CaseUnmarkedReadyForDecision caseUnmarkedReadyForDecision = new CaseUnmarkedReadyForDecision(caseId, LocalDate.now());
 
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(caseUnmarkedReadyForDecision, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(caseUnmarkedReadyForDecision, caseAggregateState);
 
         assertNull(caseAggregateState.getReadinessReason());
+        assertFalse(caseAggregateState.isCaseReadyForDecision());
+        assertThat(caseAggregateState.getExpectedDateReady(), is(caseUnmarkedReadyForDecision.getExpectedDateReady()));
+    }
+
+    @Test
+    public void shouldMutateStateOnCaseExpectedDateReadyChangedEvent() {
+        final LocalDate oldExpectedDateReady = LocalDate.now().plusDays(1);
+        final LocalDate newExpectedDateReady = LocalDate.now().plusDays(2);
+
+        caseAggregateState.setCaseReceived(true);
+        caseAggregateState.setExpectedDateReady(oldExpectedDateReady);
+
+        final CaseExpectedDateReadyChanged caseExpectedDateReadyChanged = new CaseExpectedDateReadyChanged(caseId, oldExpectedDateReady, newExpectedDateReady);
+
+        compositeCaseAggregateStateMutator.apply(caseExpectedDateReadyChanged, caseAggregateState);
+
+        assertFalse(caseAggregateState.isCaseReadyForDecision());
+        assertThat(caseAggregateState.getExpectedDateReady(), is(newExpectedDateReady));
     }
 
     @Test
     public void shouldMutateStateOnCaseReferredForCourtHearingEvent() {
-        CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing().build();
+        final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing().build();
 
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(caseReferredForCourtHearing, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(caseReferredForCourtHearing, caseAggregateState);
 
         assertTrue(caseAggregateState.isCaseReferredForCourtHearing());
     }
 
     @Test
     public void shouldMutateStateOnCaseReopenedUpdatedEvent() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
+        final LocalDate caseReopenedDate = LocalDate.now();
+        final CaseReopenedUpdated caseReopenedUpdated = new CaseReopenedUpdated(new CaseReopenDetails(caseId, caseReopenedDate, "", ""));
 
-        LocalDate caseReopenedDate = LocalDate.now();
-        CaseReopenedUpdated caseReopenedUpdated = new CaseReopenedUpdated(new CaseReopenDetails(UUID.randomUUID(), caseReopenedDate, "", ""));
-
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(caseReopenedUpdated, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(caseReopenedUpdated, caseAggregateState);
 
         assertThat(caseAggregateState.getCaseReopenedDate(), is(caseReopenedDate));
     }
 
     @Test
     public void shouldMutateStateOnCaseStartedEvent() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
+        final CaseStarted caseStarted = new CaseStarted(caseId);
 
-        UUID caseId = UUID.randomUUID();
-        CaseStarted caseStarted = new CaseStarted(caseId);
-
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(caseStarted, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(caseStarted, caseAggregateState);
 
         assertThat(caseAggregateState.getCaseId(), is(caseId));
     }
 
     @Test
     public void shouldMutateStateOnCaseCompletedEvent() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
+        final CaseCompleted caseCompleted = new CaseCompleted(caseId);
 
-        UUID caseId = UUID.randomUUID();
-        CaseCompleted caseCompleted = new CaseCompleted(caseId);
-
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(caseCompleted, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(caseCompleted, caseAggregateState);
 
         assertTrue(caseAggregateState.isCaseCompleted());
     }
 
     @Test
     public void shouldMutateStateOnDatesToAvoidAddedEvent() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
+        final String datesToAvoid = "datesToAvoid";
+        final DatesToAvoidAdded datesToAvoidAdded = new DatesToAvoidAdded(caseId, datesToAvoid);
 
-        UUID caseId = UUID.randomUUID();
-        String datesToAvoid = "datesToAvoid";
-        DatesToAvoidAdded datesToAvoidAdded = new DatesToAvoidAdded(caseId, datesToAvoid);
-
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(datesToAvoidAdded, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(datesToAvoidAdded, caseAggregateState);
 
         assertThat(caseAggregateState.getDatesToAvoid(), is(datesToAvoid));
     }
 
     @Test
     public void shouldMutateStateOnDatesToAvoidUpdatedEvent() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
+        final String datesToAvoid = "datesToAvoid";
+        final DatesToAvoidUpdated datesToAvoidUpdated = new DatesToAvoidUpdated(caseId, datesToAvoid);
 
-        UUID caseId = UUID.randomUUID();
-        String datesToAvoid = "datesToAvoid";
-        DatesToAvoidUpdated datesToAvoidUpdated = new DatesToAvoidUpdated(caseId, datesToAvoid);
-
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(datesToAvoidUpdated, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(datesToAvoidUpdated, caseAggregateState);
 
         assertThat(caseAggregateState.getDatesToAvoid(), is(datesToAvoid));
     }
 
     @Test
     public void shouldMutateStateOnEmploymentStatusUpdatedEvent() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
+        final String employmentStatus = "unemployed";
+        final EmploymentStatusUpdated employmentStatusUpdated = new EmploymentStatusUpdated(defendantId, employmentStatus);
 
-        UUID defendantId = UUID.randomUUID();
-        String employmentStatus = "unemployed";
-        EmploymentStatusUpdated employmentStatusUpdated = new EmploymentStatusUpdated(defendantId, employmentStatus);
-
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(employmentStatusUpdated, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(employmentStatusUpdated, caseAggregateState);
 
         assertThat(caseAggregateState.getEmploymentStatusByDefendantId().entrySet(), iterableWithSize(1));
     }
 
     @Test
     public void shouldMutateStateOnEmployerDeletedEvent() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
-        UUID defendantId = UUID.randomUUID();
-
         caseAggregateState.updateEmploymentStatusForDefendant(defendantId, "employed");
 
-        EmployerDeleted employerDeleted = new EmployerDeleted(defendantId);
+        final EmployerDeleted employerDeleted = new EmployerDeleted(defendantId);
 
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(employerDeleted, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(employerDeleted, caseAggregateState);
 
         assertFalse(caseAggregateState.getDefendantEmploymentStatus(defendantId).isPresent());
     }
 
     @Test
     public void shouldMutateStateOnFinancialMeansUpdatedEvent() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
-        UUID defendantId = UUID.randomUUID();
-
         caseAggregateState.updateEmploymentStatusForDefendant(defendantId, "employed");
 
-        String employmentStatus = "employmentStatus";
+        final String employmentStatus = "employmentStatus";
 
-        FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEventForOnlinePlea(
+        final FinancialMeansUpdated financialMeansUpdated = FinancialMeansUpdated.createEventForOnlinePlea(
                 defendantId,
                 new Income(IncomeFrequency.MONTHLY, BigDecimal.TEN),
                 new Benefits(),
@@ -254,109 +244,87 @@ public class CompositeCaseAggregateStateMutatorTest {
                 new ArrayList<>(),
                 now());
 
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(financialMeansUpdated, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(financialMeansUpdated, caseAggregateState);
 
         assertThat(caseAggregateState.getDefendantEmploymentStatus(defendantId).get(), is(employmentStatus));
     }
 
     @Test
     public void shouldMutateStateOnHearingLanguagePreferenceUpdatedForDefendant() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
-        UUID caseId = UUID.randomUUID();
-
-        UUID defendantId = UUID.randomUUID();
-        HearingLanguagePreferenceUpdatedForDefendant hearingLanguagePreferenceUpdatedForDefendant =
+        final HearingLanguagePreferenceUpdatedForDefendant hearingLanguagePreferenceUpdatedForDefendant =
                 HearingLanguagePreferenceUpdatedForDefendant.createEvent(
                         caseId,
                         defendantId,
                         true);
 
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(hearingLanguagePreferenceUpdatedForDefendant, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(hearingLanguagePreferenceUpdatedForDefendant, caseAggregateState);
 
         assertTrue(caseAggregateState.getDefendantsSpeakWelsh().get(defendantId));
     }
 
     @Test
     public void shouldMutateStateOnHearingLanguagePreferenceCancelledForDefendant() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
-        UUID caseId = UUID.randomUUID();
-
-        UUID defendantId = UUID.randomUUID();
-        HearingLanguagePreferenceCancelledForDefendant event =
+        final HearingLanguagePreferenceCancelledForDefendant event =
                 new HearingLanguagePreferenceCancelledForDefendant(
                         caseId,
                         defendantId);
 
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(event, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(event, caseAggregateState);
 
         assertNull(caseAggregateState.getDefendantsSpeakWelsh().get(defendantId));
     }
 
     @Test
     public void shouldMutateStateOnInterpreterUpdatedForDefendant() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
+        final String interpreterLanguage = "welsh";
 
-        UUID caseId = UUID.randomUUID();
-        UUID defendantId = UUID.randomUUID();
-        String interpreterLanguage = "welsh";
-
-        InterpreterUpdatedForDefendant event = InterpreterUpdatedForDefendant.createEvent(
+        final InterpreterUpdatedForDefendant event = InterpreterUpdatedForDefendant.createEvent(
                 caseId,
                 defendantId,
                 interpreterLanguage);
 
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(event, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(event, caseAggregateState);
 
         assertThat(caseAggregateState.getDefendantInterpreterLanguage(defendantId), is(interpreterLanguage));
     }
 
     @Test
     public void shouldMutateStateOnInterpreterCancelledForDefendant() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
-        UUID caseId = UUID.randomUUID();
-        UUID defendantId = UUID.randomUUID();
-
         caseAggregateState.updateDefendantInterpreterLanguage(defendantId, Interpreter.of("welsh"));
 
-        InterpreterCancelledForDefendant event = new InterpreterCancelledForDefendant(
+        final InterpreterCancelledForDefendant event = new InterpreterCancelledForDefendant(
                 caseId,
                 defendantId);
 
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(event, caseAggregateState);
+        compositeCaseAggregateStateMutator.apply(event, caseAggregateState);
 
         assertNull(caseAggregateState.getDefendantInterpreterLanguage(defendantId));
     }
 
     @Test
     public void shouldMutateStateOnPleaUpdatedEvent() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseReceived(true);
 
-        UUID offenceId = UUID.randomUUID();
-        PleaUpdated pleaUpdated = new PleaUpdated(UUID.randomUUID(), offenceId, PleaType.GUILTY, PleaMethod.ONLINE, ZonedDateTime.now());
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(pleaUpdated, caseAggregateState);
+        final PleaUpdated pleaUpdated = new PleaUpdated(caseId, offenceId, PleaType.GUILTY, PleaMethod.ONLINE, ZonedDateTime.now());
+        compositeCaseAggregateStateMutator.apply(pleaUpdated, caseAggregateState);
 
         assertTrue(caseAggregateState.getOffenceIdsWithPleas().contains(offenceId));
     }
 
     @Test
     public void shouldMutateStateOnPleaCancelledEvent() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
         caseAggregateState.setCaseReceived(true);
 
-        UUID offenceId = UUID.randomUUID();
-        PleaCancelled pleaCancelled = new PleaCancelled(UUID.randomUUID(), offenceId);
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(pleaCancelled, caseAggregateState);
+        final PleaCancelled pleaCancelled = new PleaCancelled(caseId, offenceId);
+        compositeCaseAggregateStateMutator.apply(pleaCancelled, caseAggregateState);
 
         assertFalse(caseAggregateState.getOffenceIdsWithPleas().contains(offenceId));
     }
 
     @Test
     public void shouldMutateStateOnTrialRequestCancelledEvent() {
-        CaseAggregateState caseAggregateState = new CaseAggregateState();
-
-        TrialRequestCancelled trialRequestCancelled = new TrialRequestCancelled(UUID.randomUUID());
-        CompositeCaseAggregateStateMutator.INSTANCE.apply(trialRequestCancelled, caseAggregateState);
+        final TrialRequestCancelled trialRequestCancelled = new TrialRequestCancelled(randomUUID());
+        compositeCaseAggregateStateMutator.apply(trialRequestCancelled, caseAggregateState);
 
         assertFalse(caseAggregateState.isTrialRequested());
     }

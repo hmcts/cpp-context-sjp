@@ -4,6 +4,7 @@
   },
   "urn": "TFL34652354",
   "prosecutingAuthority": "TVL",
+  "postingDate":"2019-07-01",
   "defendant": {
     "id": "*",
     "numPreviousConvictions": 0,
@@ -14,5 +15,6 @@
       }
     ]
   },
-  "createdOn": "2012-02-22T02:06:58.147Z"
+  "createdOn": "2012-02-22T02:06:58.147Z",
+  "expectedDateReady": "2019-07-29"
 }

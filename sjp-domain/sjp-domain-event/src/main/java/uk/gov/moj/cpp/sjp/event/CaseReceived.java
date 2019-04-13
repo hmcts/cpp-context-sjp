@@ -29,6 +29,7 @@ public class CaseReceived {
     private final LocalDate postingDate;
     private final Defendant defendant;
     private final ZonedDateTime createdOn;
+    private final LocalDate expectedDateReady;
 
     @JsonCreator
     public CaseReceived(@JsonProperty("caseId") UUID caseId,
@@ -38,7 +39,9 @@ public class CaseReceived {
                         @JsonProperty("costs") BigDecimal costs,
                         @JsonProperty("postingDate") LocalDate postingDate,
                         @JsonProperty("defendant") Defendant defendant,
-                        @JsonProperty("createdOn") ZonedDateTime createdOn) {
+                        @JsonProperty("expectedDateReady") LocalDate expectedDateReady,
+                        @JsonProperty("createdOn") ZonedDateTime createdOn
+    ) {
         this.caseId = caseId;
         this.urn = urn;
         this.enterpriseId = enterpriseId;
@@ -47,6 +50,7 @@ public class CaseReceived {
         this.postingDate = postingDate;
         this.defendant = defendant;
         this.createdOn = createdOn;
+        this.expectedDateReady = expectedDateReady;
     }
 
     public UUID getCaseId() {
@@ -79,6 +83,10 @@ public class CaseReceived {
 
     public Defendant getDefendant() {
         return defendant;
+    }
+
+    public LocalDate getExpectedDateReady() {
+        return expectedDateReady;
     }
 
     @Override

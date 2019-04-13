@@ -39,7 +39,7 @@ import java.util.stream.Stream;
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 8L;
+    private static final long serialVersionUID = 9L;
     private static final AggregateStateMutator<Object, CaseAggregateState> AGGREGATE_STATE_MUTATOR = AggregateStateMutator.compositeCaseAggregateStateMutator();
     @SuppressWarnings("squid:S1948")
     private final CaseAggregateState state = new CaseAggregateState();
@@ -70,8 +70,8 @@ public class CaseAggregate implements Aggregate {
         return apply(CaseCoreHandler.INSTANCE.markCaseReadyForDecision(readinessReason, markedAt, state));
     }
 
-    public Stream<Object> unmarkCaseReadyForDecision() {
-        return apply(CaseCoreHandler.INSTANCE.unmarkCaseReadyForDecision(state));
+    public Stream<Object> unmarkCaseReadyForDecision(final LocalDate expectedDateReady) {
+        return apply(CaseCoreHandler.INSTANCE.unmarkCaseReadyForDecision(expectedDateReady, state));
     }
 
     public Stream<Object> undoCaseReopened(final UUID caseId) {

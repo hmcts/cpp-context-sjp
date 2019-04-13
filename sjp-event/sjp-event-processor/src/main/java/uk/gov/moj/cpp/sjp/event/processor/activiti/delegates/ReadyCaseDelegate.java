@@ -15,8 +15,10 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService;
+import uk.gov.moj.cpp.sjp.event.processor.activiti.ExpectedDateReadyCalculator;
 import uk.gov.moj.cpp.sjp.event.processor.activiti.ReadyCaseCalculator;
 
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,6 +42,9 @@ public class ReadyCaseDelegate extends AbstractCaseDelegate {
     @Inject
     private ReadyCaseCalculator readyCaseCalculator;
 
+    @Inject
+    private ExpectedDateReadyCalculator expectedDateReadyCalculator;
+
     @Override
     public void execute(final UUID caseId, final Metadata metadata, final DelegateExecution execution, boolean processMigration) {
         final boolean provedInAbsence = isTrue(execution.getVariable(PROVED_IN_ABSENCE_VARIABLE, Boolean.class));
@@ -59,7 +64,8 @@ public class ReadyCaseDelegate extends AbstractCaseDelegate {
         } else {
             //TODO remove as part of ATCM-4169
             execution.setVariable(IS_READY_VARIABLE, false);
-            sendUnmarkCaseReadyForDecisionCommand(caseId, metadata);
+            final LocalDate expectedDateReady = expectedDateReadyCalculator.calculateExpectedDateReady(execution).toLocalDate();
+            sendUnmarkCaseReadyForDecisionCommand(caseId, expectedDateReady, metadata);
         }
     }
 
@@ -69,18 +75,18 @@ public class ReadyCaseDelegate extends AbstractCaseDelegate {
     }
 
     /**
-     * done for Backward compatibility
-     * old cases does't have {@link CaseStateService#PLEA_READY_VARIABLE}
+     * done for Backward compatibility old cases does't have {@link CaseStateService#PLEA_READY_VARIABLE}
      * but can have {@link CaseStateService#PLEA_TYPE_VARIABLE}
      */
     private boolean isPleaReady(final PleaType pleaType, final Boolean pleaReady) {
         return pleaReady == null && pleaType != null || isTrue(pleaReady);
     }
 
-    private void sendUnmarkCaseReadyForDecisionCommand(final UUID caseId, final Metadata metadata) {
+    private void sendUnmarkCaseReadyForDecisionCommand(final UUID caseId, final LocalDate expectedDateReady, final Metadata metadata) {
         sendAsAdmin(metadata, "sjp.command.unmark-case-ready-for-decision",
                 createObjectBuilder()
                         .add(CASE_ID, caseId.toString())
+                        .add("expectedDateReady", expectedDateReady.toString())
                         .build());
     }
 

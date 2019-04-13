@@ -11,6 +11,8 @@ import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 
+import java.time.LocalDate;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.junit.Before;
@@ -22,6 +24,8 @@ import org.junit.Test;
 public class CaseReadyForDecisionUnmark extends CaseAggregateBaseTest {
 
     private final PleaType pleaType = PleaType.GUILTY;
+
+    final LocalDate expectedDateReady = LocalDate.now();
 
     @Before
     public void markCaseBeforeStartAnyTest() {
@@ -38,18 +42,17 @@ public class CaseReadyForDecisionUnmark extends CaseAggregateBaseTest {
     @Test
     public void shouldNotUnmarkCaseWhenNeverMarked() {
         setUp(); // reinitialise Aggregate as @Before is marking the default case as ready
-
-        when(caseAggregate.unmarkCaseReadyForDecision())
+        when(caseAggregate.unmarkCaseReadyForDecision(expectedDateReady))
                 .reason("Case not unmarked as never been marked")
                 .thenExpect();
     }
 
     @Test
     public void shouldUnmarkCaseReadyForDecision() {
-        when(caseAggregate.unmarkCaseReadyForDecision())
-                .thenExpect(new CaseUnmarkedReadyForDecision(caseId));
+        when(caseAggregate.unmarkCaseReadyForDecision(expectedDateReady))
+                .thenExpect(new CaseUnmarkedReadyForDecision(UUID.randomUUID(), expectedDateReady));
 
-        when(caseAggregate.unmarkCaseReadyForDecision())
+        when(caseAggregate.unmarkCaseReadyForDecision(expectedDateReady))
                 .reason("Case can not be unmarked twice")
                 .thenExpect();
     }

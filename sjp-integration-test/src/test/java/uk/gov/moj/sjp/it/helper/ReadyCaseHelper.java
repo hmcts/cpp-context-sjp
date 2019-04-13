@@ -1,43 +1,76 @@
 package uk.gov.moj.sjp.it.helper;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
-import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
-import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaultsUntilResponseIsJson;
+import static org.hamcrest.Matchers.is;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessageAsJsonEnvelope;
 
-import uk.gov.justice.services.common.http.HeaderConstants;
-import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
+import uk.gov.moj.cpp.sjp.event.CaseExpectedDateReadyChanged;
+import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
+import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
+import uk.gov.moj.sjp.it.util.TopicUtil;
 
+import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.JsonObject;
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
 
-import com.jayway.jsonpath.ReadContext;
-import org.hamcrest.Matcher;
+public class ReadyCaseHelper implements AutoCloseable {
 
-public class ReadyCaseHelper {
+    private final MessageConsumer privateMessageConsumer;
 
-    private static final String QUERY_READY_CASES_RESOURCE = "/cases/ready-cases";
-    private static final String QUERY_READY_CASES = "application/vnd.sjp.query.ready-cases+json";
-
-
-    public static void pollUntilReadyWithReason(final UUID caseId, final CaseReadinessReason readinessReason) {
-        pollReadyCasesUntilResponseIsJson(withJsonPath("readyCases.*", hasItem(
-                isJson(allOf(
-                        withJsonPath("caseId", equalTo(caseId.toString())),
-                        withJsonPath("reason", equalTo(readinessReason.name())))
-                ))));
+    public ReadyCaseHelper() {
+        privateMessageConsumer = TopicUtil.privateEvents.createConsumerForMultipleSelectors(
+                CaseMarkedReadyForDecision.EVENT_NAME,
+                CaseUnmarkedReadyForDecision.EVENT_NAME,
+                CaseExpectedDateReadyChanged.EVENT_NAME);
     }
 
-    private static JsonObject pollReadyCasesUntilResponseIsJson(final Matcher<? super ReadContext> matcher) {
-        final RequestParamsBuilder requestParams = requestParams(getReadUrl(QUERY_READY_CASES_RESOURCE), QUERY_READY_CASES)
-                .withHeader(HeaderConstants.USER_ID, USER_ID);
-        return pollWithDefaultsUntilResponseIsJson(requestParams.build(), matcher);
+    @Override
+    public void close() throws JMSException {
+        privateMessageConsumer.close();
+    }
+
+    public void verifyCaseUnmarkedReadyForDecisionEventEmitted(final UUID caseId, final LocalDate expectedDateReady) {
+        final Optional<JsonEnvelope> event = retrieveMessageAsJsonEnvelope(privateMessageConsumer);
+        assertThat(event.isPresent(), is(true));
+        assertThat(event.get(), jsonEnvelope(
+                metadata().withName(CaseUnmarkedReadyForDecision.EVENT_NAME),
+                payloadIsJson((allOf(
+                        withJsonPath("caseId", equalTo(caseId.toString())),
+                        withJsonPath("expectedDateReady", equalTo(expectedDateReady.toString()))
+                )))));
+    }
+
+    public void verifyCaseMarkedReadyForDecisionEventEmitted(final UUID caseId, final CaseReadinessReason readinessReason) {
+        final Optional<JsonEnvelope> event = retrieveMessageAsJsonEnvelope(privateMessageConsumer);
+        assertThat(event.isPresent(), is(true));
+        assertThat(event.get(), jsonEnvelope(
+                metadata().withName(CaseMarkedReadyForDecision.EVENT_NAME),
+                payloadIsJson((allOf(
+                        withJsonPath("caseId", equalTo(caseId.toString())),
+                        withJsonPath("reason", equalTo(readinessReason.toString()))
+                )))));
+    }
+
+    public void verifyCaseExpectedDateReadyChangedEventEmitted(final UUID caseId, final LocalDate oldExpectedDateReady, final LocalDate newExpectedDateReady) {
+        final Optional<JsonEnvelope> event = retrieveMessageAsJsonEnvelope(privateMessageConsumer);
+        assertThat(event.isPresent(), is(true));
+        assertThat(event.get(), jsonEnvelope(
+                metadata().withName(CaseExpectedDateReadyChanged.EVENT_NAME),
+                payloadIsJson((allOf(
+                        withJsonPath("caseId", equalTo(caseId.toString())),
+                        withJsonPath("oldExpectedDateReady", equalTo(oldExpectedDateReady.toString())),
+                        withJsonPath("newExpectedDateReady", equalTo(newExpectedDateReady.toString()))
+                )))));
     }
 }

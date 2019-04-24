@@ -14,7 +14,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 @Event(CaseExpectedDateReadyChanged.EVENT_NAME)
 public class CaseExpectedDateReadyChanged {
 
-    public static final String EVENT_NAME = "sjp.events.case-expected-ready-date-changed";
+    public static final String EVENT_NAME = "sjp.events.case-expected-date-ready-changed";
 
     private final UUID caseId;
     private final LocalDate oldExpectedDateReady;

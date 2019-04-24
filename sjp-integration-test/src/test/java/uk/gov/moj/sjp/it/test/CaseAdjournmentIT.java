@@ -195,7 +195,6 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
             pollUntilCaseByIdIsOk(caseId, allOf(caseAssigned(false), caseAdjourned(adjournmentDate)));
 
             cancelPleaHelper.cancelPlea();
-            readyCaseHelper.verifyCaseExpectedDateReadyChangedEventEmitted(caseId, adjournmentDate, postingDate.plusDays(NOTICE_PERIOD_IN_DAYS));
             pollUntilCaseNotReady(caseId);
             pollUntilCaseByIdIsOk(caseId, allOf(caseAssigned(false), caseAdjourned(adjournmentDate)));
         }

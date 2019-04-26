@@ -79,4 +79,18 @@ public class ReferenceDataService {
         final JsonEnvelope response = requester.requestAsAdmin(request);
         return response.payloadAsJsonObject();
     }
+
+    public Optional<JsonObject> getCourtByCourtHouseOUCode(final String courtHouseOUCode, final JsonEnvelope envelope) {
+        final JsonObject queryParams = createObjectBuilder().add("oucode", courtHouseOUCode).build();
+        final JsonEnvelope query = enveloper.withMetadataFrom(envelope, "referencedata.query.organisationunits")
+                .apply(queryParams);
+
+        final JsonEnvelope organisationUnitsResponse = requester.requestAsAdmin(query);
+
+        return organisationUnitsResponse.payloadAsJsonObject()
+                .getJsonArray("organisationunits")
+                .getValuesAs(JsonObject.class)
+                .stream()
+                .findFirst();
+    }
 }

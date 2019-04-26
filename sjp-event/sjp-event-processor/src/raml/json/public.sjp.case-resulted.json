@@ -1,159 +1,147 @@
 {
-  "hearing":{
-    "id":"0377ffea-4c17-4a1b-aebf-a87f1d01c8b1",
-    "hearingType":"DmcxxObhWy",
-    "startDateTime":"2018-05-03T14:37:48.486Z",
-    "courtCentre":{
-      "courtCentreId":"e4003b92-419b-4e47-b3f9-89a4bbd6741d",
-      "courtCentreName":"7Oxoi9Xfj7",
-      "courtRoomId":"9dcbd036-ce07-4d21-a83f-a3576d7bc4ac",
-      "courtRoomName":"tOawyoljyO"
+  "session": {
+    "sessionId": "aa746921-d839-4867-bcf9-b41db8ebc852",
+    "sessionLocation": {
+      "courtId": "ab746921-d839-4867-bcf9-b41db8ebc112",
+      "courtHouseCode": "DC",
+      "name": "Cardiff Magistrates' Court",
+      "roomId": "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a",
+      "roomName": "HorseFerry",
+      "address": {
+        "address1": "Fitzalan Place",
+        "address2": "Cardiff",
+        "addressline3": "addressline3",
+        "address4": "address4",
+        "address5": "address5",
+        "postcode": "CF24 0RZ"
+      }
     },
-    "attendees":[
-      {
-        "personId":"ef142399-346e-4451-8c70-5002b0afe137",
-        "firstName":"r2JT0OBezv",
-        "lastName":"LWVzq8Dpu4",
-        "type":"COURTCLERK",
-        "title":""
-      },
-      {
-        "firstName":"hMPryT8grp",
-        "lastName":"Citrv4HZid",
-        "type":"JUDGE",
-        "title":"E1g2DGsOSm"
-      },
-      {
-        "firstName":"Gx2vmzbPSz",
-        "lastName":"Q6InexEmHX",
-        "type":"DEFENCEADVOCATE",
-        "title":"CoyDCKSfIz",
-        "defendantIds":[
-          "a88ec2b8-1a76-4d5e-8b4a-1b356b6bb49b"
-        ],
-        "status":"CWMUFzdiCa"
-      },
-      {
-        "firstName":"xfMfxtxfum",
-        "lastName":"v86SVBGpaa",
-        "type":"PROSECUTIONADVOCATE",
-        "title":"8KNZ4uNQyu",
-        "caseIds":[
-          "2baf417c-9173-4223-b543-d060148d98b8"
-        ],
-        "status":"MjiqObwqYz"
-      }
-    ],
-    "defendants":[
-      {
-        "id":"565f41fc-52e7-462d-9035-b420d55ae4b5",
-        "person":{
-          "id":"93f2bbc9-fbd0-4486-8feb-035a8c848bde",
-          "firstName":"nIM2UnRtCS",
-          "lastName":"N7IXLItjzX",
-          "dateOfBirth":"2013-12-21",
-          "address":{
-            "address1":"rNtKeXbg5u",
-            "address2":"CjIZCKP91I",
-            "address3":"4chrwXxe5F",
-            "address4":"FLoizT3XD9",
-            "postCode":"nTgV04Nh3Z"
-          },
-          "nationality":"roP0bVQ5vC",
-          "gender":"2T2maVwV7h",
-          "homeTelephone":"",
-          "workTelephone":"",
-          "mobile":"",
-          "fax":"",
-          "email":""
-        },
-        "defenceOrganisation":"Mf6XgIFeds",
-        "interpreter":{
-          "name":"",
-          "language":"1m38VVVnoC"
-        },
-        "cases":[
-          {
-            "id":"2baf417c-9173-4223-b543-d060148d98b8",
-            "urn":"IqqvbwQUbm",
-            "bailStatus":"znHzaTImOj",
-            "custodyTimeLimitDate":"2018-05-03T14:37:48.490Z",
-            "offences":[
-              {
-                "id":"ea0ab5f9-20bd-469b-9073-5dd2bd1d07de",
-                "code":"hcDSY8eFdM",
-                "convictionDate":"2018-03-04",
-                "plea":{
-                  "id":"ea0ab5f9-20bd-469b-9073-5dd2bd1d07de",
-                  "date":"2013-05-17",
-                  "value":"VLMB7wSE9q",
-                  "enteredHearingId":"0377ffea-4c17-4a1b-aebf-a87f1d01c8b1"
-                },
-                "verdict":{
-                  "verdictDescription":"pzQohlYA9O",
-                  "verdictCategory":"4bR9XRcOSI",
-                  "numberOfSplitJurors":"9-0",
-                  "verdictDate":"2014-11-08",
-                  "numberOfJurors":9,
-                  "unanimous":false,
-                  "enteredHearingId":"0377ffea-4c17-4a1b-aebf-a87f1d01c8b1"
-                },
-                "wording":"OPIqRskMqB",
-                "startDate":"2014-09-12",
-                "endDate":"2015-10-01"
-              }
-            ]
-          }
-        ]
-      }
-    ],
-    "sharedResultLines":[
-      {
-        "id":"265d47b3-4b23-47d0-8262-4cd335d053a7",
-        "caseId":"2baf417c-9173-4223-b543-d060148d98b8",
-        "defendantId":"565f41fc-52e7-462d-9035-b420d55ae4b5",
-        "offenceId":"ea0ab5f9-20bd-469b-9073-5dd2bd1d07de",
-        "level":"CASE",
-        "label":"GpY11hIFpu",
-        "lastSharedDateTime":"2018-04-30T18:32:04.238Z",
-        "orderedDate": "2017-12-21",
-        "courtClerk": {
-          "id": "ab746921-d839-4867-bcf9-b41db8ebc852",
-          "firstName": "David",
-          "lastName": "Walliams"
-        },
-        "prompts":[
-          {
-            "id" : "35b9ee94-b2f5-46fd-9d72-a5beb0dc112d",
-            "label":"5sVuexg4pZ",
-            "value":"NIgU8CsKCh"
-          }
-        ]
-      }
-    ]
+    "dateAndTimeOfSession": "2018-02-03T15:14:29.894Z",
+    "psaCode": "ABC"
   },
-  "variants" : [ {
-    "key" : {
-      "hearingId" : "7a3f466e-6f12-4915-acde-b2f3cf229b3f",
-      "defendantId" : "d700b79b-45f1-4ee5-8266-f727d07ed9e7",
-      "nowsTypeId" : "5a7bbb07-aa18-400d-a2de-56a5103e4ff0",
-      "usergroups" : [ "Listings Officers", "Court Clerks" ]
-    },
-    "materialId" : "f79bf106-84e0-4bd9-911a-fc28cd6a8c9c",
-    "description": "Imprisonment Order",
-    "templateName": "SingleTemplate",
-    "status" : "GENERATED"
-  }, {
-    "key" : {
-      "hearingId" : "7a3f466e-6f12-4915-acde-b2f3cf229b3f",
-      "defendantId" : "d700b79b-45f1-4ee5-8266-f727d07ed9e7",
-      "nowsTypeId" : "5a7bbb07-aa18-400d-a2de-56a5103e4ff0",
-      "usergroups" : [ "System Users" , "Court Clerks"]
-    },
-    "materialId" : "a7757369-8382-4a4b-9640-ace82d5222f6",
-    "description": "Imprisonment Order",
-    "templateName": "SingleTemplate",
-    "status" : "BUILDING"
-  } ],
-  "sharedTime":"2018-05-03T15:37:48.745Z"
+  "cases": [
+    {
+      "caseId": "2baf417c-9173-4223-b543-d060148d98b8",
+      "urn": "1234567",
+      "defendants": [
+        {
+          "defendantId": "7e2f843e-d639-40b3-8611-8015f3a18954",
+          "prosecutorReference": "DVLA",
+          "individualDefendant": {
+            "basePersonDetails": {
+              "personTitle": "Mr",
+              "firstName": "Joe",
+              "lastName": "Bloggs",
+              "telephoneNumberBusiness": "99999999999",
+              "telephoneNumberHome": "88888888888",
+              "telephoneNumberMobile": "77777777777",
+              "emailAddress1": "somerandomemail1@random.random",
+              "emailAddress2": "somerandomemail2@random.random",
+              "address": {
+                "address1": "102 Petty France",
+                "address2": "London",
+                "address3": "address3",
+                "address4": "address4",
+                "address5": "address5",
+                "postcode": "SW1H 9AJ"
+              },
+              "birthDate": "1960-05-04",
+              "gender": "Male"
+            },
+            "pncIdentifier": "PNC123",
+            "personStatedNationality": "GBR",
+            "bailConditions": "Must observe curfew",
+            "bailStatus": "IN_CUSTODY",
+            "reasonForBailConditionsOrCustody": "Persistent offender",
+            "presentAtHearing": true
+          },
+          "corporateDefendant": {
+            "organisationName": "ABC Corporation",
+            "telephoneNumberBusiness1": "22222222222",
+            "telephoneNumberBusiness2": "33333333333",
+            "emailAddress1": "abccorporation@mail1@random.random",
+            "emailAddress2": "abccorporation@mail2@random.random",
+            "address": {
+              "address1": "102 Petty France",
+              "address2": "London",
+              "address3": "address3",
+              "address4": "address4",
+              "address5": "address5",
+              "postcode": "SW1H 9AJ"
+            },
+            "pncIdentifier": "121",
+            "presentAtHearing": true,
+            "bailStatus": "IN_CUSTODY"
+          },
+          "parentGuardianDetails": {
+            "personTitle": "Mr",
+            "firstName": "ParentGuardianFirstName",
+            "lastName": "ParentGuardianLastName",
+            "telephoneNumberBusiness": "99999999999",
+            "telephoneNumberHome": "88888888888",
+            "telephoneNumberMobile": "77777777777",
+            "emailAddress1": "parentguardianmemail1@random.random",
+            "emailAddress2": "parentguardianemail2@random.random",
+            "address": {
+              "address1": "102 Little France",
+              "address2": "Westminster",
+              "address3": "address3",
+              "address4": "address4",
+              "address5": "address5",
+              "postcode": "SW1H 9AJ"
+            },
+            "birthDate": "1960-05-04",
+            "gender": "Male"
+          },
+          "offences": [
+            {
+              "baseOffenceDetails": {
+                "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "offenceSequenceNumber": 1,
+                "offenceCode": "61131",
+                "offenceWording": "Drink Driving",
+                "offenceDateCode": 8,
+                "offenceStartDateTime": "2018-03-01T25:14:29.894Z",
+                "offenceEndDateTime": "2018-03-02T25:14:29.894Z",
+                "chargeDate": "2018-03-02T30:14:29.894Z",
+                "arrestDate": "2018-03-02T20:14:29.894Z",
+                "locationOfOffence": "Gypsy Corner",
+                "alcoholLevelAmount": 300,
+                "alcoholLevelMethod": "Breath Test",
+                "vehicleCode": "X1AB",
+                "vehicleRegistrationMark": "OF01ENC"
+              },
+              "initiatedDate": "2018-03-05T25:14:29.894Z",
+              "plea": {
+                "pleaType": "GUILTY",
+                "pleaDate": "2018-02-05T15:14:29.894Z",
+                "pleaMethod": "POSTAL"
+              },
+              "modeOfTrial": 6,
+              "finalDisposalIndicator": 9,
+              "convictionDate": "2018-03-05T15:14:29.894Z",
+              "convictingCourt": 4,
+              "finding": "some interesting findings",
+              "results": [
+                {
+                  "resultId": "3570eae9-6ce8-4208-99f3-ff02b118c372",
+                  "resultCode": "FO",
+                  "resultText": "Driving under the influence of alcohol",
+                  "resultCodeQualifier": [
+                  ],
+                  "bailStatusOffence": "FO",
+                  "durationValue": 30,
+                  "durationUnit": "1",
+                  "secondaryDurationValue": 60,
+                  "secondaryDurationUnit": "2",
+                  "durationStartDate": "2018-03-12",
+                  "durationEndDate": "2018-03-15"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

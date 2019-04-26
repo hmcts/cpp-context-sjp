@@ -43,16 +43,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ReferenceDataServiceTest {
 
+    private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
     @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloper();
-
+    private final Enveloper enveloper = EnveloperFactory.createEnveloper();
     @Mock
     private Requester requester;
-
     @InjectMocks
     private ReferenceDataService referenceDataService;
-
-    private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
 
     @Test
     public void shouldReturnCountryForAPostcode() {
@@ -165,6 +162,37 @@ public class ReferenceDataServiceTest {
 
         final JsonObject documentsMetadata = referenceDataService.getDocumentMetadata(date, envelope);
         assertThat(documentsMetadata, is(responsePayload));
+    }
+
+    @Test
+    public void shouldReturnCourtByCourtHouseOUCode() {
+        final String courtHouseOUCode = "B01LY00";
+        final String oucodeL3Name = "South Western (Lavender Hill)";
+        final String oucodeL3WelshName = "welshName_Test";
+        final JsonObject organisationUnits = createObjectBuilder()
+                .add("organisationunits", createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("oucode", courtHouseOUCode)
+                                .add("oucodeL3Name", oucodeL3Name)
+                                .add("oucodeL3WelshName", oucodeL3WelshName)
+                        ))
+                .build();
+
+        final JsonEnvelope queryResponse = envelopeFrom(metadataWithRandomUUIDAndName(), organisationUnits);
+
+        when(organisationUnitsQuery(courtHouseOUCode)).thenReturn(queryResponse);
+
+        final Optional<JsonObject> court = referenceDataService.getCourtByCourtHouseOUCode(courtHouseOUCode, envelope);
+
+        assertThat(court.isPresent(), equalTo(true));
+        assertThat(court.get().getString("oucodeL3Name"), equalTo(oucodeL3Name));
+        assertThat(court.get().getString("oucodeL3WelshName"), equalTo(oucodeL3WelshName));
+    }
+
+    private JsonEnvelope organisationUnitsQuery(final String oucode) {
+        return requester.requestAsAdmin(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(envelope).withName("referencedata.query.organisationunits"),
+                payloadIsJson(withJsonPath("$.oucode", equalTo(oucode))))));
     }
 
     private Object requestEthnicity(final String ethnicityCode) {

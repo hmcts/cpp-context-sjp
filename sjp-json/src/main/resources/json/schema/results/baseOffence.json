@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/results/baseOffense.json",
+  "type": "object",
+  "properties": {
+    "offenceId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "offenceSequenceNumber": {
+      "type": "integer",
+      "description": "Sequence number of the offence"
+    },
+    "offenceCode": {
+      "type": "string",
+      "description": "Identifies the CJS code applicable to criminal offences as per the CJS Standard section 3.11"
+    },
+    "offenceWording": {
+      "type": "string"
+    },
+    "offenceDateCode": {
+      "description": "The codification of the date of offence.",
+      "type": "integer",
+      "id": "officeDateCode"
+    },
+    "offenceStartDateTime": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    },
+    "offenceEndDateTime": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    },
+    "chargeDate": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    },
+    "arrestDate": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    },
+    "locationOfOffence": {
+      "type": "string",
+      "description": "Location of offense"
+    },
+    "alcoholLevelAmount": {
+      "type": "integer"
+    },
+    "alcoholLevelMethod": {
+      "type": "string"
+    },
+    "vehicleCode": {
+      "type": "string",
+      "id": "vehicleCode"
+    },
+    "vehicleRegistrationMark": {
+      "type": "string",
+      "id": "vehicleRegistrationMark"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "offenceCode",
+    "offenceWording",
+    "offenceDateCode",
+    "offenceStartDateTime"
+  ]
+}

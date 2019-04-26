@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/sjp/results/sjp.case-resulted.json",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/results/publicSjpResulted.json",
   "type": "object",
   "properties": {
     "session": {
@@ -9,11 +9,11 @@
     "cases": {
       "type": "array",
       "items": {
-        "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/results/caseDetails.json"
+        "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/results/baseCaseDetails.json"
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "session",
     "cases"

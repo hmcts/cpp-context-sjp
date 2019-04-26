@@ -28,6 +28,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.sjp.it.helper.CaseNoteHelper.pollForCaseNotes;
 import static uk.gov.moj.sjp.it.helper.CaseReferralHelper.findReferralStatusForCase;
+import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.stub.ProgressionServiceStub.REFER_TO_COURT_COMMAND_CONTENT;
 import static uk.gov.moj.sjp.it.stub.ProgressionServiceStub.REFER_TO_COURT_COMMAND_URL;
@@ -247,10 +248,12 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
     @Test
     public void shouldSendReferToCourtHearingCommandToProgressionContext_WithPlea() {
-        new PleadOnlineHelper(caseId).pleadOnline(getPayload("raml/json/sjp.command.plead-online__not-guilty.json")
+        final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId);
+        pleadOnlineHelper.pleadOnline(getPayload("raml/json/sjp.command.plead-online__not-guilty.json")
                 .replace("ecf30a03-8a17-4fc5-81d2-b72ac0a13d17", offenceId.toString())
                 .replace("AB123456A", NATIONAL_INSURANCE_NUMBER));
 
+        verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(caseId, true);
         referCaseToCourtAndVerifyCommandSendToProgressionMatchesExpected("payload/referral/progression.refer-for-court-hearing_plea-present.json");
     }
 

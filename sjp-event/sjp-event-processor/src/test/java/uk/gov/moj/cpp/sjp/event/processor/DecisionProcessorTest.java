@@ -11,9 +11,9 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.SJP_SESSION_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.buildCaseDetails;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getSJPSessionJsonObject;
+import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getSjpSessionId;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
@@ -108,13 +108,13 @@ public class DecisionProcessorTest {
         final JsonObject generatedEventPayload = envelope.payloadAsJsonObject();
         final JsonObject session = generatedEventPayload.getJsonObject("session");
         assertThat("public.sjp.case-resulted", equalTo(envelope.metadata().name()));
-        assertThat(session.getString("sessionId"), equalTo(SJP_SESSION_ID.toString()));
+        assertThat(session.getString("sessionId"), equalTo(getSjpSessionId().toString()));
     }
 
     private JsonObject buildConverterResponse() {
         return createObjectBuilder()
                 .add("session", createObjectBuilder()
-                        .add("sessionId", SJP_SESSION_ID.toString()))
+                        .add("sessionId", getSjpSessionId().toString()))
                 .build();
 
     }

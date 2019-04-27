@@ -5,22 +5,12 @@ import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static javax.json.JsonValue.NULL;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static org.junit.Assert.assertEquals;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter.ADDRESS1_KEY;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter.ADDRESS2_KEY;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter.ADDRESS3_KEY;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter.ADDRESS4_KEY;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter.ADDRESS5_KEY;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter.ADDRESS_KEY;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter.DEFAULT_BAIL_STATUS;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter.DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter.DEFAULT_OFFENCE_DATE_CODE;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter.POSTCODE_KEY;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter.ROOM_NAME;
 
 import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
@@ -51,85 +41,103 @@ import javax.json.JsonObject;
 
 public class ResultingToResultsConverterHelper {
 
-    public static final String COURT_HOUSE_CODE = "DC";
-    public static final String COURT_HOUSE_NAME = "Cardiff Magistrates' Court";
-    public static final String TITLE = "Mr";
-    public static final String BUSINESS_NUMBER = "99999999999";
-    public static final String EMAIL = "somerandomemail1@random.random";
-    public static final String EMAIL_2 = "somerandomemail2@random.random";
-    public static final String HOME_NUMBER = "88888888888";
-    public static final String MOBILE = "77777777777";
-    public static final LocalDate DATE_OF_BIRTH = now(UTC).minusYears(20).toLocalDate();
-    public static final String FIRST_NAME = "SomeFirstName";
-    public static final String LAST_NAME = "SomeLastName";
-    public static final String ADDRESS1 = "Fitzalan Place";
-    public static final String ADDRESS2 = "Cardiff";
-    public static final String ADDRESS3 = "addressline3";
-    public static final String ADDRESS4 = "addressline4";
-    public static final String ADDRESS5 = "addressline5";
-    public static final UUID OFFENCE_ID = randomUUID();;
-    public static final UUID SJP_SESSION_ID = randomUUID();
-    public static final UUID CASE_ID = randomUUID();
-    public static final UUID USER_ID = randomUUID();
-    public static final String URN = "1234567";
-    public static final UUID COURT_ID = randomUUID();
-    public static final UUID DEFENDANT_ID = randomUUID();
-    public static final String POSTCODE = "CF24 0RZ";
-    public static final int OFFENCE_SEQUENCE_NUMBER = 1;
-    public static final String CJS_CODE = "SUMRCC";
-    public static final String WORDING = "Wording";
-    public static final String OFFENCE_START_DATE = now(UTC).minusYears(5).toString();
-    public static final String OFFENCE_END_DATE = now(UTC).minusDays(3).toString();
-    public static final String CHARGE_DATE = now(UTC).minusDays(2).toString();
-    public static final ZonedDateTime PLEA_DATE = now(UTC).minusDays(3);
+    private static final String DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE = "0800NP0100000000001H";
+    private static final int DEFAULT_OFFENCE_DATE_CODE = 1;
+    private static final String UNKNOWN = "0";
+    private static final String OFFENCES_KEY = "offences";
+    private static final String ADDRESS1_KEY = "address1";
+    private static final String ADDRESS2_KEY = "address2";
+    private static final String ADDRESS3_KEY = "address3";
+    private static final String ADDRESS4_KEY = "address4";
+    private static final String ADDRESS5_KEY = "address5";
+    private static final String POSTCODE_KEY = "postcode";
+    private static final String ADDRESS_KEY = "address";
+    private static final String ROOM_NAME = "00";
+    private static final String DEFAULT_BAIL_STATUS = "A";
+    private static final String VERDICT_KEY = "verdict";
+    private static final String ACCOUNT_DIVISION_CODE_KEY = "accountDivisionCode";
+    private static final String ENFORCING_COURT_CODE_KEY = "enforcingCourtCode";
+    private static final String MAGISTRATE_KEY = "magistrate";
+    private static final String ENDED_AT_KEY = "endedAt";
 
-    public static final int REFERRAL_REASON_INDEX = -1;
-    public static final int HEARING_TYPE_INDEX = -2;
-    public static final int LISTING_NOTES_INDEX = 10;
-    public static final int ESTIMATED_HEARING_DURATION_INDEX = 5;
-    public static final String RESULTED_ON = now(UTC).minusHours(5).toString();
-    public static final UUID DECISION_ID = randomUUID();
+    private static final String COURT_HOUSE_CODE = "DC";
+    private static final String COURT_HOUSE_NAME = "Cardiff Magistrates' Court";
+    private static final String TITLE = "Mr";
+    private static final String BUSINESS_NUMBER = "99999999999";
+    private static final String EMAIL = "somerandomemail1@random.random";
+    private static final String EMAIL_2 = "somerandomemail2@random.random";
+    private static final String HOME_NUMBER = "88888888888";
+    private static final String MOBILE = "77777777777";
+    private static final LocalDate DATE_OF_BIRTH = now(UTC).minusYears(20).toLocalDate();
+    private static final String FIRST_NAME = "SomeFirstName";
+    private static final String LAST_NAME = "SomeLastName";
+    private static final String ADDRESS1 = "Fitzalan Place";
+    private static final String ADDRESS2 = "Cardiff";
+    private static final String ADDRESS3 = "addressline3";
+    private static final String ADDRESS4 = "addressline4";
+    private static final String ADDRESS5 = "addressline5";
+    private static final UUID OFFENCE_ID = randomUUID();
+    private static final UUID SJP_SESSION_ID = randomUUID();
+    private static final UUID CASE_ID = randomUUID();
+    private static final UUID USER_ID = randomUUID();
+    private static final String URN = "1234567";
+    private static final UUID COURT_ID = randomUUID();
+    private static final UUID DEFENDANT_ID = randomUUID();
+    private static final String POSTCODE = "CF24 0RZ";
+    private static final int OFFENCE_SEQUENCE_NUMBER = 1;
+    private static final String CJS_CODE = "SUMRCC";
+    private static final String WORDING = "Wording";
+    private static final String OFFENCE_START_DATE = now(UTC).minusYears(5).toString();
+    private static final String OFFENCE_END_DATE = now(UTC).minusDays(3).toString();
+    private static final String CHARGE_DATE = now(UTC).minusDays(2).toString();
+    private static final ZonedDateTime PLEA_DATE = now(UTC).minusDays(3);
+
+    private static final int REFERRAL_REASON_INDEX = -1;
+    private static final int HEARING_TYPE_INDEX = -2;
+    private static final int LISTING_NOTES_INDEX = 10;
+    private static final int ESTIMATED_HEARING_DURATION_INDEX = 5;
+    private static final String RESULTED_ON = now(UTC).minusHours(5).toString();
+    private static final UUID DECISION_ID = randomUUID();
+    private static final ZonedDateTime SESSION_START_DATE = now(UTC).minusHours(7);
+    private static final ZonedDateTime SESSION_END_DATE = now(UTC).minusHours(6);
+    private static final UUID RESULT_TYPE_ID = randomUUID();
+    private static final String MAGISTRATE = "SomeMagistrate";
+    private static final String VERDICT = "PSJ";
+    private static final Integer accountDivisionCode = nextInt(1, 100);
+    private static final Integer enforcingCourtCode = nextInt(100, 200);
+    private static final String COUNTRY_CJS_CODE = "1";
     private static final String LJA = "LJA";
-    public static final ZonedDateTime SESSION_START_DATE = now(UTC).minusHours(7);
-    public static final ZonedDateTime SESSION_END_DATE = now(UTC).minusHours(6);
-    public static final UUID RESULT_TYPE_ID = randomUUID();
-    public static final String MAGISTRATE = "SomeMagistrate";
-    public static final String VERDICT = "PSJ";
-
-    public static final Integer accountDivisionCode = nextInt(1, 100);
-    public static final Integer enforcingCourtCode = nextInt(100, 200);
-
+    private static final String OFFENCE_LOCATION = "Cardiff";
 
     public static void verifyCases(final JsonArray cases) {
-        JsonObject case1 = cases.getJsonObject(0);
-        JsonArray defendants = case1.getJsonArray("defendants");
+        final JsonObject case1 = cases.getJsonObject(0);
+        final JsonArray defendants = case1.getJsonArray("defendants");
 
         assertEquals(CASE_ID.toString(), case1.getString("caseId"));
         assertEquals(URN, case1.getString("urn"));
         verifyDefendants(defendants);
     }
 
-    public static  void verifyDefendants(final JsonArray defendants) {
-        JsonObject defendant = defendants.getJsonObject(0);
-        JsonObject individualDefendant = defendant.getJsonObject("individualDefendant");
-        JsonObject person = individualDefendant.getJsonObject("basePersonDetails");
-        JsonArray offences = defendant.getJsonArray("offences");
-        JsonObject offence = offences.getJsonObject(0);
+    public static void verifyDefendants(final JsonArray defendants) {
+        final JsonObject defendant = defendants.getJsonObject(0);
+        final JsonObject individualDefendant = defendant.getJsonObject("individualDefendant");
+        final JsonObject person = individualDefendant.getJsonObject("basePersonDetails");
+        final JsonArray offences = defendant.getJsonArray("offences");
+        final JsonObject offence = offences.getJsonObject(0);
 
         assertEquals(DEFENDANT_ID.toString(), defendant.getString("defendantId"));
         assertEquals(DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE, defendant.getString("prosecutorReference"));
         assertEquals(DEFAULT_BAIL_STATUS, individualDefendant.getString("bailStatus"));
         assertEquals(false, individualDefendant.getBoolean("presentAtHearing"));
-
         verifyPerson(person);
         verifyOffence(offence);
     }
 
-    public static  void verifyOffence(final JsonObject offence) {
-        JsonObject baseOffenceDetails = offence.getJsonObject("baseOffenceDetails");
-        JsonObject plea = offence.getJsonObject("plea");
-        JsonArray results = offence.getJsonArray("results");
-        JsonObject result = results.getJsonObject(0);
+    public static void verifyOffence(final JsonObject offence) {
+        final JsonObject baseOffenceDetails = offence.getJsonObject("baseOffenceDetails");
+        final JsonObject plea = offence.getJsonObject("plea");
+        final JsonArray results = offence.getJsonArray("results");
+        final JsonObject result = results.getJsonObject(0);
 
         assertEquals(COURT_HOUSE_CODE, offence.getString("convictingCourt"));
         assertEquals(OFFENCE_ID.toString(), baseOffenceDetails.getString("offenceId"));
@@ -140,13 +148,15 @@ public class ResultingToResultsConverterHelper {
         assertEquals(OFFENCE_START_DATE, baseOffenceDetails.getString("offenceStartDateTime"));
         assertEquals(OFFENCE_END_DATE, baseOffenceDetails.getString("offenceEndDateTime"));
         assertEquals(CHARGE_DATE, baseOffenceDetails.getString("chargeDate"));
+        assertEquals(OFFENCE_LOCATION, baseOffenceDetails.getString("locationOfOffence"));
         assertEquals(PleaType.GUILTY.toString(), plea.getString("pleaType"));
         assertEquals(PleaMethod.ONLINE.toString(), plea.getString("pleaMethod"));
         assertEquals(PLEA_DATE.toString(), plea.getString("pleaDate"));
         assertEquals(CJS_CODE, result.getString("resultCode"));
+
     }
 
-    public static  void verifyPerson(final JsonObject person) {
+    public static void verifyPerson(final JsonObject person) {
         assertEquals(TITLE, person.getString("personTitle"));
         assertEquals(FIRST_NAME, person.getString("firstName"));
         assertEquals(LAST_NAME, person.getString("lastName"));
@@ -158,7 +168,7 @@ public class ResultingToResultsConverterHelper {
         assertEquals(EMAIL, person.getString("emailAddress1"));
         assertEquals(EMAIL_2, person.getString("emailAddress2"));
 
-        JsonObject sessionLocation = person.getJsonObject(ADDRESS_KEY);
+        final JsonObject sessionLocation = person.getJsonObject(ADDRESS_KEY);
         assertAddress(sessionLocation);
     }
 
@@ -171,7 +181,7 @@ public class ResultingToResultsConverterHelper {
                 .build();
     }
 
-    public static  CaseDetails buildCaseDetails() {
+    public static CaseDetails buildCaseDetails() {
         final CaseDetails caseDetails = CaseDetails.caseDetails()
                 .withId(CASE_ID)
                 .withUrn(URN)
@@ -180,7 +190,7 @@ public class ResultingToResultsConverterHelper {
         return caseDetails;
     }
 
-    public static  Defendant buildDefendant() {
+    public static Defendant buildDefendant() {
         return Defendant.defendant()
                 .withId(DEFENDANT_ID)
                 .withOffences(buildOffences())
@@ -188,9 +198,9 @@ public class ResultingToResultsConverterHelper {
                 .build();
     }
 
-    public static  List<Offence> buildOffences() {
-        List<Offence> offences = new ArrayList<>();
-        Offence offence = Offence.offence()
+    public static List<Offence> buildOffences() {
+        final List<Offence> offences = new ArrayList<>();
+        final Offence offence = Offence.offence()
                 .withId(OFFENCE_ID)
                 .withOffenceSequenceNumber(OFFENCE_SEQUENCE_NUMBER)
                 .withCjsCode(CJS_CODE)
@@ -206,7 +216,7 @@ public class ResultingToResultsConverterHelper {
         return offences;
     }
 
-    public static  JsonEnvelope getReferenceDecisionSaved() {
+    public static JsonEnvelope getReferenceDecisionSaved() {
 
         final UUID referralReasonId = randomUUID();
         final UUID hearingType = randomUUID();
@@ -218,7 +228,7 @@ public class ResultingToResultsConverterHelper {
         final TerminalEntry estimatedHearingDurationTerminalEntry = new TerminalEntry(ESTIMATED_HEARING_DURATION_INDEX, estimatedHearingDuration.toString());
         final TerminalEntry listingNotesTerminalEntry = new TerminalEntry(LISTING_NOTES_INDEX, listingNotes);
 
-        List<TerminalEntry> terminalEntries = new ArrayList<>();
+        final List<TerminalEntry> terminalEntries = new ArrayList<>();
         terminalEntries.add(referralReasonTerminalEntry);
         terminalEntries.add(hearingTypeTerminalEntry);
         terminalEntries.add(estimatedHearingDurationTerminalEntry);
@@ -253,22 +263,22 @@ public class ResultingToResultsConverterHelper {
                 .withVersion(1), decision);
     }
 
-    public static  JsonObject getSJPSessionJsonObject(){
+    public static JsonObject getSJPSessionJsonObject() {
 
         return createObjectBuilder()
-                .add("id", SJP_SESSION_ID.toString())
+                .add("sessionId", SJP_SESSION_ID.toString())
                 .add("userId", USER_ID.toString())
                 .add("type", SessionType.MAGISTRATE.toString())
                 .add("courtHouseCode", COURT_HOUSE_CODE)
                 .add("courtHouseName", COURT_HOUSE_NAME)
                 .add("localJusticeAreaNationalCourtCode", LJA)
-                .add("magistrate", MAGISTRATE)
+//                .add("magistrate", MAGISTRATE)
                 .add("startedAt", SESSION_START_DATE.toString())
-                .add("endedAt", SESSION_END_DATE.toString())
+//                .add("endedAt", SESSION_END_DATE.toString())
                 .build();
     }
 
-    public static  void assertAddress(final JsonObject address) {
+    public static void assertAddress(final JsonObject address) {
         assertEquals(ADDRESS1, address.getString(ADDRESS1_KEY));
         assertEquals(ADDRESS2, address.getString(ADDRESS2_KEY));
         assertEquals(ADDRESS3, address.getString(ADDRESS3_KEY));
@@ -277,8 +287,8 @@ public class ResultingToResultsConverterHelper {
         assertEquals(POSTCODE, address.getString(POSTCODE_KEY));
     }
 
-    public static  void assertSessionLocation(final JsonObject sessionLocation) {
-        JsonObject sessionAddress = sessionLocation.getJsonObject(ADDRESS_KEY);
+    public static void assertSessionLocation(final JsonObject sessionLocation) {
+        final JsonObject sessionAddress = sessionLocation.getJsonObject(ADDRESS_KEY);
         assertEquals(COURT_ID.toString(), sessionLocation.getString("courtId"));
         assertEquals(COURT_HOUSE_CODE, sessionLocation.getString("courtHouseCode"));
         assertEquals(COURT_HOUSE_NAME, sessionLocation.getString("name"));
@@ -291,7 +301,7 @@ public class ResultingToResultsConverterHelper {
         assertEquals(POSTCODE, sessionAddress.getString(POSTCODE_KEY));
     }
 
-    public static  Optional<JsonObject> buildCourt() {
+    public static Optional<JsonObject> buildCourt() {
         return Optional.of(createObjectBuilder()
                 .add("id", COURT_ID.toString())
                 .add(ADDRESS1_KEY, ADDRESS1)
@@ -303,7 +313,7 @@ public class ResultingToResultsConverterHelper {
         );
     }
 
-    public static  SJPSession buildSjpSession() {
+    public static SJPSession buildSjpSession() {
         final CourtDetails courtDetails = new CourtDetails(COURT_HOUSE_CODE, COURT_HOUSE_NAME, null);
         return new SJPSession(SJP_SESSION_ID,
                 null,
@@ -314,12 +324,47 @@ public class ResultingToResultsConverterHelper {
                 SESSION_END_DATE);
     }
 
-    public static  void verifySession(final JsonObject session) {
-        JsonObject sessionLocation = session.getJsonObject("sessionLocation");
+    public static void verifySession(final JsonObject session) {
+        final JsonObject sessionLocation = session.getJsonObject("sessionLocation");
         assertEquals(SJP_SESSION_ID.toString(), session.getString("sessionId"));
         assertEquals(SESSION_START_DATE.toString(), session.getString("dateAndTimeOfSession"));
         assertEquals(COURT_HOUSE_CODE, session.getString("psaCode"));
         assertSessionLocation(sessionLocation);
     }
 
+    public static JsonEnvelope getEmptyEnvelop() {
+        return envelopeFrom(metadataWithRandomUUID("public.resulting.referenced-decisions-saved")
+                .withStreamId(CASE_ID)
+                .withVersion(1), NULL);
+    }
+
+    public static Optional<JsonObject> getCaseFileDefendantDetails() {
+        return Optional.of(createObjectBuilder()
+                .add("id", DEFENDANT_ID.toString())
+                .add("selfDefinedInformation", createObjectBuilder()
+                        .add("nationality", "GBR"))
+                .add("offences", createArrayBuilder().add(
+                        createObjectBuilder()
+                                .add("id", OFFENCE_ID.toString())
+                                .add("offenceLocation", OFFENCE_LOCATION)))
+                .build());
+    }
+
+    public static Optional<JsonObject> getCountryNationality() {
+        return Optional.of(createObjectBuilder()
+                .add("cjsCode", COUNTRY_CJS_CODE)
+                .build());
+    }
+
+    public static UUID getSjpSessionId() {
+        return SJP_SESSION_ID;
+    }
+
+    public static UUID getCaseId() {
+        return CASE_ID;
+    }
+
+    public static String getCountryCjsCode() {
+        return COUNTRY_CJS_CODE;
+    }
 }

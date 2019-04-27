@@ -1,15 +1,20 @@
 package uk.gov.moj.cpp.sjp.event.processor.converter;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.assertSessionLocation;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.buildCaseDetails;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.buildCourt;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.buildDefendant;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.buildPersonalDetails;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.buildSjpSession;
+import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCaseFileDefendantDetails;
+import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCaseId;
+import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCountryCjsCode;
+import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCountryNationality;
+import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getEmptyEnvelop;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getReferenceDecisionSaved;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getSJPSessionJsonObject;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.verifyCases;
@@ -20,6 +25,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsCon
 import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.resulting.ReferencedDecisionsSaved;
 import uk.gov.moj.cpp.sjp.domain.resulting.SJPSession;
+import uk.gov.moj.cpp.sjp.event.processor.service.ProsecutionCaseFileService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
 import java.util.Optional;
@@ -42,26 +48,33 @@ public class ResultingToResultsConverterTest {
     @InjectMocks
     private ResultingToResultsConverter converter;
 
+    @Mock
+    private ProsecutionCaseFileService prosecutionCaseFileService;
+
     @Test
     public void shouldConvertResult() {
 
         final Optional<JsonObject> court = buildCourt();
 
         when(referenceDataService.getCourtByCourtHouseOUCode(any(), any())).thenReturn(court);
+        when(prosecutionCaseFileService.getCaseFileDefendantDetails(any(), any())).thenReturn(getCaseFileDefendantDetails());
+        when(referenceDataService.getNationality(any(), any())).thenReturn(getCountryNationality());
 
-        JsonObject response = converter.convert(CASE_ID, getReferenceDecisionSaved(), buildCaseDetails(), getSJPSessionJsonObject());
-        JsonObject session = response.getJsonObject("session");
-        JsonArray cases = response.getJsonArray("cases");
+        final JsonObject response = converter.convert(getCaseId(), getReferenceDecisionSaved(), buildCaseDetails(), getSJPSessionJsonObject());
+        final JsonObject session = response.getJsonObject("session");
+        final JsonArray cases = response.getJsonArray("cases");
         verifySession(session);
         verifyCases(cases);
         verify(referenceDataService).getCourtByCourtHouseOUCode(any(), any());
+        verify(prosecutionCaseFileService).getCaseFileDefendantDetails(any(), any());
+        verify(referenceDataService).getNationality(any(), any());
     }
 
     @Test
     public void shouldBuildSessionLocation() {
         final SJPSession sjpSession = buildSjpSession();
         final Optional<JsonObject> court = buildCourt();
-        JsonObject sessionLocation = converter.buildSessionLocation(sjpSession, court);
+        final JsonObject sessionLocation = converter.buildSessionLocation(sjpSession, court);
         assertSessionLocation(sessionLocation);
     }
 
@@ -69,39 +82,49 @@ public class ResultingToResultsConverterTest {
     public void shouldBuildSession() {
         final SJPSession sjpSession = buildSjpSession();
         final Optional<JsonObject> court = buildCourt();
-        JsonObject session = converter.buildSession(sjpSession, court);
+        final JsonObject session = converter.buildSession(sjpSession, court);
         verifySession(session);
     }
 
     @Test
     public void shouldBuildCases() {
-        JsonArray cases = converter.buildCases(CASE_ID, buildCaseDetails(), getReferenceDecisionSavedAsObject(), buildSjpSession());
+        when(prosecutionCaseFileService.getCaseFileDefendantDetails(any(), any())).thenReturn(getCaseFileDefendantDetails());
+        when(referenceDataService.getNationality(any(), any())).thenReturn(getCountryNationality());
+        final JsonArray cases = converter.buildCases(getCaseId(), buildCaseDetails(), getReferenceDecisionSavedAsObject(), buildSjpSession(), getEmptyEnvelop());
         verifyCases(cases);
+        verify(prosecutionCaseFileService).getCaseFileDefendantDetails(any(), any());
+        verify(referenceDataService).getNationality(any(), any());
     }
 
     @Test
     public void shouldBuildDefendant() {
-        JsonArray defendants = converter.buildDefendants(buildCaseDetails(), getReferenceDecisionSavedAsObject(), buildSjpSession());
+        when(prosecutionCaseFileService.getCaseFileDefendantDetails(any(), any())).thenReturn(getCaseFileDefendantDetails());
+        when(referenceDataService.getNationality(any(), any())).thenReturn(getCountryNationality());
+        final JsonArray defendants = converter.buildDefendants(buildCaseDetails(), getReferenceDecisionSavedAsObject(), buildSjpSession(), getEmptyEnvelop());
         verifyDefendants(defendants);
+        verify(prosecutionCaseFileService).getCaseFileDefendantDetails(any(), any());
+        verify(referenceDataService).getNationality(any(), any());
     }
 
     @Test
     public void shouldBuildIndividualDefendant() {
-        JsonObject individualDefendant = converter.buildIndividualDefendant(buildDefendant());
-        JsonObject person = individualDefendant.getJsonObject("basePersonDetails");
+        final JsonObject individualDefendant = converter.buildIndividualDefendant(buildDefendant(), getCountryCjsCode());
+        final JsonObject person = individualDefendant.getJsonObject("basePersonDetails");
+        assertEquals(getCountryCjsCode(), individualDefendant.getString("personStatedNationality"));
         verifyPerson(person);
+
     }
 
     @Test
     public void shouldBuildPerson() {
-        PersonalDetails personalDetails = buildPersonalDetails();
-        JsonObject person = converter.buildPerson(personalDetails);
+        final PersonalDetails personalDetails = buildPersonalDetails();
+        final JsonObject person = converter.buildPerson(personalDetails);
         verifyPerson(person);
     }
 
     private ReferencedDecisionsSaved getReferenceDecisionSavedAsObject() {
         final JsonObject jsonPayload = getReferenceDecisionSaved().payloadAsJsonObject();
-        return converter.extractReferenceDecisionSaves(CASE_ID, jsonPayload);
+        return converter.extractReferenceDecisionSaves(getCaseId(), jsonPayload);
     }
 
 }

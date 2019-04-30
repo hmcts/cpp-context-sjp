@@ -69,6 +69,7 @@ public class ReadyCaseDelegateTest extends AbstractCaseDelegateTest {
                         payloadIsJson(withJsonPath("$.caseId", equalTo(caseId.toString()))))));
 
         verifyGetVariableCalls();
+        verify(delegateExecution).setVariable("isReady", false);
     }
 
     @Test
@@ -93,6 +94,7 @@ public class ReadyCaseDelegateTest extends AbstractCaseDelegateTest {
                                 withJsonPath("$.markedAt", equalTo(clock.now().toString())))))));
 
         verifyGetVariableCalls();
+        verify(delegateExecution).setVariable("isReady", true);
     }
 
     @Test

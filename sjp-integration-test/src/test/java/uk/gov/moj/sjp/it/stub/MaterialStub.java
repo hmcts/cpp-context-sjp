@@ -3,25 +3,39 @@ package uk.gov.moj.sjp.it.stub;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.findAll;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.jayway.awaitility.Awaitility.await;
+import static java.util.Optional.empty;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.Matchers.not;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_ACTIVE_MQ_TOPIC;
 import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+
+import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 
 public class MaterialStub {
 
@@ -42,6 +56,34 @@ public class MaterialStub {
                 .willReturn(aResponse().withStatus(SC_OK)));
 
         waitForStubToBeReady(COMMAND_URL, COMMAND_MEDIA_TYPE);
+    }
+
+    public static UUID processMaterialAddedCommand(final UUID documentReference) {
+        final DefaultJsonObjectEnvelopeConverter envelopeConverter = new DefaultJsonObjectEnvelopeConverter();
+        final JsonEnvelope addMaterialCommand = await().until(() -> findAll(postRequestedFor(urlPathEqualTo(COMMAND_URL))
+                .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE)))
+                .stream()
+                .map(LoggedRequest::getBodyAsString)
+                .map(envelopeConverter::asEnvelope)
+                .filter(command -> documentReference.toString().equals(command.payloadAsJsonObject().getString("fileServiceId", null)))
+                .findFirst(), not(empty()))
+                .get();
+
+        try (final MessageProducerClient producerClient = new MessageProducerClient()) {
+            producerClient.startProducer(PUBLIC_ACTIVE_MQ_TOPIC);
+            final JsonEnvelope materialAddedEventPayload = envelopeFrom(metadataFrom(addMaterialCommand.metadata())
+                            .withName("material.material-added"),
+                    createObjectBuilder()
+                            .add("materialId", addMaterialCommand.payloadAsJsonObject().getJsonString("materialId"))
+                            .add("fileDetails", createObjectBuilder()
+                                    .add("fileName", "fileName")
+                                    .add("externalLink", "localhost/fileName").build())
+                            .add("materialAddedDate", ZonedDateTime.now().toString())
+                            .build());
+
+            producerClient.sendMessage("material.material-added", materialAddedEventPayload);
+        }
+        return UUID.fromString(addMaterialCommand.payloadAsJsonObject().getString("materialId"));
     }
 
     public static void stubMaterialMetadata(final UUID materialId, final String fileName, final String mimeType, final ZonedDateTime addedAt) {

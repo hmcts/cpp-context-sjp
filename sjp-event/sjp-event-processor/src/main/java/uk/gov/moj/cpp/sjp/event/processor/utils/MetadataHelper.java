@@ -21,7 +21,8 @@ import javax.json.JsonReader;
 
 public class MetadataHelper {
 
-    private static final String SJP_ID = "sjpId";
+    private static final String LEGACY_SJP_ID = "sjpId";
+    private static final String SJP_METADATA = "sjpMetadata";
 
     public static Metadata metadataFromString(final String metadataString) {
         return metadataFrom(readJson(metadataString)).build();
@@ -31,26 +32,44 @@ public class MetadataHelper {
         return metadata.asJsonObject().toString();
     }
 
-    public JsonEnvelope envelopeWithSjpProcessId(final Metadata originalMetadata, final JsonObject payload, final String processId) {
-        final Metadata newMetadata = metadataWithSjpProcessId(originalMetadata, processId);
-        final JsonObject payloadWithMetadata = payloadWithMetadata(payload, newMetadata);
-
-        return envelopeFrom(newMetadata, payloadWithMetadata);
+    public JsonEnvelope envelopeWithCustomMetadata(final Metadata originalMetadata, final JsonObject sjpMetadata, final JsonObject payload) {
+        final Metadata enrichedMetadata = enrichMetadata(originalMetadata, sjpMetadata);
+        final JsonObject enrichedPayload = enrichPayloadWithMetadata(payload, enrichedMetadata);
+        return envelopeFrom(enrichedMetadata, enrichedPayload);
     }
 
-    public Optional<String> getSjpProcessId(final JsonEnvelope envelope) {
-        return ofNullable(envelope.metadata().asJsonObject().getString(SJP_ID, null));
+    private Metadata enrichMetadata(final Metadata metadata, final JsonObject sjpMetadata) {
+        return metadataFrom(
+                createObjectBuilder(metadata.asJsonObject())
+                        .add(SJP_METADATA, sjpMetadata)
+                        .build())
+                .build();
+    }
+
+    public JsonEnvelope enrichMetadataWithProcessId(final Metadata originalMetadata, final JsonObject payload, final String processId) {
+        final Metadata enrichedMetadata = metadataWithSjpProcessId(originalMetadata, processId);
+        final JsonObject enrichedPayload = enrichPayloadWithMetadata(payload, enrichedMetadata);
+
+        return envelopeFrom(enrichedMetadata, enrichedPayload);
     }
 
     private Metadata metadataWithSjpProcessId(final Metadata metadata, final String processId) {
         return metadataFrom(
                 createObjectBuilder(metadata.asJsonObject())
-                        .add(SJP_ID, processId)
+                        .add(LEGACY_SJP_ID, processId)
                         .build())
                 .build();
     }
 
-    private JsonObject payloadWithMetadata(final JsonObject payload, final Metadata metadata) {
+    public Optional<JsonObject> getSjpMetadata(final JsonEnvelope envelope) {
+        return ofNullable(envelope.metadata().asJsonObject().getJsonObject(SJP_METADATA));
+    }
+
+    public Optional<String> getSjpProcessId(final JsonEnvelope envelope) {
+        return ofNullable(envelope.metadata().asJsonObject().getString(LEGACY_SJP_ID, null));
+    }
+
+    private JsonObject enrichPayloadWithMetadata(final JsonObject payload, final Metadata metadata) {
         final Function<String, Boolean> excludeCausation = key -> !JsonMetadata.CAUSATION.equals(key);
         final JsonObjectBuilder updatedMetadataBuilder = JsonObjects.createObjectBuilderWithFilter(metadata.asJsonObject(), excludeCausation);
 
@@ -64,5 +83,4 @@ public class MetadataHelper {
             return jsonReader.readObject();
         }
     }
-
 }

@@ -8,6 +8,7 @@ import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.sjp.event.processor.CaseDocumentProcessor;
 import uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper;
 
 import javax.inject.Inject;
@@ -20,6 +21,12 @@ import org.activiti.engine.delegate.JavaDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//TODO remove - ATCM-4293
+
+/**
+ * @deprecated required for legacy public events, replaced by {@link CaseDocumentProcessor}
+ */
+@Deprecated
 @Named
 public class AddMaterialToCase implements JavaDelegate {
 

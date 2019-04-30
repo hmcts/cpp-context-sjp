@@ -16,12 +16,9 @@
     <serviceTask id="caseStartedDelegate" name="case started" activiti:delegateExpression="${caseStartedDelegate}"></serviceTask>
     <sequenceFlow id="flow106" sourceRef="caseStartedDelegate" targetRef="ParallelGateway_1"></sequenceFlow>
     <parallelGateway id="ParallelGateway_1" name="Parallel Gateway 1"></parallelGateway>
-    <sequenceFlow id="SequenceFlow_6" sourceRef="joinerWaitKillSubProcesses" targetRef="caseCompletedDelegate"></sequenceFlow>
     <intermediateThrowEvent id="killListenersSubProcesses" name="kill listeners sub processes">
       <signalEventDefinition signalRef="killChangesAggregatorSubprocess"></signalEventDefinition>
     </intermediateThrowEvent>
-    <serviceTask id="caseCompletedDelegate" name="case completed" activiti:delegateExpression="${caseCompletedDelegate}"></serviceTask>
-    <sequenceFlow id="flow122" sourceRef="caseCompletedDelegate" targetRef="end"></sequenceFlow>
     <intermediateCatchEvent id="signalintermediatecatchevent3" name="SignalCatchEvent">
       <signalEventDefinition signalRef="caseCompleted"></signalEventDefinition>
     </intermediateCatchEvent>
@@ -174,6 +171,7 @@
     <boundaryEvent id="cancelChangesAggregator" name="cancel changes aggregator" attachedToRef="changesAggregatorSubProcess" cancelActivity="true">
       <signalEventDefinition signalRef="killChangesAggregatorSubprocess"></signalEventDefinition>
     </boundaryEvent>
+    <sequenceFlow id="flow217" sourceRef="joinerWaitKillSubProcesses" targetRef="end"></sequenceFlow>
     <textAnnotation id="textannotation2">
       <text>Kill subprocess</text>
     </textAnnotation>
@@ -186,7 +184,7 @@
         <omgdc:Bounds height="35.0" width="35.0" x="60.0" y="55.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="end" id="BPMNShape_end">
-        <omgdc:Bounds height="35.0" width="35.0" x="1260.0" y="54.0"></omgdc:Bounds>
+        <omgdc:Bounds height="35.0" width="35.0" x="1200.0" y="55.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="caseStartedDelegate" id="BPMNShape_caseStartedDelegate">
         <omgdc:Bounds height="60.0" width="105.0" x="132.0" y="42.0"></omgdc:Bounds>
@@ -196,9 +194,6 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="killListenersSubProcesses" id="BPMNShape_killListenersSubProcesses">
         <omgdc:Bounds height="35.0" width="35.0" x="745.0" y="101.0"></omgdc:Bounds>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="caseCompletedDelegate" id="BPMNShape_caseCompletedDelegate">
-        <omgdc:Bounds height="60.0" width="105.0" x="1121.0" y="42.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="signalintermediatecatchevent3" id="BPMNShape_signalintermediatecatchevent3">
         <omgdc:Bounds height="35.0" width="35.0" x="444.0" y="54.0"></omgdc:Bounds>
@@ -345,14 +340,6 @@
       <bpmndi:BPMNEdge bpmnElement="flow106" id="BPMNEdge_flow106">
         <omgdi:waypoint x="237.0" y="72.0"></omgdi:waypoint>
         <omgdi:waypoint x="298.0" y="72.0"></omgdi:waypoint>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_6" id="BPMNEdge_SequenceFlow_6">
-        <omgdi:waypoint x="1100.0" y="71.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1121.0" y="72.0"></omgdi:waypoint>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge bpmnElement="flow122" id="BPMNEdge_flow122">
-        <omgdi:waypoint x="1226.0" y="72.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1260.0" y="71.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow130" id="BPMNEdge_flow130">
         <omgdi:waypoint x="338.0" y="72.0"></omgdi:waypoint>
@@ -643,6 +630,10 @@
       <bpmndi:BPMNEdge bpmnElement="flow156" id="BPMNEdge_flow156">
         <omgdi:waypoint x="479.0" y="71.0"></omgdi:waypoint>
         <omgdi:waypoint x="1060.0" y="71.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow217" id="BPMNEdge_flow217">
+        <omgdi:waypoint x="1100.0" y="71.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1200.0" y="72.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="association2" id="BPMNEdge_association2">
         <omgdi:waypoint x="780.0" y="118.0"></omgdi:waypoint>

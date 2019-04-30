@@ -20,14 +20,14 @@
         <assignment.version>2.0.99</assignment.version>
         <material.version>2.0.114</material.version>
         <notification.notify.version>0.0.26</notification.notify.version>
-        <referencedata.version>2.0.177</referencedata.version>
-        <referencedata.offences.version>1.0.18</referencedata.offences.version>
+        <referencedata.version>2.0.191</referencedata.version>
+        <referencedata.offences.version>1.0.19</referencedata.offences.version>
         <resulting.version>2.0.216</resulting.version>
         <scheduling.version>2.0.88</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>2.0.106</usersgroups.version>
-        <progression.version>2.4.5-R2-SNAPSHOT</progression.version>
-        <prosecutioncasefile.version>1.0.21-ATCM-SNAPSHOT</prosecutioncasefile.version>
+        <progression.version>2.0.113</progression.version>
+        <prosecutioncasefile.version>1.0.23</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>

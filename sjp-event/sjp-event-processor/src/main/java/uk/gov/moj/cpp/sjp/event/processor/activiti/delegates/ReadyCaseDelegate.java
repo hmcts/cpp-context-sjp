@@ -34,6 +34,9 @@ public class ReadyCaseDelegate extends AbstractCaseDelegate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReadyCaseDelegate.class);
 
+    //TODO remove as part of ATCM-4169
+    public static final String IS_READY_VARIABLE = "isReady";
+
     @Inject
     private ReadyCaseCalculator readyCaseCalculator;
 
@@ -50,8 +53,12 @@ public class ReadyCaseDelegate extends AbstractCaseDelegate {
         LOGGER.debug("{} called with {} and responded with a reason of {}", ReadyCaseDelegate.class.getSimpleName(), execution.getVariables(), readyReason);
 
         if (readyReason.isPresent()) {
+            //TODO remove as part of ATCM-4169
+            execution.setVariable(IS_READY_VARIABLE, true);
             sendMarkCaseReadyForDecisionCommand(caseId, readyReason.get(), metadata);
         } else {
+            //TODO remove as part of ATCM-4169
+            execution.setVariable(IS_READY_VARIABLE, false);
             sendUnmarkCaseReadyForDecisionCommand(caseId, metadata);
         }
     }

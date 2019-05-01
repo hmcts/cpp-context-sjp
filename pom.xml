@@ -10,7 +10,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>1.0.103-FRAMEWORK-SNAPSHOT</version>
+    <version>1.0.104-FRAMEWORK-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>

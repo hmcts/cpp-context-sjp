@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.model.referral;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 public class ContactView {
 
     private final String home;
@@ -14,11 +16,15 @@ public class ContactView {
                        final String primaryEmail,
                        final String secondaryEmail) {
 
-        this.home = home;
-        this.work = work;
-        this.mobile = mobile;
-        this.primaryEmail = primaryEmail;
-        this.secondaryEmail = secondaryEmail;
+        this.home = nullifyIfBlank(home);
+        this.work = nullifyIfBlank(work);
+        this.mobile = nullifyIfBlank(mobile);
+        this.primaryEmail = nullifyIfBlank(primaryEmail);
+        this.secondaryEmail = nullifyIfBlank(secondaryEmail);
+    }
+
+    private static String nullifyIfBlank(final String value) {
+        return isBlank(value) ? null : value;
     }
 
     public ContactView(final String work) {

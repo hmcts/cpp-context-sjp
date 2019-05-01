@@ -31,7 +31,6 @@ import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.WITHD
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.WITHDRAWAL_REQUEST_CANCELLED_SIGNAL_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.CASE_ADJOURNED;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.CASE_ADJOURNMENT_ELAPSED;
-import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.CASE_COMPLETED;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.CASE_STARTED;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.DATES_TO_AVOID_PROCESSED;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.DelegatesVerifier.Delegate.PLEA_CANCELLED;
@@ -624,8 +623,7 @@ public class CaseStateProcessTest {
 
         caseStateService.caseCompleted(caseId, metadata);
 
-        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED, CASE_COMPLETED);
-        delegatesVerifier.assertDelegateCalledWith(CASE_COMPLETED, 0, withProcessVariable(METADATA_VARIABLE, metadataToString(metadata)));
+        delegatesVerifier.verifyDelegatesInteractionWith(CASE_STARTED);
 
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, CASE_COMPLETED_SIGNAL_NAME, is(0));
         delegatesVerifier.assertNumberEventSubscriptions(processInstanceId, WITHDRAWAL_REQUESTED_SIGNAL_NAME, is(0));

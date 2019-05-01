@@ -142,6 +142,9 @@
         },
         "otherAmount": {
           "type": "number"
+        },
+        "monthlyAmount": {
+          "type": "number"
         }
       }
     }

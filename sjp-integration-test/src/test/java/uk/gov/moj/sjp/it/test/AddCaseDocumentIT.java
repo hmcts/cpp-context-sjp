@@ -13,6 +13,7 @@ import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.producer.DecisionToReferCaseForCourtHearingSavedProducer;
+import uk.gov.moj.sjp.it.stub.MaterialStub;
 import uk.gov.moj.sjp.it.stub.ProgressionServiceStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.stub.ResultingStub;
@@ -34,23 +35,25 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
 
     private static final String PROSECUTING_AUTHORITY_ACCESS_ALL = "ALL";
 
+    private final UUID caseId = randomUUID();
+
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
     @Before
     public void setUp() {
-        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseId);
         createCaseForPayloadBuilder(createCasePayloadBuilder);
     }
 
     @Test
     public void addMultipleCaseDocumentOfSpecificTypeAndVerifySequence() {
-        final UUID legalAdviserId = UUID.randomUUID();
+        final UUID legalAdviserId = randomUUID();
         UsersGroupsStub.stubGroupForUser(legalAdviserId, UsersGroupsStub.LEGAL_ADVISERS_GROUP);
         UsersGroupsStub.stubForUserDetails(legalAdviserId, PROSECUTING_AUTHORITY_ACCESS_ALL);
 
         stubAddCaseMaterial();
 
-        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId())) {
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
             caseDocumentHelper.addCaseDocumentWithDocumentType(legalAdviserId, "OTHER-TravelCard");
             caseDocumentHelper.addCaseDocumentWithDocumentType(legalAdviserId, "OTHER-TravelCard");
             caseDocumentHelper.findDocument(legalAdviserId, 0, "OTHER-TravelCard", 1);
@@ -60,7 +63,7 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
 
     @Test
     public void addCaseDocumentWithDocumentFileAndVerifyDocumentAdded() {
-        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId())) {
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
             caseDocumentHelper.addCaseDocument();
             caseDocumentHelper.verifyInActiveMQ();
             caseDocumentHelper.verifyInPublicTopic();
@@ -70,15 +73,15 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
 
     @Test
     public void addOtherDocumentAndVerifyNotVisibleForTflUser() {
-        UUID tflUserId = UUID.randomUUID();
+        final UUID tflUserId = randomUUID();
         UsersGroupsStub.stubGroupForUser(tflUserId, UsersGroupsStub.SJP_PROSECUTORS_GROUP);
         UsersGroupsStub.stubForUserDetails(tflUserId, ProsecutingAuthority.TFL);
 
-        UUID courtAdminUserId = UUID.randomUUID();
+        final UUID courtAdminUserId = randomUUID();
         UsersGroupsStub.stubGroupForUser(courtAdminUserId, UsersGroupsStub.COURT_ADMINISTRATORS_GROUP);
         UsersGroupsStub.stubForUserDetails(courtAdminUserId, PROSECUTING_AUTHORITY_ACCESS_ALL);
 
-        try (CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId())) {
+        try (CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
             caseDocumentHelper.addCaseDocumentWithDocumentType(courtAdminUserId, "OTHER");
             caseDocumentHelper.verifyInActiveMQ();
             caseDocumentHelper.assertDocumentAdded(courtAdminUserId);
@@ -88,20 +91,21 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldUploadPleaCaseDocument() {
+    public void shouldUploadCaseDocument() {
+        final String documentType = "PLEA";
+
         stubAddCaseMaterial();
 
-        try (CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId())) {
-            caseDocumentHelper.uploadPleaCaseDocument();
-            final String documentReference = caseDocumentHelper.verifyCaseDocumentUploadedEventRaised();
-            caseDocumentHelper.assertCaseMaterialAdded(documentReference);
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
+            caseDocumentHelper.uploadDocument(documentType);
+            final UUID documentId = caseDocumentHelper.verifyCaseDocumentUploadedEventRaised();
+            final UUID materialId = MaterialStub.processMaterialAddedCommand(documentId);
+            CaseDocumentHelper.assertDocumentAdded(USER_ID, caseId, materialId, documentId, documentType);
         }
     }
 
     @Test
     public void addCaseDocumentRejectsWhenCaseIsInReferToCourtHearingStatus() {
-
-        final UUID caseId = createCasePayloadBuilder.getId();
         final UUID sessionId = randomUUID();
         final UUID prosecutorId = randomUUID();
         final UUID referralReasonId = randomUUID();
@@ -144,10 +148,10 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
 
     @Test
     public void addsDocumentNumberToDuplicateDocumentTypes() {
-        final UUID userId = UUID.randomUUID();
+        final UUID userId = randomUUID();
         UsersGroupsStub.stubForUserDetails(userId, PROSECUTING_AUTHORITY_ACCESS_ALL);
 
-        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(createCasePayloadBuilder.getId())) {
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
             caseDocumentHelper.addCaseDocument();
             caseDocumentHelper.verifyInActiveMQ();
             caseDocumentHelper.verifyInPublicTopic();

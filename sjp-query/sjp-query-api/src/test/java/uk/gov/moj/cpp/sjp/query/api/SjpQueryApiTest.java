@@ -26,12 +26,12 @@ public class SjpQueryApiTest {
                         method("findCaseSearchResults").thatHandles("sjp.query.case-search-results").withRequesterPassThrough(),
                         method("findCasesMissingSjpn").thatHandles("sjp.query.cases-missing-sjpn").withRequesterPassThrough(),
                         method("searchCaseByMaterialId").thatHandles("sjp.query.cases-search-by-material-id").withRequesterPassThrough(),
-                        method("getAwaitingCases").thatHandles("sjp.query.awaiting-cases").withRequesterPassThrough(),
                         method("getResultOrders").thatHandles("sjp.query.result-orders").withRequesterPassThrough(),
                         method("getReadyCases").thatHandles("sjp.query.ready-cases").withRequesterPassThrough(),
                         method("getCaseAssignment").thatHandles("sjp.query.case-assignment").withRequesterPassThrough(),
                         method("getProsecutingAuthority").thatHandles("sjp.query.case-prosecuting-authority").withRequesterPassThrough(),
-                        method("getDefendantDetailsUpdates").thatHandles("sjp.query.defendant-details-updates").withRequesterPassThrough()
+                        method("getDefendantDetailsUpdates").thatHandles("sjp.query.defendant-details-updates").withRequesterPassThrough(),
+                        method("getCaseNotes").thatHandles("sjp.query.case-notes").withRequesterPassThrough()
                 )));
     }
 }

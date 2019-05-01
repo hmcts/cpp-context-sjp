@@ -130,14 +130,28 @@ public class ReferenceDataServiceTest {
 
     @Test
     public void shouldReturnProsecutor() {
-        final JsonObject responsePayload = createObjectBuilder().add("id", "prosecutorId").build();
-        final JsonEnvelope queryResponse = envelopeFrom(
-                metadataWithRandomUUID("referencedata.query.prosecutors"),
-                responsePayload);
-        when(requestProsecutor(ProsecutingAuthority.TFL)).thenReturn(queryResponse);
+        final JsonEnvelope response = responseProsecutor();
+        when(requestProsecutor(ProsecutingAuthority.TFL)).thenReturn(response);
+
 
         final JsonObject prosecutor = referenceDataService.getProsecutor(ProsecutingAuthority.TFL, envelope);
-        assertThat(prosecutor, is(responsePayload));
+        assertThat(prosecutor, is(response.payloadAsJsonObject()));
+    }
+
+    @Test
+    public void shouldReturnProsecutorInEnglish() {
+        when(requestProsecutor(ProsecutingAuthority.TFL)).thenReturn(responseProsecutor());
+
+        final String prosecutor = referenceDataService.getProsecutor(ProsecutingAuthority.TFL.toString(), false, envelope);
+        assertThat(prosecutor, is("Transport For London"));
+    }
+
+    @Test
+    public void shouldReturnProsecutorInWelsh() {
+        when(requestProsecutor(ProsecutingAuthority.TFL)).thenReturn(responseProsecutor());
+
+        final String prosecutor = referenceDataService.getProsecutor(ProsecutingAuthority.TFL.toString(), true, envelope);
+        assertThat(prosecutor, is("Transport For London - Welsh"));
     }
 
     @Test
@@ -201,6 +215,19 @@ public class ReferenceDataServiceTest {
         return requester.requestAsAdmin(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("referencedata.query.country-by-postcode"),
                 payloadIsJson(withJsonPath("$.postCode", equalTo(postCode))))));
+    }
+
+    private JsonEnvelope responseProsecutor() {
+        final JsonObject responsePayload = createObjectBuilder()
+                .add("id", "prosecutorId")
+                .add("prosecutors", createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("nameWelsh", "Transport For London - Welsh")
+                                .add("fullName", "Transport For London")))
+                .build();
+        return envelopeFrom(
+                metadataWithRandomUUID("referencedata.query.prosecutors"),
+                responsePayload);
     }
 
 }

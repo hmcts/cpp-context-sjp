@@ -92,7 +92,7 @@
         "judiciary": [
           {
             "judicialRoleTypeSJP": "LEGAL_ADVISER",
-            "judicialName": "IT No Prosecuting Access User"
+            "judicialName": "IT User without prosecuting access"
           },
           {
             "judicialRoleTypeSJP": "MAGISTRATE",

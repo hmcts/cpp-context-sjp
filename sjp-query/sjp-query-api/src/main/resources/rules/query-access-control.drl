@@ -120,15 +120,6 @@ rule "sjp.query.employer"
     $outcome.setSuccess(true);
 end
 
-rule "sjp.query.awaiting-cases"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.awaiting-cases");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryAwaitingCasesActionGroups()))
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "sjp - Query - API - Get result orders"
   when
     $outcome: Outcome();
@@ -197,6 +188,33 @@ rule "sjp - Query - API - Get defendant details updates"
     $outcome: Outcome();
     $action: Action(name == "sjp.query.defendant-details-updates");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryDefendantDetailsUpdates()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get case notes"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-notes");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getCaseNotesGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get Transparency Report Metadata"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.transparency-report-metadata");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAllowedGroupsForTransparencyReport()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get Transparency Report Content"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.transparency-report-content");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAllowedGroupsForTransparencyReport()))
   then
     $outcome.setSuccess(true);
 end

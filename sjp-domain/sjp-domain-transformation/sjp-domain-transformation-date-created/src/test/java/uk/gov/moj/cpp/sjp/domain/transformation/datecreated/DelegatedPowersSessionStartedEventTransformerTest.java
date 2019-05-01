@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.transformation.datecreated;
 
 import static java.time.ZoneOffset.UTC;
+import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
@@ -99,7 +100,9 @@ public class DelegatedPowersSessionStartedEventTransformerTest {
         assertThat(events.get(0).metadata().asJsonObject(),
                 is(JsonObjects.createObjectBuilder(
                         originalEvent.metadata().asJsonObject())
-                        .add("createdAt", STARTED_AT.toString()).build()));
+                        .add("createdAt",
+                                STARTED_AT.format(
+                                        ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"))).build()));
     }
 
     private JsonEnvelope buildEnvelope() {

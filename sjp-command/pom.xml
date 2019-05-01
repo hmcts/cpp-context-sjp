@@ -13,6 +13,7 @@
 
     <modules>
         <module>sjp-command-handler</module>
+        <module>sjp-command-controller</module>
         <module>sjp-command-api</module>
     </modules>
 

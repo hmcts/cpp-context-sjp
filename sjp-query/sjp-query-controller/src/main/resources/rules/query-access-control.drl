@@ -83,14 +83,6 @@ rule "sjp.query.cases-missing-sjpn"
     $outcome.setSuccess(true);
 end
 
-rule "sjp.query.awaiting-cases"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "sjp.query.awaiting-cases");
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "sjp.query.result-orders"
   when
     $outcome: Outcome();
@@ -151,6 +143,22 @@ rule "sjp.query.defendant-details-updates"
   when
     $outcome: Outcome();
     $action: Action(name == "sjp.query.defendant-details-updates");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-notes"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-notes");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.transparency-report-metadata"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.transparency-report-metadata");
   then
     $outcome.setSuccess(true);
 end

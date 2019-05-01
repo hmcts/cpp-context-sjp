@@ -14,8 +14,9 @@ import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 
 import java.util.UUID;
 
+import javax.json.JsonObject;
+
 import com.jayway.jsonpath.ReadContext;
-import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 
@@ -37,7 +38,7 @@ public class CaseHelper {
         ))));
     }
 
-    public static JsonPath pollReadyCasesUntilResponseIsJson(final Matcher<? super ReadContext> matcher) {
+    public static JsonObject pollReadyCasesUntilResponseIsJson(final Matcher<? super ReadContext> matcher) {
         final RequestParamsBuilder requestParams = requestParams(getReadUrl(QUERY_READY_CASES_RESOURCE), QUERY_READY_CASES)
                 .withHeader(HeaderConstants.USER_ID, USER_ID);
         return pollWithDefaultsUntilResponseIsJson(requestParams.build(), matcher);

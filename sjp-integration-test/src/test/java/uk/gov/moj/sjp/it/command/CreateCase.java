@@ -263,6 +263,11 @@ public class CreateCase {
             return this;
         }
 
+        public DefendantBuilder withFirstName(final String firstName) {
+            this.firstName = firstName;
+            return this;
+        }
+
         public DefendantBuilder withNationalInsuranceNumber(final String nationalInsuranceNumber) {
             this.nationalInsuranceNumber = nationalInsuranceNumber;
             return this;

@@ -6,33 +6,24 @@
     "caseId": {
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
+    "decisionId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
     "sessionId": {
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
-    "referralReasonId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    "legalAdviser": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/user.json"
     },
-    "hearingTypeId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
-    },
-    "estimatedHearingDuration": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 999
-    },
-    "listingNotes": {
-      "type": "string"
-    },
-    "requestedAt": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/date-time"
+    "listingDetails": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/listing-details.json"
     }
   },
   "required": [
     "caseId",
+    "decisionId",
     "sessionId",
-    "referralReasonId",
-    "hearingTypeId",
-    "estimatedHearingDuration",
-    "requestedAt"
+    "legalAdviser",
+    "listingDetails"
   ]
 }

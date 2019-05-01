@@ -4,12 +4,13 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
-import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.json.schemas.domains.sjp.ListingDetails.listingDetails;
+import static uk.gov.justice.json.schemas.domains.sjp.Note.note;
+import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloperWithEvents;
@@ -27,6 +28,11 @@ import static uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecor
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
 import uk.gov.justice.domain.annotation.Event;
+import uk.gov.justice.json.schemas.domains.sjp.ListingDetails;
+import uk.gov.justice.json.schemas.domains.sjp.NoteType;
+import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -66,6 +72,9 @@ public class CourtReferralHandlerTest {
     private CaseAggregate caseAggregate;
 
     @Spy
+    private Clock clock = new UtcClock();
+
+    @Spy
     private Enveloper enveloper = createEnveloperWithEvents(
             CaseReferredForCourtHearing.class,
             CaseReferralForCourtHearingRejectionRecorded.class);
@@ -76,35 +85,48 @@ public class CourtReferralHandlerTest {
     @Test
     public void shouldReferCaseForCourtHearing() throws EventStreamException {
 
+        final User legalAdviser = user()
+                .withUserId(randomUUID())
+                .build();
+
+        final ListingDetails listingDetails = listingDetails()
+                .withEstimatedHearingDuration(10)
+                .withHearingTypeId(randomUUID())
+                .withReferralReasonId(randomUUID())
+                .withRequestedAt(clock.now())
+                .withListingNotes(note()
+                        .withId(randomUUID())
+                        .withAddedAt(now())
+                        .withText("Note")
+                        .withType(NoteType.LISTING)
+                        .build())
+                .build();
+
         final ReferCaseForCourtHearing referCaseForCourtHearing = referCaseForCourtHearing()
                 .withCaseId(randomUUID())
+                .withDecisionId(randomUUID())
                 .withSessionId(randomUUID())
-                .withReferralReasonId(randomUUID())
-                .withHearingTypeId(randomUUID())
-                .withEstimatedHearingDuration(nextInt(0, 999))
-                .withListingNotes(randomAlphanumeric(100))
-                .withRequestedAt(now(UTC))
+                .withLegalAdviser(legalAdviser)
+                .withListingDetails(listingDetails)
                 .build();
 
         final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
                 .withCaseId(referCaseForCourtHearing.getCaseId())
                 .withSessionId(referCaseForCourtHearing.getSessionId())
-                .withReferralReasonId(referCaseForCourtHearing.getReferralReasonId())
-                .withHearingTypeId(referCaseForCourtHearing.getHearingTypeId())
-                .withEstimatedHearingDuration(referCaseForCourtHearing.getEstimatedHearingDuration())
-                .withListingNotes(referCaseForCourtHearing.getListingNotes())
-                .withReferredAt(referCaseForCourtHearing.getRequestedAt())
+                .withReferralReasonId(listingDetails.getReferralReasonId())
+                .withHearingTypeId(listingDetails.getHearingTypeId())
+                .withEstimatedHearingDuration(listingDetails.getEstimatedHearingDuration())
+                .withListingNotes(listingDetails.getListingNotes().getText())
+                .withReferredAt(listingDetails.getRequestedAt())
                 .build();
 
         when(caseAggregate.referCaseForCourtHearing(
                 referCaseForCourtHearing.getCaseId(),
+                referCaseForCourtHearing.getDecisionId(),
                 referCaseForCourtHearing.getSessionId(),
-                referCaseForCourtHearing.getReferralReasonId(),
-                referCaseForCourtHearing.getHearingTypeId(),
-                referCaseForCourtHearing.getEstimatedHearingDuration(),
-                referCaseForCourtHearing.getListingNotes(),
-                referCaseForCourtHearing.getRequestedAt()
-        )).thenReturn(Stream.of(caseReferredForCourtHearing));
+                referCaseForCourtHearing.getLegalAdviser(),
+                referCaseForCourtHearing.getListingDetails())
+        ).thenReturn(Stream.of(caseReferredForCourtHearing));
 
         when(eventSource.getStreamById(referCaseForCourtHearing.getCaseId())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);

@@ -20,21 +20,28 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeThat;
+import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.getOnlinePlea;
+import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.stubNotifications;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.verifyNotification;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostcodeQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
+import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.COURT_ADMINISTRATORS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.LEGAL_ADVISERS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
+import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -51,6 +58,7 @@ import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import uk.gov.moj.sjp.it.producer.DecisionToReferCaseForCourtHearingSavedProducer;
+import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 
@@ -88,6 +96,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_OUTGOINGS_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_outgoings_response.json";
     private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_finances_case_response.json";
     private static final String ENGLISH_TEMPLATE_ID = "07d1f043-6052-4d18-adce-58678d0e7018";
+    private static final String LONDON_COURT_HOUSE_OU_CODE = "B01OK";
     private static final Set<UUID> DEFAULT_STUBBED_USER_ID = singleton(USER_ID);
     private EmployerHelper employerHelper;
     private FinancialMeansHelper financialMeansHelper;
@@ -220,7 +229,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldPleaOnlineShouldRejectIfCaseIsInReferredForCourtHearingStatus() {
+    public void shouldRejectOnlinePleaIfCaseIsReferredForCourtHearing() {
+        final UUID decisionId = randomUUID();
         final UUID sjpSessionId = randomUUID();
         final ZonedDateTime resultedOn = now(UTC);
         final UUID referralReasonId = randomUUID();
@@ -228,17 +238,28 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final Integer estimatedHearingDuration = nextInt(1, 999);
         final String listingNotes = randomAlphanumeric(100);
 
-        final DecisionToReferCaseForCourtHearingSavedProducer decisionToReferCaseForCourtHearingSavedProducer = new DecisionToReferCaseForCourtHearingSavedProducer(createCasePayloadBuilder.getId(),
+        final User legalAdviser = user()
+                .withUserId(randomUUID())
+                .withFirstName("John")
+                .withLastName("Smith")
+                .build();
+
+        stubStartSjpSessionCommand();
+        stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, "2572");
+        stubForUserDetails(legalAdviser);
+        startSession(sjpSessionId, legalAdviser.getUserId(), LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
+
+        final DecisionToReferCaseForCourtHearingSavedProducer decisionToReferCaseForCourtHearingSavedProducer = new DecisionToReferCaseForCourtHearingSavedProducer(createCasePayloadBuilder.getId(), decisionId,
                 sjpSessionId, referralReasonId, hearingTypeId, estimatedHearingDuration, listingNotes, resultedOn);
 
         new EventListener()
                 .subscribe(CaseReferredForCourtHearing.class.getAnnotation(Event.class).value())
-                .run(decisionToReferCaseForCourtHearingSavedProducer::saveDecisionToReferCaseForCourtHearing);
+                .run(decisionToReferCaseForCourtHearingSavedProducer::saveDecisionToReferCaseForCourtHearing)
+                .popEvent(CaseReferredForCourtHearing.class.getAnnotation(Event.class).value());
 
         final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(createCasePayloadBuilder.getId());
         final JSONObject pleaPayload = getOnlinePleaPayload(PleaType.NOT_GUILTY);
         pleadOnlineHelper.pleadOnline(pleaPayload.toString(), Response.Status.BAD_REQUEST);
-
     }
 
     @Test

@@ -1,6 +1,9 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import uk.gov.justice.domain.aggregate.Aggregate;
+import uk.gov.justice.json.schemas.domains.sjp.ListingDetails;
+import uk.gov.justice.json.schemas.domains.sjp.Note;
+import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
@@ -16,6 +19,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseDocumentHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseEmployerHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseFinancialMeansHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseLanguageHandler;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseNoteHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseWithdrawalHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CourtReferralHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.CancelPleaHandler;
@@ -154,20 +158,16 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> referCaseForCourtHearing(final UUID caseId,
+                                                   final UUID decisionId,
                                                    final UUID sessionId,
-                                                   final UUID referralReasonId,
-                                                   final UUID hearingTypeId,
-                                                   final Integer estimatedHearingDuration,
-                                                   final String listingNotes,
-                                                   final ZonedDateTime requestedAt
+                                                   final User legalAdviser,
+                                                   final ListingDetails listingDetails
     ) {
         return apply(CourtReferralHandler.INSTANCE.referCaseForCourtHearing(caseId,
+                decisionId,
                 sessionId,
-                referralReasonId,
-                hearingTypeId,
-                listingNotes,
-                estimatedHearingDuration,
-                requestedAt,
+                legalAdviser,
+                listingDetails,
                 state));
     }
 
@@ -198,6 +198,15 @@ public class CaseAggregate implements Aggregate {
         return apply(CaseAdjournmentHandler.INSTANCE.recordCaseAdjournmentToLaterSjpHearingElapsed(
                 caseId,
                 elapsedAt,
+                state));
+    }
+
+    public Stream<Object> addCaseNote(final UUID caseId, final Note note, final User author, final UUID decisionId) {
+        return apply(CaseNoteHandler.INSTANCE.addCaseNote(
+                caseId,
+                note,
+                author,
+                decisionId,
                 state));
     }
 

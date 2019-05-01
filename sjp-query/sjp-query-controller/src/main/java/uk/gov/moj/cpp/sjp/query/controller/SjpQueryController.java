@@ -101,11 +101,6 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
-    @Handles("sjp.query.awaiting-cases")
-    public JsonEnvelope getAwaitingCases(final JsonEnvelope query) {
-        return requester.request(query);
-    }
-
     @Handles("sjp.query.result-orders")
     public JsonEnvelope getResultOrders(final JsonEnvelope query) {
         return requester.request(query);
@@ -141,4 +136,13 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.case-notes")
+    public JsonEnvelope getCaseNotes(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
+    @Handles("sjp.query.transparency-report-metadata")
+    public JsonEnvelope getTransparencyReportMetadata(final JsonEnvelope query) {
+        return requester.request(query);
+    }
 }

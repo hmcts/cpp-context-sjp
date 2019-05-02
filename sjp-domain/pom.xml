@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-parent</artifactId>
-        <version>1.0.98-C2I-SNAPSHOT</version>
+        <version>1.0.99-C2I-SNAPSHOT</version>
     </parent>
 
     <artifactId>sjp-domain</artifactId>

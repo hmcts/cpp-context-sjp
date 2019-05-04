@@ -19,10 +19,10 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.resulting.CourtDetails;
 import uk.gov.moj.cpp.sjp.domain.resulting.Offence;
+import uk.gov.moj.cpp.sjp.domain.resulting.Prompt;
 import uk.gov.moj.cpp.sjp.domain.resulting.ReferencedDecisionsSaved;
 import uk.gov.moj.cpp.sjp.domain.resulting.Result;
 import uk.gov.moj.cpp.sjp.domain.resulting.SJPSession;
-import uk.gov.moj.cpp.sjp.domain.resulting.TerminalEntry;
 import uk.gov.moj.cpp.sjp.event.processor.service.ProsecutionCaseFileService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
@@ -183,9 +183,7 @@ public class ResultingToResultsConverter {
 
     protected JsonArray buildOffences(final CaseDetails caseDetails, final ReferencedDecisionsSaved referencedDecisionsSaved, final SJPSession sjpSession, final Optional<JsonArray> caseFileDefendantOffencesOptional) {
         final JsonArrayBuilder arrayBuilder = createArrayBuilder();
-
         final JsonArray caseFileDefendantOffences = caseFileDefendantOffencesOptional.isPresent() ? caseFileDefendantOffencesOptional.get() : createArrayBuilder().build();
-
 
         if (null != caseDetails.getDefendant().getOffences()) {
             caseDetails.getDefendant().getOffences().forEach(o -> {
@@ -198,7 +196,7 @@ public class ResultingToResultsConverter {
 //                    .add("convictionDate", "")
                         .add("convictingCourt", sjpSession.getCourtDetails().getCourtHouseCode())
 //                    .add("finding", "") do not know, check with business
-                        .add("results", buildResults(o, referencedDecisionsSaved, sjpSession)); // --required
+                        .add("results", buildResults(o, referencedDecisionsSaved)); // --required
                 arrayBuilder.add(builder);
             });
         }
@@ -223,13 +221,8 @@ public class ResultingToResultsConverter {
             baseOffenceDetails.add("chargeDate", o.getChargeDate());
         }
 
-        baseOffenceDetails.add("alcoholLevelAmount", NULL)
-                .add("alcoholLevelMethod", NULL)
-                .add("vehicleCode", NULL)
-                .add("vehicleRegistrationMark", NULL);
-
         if (null != caseFileDefendantOffence && !caseFileDefendantOffence.isEmpty()) {
-            baseOffenceDetails.add("locationOfOffence", caseFileDefendantOffence.getJsonString("offenceLocation")); // ProsecutionCaseFile.defendant.offence.offencelocation
+            baseOffenceDetails.add("locationOfOffence", caseFileDefendantOffence.getJsonString("offenceLocation"));
         }
 
         return baseOffenceDetails.build();
@@ -239,7 +232,7 @@ public class ResultingToResultsConverter {
         final JsonObjectBuilder builder = createObjectBuilder();
 
         if (null != o.getPlea()) {
-            builder.add("pleaType",  o.getPlea().toString());
+            builder.add("pleaType", o.getPlea().toString());
         }
 
         if (null != o.getPleaDate()) {
@@ -247,13 +240,13 @@ public class ResultingToResultsConverter {
         }
 
         if (null != o.getPleaMethod()) {
-         builder.add("pleaMethod",  o.getPleaMethod().toString());
+            builder.add("pleaMethod", o.getPleaMethod().toString());
         }
 
         return builder.build();
     }
 
-    protected JsonArray buildResults(final uk.gov.justice.json.schemas.domains.sjp.queries.Offence caseOffence, final ReferencedDecisionsSaved referencedDecisionsSaved, final SJPSession sjpSession) {
+    protected JsonArray buildResults(final uk.gov.justice.json.schemas.domains.sjp.queries.Offence caseOffence, final ReferencedDecisionsSaved referencedDecisionsSaved) {
 
         final JsonArrayBuilder arrayBuilder = createArrayBuilder();
         if (null != referencedDecisionsSaved) {
@@ -261,17 +254,18 @@ public class ResultingToResultsConverter {
             if (referenceDecisionSavedOffenceOptional.isPresent()) {
                 referenceDecisionSavedOffenceOptional.get().getResults().forEach(result -> {
                     final JsonObjectBuilder builder = createObjectBuilder();
-                    builder.add("resultId", sjpSession.getId().toString()) // TODO --required
-                            .add("resultCode", result.getCode())
-                            .add("resultText", "") // TODO "REPLACE_THIS" --required
-                            .add("resultCodeQualifier", "") // TODO "REPLACE_THIS"
-                            .add("bailStatusOffence", "") // TODO "REPLACE_THIS"
-                            .add("durationValue", "") // TODO "REPLACE_THIS"
-                            .add("durationUnit", "") // TODO "REPLACE_THIS"
-                            .add("secondaryDurationValue", "") // TODO "REPLACE_THIS"
-                            .add("secondaryDurationUnit", "") // TODO "REPLACE_THIS"
-                            .add("durationStartDate", "") // TODO "REPLACE_THIS"
-                            .add("durationEndDate", ""); // TODO "REPLACE_THIS"
+                    builder .add("id", result.getId().toString()); // --required
+
+                    if (null != result.getPrompts()) {
+                        final JsonArrayBuilder prompts = createArrayBuilder();
+                        result.getPrompts().forEach(p -> {
+                            final JsonObjectBuilder prompt = createObjectBuilder()
+                                    .add("id", p.getId().toString())
+                                    .add("value", p.getValue());
+                            prompts.add(prompt.build());
+                        });
+                        builder.add("prompts", prompts.build());
+                    }
                     arrayBuilder.add(builder);
                 });
             }
@@ -315,14 +309,14 @@ public class ResultingToResultsConverter {
     private List<Result> extractResults(final JsonArray results) {
         return results.getValuesAs(JsonObject.class)
                 .stream()
-                .map(result -> new Result(result.getString("code"), extractUUID(result, "resultTypeId"), extractTerminalEntries(result.getJsonArray("terminalEntries"))))
+                .map(result -> new Result(fromString(result.getString("id")), extractTerminalEntries(result.getJsonArray("prompts"))))
                 .collect(toList());
     }
 
-    private List<TerminalEntry> extractTerminalEntries(final JsonArray terminalEntries) {
-        return terminalEntries.getValuesAs(JsonObject.class)
+    private List<Prompt> extractTerminalEntries(final JsonArray prompts) {
+        return prompts.getValuesAs(JsonObject.class)
                 .stream()
-                .map(terminalEntry -> new TerminalEntry(terminalEntry.getInt("index"), terminalEntry.getString("value")))
+                .map(prompt -> new Prompt(fromString(prompt.getString("id")), prompt.getString("value")))
                 .collect(toList());
     }
 
@@ -349,7 +343,7 @@ public class ResultingToResultsConverter {
     }
 
     private void extractAndAddDetails(final String providedString, final String stringToAdd, final JsonObjectBuilder objectToAddString) {
-        if (null!= providedString && !providedString.isEmpty()) {
+        if (null != providedString && !providedString.isEmpty()) {
             objectToAddString.add(stringToAdd, providedString);
         }
     }

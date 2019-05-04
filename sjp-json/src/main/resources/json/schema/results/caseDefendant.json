@@ -9,12 +9,6 @@
     "prosecutorReference": {
       "type": "string"
     },
-    "individualDefendant": {
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/results/individualDefendant.json"
-    },
-    "corporateDefendant": {
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/results/corporateDefendant.json"
-    },
     "parentGuardianDetails": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/results/basePersonDetail.json"
     },
@@ -25,7 +19,29 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
+  "oneOf": [
+    {
+      "properties": {
+        "individualDefendant": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/results/individualDefendant.json"
+        }
+      },
+      "required": [
+        "individualDefendant"
+      ]
+    },
+    {
+      "properties": {
+        "corporateDefendant": {
+          "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/results/corporateDefendant.json"
+        }
+      },
+      "required": [
+        "corporateDefendant"
+      ]
+    }
+  ],
   "required": [
     "defendantId",
     "prosecutorReference",

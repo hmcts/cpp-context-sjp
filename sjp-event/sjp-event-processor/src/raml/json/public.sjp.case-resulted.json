@@ -55,24 +55,6 @@
             "reasonForBailConditionsOrCustody": "Persistent offender",
             "presentAtHearing": true
           },
-          "corporateDefendant": {
-            "organisationName": "ABC Corporation",
-            "telephoneNumberBusiness1": "22222222222",
-            "telephoneNumberBusiness2": "33333333333",
-            "emailAddress1": "abccorporation@mail1@random.random",
-            "emailAddress2": "abccorporation@mail2@random.random",
-            "address": {
-              "address1": "102 Petty France",
-              "address2": "London",
-              "address3": "address3",
-              "address4": "address4",
-              "address5": "address5",
-              "postcode": "SW1H 9AJ"
-            },
-            "pncIdentifier": "121",
-            "presentAtHearing": true,
-            "bailStatus": "IN_CUSTODY"
-          },
           "parentGuardianDetails": {
             "personTitle": "Mr",
             "firstName": "ParentGuardianFirstName",
@@ -124,18 +106,13 @@
               "finding": "some interesting findings",
               "results": [
                 {
-                  "resultId": "3570eae9-6ce8-4208-99f3-ff02b118c372",
-                  "resultCode": "FO",
-                  "resultText": "Driving under the influence of alcohol",
-                  "resultCodeQualifier": [
-                  ],
-                  "bailStatusOffence": "FO",
-                  "durationValue": 30,
-                  "durationUnit": "1",
-                  "secondaryDurationValue": 60,
-                  "secondaryDurationUnit": "2",
-                  "durationStartDate": "2018-03-12",
-                  "durationEndDate": "2018-03-15"
+                  "id": "3570eae9-6ce8-4208-99f3-ff02b118c372",
+                  "prompts": [
+                    {
+                      "id": "3570eae9-6ce8-4208-99f3-ff02b119d572",
+                      "value": "99"
+                    }
+                  ]
                 }
               ]
             }

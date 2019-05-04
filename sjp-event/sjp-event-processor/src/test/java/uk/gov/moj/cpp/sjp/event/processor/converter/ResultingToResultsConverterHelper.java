@@ -24,12 +24,13 @@ import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.resulting.CourtDetails;
+import uk.gov.moj.cpp.sjp.domain.resulting.Prompt;
 import uk.gov.moj.cpp.sjp.domain.resulting.SJPSession;
-import uk.gov.moj.cpp.sjp.domain.resulting.TerminalEntry;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -92,10 +93,6 @@ public class ResultingToResultsConverterHelper {
     private static final String CHARGE_DATE = now(UTC).minusDays(2).toString();
     private static final ZonedDateTime PLEA_DATE = now(UTC).minusDays(3);
 
-    private static final int REFERRAL_REASON_INDEX = -1;
-    private static final int HEARING_TYPE_INDEX = -2;
-    private static final int LISTING_NOTES_INDEX = 10;
-    private static final int ESTIMATED_HEARING_DURATION_INDEX = 5;
     private static final String RESULTED_ON = now(UTC).minusHours(5).toString();
     private static final UUID DECISION_ID = randomUUID();
     private static final ZonedDateTime SESSION_START_DATE = now(UTC).minusHours(7);
@@ -108,6 +105,15 @@ public class ResultingToResultsConverterHelper {
     private static final String COUNTRY_CJS_CODE = "1";
     private static final String LJA = "LJA";
     private static final String OFFENCE_LOCATION = "Cardiff";
+    private static final UUID RESULT_ID = randomUUID();
+    private static final UUID REFERRAL_REASON_ID = randomUUID();
+    private static final UUID HEARING_TYPE = randomUUID();
+    private static final Integer ESTIMATED_HEARING_DURATION = nextInt(0, 999);
+    private static final String LISTING_NOTES = randomAlphanumeric(100);
+    private static final UUID PROMPT1_ID = randomUUID();
+    private static final UUID PROMPT2_ID = randomUUID();
+    private static final UUID PROMPT3_ID = randomUUID();
+    private static final UUID PROMPT4_ID = randomUUID();
 
     public static void verifyCases(final JsonArray cases) {
         final JsonObject case1 = cases.getJsonObject(0);
@@ -152,8 +158,30 @@ public class ResultingToResultsConverterHelper {
         assertEquals(PleaType.GUILTY.toString(), plea.getString("pleaType"));
         assertEquals(PleaMethod.ONLINE.toString(), plea.getString("pleaMethod"));
         assertEquals(PLEA_DATE.toString(), plea.getString("pleaDate"));
-        assertEquals(CJS_CODE, result.getString("resultCode"));
+        verifyResult(result);
+    }
 
+    private static void verifyResult(final JsonObject result) {
+        final JsonArray terminalEntries = result.getJsonArray("prompts");
+        final JsonObject referralReasonPrompt = getPrompt(terminalEntries, PROMPT1_ID.toString());
+        final JsonObject hearingTypePrompt = getPrompt(terminalEntries, PROMPT2_ID.toString());
+        final JsonObject estimatedHearingDurationPrompt = getPrompt(terminalEntries, PROMPT3_ID.toString());
+        final JsonObject listingNotesPrompt = getPrompt(terminalEntries, PROMPT4_ID.toString());
+
+        assertEquals(RESULT_ID.toString(), result.getString("id"));
+        verifyPrompt(referralReasonPrompt, PROMPT1_ID.toString(), REFERRAL_REASON_ID.toString());
+        verifyPrompt(hearingTypePrompt, PROMPT2_ID.toString(), HEARING_TYPE.toString());
+        verifyPrompt(estimatedHearingDurationPrompt, PROMPT3_ID.toString(), ESTIMATED_HEARING_DURATION.toString());
+        verifyPrompt(listingNotesPrompt, PROMPT4_ID.toString(), LISTING_NOTES);
+    }
+
+    private static void verifyPrompt(final JsonObject prompt, final String expectedId, final String expectedValue) {
+        assertEquals(expectedId, prompt.getString("id"));
+        assertEquals(expectedValue, prompt.getString("value"));
+    }
+
+    private static JsonObject getPrompt(final JsonArray prompts, final String id) {
+        return prompts.stream().map(p -> (JsonObject) p).filter(p -> p.getString("id").equals(id)).findFirst().get();
     }
 
     public static void verifyPerson(final JsonObject person) {
@@ -218,27 +246,15 @@ public class ResultingToResultsConverterHelper {
 
     public static JsonEnvelope getReferenceDecisionSaved() {
 
-        final UUID referralReasonId = randomUUID();
-        final UUID hearingType = randomUUID();
-        final Integer estimatedHearingDuration = nextInt(0, 999);
-        final String listingNotes = randomAlphanumeric(100);
+        final Prompt referralReasonTerminalEntry = new Prompt(PROMPT1_ID, REFERRAL_REASON_ID.toString());
+        final Prompt hearingTypeTerminalEntry = new Prompt(PROMPT2_ID, HEARING_TYPE.toString());
+        final Prompt estimatedHearingDurationTerminalEntry = new Prompt(PROMPT3_ID, ESTIMATED_HEARING_DURATION.toString());
+        final Prompt listingNotesTerminalEntry = new Prompt(PROMPT4_ID, LISTING_NOTES);
+        final List<Prompt> prompts = Arrays.asList(referralReasonTerminalEntry, hearingTypeTerminalEntry, estimatedHearingDurationTerminalEntry, listingNotesTerminalEntry);
+        final JsonArrayBuilder promptsBuilder = createArrayBuilder();
 
-        final TerminalEntry referralReasonTerminalEntry = new TerminalEntry(REFERRAL_REASON_INDEX, referralReasonId.toString());
-        final TerminalEntry hearingTypeTerminalEntry = new TerminalEntry(HEARING_TYPE_INDEX, hearingType.toString());
-        final TerminalEntry estimatedHearingDurationTerminalEntry = new TerminalEntry(ESTIMATED_HEARING_DURATION_INDEX, estimatedHearingDuration.toString());
-        final TerminalEntry listingNotesTerminalEntry = new TerminalEntry(LISTING_NOTES_INDEX, listingNotes);
-
-        final List<TerminalEntry> terminalEntries = new ArrayList<>();
-        terminalEntries.add(referralReasonTerminalEntry);
-        terminalEntries.add(hearingTypeTerminalEntry);
-        terminalEntries.add(estimatedHearingDurationTerminalEntry);
-        terminalEntries.add(listingNotesTerminalEntry);
-
-
-        final JsonArrayBuilder terminalEntriesArrayBuilder = createArrayBuilder();
-
-        for (final TerminalEntry terminalEntry : terminalEntries) {
-            terminalEntriesArrayBuilder.add(Json.createObjectBuilder().add("index", terminalEntry.getIndex()).add("value", terminalEntry.getValue()));
+        for (final Prompt prompt : prompts) {
+            promptsBuilder.add(Json.createObjectBuilder().add("id", prompt.getId().toString()).add("value", prompt.getValue()));
         }
 
         final JsonObject decision = createObjectBuilder()
@@ -253,9 +269,8 @@ public class ResultingToResultsConverterHelper {
                                 .add("id", OFFENCE_ID.toString())
                                 .add("results",
                                         createArrayBuilder().add(createObjectBuilder()
-                                                .add("code", CJS_CODE)
-                                                .add("resultTypeId", RESULT_TYPE_ID.toString())
-                                                .add("terminalEntries", terminalEntriesArrayBuilder)))
+                                                .add("id", RESULT_ID.toString())
+                                                .add("prompts", promptsBuilder)))
                 )).build();
 
         return envelopeFrom(metadataWithRandomUUID("public.resulting.referenced-decisions-saved")

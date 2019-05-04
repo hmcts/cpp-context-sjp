@@ -29,7 +29,6 @@
   "required": [
     "basePersonDetails",
     "bailStatus",
-    "address",
     "presentAtHearing"
   ]
 }

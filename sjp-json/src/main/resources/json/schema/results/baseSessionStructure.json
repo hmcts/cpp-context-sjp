@@ -33,7 +33,6 @@
         "courtId",
         "courtHouseCode",
         "name",
-        "roomId",
         "roomName"
       ]
     },

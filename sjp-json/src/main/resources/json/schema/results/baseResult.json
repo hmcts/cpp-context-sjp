@@ -3,45 +3,32 @@
   "id": "http://justice.gov.uk/json/schemas/domains/sjp/results/baseResult.json",
   "type": "object",
   "properties": {
-    "resultId": {
+    "id": {
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
-    "resultCode": {
-      "type": "integer"
-    },
-    "resultText": {
-      "type": "string"
-    },
-    "resultCodeQualifier": {
+    "prompts": {
       "type": "array",
+      "minItems":1,
       "items": {
-        "type": "string"
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "value"
+        ],
+        "additionalProperties": false
       }
-    },
-    "bailStatusOffence": {
-      "type": "string"
-    },
-    "durationValue": {
-      "type": "integer"
-    },
-    "durationUnit": {
-      "type": "string"
-    },
-    "secondaryDurationValue": {
-      "type": "integer"
-    },
-    "secondaryDurationUnit": {
-      "type": "string"
-    },
-    "durationStartDate": {
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
-    },
-    "durationEndDate": {
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
     }
   },
   "additionalProperties": false,
   "required": [
-    "resultText"
+    "id"
   ]
 }

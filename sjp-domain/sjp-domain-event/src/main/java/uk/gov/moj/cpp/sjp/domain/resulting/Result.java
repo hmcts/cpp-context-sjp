@@ -15,29 +15,22 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 public class Result {
 
-    private final String code;
-    private final UUID resultTypeId;
-    private final List<TerminalEntry> terminalEntries;
+    private final UUID id;
+    private final List<Prompt> prompts;
 
     @JsonCreator
-    public Result(@JsonProperty("code") final String code,
-                  @JsonProperty("resultTypeId") final UUID resultTypeId,
-                  @JsonProperty("terminalEntries") final List<TerminalEntry> terminalEntries) {
-        this.code = code;
-        this.resultTypeId = resultTypeId;
-        this.terminalEntries = ofNullable(terminalEntries).orElse(emptyList());
+    public Result(@JsonProperty("id") final UUID id,
+                  @JsonProperty("prompts") final List<Prompt> prompts) {
+        this.id = id;
+        this.prompts = ofNullable(prompts).orElse(emptyList());
     }
 
-    public String getCode() {
-        return code;
+    public UUID getId() {
+        return id;
     }
 
-    public UUID getResultTypeId() {
-        return resultTypeId;
-    }
-
-    public List<TerminalEntry> getTerminalEntries() {
-        return terminalEntries;
+    public List<Prompt> getPrompts() {
+        return prompts;
     }
 
     @Override
@@ -56,4 +49,3 @@ public class Result {
     }
 
 }
-

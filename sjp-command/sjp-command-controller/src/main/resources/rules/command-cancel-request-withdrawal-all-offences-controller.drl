@@ -1,0 +1,12 @@
+package uk.gov.moj.cpp.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+
+rule "Command - Rule for Cancel Withdrawal All Offences"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.cancel-request-withdrawal-all-offences");
+  then
+    $outcome.setSuccess(true);
+end

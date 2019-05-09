@@ -1,13 +1,21 @@
 Feature: Refer case for court hearing
 
-  Scenario: Case is referred for court hearing
+  Scenario: Case is referred for court hearing with listing notes
 
     Given case is created
     And case is assigned
     When you referCaseForCourtHearing on a CaseAggregate using a court referral details
     Then case is referred for court hearing
+    And listing case note is added
 
-  Scenario: Already reffered case is again referred for court hearing
+   Scenario: Case is referred for court hearing without listing notes
+
+      Given case is created
+      And case is assigned
+      When you referCaseForCourtHearing on a CaseAggregate using a court referral details without listing notes
+      Then case is referred for court hearing without listing notes
+
+  Scenario: Already referred case is again referred for court hearing
 
     Given case is created
     And case is assigned

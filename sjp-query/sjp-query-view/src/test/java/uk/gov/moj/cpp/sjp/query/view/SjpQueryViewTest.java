@@ -343,13 +343,13 @@ public class SjpQueryViewTest {
     }
 
     @Test
-    public void shouldGetAwaitingCases() {
+    public void shouldGetPendingCases() {
         setupExpectations();
         when(envelope.metadata()).thenReturn(metadata);
         final JsonObject payload = createObjectBuilder().build();
-        when(caseService.findAwaitingCases()).thenReturn(payload);
+        when(caseService.findPendingCasesToPublish()).thenReturn(payload);
 
-        final JsonEnvelope result = sjpQueryView.getAwaitingCases(envelope);
+        final JsonEnvelope result = sjpQueryView.getPendingCasesToPublish(envelope);
 
         verify(function).apply(payload);
         assertThat(result, is(outputEnvelope));

@@ -16,7 +16,6 @@ import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaultsUntilResponseIsJson;
 
@@ -30,15 +29,16 @@ import uk.gov.moj.sjp.it.helper.CancelPleaHelper;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestCancelHelper;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
+import uk.gov.moj.sjp.it.helper.ReadyCaseHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
-import uk.gov.moj.sjp.it.stub.AssignmentStub;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
+import javax.json.JsonObject;
+
 import com.jayway.jsonpath.ReadContext;
-import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 
@@ -51,49 +51,55 @@ public class ReadyCaseIT extends BaseIntegrationTest {
     private final UUID offenceId = randomUUID();
 
     @Test
-    public void shouldChangeCaseReadinessWhenCaseAfterNoticeEndDate() {
+    public void shouldChangeCaseReadinessWhenCaseAfterNoticeEndDate() throws Exception {
         final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
-
-        createCase(postingDate);
 
         try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper();
              final CancelPleaHelper cancelPleaHelper = new CancelPleaHelper(caseId, offenceId);
              final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(caseId);
-             final OffencesWithdrawalRequestCancelHelper offencesWithdrawalRequestCancelHelper = new OffencesWithdrawalRequestCancelHelper(caseId)) {
+             final OffencesWithdrawalRequestCancelHelper offencesWithdrawalRequestCancelHelper = new OffencesWithdrawalRequestCancelHelper(caseId);
+             final ReadyCaseHelper readyCaseHelper = new ReadyCaseHelper()
+        ) {
+            createCase(postingDate);
 
             final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseId,
                     createCasePayloadBuilder.getUrn(),
                     createCasePayloadBuilder.getDefendantBuilder().getLastName(),
                     createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
 
-            pollUntilReadyWithReason(caseId, PIA);
+            readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, PIA);
+            verifyCaseReadyInViewStore(caseId, PIA);
 
             updatePleaHelper.updatePlea(caseId, offenceId, getPleaPayload(PleaType.GUILTY));
 
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
 
-            pollUntilReadyWithReason(caseId, PLEADED_GUILTY);
+            readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, PLEADED_GUILTY);
+            verifyCaseReadyInViewStore(caseId, PLEADED_GUILTY);
 
             offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(USER_ID);
 
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.WITHDRAWAL_REQUEST_READY_FOR_DECISION);
 
-            pollUntilReadyWithReason(caseId, WITHDRAWAL_REQUESTED);
+            readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, WITHDRAWAL_REQUESTED);
+            verifyCaseReadyInViewStore(caseId, WITHDRAWAL_REQUESTED);
 
             offencesWithdrawalRequestCancelHelper.cancelRequestWithdrawalForAllOffences(USER_ID);
 
-            pollUntilReadyWithReason(caseId, PLEADED_GUILTY);
+            readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, PLEADED_GUILTY);
+            verifyCaseReadyInViewStore(caseId, PLEADED_GUILTY);
 
             cancelPleaHelper.cancelPlea();
 
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION);
 
-            pollUntilReadyWithReason(caseId, PIA);
+            readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, PIA);
+            verifyCaseReadyInViewStore(caseId, PIA);
         }
     }
 
     @Test
-    public void shouldChangeCaseReadinessWhenCaseBeforeNoticeEndDate() {
+    public void shouldChangeCaseReadinessWhenCaseBeforeNoticeEndDate() throws Exception {
         final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS - 1);
 
         createCase(postingDate);
@@ -101,7 +107,9 @@ public class ReadyCaseIT extends BaseIntegrationTest {
         try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper();
              final CancelPleaHelper cancelPleaHelper = new CancelPleaHelper(caseId, offenceId);
              final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(caseId);
-             final OffencesWithdrawalRequestCancelHelper offencesWithdrawalRequestCancelHelper = new OffencesWithdrawalRequestCancelHelper(caseId)) {
+             final OffencesWithdrawalRequestCancelHelper offencesWithdrawalRequestCancelHelper = new OffencesWithdrawalRequestCancelHelper(caseId);
+             final ReadyCaseHelper readyCaseHelper = new ReadyCaseHelper()
+        ) {
 
             final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(caseId,
                     createCasePayloadBuilder.getUrn(),
@@ -114,37 +122,42 @@ public class ReadyCaseIT extends BaseIntegrationTest {
 
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
 
-            pollUntilReadyWithReason(caseId, PLEADED_GUILTY);
+            readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, PLEADED_GUILTY);
+            verifyCaseReadyInViewStore(caseId, PLEADED_GUILTY);
 
             updatePleaHelper.updatePlea(caseId, offenceId, getPleaPayload(PleaType.NOT_GUILTY));
 
-            pollUntilNotReady(caseId);
+            readyCaseHelper.verifyCaseUnmarkedReadyForDecisionEventEmitted(caseId, now().plusDays(10));
+            verifyCaseNotReadyInViewStore(caseId);
 
             addDatesToAvoid(caseId, "my-dates-to-avoid");
 
-            pollUntilReadyWithReason(caseId, CaseReadinessReason.PLEADED_NOT_GUILTY);
+            readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, CaseReadinessReason.PLEADED_NOT_GUILTY);
+            verifyCaseReadyInViewStore(caseId, CaseReadinessReason.PLEADED_NOT_GUILTY);
 
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
 
             cancelPleaHelper.cancelPlea();
 
-            pollUntilNotReady(caseId);
+            readyCaseHelper.verifyCaseUnmarkedReadyForDecisionEventEmitted(caseId, postingDate.plusDays(28));
+            verifyCaseNotReadyInViewStore(caseId);
 
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.NO_PLEA_RECEIVED);
 
-            pollUntilNotReady(caseId);
+            verifyCaseNotReadyInViewStore(caseId);
 
             offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(USER_ID);
 
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.WITHDRAWAL_REQUEST_READY_FOR_DECISION);
 
-            pollUntilReadyWithReason(caseId, WITHDRAWAL_REQUESTED);
+            readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, WITHDRAWAL_REQUESTED);
+            verifyCaseReadyInViewStore(caseId, WITHDRAWAL_REQUESTED);
 
             offencesWithdrawalRequestCancelHelper.cancelRequestWithdrawalForAllOffences(USER_ID);
 
             caseSearchResultHelper.verifyCaseStatus(CaseStatus.NO_PLEA_RECEIVED);
 
-            pollUntilNotReady(caseId);
+            verifyCaseNotReadyInViewStore(caseId);
         }
     }
 
@@ -158,11 +171,11 @@ public class ReadyCaseIT extends BaseIntegrationTest {
                 .withPostingDate(postingDate));
 
         CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
-        pollUntilReadyWithReason(caseId, PIA);
+        verifyCaseReadyInViewStore(caseId, PIA);
 
         completeCaseProducer.completeCase();
 
-        pollUntilNotReady(caseId);
+        verifyCaseNotReadyInViewStore(caseId);
     }
 
     private void createCase(final LocalDate postingDate) {
@@ -175,7 +188,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
         createCaseForPayloadBuilder(createCasePayloadBuilder);
     }
 
-    private static void pollUntilReadyWithReason(final UUID caseId, final CaseReadinessReason readinessReason) {
+    private static void verifyCaseReadyInViewStore(final UUID caseId, final CaseReadinessReason readinessReason) {
         pollReadyCasesUntilResponseIsJson(withJsonPath("readyCases.*", hasItem(
                 isJson(allOf(
                         withJsonPath("caseId", equalTo(caseId.toString())),
@@ -183,13 +196,13 @@ public class ReadyCaseIT extends BaseIntegrationTest {
                 ))));
     }
 
-    private static void pollUntilNotReady(final UUID caseId) {
+    private static void verifyCaseNotReadyInViewStore(final UUID caseId) {
         pollReadyCasesUntilResponseIsJson(withJsonPath("readyCases.*", not(hasItem(
                 isJson(withJsonPath("caseId", equalTo(caseId.toString())))
         ))));
     }
 
-    private static JsonPath pollReadyCasesUntilResponseIsJson(final Matcher<? super ReadContext> matcher) {
+    private static JsonObject pollReadyCasesUntilResponseIsJson(final Matcher<? super ReadContext> matcher) {
         final RequestParamsBuilder requestParams = requestParams(getReadUrl(QUERY_READY_CASES_RESOURCE), QUERY_READY_CASES)
                 .withHeader(HeaderConstants.USER_ID, USER_ID);
         return pollWithDefaultsUntilResponseIsJson(requestParams.build(), matcher);

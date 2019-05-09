@@ -107,6 +107,7 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
     @Test
     public void addCaseDocumentRejectsWhenCaseIsInReferToCourtHearingStatus() {
         final UUID sessionId = randomUUID();
+        final UUID decisionId = randomUUID();
         final UUID prosecutorId = randomUUID();
         final UUID referralReasonId = randomUUID();
         final UUID hearingTypeId = randomUUID();
@@ -126,6 +127,7 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
 
         final DecisionToReferCaseForCourtHearingSavedProducer decisionToReferCaseForCourtHearingSavedProducer = new DecisionToReferCaseForCourtHearingSavedProducer(
                 caseId,
+                decisionId,
                 sessionId,
                 referralReasonId,
                 hearingTypeId,

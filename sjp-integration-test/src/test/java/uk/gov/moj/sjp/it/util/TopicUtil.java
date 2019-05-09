@@ -4,6 +4,9 @@ import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.wrap;
 import static uk.gov.moj.sjp.it.util.OptionalPresent.ifPresent;
 
+import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Optional;
@@ -24,7 +27,7 @@ import org.apache.activemq.artemis.jms.client.ActiveMQTopic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TopicUtil implements  AutoCloseable {
+public class TopicUtil implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TopicUtil.class);
 
@@ -67,7 +70,7 @@ public class TopicUtil implements  AutoCloseable {
 
     public MessageConsumer createConsumerForMultipleSelectors(final String... eventSelectors) {
         final Function<String, String> wrapInQuotes = (str) -> wrap(str, "'");
-        
+
         final String eventSelectorsExpression = Arrays.stream(eventSelectors)
                 .map(wrapInQuotes)
                 .collect(joining(",", "CPPNAME IN (", ")"));
@@ -93,6 +96,11 @@ public class TopicUtil implements  AutoCloseable {
         return ifPresent(retrieveMessageAsString(consumer, RETRIEVE_TIMEOUT),
                 (x) -> Optional.of(Json.createReader(new StringReader(x)).readObject())
         ).orElse(Optional::<JsonObject>empty);
+    }
+
+    public static Optional<JsonEnvelope> retrieveMessageAsJsonEnvelope(final MessageConsumer messageConsumer) {
+        return retrieveMessageAsJsonObject(messageConsumer)
+                .map(event -> new DefaultJsonObjectEnvelopeConverter().asEnvelope(event));
     }
 
     public static Optional<String> retrieveMessageAsString(final MessageConsumer consumer, long customTimeOutInMillis) {

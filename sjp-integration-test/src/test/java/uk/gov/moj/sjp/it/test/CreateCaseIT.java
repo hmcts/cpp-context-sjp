@@ -3,16 +3,20 @@ package uk.gov.moj.sjp.it.test;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.helper.CaseProsecutingAuthorityHelper.getProsecutingAuthority;
 
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
-import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import com.jayway.restassured.path.json.JsonPath;
@@ -37,10 +41,13 @@ public class CreateCaseIT extends BaseIntegrationTest {
         final CreateCase.DefendantBuilder defendant = createCase.getDefendantBuilder();
         final CreateCase.OffenceBuilder offence = createCase.getOffenceBuilder();
 
-        new EventListener()
-                .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
-                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase));
+        final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
+                .subscribe(CaseReceived.EVENT_NAME)
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
+                .popEvent(CaseReceived.EVENT_NAME);
 
+        assertTrue(caseReceivedEvent.isPresent());
+        assertThat(caseReceivedEvent.get().payloadAsJsonObject().getString("expectedDateReady"), is(createCase.getPostingDate().plusDays(NUMBER_DAYS_WAITING_FOR_PLEA).toString()));
 
         final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId);
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));

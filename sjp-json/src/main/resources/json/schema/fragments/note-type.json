@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/note-type.json",
+  "enum": [
+    "ADJOURNMENT",
+    "DECISION",
+    "LISTING",
+    "CASE"
+  ]
+}

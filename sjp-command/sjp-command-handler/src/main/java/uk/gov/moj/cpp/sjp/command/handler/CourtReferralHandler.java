@@ -17,12 +17,10 @@ public class CourtReferralHandler extends CaseCommandHandler {
 
         applyToCaseAggregate(referCaseForCourtHearing.getCaseId(), command, aggregate -> aggregate.referCaseForCourtHearing(
                 referCaseForCourtHearing.getCaseId(),
+                referCaseForCourtHearing.getDecisionId(),
                 referCaseForCourtHearing.getSessionId(),
-                referCaseForCourtHearing.getReferralReasonId(),
-                referCaseForCourtHearing.getHearingTypeId(),
-                referCaseForCourtHearing.getEstimatedHearingDuration(),
-                referCaseForCourtHearing.getListingNotes(),
-                referCaseForCourtHearing.getRequestedAt()
+                referCaseForCourtHearing.getLegalAdviser(),
+                referCaseForCourtHearing.getListingDetails()
         ));
     }
 

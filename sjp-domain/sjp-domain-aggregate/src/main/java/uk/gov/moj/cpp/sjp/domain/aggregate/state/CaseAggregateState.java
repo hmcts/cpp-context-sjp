@@ -36,6 +36,7 @@ public class CaseAggregateState implements AggregateState {
     private LocalDate defendantDateOfBirth;
     private Address defendantAddress;
     private CaseReadinessReason readinessReason;
+    private LocalDate expectedDateReady;
     private boolean caseReceived;
 
     private String datesToAvoid;
@@ -166,6 +167,10 @@ public class CaseAggregateState implements AggregateState {
 
     public CaseReadinessReason getReadinessReason() {
         return readinessReason;
+    }
+
+    public boolean isCaseReadyForDecision() {
+        return readinessReason != null;
     }
 
     public void setReadinessReason(final CaseReadinessReason readinessReason) {
@@ -343,5 +348,13 @@ public class CaseAggregateState implements AggregateState {
 
     public boolean isCaseIdEqualTo(final UUID id) {
         return nonNull(caseId) && caseId.equals(id);
+    }
+
+    public LocalDate getExpectedDateReady() {
+        return expectedDateReady;
+    }
+
+    public void setExpectedDateReady(LocalDate expectedDateReady) {
+        this.expectedDateReady = expectedDateReady;
     }
 }

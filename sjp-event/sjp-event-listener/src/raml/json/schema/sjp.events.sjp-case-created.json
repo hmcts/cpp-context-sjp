@@ -56,7 +56,7 @@
           "libraOffenceDateCode": {
             "type": "integer"
           },
-          "offenceCommittedDate": {
+          "offenceDate": {
             "type": "string"
           },
           "offenceWording": {

@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "pendingCases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+          },
+          "defendantName": {
+            "type": "string"
+          },
+          "town": {
+            "type": "string"
+          },
+          "county": {
+            "type": "string"
+          },
+          "postcode": {
+            "type": "string"
+          },
+          "offences": {
+            "type": "array",
+            "items": {
+              "offenceCode": {
+                "type": "string"
+              },
+              "offenceStartDate": {
+                "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+              }
+            }
+          },
+          "prosecutorName": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "defendantName",
+          "postcode"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "pendingCases"
+  ]
+}

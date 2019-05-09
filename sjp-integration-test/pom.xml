@@ -51,6 +51,13 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- Once the common bom (version 2.1.4-SNAPSHOT) is upgraded in sjp parent, the version number can be removed. -->
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>2.1</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-library</artifactId>
@@ -426,6 +433,17 @@
                                 <configuration>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>sjp-command-api</artifactId>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>deploy-command-controller</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>deploy-artifact</goal>
+                                </goals>
+                                <configuration>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>sjp-command-controller</artifactId>
                                 </configuration>
                             </execution>
                             <execution>

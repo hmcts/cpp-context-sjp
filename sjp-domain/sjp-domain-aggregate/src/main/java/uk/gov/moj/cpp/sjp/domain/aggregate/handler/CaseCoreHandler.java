@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
+import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_ASSIGNED_TO_OTHER_USER;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_COMPLETED;
@@ -14,6 +15,7 @@ import uk.gov.moj.cpp.sjp.event.CaseAlreadyCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseAlreadyReopened;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseCreationFailedBecauseCaseAlreadyExisted;
+import uk.gov.moj.cpp.sjp.event.CaseExpectedDateReadyChanged;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourts;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseNotFound;
@@ -31,6 +33,7 @@ import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassignmentRejected;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -61,6 +64,8 @@ public class CaseCoreHandler {
                     .withId(UUID.randomUUID())
                     .buildBasedFrom(aCase.getDefendant());
 
+            final LocalDate expectedDateReady = aCase.getPostingDate().plusDays(NUMBER_DAYS_WAITING_FOR_PLEA);
+
             event = new CaseReceived(
                     aCase.getId(),
                     aCase.getUrn(),
@@ -69,6 +74,7 @@ public class CaseCoreHandler {
                     aCase.getCosts(),
                     aCase.getPostingDate(),
                     defendant,
+                    expectedDateReady,
                     createdOn);
         }
         return Stream.of(event);
@@ -204,10 +210,15 @@ public class CaseCoreHandler {
                 : Stream.of();
     }
 
-    public Stream<Object> unmarkCaseReadyForDecision(final CaseAggregateState state) {
-        return state.getReadinessReason() != null
-                ? Stream.of(new CaseUnmarkedReadyForDecision(state.getCaseId()))
-                : Stream.of();
+    public Stream<Object> unmarkCaseReadyForDecision(final LocalDate expectedDateReady, final CaseAggregateState state) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        if (state.isCaseReadyForDecision()) {
+            streamBuilder.add(new CaseUnmarkedReadyForDecision(state.getCaseId(), expectedDateReady));
+        } else if (!expectedDateReady.equals(state.getExpectedDateReady())) {
+            streamBuilder.add(new CaseExpectedDateReadyChanged(state.getCaseId(), state.getExpectedDateReady(), expectedDateReady));
+        }
+
+        return streamBuilder.build();
     }
 
     private Optional<Object> createCaseNotFoundEventForWrongCaseId(final UUID caseId,

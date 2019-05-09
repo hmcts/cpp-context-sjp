@@ -8,6 +8,7 @@ import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 import org.junit.Test;
@@ -39,11 +40,14 @@ public class CaseReadinessHandlerTest extends CaseCommandHandlerTest {
 
     @Test
     public void shouldHandleUnmarkCaseReadyForDecisionCommand() throws EventStreamException {
-        when(caseAggregate.unmarkCaseReadyForDecision()).thenReturn(events);
+        final LocalDate expectedDateReady = LocalDate.now();
+        when(jsonObject.getString("expectedDateReady")).thenReturn(expectedDateReady.toString());
+        when(caseAggregate.unmarkCaseReadyForDecision(expectedDateReady)).thenReturn(events);
 
         caseReadinessHandler.unmarkCaseReadyForDecision(jsonEnvelope);
 
-        verify(caseAggregate).unmarkCaseReadyForDecision();
+        verify(jsonObject).getString("expectedDateReady");
+        verify(caseAggregate).unmarkCaseReadyForDecision(expectedDateReady);
     }
 
 }

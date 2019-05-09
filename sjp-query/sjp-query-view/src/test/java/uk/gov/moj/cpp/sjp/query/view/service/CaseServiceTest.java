@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.String.format;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -11,6 +13,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -29,12 +32,12 @@ import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDocumentBuilder;
-import uk.gov.moj.cpp.sjp.persistence.entity.AwaitingCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
@@ -51,6 +54,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -59,6 +63,7 @@ import javax.json.JsonObject;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -196,7 +201,7 @@ public class CaseServiceTest {
     }
 
     @Test
-    public void shouldFindCaseByUrnAndContainsSpeakWelsh(){
+    public void shouldFindCaseByUrnAndContainsSpeakWelsh() {
         final CaseDetail caseDetail = createCaseDetail(true);
         caseDetail.getDefendant().setSpeakWelsh(Boolean.TRUE);
 
@@ -210,7 +215,7 @@ public class CaseServiceTest {
     }
 
     @Test
-    public void shouldFindCaseByUrnAndDoesNotContainSpeakWelsh(){
+    public void shouldFindCaseByUrnAndDoesNotContainSpeakWelsh() {
         final CaseDetail caseDetail = createCaseDetail(true);
         assertThat(caseDetail.getDefendant().getSpeakWelsh(), nullValue());
 
@@ -223,7 +228,7 @@ public class CaseServiceTest {
     }
 
     @Test
-    public void shouldFindCaseByUrnAndContainsSpeakWelshFalse(){
+    public void shouldFindCaseByUrnAndContainsSpeakWelshFalse() {
         final CaseDetail caseDetail = createCaseDetail(true);
         caseDetail.getDefendant().setSpeakWelsh(false);
 
@@ -412,18 +417,53 @@ public class CaseServiceTest {
     }
 
     @Test
-    public void shouldFindAwaitingCases() {
+    public void shouldFindPendingCasesToPublish() {
+        final UUID caseId1 = randomUUID();
+        final UUID caseId2 = randomUUID();
 
-        final AwaitingCase awaitingCase = new AwaitingCase("Andrew", "Baker", "PS0001");
-        when(caseRepository.findAwaitingSjpCases(600)).thenReturn(singletonList(awaitingCase));
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence1 = new PendingCaseToPublishPerOffence("John", "Doe",
+                caseId1, "Lant Street", "London", "Greater London",
+                "SE1 1PJ", "CA03014", LocalDate.of(2018, 12, 15), "TVL");
 
-        final JsonObject awaitingCases = service.findAwaitingCases();
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence2 = new PendingCaseToPublishPerOffence("John", "Doe",
+                caseId1, "Lant Street", "London", "Greater London",
+                "SE1 1PJ", "CA03014", LocalDate.of(2018, 11, 11), "TVL");
 
-        final JsonObject awaitingCase1 = awaitingCases.getJsonArray("awaitingCases")
-                .getValuesAs(JsonObject.class).get(0);
-        assertEquals(awaitingCase1.getString("firstName"), awaitingCase.getDefendantFirstName());
-        assertEquals(awaitingCase1.getString("lastName"), awaitingCase.getDefendantLastName());
-        assertEquals(awaitingCase1.getString("offenceCode"), awaitingCase.getOffenceCode());
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWith4LinesOfAddressAndWithoutFirstName = new PendingCaseToPublishPerOffence("", "Doe",
+                caseId2, "London", "Greater London", "",
+                "S", "CA03014", LocalDate.of(2018, 8, 2), "TVL");
+
+        when(caseRepository.findPendingCasesToPublish()).thenReturn(newArrayList(pendingCaseToPublishWith5LinesOfAddressOffence1,
+                pendingCaseToPublishWith5LinesOfAddressOffence2, pendingCaseToPublishWith4LinesOfAddressAndWithoutFirstName));
+
+        final JsonObject pendingCasesToPublish = service.findPendingCasesToPublish();
+
+        final List<JsonObject> pendingCaseToPublishWith5LinesOfAddressJsonPayload = pendingCasesToPublish.getJsonArray("pendingCases")
+                .getValuesAs(JsonObject.class);
+
+        containsAndAssertPendingCaseToPublish(
+                pendingCaseToPublishWith5LinesOfAddressJsonPayload,
+                caseId1,
+                "J Doe",
+                "London",
+                "Greater London",
+                "SE",
+                "TVL",
+                newArrayList(
+                        Pair.of("CA03014", "2018-11-11"),
+                        Pair.of("CA03014", "2018-12-15")));
+
+        containsAndAssertPendingCaseToPublish(
+                pendingCaseToPublishWith5LinesOfAddressJsonPayload,
+                caseId2,
+                "Doe",
+                "London",
+                "Greater London",
+                "S",
+                "TVL",
+                newArrayList(
+                        Pair.of("CA03014", "2018-08-02")));
+
     }
 
     @Test
@@ -538,6 +578,7 @@ public class CaseServiceTest {
         assertThat(service.getCase(CASE_ID).get(), equalTo(caseDetail));
     }
 
+
     @Test
     public void shouldReturnEmptyCaseWhenCaseDoesNotExist() {
         when(caseRepository.findBy(CASE_ID)).thenReturn(null);
@@ -592,5 +633,44 @@ public class CaseServiceTest {
         caseSearchResult.setDateOfBirth(DATE_OF_BIRTH);
         // not resulted
         return caseSearchResult;
+    }
+
+    private void containsAndAssertPendingCaseToPublish(final List<JsonObject> pendingCases,
+                                                       final UUID caseId,
+                                                       final String name,
+                                                       final String town,
+                                                       final String county,
+                                                       final String postcode,
+                                                       final String prosecutor,
+                                                       final List<Pair<String, String>> offencesData) {
+        final JsonObject pendingCaseToPublish = pendingCases.stream()
+                .filter(pendingCase -> caseId.toString().equals(pendingCase.getString("caseId")))
+                .findAny()
+                .orElse(null);
+
+        if (Objects.isNull(pendingCaseToPublish)) {
+            fail(format("Cannot find case with %s", caseId.toString()));
+        }
+
+        assertThat(pendingCaseToPublish.getString("caseId"), is(caseId.toString()));
+        assertThat(pendingCaseToPublish.getString("defendantName"), is(name));
+        assertThat(pendingCaseToPublish.getString("town"), is(town));
+        assertThat(pendingCaseToPublish.getString("county"), is(county));
+        assertThat(pendingCaseToPublish.getString("postcode"), is(postcode));
+        assertThat(pendingCaseToPublish.getString("prosecutorName"), is(prosecutor));
+        final List<JsonObject> offenceForPendingCaseToPublish
+                = pendingCaseToPublish.getJsonArray("offences").getValuesAs(JsonObject.class);
+
+        assertThat(offenceForPendingCaseToPublish.size(), is(offencesData.size()));
+        offencesData.forEach(offence -> assertContainsOffence(offenceForPendingCaseToPublish, offence.getLeft(), offence.getRight()));
+    }
+
+    private void assertContainsOffence(final List<JsonObject> offences, final String code, final String startDate) {
+        final Optional<JsonObject> offence = offences.stream().filter(e -> e.getString("offenceCode").equals(code)
+                && e.getString("offenceStartDate").equals(startDate)).findAny();
+
+        if (!offence.isPresent()) {
+            fail(format("%s does not contain offence with code %s and start date %s", offences.toString(), code, startDate));
+        }
     }
 }

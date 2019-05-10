@@ -140,7 +140,7 @@ public class ProsecutionCasesViewHelper {
 
         return new PersonDefendantView(
                 PersonDetailsView.builder()
-                        .withTitle(defendantPersonalDetails.getTitle().toUpperCase())
+                        .withTitle(DefendantTitleParser.parse(defendantPersonalDetails.getTitle()))
                         .withFirstName(defendantPersonalDetails.getFirstName())
                         .withLastName(defendantPersonalDetails.getLastName())
                         .withDateOfBirth(defendantPersonalDetails.getDateOfBirth())

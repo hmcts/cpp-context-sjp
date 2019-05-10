@@ -1,16 +1,30 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.core.Is.is;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
+import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.buildCaseDetails;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getSJPSessionJsonObject;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getSjpSessionId;
@@ -23,11 +37,14 @@ import uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService;
 import uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
+import java.util.List;
 import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -58,33 +75,30 @@ public class DecisionProcessorTest {
     private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
 
     @Test
-    public void shouldUpdateCaseState() {
+    public void shouldCompleteCase() {
+        final UUID caseId = randomUUID();
 
         final JsonEnvelope event = createEnvelope("public.resulting.referenced-decisions-saved",
-                Json.createObjectBuilder()
+                createObjectBuilder()
                         .add("caseId", caseId.toString())
                         .add("resultedOn", now().toString())
-                        .add("sjpSessionId", sjpSessionId.toString())
+                        .add("sjpSessionId", randomUUID().toString())
                         .build());
+
         caseDecisionListener.referencedDecisionsSaved(event);
 
-        verify(sjpService).getSessionDetails(any(), any());
-        verify(sjpService).getCaseDetails(any(), any());
-        verify(sender).send(any());
-
-        verify(caseStateService).caseCompleted(caseId, event.metadata());
+        verify(sender).send(argThat(
+                jsonEnvelope(
+                        withMetadataEnvelopedFrom(event).withName("sjp.command.complete-case"),
+                        payloadIsJson(
+                                withJsonPath("$.caseId", Matchers.equalTo(caseId.toString()))
+                        ))));
     }
 
     @Test
-    public void shouldUpdateCaseStateWithEnrichedJsonPayload() {
-
-        final JsonEnvelope event = createReferenceDecisionSavedEvent();
-        caseDecisionListener.referencedDecisionsSaved(event);
-
-        verify(sjpService).getSessionDetails(any(), any());
-        verify(sjpService).getCaseDetails(any(), any());
-        verify(sender).send(any());
-        verifyCaseStateService(event);
+    public void shouldHandleDecisionSavedEvents() {
+        Assert.assertThat(DecisionProcessor.class, isHandlerClass(EVENT_PROCESSOR)
+                .with(method("referencedDecisionsSaved").thatHandles("public.resulting.referenced-decisions-saved")));
     }
 
     @Test
@@ -101,14 +115,22 @@ public class DecisionProcessorTest {
         verify(sjpService).getSessionDetails(any(), any());
         verify(sjpService).getCaseDetails(any(), any());
         verify(converter).convert(any(), any(), any(), any());
-        verify(sender).send(envelopeCaptor.capture());
+        verify(sender, times(2)).send(envelopeCaptor.capture());
         verifyCaseStateService(event);
 
-        final JsonEnvelope envelope = envelopeCaptor.getValue();
-        final JsonObject generatedEventPayload = envelope.payloadAsJsonObject();
-        final JsonObject session = generatedEventPayload.getJsonObject("session");
-        assertThat("public.sjp.case-resulted", equalTo(envelope.metadata().name()));
-        assertThat(session.getString("sessionId"), equalTo(getSjpSessionId().toString()));
+        final List<JsonEnvelope> allValues = convertStreamToEventList(envelopeCaptor.getAllValues());
+        assertThat(allValues, containsInAnyOrder(
+                jsonEnvelope(
+                        withMetadataEnvelopedFrom(event).withName("sjp.command.complete-case"),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.caseId", is(notNullValue()))
+                                )
+                        )),
+                jsonEnvelope(
+                        metadata().withName("public.sjp.case-resulted"),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.session.sessionId", is(getSjpSessionId().toString())))
+                        ))));
     }
 
     private JsonObject buildConverterResponse() {
@@ -117,6 +139,10 @@ public class DecisionProcessorTest {
                         .add("sessionId", getSjpSessionId().toString()))
                 .build();
 
+    }
+
+    private List<JsonEnvelope> convertStreamToEventList(final List<JsonEnvelope> listOfStreams) {
+        return listOfStreams.stream().collect(toList());
     }
 
     private void verifyCaseStateService(final JsonEnvelope event) {

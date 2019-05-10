@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.util.UUID.fromString;
+import static javax.json.Json.createObjectBuilder;
 import static javax.json.JsonValue.NULL;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -55,6 +56,9 @@ public class DecisionProcessor {
         sender.send(enveloper.withMetadataFrom(envelope,
                 "public.sjp.case-resulted").
                 apply(jsonEnvelopeForResults));
+        sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.complete-case").apply(createObjectBuilder()
+                .add(CASE_ID, envelope.payloadAsJsonObject().getString(CASE_ID))
+                .build()));
     }
 
     private JsonObject buildJsonEnvelopeForCCResults(final UUID caseId, final JsonEnvelope envelope, final CaseDetails caseDetails, final JsonObject sjpSessionPayload) {

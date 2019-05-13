@@ -7,7 +7,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public final class DefendantTitleParser {
 
-  private static final List<String> VALID_TITLES = asList("MR",  "MS", "MISS", "MRS", "CO");
+  private static final List<String> VALID_TITLES = asList("MR",  "MS", "MISS", "MRS");
   private static final String DEFAULT_TITLE = "MR";
 
   private DefendantTitleParser(){

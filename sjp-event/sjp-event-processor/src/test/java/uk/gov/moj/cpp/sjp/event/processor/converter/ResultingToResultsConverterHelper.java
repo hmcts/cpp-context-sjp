@@ -102,7 +102,7 @@ public class ResultingToResultsConverterHelper {
     private static final String VERDICT = "PSJ";
     private static final Integer accountDivisionCode = nextInt(1, 100);
     private static final Integer enforcingCourtCode = nextInt(100, 200);
-    private static final String COUNTRY_CJS_CODE = "1";
+    private static final String COUNTRY_ISO_CODE = "1";
     private static final String LJA = "LJA";
     private static final String OFFENCE_LOCATION = "Cardiff";
     private static final UUID RESULT_ID = randomUUID();
@@ -367,7 +367,7 @@ public class ResultingToResultsConverterHelper {
 
     public static Optional<JsonObject> getCountryNationality() {
         return Optional.of(createObjectBuilder()
-                .add("cjsCode", COUNTRY_CJS_CODE)
+                .add("isoCode", COUNTRY_ISO_CODE)
                 .build());
     }
 
@@ -379,7 +379,7 @@ public class ResultingToResultsConverterHelper {
         return CASE_ID;
     }
 
-    public static String getCountryCjsCode() {
-        return COUNTRY_CJS_CODE;
+    public static String getCountryIsoCode() {
+        return COUNTRY_ISO_CODE;
     }
 }

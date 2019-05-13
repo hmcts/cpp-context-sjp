@@ -127,7 +127,7 @@ public class ResultingToResultsConverter {
             final String countryCJSCode = defendantSelfDefinedInformationOptional
                     .map(selfDefinedInformation -> selfDefinedInformation.getString("nationality", null))
                     .flatMap(selfDefinedNationality -> referenceDataService.getNationality(selfDefinedNationality, emptyEnvelope))
-                    .map(referenceDataNationality -> referenceDataNationality.getString("cjsCode")) // cjs country code
+                    .map(referenceDataNationality -> referenceDataNationality.getString("isoCode"))
                     .orElse(UNKNOWN);
 
             arrayBuilder.add(createObjectBuilder()

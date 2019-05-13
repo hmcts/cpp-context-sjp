@@ -12,7 +12,7 @@ import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsCon
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.buildSjpSession;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCaseFileDefendantDetails;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCaseId;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCountryCjsCode;
+import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCountryIsoCode;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCountryNationality;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getEmptyEnvelop;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getReferenceDecisionSaved;
@@ -108,9 +108,9 @@ public class ResultingToResultsConverterTest {
 
     @Test
     public void shouldBuildIndividualDefendant() {
-        final JsonObject individualDefendant = converter.buildIndividualDefendant(buildDefendant(), getCountryCjsCode());
+        final JsonObject individualDefendant = converter.buildIndividualDefendant(buildDefendant(), getCountryIsoCode());
         final JsonObject person = individualDefendant.getJsonObject("basePersonDetails");
-        assertEquals(getCountryCjsCode(), individualDefendant.getString("personStatedNationality"));
+        assertEquals(getCountryIsoCode(), individualDefendant.getString("personStatedNationality"));
         verifyPerson(person);
 
     }

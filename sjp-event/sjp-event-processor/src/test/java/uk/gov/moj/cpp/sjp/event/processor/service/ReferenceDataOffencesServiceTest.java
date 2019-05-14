@@ -20,6 +20,8 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
+import java.util.UUID;
+
 import javax.json.JsonObject;
 
 import org.junit.Test;
@@ -60,9 +62,34 @@ public class ReferenceDataOffencesServiceTest {
         assertThat(offences, is(responsePayload));
     }
 
+    @Test
+    public void shouldReturnOffence() {
+        final UUID offenceId = UUID.randomUUID();
+        final JsonObject responsePayload = createObjectBuilder().add("offenceId", offenceId.toString()).build();
+        final JsonEnvelope queryResponse = envelopeFrom(
+                metadataWithRandomUUID("referencedataoffences.query.offence"),
+                responsePayload);
+
+        final Offence offence = Offence.offence()
+                .withId(offenceId)
+                .build();
+        when(requestOffence(offenceId.toString())).thenReturn(queryResponse);
+
+        final JsonObject offenceObject = referenceDataOffencesService.findOffence(offence, envelope);
+        assertThat(offenceObject, is(responsePayload));
+    }
+
+    private Object requestOffence(final String offenceId) {
+        return requester.requestAsAdmin(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(envelope).withName("referencedataoffences.query.offence"),
+                payloadIsJson(withJsonPath("$.offenceId", equalTo(offenceId))))));
+    }
+
     private Object requestOffences(final String cjsCode) {
         return requester.requestAsAdmin(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("referencedataoffences.query.offences-list"),
                 payloadIsJson(withJsonPath("$.cjsoffencecode", equalTo(cjsCode))))));
     }
+
+
 }

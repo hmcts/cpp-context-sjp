@@ -105,6 +105,7 @@ public class ResultingToResultsConverterHelper {
     private static final String COUNTRY_ISO_CODE = "1";
     private static final String LJA = "LJA";
     private static final String OFFENCE_LOCATION = "Cardiff";
+    private static final String MODE_OF_TRIAL = "SIMP";
     private static final UUID RESULT_ID = randomUUID();
     private static final UUID REFERRAL_REASON_ID = randomUUID();
     private static final UUID HEARING_TYPE = randomUUID();
@@ -370,6 +371,18 @@ public class ResultingToResultsConverterHelper {
                 .add("isoCode", COUNTRY_ISO_CODE)
                 .build());
     }
+
+    public static JsonObject getReferenceDataOffence() {
+        return createObjectBuilder()
+                .add("offenceId" , OFFENCE_ID.toString())
+                .add("cjsOffenceCode" , CJS_CODE )
+                .add("modeOfTrial", MODE_OF_TRIAL)
+                .add( "offenceStartDate",OFFENCE_START_DATE)
+                .add("offenceEndDate", OFFENCE_END_DATE).build();
+
+    }
+
+
 
     public static UUID getSjpSessionId() {
         return SJP_SESSION_ID;

@@ -30,4 +30,14 @@ public class ReferenceOffencesDataService {
         final JsonEnvelope response = requester.request(request);
         return response.payloadAsJsonObject().getJsonArray("offences").getJsonObject(0);
     }
+
+    public JsonObject getOffenceReferenceDataByOffenceId(final JsonEnvelope envelope, final String offenceId) {
+        final JsonEnvelope request = enveloper
+                .withMetadataFrom(envelope, "referencedataoffences.query.offence")
+                .apply(Json.createObjectBuilder()
+                        .add("offenceId", offenceId)
+                        .build());
+        final JsonEnvelope response = requester.request(request);
+        return response.payloadAsJsonObject();
+    }
 }

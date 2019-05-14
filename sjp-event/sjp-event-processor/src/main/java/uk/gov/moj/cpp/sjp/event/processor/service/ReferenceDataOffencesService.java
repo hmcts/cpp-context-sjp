@@ -27,4 +27,11 @@ public class ReferenceDataOffencesService {
         final JsonEnvelope response = requester.requestAsAdmin(request);
         return response.payloadAsJsonObject();
     }
+
+    public JsonObject findOffence(final Offence offence, final JsonEnvelope envelope) {
+        final JsonObject payload = createObjectBuilder().add("offenceId", offence.getId().toString()).build();
+        final JsonEnvelope request =  enveloper.withMetadataFrom(envelope, "referencedataoffences.query.offence").apply(payload);
+        final JsonEnvelope response = requester.requestAsAdmin(request);
+        return response.payloadAsJsonObject();
+    }
 }

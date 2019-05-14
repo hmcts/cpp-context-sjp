@@ -3,6 +3,7 @@ package uk.gov.moj.sjp.it.test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
@@ -20,10 +21,12 @@ import org.junit.Test;
 public class CompleteCaseIT extends BaseIntegrationTest {
 
     private UUID caseId = UUID.randomUUID();
+    private UUID offenceId = UUID.randomUUID();
 
     @Before
     public void setUp() {
         stubRemoveAssignmentCommand();
+        stubQueryOffenceById(offenceId);
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseId);
 
         final EventListener eventListener = new EventListener();

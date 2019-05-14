@@ -29,6 +29,8 @@ import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAsync;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
@@ -43,7 +45,6 @@ import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
-import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
@@ -71,12 +72,14 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
             tvlPiaCasePayloadBuilder, tvlPleadedGuiltyRequestHearingCasePayloadBuilder, dvlaPiaCasePayloadBuilder, dvlaPleadedNotGuiltyCasePayloadBuilder;
 
     private UUID userId;
+    private  UUID offenceId = UUID.randomUUID();
 
     @Before
     public void setUp() throws Exception {
 
-        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
-        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(NON_LONDON_COURT_HOUSE_OU_CODE, NON_LONDON_LJA_NATIONAL_COURT_CODE);
+        stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
+        stubCourtByCourtHouseOUCodeQuery(NON_LONDON_COURT_HOUSE_OU_CODE, NON_LONDON_LJA_NATIONAL_COURT_CODE);
+        stubQueryOffenceById(offenceId);
         AssignmentStub.stubAddAssignmentCommand();
         AssignmentStub.stubRemoveAssignmentCommand();
         SchedulingStub.stubStartSjpSessionCommand();

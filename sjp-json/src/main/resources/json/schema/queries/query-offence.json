@@ -9,6 +9,9 @@
     "offenceCode": {
       "type": "string"
     },
+    "modeOfTrial" : {
+      "type": "string"
+    },
     "plea": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-type.json"
     },

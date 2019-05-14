@@ -12,6 +12,8 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
+import java.util.UUID;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 
@@ -70,5 +72,26 @@ public class ReferenceOffencesDataServiceTest {
         assertEquals(requestPayload.getString("date"), date);
 
         assertEquals(result, responsePayload.getJsonArray("offences").getJsonObject(0));
+    }
+
+    @Test
+    public void shouldGetOffenceReferenceDataByOffenceId() {
+        final JsonEnvelope queryJsonEnvelope = envelope()
+                .with(metadataWithRandomUUID("sjp.query.case-by-urn-postcode")).build();
+
+        final UUID offenceId = UUID.randomUUID();
+        final JsonObject responsePayload = Json.createObjectBuilder().add("offenceId", offenceId.toString()).build();
+
+        when(requester.request(any(JsonEnvelope.class))).thenReturn(response);
+        when(response.payloadAsJsonObject()).thenReturn(responsePayload);
+
+        final JsonObject result = referenceOffencesDataService.getOffenceReferenceDataByOffenceId(queryJsonEnvelope, offenceId.toString());
+
+        verify(requester).request(requestCaptor.capture());
+        final JsonObject requestPayload = requestCaptor.getValue().payloadAsJsonObject();
+        assertEquals(requestPayload.getString("offenceId"), offenceId.toString());
+        assertEquals(result, responsePayload);
+
+
     }
 }

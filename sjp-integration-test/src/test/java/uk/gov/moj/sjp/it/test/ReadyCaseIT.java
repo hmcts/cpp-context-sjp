@@ -16,9 +16,9 @@ import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaultsUntilResponseIsJson;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
@@ -40,6 +40,7 @@ import java.util.UUID;
 import com.jayway.jsonpath.ReadContext;
 import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
+import org.junit.Before;
 import org.junit.Test;
 
 public class ReadyCaseIT extends BaseIntegrationTest {
@@ -49,6 +50,12 @@ public class ReadyCaseIT extends BaseIntegrationTest {
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private final UUID caseId = randomUUID();
     private final UUID offenceId = randomUUID();
+
+    @Before
+    public void setUp() throws Exception {
+
+        stubQueryOffenceById(offenceId);
+    }
 
     @Test
     public void shouldChangeCaseReadinessWhenCaseAfterNoticeEndDate() {

@@ -9,6 +9,7 @@ import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAddAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
@@ -32,13 +33,16 @@ public class AssignmentReplicationIT extends BaseIntegrationTest {
     private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
 
     private UUID caseId;
+    private UUID offenceId;
 
     @Before
     public void setUp() throws Exception {
         databaseCleaner.cleanAll();
         caseId = UUID.randomUUID();
+        offenceId = UUID.randomUUID();
 
         stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
+        stubQueryOffenceById(offenceId);
         stubGetEmptyAssignmentsByDomainObjectId(caseId);
         stubGetCaseDecisionsWithNoDecision(caseId);
         stubAddAssignmentCommand();

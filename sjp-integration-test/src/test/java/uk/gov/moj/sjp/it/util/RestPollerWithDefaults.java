@@ -17,8 +17,9 @@ import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.justice.services.test.utils.core.http.RestPoller;
 
+import javax.json.JsonObject;
+
 import com.jayway.jsonpath.ReadContext;
-import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 
 public class RestPollerWithDefaults {
@@ -36,7 +37,7 @@ public class RestPollerWithDefaults {
                 .pollInterval(INTERVAL_IN_MILLIS, MILLISECONDS);
     }
 
-    public static JsonPath pollWithDefaultsUntilResponseIsJson(final RequestParams requestParams, final Matcher<? super ReadContext> matcher) {
+    public static JsonObject pollWithDefaultsUntilResponseIsJson(final RequestParams requestParams, final Matcher<? super ReadContext> matcher) {
         final ResponseData responseData = pollWithDefaults(requestParams)
                 .until(anyOf(
                         allOf(status().is(OK), payload().isJson(matcher)),
@@ -48,7 +49,7 @@ public class RestPollerWithDefaults {
             fail("Polling interrupted, please fix the error before continue. Status code: " + responseData.getStatus());
         }
 
-        return new JsonPath(responseData.getPayload());
+        return JsonHelper.getJsonObject(responseData.getPayload());
     }
 
     private RestPollerWithDefaults() {

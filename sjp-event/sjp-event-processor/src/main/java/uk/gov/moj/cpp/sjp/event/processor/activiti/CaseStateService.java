@@ -54,7 +54,7 @@ public class CaseStateService {
     public static final String PROCESS_MIGRATION_VARIABLE = "processMigration";
     public static final String CREATE_BY_PROCESS_MIGRATION_VARIABLE = "createdByProcessMigration";
     public static final String CASE_ADJOURNED_VARIABLE = "caseAdjourned";
-    static final String CASE_ADJOURNED_DATE = "adjournedTo";
+    public static final String CASE_ADJOURNED_DATE = "adjournedTo";
 
     private ActivitiService activitiService;
 

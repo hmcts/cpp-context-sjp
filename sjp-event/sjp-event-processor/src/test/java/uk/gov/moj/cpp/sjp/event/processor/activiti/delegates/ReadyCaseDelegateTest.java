@@ -2,12 +2,14 @@ package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.time.LocalDateTime.now;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
@@ -21,8 +23,10 @@ import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.WITHD
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.event.processor.activiti.ExpectedDateReadyCalculator;
 import uk.gov.moj.cpp.sjp.event.processor.activiti.ReadyCaseCalculator;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -39,6 +43,9 @@ public class ReadyCaseDelegateTest extends AbstractCaseDelegateTest {
     @Mock
     private ReadyCaseCalculator readyCaseCalculator;
 
+    @Mock
+    private ExpectedDateReadyCalculator expectedDateReadyCalculator;
+
     @InjectMocks
     private ReadyCaseDelegate readyCaseDelegate;
 
@@ -53,9 +60,12 @@ public class ReadyCaseDelegateTest extends AbstractCaseDelegateTest {
 
     @Test
     public void shouldSendUnmarkCaseReadyCommandWhenCaseIsNotReady() {
+        final LocalDateTime expectedDateReady = now();
         // GIVEN
         when(readyCaseCalculator.getReasonIfReady(anyBoolean(), anyBoolean(), anyBoolean(), any(PleaType.class), anyBoolean()))
                 .thenReturn(Optional.empty());
+
+        when(expectedDateReadyCalculator.calculateExpectedDateReady(delegateExecution)).thenReturn(expectedDateReady);
 
         // WHEN
         readyCaseDelegate.execute(delegateExecution);
@@ -66,7 +76,10 @@ public class ReadyCaseDelegateTest extends AbstractCaseDelegateTest {
         verify(sender).sendAsAdmin(argThat(
                 jsonEnvelope(
                         metadata().of(metadata).withName("sjp.command.unmark-case-ready-for-decision"),
-                        payloadIsJson(withJsonPath("$.caseId", equalTo(caseId.toString()))))));
+                        payloadIsJson(allOf(
+                                withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                withJsonPath("$.expectedDateReady", equalTo(expectedDateReady.toLocalDate().toString()))
+                        )))));
 
         verifyGetVariableCalls();
         verify(delegateExecution).setVariable("isReady", false);
@@ -95,6 +108,7 @@ public class ReadyCaseDelegateTest extends AbstractCaseDelegateTest {
 
         verifyGetVariableCalls();
         verify(delegateExecution).setVariable("isReady", true);
+        verify(expectedDateReadyCalculator, never()).calculateExpectedDateReady(any());
     }
 
     @Test
@@ -108,9 +122,11 @@ public class ReadyCaseDelegateTest extends AbstractCaseDelegateTest {
     }
 
     private void callDelegateWithoutPleaReadyAndWith(final PleaType pleaType) {
+        final LocalDateTime expectedDateReady = now();
         // GIVEN
         when(readyCaseCalculator.getReasonIfReady(anyBoolean(), anyBoolean(), anyBoolean(), any(PleaType.class), anyBoolean()))
                 .thenReturn(Optional.empty());
+        when(expectedDateReadyCalculator.calculateExpectedDateReady(delegateExecution)).thenReturn(expectedDateReady);
         when(delegateExecution.getVariable(PLEA_READY_VARIABLE)).thenReturn(null);
         when(delegateExecution.getVariable(PLEA_TYPE_VARIABLE, String.class))
                 .thenReturn(Optional.ofNullable(pleaType).map(PleaType::name).orElse(null));

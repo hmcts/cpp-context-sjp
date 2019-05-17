@@ -30,6 +30,7 @@ public abstract class BaseIntegrationTest {
     @BeforeClass
     public static void setup() {
         WireMock.resetAllRequests();
+        WireMock.reset();
         InternalEndpointMockUtils.stubPingFor("usersgroups-service");
         stubAllGroupsForUser();
         stubForUserDetails(USER_ID, "ALL");

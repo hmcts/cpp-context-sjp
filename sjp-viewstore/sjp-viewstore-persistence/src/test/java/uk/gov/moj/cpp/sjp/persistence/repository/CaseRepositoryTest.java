@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 
@@ -23,7 +24,6 @@ import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
-import uk.gov.moj.cpp.sjp.persistence.entity.AwaitingCase;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -203,6 +203,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         caseRepository.completeCase(VALID_CASE_ID_1);
         CaseDetail actualCase = caseRepository.findBy(VALID_CASE_ID_1);
         assertTrue("CaseAggregate should be completed", actualCase.isCompleted());
+        assertNull(actualCase.getAdjournedTo());
     }
 
     @Test
@@ -362,20 +363,6 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         final CaseDetail actualCase = caseRepository.findByUrnPostcode("12345678A", postcode1);
 
         //then throws exception
-    }
-
-    @Test
-    public void shouldGetAwaitingSjpCases() {
-        final int limit = 2;
-
-        final List<AwaitingCase> awaitingSjpCases = caseRepository.findAwaitingSjpCases(limit);
-
-        assertThat(awaitingSjpCases, hasSize(limit));
-        assertThat(awaitingSjpCases.get(0).getDefendantLastName(), equalTo(
-                CASES.get(VALID_CASE_ID_3).getDefendant().getPersonalDetails().getLastName()));
-        assertThat(awaitingSjpCases.get(1).getDefendantLastName(), equalTo(
-                CASES.get(VALID_CASE_ID_2).getDefendant().getPersonalDetails().getLastName()));
-        assertThat(awaitingSjpCases.get(1).getOffenceCode(), equalTo(OFFENCE_CODE));
     }
 
     private void isCaseNotPendingWithdrawal(CaseDetail caseDetail) {

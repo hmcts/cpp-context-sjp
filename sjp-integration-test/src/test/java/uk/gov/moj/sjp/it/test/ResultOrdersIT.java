@@ -25,6 +25,7 @@ import javax.json.Json;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class ResultOrdersIT extends BaseIntegrationTest {
@@ -51,6 +52,7 @@ public class ResultOrdersIT extends BaseIntegrationTest {
     }
 
     @Test
+    @Ignore("To be removed as part of - ATCM-4077, unstable test for not needed functionality")
     public void whenGetResultOrders() {
         //when
         final LocalDate FROM_DATE = LocalDate.now(ZoneOffset.UTC);

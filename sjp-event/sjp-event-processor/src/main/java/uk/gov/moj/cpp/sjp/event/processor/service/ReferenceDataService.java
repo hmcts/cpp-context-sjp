@@ -12,6 +12,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -61,6 +62,23 @@ public class ReferenceDataService {
         final JsonEnvelope request = enveloper.withMetadataFrom(envelope, "referencedata.query.prosecutors").apply(payload);
         final JsonEnvelope response = requester.requestAsAdmin(request);
         return response.payloadAsJsonObject();
+    }
+
+    public String getProsecutor(final String prosecutingAuthority, final Boolean isWelsh, final JsonEnvelope envelope) {
+        final JsonObject prosecutor = this.getProsecutor(ProsecutingAuthority.valueOf(prosecutingAuthority), envelope)
+                .getJsonArray("prosecutors")
+                .getValuesAs(JsonObject.class)
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+        if (Objects.isNull(prosecutor)) {
+            return prosecutingAuthority;
+        }
+
+        return isWelsh
+                ? prosecutor.getString("nameWelsh", prosecutor.getString("fullName", prosecutingAuthority))
+                : prosecutor.getString("fullName", prosecutingAuthority);
     }
 
     public JsonObject getReferralReasons(final JsonEnvelope envelope) {

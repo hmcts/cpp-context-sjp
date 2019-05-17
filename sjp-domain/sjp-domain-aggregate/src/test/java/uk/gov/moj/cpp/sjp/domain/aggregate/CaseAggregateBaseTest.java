@@ -6,6 +6,7 @@ import static java.lang.System.lineSeparator;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.fail;
+import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
@@ -61,6 +62,7 @@ public abstract class CaseAggregateBaseTest {
                 aCase.getCosts(),
                 aCase.getPostingDate(),
                 aCase.getDefendant(),
+                aCase.getPostingDate().plusDays(NUMBER_DAYS_WAITING_FOR_PLEA),
                 clock.now());
     }
 
@@ -123,7 +125,9 @@ public abstract class CaseAggregateBaseTest {
         /**
          * List all the events after the aggregate execution
          */
+        //TODO FIX-ME ATCM-4334
         void thenExpect(final Object... items) {
+
             if (!new ReflectionEquals(events.toArray()).matches(items)) {
                 fail(buildErrorMessage());
             }

@@ -1,0 +1,18 @@
+{
+  "_metadata": {
+    "name": "sjp.events.case-note-added"
+  },
+  "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "decisionId": "5ca05d1c-9ce1-4f76-8aa7-736b3d69dd41",
+  "note": {
+    "id": "19201bd7-ae14-4664-96eb-0cbe8e883260",
+    "text": "wheelchair access required",
+    "type": "LISTING",
+    "addedAt": "2018-06-01T09:00:00.000Z"
+  },
+  "author": {
+    "userId": "a085e359-6069-4694-8820-7810e7dfe762",
+    "firstName": "Erica",
+    "lastName": "Wilson"
+  }
+}

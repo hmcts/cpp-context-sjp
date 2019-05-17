@@ -10,6 +10,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonObject;
 
 public class ReferenceDataOffencesService {
@@ -30,8 +31,19 @@ public class ReferenceDataOffencesService {
 
     public JsonObject findOffence(final Offence offence, final JsonEnvelope envelope) {
         final JsonObject payload = createObjectBuilder().add("offenceId", offence.getId().toString()).build();
-        final JsonEnvelope request =  enveloper.withMetadataFrom(envelope, "referencedataoffences.query.offence").apply(payload);
+        final JsonEnvelope request = enveloper.withMetadataFrom(envelope, "referencedataoffences.query.offence").apply(payload);
         final JsonEnvelope response = requester.requestAsAdmin(request);
         return response.payloadAsJsonObject();
+    }
+
+    public JsonObject getOffenceReferenceData(final JsonEnvelope envelope, final String offenceCode, final String date) {
+        final JsonEnvelope request = enveloper
+                .withMetadataFrom(envelope, "referencedataoffences.query.offences-list")
+                .apply(Json.createObjectBuilder()
+                        .add("cjsoffencecode", offenceCode)
+                        .add("date", date)
+                        .build());
+        final JsonEnvelope response = requester.request(request);
+        return response.payloadAsJsonObject().getJsonArray("offences").getJsonObject(0);
     }
 }

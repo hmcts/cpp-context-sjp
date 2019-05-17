@@ -19,6 +19,7 @@ import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
 import uk.gov.moj.cpp.sjp.query.view.service.DefendantService;
 import uk.gov.moj.cpp.sjp.query.view.service.EmployerService;
 import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
+import uk.gov.moj.cpp.sjp.query.view.service.TransparencyReportService;
 import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
 
 import java.time.LocalDate;
@@ -43,13 +44,17 @@ public class SjpQueryView {
     private static final String NAME_RESPONSE_CASES_SEARCH = "sjp.query.cases-search-response";
     private static final String NAME_RESPONSE_CASES_SEARCH_BY_MATERIAL_ID = "sjp.query.cases-search-by-material-id-response";
     private static final String NAME_RESPONSE_CASE_DOCUMENTS = "sjp.query.case-documents-response";
-    private static final String NAME_RESPONSE_AWAITING_CASES = "sjp.query.awaiting-cases-response";
+    private static final String NAME_RESPONSE_PENDING_CASES = "sjp.query.pending-cases";
+    private static final String TRANSPARENCY_REPORT_METADATA_RESPONSE_NAME = "sjp.query.transparency-report-metadata";
 
     @Inject
     private CaseService caseService;
 
     @Inject
     private DefendantService defendantService;
+
+    @Inject
+    private TransparencyReportService transparencyReportService;
 
     @Inject
     private CaseRepository caseRepository;
@@ -151,10 +156,10 @@ public class SjpQueryView {
 
     }
 
-    @Handles("sjp.query.awaiting-cases")
-    public JsonEnvelope getAwaitingCases(final JsonEnvelope envelope) {
-        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_AWAITING_CASES).apply(
-                caseService.findAwaitingCases());
+    @Handles("sjp.query.pending-cases")
+    public JsonEnvelope getPendingCasesToPublish(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_PENDING_CASES).apply(
+                caseService.findPendingCasesToPublish());
     }
 
     @Handles("sjp.query.result-orders")
@@ -203,6 +208,12 @@ public class SjpQueryView {
     public JsonEnvelope findDefendantDetailUpdates(JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, "sjp.query.defendant-details-updates")
                 .apply(defendantService.findDefendantDetailUpdates(envelope));
+    }
+
+    @Handles("sjp.query.transparency-report-metadata")
+    public JsonEnvelope getTransparencyReportMetadata(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, TRANSPARENCY_REPORT_METADATA_RESPONSE_NAME).apply(
+                transparencyReportService.getMetaData());
     }
 
     private static String extract(JsonEnvelope envelope, String fieldName) {

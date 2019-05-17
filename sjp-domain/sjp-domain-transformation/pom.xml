@@ -17,6 +17,9 @@
         <module>sjp-domain-transformation-plea-updated</module>
         <module>sjp-domain-transformation-defendant-updated-date</module>
         <module>sjp-domain-transformation-date-created</module>
+        <module>sjp-domain-transformation-notes-to-case-notes</module>
+        <module>sjp-domain-transformation-offence-date</module>
+        <module>sjp-domain-transformation-case-assignment-deleted-to-case-unassigned</module>
     </modules>
 
 </project>

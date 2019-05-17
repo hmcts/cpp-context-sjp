@@ -1,0 +1,12 @@
+{
+  "referralReasonId": "8cda35cc-8073-41d7-a160-609bfe362f47",
+  "hearingTypeId": "1b5fbb45-fe56-4405-ac53-d13802394150",
+  "estimatedHearingDuration": 30,
+  "requestedAt": "2018-06-01T09:00:00Z",
+  "listingNotes": {
+    "id": "7dfcf915-adb2-4ce0-9a81-bf45072f7bac",
+    "text": "test note",
+    "type": "DECISION",
+    "addedAt": "2018-06-01T09:00:00.000Z"
+  }
+}

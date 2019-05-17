@@ -17,6 +17,8 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static uk.gov.justice.json.schemas.domains.sjp.ListingDetails.listingDetails;
+import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 import static uk.gov.moj.cpp.sjp.domain.plea.EmploymentStatus.EMPLOYED;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_ADDRESS;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_CONTACT_DETAILS;
@@ -25,6 +27,8 @@ import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_LAST_NAME;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_NI_NUMBER;
 
+import uk.gov.justice.json.schemas.domains.sjp.ListingDetails;
+import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
@@ -355,22 +359,26 @@ public class PleadOnlineTest {
         assertThat(((CaseUpdateRejected) events.get(0)).getReason(),
                 is(CaseUpdateRejected.RejectReason.CASE_COMPLETED));
     }
+
     @Test
     public void shouldNotStoreOnlinePleaWhenCaseStatusIsReferredToCourtForHearing() {
         final UUID caseId = randomUUID();
         final UUID sessionId = randomUUID();
-        final UUID referralReasonId = randomUUID();
-        final UUID hearingTypeId = randomUUID();
-        final int estimatedHearingDuration = 60;
+        final UUID decisionId = randomUUID();
+        final User legalAdviser = user().build();
+        final ListingDetails listingDetails = listingDetails()
+                .withReferralReasonId(randomUUID())
+                .withHearingTypeId(randomUUID())
+                .withEstimatedHearingDuration(60)
+                .withRequestedAt(now)
+                .build();
 
         //given
         caseAggregate.referCaseForCourtHearing(caseId,
+                decisionId,
                 sessionId,
-                referralReasonId,
-                hearingTypeId,
-                estimatedHearingDuration,
-                "listing notes",
-                ZonedDateTime.now());
+                legalAdviser,
+                listingDetails);
 
         //when
         final UpdatePlea updatePlea = new UpdatePlea(caseId, offenceId, PleaType.NOT_GUILTY, "welsh", false);
@@ -525,7 +533,7 @@ public class PleadOnlineTest {
 
         assertThat(events, not(emptyCollectionOf(Object.class)));
         events.forEach(e -> {
-            if(e instanceof PleaUpdated) {
+            if (e instanceof PleaUpdated) {
                 assertThat(pleaUpdated.getCaseId(), equalTo(caseId));
                 assertThat(pleaUpdated.getPleaMethod(), equalTo(PleaMethod.ONLINE));
                 assertThat(pleaUpdated.getUpdatedDate(), equalTo(createDate));
@@ -534,7 +542,7 @@ public class PleadOnlineTest {
                 assertThat(firstOffence.getId(), equalTo(pleaUpdated.getOffenceId()));
                 assertThat(firstOffence.getMitigation(), equalTo(pleaUpdated.getMitigation()));
                 assertThat(firstOffence.getNotGuiltyBecause(), equalTo(pleaUpdated.getNotGuiltyBecause()));
-            } else if(e instanceof FinancialMeansUpdated) {
+            } else if (e instanceof FinancialMeansUpdated) {
                 final FinancialMeansUpdated financialMeansUpdated = (FinancialMeansUpdated) e;
 
                 assertThat(financialMeansUpdated.getDefendantId(), equalTo(defendantId));
@@ -545,7 +553,7 @@ public class PleadOnlineTest {
                 assertThat(financialMeansUpdated.getUpdatedDate(), equalTo(createDate));
                 assertThat(financialMeansUpdated.isUpdatedByOnlinePlea(), equalTo(updateByOnlinePlea));
                 assertTrue(financialMeansUpdated.isUpdatedByOnlinePlea());
-            } else if(e instanceof EmployerUpdated) {
+            } else if (e instanceof EmployerUpdated) {
                 final EmployerUpdated employerUpdated = (EmployerUpdated) e;
 
                 assertThat(employerUpdated.getDefendantId(), equalTo(defendantId));
@@ -556,12 +564,12 @@ public class PleadOnlineTest {
                 assertThat(employerUpdated.getUpdatedDate(), equalTo(createDate));
                 assertThat(employerUpdated.isUpdatedByOnlinePlea(), equalTo(updateByOnlinePlea));
                 assertTrue(employerUpdated.isUpdatedByOnlinePlea());
-            } else if(e instanceof EmploymentStatusUpdated) {
+            } else if (e instanceof EmploymentStatusUpdated) {
                 final EmploymentStatusUpdated employmentStatusUpdated = (EmploymentStatusUpdated) e;
 
                 assertThat(employmentStatusUpdated.getDefendantId(), equalTo(defendantId));
                 assertThat(employmentStatusUpdated.getEmploymentStatus(), equalTo(EMPLOYED.name()));
-            } else if(e instanceof InterpreterUpdatedForDefendant) {
+            } else if (e instanceof InterpreterUpdatedForDefendant) {
                 final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant = (InterpreterUpdatedForDefendant) e;
 
                 assertThat(interpreterUpdatedForDefendant.getCaseId(), equalTo(caseId));
@@ -573,7 +581,7 @@ public class PleadOnlineTest {
 
                 // if contains InterpreterUpdatedForDefendant then contains also HearingLanguagePreferenceUpdatedForDefendant
                 assertThat(events, hasItem(instanceOf(HearingLanguagePreferenceUpdatedForDefendant.class)));
-            } else if (e instanceof HearingLanguagePreferenceUpdatedForDefendant){
+            } else if (e instanceof HearingLanguagePreferenceUpdatedForDefendant) {
                 final HearingLanguagePreferenceUpdatedForDefendant HearingLanguagePreferenceUpdatedForDefendant = (HearingLanguagePreferenceUpdatedForDefendant) e;
 
                 assertThat(HearingLanguagePreferenceUpdatedForDefendant.getCaseId(), equalTo(caseId));
@@ -583,7 +591,7 @@ public class PleadOnlineTest {
 
                 // if contains InterpreterUpdatedForDefendant then contains also HearingLanguagePreferenceUpdatedForDefendant
                 assertThat(events, hasItem(instanceOf(InterpreterUpdatedForDefendant.class)));
-            } else if(e instanceof TrialRequested) {
+            } else if (e instanceof TrialRequested) {
                 final TrialRequested trialRequested = (TrialRequested) e;
 
                 assertThat(caseId, equalTo(trialRequested.getCaseId()));
@@ -591,7 +599,7 @@ public class PleadOnlineTest {
                 assertThat(trialRequested.getWitnessDetails(), equalTo(pleadOnline.getWitnessDetails()));
                 assertThat(trialRequested.getWitnessDispute(), equalTo(pleadOnline.getWitnessDispute()));
                 assertThat(createDate, equalTo(trialRequested.getUpdatedDate()));
-            } else if(e instanceof DefendantDetailsUpdated) {
+            } else if (e instanceof DefendantDetailsUpdated) {
                 final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) e;
 
                 final PersonalDetails pleadOnlinePersonalDetails = pleadOnline.getPersonalDetails();
@@ -604,13 +612,13 @@ public class PleadOnlineTest {
                 assertThat(defendantDetailsUpdated.getNationalInsuranceNumber(), equalTo(pleadOnlinePersonalDetails.getNationalInsuranceNumber()));
                 assertThat(defendantDetailsUpdated.getAddress(), equalTo(pleadOnlinePersonalDetails.getAddress()));
                 assertThat(defendantDetailsUpdated.getContactDetails(), equalTo(pleadOnlinePersonalDetails.getContactDetails()));
-            } else if(e instanceof DefendantDateOfBirthUpdated) {
+            } else if (e instanceof DefendantDateOfBirthUpdated) {
                 final DefendantDateOfBirthUpdated defendantDateOfBirthUpdated = (DefendantDateOfBirthUpdated) e;
 
                 assertThat(defendantDateOfBirthUpdated.getCaseId(), equalTo(caseId));
                 assertThat(defendantDateOfBirthUpdated.getNewDateOfBirth(), equalTo(pleadOnline.getPersonalDetails().getDateOfBirth()));
                 assertThat(defendantDateOfBirthUpdated.getOldDateOfBirth(), not(equalTo(defendantDateOfBirthUpdated.getNewDateOfBirth())));
-            } else if(e instanceof DefendantPersonalNameUpdated) {
+            } else if (e instanceof DefendantPersonalNameUpdated) {
                 final DefendantPersonalNameUpdated defendantPersonalNameUpdated = (DefendantPersonalNameUpdated) e;
 
                 assertThat(defendantPersonalNameUpdated.getCaseId(), equalTo(caseId));
@@ -621,13 +629,13 @@ public class PleadOnlineTest {
                                 pleadOnline.getPersonalDetails().getLastName()
                         )));
                 assertThat(defendantPersonalNameUpdated.getOldPersonalName(), not(equalTo(defendantPersonalNameUpdated.getNewPersonalName())));
-            } else if(e instanceof DefendantAddressUpdated) {
+            } else if (e instanceof DefendantAddressUpdated) {
                 final DefendantAddressUpdated defendantAddressUpdated = (DefendantAddressUpdated) e;
 
                 assertThat(defendantAddressUpdated.getCaseId(), equalTo(caseId));
                 assertThat(defendantAddressUpdated.getNewAddress(), equalTo(pleadOnline.getPersonalDetails().getAddress()));
                 assertThat(defendantAddressUpdated.getNewAddress(), not(equalTo(defendantAddressUpdated.getOldAddress())));
-            } else if(e instanceof OnlinePleaReceived) {
+            } else if (e instanceof OnlinePleaReceived) {
                 final OnlinePleaReceived onlinePleaReceived = (OnlinePleaReceived) e;
 
                 assertThat(onlinePleaReceived.getCaseId(), equalTo(caseId));
@@ -652,7 +660,7 @@ public class PleadOnlineTest {
                 .collect(toList());
 
         return new Case(randomUUID(), "TFL123456", RandomStringUtils.randomAlphanumeric(12).toUpperCase(),
-                ProsecutingAuthority.TFL,  null, LocalDate.now(),
+                ProsecutingAuthority.TFL, null, LocalDate.now(),
                 new Defendant(randomUUID(), title, PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_DOB,
                         null, PERSON_NI_NUMBER, null, PERSON_ADDRESS, PERSON_CONTACT_DETAILS, 1, offences, null));
     }

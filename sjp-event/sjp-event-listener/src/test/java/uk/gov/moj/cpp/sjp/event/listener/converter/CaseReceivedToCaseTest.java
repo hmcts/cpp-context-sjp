@@ -5,7 +5,9 @@ import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
+
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -60,8 +62,9 @@ public class CaseReceivedToCaseTest {
     }
 
     private static CaseReceived buildCaseReceived() {
+        final LocalDate postingDate = LocalDate.of(2016, 1, 3);
         return new CaseReceived(UUID.randomUUID(), "TFL243179", "2K2SLYFC743H", TFL, BigDecimal.valueOf(33.5),
-                LocalDate.of(2016, 1, 3), mock(Defendant.class), ZonedDateTime.now(UTC));
+                postingDate, mock(Defendant.class), postingDate.plusDays(NUMBER_DAYS_WAITING_FOR_PLEA), ZonedDateTime.now(UTC));
     }
 
 }

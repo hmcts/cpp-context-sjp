@@ -5,6 +5,7 @@ import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
+import uk.gov.moj.cpp.sjp.event.CaseExpectedDateReadyChanged;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
@@ -84,10 +85,8 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
             (event, state) -> state.setAssigneeId(null);
     private static final AggregateStateMutator<CaseAssignmentDeleted, CaseAggregateState> CASE_ASSIGNMENT_DELETED_MUTATOR =
             (event, state) -> state.setAssigneeId(null);
-    private static final AggregateStateMutator<CaseMarkedReadyForDecision, CaseAggregateState> CASE_READY_MUTATOR =
-            (event, state) -> state.setReadinessReason(event.getReason());
-    private static final AggregateStateMutator<CaseUnmarkedReadyForDecision, CaseAggregateState> CASE_UNMARKED_READY_MUTATOR =
-            (event, state) -> state.setReadinessReason(null);
+    private static final AggregateStateMutator<CaseExpectedDateReadyChanged, CaseAggregateState> CASE_EXPECTED_DATE_READY_CHAGED_MUTATOR =
+            (event, state) -> state.setExpectedDateReady(event.getNewExpectedDateReady());
 
     static final CompositeCaseAggregateStateMutator INSTANCE = new CompositeCaseAggregateStateMutator();
 
@@ -101,8 +100,9 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 .put(CaseAssigned.class, CASE_ASSIGNED_MUTATOR)
                 .put(CaseUnassigned.class, CASE_UNASSIGNED_MUTATOR)
                 .put(CaseAssignmentDeleted.class, CASE_ASSIGNMENT_DELETED_MUTATOR)
-                .put(CaseMarkedReadyForDecision.class, CASE_READY_MUTATOR)
-                .put(CaseUnmarkedReadyForDecision.class, CASE_UNMARKED_READY_MUTATOR)
+                .put(CaseMarkedReadyForDecision.class, CaseMarkedReadyForDecisionMutator.INSTANCE)
+                .put(CaseUnmarkedReadyForDecision.class, CaseUnmarkedReadyForDecisionMutator.INSTANCE)
+                .put(CaseExpectedDateReadyChanged.class, CASE_EXPECTED_DATE_READY_CHAGED_MUTATOR)
                 .put(CaseReopenedUpdated.class, CASE_REOPENED_UPDATED_MUTATOR)
                 .put(CaseReceived.class, CaseReceivedMutator.INSTANCE)
                 .put(CaseDocumentAdded.class, CaseDocumentAddedMutator.INSTANCE)

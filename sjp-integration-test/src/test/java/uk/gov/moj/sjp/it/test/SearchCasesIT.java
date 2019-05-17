@@ -2,6 +2,7 @@ package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
@@ -10,6 +11,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
@@ -22,11 +24,17 @@ import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 
 import java.util.UUID;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class SearchCasesIT extends BaseIntegrationTest {
 
     private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
+
+    @Before
+    public void setUp(){
+        stubQueryOffenceById(randomUUID());
+    }
 
     @Test
     public void verifyInitialSearchDetailsAndUpdateToDefendantDetails() {

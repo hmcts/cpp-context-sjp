@@ -109,7 +109,7 @@ public class SjpCaseCreatedToCaseTest {
         assertThat(offenceDetail.getCode(), is(offence.getLibraOffenceCode()));
         assertThat(offenceDetail.getSequenceNumber(), is(offence.getOffenceSequenceNo()));
         assertThat(offenceDetail.getWording(), is(offence.getOffenceWording()));
-        assertThat(offenceDetail.getStartDate(), is(offence.getOffenceDate()));
+        assertThat(offenceDetail.getStartDate(), is(offence.getOffenceCommittedDate()));
         assertThat(offenceDetail.getWitnessStatement(), is(offence.getWitnessStatement()));
         assertThat(offenceDetail.getProsecutionFacts(), is("Prosecution facts"));
         assertThat(offenceDetail.getLibraOffenceDateCode(), is(offence.getLibraOffenceDateCode()));

@@ -5,10 +5,14 @@
   "properties": {
     "caseId": {
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "expectedDateReady": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
     }
   },
   "required": [
-    "caseId"
+    "caseId",
+    "expectedDateReady"
   ],
   "additionalProperties": false
 }

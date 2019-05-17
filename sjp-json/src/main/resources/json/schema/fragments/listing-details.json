@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/listing-details.json",
+  "type": "object",
+  "properties": {
+    "referralReasonId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "hearingTypeId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "estimatedHearingDuration": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 999
+    },
+    "listingNotes": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/note.json"
+    },
+    "requestedAt": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/date-time"
+    }
+  },
+  "required": [
+    "referralReasonId",
+    "hearingTypeId",
+    "estimatedHearingDuration",
+    "requestedAt"
+  ],
+  "additionalProperties": false
+}

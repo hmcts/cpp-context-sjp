@@ -1,9 +1,22 @@
 {
   "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "decisionId": "5ca05d1c-9ce1-4f76-8aa7-736b3d69dd41",
   "sessionId": "2630237f-9e36-4f0e-9e3e-cf51e0900e30",
-  "referralReasonId": "8cda35cc-8073-41d7-a160-609bfe362f47",
-  "hearingTypeId": "1b5fbb45-fe56-4405-ac53-d13802394150",
-  "estimatedHearingDuration": 30,
-  "requestedAt": "2018-06-01T09:00:00.000Z",
-  "listingNotes": "wheelchair access required"
+  "legalAdviser": {
+    "userId": "a085e359-6069-4694-8820-7810e7dfe762",
+    "firstName": "Erica",
+    "lastName": "Wilson"
+  },
+  "listingDetails": {
+    "referralReasonId": "8cda35cc-8073-41d7-a160-609bfe362f47",
+    "hearingTypeId": "1b5fbb45-fe56-4405-ac53-d13802394150",
+    "estimatedHearingDuration": 30,
+    "requestedAt": "2018-06-01T09:00:00.000Z",
+    "listingNotes": {
+      "id": "19201bd7-ae14-4664-96eb-0cbe8e883260",
+      "text": "wheelchair access required",
+      "type": "LISTING",
+      "addedAt": "2018-06-01T09:00:00.000Z"
+    }
+  }
 }

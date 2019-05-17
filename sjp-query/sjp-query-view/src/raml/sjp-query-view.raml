@@ -272,21 +272,21 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
             schema: !include json/schema/sjp.query.case-document.json
             example: !include json/sjp.query.case-document.json
 
-/cases/awaiting:
-  description: return the 600 oldest not resulted SJP cases, that have SJPN documents
+/cases/pending:
+  description: return the pending SJP cases for the PDF export
   get:
     description: |
       ...
       (mapping):
-          responseType: application/vnd.sjp.query.awaiting-cases+json
-          name: sjp.query.awaiting-cases
+          responseType: application/vnd.sjp.query.pending-cases+json
+          name: sjp.query.pending-cases
       ...
     responses:
       200:
         body:
-          application/vnd.sjp.query.awaiting-cases+json:
-            schema: !include json/schema/sjp.query.awaiting-cases.json
-            example: !include json/sjp.query.awaiting-cases.json
+          application/vnd.sjp.query.pending-cases+json:
+            schema: !include json/schema/sjp.query.pending-cases.json
+            example: !include json/sjp.query.pending-cases.json
 
 /cases/{caseId}/defendants-online-plea:
   get:
@@ -426,3 +426,35 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
           application/vnd.sjp.query.case-prosecuting-authority+json:
             schema: !include json/schema/sjp.query.case-prosecuting-authority.json
             example: !include json/sjp.query.case-prosecuting-authority.json
+
+/cases/{caseId}/notes:
+  get:
+    description: |
+      get case notes
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-notes+json
+          name: sjp.query.case-notes
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case-notes+json:
+            schema: !include json/schema/sjp.query.case-notes.json
+            example: !include json/sjp.query.case-notes.json
+
+/transparency-report/metadata:
+  get:
+    description: |
+      fetch the latest transparency report metadata
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.transparency-report-metadata+json
+          name: sjp.query.transparency-report-metadata
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.transparency-report-metadata+json:
+            schema: !include json/schema/sjp.query.transparency-report-metadata.json
+            example: !include json/sjp.query.transparency-report-metadata.json

@@ -1,0 +1,18 @@
+{
+  "_metadata": {
+    "name": "sjp.events.case-note-added"
+  },
+  "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "note": {
+    "id": "7dfcf915-adb2-4ce0-9a81-bf45072f7bac",
+    "text": "test note",
+    "type": "DECISION",
+    "addedAt": "2018-06-01T09:00:00.000Z"
+  },
+  "author": {
+    "userId": "697f281f-62a4-4768-ab06-00f752d5ed4f",
+    "firstName": "John",
+    "lastName": "Wall"
+  },
+  "decisionId": "ab73f106-ec06-48a3-8cf4-f329891ba548"
+}

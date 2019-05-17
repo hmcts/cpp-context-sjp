@@ -1,18 +1,19 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
-import org.junit.Test;
-import uk.gov.moj.cpp.sjp.domain.Case;
-import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
-import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
-import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
-import uk.gov.moj.cpp.sjp.event.CaseReceived;
-
-import java.time.ZonedDateTime;
-
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
+import uk.gov.moj.cpp.sjp.domain.Case;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
+
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+
+import org.junit.Test;
 
 public class CaseReceivedMutatorTest {
 
@@ -28,6 +29,7 @@ public class CaseReceivedMutatorTest {
                 aCase.getCosts(),
                 aCase.getPostingDate(),
                 aCase.getDefendant(),
+                LocalDate.now(),
                 ZonedDateTime.now());
 
         CaseAggregateState state = new CaseAggregateState();
@@ -43,6 +45,7 @@ public class CaseReceivedMutatorTest {
         assertThat(state.getDefendantLastName(), is(aCase.getDefendant().getLastName()));
         assertThat(state.getDefendantDateOfBirth(), is(aCase.getDefendant().getDateOfBirth()));
         assertThat(state.getDefendantAddress(), is(aCase.getDefendant().getAddress()));
+        assertThat(state.getExpectedDateReady(), is(event.getExpectedDateReady()));
         assertTrue(state.isCaseReceived());
     }
 }

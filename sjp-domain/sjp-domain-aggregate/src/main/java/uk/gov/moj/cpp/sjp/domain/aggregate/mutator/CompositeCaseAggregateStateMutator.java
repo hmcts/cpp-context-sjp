@@ -18,6 +18,7 @@ import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
 import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
 import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
+import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleted;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
@@ -77,6 +78,8 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
             (event, state) -> state.updateEmploymentStatusForDefendant(event.getDefendantId(), event.getEmploymentStatus());
     private static final AggregateStateMutator<FinancialMeansUpdated, CaseAggregateState> DEFENDANT_FINANCIAL_MEANS_MUTATOR =
             (event, state) -> state.updateEmploymentStatusForDefendant(event.getDefendantId(), event.getEmploymentStatus());
+    private static final AggregateStateMutator<FinancialMeansDeleted, CaseAggregateState> DEFENDANT_FINANCIAL_MEANS_DELETED_MUTATOR =
+            (event, state) -> state.deleteFinancialMeansData();
     private static final AggregateStateMutator<EmployerDeleted, CaseAggregateState> EMPLOYER_DELETED_MUTATOR =
             (event, state) -> state.removeEmploymentStatusForDefendant(event.getDefendantId());
     private static final AggregateStateMutator<CaseAssigned, CaseAggregateState> CASE_ASSIGNED_MUTATOR =
@@ -117,6 +120,7 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 .put(EmploymentStatusUpdated.class, DEFENDANT_EMPLOYMENT_STATUS_MUTATOR)
                 .put(EmployerDeleted.class, EMPLOYER_DELETED_MUTATOR)
                 .put(FinancialMeansUpdated.class, DEFENDANT_FINANCIAL_MEANS_MUTATOR)
+                .put(FinancialMeansDeleted.class, DEFENDANT_FINANCIAL_MEANS_DELETED_MUTATOR)
                 .put(HearingLanguagePreferenceUpdatedForDefendant.class, HEARING_LANGUAGE_PREFERENCE_MUTATOR)
                 .put(HearingLanguagePreferenceCancelledForDefendant.class, HEARING_LANGUAGE_PREFERENCE_CANCELLED_MUTATOR)
                 .put(InterpreterUpdatedForDefendant.class, UPDATE_INTERPRETER_MUTATOR)

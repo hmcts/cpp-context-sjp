@@ -112,6 +112,11 @@ public class NoActionController {
         send(envelope);
     }
 
+    @Handles("sjp.command.delete-defendant-financial-means-information")
+    public void deleteDefendantFinancialMeansInformation(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
     @Handles("sjp.command.update-hearing-requirements")
     public void updateHearingRequirements(final JsonEnvelope envelope) {
         send(envelope);

@@ -12,16 +12,20 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Defines the case aggregate state.
  */
 public class CaseAggregateState implements AggregateState {
 
+
+    public static final String FINANCIAL_MEANS_DOCUMENT_TYPE =  "FINANCIAL_MEANS";
     private UUID caseId;
     private String urn;
     private boolean caseReopened;
@@ -356,5 +360,17 @@ public class CaseAggregateState implements AggregateState {
 
     public void setExpectedDateReady(LocalDate expectedDateReady) {
         this.expectedDateReady = expectedDateReady;
+    }
+
+    public void deleteFinancialMeansData() {
+
+        final List<UUID> uuids = this.caseDocuments.entrySet().stream()
+                .map(Map.Entry::getValue)
+                .filter(caseDocument ->
+                        FINANCIAL_MEANS_DOCUMENT_TYPE
+                                .equals(caseDocument.getDocumentType()))
+                .map(CaseDocument::getId)
+                .collect(Collectors.toList());
+        uuids.stream().forEach(this.caseDocuments::remove);
     }
 }

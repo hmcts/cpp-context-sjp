@@ -21,7 +21,6 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
@@ -76,7 +75,7 @@ public class UpdateFinancialMeansTest extends CaseAggregateBaseTest {
         addCaseDocument("FINANCIAL_MEANS");
         addCaseDocument("xxxxxxxxxx");
         final UUID defendantId = caseReceivedEvent.getDefendant().getId();
-        assertEquals(2,caseAggregate.getState().getCaseDocuments().keySet().size());
+        assertThat(caseAggregate.getState().getCaseDocuments().keySet(),hasSize(2));
 
         final Stream<Object> eventStream = caseAggregate.deleteFinancialMeans(defendantId);
         final List<Object> events = eventStream.collect(toList());
@@ -85,13 +84,13 @@ public class UpdateFinancialMeansTest extends CaseAggregateBaseTest {
         final FinancialMeansDeleted financialMeansDeleted = (FinancialMeansDeleted) events.get(0);
 
         assertThat(financialMeansDeleted.getDefendantId(), equalTo(defendantId));
-        assertEquals(1,caseAggregate.getState().getCaseDocuments().keySet().size());
+        assertThat(caseAggregate.getState().getCaseDocuments().keySet(),hasSize(1));
         final List<CaseDocument> caseDocuments = caseAggregate.getState().getCaseDocuments().entrySet().stream()
                 .map(uuidCaseDocumentEntry -> uuidCaseDocumentEntry.getValue())
                 .filter(caseDocument ->
                         "xxxxxxxxxx".equalsIgnoreCase(caseDocument.getDocumentType()))
                 .collect(toList());
-        assertEquals("xxxxxxxxxx",caseDocuments.get(0).getDocumentType());
+        assertThat(caseDocuments.get(0).getDocumentType(),equalTo("xxxxxxxxxx"));
     }
 
 

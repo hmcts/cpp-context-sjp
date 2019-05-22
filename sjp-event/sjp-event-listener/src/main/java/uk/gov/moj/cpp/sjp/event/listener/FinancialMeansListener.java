@@ -6,6 +6,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleted;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.listener.converter.FinancialMeansConverter;
 import uk.gov.moj.cpp.sjp.event.listener.converter.OnlinePleaConverter;
@@ -53,4 +54,20 @@ public class FinancialMeansListener {
             onlinePleaRepository.saveOnlinePlea(onlinePlea);
         }
     }
+
+    @Handles("sjp.events.financial-means-deleted")
+    public void deleteFinancialMeans(final JsonEnvelope event) {
+        final FinancialMeansDeleted financialMeansDeleted = jsonObjectConverter.convert(event.payloadAsJsonObject(), FinancialMeansDeleted.class);
+        final UUID defendantId = financialMeansDeleted.getDefendantId();
+        final FinancialMeans financialMeansByDefendantId = financialMeansRepository.findBy(defendantId);
+        financialMeansRepository.remove(financialMeansByDefendantId);
+
+        final UUID caseId = defendantRepository.findCaseIdByDefendantId(defendantId);
+        final OnlinePlea onlinePlea = onlinePleaRepository.findOnlinePleaByDefendantIdAndCaseId(caseId,defendantId);
+        if(onlinePlea!=null) {
+            onlinePlea.setOutgoings(null);
+            onlinePleaRepository.save(onlinePlea);
+        }
+    }
+
 }

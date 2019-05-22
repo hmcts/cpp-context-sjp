@@ -283,4 +283,9 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         }
     }
 
+    @org.apache.deltaspike.data.api.Query(
+            value = "SELECT op FROM OnlinePlea op WHERE op.caseId = :caseId AND op.defendantId = :defendantId",
+            singleResult = SingleResultType.OPTIONAL)
+    public abstract OnlinePlea findOnlinePleaByDefendantIdAndCaseId(@QueryParam("caseId") final UUID caseId, @QueryParam("defendantId") final UUID defendantId);
+
 }

@@ -3,8 +3,11 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang.builder.EqualsBuilder.reflectionEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import uk.gov.justice.services.common.util.Clock;
@@ -49,6 +52,29 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
 
         final OnlinePlea insertedOnlinePlea = buildOnlinePlea(caseDetail, clock.now());
         onlinePleaRepository.save(insertedOnlinePlea);
+    }
+
+    @Test
+    public void shouldFindOnlinePleaGivenCaseIdAndDefendantId() {
+
+        final OnlinePlea onlinePlea = onlinePleaRepository.findBy(caseId);
+        final UUID defendantId = onlinePlea.getDefendantId();
+        final OnlinePlea onlinePleaByDefendantIdAndCaseId = onlinePleaRepository.findOnlinePleaByDefendantIdAndCaseId(caseId, defendantId);
+
+        assertThat("The online plea object obtained by case and defendant Id should be equal to original onlinepea object created with that case and defendant Id",
+                reflectionEquals(onlinePleaByDefendantIdAndCaseId, onlinePlea));
+        assertThat(onlinePlea.getOutgoings().getAccommodationAmount().doubleValue(),closeTo(10.0,0.0));
+    }
+
+    @Test
+    public void shouldDeleteOutgoingDataOnSettingItToNullInOnlinePleaData() {
+
+        final OnlinePlea onlinePlea = onlinePleaRepository.findBy(caseId);
+        assertThat("Outgoing financial means data should present" , onlinePlea.getOutgoings()!=null);
+        onlinePlea.setOutgoings(null);
+        onlinePleaRepository.save(onlinePlea);
+        final OnlinePlea onlinePleaAfterModification = onlinePleaRepository.findBy(caseId);
+        assertThat("Outgoing financial means data should be null after deleting it" , onlinePleaAfterModification.getOutgoings()==null);
     }
 
     @Test

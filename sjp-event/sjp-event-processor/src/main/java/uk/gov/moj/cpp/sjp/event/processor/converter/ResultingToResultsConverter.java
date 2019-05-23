@@ -23,11 +23,9 @@ import uk.gov.moj.cpp.sjp.domain.resulting.Prompt;
 import uk.gov.moj.cpp.sjp.domain.resulting.ReferencedDecisionsSaved;
 import uk.gov.moj.cpp.sjp.domain.resulting.Result;
 import uk.gov.moj.cpp.sjp.domain.resulting.SJPSession;
-import uk.gov.moj.cpp.sjp.event.processor.service.ModeOfTrial;
 import uk.gov.moj.cpp.sjp.event.processor.service.ProsecutionCaseFileService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
-
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -60,6 +58,7 @@ public class ResultingToResultsConverter {
     private static final String ENFORCING_COURT_CODE_KEY = "enforcingCourtCode";
     private static final String MAGISTRATE_KEY = "magistrate";
     private static final String ENDED_AT_KEY = "endedAt";
+    private static final int MODE_OF_TRIAL = 1;
 
     @Inject
     private ReferenceDataService referenceDataService;
@@ -140,7 +139,7 @@ public class ResultingToResultsConverter {
                     .add("defendantId", defendant.getId().toString()) // --required
                     .add("prosecutorReference", DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE) // --required
                     .add("individualDefendant", buildIndividualDefendant(defendant, countryCJSCode))
-                    .add(OFFENCES_KEY, buildOffences(caseDetails, referencedDecisionsSaved, sjpSession, caseFileDefendantOffencesOptional , envelope))); // --required
+                    .add(OFFENCES_KEY, buildOffences(caseDetails, referencedDecisionsSaved, sjpSession, caseFileDefendantOffencesOptional))); // --required
         }
 
         return arrayBuilder.build();
@@ -188,7 +187,7 @@ public class ResultingToResultsConverter {
     }
 
     protected JsonArray buildOffences(final CaseDetails caseDetails, final ReferencedDecisionsSaved referencedDecisionsSaved, final SJPSession sjpSession,
-                                      final Optional<JsonArray> caseFileDefendantOffencesOptional, final JsonEnvelope envelope) {
+                                      final Optional<JsonArray> caseFileDefendantOffencesOptional) {
         final JsonArrayBuilder arrayBuilder = createArrayBuilder();
         final JsonArray caseFileDefendantOffences = caseFileDefendantOffencesOptional.isPresent() ? caseFileDefendantOffencesOptional.get() : createArrayBuilder().build();
 
@@ -196,15 +195,7 @@ public class ResultingToResultsConverter {
             caseDetails.getDefendant().getOffences().forEach(o -> {
                 final JsonObject caseFileDefendantOffence = caseFileDefendantOffences.stream().map(cfdo -> (JsonObject) cfdo).filter(cfdo -> cfdo.getString("id").equalsIgnoreCase(o.getId().toString())).findFirst().orElse(createObjectBuilder().build());
                 final JsonObjectBuilder builder = createObjectBuilder();
-                final Optional<String>  modeOfTrialOptioanl = getModeOfTrial(o,envelope);
-                final String modeOfTrial =  modeOfTrialOptioanl.isPresent() ? modeOfTrialOptioanl.get() : null;
-                final Optional<ModeOfTrial> modeOfTrialOptional = Optional.of(ModeOfTrial.valueOf(modeOfTrial));
-                final ModeOfTrial twoDigitCode = modeOfTrialOptional.isPresent() ? modeOfTrialOptional.get() : null;
-
-                if(twoDigitCode != null) {
-                        builder.add("modeOfTrial", twoDigitCode.getTwoDigitCode());
-                }
-
+                builder.add("modeOfTrial", MODE_OF_TRIAL);
                 builder.add("baseOffenceDetails", buildBaseOffenceDetails(o, caseFileDefendantOffence)) // --required
                         .add("initiatedDate", o.getStartDate()) // --required
                         .add("plea", buildPlea(o))
@@ -217,13 +208,6 @@ public class ResultingToResultsConverter {
         }
 
         return arrayBuilder.build();
-    }
-
-
-    private Optional<String>  getModeOfTrial(final uk.gov.justice.json.schemas.domains.sjp.queries.Offence offence ,final JsonEnvelope envelope) {
-        final  JsonObject referenceDataOffencesObject = referenceDataOffencesService.findOffence(offence, envelope);
-        return Optional.of(referenceDataOffencesObject.getString("modeOfTrial"));
-
     }
 
 
@@ -277,7 +261,7 @@ public class ResultingToResultsConverter {
             if (referenceDecisionSavedOffenceOptional.isPresent()) {
                 referenceDecisionSavedOffenceOptional.get().getResults().forEach(result -> {
                     final JsonObjectBuilder builder = createObjectBuilder();
-                    builder .add("id", result.getId().toString()); // --required
+                    builder.add("id", result.getId().toString()); // --required
 
                     if (null != result.getPrompts()) {
                         final JsonArrayBuilder prompts = createArrayBuilder();

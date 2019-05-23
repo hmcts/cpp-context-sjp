@@ -15,7 +15,6 @@ import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsCon
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCountryIsoCode;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCountryNationality;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getEmptyEnvelop;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getReferenceDataOffence;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getReferenceDecisionSaved;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getSJPSessionJsonObject;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.verifyCases;
@@ -64,7 +63,6 @@ public class ResultingToResultsConverterTest {
         when(referenceDataService.getCourtByCourtHouseOUCode(any(), any())).thenReturn(court);
         when(prosecutionCaseFileService.getCaseFileDefendantDetails(any(), any())).thenReturn(getCaseFileDefendantDetails());
         when(referenceDataService.getNationality(any(), any())).thenReturn(getCountryNationality());
-        when(referenceDataOffencesService.findOffence(any(), any())).thenReturn(getReferenceDataOffence());
 
         final JsonObject response = converter.convert(getCaseId(), getReferenceDecisionSaved(), buildCaseDetails(), getSJPSessionJsonObject());
         final JsonObject session = response.getJsonObject("session");
@@ -74,7 +72,6 @@ public class ResultingToResultsConverterTest {
         verify(referenceDataService).getCourtByCourtHouseOUCode(any(), any());
         verify(prosecutionCaseFileService).getCaseFileDefendantDetails(any(), any());
         verify(referenceDataService).getNationality(any(), any());
-        verify(referenceDataOffencesService).findOffence(any(), any());
     }
 
     @Test
@@ -97,24 +94,20 @@ public class ResultingToResultsConverterTest {
     public void shouldBuildCases() {
         when(prosecutionCaseFileService.getCaseFileDefendantDetails(any(), any())).thenReturn(getCaseFileDefendantDetails());
         when(referenceDataService.getNationality(any(), any())).thenReturn(getCountryNationality());
-        when(referenceDataOffencesService.findOffence(any(), any())).thenReturn(getReferenceDataOffence());
         final JsonArray cases = converter.buildCases(getCaseId(), buildCaseDetails(), getReferenceDecisionSavedAsObject(), buildSjpSession(), getEmptyEnvelop());
         verifyCases(cases);
         verify(prosecutionCaseFileService).getCaseFileDefendantDetails(any(), any());
         verify(referenceDataService).getNationality(any(), any());
-        verify(referenceDataOffencesService).findOffence(any(), any());
     }
 
     @Test
     public void shouldBuildDefendant() {
         when(prosecutionCaseFileService.getCaseFileDefendantDetails(any(), any())).thenReturn(getCaseFileDefendantDetails());
         when(referenceDataService.getNationality(any(), any())).thenReturn(getCountryNationality());
-        when(referenceDataOffencesService.findOffence(any(), any())).thenReturn(getReferenceDataOffence());
         final JsonArray defendants = converter.buildDefendants(buildCaseDetails(), getReferenceDecisionSavedAsObject(), buildSjpSession(), getEmptyEnvelop());
         verifyDefendants(defendants);
         verify(prosecutionCaseFileService).getCaseFileDefendantDetails(any(), any());
         verify(referenceDataService).getNationality(any(), any());
-        verify(referenceDataOffencesService).findOffence(any(), any());
     }
 
     @Test

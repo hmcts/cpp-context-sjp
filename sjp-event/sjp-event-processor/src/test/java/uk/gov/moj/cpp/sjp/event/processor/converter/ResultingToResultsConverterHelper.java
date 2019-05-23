@@ -103,7 +103,8 @@ public class ResultingToResultsConverterHelper {
     private static final Integer accountDivisionCode = nextInt(1, 100);
     private static final Integer enforcingCourtCode = nextInt(100, 200);
     private static final String COUNTRY_ISO_CODE = "1";
-    private static final String LJA = "LJA";
+    private static final String LJA = "lja";
+    private static final String LJA_VALUE = "2905";
     private static final String OFFENCE_LOCATION = "Cardiff";
     private static final Integer MODE_OF_TRIAL = 1;
     private static final UUID RESULT_ID = randomUUID();
@@ -287,7 +288,7 @@ public class ResultingToResultsConverterHelper {
                 .add("type", SessionType.MAGISTRATE.toString())
                 .add("courtHouseCode", COURT_HOUSE_CODE)
                 .add("courtHouseName", COURT_HOUSE_NAME)
-                .add("localJusticeAreaNationalCourtCode", LJA)
+                .add("localJusticeAreaNationalCourtCode", LJA_VALUE)
 //                .add("magistrate", MAGISTRATE)
                 .add("startedAt", SESSION_START_DATE.toString())
 //                .add("endedAt", SESSION_END_DATE.toString())
@@ -309,6 +310,7 @@ public class ResultingToResultsConverterHelper {
         assertEquals(COURT_HOUSE_CODE, sessionLocation.getString("courtHouseCode"));
         assertEquals(COURT_HOUSE_NAME, sessionLocation.getString("name"));
         assertEquals(ROOM_NAME, sessionLocation.getString("roomName"));
+        assertEquals(LJA_VALUE, sessionLocation.getString("lja"));
         assertEquals(ADDRESS1, sessionAddress.getString(ADDRESS1_KEY));
         assertEquals(ADDRESS2, sessionAddress.getString(ADDRESS2_KEY));
         assertEquals(ADDRESS3, sessionAddress.getString(ADDRESS3_KEY));
@@ -320,6 +322,7 @@ public class ResultingToResultsConverterHelper {
     public static Optional<JsonObject> buildCourt() {
         return Optional.of(createObjectBuilder()
                 .add("id", COURT_ID.toString())
+                .add(LJA, LJA_VALUE)
                 .add(ADDRESS1_KEY, ADDRESS1)
                 .add(ADDRESS2_KEY, ADDRESS2)
                 .add(ADDRESS3_KEY, ADDRESS3)
@@ -344,7 +347,7 @@ public class ResultingToResultsConverterHelper {
         final JsonObject sessionLocation = session.getJsonObject("sessionLocation");
         assertEquals(SJP_SESSION_ID.toString(), session.getString("sessionId"));
         assertEquals(SESSION_START_DATE.toString(), session.getString("dateAndTimeOfSession"));
-        assertEquals(COURT_HOUSE_CODE, session.getString("psaCode"));
+        assertEquals(COURT_HOUSE_CODE, session.getString("ouCode"));
         assertSessionLocation(sessionLocation);
     }
 

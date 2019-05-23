@@ -25,6 +25,9 @@
         "roomName": {
           "type": "string"
         },
+        "lja": {
+          "type": "string"
+        },
         "address": {
           "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
         }
@@ -32,6 +35,7 @@
       "required": [
         "courtId",
         "courtHouseCode",
+        "lja",
         "name",
         "roomName"
       ]
@@ -39,7 +43,7 @@
     "dateAndTimeOfSession": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
     },
-    "psaCode": {
+    "ouCode": {
       "description": "The unique identifier of Local Justice Area.",
       "type": "string"
     }
@@ -49,6 +53,6 @@
     "sessionId",
     "sessionLocation",
     "dateAndTimeOfSession",
-    "psaCode"
+    "ouCode"
   ]
 }

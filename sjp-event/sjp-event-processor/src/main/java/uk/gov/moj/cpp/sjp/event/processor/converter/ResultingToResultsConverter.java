@@ -78,37 +78,38 @@ public class ResultingToResultsConverter {
         final Optional<JsonObject> court = referenceDataService.getCourtByCourtHouseOUCode(sjpSession.getCourtDetails().getCourtHouseCode(), emptyEnvelope);
 
         return createObjectBuilder()
-                .add("session", buildSession(sjpSession, court)) // --required
-                .add("cases", buildCases(caseId, caseDetails, referencedDecisionsSaved, sjpSession, envelope)) // --required
+                .add("session", buildSession(sjpSession, court))
+                .add("cases", buildCases(caseId, caseDetails, referencedDecisionsSaved, sjpSession, envelope))
                 .build();
     }
 
     protected JsonArray buildCases(final UUID caseId, final CaseDetails caseDetails, final ReferencedDecisionsSaved referencedDecisionsSaved, final SJPSession sjpSession, final JsonEnvelope envelope) {
         return createArrayBuilder().add(createObjectBuilder()
-                .add("caseId", caseId.toString()) // -- required
-                .add("urn", caseDetails.getUrn()) // -- required
-                .add("defendants", buildDefendants(caseDetails, referencedDecisionsSaved, sjpSession, envelope))).build(); // -- required
+                .add("caseId", caseId.toString())
+                .add("urn", caseDetails.getUrn())
+                .add("defendants", buildDefendants(caseDetails, referencedDecisionsSaved, sjpSession, envelope))).build();
     }
 
     protected JsonObject buildSession(final SJPSession sjpSession, final Optional<JsonObject> court) {
         return createObjectBuilder()
-                .add("sessionId", sjpSession.getId().toString()) // -- required
-                .add("sessionLocation", buildSessionLocation(sjpSession, court)) // -- required
-                .add("dateAndTimeOfSession", getZonedDateTimeString(sjpSession.getStartedAt())) // -- required
-                .add("psaCode", sjpSession.getCourtDetails().getCourtHouseCode()).build(); // -- required
+                .add("sessionId", sjpSession.getId().toString())
+                .add("sessionLocation", buildSessionLocation(sjpSession, court))
+                .add("dateAndTimeOfSession", getZonedDateTimeString(sjpSession.getStartedAt()))
+                .add("ouCode", sjpSession.getCourtDetails().getCourtHouseCode()).build();
     }
 
     protected JsonObject buildSessionLocation(final SJPSession sjpSession, final Optional<JsonObject> courtOptional) {
         final JsonObjectBuilder builder = createObjectBuilder();
-        builder.add("courtId", courtOptional.isPresent() ? courtOptional.get().getString("id") : null) // -- required
-                .add("courtHouseCode", sjpSession.getCourtDetails().getCourtHouseCode()) // -- required
-                .add("name", sjpSession.getCourtDetails().getCourtHouseName()) // -- required
-                .add("roomName", ROOM_NAME); // -- required. It was decided by architect to set it to 00
+        builder.add("courtId", courtOptional.isPresent() ? courtOptional.get().getString("id") : null)
+                .add("courtHouseCode", sjpSession.getCourtDetails().getCourtHouseCode())
+                .add("name", sjpSession.getCourtDetails().getCourtHouseName())
+                .add("roomName", ROOM_NAME)
+                .add("lja", courtOptional.isPresent() ? courtOptional.get().getString("lja") : null);
 
         if (courtOptional.isPresent()) {
             final JsonObject court = courtOptional.get();
             builder.add(ADDRESS_KEY, createObjectBuilder()
-                    .add(ADDRESS1_KEY, court.getString(ADDRESS1_KEY)) // -- required
+                    .add(ADDRESS1_KEY, court.getString(ADDRESS1_KEY))
                     .add(ADDRESS2_KEY, court.getString(ADDRESS2_KEY))
                     .add(ADDRESS3_KEY, court.getString(ADDRESS3_KEY))
                     .add(ADDRESS4_KEY, court.getString(ADDRESS4_KEY))
@@ -136,10 +137,10 @@ public class ResultingToResultsConverter {
                     .orElse(UNKNOWN);
 
             arrayBuilder.add(createObjectBuilder()
-                    .add("defendantId", defendant.getId().toString()) // --required
-                    .add("prosecutorReference", DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE) // --required
+                    .add("defendantId", defendant.getId().toString())
+                    .add("prosecutorReference", DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE)
                     .add("individualDefendant", buildIndividualDefendant(defendant, countryCJSCode))
-                    .add(OFFENCES_KEY, buildOffences(caseDetails, referencedDecisionsSaved, sjpSession, caseFileDefendantOffencesOptional))); // --required
+                    .add(OFFENCES_KEY, buildOffences(caseDetails, referencedDecisionsSaved, sjpSession, caseFileDefendantOffencesOptional)));
         }
 
         return arrayBuilder.build();
@@ -150,13 +151,11 @@ public class ResultingToResultsConverter {
         PersonalDetails personalDetails = defendant.getPersonalDetails();
 
         if (null != personalDetails) {
-            objectBuilder.add("basePersonDetails", buildPerson(defendant.getPersonalDetails())); // -- required
+            objectBuilder.add("basePersonDetails", buildPerson(defendant.getPersonalDetails()));
         }
-
-//                        .add("pncIdentifier", "")
         objectBuilder.add("personStatedNationality", countryCJSCode)
-                .add("bailStatus", DEFAULT_BAIL_STATUS) // -- required
-                .add("presentAtHearing", false); // -- required
+                .add("bailStatus", DEFAULT_BAIL_STATUS)
+                .add("presentAtHearing", false);
         return objectBuilder.build();
     }
 
@@ -164,7 +163,7 @@ public class ResultingToResultsConverter {
         final JsonObjectBuilder person = createObjectBuilder();
         person.add("personTitle", personalDetails.getTitle())
                 .add("firstName", personalDetails.getFirstName())
-                .add("lastName", personalDetails.getLastName()) // --required
+                .add("lastName", personalDetails.getLastName())
                 .add(ADDRESS_KEY, buildAddress(personalDetails.getAddress()));
         ContactDetails contactDetails = personalDetails.getContactDetails();
         if (null != contactDetails) {
@@ -196,13 +195,13 @@ public class ResultingToResultsConverter {
                 final JsonObject caseFileDefendantOffence = caseFileDefendantOffences.stream().map(cfdo -> (JsonObject) cfdo).filter(cfdo -> cfdo.getString("id").equalsIgnoreCase(o.getId().toString())).findFirst().orElse(createObjectBuilder().build());
                 final JsonObjectBuilder builder = createObjectBuilder();
                 builder.add("modeOfTrial", MODE_OF_TRIAL);
-                builder.add("baseOffenceDetails", buildBaseOffenceDetails(o, caseFileDefendantOffence)) // --required
-                        .add("initiatedDate", o.getStartDate()) // --required
+                builder.add("baseOffenceDetails", buildBaseOffenceDetails(o, caseFileDefendantOffence))
+                        .add("initiatedDate", o.getStartDate())
                         .add("plea", buildPlea(o))
 //                    .add("convictionDate", "")
                         .add("convictingCourt", sjpSession.getCourtDetails().getCourtHouseCode())
 //                    .add("finding", "") do not know, check with business
-                        .add("results", buildResults(o, referencedDecisionsSaved)); // --required
+                        .add("results", buildResults(o, referencedDecisionsSaved));
                 arrayBuilder.add(builder);
             });
         }
@@ -213,12 +212,12 @@ public class ResultingToResultsConverter {
 
     protected JsonObject buildBaseOffenceDetails(final uk.gov.justice.json.schemas.domains.sjp.queries.Offence o, final JsonObject caseFileDefendantOffence) {
         final JsonObjectBuilder baseOffenceDetails = createObjectBuilder();
-        baseOffenceDetails.add("offenceId", o.getId().toString()) // --required
+        baseOffenceDetails.add("offenceId", o.getId().toString())
                 .add("offenceSequenceNumber", o.getOffenceSequenceNumber())
                 .add("offenceCode", o.getCjsCode())
                 .add("offenceWording", o.getWording())
-                .add("offenceDateCode", DEFAULT_OFFENCE_DATE_CODE) // --required
-                .add("offenceStartDateTime", o.getStartDate()); // --required
+                .add("offenceDateCode", DEFAULT_OFFENCE_DATE_CODE)
+                .add("offenceStartDateTime", o.getStartDate());
 
         if (null != o.getEndDate()) {
             baseOffenceDetails.add("offenceEndDateTime", o.getEndDate());
@@ -261,7 +260,7 @@ public class ResultingToResultsConverter {
             if (referenceDecisionSavedOffenceOptional.isPresent()) {
                 referenceDecisionSavedOffenceOptional.get().getResults().forEach(result -> {
                     final JsonObjectBuilder builder = createObjectBuilder();
-                    builder.add("id", result.getId().toString()); // --required
+                    builder.add("id", result.getId().toString());
 
                     if (null != result.getPrompts()) {
                         final JsonArrayBuilder prompts = createArrayBuilder();
@@ -282,7 +281,7 @@ public class ResultingToResultsConverter {
 
     protected JsonObject buildAddress(final Address address) {
         return createObjectBuilder()
-                .add(ADDRESS1_KEY, address.getAddress1()) // -- required
+                .add(ADDRESS1_KEY, address.getAddress1())
                 .add(ADDRESS2_KEY, address.getAddress2())
                 .add(ADDRESS3_KEY, address.getAddress3())
                 .add(ADDRESS4_KEY, address.getAddress4())

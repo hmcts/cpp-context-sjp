@@ -39,7 +39,7 @@ public class CaseFinancialMeansHandler {
 
     public Stream<Object> deleteFinancialMeans(final UUID defendantId, final CaseAggregateState state) {
 
-        final List<UUID> listOfMC100MaterialIds = state.getCaseDocuments()
+        final List<UUID> materialIds = state.getCaseDocuments()
                 .entrySet()
                 .stream()
                 .map(Map.Entry::getValue)
@@ -49,6 +49,6 @@ public class CaseFinancialMeansHandler {
                 .map(CaseDocument::getMaterialId)
                 .collect(toList());
 
-        return Stream.of(FinancialMeansDeleted.createEvent(defendantId,listOfMC100MaterialIds));
+        return Stream.of(FinancialMeansDeleted.createEvent(defendantId,materialIds));
     }
 }

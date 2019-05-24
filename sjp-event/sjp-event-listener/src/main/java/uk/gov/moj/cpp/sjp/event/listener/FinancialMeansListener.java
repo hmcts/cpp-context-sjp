@@ -60,13 +60,16 @@ public class FinancialMeansListener {
         final FinancialMeansDeleted financialMeansDeleted = jsonObjectConverter.convert(event.payloadAsJsonObject(), FinancialMeansDeleted.class);
         final UUID defendantId = financialMeansDeleted.getDefendantId();
         final FinancialMeans financialMeansByDefendantId = financialMeansRepository.findBy(defendantId);
-        financialMeansRepository.remove(financialMeansByDefendantId);
 
-        final UUID caseId = defendantRepository.findCaseIdByDefendantId(defendantId);
-        final OnlinePlea onlinePlea = onlinePleaRepository.findOnlinePleaByDefendantIdAndCaseId(caseId,defendantId);
-        if(onlinePlea!=null) {
-            onlinePlea.setOutgoings(null);
-            onlinePleaRepository.save(onlinePlea);
+        if(financialMeansByDefendantId!=null) {
+            financialMeansRepository.remove(financialMeansByDefendantId);
+
+            final UUID caseId = defendantRepository.findCaseIdByDefendantId(defendantId);
+            final OnlinePlea onlinePlea = onlinePleaRepository.findOnlinePleaByDefendantIdAndCaseId(caseId, defendantId);
+            if (onlinePlea != null) {
+                onlinePlea.setOutgoings(null);
+                onlinePleaRepository.save(onlinePlea);
+            }
         }
     }
 

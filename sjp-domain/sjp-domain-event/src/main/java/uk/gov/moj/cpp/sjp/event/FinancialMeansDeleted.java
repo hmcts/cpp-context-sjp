@@ -15,26 +15,26 @@ public class FinancialMeansDeleted {
 
     private UUID defendantId;
 
-    private List<UUID> listOfMC100MaterialId;
+    private List<UUID> materialIds;
 
-    public FinancialMeansDeleted(final UUID defendantId,final List<UUID> listOfMC100MaterialId) {
+    public FinancialMeansDeleted(final UUID defendantId, final List<UUID> materialIds) {
         this.defendantId = defendantId;
-        this.listOfMC100MaterialId= Collections.unmodifiableList(new ArrayList<>(listOfMC100MaterialId));
+        this.materialIds = Collections.unmodifiableList(new ArrayList<>(materialIds));
     }
 
-    public static FinancialMeansDeleted createEvent(final UUID defendantId, final List<UUID> listOfMC100MaterialId) {
-        return new FinancialMeansDeleted(defendantId,listOfMC100MaterialId);
+    public static FinancialMeansDeleted createEvent(final UUID defendantId, final List<UUID> materialIds) {
+        return new FinancialMeansDeleted(defendantId, materialIds);
     }
 
     public UUID getDefendantId() {
         return defendantId;
     }
 
-    public List<UUID> getListOfMC100MaterialId() {
-        if(this.listOfMC100MaterialId==null){
+    public List<UUID> getMaterialIds() {
+        if (this.materialIds == null) {
             return new ArrayList<>();
         }
-        return listOfMC100MaterialId;
+        return materialIds;
     }
 
 }

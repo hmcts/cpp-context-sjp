@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class DefendantDetailsMovedFromPeople {
 
     private final UUID caseId;
+    private final UUID defendantId;
     private final UUID personId;
     private final String title;
     private final String firstName;
@@ -28,6 +29,7 @@ public class DefendantDetailsMovedFromPeople {
     //Created builder
     @JsonCreator
     private DefendantDetailsMovedFromPeople(@JsonProperty("caseId") UUID caseId,
+                                            @JsonProperty("defendantId") UUID defendantId,
                                             @JsonProperty("personId") UUID personId,
                                             @JsonProperty("title") String title,
                                             @JsonProperty("firstName") String firstName,
@@ -38,6 +40,7 @@ public class DefendantDetailsMovedFromPeople {
                                             @JsonProperty("contactNumber") ContactDetails contactNumber,
                                             @JsonProperty("address") Address address) {
         this.caseId = caseId;
+        this.defendantId = defendantId;
         this.personId = personId;
         this.title = title;
         this.firstName = firstName;
@@ -51,6 +54,7 @@ public class DefendantDetailsMovedFromPeople {
 
     public static class DefendantDetailsMovedFromPeopleBuilder {
         private UUID caseId;
+        private UUID defendantId;
         private UUID personId;
         private String title;
         private String firstName;
@@ -67,6 +71,11 @@ public class DefendantDetailsMovedFromPeople {
 
         public DefendantDetailsMovedFromPeopleBuilder withCaseId(final UUID caseId) {
             this.caseId = caseId;
+            return this;
+        }
+
+        public DefendantDetailsMovedFromPeopleBuilder withDefendantId(final UUID defendantId) {
+            this.defendantId = defendantId;
             return this;
         }
 
@@ -116,7 +125,7 @@ public class DefendantDetailsMovedFromPeople {
         }
 
         public DefendantDetailsMovedFromPeople build() {
-            return new DefendantDetailsMovedFromPeople(caseId, personId, title, firstName,
+            return new DefendantDetailsMovedFromPeople(caseId, defendantId, personId, title, firstName,
                     lastName, dateOfBirth, gender, nationalInsuranceNumber, contactNumber,
                     address);
         }
@@ -124,6 +133,10 @@ public class DefendantDetailsMovedFromPeople {
 
     public UUID getCaseId() {
         return caseId;
+    }
+
+    public UUID getDefendantId() {
+        return defendantId;
     }
 
     public UUID getPersonId() {

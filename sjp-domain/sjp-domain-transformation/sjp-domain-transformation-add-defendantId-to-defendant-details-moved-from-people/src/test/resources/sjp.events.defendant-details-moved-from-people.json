@@ -1,7 +1,6 @@
 {
-  "caseId":"10d628dc-da5c-4a17-a50b-16b36fc1c714",
-  "personId":"20d628dc-da5c-4a17-a50b-16b36fc1c714",
-  "defendantId":"60d628dc-da5c-4a17-a50b-16b36fc1c714",
+  "caseId": "%s",
+  "personId": "%s",
   "title":"Dr",
   "firstName": "David",
   "lastName": "SMITH",

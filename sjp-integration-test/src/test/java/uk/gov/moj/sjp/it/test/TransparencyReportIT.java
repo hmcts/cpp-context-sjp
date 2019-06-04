@@ -17,7 +17,6 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_TITLE;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.DefendantBuilder.defaultDefendant;
@@ -194,7 +193,7 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         final String expectedTown = getTown(address);
         final String expectedPostcode = getPostcode(address);
         final String expectedProsecutorName = casePayloadBuilder.getProsecutingAuthority().name();
-        final String expectedOffenceTitle = DEFAULT_OFFENCE_TITLE;
+        final String expectedOffenceTitle = "Public service vehicle - passenger use altered / defaced ticket";
 
         assertThat(readyCase.optString("county", null), is(expectedCounty));
         assertThat(readyCase.optString("town", null), is(expectedTown));

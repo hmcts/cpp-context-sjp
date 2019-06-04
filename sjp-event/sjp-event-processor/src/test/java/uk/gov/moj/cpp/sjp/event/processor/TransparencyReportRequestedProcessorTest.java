@@ -38,6 +38,7 @@ import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientPro
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -192,7 +194,7 @@ public class TransparencyReportRequestedProcessorTest {
         assertReadyCasesPayloadWithPendingCases(payload, pendingCasesResultPayload, "county");
         assertReadyCasesPayloadWithPendingCases(payload, pendingCasesResultPayload, "postcode");
 
-        assertThat(getCaseIdsFromPayload(payload, "readyCases", "prosecutorName"),
+        assertThat(getPropertyFromPayload(payload, "readyCases", "prosecutorName"),
                 is(range(0, totalNumberOfRecords).mapToObj(e -> isWelsh ? "Transport For London - Welsh" : "Transport For London").collect(toList())));
 
         assertThat(payload.getJsonArray("readyCases").size(), is(totalNumberOfRecords));
@@ -201,14 +203,15 @@ public class TransparencyReportRequestedProcessorTest {
     }
 
     private void assertReadyCasesPayloadWithPendingCases(final JsonObject payload, final JsonObject pendingCasesResultPayload, final String field) {
-        assertThat(getCaseIdsFromPayload(payload, "readyCases", field),
-                is(getCaseIdsFromPayload(pendingCasesResultPayload, "pendingCases", field)));
+        assertThat(getPropertyFromPayload(payload, "readyCases", field),
+                is(getPropertyFromPayload(pendingCasesResultPayload, "pendingCases", field)));
     }
 
-    private List<String> getCaseIdsFromPayload(final JsonObject payload, final String containerArray, final String jsonField) {
+    private List<String> getPropertyFromPayload(final JsonObject payload, final String containerArray, final String jsonField) {
         return payload.getJsonArray(containerArray)
                 .getValuesAs(JsonObject.class).stream()
-                .map(e -> e.getString(jsonField))
+                .map(e -> e.getString(jsonField, null))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -231,24 +234,33 @@ public class TransparencyReportRequestedProcessorTest {
 
     private JsonObject createQueryPendingCasesPayload(final List<UUID> caseIds) {
         final JsonArrayBuilder pendingCaseArrayBuilder = createArrayBuilder();
-        range(0, caseIds.size()).forEach(e -> {
-            final JsonArrayBuilder offenceArrayBuilder = createArrayBuilder();
-            offenceArrayBuilder.add(createObjectBuilder()
-                    .add("offenceCode", "CA03011")
-                    .add("offenceStartDate", now().toString()));
-            offenceArrayBuilder.add(createObjectBuilder()
-                    .add("offenceCode", "CA03011")
-                    .add("offenceStartDate", now().minusMonths(1).toString()));
 
-            pendingCaseArrayBuilder.add(createObjectBuilder()
-                    .add("caseId", caseIds.get(e).toString())
-                    .add("defendantName", "J. Doe".concat(String.valueOf(e)))
-                    .add("town", "London".concat(String.valueOf(e)))
-                    .add("county", "Greater London".concat(String.valueOf(e)))
-                    .add("postcode", "SE1 1PJ".concat(String.valueOf(e)))
+        for (int caseNumber = 0; caseNumber < caseIds.size(); caseNumber++) {
+            boolean generateFullAddress = caseNumber % 2 == 0;
+
+            final JsonArrayBuilder offenceArrayBuilder = createArrayBuilder()
+                    .add(createObjectBuilder()
+                            .add("offenceCode", "CA03011")
+                            .add("offenceStartDate", now().toString()))
+                    .add(createObjectBuilder()
+                            .add("offenceCode", "CA03011")
+                            .add("offenceStartDate", now().minusMonths(1).toString()));
+
+            final JsonObjectBuilder pendingCase = createObjectBuilder()
+                    .add("caseId", caseIds.get(caseNumber).toString())
+                    .add("defendantName", "J. Doe" + caseNumber)
+                    .add("postcode", "SE1 1PJ" + caseNumber)
                     .add("offences", offenceArrayBuilder)
-                    .add("prosecutorName", "TFL"));
-        });
+                    .add("prosecutorName", "TFL");
+
+            if (generateFullAddress) {
+                pendingCase
+                        .add("town", "London" + caseNumber)
+                        .add("county", "Greater London" + caseNumber);
+            }
+
+            pendingCaseArrayBuilder.add(pendingCase);
+        }
 
         return createObjectBuilder()
                 .add("pendingCases", pendingCaseArrayBuilder)

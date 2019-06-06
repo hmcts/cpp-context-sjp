@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/financial-means-deleted.json",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.financial-means-deleted.json",
   "type": "object",
   "properties": {
     "defendantId": {
@@ -10,12 +10,7 @@
       "type": "array",
       "minItems": 0,
       "items": {
-        "type": "object",
-        "properties": {
-          "materialId": {
-            "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
-          }
-        }
+        "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
       }
     }
   },
@@ -24,3 +19,4 @@
   ],
   "additionalProperties": false
 }
+

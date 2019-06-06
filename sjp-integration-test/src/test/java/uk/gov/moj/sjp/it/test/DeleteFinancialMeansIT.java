@@ -8,6 +8,7 @@ import static uk.gov.moj.sjp.it.helper.DeleteFinancialMeansMatcherHelper.getExpe
 import static uk.gov.moj.sjp.it.helper.DeleteFinancialMeansMatcherHelper.getExpectedFinancialMeanDataBeforeDeletionMatcher;
 import static uk.gov.moj.sjp.it.helper.DeleteFinancialMeansMatcherHelper.getSavedOnlinePleaPayloadContentMatcher;
 import static uk.gov.moj.sjp.it.helper.FinancialMeansHelper.getOnlinePleaData;
+import static uk.gov.moj.sjp.it.stub.MaterialStub.stubAddCaseMaterial;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.stubNotifications;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostcodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
@@ -15,8 +16,10 @@ import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
 import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
+import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -35,6 +38,8 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
     private FinancialMeansHelper financialMeansHelper;
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private static final String TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__not-guilty.json";
+    //To add Case Document
+    private static final String PROSECUTING_AUTHORITY_ACCESS_ALL = "ALL";
     //To Query OnlinePlea
     private static final Set<UUID> DEFAULT_STUBBED_USER_ID = singleton(USER_ID);
 
@@ -71,12 +76,40 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
         final JSONObject pleaPayload = getOnlinePleaPayload();
         defendantRaisesOnlinePlea(caseId, defendantId, pleaPayload);
 
-        //Step 3: Delete Financial Means Data
+        //Step 3: Add Case Documents of FINANCIAL_MEANS documentType
+        final UUID legalAdviserId = randomUUID();
+        addFinancialMeansCaseDocument(caseId,defendantId,legalAdviserId);
+
+        //Step 4: Delete Financial Means Data
         financialMeansHelper.deleteFinancialMeans(caseId, defendantId, createObjectBuilder().build());
 
-        //Step 4: Verify both financial Mean data from a) financial-mean and b) online-plea is deleted
+        //Step 5: Verify the deletion of financial Mean data from
+        // a) financial-mean
+        // b) online-plea
+        // c) case document entry containing finacial means reference data
         verifyFinancialMeansDataDeletion(defendantId);
         verifyOnlinePleaDataDeletion(pleaPayload, caseId, defendantId);
+        verifyFinancialMeansCaseDocumentDeletion(caseId,legalAdviserId);
+    }
+
+    private void verifyFinancialMeansCaseDocumentDeletion(final UUID caseId, final UUID legalAdviserId) {
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
+            caseDocumentHelper.assertDocumentNotExist(legalAdviserId, 0, "FINANCIAL_MEANS", 1);
+        }
+    }
+
+    private void addFinancialMeansCaseDocument(final UUID caseId, final String defendantId, final UUID legalAdviserId) {
+
+        UsersGroupsStub.stubGroupForUser(legalAdviserId, UsersGroupsStub.LEGAL_ADVISERS_GROUP);
+        UsersGroupsStub.stubForUserDetails(legalAdviserId, PROSECUTING_AUTHORITY_ACCESS_ALL);
+
+        stubAddCaseMaterial();
+
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
+            caseDocumentHelper.addCaseDocumentWithDocumentType(legalAdviserId, "FINANCIAL_MEANS");
+            caseDocumentHelper.findDocument(legalAdviserId, 0, "FINANCIAL_MEANS", 1);
+        }
+
     }
 
     private void verifyOnlinePleaDataDeletion(final JSONObject pleaPayload, final UUID caseId, final String defendantId) throws InterruptedException {

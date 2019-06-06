@@ -49,6 +49,6 @@ public class CaseFinancialMeansHandler {
                 .map(CaseDocument::getMaterialId)
                 .collect(toList());
 
-        return Stream.of(FinancialMeansDeleted.createEvent(defendantId,materialIds));
+        return Stream.of(FinancialMeansDeleted.createEvent(defendantId, materialIds));
     }
 }

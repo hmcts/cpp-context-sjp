@@ -12,6 +12,7 @@ import uk.gov.moj.cpp.sjp.event.listener.converter.FinancialMeansConverter;
 import uk.gov.moj.cpp.sjp.event.listener.converter.OnlinePleaConverter;
 import uk.gov.moj.cpp.sjp.persistence.entity.FinancialMeans;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.DefendantRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.FinancialMeansRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
@@ -41,6 +42,9 @@ public class FinancialMeansListener {
     @Inject
     private DefendantRepository defendantRepository;
 
+    @Inject
+    private CaseDocumentRepository caseDocumentRepository;
+
     @Handles("sjp.events.financial-means-updated")
     public void updateFinancialMeans(final JsonEnvelope event) {
         final FinancialMeansUpdated financialMeansUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), FinancialMeansUpdated.class);
@@ -59,17 +63,35 @@ public class FinancialMeansListener {
     public void deleteFinancialMeans(final JsonEnvelope event) {
         final FinancialMeansDeleted financialMeansDeleted = jsonObjectConverter.convert(event.payloadAsJsonObject(), FinancialMeansDeleted.class);
         final UUID defendantId = financialMeansDeleted.getDefendantId();
+
+        if (deleteFinancialMeansData(defendantId)) {
+            deleteFinancialMeansDataUpdatedThruOnlinePlea(defendantId);
+        }
+        deleteFinancialMeansCaseDocumentReferenceData(financialMeansDeleted);
+    }
+
+    private boolean deleteFinancialMeansData(final UUID defendantId) {
         final FinancialMeans financialMeansByDefendantId = financialMeansRepository.findBy(defendantId);
-
-        if(financialMeansByDefendantId!=null) {
+        boolean financialMeansExist = false;
+        if (financialMeansByDefendantId != null) {
+            financialMeansExist = true;
             financialMeansRepository.remove(financialMeansByDefendantId);
+        }
+        return financialMeansExist;
+    }
 
-            final UUID caseId = defendantRepository.findCaseIdByDefendantId(defendantId);
-            final OnlinePlea onlinePlea = onlinePleaRepository.findOnlinePleaByDefendantIdAndCaseId(caseId, defendantId);
-            if (onlinePlea != null) {
-                onlinePlea.setOutgoings(null);
-                onlinePleaRepository.save(onlinePlea);
-            }
+    private void deleteFinancialMeansCaseDocumentReferenceData(final FinancialMeansDeleted financialMeansDeleted) {
+        financialMeansDeleted.getMaterialIds().stream()
+                .map(materialId -> caseDocumentRepository.findByMaterialId(materialId))
+                .forEach(caseDocumentRepository::remove);
+    }
+
+    private void deleteFinancialMeansDataUpdatedThruOnlinePlea(final UUID defendantId) {
+        final UUID caseId = defendantRepository.findCaseIdByDefendantId(defendantId);
+        final OnlinePlea onlinePlea = onlinePleaRepository.findOnlinePleaByDefendantIdAndCaseId(caseId, defendantId);
+        if (onlinePlea != null) {
+            onlinePlea.setOutgoings(null);
+            onlinePleaRepository.save(onlinePlea);
         }
     }
 

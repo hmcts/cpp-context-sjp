@@ -5,6 +5,7 @@ import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.JsonPath.compile;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -235,6 +236,16 @@ public class CaseDocumentHelper implements AutoCloseable {
                 );
 
         return JsonHelper.getJsonObject(documents.getPayload()).getJsonArray("caseDocuments").getJsonObject(0);
+    }
+
+    public void assertDocumentNotExist(final UUID userId, final int index, final String documentType, final int documentNumber) {
+        final ResponseData documents = pollWithDefaults(getCaseDocumentsByCaseId(caseId, userId))
+                .until(
+                        status().is(Response.Status.OK),
+                        payload().isJson(allOf(
+                                withoutJsonPath("$.caseDocuments")
+                        ))
+                );
     }
 
     public void verifyDocumentNotVisibleForProsecutorWhenQueryingForCaseDocuments(final UUID tflUserId) {

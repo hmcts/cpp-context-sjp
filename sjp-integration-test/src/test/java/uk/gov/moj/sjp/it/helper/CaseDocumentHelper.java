@@ -8,6 +8,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -31,6 +32,7 @@ import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeMultipartFormPostCall;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithTimeParams;
 import static uk.gov.moj.sjp.it.util.TopicUtil.privateEvents;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
@@ -41,9 +43,11 @@ import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.JsonHelper;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.jms.MessageConsumer;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
@@ -238,6 +242,15 @@ public class CaseDocumentHelper implements AutoCloseable {
         return JsonHelper.getJsonObject(documents.getPayload()).getJsonArray("caseDocuments").getJsonObject(0);
     }
 
+    public JsonObject findAllDocumentsForTheUser (final UUID userId) {
+        final ResponseData documents = pollWithTimeParams(getCaseDocumentsByCaseId(caseId, userId),2000,100)
+                .until(
+                        status().is(OK),
+                        payload().isJson( withJsonPath("$.caseDocuments[" + 0 + "].documentNumber", Matchers.notNullValue())
+                        ));
+        return JsonHelper.getJsonObject(documents.getPayload()).getJsonArray("caseDocuments").getJsonObject(0);
+    }
+
     public void assertDocumentNotExist(final UUID userId, final int index, final String documentType, final int documentNumber) {
         final ResponseData documents = pollWithDefaults(getCaseDocumentsByCaseId(caseId, userId))
                 .until(
@@ -278,6 +291,10 @@ public class CaseDocumentHelper implements AutoCloseable {
 
     public String getDocumentId() {
         return id;
+    }
+
+    public String getMaterialId() {
+        return this.materialId;
     }
 
     @Override

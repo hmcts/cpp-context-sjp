@@ -102,6 +102,12 @@
             <artifactId>hamcrest-library</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>test-utils-enveloper-provider</artifactId>
+            <version>${cpp.framework.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -201,6 +207,18 @@
                     <dependency>
                         <groupId>uk.gov.moj.cpp.material</groupId>
                         <artifactId>material-query-api</artifactId>
+                        <version>${material.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.material</groupId>
+                        <artifactId>material-command-api</artifactId>
                         <version>${material.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>

@@ -8,8 +8,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.jayway.awaitility.Awaitility.await;
+import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -17,6 +19,7 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
@@ -30,7 +33,9 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -40,9 +45,12 @@ import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 public class MaterialStub {
 
     public static final String COMMAND_URL = "/material-service/command/api/rest/material/material";
+    //public static final String DELETE_COMMAND_URL = "/material-service/command/api/rest/material/material/%s";
+    public static final String DELETE_COMMAND_URL = "/material-service/command/api/rest/material/material/%s";
     public static final String MATERIAL_QUERY_URL = "/material-service/query/api/rest/material";
     public static final String COMMAND_MEDIA_TYPE = "application/vnd.material.command.upload-file+json";
     public static final String MATERIAL_METADATA_QUERY_MEDIA_TYPE = "application/vnd.material.query.material-metadata+json";
+    public static final String DELETE_MATERIAL_COMMAND_MEDIA_TYPE = "application/vnd.material.delete-material+json";
 
     public static void stubAddCaseMaterial() {
         InternalEndpointMockUtils.stubPingFor("material-service");
@@ -135,5 +143,26 @@ public class MaterialStub {
                 .withQueryParam("requestPdf", equalTo("false"))
                 .willReturn(aResponse().withStatus(responseStatusCode)
                         .withHeader(HeaderConstants.ID, randomUUID().toString())));
+    }
+
+    public static void stubDeleteMaterial(final String materialId) {
+        InternalEndpointMockUtils.stubPingFor("material-service");
+
+        stubFor(post(urlPathEqualTo(format(DELETE_COMMAND_URL, materialId)))
+                .willReturn(aResponse().withStatus(SC_ACCEPTED)));
+    }
+
+    public static void assertMaterialDeleteFMICommandInvoked(String materialId) {
+
+        verifyCallsToStubbedEndpoint(format(DELETE_COMMAND_URL, materialId), 1);
+    }
+
+
+    public static void verifyCallsToStubbedEndpoint(final String url, final int numberOfCalls) {
+        await().timeout(30, TimeUnit.SECONDS)
+                .pollInterval(1, TimeUnit.SECONDS)
+                .until(
+                        () -> findAll(postRequestedFor(urlMatching(url))).size(), is(numberOfCalls)
+                );
     }
 }

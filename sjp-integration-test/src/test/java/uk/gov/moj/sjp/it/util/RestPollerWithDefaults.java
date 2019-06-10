@@ -31,10 +31,20 @@ public class RestPollerWithDefaults {
         return pollWithDefaults(requestParamsBuilder.build());
     }
 
+    public static RestPoller pollWithTimeParams(final RequestParamsBuilder requestParamsBuilder,int delayInMillis,int intervalInMillis) {
+        return pollWithTimeParams(requestParamsBuilder.build(),delayInMillis,intervalInMillis);
+    }
+
     public static RestPoller pollWithDefaults(final RequestParams requestParams) {
         return poll(requestParams)
                 .pollDelay(DELAY_IN_MILLIS, MILLISECONDS)
                 .pollInterval(INTERVAL_IN_MILLIS, MILLISECONDS);
+    }
+
+    public static RestPoller pollWithTimeParams(final RequestParams requestParams,int delayInMillis,int intervalInMillis) {
+        return poll(requestParams)
+                .pollDelay(delayInMillis, MILLISECONDS)
+                .pollInterval(intervalInMillis, MILLISECONDS);
     }
 
     public static JsonObject pollWithDefaultsUntilResponseIsJson(final RequestParams requestParams, final Matcher<? super ReadContext> matcher) {

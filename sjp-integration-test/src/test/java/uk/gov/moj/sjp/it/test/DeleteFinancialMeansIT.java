@@ -1,8 +1,14 @@
 package uk.gov.moj.sjp.it.test;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singleton;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 import static uk.gov.moj.cpp.sjp.domain.IncomeFrequency.MONTHLY;
 import static uk.gov.moj.sjp.it.helper.DeleteFinancialMeansMatcherHelper.getExpectedFinancialMeanDataAfterDeletionMatcher;
 import static uk.gov.moj.sjp.it.helper.DeleteFinancialMeansMatcherHelper.getExpectedFinancialMeanDataBeforeDeletionMatcher;
@@ -20,8 +26,11 @@ import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
 import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
+import uk.gov.moj.sjp.it.stub.MaterialStub;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -42,6 +51,7 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
     private static final String PROSECUTING_AUTHORITY_ACCESS_ALL = "ALL";
     //To Query OnlinePlea
     private static final Set<UUID> DEFAULT_STUBBED_USER_ID = singleton(USER_ID);
+
 
     @Before
     public void setUp() {
@@ -90,6 +100,29 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
         verifyFinancialMeansDataDeletion(defendantId);
         verifyOnlinePleaDataDeletion(pleaPayload, caseId, defendantId);
         verifyFinancialMeansCaseDocumentDeletion(caseId,legalAdviserId);
+    }
+
+    @Test
+    public void testDeleteFinancialMeansWithMaterials() {
+
+        //Create a Case...
+        final UUID caseId = createCasePayloadBuilder.getId();
+        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
+        final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId);
+
+        List<String> fmiMaterials = financialMeansHelper.associateCaseWithFinancialMeansDocuments(caseId,USER_ID,caseDocumentHelper);
+
+        final JsonObject payload = createObjectBuilder().build();
+        financialMeansHelper.deleteFinancialMeans(caseId, defendantId, payload);
+
+        FinancialMeansHelper.assertDocumentDeleted(caseDocumentHelper,USER_ID,fmiMaterials);
+        fmiMaterials.forEach(materialId -> MaterialStub.assertMaterialDeleteFMICommandInvoked(materialId));
+        fmiMaterials.clear();
+        financialMeansHelper.getEventFromPublicTopic(
+                isJson(
+                        withJsonPath("$.defendantId", is(defendantId)))
+        );
+
     }
 
     private void verifyFinancialMeansCaseDocumentDeletion(final UUID caseId, final UUID legalAdviserId) {
@@ -149,5 +182,4 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
         jsonObject.getJSONArray("offences").getJSONObject(0).put("id", createCasePayloadBuilder.getOffenceId().toString());
         return jsonObject;
     }
-
 }

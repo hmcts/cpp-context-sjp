@@ -20,7 +20,7 @@ import org.json.JSONObject;
 public class DeleteFinancialMeansMatcherHelper {
 
     public static Matcher<Object> getSavedOnlinePleaPayloadContentMatcher(final JSONObject onlinePleaPayload,
-                                                                    final String caseId, final String defendantId, boolean isFinancialMeansDeleted) {
+                                                                          final String caseId, final String defendantId, boolean isFinancialMeansDeleted) {
         final List<Matcher> fieldMatchers = getOnlinePleaMatchers(onlinePleaPayload, caseId, defendantId);
 
         if (isFinancialMeansDeleted) {
@@ -34,7 +34,7 @@ public class DeleteFinancialMeansMatcherHelper {
     }
 
 
-    public static  Matcher<Object> getExpectedFinancialMeanDataBeforeDeletionMatcher(Income originalIncome, String employmentStatus) {
+    public static Matcher<Object> getExpectedFinancialMeanDataBeforeDeletionMatcher(Income originalIncome, String employmentStatus) {
         return isJson(allOf(
                 withJsonPath("$.income.frequency", is(originalIncome.getFrequency().name())),
                 withJsonPath("$.income.amount", is(originalIncome.getAmount().doubleValue())),
@@ -44,7 +44,7 @@ public class DeleteFinancialMeansMatcherHelper {
         ));
     }
 
-    public static  Matcher<Object> getExpectedFinancialMeanDataAfterDeletionMatcher() {
+    public static Matcher<Object> getExpectedFinancialMeanDataAfterDeletionMatcher() {
         return isJson(allOf(
                 withoutJsonPath("$.income.frequency"),
                 withoutJsonPath("$.income.amount"),
@@ -61,7 +61,11 @@ public class DeleteFinancialMeansMatcherHelper {
         final JSONObject travelExpensesOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(3);
         final JSONObject childMaintenanceOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(4);
         final JSONObject otherOutgoing = onlinePleaPayload.getJSONArray("outgoings").getJSONObject(5);
-        return asList(
+        final JSONObject financialMeans = onlinePleaPayload.getJSONObject("financialMeans");
+        final JSONObject employer = onlinePleaPayload.getJSONObject("employer");
+        final JSONObject employerAddress = employer.getJSONObject("address");
+
+        final List<Matcher> matchers = new ArrayList<>( asList(
                 //outgoings
                 withJsonPath("$.outgoings.accommodationAmount", equalTo(accommodationOutgoing.getDouble("amount"))),
                 withJsonPath("$.outgoings.councilTaxAmount", equalTo(councilTaxOutgoing.getDouble("amount"))),
@@ -71,50 +75,6 @@ public class DeleteFinancialMeansMatcherHelper {
                 withJsonPath("$.outgoings.otherDescription", equalTo(otherOutgoing.getString("description"))),
                 withJsonPath("$.outgoings.otherAmount", equalTo(otherOutgoing.getDouble("amount"))),
                 withJsonPath("$.outgoings.monthlyAmount", equalTo(1772.3))
-        );
-    }
-
-
-    private static List<Matcher> getOutgoingsMatcherAfterDelete() {
-        return asList(
-                withoutJsonPath("$.outgoings.accommodationAmount"),
-                withoutJsonPath("$.outgoings.councilTaxAmount"),
-                withoutJsonPath("$.outgoings.householdBillsAmount"),
-                withoutJsonPath("$.outgoings.travelExpensesAmount"),
-                withoutJsonPath("$.outgoings.childMaintenanceAmount"),
-                withoutJsonPath("$.outgoings.otherDescription"),
-                withoutJsonPath("$.outgoings.otherAmount"),
-                withoutJsonPath("$.outgoings.monthlyAmount")
-        );
-    }
-
-
-    private static List<Matcher> getOnlinePleaMatchers(final JSONObject onlinePleaPayload, final String caseId, final String defendantId) {
-        final JSONObject person = onlinePleaPayload.getJSONObject("personalDetails");
-        final JSONObject personAddress = person.getJSONObject("address");
-        final JSONObject personContactDetails = person.getJSONObject("contactDetails");
-        final JSONObject financialMeans = onlinePleaPayload.getJSONObject("financialMeans");
-        final JSONObject employer = onlinePleaPayload.getJSONObject("employer");
-        final JSONObject employerAddress = employer.getJSONObject("address");
-
-        final List<Matcher> matchers = new ArrayList<>(asList(
-                withJsonPath("$.caseId", equalTo(caseId)),
-                withJsonPath("$.defendantId", equalTo(defendantId)),
-
-                //personal details
-                withJsonPath("$.personalDetails.firstName", equalTo(person.getString("firstName"))),
-                withJsonPath("$.personalDetails.lastName", equalTo(person.getString("lastName"))),
-                withJsonPath("$.personalDetails.homeTelephone", equalTo(personContactDetails.getString("home"))),
-                withJsonPath("$.personalDetails.mobile", equalTo(personContactDetails.getString("mobile"))),
-                withJsonPath("$.personalDetails.email", equalTo(personContactDetails.getString("email"))),
-                withJsonPath("$.personalDetails.dateOfBirth", equalTo(person.getString("dateOfBirth"))),
-                withJsonPath("$.personalDetails.nationalInsuranceNumber", equalTo(person.getString("nationalInsuranceNumber"))),
-                withJsonPath("$.personalDetails.address.address1", equalTo(personAddress.getString("address1"))),
-                withJsonPath("$.personalDetails.address.address2", equalTo(personAddress.getString("address2"))),
-                withJsonPath("$.personalDetails.address.address3", equalTo(personAddress.getString("address3"))),
-                withJsonPath("$.personalDetails.address.address4", equalTo(personAddress.getString("address4"))),
-                withJsonPath("$.personalDetails.address.address5", equalTo(personAddress.getString("address5"))),
-                withJsonPath("$.personalDetails.address.postcode", equalTo(personAddress.getString("postcode")))
         ));
 
         //Financial data matchers
@@ -137,6 +97,74 @@ public class DeleteFinancialMeansMatcherHelper {
                 withJsonPath("$.employer.address.address5", equalTo(employerAddress.getString("address5"))),
                 withJsonPath("$.employer.address.postcode", equalTo(employerAddress.getString("postcode")))
         ));
+        return matchers;
+
+    }
+
+
+    private static List<Matcher> getOutgoingsMatcherAfterDelete() {
+        final List<Matcher> matchers = new ArrayList<>(asList(
+                withoutJsonPath("$.outgoings.accommodationAmount"),
+                withoutJsonPath("$.outgoings.councilTaxAmount"),
+                withoutJsonPath("$.outgoings.householdBillsAmount"),
+                withoutJsonPath("$.outgoings.travelExpensesAmount"),
+                withoutJsonPath("$.outgoings.childMaintenanceAmount"),
+                withoutJsonPath("$.outgoings.otherDescription"),
+                withoutJsonPath("$.outgoings.otherAmount"),
+                withoutJsonPath("$.outgoings.monthlyAmount")
+        ));
+
+        //Financial means matchers
+        matchers.addAll(asList(
+                //financial-means
+                withoutJsonPath("$.employment.incomePaymentFrequency"),
+                withoutJsonPath("$.employment.incomePaymentAmount"),
+                withoutJsonPath("$.employment.benefitsClaimed"),
+                withoutJsonPath("$.employment.benefitsType"),
+                withoutJsonPath("$.employment.benefitsDeductPenaltyPreference"),
+
+                //employer
+                withoutJsonPath("$.employer.name"),
+                withoutJsonPath("$.employer.employeeReference"),
+                withoutJsonPath("$.employer.phone"),
+                withoutJsonPath("$.employer.address.address1"),
+                withoutJsonPath("$.employer.address.address2"),
+                withoutJsonPath("$.employer.address.address3"),
+                withoutJsonPath("$.employer.address.address4"),
+                withoutJsonPath("$.employer.address.address5"),
+                withoutJsonPath("$.employer.address.postcode")
+        ));
+
+        return matchers;
+    }
+
+
+    private static List<Matcher> getOnlinePleaMatchers(final JSONObject onlinePleaPayload, final String caseId, final String defendantId) {
+        final JSONObject person = onlinePleaPayload.getJSONObject("personalDetails");
+        final JSONObject personAddress = person.getJSONObject("address");
+        final JSONObject personContactDetails = person.getJSONObject("contactDetails");
+
+        final List<Matcher> matchers = new ArrayList<>(asList(
+                withJsonPath("$.caseId", equalTo(caseId)),
+                withJsonPath("$.defendantId", equalTo(defendantId)),
+
+                //personal details
+                withJsonPath("$.personalDetails.firstName", equalTo(person.getString("firstName"))),
+                withJsonPath("$.personalDetails.lastName", equalTo(person.getString("lastName"))),
+                withJsonPath("$.personalDetails.homeTelephone", equalTo(personContactDetails.getString("home"))),
+                withJsonPath("$.personalDetails.mobile", equalTo(personContactDetails.getString("mobile"))),
+                withJsonPath("$.personalDetails.email", equalTo(personContactDetails.getString("email"))),
+                withJsonPath("$.personalDetails.dateOfBirth", equalTo(person.getString("dateOfBirth"))),
+                withJsonPath("$.personalDetails.nationalInsuranceNumber", equalTo(person.getString("nationalInsuranceNumber"))),
+                withJsonPath("$.personalDetails.address.address1", equalTo(personAddress.getString("address1"))),
+                withJsonPath("$.personalDetails.address.address2", equalTo(personAddress.getString("address2"))),
+                withJsonPath("$.personalDetails.address.address3", equalTo(personAddress.getString("address3"))),
+                withJsonPath("$.personalDetails.address.address4", equalTo(personAddress.getString("address4"))),
+                withJsonPath("$.personalDetails.address.address5", equalTo(personAddress.getString("address5"))),
+                withJsonPath("$.personalDetails.address.postcode", equalTo(personAddress.getString("postcode")))
+        ));
+
+
         return matchers;
     }
 

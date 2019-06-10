@@ -91,7 +91,15 @@ public class FinancialMeansListener {
         final OnlinePlea onlinePlea = onlinePleaRepository.findOnlinePleaByDefendantIdAndCaseId(caseId, defendantId);
         if (onlinePlea != null) {
             onlinePlea.setOutgoings(null);
+            deleteEmploymentData(onlinePlea);
             onlinePleaRepository.save(onlinePlea);
+        }
+    }
+
+    private void deleteEmploymentData(final OnlinePlea onlinePlea) {
+        if (onlinePlea.getEmployment() != null) {
+            onlinePlea.setEmployment(null);
+            onlinePlea.setEmployer(null);
         }
     }
 

@@ -1,6 +1,7 @@
 package uk.gov.moj.sjp.it.test;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryNationalities;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubAllGroupsForUser;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.DELAY_IN_MILLIS;
@@ -34,5 +35,6 @@ public abstract class BaseIntegrationTest {
         InternalEndpointMockUtils.stubPingFor("usersgroups-service");
         stubAllGroupsForUser();
         stubForUserDetails(USER_ID, "ALL");
+        stubCountryNationalities("stub-data/referencedata.query.country-nationality.json");
     }
 }

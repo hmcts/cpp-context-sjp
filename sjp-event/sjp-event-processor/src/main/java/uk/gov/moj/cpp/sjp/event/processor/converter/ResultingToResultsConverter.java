@@ -1,10 +1,11 @@
 package uk.gov.moj.cpp.sjp.event.processor.converter;
 
+import static java.lang.Integer.parseInt;
 import static java.util.UUID.fromString;
-import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static javax.json.JsonValue.NULL;
+import static uk.gov.justice.json.schemas.domains.sjp.results.PersonTitle.valueFor;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
@@ -13,30 +14,43 @@ import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
 import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
-import uk.gov.justice.services.common.converter.LocalDates;
+import uk.gov.justice.json.schemas.domains.sjp.results.BaseCaseDetails;
+import uk.gov.justice.json.schemas.domains.sjp.results.BaseOffence;
+import uk.gov.justice.json.schemas.domains.sjp.results.BasePersonDetail;
+import uk.gov.justice.json.schemas.domains.sjp.results.BaseResult;
+import uk.gov.justice.json.schemas.domains.sjp.results.BaseSessionStructure;
+import uk.gov.justice.json.schemas.domains.sjp.results.CaseDefendant;
+import uk.gov.justice.json.schemas.domains.sjp.results.CaseOffence;
+import uk.gov.justice.json.schemas.domains.sjp.results.IndividualDefendant;
+import uk.gov.justice.json.schemas.domains.sjp.results.PersonTitle;
+import uk.gov.justice.json.schemas.domains.sjp.results.Plea;
+import uk.gov.justice.json.schemas.domains.sjp.results.Prompts;
+import uk.gov.justice.json.schemas.domains.sjp.results.PublicSjpResulted;
+import uk.gov.justice.json.schemas.domains.sjp.results.SessionLocation;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.resulting.CourtDetails;
 import uk.gov.moj.cpp.sjp.domain.resulting.Offence;
-import uk.gov.moj.cpp.sjp.domain.resulting.Prompt;
 import uk.gov.moj.cpp.sjp.domain.resulting.ReferencedDecisionsSaved;
-import uk.gov.moj.cpp.sjp.domain.resulting.Result;
 import uk.gov.moj.cpp.sjp.domain.resulting.SJPSession;
 import uk.gov.moj.cpp.sjp.event.processor.service.ProsecutionCaseFileService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 
 public class ResultingToResultsConverter {
 
@@ -50,12 +64,8 @@ public class ResultingToResultsConverter {
     private static final String ADDRESS4_KEY = "address4";
     private static final String ADDRESS5_KEY = "address5";
     private static final String POSTCODE_KEY = "postcode";
-    private static final String ADDRESS_KEY = "address";
     private static final String ROOM_NAME = "00";
     private static final String DEFAULT_BAIL_STATUS = "A";
-    private static final String VERDICT_KEY = "verdict";
-    private static final String ACCOUNT_DIVISION_CODE_KEY = "accountDivisionCode";
-    private static final String ENFORCING_COURT_CODE_KEY = "enforcingCourtCode";
     private static final String MAGISTRATE_KEY = "magistrate";
     private static final String ENDED_AT_KEY = "endedAt";
     private static final int MODE_OF_TRIAL = 1;
@@ -69,62 +79,65 @@ public class ResultingToResultsConverter {
     @Inject
     private ProsecutionCaseFileService prosecutionCaseFileService;
 
-    public JsonObject convert(final UUID caseId, final JsonEnvelope envelope, final CaseDetails caseDetails, final JsonObject sjpSessionPayload) {
-
-        final JsonObject jsonPayload = envelope.payloadAsJsonObject();
-        final ReferencedDecisionsSaved referencedDecisionsSaved = extractReferenceDecisionSaves(caseId, jsonPayload);
+    public PublicSjpResulted convert(final UUID caseId, final Envelope<ReferencedDecisionsSaved> envelope, final CaseDetails caseDetails, final JsonObject sjpSessionPayload) {
+        final ReferencedDecisionsSaved referencedDecisionsSaved = envelope.payload();
         final SJPSession sjpSession = extractSJPSession(sjpSessionPayload);
         final JsonEnvelope emptyEnvelope = envelopeFrom(metadataFrom(envelope.metadata()), NULL);
         final Optional<JsonObject> court = referenceDataService.getCourtByCourtHouseOUCode(sjpSession.getCourtDetails().getCourtHouseCode(), emptyEnvelope);
 
-        return createObjectBuilder()
-                .add("session", buildSession(sjpSession, court))
-                .add("cases", buildCases(caseId, caseDetails, referencedDecisionsSaved, sjpSession, envelope))
+        return PublicSjpResulted.publicSjpResulted()
+                .withSession(buildSession(sjpSession, court))
+                .withCases(buildCases(caseId, caseDetails, referencedDecisionsSaved, sjpSession, envelope.metadata()))
                 .build();
     }
 
-    protected JsonArray buildCases(final UUID caseId, final CaseDetails caseDetails, final ReferencedDecisionsSaved referencedDecisionsSaved, final SJPSession sjpSession, final JsonEnvelope envelope) {
-        return createArrayBuilder().add(createObjectBuilder()
-                .add("caseId", caseId.toString())
-                .add("urn", caseDetails.getUrn())
-                .add("defendants", buildDefendants(caseDetails, referencedDecisionsSaved, sjpSession, envelope))).build();
+    protected List<BaseCaseDetails> buildCases(final UUID caseId, final CaseDetails caseDetails, final ReferencedDecisionsSaved referencedDecisionsSaved, final SJPSession sjpSession, final Metadata metadata) {
+        List<BaseCaseDetails> baseCaseDetailsList = new ArrayList<>();
+        baseCaseDetailsList.add(BaseCaseDetails.baseCaseDetails()
+                .withCaseId(caseId)
+                .withUrn(caseDetails.getUrn())
+                .withDefendants(buildDefendants(caseDetails, referencedDecisionsSaved, sjpSession, metadata)).build());
+        return baseCaseDetailsList;
     }
 
-    protected JsonObject buildSession(final SJPSession sjpSession, final Optional<JsonObject> court) {
-        return createObjectBuilder()
-                .add("sessionId", sjpSession.getId().toString())
-                .add("sessionLocation", buildSessionLocation(sjpSession, court))
-                .add("dateAndTimeOfSession", getZonedDateTimeString(sjpSession.getStartedAt()))
-                .add("ouCode", sjpSession.getCourtDetails().getCourtHouseCode()).build();
+    protected BaseSessionStructure buildSession(final SJPSession sjpSession, final Optional<JsonObject> court) {
+        return BaseSessionStructure.baseSessionStructure()
+                .withSessionId(sjpSession.getId())
+                .withDateAndTimeOfSession(sjpSession.getStartedAt())
+                .withOuCode(sjpSession.getCourtDetails().getCourtHouseCode())
+                .withSessionLocation(buildSessionLocation(sjpSession, court))
+                .build();
     }
 
-    protected JsonObject buildSessionLocation(final SJPSession sjpSession, final Optional<JsonObject> courtOptional) {
-        final JsonObjectBuilder builder = createObjectBuilder();
-        builder.add("courtId", courtOptional.isPresent() ? courtOptional.get().getString("id") : null)
-                .add("courtHouseCode", sjpSession.getCourtDetails().getCourtHouseCode())
-                .add("name", sjpSession.getCourtDetails().getCourtHouseName())
-                .add("roomName", ROOM_NAME)
-                .add("lja", courtOptional.isPresent() ? courtOptional.get().getString("lja") : null);
+    protected SessionLocation buildSessionLocation(final SJPSession sjpSession, final Optional<JsonObject> courtOptional) {
+        SessionLocation.Builder builder = SessionLocation.sessionLocation();
+
+        builder.withCourtId(courtOptional.isPresent() ? fromString(courtOptional.get().getString("id")) : null)
+                .withCourtHouseCode(sjpSession.getCourtDetails().getCourtHouseCode())
+                .withName(sjpSession.getCourtDetails().getCourtHouseName())
+                .withRoomName(ROOM_NAME)
+                .withLja(courtOptional.isPresent() ? courtOptional.get().getString("lja") : null);
 
         if (courtOptional.isPresent()) {
             final JsonObject court = courtOptional.get();
-            builder.add(ADDRESS_KEY, createObjectBuilder()
-                    .add(ADDRESS1_KEY, court.getString(ADDRESS1_KEY))
-                    .add(ADDRESS2_KEY, court.getString(ADDRESS2_KEY))
-                    .add(ADDRESS3_KEY, court.getString(ADDRESS3_KEY))
-                    .add(ADDRESS4_KEY, court.getString(ADDRESS4_KEY))
-                    .add(ADDRESS5_KEY, court.getString(ADDRESS5_KEY))
-                    .add(POSTCODE_KEY, !court.isNull(POSTCODE_KEY) ? court.getString(POSTCODE_KEY) : ""));
+            builder.withAddress(Address.address()
+                    .withAddress1(court.getString(ADDRESS1_KEY))
+                    .withAddress2(court.getString(ADDRESS2_KEY))
+                    .withAddress3(court.getString(ADDRESS3_KEY))
+                    .withAddress4(court.getString(ADDRESS4_KEY))
+                    .withAddress5(court.getString(ADDRESS5_KEY))
+                    .withPostcode(!court.isNull(POSTCODE_KEY) ? court.getString(POSTCODE_KEY) : null)
+                    .build());
         }
 
         return builder.build();
     }
 
-    protected JsonArray buildDefendants(final CaseDetails caseDetails, final ReferencedDecisionsSaved referencedDecisionsSaved, final SJPSession sjpSession, final JsonEnvelope envelope) {
-        final JsonArrayBuilder arrayBuilder = createArrayBuilder();
+    protected List<CaseDefendant> buildDefendants(final CaseDetails caseDetails, final ReferencedDecisionsSaved referencedDecisionsSaved, final SJPSession sjpSession, final Metadata metadata) {
+        final List<CaseDefendant> arrayBuilder = new ArrayList<>();
         final Defendant defendant = caseDetails.getDefendant();
         if (null != defendant) {
-            final JsonEnvelope emptyEnvelope = envelopeFrom(metadataFrom(envelope.metadata()), NULL);
+            final JsonEnvelope emptyEnvelope = envelopeFrom(metadataFrom(metadata), NULL);
             final JsonObject caseFileDefendantDetails = prosecutionCaseFileService.getCaseFileDefendantDetails(caseDetails.getId(), emptyEnvelope).orElse(null); // this service returns first defendant as in the SJP there is only 1 defendant.
             final Optional<JsonObject> defendantSelfDefinedInformationOptional = Optional.ofNullable(caseFileDefendantDetails)
                     .map(defendantDetails -> (JsonObject) defendantDetails.getOrDefault("selfDefinedInformation", createObjectBuilder().build()));
@@ -136,201 +149,136 @@ public class ResultingToResultsConverter {
                     .map(referenceDataNationality -> referenceDataNationality.getString("isoCode"))
                     .orElse(UNKNOWN);
 
-            arrayBuilder.add(createObjectBuilder()
-                    .add("defendantId", defendant.getId().toString())
-                    .add("prosecutorReference", DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE)
-                    .add("individualDefendant", buildIndividualDefendant(defendant, countryCJSCode))
-                    .add(OFFENCES_KEY, buildOffences(caseDetails, referencedDecisionsSaved, sjpSession, caseFileDefendantOffencesOptional)));
+            arrayBuilder.add(CaseDefendant.caseDefendant()
+                    .withDefendantId(defendant.getId())
+                    .withProsecutorReference(DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE)
+                    .withIndividualDefendant(buildIndividualDefendant(defendant, countryCJSCode))
+                    .withOffences(buildOffences(caseDetails, referencedDecisionsSaved, sjpSession, caseFileDefendantOffencesOptional))
+                    .build());
         }
 
-        return arrayBuilder.build();
+        return arrayBuilder;
     }
 
-    protected JsonObject buildIndividualDefendant(final Defendant defendant, final String countryCJSCode) {
-        final JsonObjectBuilder objectBuilder = createObjectBuilder();
+    protected IndividualDefendant buildIndividualDefendant(final Defendant defendant, final String countryCJSCode) {
+        final IndividualDefendant.Builder objectBuilder = IndividualDefendant.individualDefendant();
         PersonalDetails personalDetails = defendant.getPersonalDetails();
 
         if (null != personalDetails) {
-            objectBuilder.add("basePersonDetails", buildPerson(defendant.getPersonalDetails()));
+            objectBuilder.withBasePersonDetails(buildPerson(defendant.getPersonalDetails()));
         }
-        objectBuilder.add("personStatedNationality", countryCJSCode)
-                .add("bailStatus", DEFAULT_BAIL_STATUS)
-                .add("presentAtHearing", false);
+        objectBuilder.withPersonStatedNationality(countryCJSCode)
+                .withBailStatus(DEFAULT_BAIL_STATUS)
+                .withPresentAtHearing(false);
         return objectBuilder.build();
     }
 
-    protected JsonObject buildPerson(final PersonalDetails personalDetails) {
-        final JsonObjectBuilder person = createObjectBuilder();
-        person.add("personTitle", personalDetails.getTitle())
-                .add("firstName", personalDetails.getFirstName())
-                .add("lastName", personalDetails.getLastName())
-                .add(ADDRESS_KEY, buildAddress(personalDetails.getAddress()));
+    protected BasePersonDetail buildPerson(final PersonalDetails personalDetails) {
+        final BasePersonDetail.Builder person = BasePersonDetail.basePersonDetail();
+
+        Optional<PersonTitle> personTitle = valueFor(personalDetails.getTitle());
+        person.withPersonTitle(personTitle.isPresent() ? personTitle.get() : null)
+                .withFirstName(personalDetails.getFirstName())
+                .withLastName(personalDetails.getLastName())
+                .withAddress(personalDetails.getAddress());
+
         ContactDetails contactDetails = personalDetails.getContactDetails();
         if (null != contactDetails) {
-            extractAndAddDetails(contactDetails.getBusiness(), "telephoneNumberBusiness", person);
-            extractAndAddDetails(contactDetails.getHome(), "telephoneNumberHome", person);
-            extractAndAddDetails(contactDetails.getMobile(), "telephoneNumberMobile", person);
-            extractAndAddDetails(contactDetails.getEmail(), "emailAddress1", person);
-            extractAndAddDetails(contactDetails.getEmail2(), "emailAddress2", person);
+            person.withTelephoneNumberBusiness(contactDetails.getBusiness())
+                    .withTelephoneNumberHome(contactDetails.getHome())
+                    .withTelephoneNumberMobile(contactDetails.getMobile())
+                    .withEmailAddress1(contactDetails.getEmail())
+                    .withEmailAddress2(contactDetails.getEmail2()).build();
         }
 
         if (null != personalDetails.getDateOfBirth()) {
-            person.add("birthDate", LocalDates.to(personalDetails.getDateOfBirth()));
+            person.withBirthDate(personalDetails.getDateOfBirth().atStartOfDay(ZoneId.systemDefault()));
         }
 
         if (null != personalDetails.getGender()) {
-            person.add("gender", personalDetails.getGender().toString());
+            person.withGender(personalDetails.getGender());
         }
 
         return person.build();
     }
 
-    protected JsonArray buildOffences(final CaseDetails caseDetails, final ReferencedDecisionsSaved referencedDecisionsSaved, final SJPSession sjpSession,
-                                      final Optional<JsonArray> caseFileDefendantOffencesOptional) {
-        final JsonArrayBuilder arrayBuilder = createArrayBuilder();
+    protected List<CaseOffence> buildOffences(final CaseDetails caseDetails, final ReferencedDecisionsSaved referencedDecisionsSaved, final SJPSession sjpSession,
+                                              final Optional<JsonArray> caseFileDefendantOffencesOptional) {
+        final List<CaseOffence> arrayBuilder = new ArrayList<>();
         final JsonArray caseFileDefendantOffences = caseFileDefendantOffencesOptional.isPresent() ? caseFileDefendantOffencesOptional.get() : createArrayBuilder().build();
 
         if (null != caseDetails.getDefendant().getOffences()) {
-            caseDetails.getDefendant().getOffences().forEach(o -> {
-                final JsonObject caseFileDefendantOffence = caseFileDefendantOffences.stream().map(cfdo -> (JsonObject) cfdo).filter(cfdo -> cfdo.getString("id").equalsIgnoreCase(o.getId().toString())).findFirst().orElse(createObjectBuilder().build());
-                final JsonObjectBuilder builder = createObjectBuilder();
-                builder.add("modeOfTrial", MODE_OF_TRIAL);
-                builder.add("baseOffenceDetails", buildBaseOffenceDetails(o, caseFileDefendantOffence))
-                        .add("initiatedDate", o.getStartDate())
-                        .add("plea", buildPlea(o))
-//                    .add("convictionDate", "")
-                        .add("convictingCourt", sjpSession.getCourtDetails().getCourtHouseCode())
-//                    .add("finding", "") do not know, check with business
-                        .add("results", buildResults(o, referencedDecisionsSaved));
-                arrayBuilder.add(builder);
-            });
+            buildOffence(caseDetails, referencedDecisionsSaved, sjpSession, arrayBuilder, caseFileDefendantOffences);
         }
 
-        return arrayBuilder.build();
+        return arrayBuilder;
     }
 
-
-    protected JsonObject buildBaseOffenceDetails(final uk.gov.justice.json.schemas.domains.sjp.queries.Offence o, final JsonObject caseFileDefendantOffence) {
-        final JsonObjectBuilder baseOffenceDetails = createObjectBuilder();
-        baseOffenceDetails.add("offenceId", o.getId().toString())
-                .add("offenceSequenceNumber", o.getOffenceSequenceNumber())
-                .add("offenceCode", o.getCjsCode())
-                .add("offenceWording", o.getWording())
-                .add("offenceDateCode", DEFAULT_OFFENCE_DATE_CODE)
-                .add("offenceStartDateTime", o.getStartDate());
-
-        if (null != o.getEndDate()) {
-            baseOffenceDetails.add("offenceEndDateTime", o.getEndDate());
-        }
-
-        if (null != o.getChargeDate()) {
-            baseOffenceDetails.add("chargeDate", o.getChargeDate());
-        }
-
-        if (null != caseFileDefendantOffence && !caseFileDefendantOffence.isEmpty()) {
-            baseOffenceDetails.add("locationOfOffence", caseFileDefendantOffence.getJsonString("offenceLocation"));
-        }
-
-        return baseOffenceDetails.build();
+    private void buildOffence(final CaseDetails caseDetails, final ReferencedDecisionsSaved referencedDecisionsSaved, final SJPSession sjpSession, final List<CaseOffence> arrayBuilder, final JsonArray caseFileDefendantOffences) {
+        caseDetails.getDefendant().getOffences().forEach(o -> {
+            final JsonObject caseFileDefendantOffence = caseFileDefendantOffences.stream().map(cfdo -> (JsonObject) cfdo).filter(cfdo -> cfdo.getString("offenceId").equalsIgnoreCase(o.getId().toString())).findFirst().orElse(createObjectBuilder().build());
+            final CaseOffence caseOffence = CaseOffence.caseOffence()
+                    .withModeOfTrial(MODE_OF_TRIAL)
+                    .withBaseOffenceDetails(buildBaseOffenceDetails(o, caseFileDefendantOffence))
+                    .withInitiatedDate(null != o.getStartDate() ? LocalDate.parse(o.getStartDate()).atStartOfDay(ZoneId.systemDefault()) : null)
+                    .withPlea(buildPlea(o))
+                    .withConvictingCourt(parseInt(sjpSession.getCourtDetails().getLocalJusticeAreaNationalCourtCode()))
+                    .withResults(buildResults(o, referencedDecisionsSaved))
+                    .build();
+            arrayBuilder.add(caseOffence);
+        });
     }
 
-    protected JsonObject buildPlea(final uk.gov.justice.json.schemas.domains.sjp.queries.Offence o) {
-        final JsonObjectBuilder builder = createObjectBuilder();
-
-        if (null != o.getPlea()) {
-            builder.add("pleaType", o.getPlea().toString());
-        }
-
-        if (null != o.getPleaDate()) {
-            builder.add("pleaDate", getZonedDateTimeString(o.getPleaDate()));
-        }
-
-        if (null != o.getPleaMethod()) {
-            builder.add("pleaMethod", o.getPleaMethod().toString());
-        }
-
-        return builder.build();
+    @SuppressWarnings("squid:S1067")
+    protected BaseOffence buildBaseOffenceDetails(final uk.gov.justice.json.schemas.domains.sjp.queries.Offence o, final JsonObject caseFileDefendantOffence) {
+        return BaseOffence.baseOffence()
+                .withOffenceId(o.getId())
+                .withOffenceSequenceNumber(o.getOffenceSequenceNumber())
+                .withOffenceCode(o.getCjsCode())
+                .withOffenceWording(o.getWording())
+                .withOffenceDateCode(DEFAULT_OFFENCE_DATE_CODE)
+                .withOffenceStartDate(null != o.getStartDate() ? LocalDate.parse(o.getStartDate()) : null)
+                .withOffenceEndDate(null != o.getEndDate() ? LocalDate.parse(o.getEndDate()) : null)
+                .withChargeDate(null != o.getChargeDate() ? LocalDate.parse(o.getChargeDate()) : null)
+                .withLocationOfOffence(null != caseFileDefendantOffence ? caseFileDefendantOffence.getString("offenceLocation") : null)
+                .build();
     }
 
-    protected JsonArray buildResults(final uk.gov.justice.json.schemas.domains.sjp.queries.Offence caseOffence, final ReferencedDecisionsSaved referencedDecisionsSaved) {
+    protected Plea buildPlea(final uk.gov.justice.json.schemas.domains.sjp.queries.Offence o) {
+        return Plea.plea()
+                .withPleaType(o.getPlea())
+                .withPleaDate(o.getPleaDate())
+                .withPleaMethod(o.getPleaMethod()).build();
 
-        final JsonArrayBuilder arrayBuilder = createArrayBuilder();
-        if (null != referencedDecisionsSaved) {
+    }
+
+    protected List<BaseResult> buildResults(final uk.gov.justice.json.schemas.domains.sjp.queries.Offence caseOffence, final ReferencedDecisionsSaved referencedDecisionsSaved) {
+
+        final List<BaseResult> baseResultBuilderList = new ArrayList<>();
+        if (null != referencedDecisionsSaved && null != referencedDecisionsSaved.getOffences()) {
             final Optional<Offence> referenceDecisionSavedOffenceOptional = referencedDecisionsSaved.getOffences().stream().filter(o -> o.getId().equals(caseOffence.getId())).findFirst();
             if (referenceDecisionSavedOffenceOptional.isPresent()) {
                 referenceDecisionSavedOffenceOptional.get().getResults().forEach(result -> {
-                    final JsonObjectBuilder builder = createObjectBuilder();
-                    builder.add("id", result.getId().toString());
+                    final BaseResult.Builder baseResultBuilder = BaseResult.baseResult();
+                    baseResultBuilder.withId(result.getId());
 
+                    final List<Prompts> promptList = new ArrayList<>();
                     if (null != result.getPrompts()) {
-                        final JsonArrayBuilder prompts = createArrayBuilder();
-                        result.getPrompts().forEach(p -> {
-                            final JsonObjectBuilder prompt = createObjectBuilder()
-                                    .add("id", p.getId().toString())
-                                    .add("value", p.getValue());
-                            prompts.add(prompt.build());
-                        });
-                        builder.add("prompts", prompts.build());
+                        result.getPrompts().forEach(p ->
+                            promptList.add(Prompts.prompts()
+                                    .withId(p.getId())
+                                    .withValue(p.getValue()).build()));
+                        baseResultBuilder.withPrompts(promptList);
                     }
-                    arrayBuilder.add(builder);
+                    baseResultBuilderList.add(baseResultBuilder.build());
                 });
             }
         }
-        return arrayBuilder.build();
-    }
-
-    protected JsonObject buildAddress(final Address address) {
-        return createObjectBuilder()
-                .add(ADDRESS1_KEY, address.getAddress1())
-                .add(ADDRESS2_KEY, address.getAddress2())
-                .add(ADDRESS3_KEY, address.getAddress3())
-                .add(ADDRESS4_KEY, address.getAddress4())
-                .add(ADDRESS5_KEY, address.getAddress5())
-                .add(POSTCODE_KEY, address.getPostcode()).build();
-    }
-
-    protected ReferencedDecisionsSaved extractReferenceDecisionSaves(final UUID caseId, final JsonObject payload) {
-        final UUID sjpSessionId = fromString(payload.getString("sjpSessionId"));
-        final ZonedDateTime resultedOn = payload.getString("resultedOn").isEmpty() ? null : ZonedDateTimes.fromString(payload.getString("resultedOn"));
-        final String verdict = payload.containsKey(VERDICT_KEY) && !payload.isNull(VERDICT_KEY) ? payload.getString(VERDICT_KEY) : null;
-        final List<Offence> offences = extractOffences(payload);
-        final Integer accountDivisionCode = payload.containsKey(ACCOUNT_DIVISION_CODE_KEY) && !payload.isNull(ACCOUNT_DIVISION_CODE_KEY) ? payload.getInt(ACCOUNT_DIVISION_CODE_KEY) : 0;
-        final Integer enforcingCourtCode = payload.containsKey(ENFORCING_COURT_CODE_KEY) && !payload.isNull(ENFORCING_COURT_CODE_KEY) ? payload.getInt(ENFORCING_COURT_CODE_KEY) : 0;
-
-        return new ReferencedDecisionsSaved(caseId, sjpSessionId, resultedOn, verdict, offences, accountDivisionCode, enforcingCourtCode);
-    }
-
-    private List<Offence> extractOffences(final JsonObject payload) {
-        final JsonArray offencesPayload = payload.containsKey(OFFENCES_KEY) && !payload.isNull(OFFENCES_KEY) ? payload.getJsonArray(OFFENCES_KEY) : createArrayBuilder().build();
-        return offencesPayload.getValuesAs(JsonObject.class)
-                .stream()
-                .map(offence -> new Offence(extractUUID(offence, "id"), extractResults(offence.getJsonArray("results"))))
-                .collect(toList());
+        return baseResultBuilderList;
     }
 
     private UUID extractUUID(final JsonObject object, final String key) {
         return object.getString(key).isEmpty() ? null : fromString(object.getString(key));
-    }
-
-    private List<Result> extractResults(final JsonArray results) {
-        return results.getValuesAs(JsonObject.class)
-                .stream()
-                .map(result -> new Result(fromString(result.getString("id")), extractTerminalEntries(result.getJsonArray("prompts"))))
-                .collect(toList());
-    }
-
-    private List<Prompt> extractTerminalEntries(final JsonArray prompts) {
-        return prompts.getValuesAs(JsonObject.class)
-                .stream()
-                .map(prompt -> new Prompt(fromString(prompt.getString("id")), prompt.getString("value")))
-                .collect(toList());
-    }
-
-    private String getZonedDateTimeString(final ZonedDateTime date) {
-        if (null != date) {
-            return ZonedDateTimes.toString(date);
-        }
-        return null;
     }
 
     private SJPSession extractSJPSession(final JsonObject sjpSessionPayload) {
@@ -348,9 +296,4 @@ public class ResultingToResultsConverter {
         return new SJPSession(sjpSessionId, userId, type, courtDetails, magistrate, startedAt, endedAt);
     }
 
-    private void extractAndAddDetails(final String providedString, final String stringToAdd, final JsonObjectBuilder objectToAddString) {
-        if (null != providedString && !providedString.isEmpty()) {
-            objectToAddString.add(stringToAdd, providedString);
-        }
-    }
 }

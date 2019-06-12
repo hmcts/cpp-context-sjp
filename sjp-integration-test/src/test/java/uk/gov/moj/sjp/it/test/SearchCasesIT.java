@@ -132,7 +132,7 @@ public class SearchCasesIT extends BaseIntegrationTest {
 
         // when
         //TODO change to end session when it is ready (ATCM-2957)
-        caseSearchResultHelper.completeCase();
+        caseSearchResultHelper.completeCase(createCasePayloadBuilder.getDefendantBuilder().getId(), createCasePayloadBuilder.getOffenceBuilder().getId());
         // then
         caseSearchResultHelper.verifyAssignment(false);
     }

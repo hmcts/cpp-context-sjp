@@ -173,12 +173,13 @@ public class ReadyCaseIT extends BaseIntegrationTest {
     public void shouldUnmarkCaseReadyWhenCaseCompleted() {
         final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
 
-        createCaseForPayloadBuilder(CreateCase.CreateCasePayloadBuilder
+        CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
                 .withDefaults()
                 .withId(caseId)
-                .withPostingDate(postingDate));
+                .withPostingDate(postingDate);
+        createCaseForPayloadBuilder(createCasePayloadBuilder);
 
-        CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
+        CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId, createCasePayloadBuilder.getDefendantBuilder().getId(), createCasePayloadBuilder.getOffenceBuilder().getId());
         verifyCaseReadyInViewStore(caseId, PIA);
 
         completeCaseProducer.completeCase();

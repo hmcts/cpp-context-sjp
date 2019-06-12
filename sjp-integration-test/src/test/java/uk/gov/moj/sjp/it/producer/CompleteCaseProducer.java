@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.endSession;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSessionAndWaitForEvent;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
+import static uk.gov.moj.sjp.it.stub.ProsecutionCaseFileServiceStub.stubCaseDetails;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
@@ -26,7 +27,8 @@ public class CompleteCaseProducer extends BaseIntegrationTest {
     private static final String LONDON_LJA_NATIONAL_COURT_CODE = "2572";
     private static final String LONDON_COURT_HOUSE_OU_CODE = "B01OK";
 
-    public CompleteCaseProducer(final UUID caseId) {
+    public CompleteCaseProducer(final UUID caseId, final UUID defendantId, final UUID offenceId) {
+        stubCaseDetails(caseId, defendantId, offenceId, "stub-data/prosecutioncasefile.query.case-details.json");
         this.caseId = caseId;
     }
 

@@ -1,38 +1,45 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+import static uk.gov.justice.json.schemas.domains.sjp.results.BaseSessionStructure.baseSessionStructure;
+import static uk.gov.justice.json.schemas.domains.sjp.results.PublicSjpResulted.publicSjpResulted;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.buildCaseDetails;
+import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getReferenceDecisionSaved;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getSJPSessionJsonObject;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getSjpSessionId;
 
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.sjp.domain.resulting.ReferencedDecisionsSaved;
 import uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService;
 import uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
@@ -40,11 +47,9 @@ import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -59,8 +64,7 @@ public class DecisionProcessorTest {
 
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloper();
-    private final UUID caseId = randomUUID();
-    private final UUID sjpSessionId = randomUUID();
+
     @Mock
     private Sender sender;
     @Mock
@@ -74,24 +78,35 @@ public class DecisionProcessorTest {
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
 
+    @Spy
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    @Before
+    public void setUp() {
+        initMocks(this);
+        setField(objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
+    }
+
     @Test
     public void shouldCompleteCase() {
-        final UUID caseId = randomUUID();
-
+        final Envelope<ReferencedDecisionsSaved> referenceDecisionSaved = getReferenceDecisionSaved();
+        final ReferencedDecisionsSaved referencedDecisionsSaved = referenceDecisionSaved.payload();
         final JsonEnvelope event = createEnvelope("public.resulting.referenced-decisions-saved",
                 createObjectBuilder()
-                        .add("caseId", caseId.toString())
+                        .add("caseId", referencedDecisionsSaved.getCaseId().toString())
                         .add("resultedOn", now().toString())
                         .add("sjpSessionId", randomUUID().toString())
                         .build());
+        when(converter.convert(any(), any(), any(), any())).thenReturn(publicSjpResulted().withSession(baseSessionStructure().withSessionId(getSjpSessionId()).build()).build());
 
-        caseDecisionListener.referencedDecisionsSaved(event);
+
+        caseDecisionListener.referencedDecisionsSaved(referenceDecisionSaved);
 
         verify(sender).send(argThat(
                 jsonEnvelope(
-                        withMetadataEnvelopedFrom(event).withName("sjp.command.complete-case"),
+                        metadata().withName("sjp.command.complete-case"),
                         payloadIsJson(
-                                withJsonPath("$.caseId", Matchers.equalTo(caseId.toString()))
+                                withJsonPath("$.caseId", Matchers.equalTo(referenceDecisionSaved.payload().getCaseId().toString()))
                         ))));
     }
 
@@ -103,25 +118,26 @@ public class DecisionProcessorTest {
 
     @Test
     public void shouldRaiseSJPCaseResultedEvent() {
-
-        final JsonEnvelope event = createReferenceDecisionSavedEvent();
+        final Envelope<ReferencedDecisionsSaved> referenceDecisionSaved = getReferenceDecisionSaved();
+        final ReferencedDecisionsSaved referencedDecisionsSaved = referenceDecisionSaved.payload();
 
         when(sjpService.getSessionDetails(any(), any())).thenReturn(getSJPSessionJsonObject());
         when(sjpService.getCaseDetails(any(), any())).thenReturn(buildCaseDetails());
-        when(converter.convert(any(), any(), any(), any())).thenReturn(buildConverterResponse());
+        when(converter.convert(any(), any(), any(), any())).thenReturn(publicSjpResulted().withSession(baseSessionStructure().withSessionId(getSjpSessionId()).build()).build());
 
-        caseDecisionListener.referencedDecisionsSaved(event);
+        caseDecisionListener.referencedDecisionsSaved(referenceDecisionSaved);
 
         verify(sjpService).getSessionDetails(any(), any());
         verify(sjpService).getCaseDetails(any(), any());
         verify(converter).convert(any(), any(), any(), any());
         verify(sender, times(2)).send(envelopeCaptor.capture());
-        verifyCaseStateService(event);
+        verifyCaseStateService(referenceDecisionSaved, referencedDecisionsSaved.getCaseId());
 
         final List<JsonEnvelope> allValues = convertStreamToEventList(envelopeCaptor.getAllValues());
+        assertThat(allValues, hasSize(2));
         assertThat(allValues, containsInAnyOrder(
                 jsonEnvelope(
-                        withMetadataEnvelopedFrom(event).withName("sjp.command.complete-case"),
+                        metadata().withName("sjp.command.complete-case"),
                         payloadIsJson(allOf(
                                 withJsonPath("$.caseId", is(notNullValue()))
                                 )
@@ -133,54 +149,11 @@ public class DecisionProcessorTest {
                         ))));
     }
 
-    private JsonObject buildConverterResponse() {
-        return createObjectBuilder()
-                .add("session", createObjectBuilder()
-                        .add("sessionId", getSjpSessionId().toString()))
-                .build();
-
-    }
-
     private List<JsonEnvelope> convertStreamToEventList(final List<JsonEnvelope> listOfStreams) {
         return listOfStreams.stream().collect(toList());
     }
 
-    private void verifyCaseStateService(final JsonEnvelope event) {
+    private void verifyCaseStateService(final Envelope<ReferencedDecisionsSaved> event, final UUID caseId) {
         verify(caseStateService).caseCompleted(caseId, event.metadata());
-        assertThat(event.payloadAsJsonObject(), hasJsonPath("$.accountDivisionCode"));
-        assertThat(event.payloadAsJsonObject(), hasJsonPath("$.enforcingCourtCode"));
-        assertThat(event.payloadAsJsonObject(), hasJsonPath("$.verdict"));
-        assertThat(event.payloadAsJsonObject(), hasJsonPath("$.offences"));
-        assertThat(event.payloadAsJsonObject(), hasJsonPath("$.offences[*].results"));
-        assertThat(event.payloadAsJsonObject(), hasJsonPath("$.offences[*].results[*].code"));
-        assertThat(event.payloadAsJsonObject(), hasJsonPath("$.offences[*].results[*].resultTypeId"));
-        assertThat(event.payloadAsJsonObject(), hasJsonPath("$.offences[*].results[*].terminalEntries"));
     }
-
-    private JsonEnvelope createReferenceDecisionSavedEvent() {
-
-        final Integer accountDivisionCode = 199;
-        final Integer enforcingCourtCode = 100;
-
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("caseId", caseId.toString())
-                .add("resultedOn", now().toString())
-                .add("sjpSessionId", sjpSessionId.toString())
-                .add("verdict", "PSJ")
-                .add("accountDivisionCode", accountDivisionCode)
-                .add("enforcingCourtCode", enforcingCourtCode)
-                .add("offences", Json.createArrayBuilder().add(
-                        createObjectBuilder()
-                                .add("id", randomUUID().toString())
-                                .add("results",
-                                        createArrayBuilder().add(createObjectBuilder()
-                                                .add("code", "")
-                                                .add("resultTypeId", randomUUID().toString())
-                                                .add("terminalEntries", "")))
-                )).build();
-
-        return createEnvelope("public.resulting.referenced-decisions-saved",
-                payload);
-    }
-
 }

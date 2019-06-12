@@ -21,13 +21,17 @@ import org.junit.Test;
 public class CompleteCaseIT extends BaseIntegrationTest {
 
     private UUID caseId = UUID.randomUUID();
-    private UUID offenceId = UUID.randomUUID();
+    private UUID defendantId;
+    private UUID offenceId;
 
     @Before
     public void setUp() {
         stubRemoveAssignmentCommand();
-        stubQueryOffenceById(offenceId);
+
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseId);
+        stubQueryOffenceById(createCasePayloadBuilder.getOffenceBuilder().getId());
+        defendantId = createCasePayloadBuilder.getDefendantBuilder().getId();
+        offenceId = createCasePayloadBuilder.getOffenceBuilder().getId();
 
         final EventListener eventListener = new EventListener();
         eventListener
@@ -41,7 +45,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
 
     @Test
     public void shouldCompleteCase() {
-        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId,defendantId,offenceId);
         new EventListener()
                 .subscribe(CaseCompleted.EVENT_NAME)
                 .run(completeCaseProducer::completeCase);
@@ -51,7 +55,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
 
     @Test
     public void shouldCompleteCaseAndGenerateResultsEvent() {
-        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId, defendantId,offenceId);
         new EventListener()
                 .subscribe("public.sjp.case-resulted")
                 .run(completeCaseProducer::completeCaseResults);

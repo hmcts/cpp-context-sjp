@@ -59,13 +59,15 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
     private UUID userId;
     private LocalDate adjournmentDate = now().plusDays(7);
     private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
-    private UUID offenceId;
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
     private static final String LONDON_LJA_NATIONAL_COURT_CODE = "2572";
     private static final String LONDON_COURT_HOUSE_OU_CODE = "B01OK";
     private static final String PROCESS_NAME = "caseState";
     final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
+
+    private UUID defendantId;
+    private UUID offenceId;
 
     @Before
     public void setUp() throws SQLException {
@@ -87,7 +89,8 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
                 .withId(caseId)
                 .withOffenceId(offenceId)
                 .withPostingDate(postingDate);
-
+        defendantId = createCasePayloadBuilder.getDefendantBuilder().getId();
+        offenceId = createCasePayloadBuilder.getOffenceBuilder().getId();
         CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
         pollUntilCaseReady(caseId);
 
@@ -118,7 +121,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
             pollUntilCaseByIdIsOk(caseId, allOf(caseAssigned(false), caseAdjourned(adjournmentDate)));
         }
 
-        new CompleteCaseProducer(caseId).completeCase();
+        new CompleteCaseProducer(caseId, defendantId, offenceId).completeCase();
 
         pollUntilCaseByIdIsOk(caseId, CoreMatchers.allOf(
                 withJsonPath("$.completed", CoreMatchers.is(true)),

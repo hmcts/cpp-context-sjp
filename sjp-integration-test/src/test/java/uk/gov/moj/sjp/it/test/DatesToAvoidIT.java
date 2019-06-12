@@ -222,7 +222,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     }
 
     private void completeCase(CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder) {
-        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(createCasePayloadBuilder.getId());
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getDefendantBuilder().getId(), createCasePayloadBuilder.getOffenceBuilder().getId());
         completeCaseProducer.completeCase();
     }
 

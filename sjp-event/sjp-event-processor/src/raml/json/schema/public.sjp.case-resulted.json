@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/sjp/results/sjp.case-resulted.json",
+  "id": "http://cpp.moj.gov.uk/sjp/json/schemas/sjp.case-resulted.json",
   "type": "object",
   "properties": {
     "session": {

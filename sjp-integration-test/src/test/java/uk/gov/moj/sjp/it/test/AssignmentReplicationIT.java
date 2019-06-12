@@ -33,6 +33,7 @@ public class AssignmentReplicationIT extends BaseIntegrationTest {
     private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
 
     private UUID caseId;
+    private UUID defendantId;
     private UUID offenceId;
 
     @Before
@@ -49,6 +50,7 @@ public class AssignmentReplicationIT extends BaseIntegrationTest {
         stubRemoveAssignmentCommand();
 
         createCaseAndWaitUntilReady(caseId);
+
     }
 
     @Test
@@ -66,18 +68,20 @@ public class AssignmentReplicationIT extends BaseIntegrationTest {
         AssignmentStub.verifyRemoveAssignmentCommandSend(caseId);
     }
 
-    private static void createCaseAndWaitUntilReady(final UUID caseId) {
+    private void createCaseAndWaitUntilReady(final UUID caseId) {
         try (final MessageConsumerClient messageConsumerClient = new MessageConsumerClient()) {
-            CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
+            final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
                     .withPostingDate(now().minusDays(30)).withId(caseId);
             CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
             messageConsumerClient.startConsumer(CaseMarkedReadyForDecision.EVENT_NAME, "sjp.event");
             messageConsumerClient.retrieveMessage();
+            defendantId = createCasePayloadBuilder.getDefendantBuilder().getId();
+            offenceId = createCasePayloadBuilder.getOffenceBuilder().getId();
         }
     }
 
-    private static void saveDecision(final UUID caseId) {
-        new CompleteCaseProducer(caseId).completeCase();
+    private void saveDecision(final UUID caseId) {
+        new CompleteCaseProducer(caseId, defendantId, offenceId).completeCase();
     }
 
 }

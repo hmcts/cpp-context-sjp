@@ -58,6 +58,6 @@
     "offenceCode",
     "offenceWording",
     "offenceDateCode",
-    "offenceStartDateTime"
+    "offenceStartDate"
   ]
 }

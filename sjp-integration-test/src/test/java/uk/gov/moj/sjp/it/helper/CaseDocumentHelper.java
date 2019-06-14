@@ -251,8 +251,8 @@ public class CaseDocumentHelper implements AutoCloseable {
         return JsonHelper.getJsonObject(documents.getPayload()).getJsonArray("caseDocuments").getJsonObject(0);
     }
 
-    public void assertDocumentNotExist(final UUID userId, final int index, final String documentType, final int documentNumber) {
-        final ResponseData documents = pollWithDefaults(getCaseDocumentsByCaseId(caseId, userId))
+    public void assertDocumentNotExist(final UUID userId,final UUID caseId) {
+        pollWithDefaults(getCaseDocumentsByCaseId(caseId, userId))
                 .until(
                         status().is(Response.Status.OK),
                         payload().isJson(allOf(

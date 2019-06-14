@@ -12,6 +12,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.FIELD_ADDRESS;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.FIELD_ADDRESS_1;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.FIELD_ADDRESS_2;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.FIELD_ADDRESS_3;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.FIELD_ADDRESS_4;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.FIELD_ADDRESS_5;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.FIELD_EMPLOYEE_REFERENCE;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.FIELD_NAME;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.FIELD_PHONE;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.FIELD_POST_CODE;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.sjp.it.command.CreateCase;
@@ -37,16 +47,7 @@ public class EmployerIT extends BaseIntegrationTest {
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private FinancialMeansHelper financialMeansHelper;
 
-    private static final String FIELD_NAME = "name";
-    private static final String FIELD_EMPLOYEE_REFERENCE = "employeeReference";
-    private static final String FIELD_PHONE = "phone";
-    private static final String FIELD_ADDRESS = "address";
-    private static final String FIELD_ADDRESS_1 = "address1";
-    private static final String FIELD_ADDRESS_2 = "address2";
-    private static final String FIELD_ADDRESS_3 = "address3";
-    private static final String FIELD_ADDRESS_4 = "address4";
-    private static final String FIELD_ADDRESS_5 = "address5";
-    private static final String FIELD_POST_CODE = "postcode";
+
 
     @Before
     public void setUp() {
@@ -73,13 +74,13 @@ public class EmployerIT extends BaseIntegrationTest {
             final JsonObject employer2 = getEmployerPayload();
 
             employerHelper.updateEmployer(caseId, defendantId, employer1);
-            employerHelper.getEmployer(defendantId, getEmployerUpdatedPayloadMatcher(employer1));
-            assertThat(employerHelper.getEventFromPublicTopic(), getEmployerUpdatedPublicEventMatcher(employer1));
+            employerHelper.getEmployer(defendantId, employerHelper.getEmployerUpdatedPayloadMatcher(employer1));
+            assertThat(employerHelper.getEventFromPublicTopic(), employerHelper.getEmployerUpdatedPublicEventMatcher(employer1));
 
             employerHelper.updateEmployer(caseId, defendantId, employer2);
-            employerHelper.getEmployer(defendantId, getEmployerUpdatedPayloadMatcher(employer2));
+            employerHelper.getEmployer(defendantId, employerHelper.getEmployerUpdatedPayloadMatcher(employer2));
 
-            assertThat(employerHelper.getEventFromPublicTopic(), getEmployerUpdatedPublicEventMatcher(employer2));
+            assertThat(employerHelper.getEventFromPublicTopic(), employerHelper.getEmployerUpdatedPublicEventMatcher(employer2));
 
             final Matcher<Object> expectedFinancialMeans = isJson(withJsonPath("$.employmentStatus", is("EMPLOYED")));
             financialMeansHelper.getFinancialMeans(defendantId, expectedFinancialMeans);
@@ -88,7 +89,7 @@ public class EmployerIT extends BaseIntegrationTest {
 
             employerHelper.getEmployer(defendantId, isJson(withJsonPath("$.size()", is(0))));
 
-            assertThat(employerHelper.getEventFromPublicTopic(), getEmployerDeletedPublicEventMatcher(defendantId));
+            assertThat(employerHelper.getEventFromPublicTopic(), employerHelper.getEmployerDeletedPublicEventMatcher(defendantId));
     }
 
     @Test
@@ -113,39 +114,5 @@ public class EmployerIT extends BaseIntegrationTest {
                 .add(FIELD_PHONE, "02020202020")
                 .add(FIELD_ADDRESS, address).build();
     }
-
-    private Matcher<ReadContext> getEmployerUpdatedPayloadContentMatcher(final JsonObject employer) {
-
-        final JsonObject address = employer.getJsonObject(FIELD_ADDRESS);
-        return allOf(
-                withJsonPath("$.name", equalTo(employer.getString(FIELD_NAME))),
-                withJsonPath("$.employeeReference", equalTo(employer.getString(FIELD_EMPLOYEE_REFERENCE))),
-                withJsonPath("$.phone", equalTo(employer.getString(FIELD_PHONE))),
-                withJsonPath("$.address.address1", equalTo(address.getString(FIELD_ADDRESS_1))),
-                withJsonPath("$.address.address2", equalTo(address.getString(FIELD_ADDRESS_2))),
-                withJsonPath("$.address.address3", equalTo(address.getString(FIELD_ADDRESS_3))),
-                withJsonPath("$.address.address4", equalTo(address.getString(FIELD_ADDRESS_4))),
-                withJsonPath("$.address.address5", equalTo(address.getString(FIELD_ADDRESS_5))),
-                withJsonPath("$.address.postcode", equalTo(address.getString(FIELD_POST_CODE)))
-        );
-    }
-
-    private Matcher<Object> getEmployerUpdatedPayloadMatcher(final JsonObject employer) {
-        return isJson(getEmployerUpdatedPayloadContentMatcher(employer));
-    }
-
-    private Matcher<JsonEnvelope> getEmployerUpdatedPublicEventMatcher(final JsonObject employer) {
-        final Matcher<ReadContext> payloadContentMatcher = getEmployerUpdatedPayloadContentMatcher(employer);
-        return jsonEnvelope()
-                .withMetadataOf(metadata().withName("public.sjp.employer-updated"))
-                .withPayloadOf(payloadIsJson(payloadContentMatcher));
-    }
-
-    private Matcher<JsonEnvelope> getEmployerDeletedPublicEventMatcher(final String defendantId) {
-        return jsonEnvelope()
-                .withMetadataOf(metadata().withName("public.sjp.employer-deleted"))
-                .withPayloadOf(payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId))));
-    }
-
 
 }

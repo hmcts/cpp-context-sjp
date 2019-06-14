@@ -18,10 +18,12 @@ import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleted;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.listener.converter.FinancialMeansConverter;
 import uk.gov.moj.cpp.sjp.event.listener.converter.OnlinePleaConverter;
+import uk.gov.moj.cpp.sjp.persistence.entity.Employer;
 import uk.gov.moj.cpp.sjp.persistence.entity.FinancialMeans;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.DefendantRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.EmployerRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.FinancialMeansRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
@@ -31,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.inject.Inject;
 import javax.json.JsonObject;
 
 import org.junit.Before;
@@ -76,6 +79,9 @@ public class FinancialMeansListenerTest {
 
     @Mock
     private CaseDocumentRepository caseDocumentRepository;
+
+    @Mock
+    private EmployerRepository employerRepository;
 
     @InjectMocks
     private FinancialMeansListener financialMeansListener = new FinancialMeansListener();
@@ -153,6 +159,8 @@ public class FinancialMeansListenerTest {
         verify(onlinePleaRepository).save(anyObject());
         verify(caseDocumentRepository).findByMaterialId(financialMeansDeleted.getMaterialIds().get(0));
         verify(caseDocumentRepository).remove(anyObject());
+        verify(employerRepository).findBy(anyObject());
+        verify(employerRepository).remove(anyObject());
     }
 
     private List<UUID> addCaseDocuments() {
@@ -176,6 +184,9 @@ public class FinancialMeansListenerTest {
         uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument caseDocumentEntity = new uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument();
         when(caseDocumentRepository.findByMaterialId(financialMeansDeleted.getMaterialIds().get(0))).thenReturn(caseDocumentEntity);
         doNothing().when(caseDocumentRepository).remove(caseDocumentEntity);
+        Employer employer = new Employer();
+        when(employerRepository.findBy(financialMeansDeleted.getDefendantId())).thenReturn(employer);
+        doNothing().when(employerRepository).remove(employer);
     }
 
 }

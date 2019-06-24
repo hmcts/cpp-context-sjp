@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
+import static java.util.stream.Stream.empty;
+
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.json.schemas.domains.sjp.ListingDetails;
 import uk.gov.justice.json.schemas.domains.sjp.Note;
@@ -55,7 +57,10 @@ public class CaseAggregate implements Aggregate {
     public Stream<Object> updateCaseListedInCriminalCourts(final UUID caseId,
                                                            final String hearingCourtName,
                                                            final ZonedDateTime hearingTime) {
-        return apply(CaseCoreHandler.INSTANCE.updateCaseListedInCriminalCourts(caseId, hearingCourtName, hearingTime));
+        if (state.isCaseReceived()) {
+            return apply(CaseCoreHandler.INSTANCE.updateCaseListedInCriminalCourts(caseId, hearingCourtName, hearingTime));
+        }
+        return empty();
     }
 
     public Stream<Object> markCaseReopened(final CaseReopenDetails caseReopenDetails) {

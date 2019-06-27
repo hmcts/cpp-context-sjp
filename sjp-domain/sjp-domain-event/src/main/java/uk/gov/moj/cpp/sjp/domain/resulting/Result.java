@@ -15,18 +15,18 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 public class Result {
 
-    private final UUID id;
+    private final UUID resultDefinitionId;
     private final List<Prompt> prompts;
 
     @JsonCreator
-    public Result(@JsonProperty("id") final UUID id,
+    public Result(@JsonProperty("resultDefinitionId") final UUID resultDefinitionId,
                   @JsonProperty("prompts") final List<Prompt> prompts) {
-        this.id = id;
+        this.resultDefinitionId = resultDefinitionId;
         this.prompts = ofNullable(prompts).orElse(emptyList());
     }
 
-    public UUID getId() {
-        return id;
+    public UUID getResultDefinitionId() {
+        return resultDefinitionId;
     }
 
     public List<Prompt> getPrompts() {

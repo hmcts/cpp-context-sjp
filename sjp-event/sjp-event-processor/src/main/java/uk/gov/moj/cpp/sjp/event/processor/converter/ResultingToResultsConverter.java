@@ -96,6 +96,7 @@ public class ResultingToResultsConverter {
         baseCaseDetailsList.add(BaseCaseDetails.baseCaseDetails()
                 .withCaseId(caseId)
                 .withUrn(caseDetails.getUrn())
+                .withProsecutingAuthority(caseDetails.getProsecutingAuthority().toString())
                 .withDefendants(buildDefendants(caseDetails, referencedDecisionsSaved, sjpSession, metadata)).build());
         return baseCaseDetailsList;
     }
@@ -260,13 +261,13 @@ public class ResultingToResultsConverter {
             if (referenceDecisionSavedOffenceOptional.isPresent()) {
                 referenceDecisionSavedOffenceOptional.get().getResults().forEach(result -> {
                     final BaseResult.Builder baseResultBuilder = BaseResult.baseResult();
-                    baseResultBuilder.withId(result.getId());
+                    baseResultBuilder.withId(result.getResultDefinitionId());
 
                     final List<Prompts> promptList = new ArrayList<>();
                     if (null != result.getPrompts()) {
                         result.getPrompts().forEach(p ->
                             promptList.add(Prompts.prompts()
-                                    .withId(p.getId())
+                                    .withId(p.getPromptDefinitionId())
                                     .withValue(p.getValue()).build()));
                         baseResultBuilder.withPrompts(promptList);
                     }

@@ -6,12 +6,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Prompt {
-    private final UUID id;
+    private final UUID promptDefinitionId;
     private final String value;
 
     @JsonCreator
-    public Prompt(@JsonProperty("id") final UUID id, @JsonProperty("value") final String value) {
-        this.id = id;
+    public Prompt(@JsonProperty("promptDefinitionId") final UUID promptDefinitionId, @JsonProperty("value") final String value) {
+        this.promptDefinitionId = promptDefinitionId;
         this.value = value;
     }
 
@@ -19,8 +19,8 @@ public class Prompt {
         return new uk.gov.moj.cpp.sjp.domain.resulting.Prompt.Builder();
     }
 
-    public UUID getId() {
-        return id;
+    public UUID getPromptDefinitionId() {
+        return promptDefinitionId;
     }
 
     public String getValue() {
@@ -39,30 +39,30 @@ public class Prompt {
 
         final uk.gov.moj.cpp.sjp.domain.resulting.Prompt that = (uk.gov.moj.cpp.sjp.domain.resulting.Prompt) obj;
 
-        return java.util.Objects.equals(this.id, that.id) &&
+        return java.util.Objects.equals(this.promptDefinitionId, that.promptDefinitionId) &&
                 java.util.Objects.equals(this.value, that.value);
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(id, value);
+        return java.util.Objects.hash(promptDefinitionId, value);
     }
 
     @Override
     public String toString() {
         return "Prompt{" +
-                "id='" + id + "'," +
+                "promptDefinitionId='" + promptDefinitionId + "'," +
                 "value='" + value + "'" +
                 "}";
     }
 
     public static class Builder {
-        private UUID id;
+        private UUID promptDefinitionId;
 
         private String value;
 
-        public Builder withId(final UUID id) {
-            this.id = id;
+        public Builder withPromptDefinitionId(final UUID promptDefinitionId) {
+            this.promptDefinitionId = promptDefinitionId;
             return this;
         }
 
@@ -72,7 +72,7 @@ public class Prompt {
         }
 
         public Prompt build() {
-            return new uk.gov.moj.cpp.sjp.domain.resulting.Prompt(id, value);
+            return new uk.gov.moj.cpp.sjp.domain.resulting.Prompt(promptDefinitionId, value);
         }
     }
 }

@@ -20,6 +20,7 @@ import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
 import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
 import uk.gov.justice.json.schemas.domains.sjp.PleaMethod;
 import uk.gov.justice.json.schemas.domains.sjp.PleaType;
+import uk.gov.justice.json.schemas.domains.sjp.ProsecutingAuthority;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
@@ -90,6 +91,7 @@ public class ResultingToResultsConverterHelper {
     private static final UUID CASE_ID = randomUUID();
     private static final UUID USER_ID = randomUUID();
     private static final String URN = "1234567";
+    private static final String PROSECUTING_AUTHORITY = "TFL";
     private static final UUID COURT_ID = randomUUID();
     private static final UUID DEFENDANT_ID = randomUUID();
     private static final String POSTCODE = "CF24 0RZ";
@@ -129,6 +131,7 @@ public class ResultingToResultsConverterHelper {
 
         assertEquals(CASE_ID, case1.getCaseId());
         assertEquals(URN, case1.getUrn());
+        assertEquals(PROSECUTING_AUTHORITY, case1.getProsecutingAuthority());
         verifyDefendants(defendants);
     }
 
@@ -219,6 +222,7 @@ public class ResultingToResultsConverterHelper {
         final CaseDetails caseDetails = CaseDetails.caseDetails()
                 .withId(CASE_ID)
                 .withUrn(URN)
+                .withProsecutingAuthority(ProsecutingAuthority.TFL)
                 .withDefendant(buildDefendant())
                 .build();
         return caseDetails;
@@ -260,7 +264,7 @@ public class ResultingToResultsConverterHelper {
         final JsonArrayBuilder promptsBuilder = createArrayBuilder();
 
         for (final Prompt prompt : prompts) {
-            promptsBuilder.add(Json.createObjectBuilder().add("id", prompt.getId().toString()).add("value", prompt.getValue()));
+            promptsBuilder.add(Json.createObjectBuilder().add("id", prompt.getPromptDefinitionId().toString()).add("value", prompt.getValue()));
         }
         uk.gov.moj.cpp.sjp.domain.resulting.Offence offence = new uk.gov.moj.cpp.sjp.domain.resulting.Offence(OFFENCE_ID, asList(new Result(RESULT_ID, prompts)));
         final List<uk.gov.moj.cpp.sjp.domain.resulting.Offence> offences = asList(offence);

@@ -26,9 +26,6 @@
     "modeOfTrial": {
       "type": "integer"
     },
-    "finalDisposalIndicator": {
-      "type": "integer"
-    },
     "convictionDate": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
     },
@@ -49,7 +46,6 @@
   "required": [
     "baseOffenceDetails",
     "initiatedDate",
-    "finalDisposalIndicator",
     "results"
 
   ]

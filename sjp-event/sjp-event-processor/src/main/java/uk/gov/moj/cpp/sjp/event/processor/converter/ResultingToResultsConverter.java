@@ -5,7 +5,7 @@ import static java.util.UUID.fromString;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static javax.json.JsonValue.NULL;
-import static uk.gov.justice.json.schemas.domains.sjp.results.PersonTitle.valueFor;
+import static uk.gov.justice.json.schemas.domains.sjp.results.Gender.valueOf;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
@@ -122,12 +122,12 @@ public class ResultingToResultsConverter {
         if (courtOptional.isPresent()) {
             final JsonObject court = courtOptional.get();
             builder.withAddress(Address.address()
-                    .withAddress1(court.getString(ADDRESS1_KEY))
-                    .withAddress2(court.getString(ADDRESS2_KEY))
-                    .withAddress3(court.getString(ADDRESS3_KEY))
-                    .withAddress4(court.getString(ADDRESS4_KEY))
-                    .withAddress5(court.getString(ADDRESS5_KEY))
-                    .withPostcode(!court.isNull(POSTCODE_KEY) ? court.getString(POSTCODE_KEY) : null)
+                    .withAddress1(court.getString(ADDRESS1_KEY, null))
+                    .withAddress2(court.getString(ADDRESS2_KEY, null))
+                    .withAddress3(court.getString(ADDRESS3_KEY, null))
+                    .withAddress4(court.getString(ADDRESS4_KEY,null))
+                    .withAddress5(court.getString(ADDRESS5_KEY, null))
+                    .withPostcode(court.getString(POSTCODE_KEY, null))
                     .build());
         }
 
@@ -177,8 +177,7 @@ public class ResultingToResultsConverter {
     protected BasePersonDetail buildPerson(final PersonalDetails personalDetails) {
         final BasePersonDetail.Builder person = BasePersonDetail.basePersonDetail();
 
-        Optional<PersonTitle> personTitle = valueFor(personalDetails.getTitle());
-        person.withPersonTitle(personTitle.isPresent() ? personTitle.get() : null)
+        person.withPersonTitle(null != personalDetails.getTitle() ? PersonTitle.valueOf(personalDetails.getTitle().toString().toUpperCase()) : null)
                 .withFirstName(personalDetails.getFirstName())
                 .withLastName(personalDetails.getLastName())
                 .withAddress(personalDetails.getAddress());
@@ -197,7 +196,7 @@ public class ResultingToResultsConverter {
         }
 
         if (null != personalDetails.getGender()) {
-            person.withGender(personalDetails.getGender());
+            person.withGender(valueOf(personalDetails.getGender().toString().toUpperCase()));
         }
 
         return person.build();
@@ -223,6 +222,7 @@ public class ResultingToResultsConverter {
                     .withBaseOffenceDetails(buildBaseOffenceDetails(o, caseFileDefendantOffence))
                     .withInitiatedDate(null != o.getStartDate() ? LocalDate.parse(o.getStartDate()).atStartOfDay(ZoneId.systemDefault()) : null)
                     .withPlea(buildPlea(o))
+                    .withConvictionDate(referencedDecisionsSaved.getResultedOn())
                     .withConvictingCourt(parseInt(sjpSession.getCourtDetails().getLocalJusticeAreaNationalCourtCode()))
                     .withResults(buildResults(o, referencedDecisionsSaved))
                     .build();

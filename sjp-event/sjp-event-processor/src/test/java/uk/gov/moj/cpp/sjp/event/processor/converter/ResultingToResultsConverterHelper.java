@@ -11,6 +11,7 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static org.junit.Assert.assertEquals;
 import static uk.gov.justice.json.schemas.domains.sjp.Gender.MALE;
+import static uk.gov.justice.json.schemas.domains.sjp.results.Gender.valueOf;
 import static uk.gov.justice.json.schemas.domains.sjp.results.PersonTitle.MR;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
@@ -200,7 +201,7 @@ public class ResultingToResultsConverterHelper {
         assertEquals(FIRST_NAME, person.getFirstName());
         assertEquals(LAST_NAME, person.getLastName());
         assertEquals(DATE_OF_BIRTH.toLocalDate(), person.getBirthDate().toLocalDate());
-        assertEquals(MALE, person.getGender());
+        assertEquals(valueOf(MALE.toString().toUpperCase()), person.getGender());
         assertEquals(BUSINESS_NUMBER, person.getTelephoneNumberBusiness());
         assertEquals(HOME_NUMBER, person.getTelephoneNumberHome());
         assertEquals(MOBILE, person.getTelephoneNumberMobile());

@@ -96,7 +96,7 @@ public class ResultingToResultsConverter {
         baseCaseDetailsList.add(BaseCaseDetails.baseCaseDetails()
                 .withCaseId(caseId)
                 .withUrn(caseDetails.getUrn())
-                .withProsecutingAuthority(caseDetails.getProsecutingAuthority().toString())
+                .withProsecutionAuthorityCode(caseDetails.getProsecutingAuthority().toString())
                 .withDefendants(buildDefendants(caseDetails, referencedDecisionsSaved, sjpSession, metadata)).build());
         return baseCaseDetailsList;
     }
@@ -177,7 +177,7 @@ public class ResultingToResultsConverter {
     protected BasePersonDetail buildPerson(final PersonalDetails personalDetails) {
         final BasePersonDetail.Builder person = BasePersonDetail.basePersonDetail();
 
-        person.withPersonTitle(null != personalDetails.getTitle() ? PersonTitle.valueOf(personalDetails.getTitle().toString().toUpperCase()) : null)
+        person.withPersonTitle(null != personalDetails.getTitle() ? PersonTitle.valueOf(personalDetails.getTitle().toUpperCase()) : null)
                 .withFirstName(personalDetails.getFirstName())
                 .withLastName(personalDetails.getLastName())
                 .withAddress(personalDetails.getAddress());

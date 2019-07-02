@@ -16,7 +16,7 @@
         "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/results/caseDefendant.json"
       }
     },
-    "prosecutingAuthority": {
+    "prosecutionAuthorityCode": {
       "type": "string"
     }
   },

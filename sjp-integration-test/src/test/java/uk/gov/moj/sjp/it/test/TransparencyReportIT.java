@@ -70,6 +70,7 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         // stub prosecutor and offences, reference data
         stubProsecutorQuery(ProsecutingAuthority.TFL.toString(), randomUUID());
         stubProsecutorQuery(ProsecutingAuthority.TVL.toString(), randomUUID());
+        stubProsecutorQuery(ProsecutingAuthority.DVLA.toString(), randomUUID());
         stubQueryOffences("stub-data/referencedata.query.offences.json");
 
         // CASE1

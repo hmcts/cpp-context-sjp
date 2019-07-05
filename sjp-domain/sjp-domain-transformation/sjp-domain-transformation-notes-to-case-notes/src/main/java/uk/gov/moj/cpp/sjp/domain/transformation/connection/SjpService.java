@@ -9,7 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 public class SjpService {
 
-    private static final String SJP_VIEW_STORE_DS_NAME = "java:/app/sjp/DS.viewstore";
+    private static final String SJP_VIEW_STORE_DS_NAME = "java:/app/event-tool/DS.viewstore";
 
     private static final String LISTING_NOTES_COUNT = "select count(*) as listing_notes_count from case_note where case_id = CAST(? as uuid) and note_type='LISTING'";
 

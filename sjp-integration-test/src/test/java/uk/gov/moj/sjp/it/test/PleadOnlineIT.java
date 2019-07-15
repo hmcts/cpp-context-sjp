@@ -59,6 +59,7 @@ import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import uk.gov.moj.sjp.it.producer.DecisionToReferCaseForCourtHearingSavedProducer;
+import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 

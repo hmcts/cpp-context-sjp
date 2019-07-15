@@ -14,6 +14,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -26,6 +29,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.domain.transformation.connection.ResultingService;
+import uk.gov.moj.cpp.sjp.domain.transformation.connection.SjpService;
 import uk.gov.moj.cpp.sjp.domain.transformation.connection.UsersAndGroupService;
 
 import java.io.IOException;
@@ -66,6 +70,9 @@ public class CaseNotesTransformerTest {
     @Mock
     private UsersAndGroupService usersAndGroupService;
 
+    @Mock
+    private SjpService sjpService;
+
     private String caseId = randomUUID().toString();
 
     private UUID userId = randomUUID();
@@ -86,21 +93,30 @@ public class CaseNotesTransformerTest {
     }
 
     @Test
-    public void shouldRaiseTransformActionForOnlyCaseCompletedEvent() {
+    public void shouldTransformCompletedCaseWithoutListingNote() throws Exception {
+        when(sjpService.hasListingNote(caseId)).thenReturn(false);
         assertThat(caseNotesTransformer.actionFor(jsonEnvelope), is(TRANSFORM));
     }
 
     @Test
-    public void shouldNotRaiseTransformActionForAnyOtherEvent() {
+    public void shouldNotTransformCompletedCasesWithListingNote() throws Exception {
+        when(sjpService.hasListingNote(caseId)).thenReturn(true);
+        assertThat(caseNotesTransformer.actionFor(jsonEnvelope), is(NO_ACTION));
+    }
+
+    @Test
+    public void shouldNotTransformNotCompletedCases() throws Exception {
         JsonEnvelope caseNoteAddedEventEnvelope = envelopeFrom(metadataWithRandomUUID(CASE_NOTE_ADDED_EVENT).build(),
                 createObjectBuilder().add("caseId", caseId).build());
         assertThat(caseNotesTransformer.actionFor(caseNoteAddedEventEnvelope), is(NO_ACTION));
+        verify(sjpService, never()).hasListingNote(any());
     }
 
     @Test
     public void shouldRaiseNewCaseNoteCreatedEventWhenThenThereIsANote() {
         when(usersAndGroupService.getUserDetails(userId.toString())).thenReturn(getUserDetails());
         when(resultingService.getCaseDecisionFor(caseId)).thenReturn(getCaseDecisions());
+
         final List<JsonEnvelope> envelopeList = whenTheTransformationIsApplied();
         thenOutputStreamHasTwoEvents(envelopeList);
         thenCaseNoteAddedEventHasAllTheFieldsSetCorrectly(envelopeList);
@@ -108,13 +124,14 @@ public class CaseNotesTransformerTest {
     }
 
     @Test
-    public void shouldNotRaiseCaseNoteAddedEventWhenThereIsNoNote() {
+    public void shouldNotRaiseCaseNoteAddedEventWhenThereIsNoNote() throws Exception {
+        when(sjpService.hasListingNote(caseId)).thenReturn(false);
         when(resultingService.getCaseDecisionFor(caseId)).thenReturn(empty());
         final List<JsonEnvelope> envelopeList = whenTheTransformationIsApplied();
         assertThat(envelopeList, hasSize(1));
         assertThat(envelopeList, contains(jsonEnvelope));
+        verify(usersAndGroupService, never()).getUserDetails(any());
     }
-
 
     private void thenOutputStreamHasTwoEvents(final List<JsonEnvelope> envelopeList) {
         assertThat(envelopeList, hasSize(2));
@@ -123,7 +140,6 @@ public class CaseNotesTransformerTest {
     private void thenTheStreamAlsoHasCaseCompletedEvent(final List<JsonEnvelope> envelopeList) {
         assertThat(envelopeList, hasItem(jsonEnvelope));
     }
-
 
     protected void thenCaseNoteAddedEventHasAllTheFieldsSetCorrectly(final List<JsonEnvelope> envelopeList) {
         final JsonEnvelope expectedEnvelope = envelopeFrom(

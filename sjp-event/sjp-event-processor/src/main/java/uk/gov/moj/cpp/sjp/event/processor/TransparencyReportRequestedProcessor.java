@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.time.LocalDateTime.now;
+import static java.util.Optional.ofNullable;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.LF;
@@ -34,6 +35,7 @@ import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.transaction.Transactional;
 
 import com.google.common.collect.HashBasedTable;
@@ -162,13 +164,21 @@ public class TransparencyReportRequestedProcessor {
 
     private JsonArrayBuilder createPendingCasesJsonArrayBuilderFromListOfPendingCases(final List<JsonObject> pendingCases, final Boolean isWelsh, final JsonEnvelope envelope) {
         final JsonArrayBuilder pendingCasesBuilder = createArrayBuilder();
-        pendingCases.forEach(pendingCase -> pendingCasesBuilder.add(createObjectBuilder()
-                .add("defendantName", pendingCase.getString("defendantName"))
-                .add("town", pendingCase.getString("town"))
-                .add("county", pendingCase.getString("county"))
-                .add("postcode", pendingCase.getString("postcode"))
-                .add("offenceTitle", buildOffenceTitleFromOffenceArray(pendingCase.getJsonArray("offences"), isWelsh, envelope))
-                .add("prosecutorName", buildProsecutorName(pendingCase.getString("prosecutorName"), isWelsh, envelope))));
+        pendingCases.forEach(pendingCase -> {
+            final JsonObjectBuilder pendingCaseBuilder = createObjectBuilder()
+                    .add("defendantName", pendingCase.getString("defendantName"))
+                    .add("postcode", pendingCase.getString("postcode"))
+                    .add("offenceTitle", buildOffenceTitleFromOffenceArray(pendingCase.getJsonArray("offences"), isWelsh, envelope))
+                    .add("prosecutorName", buildProsecutorName(pendingCase.getString("prosecutorName"), isWelsh, envelope));
+
+            ofNullable(pendingCase.getString("town", null))
+                    .ifPresent(town -> pendingCaseBuilder.add("town", town));
+
+            ofNullable(pendingCase.getString("county", null))
+                    .ifPresent(county -> pendingCaseBuilder.add("county", county));
+
+            pendingCasesBuilder.add(pendingCaseBuilder);
+        });
         return pendingCasesBuilder;
     }
 

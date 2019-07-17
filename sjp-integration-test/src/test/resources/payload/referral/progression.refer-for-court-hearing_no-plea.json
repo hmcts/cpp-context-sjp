@@ -145,7 +145,8 @@
             "prosecutionCaseId": "${CASE_ID}"
           }
         },
-        "mimeType": "pdf"
+        "mimeType": "pdf",
+        "containsFinancialMeans" : false
       }
     ]
   }

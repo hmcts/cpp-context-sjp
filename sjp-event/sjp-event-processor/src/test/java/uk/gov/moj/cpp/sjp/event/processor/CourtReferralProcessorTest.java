@@ -246,6 +246,7 @@ public class CourtReferralProcessorTest {
                                 withJsonPath("$.courtReferral.courtDocuments[0].documentTypeId", equalTo(courtDocumentView.getDocumentTypeId().toString())),
                                 withJsonPath("$.courtReferral.courtDocuments[0].mimeType", equalTo(courtDocumentView.getMimeType())),
                                 withJsonPath("$.courtReferral.courtDocuments[0].documentCategory.defendantDocument.prosecutionCaseId", equalTo(courtDocumentView.getDocumentCategory().getDefendantDocument().getProsecutionCaseId().toString())),
+                                withJsonPath("$.courtReferral.courtDocuments[0].containsFinancialMeans", equalTo(courtDocumentView.getContainsFinancialMeans())),
                                 withJsonPath("$.courtReferral.courtDocuments[0].materials[0].id", equalTo(courtDocumentView.getMaterials().get(0).getId().toString())),
                                 withJsonPath("$.courtReferral.courtDocuments[0].materials[0].name", equalTo(courtDocumentView.getMaterials().get(0).getName()))
                         )))));
@@ -329,6 +330,7 @@ public class CourtReferralProcessorTest {
                 "Bank Statement",
                 randomUUID(),
                 "pdf",
+                true,
                 Collections.singletonList(new MaterialView(randomUUID(),
                         "BankStatment.pdf",
                         ZonedDateTime.now(),

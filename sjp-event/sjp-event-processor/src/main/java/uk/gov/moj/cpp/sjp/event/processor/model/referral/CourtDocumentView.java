@@ -13,6 +13,7 @@ public class CourtDocumentView {
     private final String name;
     private final UUID documentTypeId;
     private final String mimeType;
+    private final boolean containsFinancialMeans;
 
     private final List<MaterialView> materials;
 
@@ -21,12 +22,14 @@ public class CourtDocumentView {
                              final String name,
                              final UUID documentTypeId,
                              final String mimeType,
+                             final boolean containsFinancialMeans,
                              final List<MaterialView> materials) {
         this.courtDocumentId = courtDocumentId;
         this.documentCategory = documentCategory;
         this.name = name;
         this.documentTypeId = documentTypeId;
         this.mimeType = mimeType;
+        this.containsFinancialMeans = containsFinancialMeans;
         this.materials = materials;
     }
 
@@ -46,6 +49,10 @@ public class CourtDocumentView {
         return documentTypeId;
     }
 
+    public boolean getContainsFinancialMeans() {
+        return containsFinancialMeans;
+    }
+
     public String getMimeType() {
         return mimeType;
     }
@@ -61,7 +68,7 @@ public class CourtDocumentView {
 
     @Override
     public int hashCode() {
-        return Objects.hash(courtDocumentId, documentCategory, name, documentTypeId, mimeType, materials);
+        return Objects.hash(courtDocumentId, documentCategory, name, documentTypeId, mimeType,containsFinancialMeans, materials);
     }
 
     @Override
@@ -72,6 +79,7 @@ public class CourtDocumentView {
                 ", name='" + name + '\'' +
                 ", documentTypeId=" + documentTypeId +
                 ", mimeType='" + mimeType + '\'' +
+                ", containsFinancialMeans='" + containsFinancialMeans + '\'' +
                 ", materials=" + materials +
                 '}';
     }

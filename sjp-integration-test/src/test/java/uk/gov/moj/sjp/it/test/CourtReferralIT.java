@@ -57,6 +57,7 @@ import uk.gov.moj.sjp.it.producer.DecisionToReferCaseForCourtHearingSavedProduce
 import uk.gov.moj.sjp.it.producer.ReferToCourtHearingProducer;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.MaterialStub;
+import uk.gov.moj.sjp.it.stub.NotifyStub;
 import uk.gov.moj.sjp.it.stub.ProgressionServiceStub;
 import uk.gov.moj.sjp.it.stub.ProsecutionCaseFileServiceStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
@@ -70,6 +71,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.json.JsonObject;
 
@@ -100,6 +102,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
     private static final UUID DOCUMENT_TYPE_ID = randomUUID();
     private static final String DOCUMENT_TYPE = "SJPN";
+    private static final String FINANCIAL_MEANS_DOCUMENT_TYPE = "FINANCIAL_MEANS";
     private static final UUID MATERIAL_ID = randomUUID();
     private static final UUID DOCUMENT_ID = randomUUID();
     private static final String FILE_NAME = "Bank Statement";
@@ -144,11 +147,13 @@ public class CourtReferralIT extends BaseIntegrationTest {
         ReferenceDataServiceStub.stubHearingTypesQuery(HEARING_TYPE_ID.toString(), HEARING_DESCRIPTION);
         ReferenceDataServiceStub.stubProsecutorQuery(prosecutingAuthority.name(), PROSECUTOR_ID);
         ReferenceDataServiceStub.stubQueryOffences("stub-data/referencedata.query.offences.json");
+        ReferenceDataServiceStub.stubCountryByPostcodeQuery("W1T 1JY", "UK-");
         ReferenceDataServiceStub.stubCountryNationalities("stub-data/referencedata.query.country-nationality.json");
         ReferenceDataServiceStub.stubEthnicities("stub-data/referencedata.query.ethnicities.json");
         ReferenceDataServiceStub.stubReferralDocumentMetadataQuery(DOCUMENT_TYPE_ID.toString(), REFERENCE_DATA_DOCUMENT_TYPE);
         ResultingStub.stubGetCaseDecisionsWithDecision(caseId);
         UsersGroupsStub.stubForUserDetails(legalAdviser);
+        NotifyStub.stubNotifications();
         MaterialStub.stubMaterialMetadata(MATERIAL_ID, FILE_NAME, MIME_TYPE, ADDED_AT);
         ProgressionServiceStub.stubReferCaseToCourtCommand();
         ProsecutionCaseFileServiceStub.stubCaseDetails(caseId, fromString("4a1e66ab-8673-4300-aed8-b2391e38d8db"), fromString("63f61b32-0fd0-4a76-bab1-ee68fb54e93f"), "stub-data/prosecutioncasefile.query.case-details.json");
@@ -253,10 +258,10 @@ public class CourtReferralIT extends BaseIntegrationTest {
     @Test
     public void shouldSendReferToCourtHearingCommandToProgressionContext_WithPlea() {
         final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId);
+        final UUID legalAdviserId = randomUUID();
         pleadOnlineHelper.pleadOnline(getPayload("raml/json/sjp.command.plead-online__not-guilty.json")
                 .replace("ecf30a03-8a17-4fc5-81d2-b72ac0a13d17", offenceId.toString())
                 .replace("AB123456A", NATIONAL_INSURANCE_NUMBER));
-
         verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(caseId, true);
         referCaseToCourtAndVerifyCommandSendToProgressionMatchesExpected("payload/referral/progression.refer-for-court-hearing_plea-present.json");
     }
@@ -279,14 +284,17 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 .run(decisionToReferCaseForCourtHearingSavedProducer::saveDecisionToReferCaseForCourtHearing);
 
         final JsonObject expectedCommandPayload = prepareExpectedCommandPayload(expectedCommandPayloadFile);
-
-        await().until(() ->
-                findAll(postRequestedFor(urlPathMatching(REFER_TO_COURT_COMMAND_URL + ".*"))
-                        .withHeader(CONTENT_TYPE, WireMock.equalTo(REFER_TO_COURT_COMMAND_CONTENT)))
-                        .stream()
-                        .map(LoggedRequest::getBodyAsString)
-                        .map(JsonHelper::getJsonObject)
-                        .anyMatch(commandPayload -> lenientCompare(commandPayload, expectedCommandPayload)));
+        await()
+                .atMost(40, TimeUnit.SECONDS)
+                .pollInterval(2, TimeUnit.SECONDS)
+                .pollDelay(1, TimeUnit.SECONDS)
+                .until(() ->
+                        findAll(postRequestedFor(urlPathMatching(REFER_TO_COURT_COMMAND_URL + ".*"))
+                                .withHeader(CONTENT_TYPE, WireMock.equalTo(REFER_TO_COURT_COMMAND_CONTENT)))
+                                .stream()
+                                .map(LoggedRequest::getBodyAsString)
+                                .map(JsonHelper::getJsonObject)
+                                .anyMatch(commandPayload -> lenientCompare(commandPayload, expectedCommandPayload)));
     }
 
     private JsonObject prepareExpectedCommandPayload(String payloadFileLocation) {

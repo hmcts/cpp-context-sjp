@@ -1,7 +1,10 @@
 package uk.gov.moj.sjp.it.command;
 
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
@@ -88,6 +91,16 @@ public class CreateCase {
         Optional.ofNullable(payloadBuilder.offenceBuilders.get(0).offenceWordingWelsh)
                 .ifPresent(offenceWordingWelsh -> offence.add("offenceWordingWelsh", offenceWordingWelsh));
 
+        final JsonObjectBuilder addressBuilder = createObjectBuilder();
+
+        ofNullable(payloadBuilder.defendantBuilder.addressBuilder.getAddress1()).ifPresent(a1 -> addressBuilder.add("address1", a1));
+        ofNullable(payloadBuilder.defendantBuilder.addressBuilder.getAddress2()).ifPresent(a2 -> addressBuilder.add("address2", a2));
+        ofNullable(payloadBuilder.defendantBuilder.addressBuilder.getAddress3()).ifPresent(a3 -> addressBuilder.add("address3", a3));
+        ofNullable(payloadBuilder.defendantBuilder.addressBuilder.getAddress4()).ifPresent(a4 -> addressBuilder.add("address4", a4));
+        ofNullable(payloadBuilder.defendantBuilder.addressBuilder.getAddress5()).ifPresent(a5 -> addressBuilder.add("address5", a5));
+        ofNullable(payloadBuilder.defendantBuilder.addressBuilder.getPostcode()).ifPresent(p -> addressBuilder.add("postcode", p));
+
+
         final JsonObjectBuilder defendantBuilder = createObjectBuilder()
                 .add("id", payloadBuilder.defendantBuilder.id.toString())
                 .add("title", payloadBuilder.defendantBuilder.title)
@@ -96,14 +109,7 @@ public class CreateCase {
                 .add("nationalInsuranceNumber", payloadBuilder.defendantBuilder.nationalInsuranceNumber)
                 .add("gender", payloadBuilder.defendantBuilder.gender.toString())
                 .add("numPreviousConvictions", payloadBuilder.defendantBuilder.numPreviousConvictions)
-                .add("address", createObjectBuilder()
-                        .add("address1", payloadBuilder.defendantBuilder.addressBuilder.getAddress1())
-                        .add("address2", payloadBuilder.defendantBuilder.addressBuilder.getAddress2())
-                        .add("address3", payloadBuilder.defendantBuilder.addressBuilder.getAddress3())
-                        .add("address4", payloadBuilder.defendantBuilder.addressBuilder.getAddress4())
-                        .add("address5", payloadBuilder.defendantBuilder.addressBuilder.getAddress5())
-                        .add("postcode", payloadBuilder.defendantBuilder.addressBuilder.getPostcode())
-                )
+                .add("address", addressBuilder)
                 .add("contactDetails", createObjectBuilder()
                         .add("home", payloadBuilder.defendantBuilder.contactDetailsBuilder.getHome())
                         .add("mobile", payloadBuilder.defendantBuilder.contactDetailsBuilder.getMobile())
@@ -236,6 +242,10 @@ public class CreateCase {
 
         }
 
+        public static DefendantBuilder defaultDefendant() {
+            return withDefaults();
+        }
+
         public static DefendantBuilder withDefaults() {
             final DefendantBuilder builder = new DefendantBuilder();
 
@@ -263,6 +273,11 @@ public class CreateCase {
             return this;
         }
 
+        public DefendantBuilder withRandomLastName() {
+            this.lastName = "LastName" + randomUUID();
+            return this;
+        }
+
         public DefendantBuilder withFirstName(final String firstName) {
             this.firstName = firstName;
             return this;
@@ -270,6 +285,16 @@ public class CreateCase {
 
         public DefendantBuilder withNationalInsuranceNumber(final String nationalInsuranceNumber) {
             this.nationalInsuranceNumber = nationalInsuranceNumber;
+            return this;
+        }
+
+        public DefendantBuilder withAddressBuilder(final AddressBuilder addressBuilder) {
+            this.addressBuilder = addressBuilder;
+            return this;
+        }
+
+        public DefendantBuilder withDefaultShortAddress() {
+            this.addressBuilder = AddressBuilder.addressWithMandatoryFieldsOnly();
             return this;
         }
 
@@ -333,7 +358,7 @@ public class CreateCase {
         public static OffenceBuilder withDefaults() {
             final OffenceBuilder builder = new OffenceBuilder();
 
-            builder.libraOffenceCode = "PS00001";
+            builder.libraOffenceCode = DEFAULT_OFFENCE_CODE;
             builder.chargeDate = LocalDate.of(2016, 1, 1);
             builder.libraOffenceDateCode = 1;
             builder.offenceCommittedDate = LocalDate.of(2016, 1, 1);

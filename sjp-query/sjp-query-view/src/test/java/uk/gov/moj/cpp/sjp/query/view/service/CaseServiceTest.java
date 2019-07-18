@@ -420,6 +420,7 @@ public class CaseServiceTest {
     public void shouldFindPendingCasesToPublish() {
         final UUID caseId1 = randomUUID();
         final UUID caseId2 = randomUUID();
+        final UUID caseId3 = randomUUID();
 
         final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence1 = new PendingCaseToPublishPerOffence("John", "Doe",
                 caseId1, "Lant Street", "London", "Greater London",
@@ -433,16 +434,24 @@ public class CaseServiceTest {
                 caseId2, "London", "Greater London", "",
                 "S", "CA03014", LocalDate.of(2018, 8, 2), "TVL");
 
-        when(caseRepository.findPendingCasesToPublish()).thenReturn(newArrayList(pendingCaseToPublishWith5LinesOfAddressOffence1,
-                pendingCaseToPublishWith5LinesOfAddressOffence2, pendingCaseToPublishWith4LinesOfAddressAndWithoutFirstName));
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWithoutAddress3and4and5 = new PendingCaseToPublishPerOffence("Emma", "White",
+                caseId3, null, null, null,
+                "CR0 2GE", "CA03011", LocalDate.of(2018, 8, 2), "TVL");
+
+        when(caseRepository.findPendingCasesToPublish()).thenReturn(newArrayList(
+                pendingCaseToPublishWith5LinesOfAddressOffence1,
+                pendingCaseToPublishWith5LinesOfAddressOffence2,
+                pendingCaseToPublishWith4LinesOfAddressAndWithoutFirstName,
+                pendingCaseToPublishWithoutAddress3and4and5
+        ));
 
         final JsonObject pendingCasesToPublish = service.findPendingCasesToPublish();
 
-        final List<JsonObject> pendingCaseToPublishWith5LinesOfAddressJsonPayload = pendingCasesToPublish.getJsonArray("pendingCases")
+        final List<JsonObject> pendingCaseToPublish = pendingCasesToPublish.getJsonArray("pendingCases")
                 .getValuesAs(JsonObject.class);
 
         containsAndAssertPendingCaseToPublish(
-                pendingCaseToPublishWith5LinesOfAddressJsonPayload,
+                pendingCaseToPublish,
                 caseId1,
                 "J Doe",
                 "London",
@@ -454,7 +463,7 @@ public class CaseServiceTest {
                         Pair.of("CA03014", "2018-12-15")));
 
         containsAndAssertPendingCaseToPublish(
-                pendingCaseToPublishWith5LinesOfAddressJsonPayload,
+                pendingCaseToPublish,
                 caseId2,
                 "Doe",
                 "London",
@@ -463,6 +472,17 @@ public class CaseServiceTest {
                 "TVL",
                 newArrayList(
                         Pair.of("CA03014", "2018-08-02")));
+
+        containsAndAssertPendingCaseToPublish(
+                pendingCaseToPublish,
+                caseId3,
+                "E White",
+                null,
+                null,
+                "CR",
+                "TVL",
+                newArrayList(
+                        Pair.of("CA03011", "2018-08-02")));
 
     }
 
@@ -654,8 +674,8 @@ public class CaseServiceTest {
 
         assertThat(pendingCaseToPublish.getString("caseId"), is(caseId.toString()));
         assertThat(pendingCaseToPublish.getString("defendantName"), is(name));
-        assertThat(pendingCaseToPublish.getString("town"), is(town));
-        assertThat(pendingCaseToPublish.getString("county"), is(county));
+        assertThat(pendingCaseToPublish.getString("town", null), is(town));
+        assertThat(pendingCaseToPublish.getString("county", null), is(county));
         assertThat(pendingCaseToPublish.getString("postcode"), is(postcode));
         assertThat(pendingCaseToPublish.getString("prosecutorName"), is(prosecutor));
         final List<JsonObject> offenceForPendingCaseToPublish

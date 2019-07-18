@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
@@ -12,7 +9,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>1.0.108-FRAMEWORK-SNAPSHOT</version>
+    <version>6.0.0-FRAMEWORK-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -25,12 +22,12 @@
         <notification.notify.version>0.0.26</notification.notify.version>
         <referencedata.version>2.0.191</referencedata.version>
         <referencedata.offences.version>1.0.19</referencedata.offences.version>
-        <resulting.version>2.0.226-ATCM-SNAPSHOT</resulting.version>
+        <resulting.version>2.0.224</resulting.version>
         <scheduling.version>2.0.88</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>2.0.106</usersgroups.version>
         <progression.version>2.0.113</progression.version>
-        <prosecutioncasefile.version>1.0.21-ATCM-SNAPSHOT</prosecutioncasefile.version>
+        <prosecutioncasefile.version>1.0.28</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>

@@ -13,13 +13,20 @@ public class AddressBuilder {
     }
 
     public static AddressBuilder withDefaults() {
-        final AddressBuilder addressBuilder = new AddressBuilder();
+        final AddressBuilder addressBuilder = addressWithMandatoryFieldsOnly();
 
-        addressBuilder.address1 = "14 Tottenham Court Road";
         addressBuilder.address2 = "London";
         addressBuilder.address3 = "England";
         addressBuilder.address4 = "UK";
         addressBuilder.address5 = "Greater London";
+
+        return addressBuilder;
+    }
+
+    public static AddressBuilder addressWithMandatoryFieldsOnly() {
+        final AddressBuilder addressBuilder = new AddressBuilder();
+
+        addressBuilder.address1 = "14 Tottenham Court Road";
         addressBuilder.postcode = "W1T 1JY";
 
         return addressBuilder;
@@ -40,12 +47,12 @@ public class AddressBuilder {
         return this;
     }
 
-    public AddressBuilder setAddress4(final String address4) {
+    public AddressBuilder withAddress4(final String address4) {
         this.address4 = address4;
         return this;
     }
 
-    public AddressBuilder setAddress5(final String address5) {
+    public AddressBuilder withAddress5(final String address5) {
         this.address5 = address5;
         return this;
     }

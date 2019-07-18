@@ -211,6 +211,46 @@
                     </validation>
                 </xa-datasource>
 
+                <xa-datasource jndi-name="java:/app/event-tool/DS.viewstore"
+                               pool-name="DS.sjp.viewstore" enabled="true" spy="true"
+                               statistics-enabled="true" use-java-context="true" use-ccm="true">
+                    <driver>postgres</driver>
+                    <xa-datasource-property name="ServerName">localhost</xa-datasource-property>
+                    <xa-datasource-property name="targetServerType">master</xa-datasource-property>
+                    <xa-datasource-property name="PortNumber">5432</xa-datasource-property>
+                    <xa-datasource-property name="DatabaseName">sjpviewstore
+                    </xa-datasource-property>
+                    <xa-datasource-property name="ApplicationName">sjp
+                    </xa-datasource-property>
+
+                    <xa-datasource-property name="CurrentSchema">public</xa-datasource-property>
+                    <xa-datasource-property name="LogLevel">0</xa-datasource-property>
+                    <xa-pool>
+                        <min-pool-size>1</min-pool-size>
+                        <initial-pool-size>10</initial-pool-size>
+                        <max-pool-size>10</max-pool-size>
+                        <allow-multiple-users>true</allow-multiple-users>
+                    </xa-pool>
+                    <timeout>
+                        <xa-resource-timeout>100</xa-resource-timeout>
+                    </timeout>
+                    <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
+                    <statement>
+                        <track-statements>true</track-statements>
+                    </statement>
+                    <security>
+                        <user-name>sjp</user-name>
+                        <password>sjp</password>
+                    </security>
+
+                    <validation>
+                        <exception-sorter
+                                class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"/>
+                        <valid-connection-checker
+                                class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
+                    </validation>
+                </xa-datasource>
+
                 <xa-datasource jndi-name="java:/app/resulting/DS.eventstore"
                                pool-name="DS.resulting.eventstore" enabled="true" spy="true"
                                statistics-enabled="true" use-java-context="true" use-ccm="true">

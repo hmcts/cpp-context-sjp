@@ -7,6 +7,7 @@ import static java.time.LocalDate.now;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -18,6 +19,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
+import static uk.gov.moj.sjp.it.command.CreateCase.DefendantBuilder.defaultDefendant;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
 import static uk.gov.moj.sjp.it.helper.TransparencyReportDBHelper.checkIfFileExists;
@@ -28,6 +30,8 @@ import static uk.gov.moj.sjp.it.stub.SystemDocumentGeneratorStub.stubDocumentGen
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.TransparencyReportHelper;
 
@@ -45,6 +49,7 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 
 import com.google.common.collect.Sets;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matcher;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -55,41 +60,34 @@ public class TransparencyReportIT extends BaseIntegrationTest {
 
     private TransparencyReportHelper transparencyReportHelper = new TransparencyReportHelper();
     private CreateCasePayloadBuilder createCasePayloadBuilder;
+    private final UUID caseId1 = randomUUID(), caseId2 = randomUUID();
+    private final UUID offenceId1 = randomUUID(), offenceId2 = randomUUID();
 
     private static final String SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED = "sjp.events.transparency-report-requested";
     private static final String SJP_EVENTS_TRANSPARENCY_REPORT_GENERATED = "sjp.events.transparency-report-generated";
 
     @Before
     public void setUp() {
+        stubDocumentGeneratorEndPoint();
+        stubProsecutorQuery(ProsecutingAuthority.TFL.toString(), randomUUID());
+        stubProsecutorQuery(ProsecutingAuthority.TVL.toString(), randomUUID());
+        stubQueryOffences("stub-data/referencedata.query.offences.json");
     }
 
     @Test
     public void shouldGenerateTransparencyReports() throws IOException {
-        // stub the document generator
-        stubDocumentGeneratorEndPoint();
-        // stub prosecutor and offences, reference data
-        stubProsecutorQuery(ProsecutingAuthority.TFL.toString(), randomUUID());
-        stubProsecutorQuery(ProsecutingAuthority.TVL.toString(), randomUUID());
-        stubQueryOffences("stub-data/referencedata.query.offences.json");
 
-        // CASE1
-        final UUID caseId1 = randomUUID();
-        final UUID offenceId1 = randomUUID();
-        final String case1defendantLastName = randomUUID().toString() + "_LastName";
-        createCase(caseId1, offenceId1, case1defendantLastName);
-        // put the case in ready  status
-        pollUntilCaseReady(caseId1);
+        final CreateCase.DefendantBuilder defendant1 = defaultDefendant()
+                .withRandomLastName();
 
-        // CASE2
-        final UUID caseId2 = randomUUID();
-        final UUID offenceId2 = randomUUID();
-        final String case2defendantLastName = randomUUID().toString() + "_LastName";
-        createCase(caseId2, offenceId2, case2defendantLastName);
-        // put the case in ready  status
-        pollUntilCaseReady(caseId2);
+        final CreateCase.DefendantBuilder defendant2 = defaultDefendant()
+                .withRandomLastName()
+                .withDefaultShortAddress();
 
-        // make a request to generate the file
-        final EventListener eventListener = new EventListener().withMaxWaitTime(40000);
+        final CreateCasePayloadBuilder case1 = createCase(caseId1, offenceId1, defendant1);
+        final CreateCasePayloadBuilder case2 = createCase(caseId2, offenceId2, defendant2);
+
+        final EventListener eventListener = new EventListener().withMaxWaitTime(50000);
         eventListener
                 .subscribe(SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED)
                 .subscribe(SJP_EVENTS_TRANSPARENCY_REPORT_GENERATED)
@@ -129,8 +127,8 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         final List<JSONObject> documentGenerationRequests = pollDocumentGenerationRequests(hasSize(2));
 
         // validate the english and welsh payloads
-        validateDocumentGenerationRequest(documentGenerationRequests.get(0), case1defendantLastName, "PendingCasesEnglish");
-        validateDocumentGenerationRequest(documentGenerationRequests.get(1), case2defendantLastName, "PendingCasesWelsh");
+        validateDocumentGenerationRequest(documentGenerationRequests.get(0), "PendingCasesEnglish", case1);
+        validateDocumentGenerationRequest(documentGenerationRequests.get(1), "PendingCasesWelsh", case2);
 
         // get the report metadata
         final Matcher matcher = withJsonPath("reportsMetadata.*", hasItem(
@@ -142,7 +140,6 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         final JsonArray reportsArray = reportsMetadata.getJsonArray("reportsMetadata");
         final JsonObject englishReport = reportsArray.getJsonObject(0);
         final JsonObject welshReport = reportsArray.getJsonObject(1);
-
 
         validateMetadata(englishReport, englishReportMetadata, false);
         validateMetadata(welshReport, welshReportMetadata, true);
@@ -166,8 +163,8 @@ public class TransparencyReportIT extends BaseIntegrationTest {
     }
 
     private void validateDocumentGenerationRequest(final JSONObject documentGenerationRequest,
-                                                   final String defendantLastName,
-                                                   final String templateName) {
+                                                   final String templateName,
+                                                   final CreateCasePayloadBuilder casePayloadBuilder) {
         assertThat(documentGenerationRequest.getString("templateName"), is(templateName));
         assertThat(documentGenerationRequest.getString("conversionFormat"), is("pdf"));
 
@@ -184,37 +181,60 @@ public class TransparencyReportIT extends BaseIntegrationTest {
 
         final List<JSONObject> filteredReadyCases = jsonObjects
                 .stream()
-                .filter((eachCase) -> eachCase.get("defendantName").equals("F " + defendantLastName))
+                .filter((eachCase) -> eachCase.get("defendantName").equals(getShortDefendantName(casePayloadBuilder.getDefendantBuilder())))
                 .collect(toList());
         assertThat(filteredReadyCases.size(), is(1));
 
         final JSONObject readyCase = filteredReadyCases.get(0);
-        assertThat(readyCase.get("county"), is("Greater London"));
-        assertThat(readyCase.get("offenceTitle"), is("Public service vehicle - passenger use altered / defaced ticket"));
-        assertThat(readyCase.get("postcode"), is("W1"));
-        assertThat(readyCase.get("prosecutorName"), is("TFL"));
-        assertThat(readyCase.get("town"), is("UK"));
+
+        final AddressBuilder address = casePayloadBuilder.getDefendantBuilder().getAddressBuilder();
+
+        final String expectedCounty = getCounty(address);
+        final String expectedTown = getTown(address);
+        final String expectedPostcode = getPostcode(address);
+        final String expectedProsecutorName = casePayloadBuilder.getProsecutingAuthority().name();
+        final String expectedOffenceTitle = "Public service vehicle - passenger use altered / defaced ticket";
+
+        assertThat(readyCase.optString("county", null), is(expectedCounty));
+        assertThat(readyCase.optString("town", null), is(expectedTown));
+        assertThat(readyCase.optString("postcode", null), is(expectedPostcode));
+        assertThat(readyCase.optString("offenceTitle"), is(expectedOffenceTitle));
+        assertThat(readyCase.optString("prosecutorName"), is(expectedProsecutorName));
     }
 
-    private void createCase(final UUID caseId,
-                            final UUID offenceId,
-                            final String defendantLastName) {
+    private static String getTown(final AddressBuilder addressBuilder) {
+        return isNotEmpty(addressBuilder.getAddress5()) ? addressBuilder.getAddress4() : addressBuilder.getAddress3();
+    }
+
+    private static String getCounty(final AddressBuilder addressBuilder) {
+        return isNotEmpty(addressBuilder.getAddress5()) ? addressBuilder.getAddress5() : addressBuilder.getAddress4();
+    }
+
+    private static String getPostcode(final AddressBuilder addressBuilder) {
+        return StringUtils.substring(StringUtils.defaultString(addressBuilder.getPostcode()), 0, 2);
+    }
+
+    private CreateCasePayloadBuilder createCase(final UUID caseId,
+                                                final UUID offenceId,
+                                                final CreateCase.DefendantBuilder defendantBuilder) {
         final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
         createCasePayloadBuilder = CreateCasePayloadBuilder
                 .withDefaults()
                 .withId(caseId)
                 .withOffenceId(offenceId)
-                .withPostingDate(postingDate);
-
-        // generate random defendant last name to assert on the submitted payload
-        createCasePayloadBuilder.getDefendantBuilder().withLastName(defendantLastName);
-        createCasePayloadBuilder.getDefendantBuilder().withFirstName("FirstName");
+                .withPostingDate(postingDate)
+                .withDefendantBuilder(defendantBuilder);
 
         createCaseForPayloadBuilder(createCasePayloadBuilder);
+        pollUntilCaseReady(createCasePayloadBuilder.getId());
+        return createCasePayloadBuilder;
     }
 
     private void validateThePdfContent(final String mockedContent) {
         assertThat(mockedContent, equalToCompressingWhiteSpace(transparencyReportHelper.getStubbedContent()));
     }
 
+    private static String getShortDefendantName(final CreateCase.DefendantBuilder defendantBuilder) {
+        return StringUtils.substring(defendantBuilder.getFirstName(), 0, 1) + " " + defendantBuilder.getLastName();
+    }
 }

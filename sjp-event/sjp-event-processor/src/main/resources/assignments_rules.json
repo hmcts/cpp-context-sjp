@@ -4,7 +4,8 @@
     {
       "courtHouseCodePrefix": "B01",
       "allowedProsecutingAuthorities": [
-        "TFL"
+        "TFL",
+        "TVL"
       ]
     },
     {

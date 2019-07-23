@@ -23,13 +23,21 @@ import javax.json.JsonObject;
 
 public class CompleteCaseProducer extends BaseIntegrationTest {
 
-    private final UUID caseId;
     private static final String LONDON_LJA_NATIONAL_COURT_CODE = "2572";
     private static final String LONDON_COURT_HOUSE_OU_CODE = "B01OK";
+    private final UUID caseId;
+    private final UUID resultId;
 
     public CompleteCaseProducer(final UUID caseId, final UUID defendantId, final UUID offenceId) {
         stubCaseDetails(caseId, defendantId, offenceId, "stub-data/prosecutioncasefile.query.case-details.json");
         this.caseId = caseId;
+        this.resultId = randomUUID();
+    }
+
+    public CompleteCaseProducer(final UUID caseId, final UUID defendantId, final UUID offenceId, final UUID resultId) {
+        stubCaseDetails(caseId, defendantId, offenceId, "stub-data/prosecutioncasefile.query.case-details.json");
+        this.caseId = caseId;
+        this.resultId = resultId;
     }
 
     public void completeCase() {
@@ -40,6 +48,8 @@ public class CompleteCaseProducer extends BaseIntegrationTest {
             producerClient.startProducer("public.event");
             producerClient.sendMessage("public.resulting.referenced-decisions-saved", payload);
         }
+
+
     }
 
     private UUID startAndEndSession() {
@@ -69,10 +79,19 @@ public class CompleteCaseProducer extends BaseIntegrationTest {
 
     private JsonObject getPayload(final UUID sessionId) {
         return Json.createObjectBuilder()
-                    .add("caseId", caseId.toString())
-                    .add("resultedOn", now().toString())
-                    .add("sjpSessionId", sessionId.toString())
-                    .build();
+                .add("caseId", caseId.toString())
+                .add("resultedOn", now().toString())
+                .add("sjpSessionId", sessionId.toString())
+                .add("offences", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("id", randomUUID().toString())
+                                .add("results", Json.createArrayBuilder()
+                                        .add(Json.createObjectBuilder()
+                                                .add("resultDefinitionId", resultId.toString()))
+                                        .build())
+                                .build())
+                        .build())
+                .build();
     }
 
     public void assertCaseResults() {

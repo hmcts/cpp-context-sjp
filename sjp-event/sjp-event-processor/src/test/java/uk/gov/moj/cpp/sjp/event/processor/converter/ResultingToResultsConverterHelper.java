@@ -6,15 +6,12 @@ import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static javax.json.JsonValue.NULL;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static org.junit.Assert.assertEquals;
 import static uk.gov.justice.json.schemas.domains.sjp.Gender.MALE;
 import static uk.gov.justice.json.schemas.domains.sjp.results.Gender.valueOf;
 import static uk.gov.justice.json.schemas.domains.sjp.results.PersonTitle.MR;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
 
 import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
@@ -37,7 +34,6 @@ import uk.gov.justice.json.schemas.domains.sjp.results.Plea;
 import uk.gov.justice.json.schemas.domains.sjp.results.Prompts;
 import uk.gov.justice.json.schemas.domains.sjp.results.SessionLocation;
 import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.resulting.CourtDetails;
 import uk.gov.moj.cpp.sjp.domain.resulting.Prompt;
@@ -50,6 +46,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -115,6 +112,7 @@ public class ResultingToResultsConverterHelper {
     private static final String LJA_VALUE = "1022";
     private static final String OFFENCE_LOCATION = "Cardiff";
     private static final UUID RESULT_ID = randomUUID();
+    private static final UUID WITHDRAWN_RESULT_ID = UUID.fromString("6feb0f2e-8d1e-40c7-af2c-05b28c69e5fc");
     private static final UUID REFERRAL_REASON_ID = randomUUID();
     private static final UUID HEARING_TYPE = randomUUID();
     private static final Integer ESTIMATED_HEARING_DURATION = nextInt(0, 999);
@@ -256,6 +254,10 @@ public class ResultingToResultsConverterHelper {
     }
 
     public static Envelope<ReferencedDecisionsSaved> getReferenceDecisionSaved() {
+        return getReferenceDecisionSaved(RESULT_ID, RESULT_ID);
+    }
+
+    public static Envelope<ReferencedDecisionsSaved> getReferenceDecisionSaved(final UUID resultDefinitionId1, final UUID resultDefinitionId2) {
 
         final Prompt referralReasonTerminalEntry = new Prompt(PROMPT1_ID, REFERRAL_REASON_ID.toString());
         final Prompt hearingTypeTerminalEntry = new Prompt(PROMPT2_ID, HEARING_TYPE.toString());
@@ -267,8 +269,11 @@ public class ResultingToResultsConverterHelper {
         for (final Prompt prompt : prompts) {
             promptsBuilder.add(Json.createObjectBuilder().add("id", prompt.getPromptDefinitionId().toString()).add("value", prompt.getValue()));
         }
-        uk.gov.moj.cpp.sjp.domain.resulting.Offence offence = new uk.gov.moj.cpp.sjp.domain.resulting.Offence(OFFENCE_ID, asList(new Result(RESULT_ID, prompts)));
-        final List<uk.gov.moj.cpp.sjp.domain.resulting.Offence> offences = asList(offence);
+        final uk.gov.moj.cpp.sjp.domain.resulting.Offence offence1 = new uk.gov.moj.cpp.sjp.domain.resulting.Offence(OFFENCE_ID, asList(new Result(resultDefinitionId1, prompts)));
+
+        final uk.gov.moj.cpp.sjp.domain.resulting.Offence offence2 = new uk.gov.moj.cpp.sjp.domain.resulting.Offence(OFFENCE_ID, asList(new Result(resultDefinitionId2, prompts)));
+
+        final List<uk.gov.moj.cpp.sjp.domain.resulting.Offence> offences = asList(offence1, offence2);
 
         return genericEnveloper.envelopeWithNewActionName(new ReferencedDecisionsSaved(CASE_ID, SJP_SESSION_ID, RESULTED_ON, VERDICT, offences, accountDivisionCode, enforcingCourtCode), Envelope.metadataBuilder()
                 .withId(randomUUID())
@@ -347,10 +352,19 @@ public class ResultingToResultsConverterHelper {
         assertSessionLocation(session.getSessionLocation());
     }
 
-    public static JsonEnvelope getEmptyEnvelop() {
-        return envelopeFrom(metadataWithRandomUUID("public.resulting.referenced-decisions-saved")
-                .withStreamId(CASE_ID)
-                .withVersion(1), NULL);
+    public static Envelope<ReferencedDecisionsSaved> getReferenceDecisionsSavedWithNoResults() {
+        final uk.gov.moj.cpp.sjp.domain.resulting.Offence offence = new uk.gov.moj.cpp.sjp.domain.resulting.Offence(randomUUID(), Collections.EMPTY_LIST);
+        return genericEnveloper.envelopeWithNewActionName(new ReferencedDecisionsSaved(CASE_ID, SJP_SESSION_ID, RESULTED_ON, null, Collections.singletonList(offence), null, null), Envelope.metadataBuilder()
+                .withId(randomUUID())
+                .withName("public.resulting.referenced-decisions-saved")
+                .build(), "public.resulting.referenced-decisions-saved");
+    }
+
+    public static Envelope<ReferencedDecisionsSaved> getReferenceDecisionsSavedWithNoOffences() {
+        return genericEnveloper.envelopeWithNewActionName(new ReferencedDecisionsSaved(CASE_ID, SJP_SESSION_ID, RESULTED_ON, null, Collections.emptyList(), null, null), Envelope.metadataBuilder()
+                .withId(randomUUID())
+                .withName("public.resulting.referenced-decisions-saved")
+                .build(), "public.resulting.referenced-decisions-saved");
     }
 
     public static Optional<JsonObject> getCaseFileDefendantDetails() {

@@ -2,6 +2,7 @@ package uk.gov.moj.sjp.it.test;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryNationalities;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubAllGroupsForUser;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.DELAY_IN_MILLIS;
@@ -18,9 +19,8 @@ import org.junit.BeforeClass;
 
 public abstract class BaseIntegrationTest {
 
-    private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
-
     public static final UUID USER_ID = UUID.fromString("58ea6e5f-193d-49cc-af43-edfed4f5e5fc");
+    private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
 
     static {
         Awaitility.setDefaultPollDelay(DELAY_IN_MILLIS, TimeUnit.MILLISECONDS);
@@ -36,5 +36,6 @@ public abstract class BaseIntegrationTest {
         stubAllGroupsForUser();
         stubForUserDetails(USER_ID, "ALL");
         stubCountryNationalities("stub-data/referencedata.query.country-nationality.json");
+        stubResultDefinitions();
     }
 }

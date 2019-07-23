@@ -1,15 +1,18 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.time.ZonedDateTime.now;
-import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static junit.framework.TestCase.fail;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
@@ -20,7 +23,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.justice.json.schemas.domains.sjp.results.BaseSessionStructure.baseSessionStructure;
 import static uk.gov.justice.json.schemas.domains.sjp.results.PublicSjpResulted.publicSjpResulted;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
@@ -29,6 +31,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.buildCaseDetails;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getReferenceDecisionSaved;
+import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getReferenceDecisionsSavedWithNoOffences;
+import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getReferenceDecisionsSavedWithNoResults;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getSJPSessionJsonObject;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getSjpSessionId;
 
@@ -38,15 +42,24 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
+import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.domain.resulting.ReferencedDecisionsSaved;
 import uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService;
 import uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter;
+import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
+import java.io.StringReader;
 import java.util.List;
 import java.util.UUID;
 
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -62,43 +75,87 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class DecisionProcessorTest {
 
+    private static final String FIELD_ID = "id";
+    private static final String FIELD_VERSION = "version";
+    private static final String FIELD_LABEL = "label";
+    private static final String FIELD_WELSH_LABEL = "welshLabel";
+    private static final String FIELD_IS_AVAILABLE_FOR_COURT_EXTRACT = "isAvailableForCourtExtract";
+    private static final String FIELD_SHORT_CODE = "shortCode";
+    private static final String FIELD_LEVEL = "level";
+    private static final String FIELD_RANK = "rank";
+    private static final String FIELD_START_DATE = "startDate";
+    private static final String FIELD_USER_GROUPS = "userGroups";
+    private static final String PLACEHOLDER = "PLACEHOLDER";
+    private static final String RESULT_ID = "b786ce8a-ce7a-4fa1-94ce-a3d9777574e4";
+    private static final String WITHDRAWN_RESULT_ID = "6feb0f2e-8d1e-40c7-af2c-05b28c69e5fc";
+    private static final String DISMISSED_RESULT_ID = "14d66587-8fbe-424f-a369-b1144f1684e3";
+    private static final String WITHDRAWN_SHORT_CODE = "WDRNNOT";
+    private static final String DISMISSED_SHORT_CODE = "D";
+
+    private static final DefaultJsonEnvelopeProvider defaultJsonEnvelopeProvider = new DefaultJsonEnvelopeProvider();
+    private static final ObjectMapperProducer objectMapperProducer = new ObjectMapperProducer();
+
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloper();
 
     @Mock
     private Sender sender;
+
     @Mock
     private CaseStateService caseStateService;
+
     @InjectMocks
     private DecisionProcessor caseDecisionListener;
+
     @Mock
     private SjpService sjpService;
+
+    @Mock
+    private ReferenceDataService referenceDataService;
+
     @Mock
     private ResultingToResultsConverter converter;
+
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
 
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
+    private static JsonEnvelope toJsonEnvelope(final Object envelope) {
+        if (envelope instanceof JsonEnvelope) {
+            return (JsonEnvelope) envelope;
+        } else if (envelope instanceof DefaultEnvelope) {
+            try {
+                final DefaultEnvelope defaultEnvelope = (DefaultEnvelope) envelope;
+                final String jsonString = objectMapperProducer.objectMapper().writeValueAsString(defaultEnvelope.payload());
+                final StringReader stringReader = new StringReader(jsonString);
+                final JsonObject payload = Json.createReader(stringReader).readObject();
+                stringReader.close();
+                return defaultJsonEnvelopeProvider.envelopeFrom(defaultEnvelope.metadata(), payload);
+            } catch (final JsonProcessingException ex) {
+                throw new RuntimeException(ex.getMessage(), ex);
+            }
+
+        } else {
+            throw new IllegalArgumentException("don't know how to convert this");
+        }
+    }
+
     @Before
     public void setUp() {
         initMocks(this);
         setField(objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
+        when(sjpService.getSessionDetails(any(), any())).thenReturn(getSJPSessionJsonObject());
+        when(sjpService.getCaseDetails(any(), any())).thenReturn(buildCaseDetails());
+        when(converter.convert(any(), any(), any(), any())).thenReturn(publicSjpResulted().withSession(baseSessionStructure().withSessionId(getSjpSessionId()).build()).build());
+        when(referenceDataService.getAllResultDefinitions(any())).thenReturn(getAllResultsDefinitionJsonObject());
     }
 
     @Test
     public void shouldCompleteCase() {
         final Envelope<ReferencedDecisionsSaved> referenceDecisionSaved = getReferenceDecisionSaved();
         final ReferencedDecisionsSaved referencedDecisionsSaved = referenceDecisionSaved.payload();
-        final JsonEnvelope event = createEnvelope("public.resulting.referenced-decisions-saved",
-                createObjectBuilder()
-                        .add("caseId", referencedDecisionsSaved.getCaseId().toString())
-                        .add("resultedOn", now().toString())
-                        .add("sjpSessionId", randomUUID().toString())
-                        .build());
-        when(converter.convert(any(), any(), any(), any())).thenReturn(publicSjpResulted().withSession(baseSessionStructure().withSessionId(getSjpSessionId()).build()).build());
-
 
         caseDecisionListener.referencedDecisionsSaved(referenceDecisionSaved);
 
@@ -120,11 +177,6 @@ public class DecisionProcessorTest {
     public void shouldRaiseSJPCaseResultedEvent() {
         final Envelope<ReferencedDecisionsSaved> referenceDecisionSaved = getReferenceDecisionSaved();
         final ReferencedDecisionsSaved referencedDecisionsSaved = referenceDecisionSaved.payload();
-
-        when(sjpService.getSessionDetails(any(), any())).thenReturn(getSJPSessionJsonObject());
-        when(sjpService.getCaseDetails(any(), any())).thenReturn(buildCaseDetails());
-        when(converter.convert(any(), any(), any(), any())).thenReturn(publicSjpResulted().withSession(baseSessionStructure().withSessionId(getSjpSessionId()).build()).build());
-
         caseDecisionListener.referencedDecisionsSaved(referenceDecisionSaved);
 
         verify(sjpService).getSessionDetails(any(), any());
@@ -149,11 +201,164 @@ public class DecisionProcessorTest {
                         ))));
     }
 
+
+    @Test
+    public void shouldErrorIfNoResultsReceived() {
+        try {
+            caseDecisionListener.referencedDecisionsSaved(getReferenceDecisionsSavedWithNoResults());
+            fail("Should throw IllegalArgumentException when no Results received");
+        } catch (final IllegalArgumentException exception) {
+            Assert.assertThat(exception.getMessage(), equalTo("No results for offence in ReferencedDecisionsSaved event"));
+        }
+    }
+
+    @Test
+    public void shouldErrorIfNoOffencesReceived() {
+        try {
+            caseDecisionListener.referencedDecisionsSaved(getReferenceDecisionsSavedWithNoOffences());
+            fail("Should throw IllegalArgumentException when no Results received");
+        } catch (final IllegalArgumentException exception) {
+            Assert.assertThat(exception.getMessage(), equalTo("No offences in ReferencedDecisionsSaved event"));
+        }
+    }
+
+    @Test
+    public void shouldGenerateAllOffencesWithdrawnOrDismissedEvent() {
+        final Envelope<ReferencedDecisionsSaved> referenceDecisionSaved = getReferenceDecisionSaved(UUID.fromString(DISMISSED_RESULT_ID), UUID.fromString(WITHDRAWN_RESULT_ID));
+
+        caseDecisionListener.referencedDecisionsSaved(referenceDecisionSaved);
+
+        verify(sender, times(3)).send(envelopeCaptor.capture());
+
+        final List<JsonEnvelope> allValues = standardizeJsonEnvelopes((List) envelopeCaptor.getAllValues());
+
+        assertThat(allValues, hasSize(3));
+        assertThat(allValues, containsInAnyOrder(
+                jsonEnvelope(
+                        metadata().withName("sjp.command.complete-case"),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.caseId", is(notNullValue()))
+                                )
+                        )),
+                jsonEnvelope(
+                        metadata().withName("public.sjp.case-resulted"),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.session.sessionId", is(getSjpSessionId().toString())))
+                        )),
+                jsonEnvelope(
+                        metadata().withName("public.sjp.all-offences-dismissed-or-withdrawn"),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.caseId", Matchers.equalTo(referenceDecisionSaved.payload().getCaseId().toString()))
+                        )))
+        ));
+    }
+
+    private List<JsonEnvelope> standardizeJsonEnvelopes(final List<Object> allValues) {
+        return allValues.stream().map(DecisionProcessorTest::toJsonEnvelope).collect(toList());
+    }
+
+    @Test
+    public void shouldNotGenerateAllOffencesWithdrawnOrDismissedEventWhenOneOffenceIsWithdrawnButAnotherIsNotWithdrawnOrDismissed() {
+        final Envelope<ReferencedDecisionsSaved> referenceDecisionSaved = getReferenceDecisionSaved(UUID.fromString(WITHDRAWN_RESULT_ID), UUID.fromString(RESULT_ID));
+
+        caseDecisionListener.referencedDecisionsSaved(referenceDecisionSaved);
+
+        verify(sender, times(2)).send(envelopeCaptor.capture());
+
+        final List<JsonEnvelope> allValues = convertStreamToEventList(envelopeCaptor.getAllValues());
+
+        assertThat(allValues, hasSize(2));
+        assertThat(allValues, containsInAnyOrder(
+                jsonEnvelope(
+                        metadata().withName("sjp.command.complete-case"),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.caseId", is(notNullValue()))
+                                )
+                        )),
+                jsonEnvelope(
+                        metadata().withName("public.sjp.case-resulted"),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.session.sessionId", is(getSjpSessionId().toString())))
+                        ))));
+    }
+
+
+    @Test
+    public void shouldNotGenerateAllOffencesWithdrawnOrDismissedEventWhenOneOffenceIsDismissedButAnotherIsNotWithdrawnOrDismissed() {
+        final Envelope<ReferencedDecisionsSaved> referenceDecisionSaved = getReferenceDecisionSaved(UUID.fromString(DISMISSED_RESULT_ID), UUID.fromString(RESULT_ID));
+
+        caseDecisionListener.referencedDecisionsSaved(referenceDecisionSaved);
+
+        verify(sender, times(2)).send(envelopeCaptor.capture());
+
+        final List<JsonEnvelope> allValues = convertStreamToEventList(envelopeCaptor.getAllValues());
+
+        assertThat(allValues, hasSize(2));
+        assertThat(allValues, containsInAnyOrder(
+                jsonEnvelope(
+                        metadata().withName("sjp.command.complete-case"),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.caseId", is(notNullValue()))
+                                )
+                        )),
+                jsonEnvelope(
+                        metadata().withName("public.sjp.case-resulted"),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.session.sessionId", is(getSjpSessionId().toString())))
+                        ))));
+
+        assertThat(allValues, not(contains(
+                jsonEnvelope().withMetadataOf(
+                        metadata().withName("public.sjp.all-offences-dismissed-or-withdrawn")
+                ))));
+    }
+
+    //TODO THIS code does not what is says on the tin. the better name for this method is clone
+    @Deprecated
     private List<JsonEnvelope> convertStreamToEventList(final List<JsonEnvelope> listOfStreams) {
         return listOfStreams.stream().collect(toList());
     }
 
-    private void verifyCaseStateService(final Envelope<ReferencedDecisionsSaved> event, final UUID caseId) {
+    private void verifyCaseStateService(final Envelope<ReferencedDecisionsSaved> event,
+                                        final UUID caseId) {
         verify(caseStateService).caseCompleted(caseId, event.metadata());
     }
+
+    private final JsonArray getAllResultsDefinitionJsonObject() {
+
+        final JsonObject withdrawnResultDefinitionJsonObject = createObjectBuilder()
+                .add(FIELD_ID, WITHDRAWN_RESULT_ID)
+                .add(FIELD_VERSION, PLACEHOLDER)
+                .add(FIELD_LABEL, PLACEHOLDER)
+                .add(FIELD_WELSH_LABEL, PLACEHOLDER)
+                .add(FIELD_SHORT_CODE, WITHDRAWN_SHORT_CODE)
+                .add(FIELD_LEVEL, PLACEHOLDER)
+                .add(FIELD_USER_GROUPS, PLACEHOLDER)
+                .add(FIELD_RANK, PLACEHOLDER)
+                .add(FIELD_START_DATE, PLACEHOLDER)
+                .add(FIELD_IS_AVAILABLE_FOR_COURT_EXTRACT, PLACEHOLDER)
+                .build();
+
+        final JsonObject dismissedResultDefinitionJsonObject = createObjectBuilder()
+                .add(FIELD_ID, DISMISSED_RESULT_ID)
+                .add(FIELD_VERSION, PLACEHOLDER)
+                .add(FIELD_LABEL, PLACEHOLDER)
+                .add(FIELD_WELSH_LABEL, PLACEHOLDER)
+                .add(FIELD_SHORT_CODE, DISMISSED_SHORT_CODE)
+                .add(FIELD_LEVEL, PLACEHOLDER)
+                .add(FIELD_USER_GROUPS, PLACEHOLDER)
+                .add(FIELD_RANK, PLACEHOLDER)
+                .add(FIELD_START_DATE, PLACEHOLDER)
+                .add(FIELD_IS_AVAILABLE_FOR_COURT_EXTRACT, PLACEHOLDER)
+                .build();
+
+        return createArrayBuilder()
+                .add(withdrawnResultDefinitionJsonObject)
+                .add(dismissedResultDefinitionJsonObject)
+                .build();
+    }
+
+
 }
+
+

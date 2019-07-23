@@ -50,22 +50,21 @@ public class ReferenceDataServiceStub {
     }
 
 
-    public static void stubQueryOffenceById( final UUID offenceId) {
+    public static void stubQueryOffenceById(final UUID offenceId) {
         InternalEndpointMockUtils.stubPingFor("referencedataoffences-service");
         final JsonObject offence = createObjectBuilder()
-                    .add("offenceId" , offenceId.toString())
-                    .add("cjsOffenceCode" , "1" )
-                    .add("modeOfTrial", "SIMP").build();
+                .add("offenceId", offenceId.toString())
+                .add("cjsOffenceCode", "1")
+                .add("modeOfTrial", "SIMP").build();
         final String urlPath = "/referencedataoffences-service/query/api/rest/referencedataoffences/offences";
         stubFor(get(urlPathEqualTo(format(urlPath, offenceId)))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader(HeaderConstants.ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(offence.toString())));
-        waitForStubToBeReady(urlPath , "application/vnd.referencedataoffences.offence+json");
+        waitForStubToBeReady(urlPath, "application/vnd.referencedataoffences.offence+json");
 
     }
-
 
 
     public static void stubProsecutorQuery(final String prosecutingAuthorityCode, final UUID prosecutorId) {
@@ -187,12 +186,12 @@ public class ReferenceDataServiceStub {
                             .withBody(createObjectBuilder().add("country", country).build().toString())));
             waitForStubToBeReady(urlPath + "?postCode=" + encodedPostcode, "application/vnd.reference-data.country-by-postcode+json");
 
-        } catch (UnsupportedEncodingException e) {
+        } catch (final UnsupportedEncodingException e) {
             throw new IllegalArgumentException(format("Not able to URL encode postcode: %s", postcode), e);
         }
     }
 
-    public static void stubCountryNationalities(String resourceName) {
+    public static void stubCountryNationalities(final String resourceName) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
 
         final String urlPath = "/referencedata-service/query/api/rest/referencedata/country-nationality";
@@ -205,7 +204,7 @@ public class ReferenceDataServiceStub {
         waitForStubToBeReady(urlPath, "application/vnd.reference-data.country-nationality+json");
     }
 
-    public static void stubEthnicities(String resourceName) {
+    public static void stubEthnicities(final String resourceName) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
 
         final String query = "application/vnd.reference-data.ethnicities+json";
@@ -228,6 +227,20 @@ public class ReferenceDataServiceStub {
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    public static void stubResultDefinitions() {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+
+        final String query = "application/vnd.referencedata.get-all-result-definitions+json";
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/result-definitions";
+
+        stubFor(get(urlPathEqualTo(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(getPayload("stub-data/referencedata.result-definitions.json"))));
+        waitForStubToBeReady(urlPath, query);
     }
 
 }

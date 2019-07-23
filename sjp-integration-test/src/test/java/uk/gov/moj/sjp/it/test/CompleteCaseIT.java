@@ -1,7 +1,14 @@
 package uk.gov.moj.sjp.it.test;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertFalse;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
 
@@ -15,12 +22,15 @@ import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 
 public class CompleteCaseIT extends BaseIntegrationTest {
 
-    private UUID caseId = UUID.randomUUID();
+    private static final UUID DISMISSED_RESULT_ID = UUID.fromString("14d66587-8fbe-424f-a369-b1144f1684e3");
+    private static final UUID PAY_COSTS_RESULT_ID = UUID.fromString("b786ce8a-ce7a-4fa1-94ce-a3d9777574e4");
+    private final UUID caseId = UUID.randomUUID();
     private UUID defendantId;
     private UUID offenceId;
 
@@ -45,7 +55,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
 
     @Test
     public void shouldCompleteCase() {
-        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId,defendantId,offenceId);
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId, defendantId, offenceId);
         new EventListener()
                 .subscribe(CaseCompleted.EVENT_NAME)
                 .run(completeCaseProducer::completeCase);
@@ -55,12 +65,49 @@ public class CompleteCaseIT extends BaseIntegrationTest {
 
     @Test
     public void shouldCompleteCaseAndGenerateResultsEvent() {
-        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId, defendantId,offenceId);
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId, defendantId, offenceId);
         new EventListener()
                 .subscribe("public.sjp.case-resulted")
                 .run(completeCaseProducer::completeCaseResults);
 
         completeCaseProducer.assertCaseResults();
     }
+
+    @Test
+    public void shouldGenerateAllOffencesWithdrawnOrDismissedEvent() {
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId, defendantId, offenceId, DISMISSED_RESULT_ID);
+        final EventListener eventListener = new EventListener()
+                .subscribe("public.sjp.case-resulted")
+                .subscribe("public.sjp.all-offences-dismissed-or-withdrawn")
+                .run(completeCaseProducer::completeCaseResults);
+
+        completeCaseProducer.assertCaseResults();
+
+        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.sjp.all-offences-dismissed-or-withdrawn");
+        assertTrue(jsonEnvelope.isPresent());
+        final JsonEnvelope envelope = jsonEnvelope.get();
+        assertThat((JsonEnvelope) envelope,
+                jsonEnvelope(
+                        metadata().withName("public.sjp.all-offences-dismissed-or-withdrawn"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.caseId", CoreMatchers.equalTo(caseId.toString())),
+
+                                withJsonPath("$.defendantId", CoreMatchers.equalTo(defendantId.toString()))
+                        ))));
+    }
+
+    @Test
+    public void shouldNotGenerateAllOffencesWithdrawnOrDismissedEvent() {
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId, defendantId, offenceId, PAY_COSTS_RESULT_ID);
+        final EventListener eventListener = new EventListener()
+                .subscribe("public.sjp.case-resulted")
+                .subscribe("public.sjp.all-offences-dismissed-or-withdrawn")
+                .run(completeCaseProducer::completeCaseResults);
+
+        completeCaseProducer.assertCaseResults();
+        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.sjp.all-offences-dismissed-or-withdrawn");
+        assertFalse(jsonEnvelope.isPresent());
+    }
+
 
 }

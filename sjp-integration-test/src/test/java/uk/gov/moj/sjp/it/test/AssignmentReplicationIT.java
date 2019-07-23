@@ -30,7 +30,7 @@ public class AssignmentReplicationIT extends BaseIntegrationTest {
     private static final String LONDON_LJA_NATIONAL_COURT_CODE = "2572";
     private static final String LONDON_COURT_HOUSE_OU_CODE = "B01OK";
 
-    private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
+    private final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
 
     private UUID caseId;
     private UUID defendantId;
@@ -41,7 +41,6 @@ public class AssignmentReplicationIT extends BaseIntegrationTest {
         databaseCleaner.cleanAll();
         caseId = UUID.randomUUID();
         offenceId = UUID.randomUUID();
-
         stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
         stubQueryOffenceById(offenceId);
         stubGetEmptyAssignmentsByDomainObjectId(caseId);

@@ -7,8 +7,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.util.Clock;
@@ -54,11 +54,11 @@ public class ResultOrdersTest {
         final String FROM_DATE = "2017-01-01";
         final String TO_DATE = "2017-01-10";
         JsonEnvelope request = envelopeFrom(
-                        metadataWithRandomUUID("sjp.query.result-orders"),
-                        createObjectBuilder()
-                                        .add("fromDate", FROM_DATE)
-                                        .add("toDate", TO_DATE)
-                                        .build());
+                metadataWithRandomUUID("sjp.query.result-orders"),
+                createObjectBuilder()
+                        .add("fromDate", FROM_DATE)
+                        .add("toDate", TO_DATE)
+                        .build());
 
         final UUID CASE_ID = UUID.randomUUID();
         final String URN = "urn";
@@ -66,11 +66,11 @@ public class ResultOrdersTest {
         final ZonedDateTime ADDED_AT = clock.now();
         final ResultOrdersView resultOrdersView = new ResultOrdersView();
         resultOrdersView.addResultOrder(
-                        ResultOrdersView.createResultOrderBuilder().setCaseId(CASE_ID).setUrn(URN)
-                                        .setDefendant(new PersonalDetails()).setOrder(DOCUMENT_ID, ADDED_AT)
-                                        .build());
+                ResultOrdersView.createResultOrderBuilder().setCaseId(CASE_ID).setUrn(URN)
+                        .setDefendant(new PersonalDetails()).setOrder(DOCUMENT_ID, ADDED_AT)
+                        .build());
         when(caseService.findResultOrders(LocalDates.from(FROM_DATE), LocalDates.from(TO_DATE)))
-                        .thenReturn(resultOrdersView);
+                .thenReturn(resultOrdersView);
 
         //when
         final JsonEnvelope response = sjpQueryView.getResultOrders(request);
@@ -79,16 +79,16 @@ public class ResultOrdersTest {
         verify(caseService).findResultOrders(LocalDates.from(FROM_DATE), LocalDates.from(TO_DATE));
 
         assertThat(response, JsonEnvelopeMatcher.jsonEnvelope(
-                        JsonEnvelopeMetadataMatcher.metadata()
-                                        .withName("sjp.query.result-orders"),
-                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                        JsonPathMatchers.withJsonPath("$.resultOrders[0].caseId",
-                                                        is(CASE_ID.toString())),
-                                        JsonPathMatchers.withJsonPath("$.resultOrders[0].urn",
-                                                        is(URN)),
-                                        JsonPathMatchers.withJsonPath("$.resultOrders[0].order.documentId",
-                                                        is(DOCUMENT_ID.toString())),
-                                        JsonPathMatchers.withJsonPath("$.resultOrders[0].order.addedAt",
-                                                        startsWith(ADDED_AT.toString().substring(0, ADDED_AT.toString().indexOf("."))))))));
+                JsonEnvelopeMetadataMatcher.metadata()
+                        .withName("sjp.query.result-orders"),
+                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                        JsonPathMatchers.withJsonPath("$.resultOrders[0].caseId",
+                                is(CASE_ID.toString())),
+                        JsonPathMatchers.withJsonPath("$.resultOrders[0].urn",
+                                is(URN)),
+                        JsonPathMatchers.withJsonPath("$.resultOrders[0].order.documentId",
+                                is(DOCUMENT_ID.toString())),
+                        JsonPathMatchers.withJsonPath("$.resultOrders[0].order.addedAt",
+                                startsWith(ADDED_AT.toString().substring(0, ADDED_AT.toString().indexOf("."))))))));
     }
 }

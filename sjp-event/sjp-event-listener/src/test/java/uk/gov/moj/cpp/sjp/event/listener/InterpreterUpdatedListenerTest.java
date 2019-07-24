@@ -8,13 +8,13 @@ import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
-import uk.gov.justice.services.messaging.DefaultJsonEnvelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
@@ -83,7 +83,7 @@ public class InterpreterUpdatedListenerTest {
                         ? InterpreterUpdatedForDefendant.createEventForOnlinePlea(caseId, defendantId, language, now)
                         : InterpreterUpdatedForDefendant.createEvent(caseId, defendantId, language);
 
-        final JsonEnvelope envelope = DefaultJsonEnvelope.envelope()
+        final JsonEnvelope envelope = JsonEnvelopeBuilder.envelope()
                 .with(metadataWithRandomUUID("sjp.events.interpreter-for-defendant-updated"))
                 .withPayloadOf(caseId, "caseId")
                 .withPayloadOf(defendantId, "defendantId").withPayloadOf(
@@ -139,7 +139,7 @@ public class InterpreterUpdatedListenerTest {
     @Test
     public void shouldCancelInterpreter() {
 
-        final JsonEnvelope envelope = DefaultJsonEnvelope.envelope()
+        final JsonEnvelope envelope = JsonEnvelopeBuilder.envelope()
                 .with(metadataWithRandomUUID("sjp.events.interpreter-for-defendant-cancelled"))
                 .withPayloadOf(caseId, "caseId")
                 .withPayloadOf(defendantId, "defendantId")

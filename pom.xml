@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>7.1.4</version>
+        <version>9.0.8-FRAMEWORK-SNAPSHOT</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
@@ -20,14 +22,14 @@
         <assignment.version>2.0.99</assignment.version>
         <material.version>2.0.114</material.version>
         <notification.notify.version>0.0.26</notification.notify.version>
-        <referencedata.version>2.0.191</referencedata.version>
-        <referencedata.offences.version>1.0.19</referencedata.offences.version>
+        <referencedata.version>2.0.240</referencedata.version>
+        <referencedata.offences.version>1.0.21</referencedata.offences.version>
         <resulting.version>2.0.224</resulting.version>
         <scheduling.version>2.0.88</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
-        <usersgroups.version>2.0.106</usersgroups.version>
-        <progression.version>2.0.113</progression.version>
-        <prosecutioncasefile.version>1.0.28</prosecutioncasefile.version>
+        <usersgroups.version>2.0.115</usersgroups.version>
+        <progression.version>2.0.138</progression.version>
+        <prosecutioncasefile.version>1.0.31</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
@@ -53,6 +55,7 @@
         <module>sjp-integration-test</module>
         <module>sjp-service</module>
         <module>sjp-json</module>
+        <module>sjp-event-sources</module>
     </modules>
 
     <build>

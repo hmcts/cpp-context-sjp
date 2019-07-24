@@ -6,6 +6,7 @@ import static javax.json.JsonValue.NULL;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails.caseDetails;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
@@ -42,7 +43,7 @@ public class HearingRequestsDataSourcingServiceTest {
 
     @Test
     public void shouldCreateHearingRequestViews() {
-        final JsonEnvelope emptyEnvelopeWithReferralEventMetadata = JsonEnvelope.envelopeFrom(metadataWithRandomUUIDAndName(), NULL);
+        final JsonEnvelope emptyEnvelopeWithReferralEventMetadata = envelopeFrom(metadataWithRandomUUIDAndName(), NULL);
 
         final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
                 .withCaseId(CASE_ID)

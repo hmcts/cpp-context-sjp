@@ -17,6 +17,7 @@ import static uk.gov.justice.json.schemas.domains.sjp.NoteType.DECISION;
 import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
@@ -126,7 +127,7 @@ public class CaseNoteHandlerTest {
 
         assertThat(argumentCaptor.getValue(), is(streamContaining(
                 jsonEnvelope(
-                        withMetadataEnvelopedFrom(JsonEnvelope.envelopeFrom(addCaseNoteCommand.metadata(), NULL))
+                        withMetadataEnvelopedFrom(envelopeFrom(addCaseNoteCommand.metadata(), NULL))
                                 .withName("sjp.events.case-note-added"),
                         payloadIsJson(allOf(
                                 withJsonPath("$.caseId", equalTo(caseId.toString())),

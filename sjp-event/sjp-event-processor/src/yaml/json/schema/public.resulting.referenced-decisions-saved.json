@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/public.resulting.referenced-decisions-saved.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "resultedOn": {
+      "type": "string"
+    },
+    "sjpSessionId": {
+      "type": "string"
+    },
+    "hearingDate": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "resultedOn",
+    "sjpSessionId"
+  ]
+}

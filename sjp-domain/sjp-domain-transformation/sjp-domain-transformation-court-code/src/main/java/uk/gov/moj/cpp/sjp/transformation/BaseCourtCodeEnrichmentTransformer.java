@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.transformation;
 
 import static java.util.stream.Stream.of;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.NO_ACTION;
 import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.TRANSFORM;
 import static uk.gov.moj.cpp.sjp.transformation.util.SchemaValidatorUtil.validateAgainstSchema;
@@ -56,7 +57,7 @@ abstract class BaseCourtCodeEnrichmentTransformer implements EventTransformation
         final JsonValue transformedEvent = buildTransformedEventPayload(eventEnvelope);
         validateAgainstSchema(getEventSchemaFileName(), transformedEvent.toString());
 
-        final JsonEnvelope transformedEnvelope = JsonEnvelope.envelopeFrom(
+        final JsonEnvelope transformedEnvelope = envelopeFrom(
                 eventEnvelope.metadata(),
                 transformedEvent);
 

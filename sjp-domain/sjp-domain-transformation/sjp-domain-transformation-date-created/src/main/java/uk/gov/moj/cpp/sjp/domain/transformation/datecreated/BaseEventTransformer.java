@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.transformation.datecreated;
 
 import static java.util.stream.Stream.of;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.NO_ACTION;
 import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.TRANSFORM;
@@ -46,7 +47,7 @@ abstract class BaseEventTransformer implements EventTransformation {
 
         ZonedDateTime createdAt = returnTransformedCreatedAt(eventEnvelope);
 
-        final JsonEnvelope transformedEnvelope = JsonEnvelope.envelopeFrom(
+        final JsonEnvelope transformedEnvelope = envelopeFrom(
                 metadataFrom(eventEnvelope.metadata()).createdAt(createdAt),
                 eventEnvelope.payload());
 

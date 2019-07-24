@@ -10,6 +10,7 @@ import static uk.gov.justice.json.schemas.domains.sjp.command.FinancialMeans.fin
 import static uk.gov.justice.json.schemas.domains.sjp.command.Plea.GUILTY;
 import static uk.gov.justice.json.schemas.domains.sjp.command.Plea.NOT_GUILTY;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildAddressObjectWithPostcode;
 import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildEmployerWithAddress;
@@ -31,7 +32,6 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.sjp.command.api.validator.PleadOnlineValidator;
 
 import java.math.BigDecimal;
@@ -272,6 +272,6 @@ public class PleadOnlineApiTest {
     }
 
     private JsonEnvelope getCaseDetailResponseEnvelope(final JsonObject caseDetail) {
-        return JsonEnvelope.envelopeFrom(MetadataBuilderFactory.metadataWithRandomUUID("sjp.query.case"), caseDetail);
+        return envelopeFrom(metadataWithRandomUUID("sjp.query.case"), caseDetail);
     }
 }

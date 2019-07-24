@@ -29,10 +29,10 @@ public class AssignmentRepository {
     private static final String ASSIGNMENTS_CANDIDATES_QUERY =
             "SELECT " +
                     "   rc.case_id," +
-                    "   s.version AS case_stream_version" +
+                    "   s.position AS case_stream_version" +
                     " FROM ready_cases rc" +
                     "   JOIN case_details c ON rc.case_id = c.id AND c.completed = FALSE" +
-                    "   JOIN stream_status s ON s.stream_id = rc.case_id" +
+                    "   JOIN stream_status s ON s.stream_id = rc.case_id AND s.source = 'sjp' AND s.component = 'EVENT_LISTENER'" +
                     " WHERE (rc.assignee_id IS NULL OR rc.assignee_id = :assigneeId)" +
                     "   AND rc.reason IN(:reasons)" +
                     "   AND" +

@@ -13,8 +13,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjectMetadata;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper;
 
 import java.util.UUID;
@@ -49,7 +49,7 @@ public class AddMaterialToCaseTest {
 
     @Test
     public void addsDocumentToACaseWhenMaterialAdded() {
-        final Metadata originalMetadata = JsonObjectMetadata.metadataWithRandomUUIDAndName().build();
+        final Metadata originalMetadata = MetadataBuilderFactory.metadataWithRandomUUIDAndName().build();
         final String originalMetadataString = metadataHelper.metadataToString(originalMetadata);
         when(delegateExecution.getVariable("metadata", String.class)).thenReturn(originalMetadataString);
 

@@ -2,6 +2,8 @@ package uk.gov.moj.cpp.sjp.command.handler.builder;
 
 
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_ID;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.REOPEN_DATE;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.REOPEN_LIBRA_NUMBER;
@@ -11,8 +13,6 @@ import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.REOPEN_UPDATE_LIBRA
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.REOPEN_UPDATE_REASON;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjectMetadata;
-import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
 
 import javax.json.JsonObject;
@@ -54,8 +54,8 @@ public class CaseReopenDetailsBuilder {
     }
 
     public JsonEnvelope buildJsonEnvelope(String actionName) {
-        return JsonEnvelopeBuilder.envelopeFrom(
-                JsonObjectMetadata.metadataOf(CASE_ID, actionName).build(),
+        return envelopeFrom(
+                metadataOf(CASE_ID, actionName).build(),
                 buildJsonObject());
     }
 }

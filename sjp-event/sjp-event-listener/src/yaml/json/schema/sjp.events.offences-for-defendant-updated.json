@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/offences-for-defendant-updated.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "offences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "offenceCode": {
+            "type": "string"
+          },
+          "wording": {
+            "type": "string"
+          },
+          "wordingWelsh": {
+            "type": "string"
+          },
+          "indicatedPlea": {
+            "type": "string",
+            "enum": [
+              "NOT_GUILTY",
+              "GUILTY",
+              "NO_PLEA",
+              "ACTUAL_GUILTY"
+            ]
+          },
+          "section": {
+            "type": "string"
+          },
+          "startDate": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+          },
+          "endDate": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+          },
+          "orderIndex": {
+            "type": "integer"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 999
+          }
+        },
+        "required": [
+          "id",
+          "offenceCode",
+          "startDate"
+        ]
+      }
+    }
+  },
+  "required": [
+    "caseId",
+    "defendantId",
+    "offences"
+  ]
+}

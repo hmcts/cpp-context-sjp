@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>sjp-command</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
@@ -61,7 +63,7 @@
             <artifactId>sjp-event-listener</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
-            <classifier>raml</classifier>
+            <classifier>yaml</classifier>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.utils</groupId>
@@ -72,25 +74,37 @@
     <build>
         <plugins>
             <plugin>
-                <artifactId>generator-plugin</artifactId>
-                <groupId>uk.gov.justice.maven.generator</groupId>
+                <groupId>uk.gov.justice.generators</groupId>
+                <artifactId>pojo-generation-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>pojo-generation</id>
                         <configuration>
-                            <sourceDirectory>${project.basedir}/src/raml/json/schema</sourceDirectory>
+                            <sourceDirectory>${project.basedir}/src/raml/json/schema
+                            </sourceDirectory>
                             <includes>
                                 <include>**/sjp.command.update-employer.json</include>
                                 <include>**/sjp.command.refer-case-for-court-hearing.json</include>
-                                <include>**/sjp.command.record-case-referral-for-court-hearing-rejection.json</include>
+                                <include>
+                                    **/sjp.command.record-case-referral-for-court-hearing-rejection.json
+                                </include>
                                 <include>**/sjp.command.add-case-note.json</include>
                             </includes>
-                            <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
+                            <generatorProperties
+                                    implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin</plugin>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin</plugin>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddHashcodeAndEqualsPlugin</plugin>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddToStringMethodToClassPlugin</plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin
+                                    </plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin
+                                    </plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.classmodifying.AddHashcodeAndEqualsPlugin
+                                    </plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.classmodifying.AddToStringMethodToClassPlugin
+                                    </plugin>
                                 </plugins>
                                 <typeMappings>
                                     <typeMapping>

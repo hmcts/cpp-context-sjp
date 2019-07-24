@@ -452,7 +452,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
                     .addDefendantDetail(defendant)
                     .build();
 
-            final StreamStatus caseStreamStatus = new StreamStatus(caseId, version);
+            final StreamStatus caseStreamStatus = new StreamStatus(caseId, "sjp", "EVENT_LISTENER", version);
             em.persist(caseDetail);
             em.persist(caseStreamStatus);
 
@@ -470,8 +470,8 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
                 if (pendingWithdrawal) {
                     caseReadinessReason = CaseReadinessReason.WITHDRAWAL_REQUESTED;
-                } else if(plea != null &&
-                        (! PleaType.NOT_GUILTY.equals(plea) ||
+                } else if (plea != null &&
+                        (!PleaType.NOT_GUILTY.equals(plea) ||
                                 (!StringUtils.isEmpty(datesToAvoid) ||
                                         Optional.ofNullable(datesToAvoidPleaDate)
                                                 .map(TODAY_MIDNIGHT.minusDays(10)::isAfter)

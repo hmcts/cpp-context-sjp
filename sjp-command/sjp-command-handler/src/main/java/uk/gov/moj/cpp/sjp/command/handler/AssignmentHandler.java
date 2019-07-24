@@ -87,7 +87,7 @@ public class AssignmentHandler {
 
         for (final AssignmentCandidate assignmentCandidate : assignmentCandidates) {
             final EventStream caseEventsStream = eventSource.getStreamById(assignmentCandidate.getCaseId());
-            long actualCaseStreamVersion = caseEventsStream.getCurrentVersion();
+            long actualCaseStreamVersion = caseEventsStream.size();
 
             if (actualCaseStreamVersion == assignmentCandidate.getCaseStreamVersion()) {
                 final CaseAggregate caseAggregate = aggregateService.get(caseEventsStream, CaseAggregate.class);

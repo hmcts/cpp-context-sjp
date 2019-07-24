@@ -10,17 +10,17 @@ import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
@@ -74,12 +74,12 @@ public class PleaNotificationProcessorTest {
     }
 
     @Test
-    public void shouldSendEnglishPleaNotificationEmail(){
+    public void shouldSendEnglishPleaNotificationEmail() {
         shouldSendPleaNotificationEmail("England", ENGLISH_TEMPLATE_ID);
     }
 
     @Test
-    public void shouldSendWelshPleaNotificationEmail(){
+    public void shouldSendWelshPleaNotificationEmail() {
         shouldSendPleaNotificationEmail("Wales", WELSH_TEMPLATE_ID);
     }
 
@@ -89,7 +89,7 @@ public class PleaNotificationProcessorTest {
         final String urn = "TFL123";
         final String postcode = "W1 1AA";
 
-        final JsonEnvelope event = JsonEnvelopeBuilder.envelopeFrom(
+        final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("sjp.events.online-plea-received"),
                 createObjectBuilder()
                         .add("urn", urn)

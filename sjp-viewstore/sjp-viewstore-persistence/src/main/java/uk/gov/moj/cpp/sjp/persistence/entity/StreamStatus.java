@@ -15,22 +15,38 @@ public class StreamStatus {
     @Column(name = "stream_id")
     private UUID streamId;
 
-    @Column(name = "version")
-    private int version;
+    @Column(name = "source")
+    private String source;
+
+    @Column(name = "component")
+    private String component;
+
+    @Column(name = "position")
+    private int position;
 
     public StreamStatus() {
     }
 
-    public StreamStatus(UUID streamId, int version) {
+    public StreamStatus(final UUID streamId, final String source, final String component, final int position) {
         this.streamId = streamId;
-        this.version = version;
+        this.source = source;
+        this.component = component;
+        this.position = position;
     }
 
     public UUID getStreamId() {
         return streamId;
     }
 
-    public int getVersion() {
-        return version;
+    public String getSource() {
+        return source;
+    }
+
+    public String getComponent() {
+        return component;
+    }
+
+    public int getPosition() {
+        return position;
     }
 }

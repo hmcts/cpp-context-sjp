@@ -65,22 +65,6 @@ public class TransparencyReportIT extends BaseIntegrationTest {
     private final TransparencyReportHelper transparencyReportHelper = new TransparencyReportHelper();
     private CreateCasePayloadBuilder createCasePayloadBuilder;
 
-    private static String getTown(final AddressBuilder addressBuilder) {
-        return isNotEmpty(addressBuilder.getAddress5()) ? addressBuilder.getAddress4() : addressBuilder.getAddress3();
-    }
-
-    private static String getCounty(final AddressBuilder addressBuilder) {
-        return isNotEmpty(addressBuilder.getAddress5()) ? addressBuilder.getAddress5() : addressBuilder.getAddress4();
-    }
-
-    private static String getPostcode(final AddressBuilder addressBuilder) {
-        return StringUtils.substring(StringUtils.defaultString(addressBuilder.getPostcode()), 0, 2);
-    }
-
-    private static String getShortDefendantName(final CreateCase.DefendantBuilder defendantBuilder) {
-        return StringUtils.substring(defendantBuilder.getFirstName(), 0, 1) + " " + defendantBuilder.getLastName();
-    }
-
     @Before
     public void setUp() {
         stubDocumentGeneratorEndPoint();
@@ -217,6 +201,18 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         assertThat(readyCase.optString("prosecutorName"), is(expectedProsecutorName));
     }
 
+    private static String getTown(final AddressBuilder addressBuilder) {
+        return isNotEmpty(addressBuilder.getAddress5()) ? addressBuilder.getAddress4() : addressBuilder.getAddress3();
+    }
+
+    private static String getCounty(final AddressBuilder addressBuilder) {
+        return isNotEmpty(addressBuilder.getAddress5()) ? addressBuilder.getAddress5() : addressBuilder.getAddress4();
+    }
+
+    private static String getPostcode(final AddressBuilder addressBuilder) {
+        return StringUtils.substring(StringUtils.defaultString(addressBuilder.getPostcode()), 0, 2);
+    }
+
     private CreateCasePayloadBuilder createCase(final UUID caseId,
                                                 final UUID offenceId,
                                                 final CreateCase.DefendantBuilder defendantBuilder) {
@@ -235,5 +231,9 @@ public class TransparencyReportIT extends BaseIntegrationTest {
 
     private void validateThePdfContent(final String mockedContent) {
         assertThat(mockedContent, equalToCompressingWhiteSpace(transparencyReportHelper.getStubbedContent()));
+    }
+
+    private static String getShortDefendantName(final CreateCase.DefendantBuilder defendantBuilder) {
+        return StringUtils.substring(defendantBuilder.getFirstName(), 0, 1) + " " + defendantBuilder.getLastName();
     }
 }

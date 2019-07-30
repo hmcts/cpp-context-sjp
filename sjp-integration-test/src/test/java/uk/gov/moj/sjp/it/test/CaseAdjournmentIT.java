@@ -59,6 +59,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
     private UUID userId;
     private LocalDate adjournmentDate = now().plusDays(7);
     private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
+    private UUID offenceId;
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
     private static final String LONDON_LJA_NATIONAL_COURT_CODE = "2572";
@@ -67,7 +68,6 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
     final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
 
     private UUID defendantId;
-    private UUID offenceId;
 
     @Before
     public void setUp() throws SQLException {

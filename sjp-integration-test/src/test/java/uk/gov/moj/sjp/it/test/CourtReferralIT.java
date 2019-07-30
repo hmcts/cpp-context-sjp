@@ -257,11 +257,12 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
     @Test
     public void shouldSendReferToCourtHearingCommandToProgressionContext_WithPlea() {
-        final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId);
         final UUID legalAdviserId = randomUUID();
+        final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId);
         pleadOnlineHelper.pleadOnline(getPayload("raml/json/sjp.command.plead-online__not-guilty.json")
                 .replace("ecf30a03-8a17-4fc5-81d2-b72ac0a13d17", offenceId.toString())
                 .replace("AB123456A", NATIONAL_INSURANCE_NUMBER));
+
         verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(caseId, true);
         referCaseToCourtAndVerifyCommandSendToProgressionMatchesExpected("payload/referral/progression.refer-for-court-hearing_plea-present.json");
     }

@@ -29,6 +29,7 @@ import static uk.gov.moj.sjp.it.stub.SystemDocumentGeneratorStub.pollDocumentGen
 import static uk.gov.moj.sjp.it.stub.SystemDocumentGeneratorStub.stubDocumentGeneratorEndPoint;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.messaging.Poller;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
@@ -58,13 +59,15 @@ import org.junit.Test;
 
 public class TransparencyReportIT extends BaseIntegrationTest {
 
-    private TransparencyReportHelper transparencyReportHelper = new TransparencyReportHelper();
-    private CreateCasePayloadBuilder createCasePayloadBuilder;
-    private final UUID caseId1 = randomUUID(), caseId2 = randomUUID();
-    private final UUID offenceId1 = randomUUID(), offenceId2 = randomUUID();
-
     private static final String SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED = "sjp.events.transparency-report-requested";
     private static final String SJP_EVENTS_TRANSPARENCY_REPORT_GENERATED = "sjp.events.transparency-report-generated";
+
+    private final TransparencyReportHelper transparencyReportHelper = new TransparencyReportHelper();
+    private final UUID caseId1 = randomUUID(), caseId2 = randomUUID();
+    private final UUID offenceId1 = randomUUID(), offenceId2 = randomUUID();
+    private final Poller poller = new Poller();
+
+    private CreateCasePayloadBuilder createCasePayloadBuilder;
 
     @Before
     public void setUp() {
@@ -93,8 +96,11 @@ public class TransparencyReportIT extends BaseIntegrationTest {
                 .subscribe(SJP_EVENTS_TRANSPARENCY_REPORT_GENERATED)
                 .run(() -> transparencyReportHelper.requestToGenerateTransparencyReport());
 
-        final Optional<JsonEnvelope> transparencyReportRequestedEvent = eventListener.popEvent(SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED);
-        final Optional<JsonEnvelope> transparencyReportDataEvent = eventListener.popEvent(SJP_EVENTS_TRANSPARENCY_REPORT_GENERATED);
+        final Optional<JsonEnvelope> transparencyReportRequestedEvent = poller
+                .pollUntilFound(() -> eventListener.popEvent(SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED));
+
+        final Optional<JsonEnvelope> transparencyReportDataEvent = poller
+                .pollUntilFound(() -> eventListener.popEvent(SJP_EVENTS_TRANSPARENCY_REPORT_GENERATED));
 
         assertThat(transparencyReportRequestedEvent.isPresent(), is(true));
         assertThat(transparencyReportDataEvent.isPresent(), is(true));

@@ -1,0 +1,6 @@
+event_sources:
+  - name: indexer.event.source
+    location:
+      jms_uri:  jms:topic:sjp.event
+      rest_uri: http://localhost:8080/sjp-service/event-source-api/rest
+      data_source: java:/app/sjp-service/DS.eventstore

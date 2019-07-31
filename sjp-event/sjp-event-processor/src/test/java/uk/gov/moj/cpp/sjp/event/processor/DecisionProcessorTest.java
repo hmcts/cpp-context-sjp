@@ -246,7 +246,7 @@ public class DecisionProcessorTest {
                                 withJsonPath("$.session.sessionId", is(getSjpSessionId().toString())))
                         )),
                 jsonEnvelope(
-                        metadata().withName("public.sjp.all-offences-dismissed-or-withdrawn"),
+                        metadata().withName("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn"),
                         payloadIsJson(allOf(
                                 withJsonPath("$.caseId", Matchers.equalTo(referenceDecisionSaved.payload().getCaseId().toString()))
                         )))
@@ -309,7 +309,7 @@ public class DecisionProcessorTest {
 
         assertThat(allValues, not(contains(
                 jsonEnvelope().withMetadataOf(
-                        metadata().withName("public.sjp.all-offences-dismissed-or-withdrawn")
+                        metadata().withName("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn")
                 ))));
     }
 

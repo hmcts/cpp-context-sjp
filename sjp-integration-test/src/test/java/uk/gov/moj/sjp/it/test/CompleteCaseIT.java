@@ -78,17 +78,17 @@ public class CompleteCaseIT extends BaseIntegrationTest {
         final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId, defendantId, offenceId, DISMISSED_RESULT_ID);
         final EventListener eventListener = new EventListener()
                 .subscribe("public.sjp.case-resulted")
-                .subscribe("public.sjp.all-offences-dismissed-or-withdrawn")
+                .subscribe("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn")
                 .run(completeCaseProducer::completeCaseResults);
 
         completeCaseProducer.assertCaseResults();
 
-        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.sjp.all-offences-dismissed-or-withdrawn");
+        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn");
         assertTrue(jsonEnvelope.isPresent());
         final JsonEnvelope envelope = jsonEnvelope.get();
         assertThat((JsonEnvelope) envelope,
                 jsonEnvelope(
-                        metadata().withName("public.sjp.all-offences-dismissed-or-withdrawn"),
+                        metadata().withName("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn"),
                         payload().isJson(allOf(
                                 withJsonPath("$.caseId", CoreMatchers.equalTo(caseId.toString())),
 
@@ -101,11 +101,11 @@ public class CompleteCaseIT extends BaseIntegrationTest {
         final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId, defendantId, offenceId, PAY_COSTS_RESULT_ID);
         final EventListener eventListener = new EventListener()
                 .subscribe("public.sjp.case-resulted")
-                .subscribe("public.sjp.all-offences-dismissed-or-withdrawn")
+                .subscribe("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn")
                 .run(completeCaseProducer::completeCaseResults);
 
         completeCaseProducer.assertCaseResults();
-        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.sjp.all-offences-dismissed-or-withdrawn");
+        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn");
         assertFalse(jsonEnvelope.isPresent());
     }
 

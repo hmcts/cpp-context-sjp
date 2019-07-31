@@ -128,9 +128,8 @@ public class DecisionProcessor {
         sender.send(Enveloper.envelop(createObjectBuilder()
                 .add(CASE_ID, caseDetails.getId().toString())
                 .add(DEFENDANT_ID, caseDetails.getDefendant().getId().toString())
-                .build()).withName("public.sjp.all-offences-dismissed-or-withdrawn").withMetadataFrom(envelope));
+                .build()).withName("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn").withMetadataFrom(envelope));
     }
-
 
     private Map<UUID, String> getWithdrawnOrDismissedResultDefinitions(final Metadata metadata) {
 

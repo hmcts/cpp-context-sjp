@@ -65,7 +65,7 @@ public class TransparencyReportIT extends BaseIntegrationTest {
     private final TransparencyReportHelper transparencyReportHelper = new TransparencyReportHelper();
     private final UUID caseId1 = randomUUID(), caseId2 = randomUUID();
     private final UUID offenceId1 = randomUUID(), offenceId2 = randomUUID();
-    private final Poller poller = new Poller();
+    private final Poller poller = new Poller(10, 1000L);
 
     private CreateCasePayloadBuilder createCasePayloadBuilder;
 

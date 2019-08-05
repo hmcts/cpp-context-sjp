@@ -94,8 +94,33 @@ public class UpdateDefendantDetails {
             return new DefendantDetailsPayloadBuilder();
         }
 
+        public DefendantDetailsPayloadBuilder withTitle(final String title) {
+            this.title = title;
+            return this;
+        }
+
+        public DefendantDetailsPayloadBuilder withFirstName(final String firstName) {
+            this.firstName = firstName;
+            return this;
+        }
+
         public DefendantDetailsPayloadBuilder withLastName(final String lastName) {
             this.lastName = lastName;
+            return this;
+        }
+
+        public DefendantDetailsPayloadBuilder withDateOfBirth(final LocalDate dateOfBirth) {
+            this.dateOfBirth = dateOfBirth;
+            return this;
+        }
+
+        public DefendantDetailsPayloadBuilder withGender(final Gender gender) {
+            this.gender = gender;
+            return this;
+        }
+
+        public DefendantDetailsPayloadBuilder withAddress(final AddressBuilder addressBuilder) {
+            this.addressBuilder = addressBuilder;
             return this;
         }
 

@@ -1,6 +1,33 @@
 {
   "operations": [
     {
+      "operation": "shift",
+      "spec": {
+        "caseId": "caseId",
+        "#prosecution": "_case_type",
+        "defendantId": "parties[0].partyId",
+        "title": "parties[0].title",
+        "firstName": "parties[0].firstName",
+        "lastName": "parties[0].lastName",
+        "dateOfBirth": "parties[0].dateOfBirth",
+        "gender": "parties[0].gender",
+        "address": {
+          "*": "parties[0].addressLines",
+          "postcode": "parties[0].postCode"
+        },
+        "#defendant": "parties[0]._party_type"
+      }
+    },
+
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "parties": {
+          "*": {
+            "addressLines": "=join(' ',@(1,addressLines))"
+          }
+        }
+      }
     }
   ]
 }

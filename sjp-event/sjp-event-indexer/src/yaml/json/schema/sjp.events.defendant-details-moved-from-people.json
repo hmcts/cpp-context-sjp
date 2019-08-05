@@ -3,6 +3,12 @@
   "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-details-moved-from-people.json",
   "type": "object",
   "properties": {
+    "caseId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
     "title": {
       "type": "string"
     },

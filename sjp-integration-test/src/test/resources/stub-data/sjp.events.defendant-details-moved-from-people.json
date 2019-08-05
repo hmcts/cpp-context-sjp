@@ -1,6 +1,6 @@
 {
-  "caseId": "7e2f843e-d639-40b3-8611-8015f3a18958",
-  "defendantId": "ccfbb752-9dae-48e4-a69d-f132998f7311",
+  "caseId": "CASE_ID",
+  "defendantId": "DEFENDANT_ID",
   "title": "Dr",
   "firstName": "David",
   "lastName": "SMITH",
@@ -13,7 +13,7 @@
     "address3": "England",
     "address4": "UK",
     "address5": "Greater London",
-    "postcode": "W1T 1JY"
+    "postcode": "EC2 2HJ"
   },
   "contactNumber": {
     "home": "02087654321",

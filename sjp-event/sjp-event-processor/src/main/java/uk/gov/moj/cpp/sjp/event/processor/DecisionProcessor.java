@@ -42,7 +42,7 @@ import javax.json.JsonObject;
 @ServiceComponent(EVENT_PROCESSOR)
 public class DecisionProcessor {
 
-    private static final String[] WITHDRAWN_OR_DISMISSED_SHORTCODES = {"D", "WDRNNOT"};
+    private static final String[] WITHDRAWN_OR_DISMISSED_SHORTCODES = {"DISM", "WDRNNOT"};
     private static final String FIELD_SHORT_CODE = "shortCode";
     private static final String FIELD_ID = "id";
 

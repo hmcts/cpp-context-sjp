@@ -85,6 +85,7 @@ public class EventListener {
 
     public EventListener run(final Runnable action) {
         Map<String, MessageConsumerClient> consumers = eventsByName.keySet().parallelStream().collect(toMap(p -> p, this::startConsumer));
+        consumers.values().forEach(MessageConsumerClient::cleanQueue);
 
         action.run();
 

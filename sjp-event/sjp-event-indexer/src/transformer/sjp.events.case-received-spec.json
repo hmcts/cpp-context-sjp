@@ -6,6 +6,7 @@
         "caseId": "caseId",
         "urn": "caseReference",
         "prosecutingAuthority": "prosecutingAuthority",
+        "postingDate": "sjpNoticeServed",
         "#NO_PLEA_RECEIVED": "caseStatus",
         "#prosecution": "_case_type",
         "defendant": {
@@ -40,6 +41,7 @@
         "parties": "parties",
         "caseReference": "caseReference",
         "prosecutingAuthority": "prosecutingAuthority",
+        "sjpNoticeServed": "sjpNoticeServed",
         "caseStatus": "caseStatus",
         "_case_type": "_case_type",
         "_party_type": "_party_type",

@@ -1,0 +1,11 @@
+{
+  "operations": [
+    {
+      "operation": "shift",
+      "spec": {
+        "caseId": "caseId",
+        "caseStatus": "caseStatus"
+      }
+    }
+  ]
+}

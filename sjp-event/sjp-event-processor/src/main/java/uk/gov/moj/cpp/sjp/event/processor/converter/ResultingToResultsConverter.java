@@ -113,11 +113,11 @@ public class ResultingToResultsConverter {
     protected SessionLocation buildSessionLocation(final SJPSession sjpSession, final Optional<JsonObject> courtOptional) {
         SessionLocation.Builder builder = SessionLocation.sessionLocation();
 
-        builder.withCourtId(courtOptional.isPresent() ? fromString(courtOptional.get().getString("id")) : null)
+        builder.withCourtId(courtOptional.isPresent() ? fromString(courtOptional.get().getString("id", null)) : null)
                 .withCourtHouseCode(sjpSession.getCourtDetails().getCourtHouseCode())
                 .withName(sjpSession.getCourtDetails().getCourtHouseName())
                 .withRoomName(ROOM_NAME)
-                .withLja(courtOptional.isPresent() ? courtOptional.get().getString("lja") : null);
+                .withLja(courtOptional.isPresent() ? courtOptional.get().getString("lja", null) : null);
 
         if (courtOptional.isPresent()) {
             final JsonObject court = courtOptional.get();
@@ -147,7 +147,7 @@ public class ResultingToResultsConverter {
             final String countryCJSCode = defendantSelfDefinedInformationOptional
                     .map(selfDefinedInformation -> selfDefinedInformation.getString("nationality", null))
                     .flatMap(selfDefinedNationality -> referenceDataService.getNationality(selfDefinedNationality, emptyEnvelope))
-                    .map(referenceDataNationality -> referenceDataNationality.getString("isoCode"))
+                    .map(referenceDataNationality -> referenceDataNationality.getString("isoCode", null))
                     .orElse(UNKNOWN);
 
             arrayBuilder.add(CaseDefendant.caseDefendant()
@@ -216,7 +216,7 @@ public class ResultingToResultsConverter {
 
     private void buildOffence(final CaseDetails caseDetails, final ReferencedDecisionsSaved referencedDecisionsSaved, final SJPSession sjpSession, final List<CaseOffence> arrayBuilder, final JsonArray caseFileDefendantOffences) {
         caseDetails.getDefendant().getOffences().forEach(o -> {
-            final JsonObject caseFileDefendantOffence = caseFileDefendantOffences.stream().map(cfdo -> (JsonObject) cfdo).filter(cfdo -> cfdo.getString("offenceId").equalsIgnoreCase(o.getId().toString())).findFirst().orElse(createObjectBuilder().build());
+            final JsonObject caseFileDefendantOffence = caseFileDefendantOffences.stream().map(cfdo -> (JsonObject) cfdo).filter(cfdo -> cfdo.getString("offenceId", null).equalsIgnoreCase(o.getId().toString())).findFirst().orElse(createObjectBuilder().build());
             final CaseOffence caseOffence = CaseOffence.caseOffence()
                     .withModeOfTrial(MODE_OF_TRIAL)
                     .withBaseOffenceDetails(buildBaseOffenceDetails(o, caseFileDefendantOffence))
@@ -241,7 +241,7 @@ public class ResultingToResultsConverter {
                 .withOffenceStartDate(null != o.getStartDate() ? LocalDate.parse(o.getStartDate()) : null)
                 .withOffenceEndDate(null != o.getEndDate() ? LocalDate.parse(o.getEndDate()) : null)
                 .withChargeDate(null != o.getChargeDate() ? LocalDate.parse(o.getChargeDate()) : null)
-                .withLocationOfOffence(null != caseFileDefendantOffence ? caseFileDefendantOffence.getString("offenceLocation") : null)
+                .withLocationOfOffence(null != caseFileDefendantOffence ? caseFileDefendantOffence.getString("offenceLocation", null) : null)
                 .build();
     }
 
@@ -279,20 +279,20 @@ public class ResultingToResultsConverter {
     }
 
     private UUID extractUUID(final JsonObject object, final String key) {
-        return object.getString(key).isEmpty() ? null : fromString(object.getString(key));
+        return object.containsKey(key) && !object.getString(key).isEmpty() ? fromString(object.getString(key, null)): null;
     }
 
     private SJPSession extractSJPSession(final JsonObject sjpSessionPayload) {
-        final UUID sjpSessionId = fromString(sjpSessionPayload.getString("sessionId"));
+        final UUID sjpSessionId = fromString(sjpSessionPayload.getString("sessionId", null));
         final UUID userId = extractUUID(sjpSessionPayload, "userId");
-        final SessionType type = SessionType.valueOf(sjpSessionPayload.getString("type"));
-        final String courtHouseCode = sjpSessionPayload.getString("courtHouseCode");
-        final String courtHouseName = sjpSessionPayload.getString("courtHouseName");
-        final String localJusticeAreaNationalCourtCode = sjpSessionPayload.getString("localJusticeAreaNationalCourtCode");
-        final ZonedDateTime startedAt = ZonedDateTimes.fromString(sjpSessionPayload.getString("startedAt"));
+        final SessionType type = SessionType.valueOf(sjpSessionPayload.getString("type", null));
+        final String courtHouseCode = sjpSessionPayload.getString("courtHouseCode", null);
+        final String courtHouseName = sjpSessionPayload.getString("courtHouseName", null);
+        final String localJusticeAreaNationalCourtCode = sjpSessionPayload.getString("localJusticeAreaNationalCourtCode", null);
+        final ZonedDateTime startedAt = ZonedDateTimes.fromString(sjpSessionPayload.getString("startedAt", null));
 
-        final String magistrate = sjpSessionPayload.containsKey(MAGISTRATE_KEY) && !sjpSessionPayload.getString(MAGISTRATE_KEY).isEmpty() ? sjpSessionPayload.getString(MAGISTRATE_KEY) : null;
-        final ZonedDateTime endedAt = sjpSessionPayload.containsKey(ENDED_AT_KEY) && !sjpSessionPayload.getString(ENDED_AT_KEY).isEmpty() ? ZonedDateTimes.fromString(sjpSessionPayload.getString(ENDED_AT_KEY)) : null;
+        final String magistrate = sjpSessionPayload.containsKey(MAGISTRATE_KEY) && !sjpSessionPayload.getString(MAGISTRATE_KEY).isEmpty() ? sjpSessionPayload.getString(MAGISTRATE_KEY, null) : null;
+        final ZonedDateTime endedAt = sjpSessionPayload.containsKey(ENDED_AT_KEY) && !sjpSessionPayload.getString(ENDED_AT_KEY).isEmpty() ? ZonedDateTimes.fromString(sjpSessionPayload.getString(ENDED_AT_KEY, null)) : null;
         final CourtDetails courtDetails = new CourtDetails(courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode);
         return new SJPSession(sjpSessionId, userId, type, courtDetails, magistrate, startedAt, endedAt);
     }

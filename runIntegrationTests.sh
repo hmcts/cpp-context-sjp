@@ -5,6 +5,7 @@ WILDFLY_DEPLOYMENT_DIR="${VAGRANT_DIR}/deployments"
 CONTEXT_NAME=sjp
 FRAMEWORK_VERSION=6.0.0-RC9
 EVENT_STORE_VERSION=2.0.0-RC10
+FILE_SERVICE_VERSION=1.17.10
 CPP_ACTIVITI_VERSION=5.22.0
 
 #fail script on error
@@ -87,6 +88,13 @@ function runEventTrackingLiquibase {
     echo "Finished executing event tracking liquibase"
 }
 
+function runFileServiceLiquibase {
+    echo "Running file service liquibase"
+    mvn org.apache.maven.plugins:maven-dependency-plugin:3.0.1:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.services:file-service-liquibase:${FILE_SERVICE_VERSION}:jar
+    java -jar target/file-service-liquibase-${FILE_SERVICE_VERSION}.jar --url=jdbc:postgresql://localhost:5432/fileservice --username=fileservice --password=fileservice --logLevel=info update
+    echo "Finished executing file service liquibase"
+}
+
 function runActivitiLiquibase() {
     echo "running activiti liquibase"
     mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.moj.cpp.activiti:activiti-liquibase:${CPP_ACTIVITI_VERSION}:jar
@@ -159,6 +167,7 @@ function deployAndTest {
   runSystemLiquibase
   runEventTrackingLiquibase
   runActivitiLiquibase
+  runFileServiceLiquibase
   deployWars
   deployWiremock
   healthCheck

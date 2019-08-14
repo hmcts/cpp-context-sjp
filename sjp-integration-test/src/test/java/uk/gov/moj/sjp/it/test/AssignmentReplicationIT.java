@@ -9,6 +9,7 @@ import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAddAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
@@ -29,22 +30,26 @@ public class AssignmentReplicationIT extends BaseIntegrationTest {
     private static final String LONDON_LJA_NATIONAL_COURT_CODE = "2572";
     private static final String LONDON_COURT_HOUSE_OU_CODE = "B01OK";
 
-    private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
+    private final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
 
     private UUID caseId;
+    private UUID defendantId;
+    private UUID offenceId;
 
     @Before
     public void setUp() throws Exception {
         databaseCleaner.cleanAll();
         caseId = UUID.randomUUID();
-
+        offenceId = UUID.randomUUID();
         stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
+        stubQueryOffenceById(offenceId);
         stubGetEmptyAssignmentsByDomainObjectId(caseId);
         stubGetCaseDecisionsWithNoDecision(caseId);
         stubAddAssignmentCommand();
         stubRemoveAssignmentCommand();
 
         createCaseAndWaitUntilReady(caseId);
+
     }
 
     @Test
@@ -62,18 +67,20 @@ public class AssignmentReplicationIT extends BaseIntegrationTest {
         AssignmentStub.verifyRemoveAssignmentCommandSend(caseId);
     }
 
-    private static void createCaseAndWaitUntilReady(final UUID caseId) {
+    private void createCaseAndWaitUntilReady(final UUID caseId) {
         try (final MessageConsumerClient messageConsumerClient = new MessageConsumerClient()) {
-            CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
+            final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
                     .withPostingDate(now().minusDays(30)).withId(caseId);
             CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
             messageConsumerClient.startConsumer(CaseMarkedReadyForDecision.EVENT_NAME, "sjp.event");
             messageConsumerClient.retrieveMessage();
+            defendantId = createCasePayloadBuilder.getDefendantBuilder().getId();
+            offenceId = createCasePayloadBuilder.getOffenceBuilder().getId();
         }
     }
 
-    private static void saveDecision(final UUID caseId) {
-        new CompleteCaseProducer(caseId).completeCase();
+    private void saveDecision(final UUID caseId) {
+        new CompleteCaseProducer(caseId, defendantId, offenceId).completeCase();
     }
 
 }

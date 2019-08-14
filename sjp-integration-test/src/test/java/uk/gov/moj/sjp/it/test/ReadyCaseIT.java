@@ -18,6 +18,7 @@ import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaultsUntilResponseIsJson;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
@@ -40,6 +41,7 @@ import javax.json.JsonObject;
 
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
+import org.junit.Before;
 import org.junit.Test;
 
 public class ReadyCaseIT extends BaseIntegrationTest {
@@ -49,6 +51,12 @@ public class ReadyCaseIT extends BaseIntegrationTest {
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private final UUID caseId = randomUUID();
     private final UUID offenceId = randomUUID();
+
+    @Before
+    public void setUp() throws Exception {
+
+        stubQueryOffenceById(offenceId);
+    }
 
     @Test
     public void shouldChangeCaseReadinessWhenCaseAfterNoticeEndDate() throws Exception {
@@ -165,12 +173,13 @@ public class ReadyCaseIT extends BaseIntegrationTest {
     public void shouldUnmarkCaseReadyWhenCaseCompleted() {
         final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
 
-        createCaseForPayloadBuilder(CreateCase.CreateCasePayloadBuilder
+        CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
                 .withDefaults()
                 .withId(caseId)
-                .withPostingDate(postingDate));
+                .withPostingDate(postingDate);
+        createCaseForPayloadBuilder(createCasePayloadBuilder);
 
-        CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
+        CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId, createCasePayloadBuilder.getDefendantBuilder().getId(), createCasePayloadBuilder.getOffenceBuilder().getId());
         verifyCaseReadyInViewStore(caseId, PIA);
 
         completeCaseProducer.completeCase();

@@ -21,17 +21,22 @@ import java.util.UUID;
 
 public class ProsecutionCaseFileServiceStub {
 
-    public static void stubCaseDetails(final UUID caseId, final String resourceName) {
+    public static void stubCaseDetails(final UUID caseId, final UUID defendantId, final UUID offenceId, final String resourceName) {
         InternalEndpointMockUtils.stubPingFor("prosecutioncasefile-service");
 
         final String query = "application/vnd.prosecutioncasefile.query.case+json";
         final String urlPath = format("/prosecutioncasefile-service/query/api/rest/prosecutioncasefile/cases/%s", caseId.toString());
+        String payload = getPayload(resourceName);
+        payload = payload.replace("51cac7fb-387c-4d19-9c80-8963fa8cf228", caseId.toString());
+        payload = payload.replace("4a1e66ab-8673-4300-aed8-b2391e38d8db", defendantId.toString());
+        payload = payload.replace("63f61b32-0fd0-4a76-bab1-ee68fb54e93f", offenceId.toString());
+
         stubFor(get(urlPathEqualTo(urlPath))
                 .withHeader(ACCEPT, equalTo(query))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                        .withBody(getPayload(resourceName))));
+                        .withBody(payload)));
 
         waitForStubToBeReady(urlPath, query);
     }

@@ -56,7 +56,8 @@ import org.junit.Test;
 public class CaseStateProcessMigrationIT extends BaseIntegrationTest {
 
     private final UUID caseId = UUID.randomUUID();
-    private final UUID offenceId = UUID.randomUUID();
+    private UUID defendantId;
+    private UUID offenceId = UUID.randomUUID();
     private final EventListener eventListener = new EventListener().withMaxWaitTime(5000);
 
     @Before
@@ -68,7 +69,8 @@ public class CaseStateProcessMigrationIT extends BaseIntegrationTest {
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
                 .withDefaults().withId(caseId).withOffenceId(offenceId).withPostingDate(LocalDate.now());
         CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
-
+        defendantId = createCasePayloadBuilder.getDefendantBuilder().getId();
+        offenceId = createCasePayloadBuilder.getOffenceBuilder().getId();
         //delete case state process so that it can be recreated by migration
         final String processInstanceId = ActivitiHelper.pollUntilProcessExists(PROCESS_NAME, caseId.toString());
         ActivitiHelper.deleteProcessInstance(processInstanceId);
@@ -227,7 +229,7 @@ public class CaseStateProcessMigrationIT extends BaseIntegrationTest {
         eventListener
                 .reset()
                 .subscribe(EVENT_SELECTOR_CASE_COMPLETED)
-                .run(() -> new CompleteCaseProducer(caseId).completeCase());
+                .run(() -> new CompleteCaseProducer(caseId, defendantId, offenceId).completeCase());
     }
 
 }

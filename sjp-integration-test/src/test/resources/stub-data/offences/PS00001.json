@@ -1,0 +1,165 @@
+{
+  "offenceId": "9efdbffa-08f0-4cb5-905d-139511ddcadc",
+  "cjsOffenceCode": "PS00001",
+  "modeOfTrial": "EWAY",
+  "cppDateOfLastUpdate": "2019-03-07",
+  "pnldDateOfLastUpdate": "2011-09-30",
+  "details": {
+    "document": {
+      "type": "H",
+      "codes": {
+        "fptgraduated": 0.0,
+        "mojstatscode": "099/82",
+        "mopinoteslink": "D19586",
+        "cjsoffencecode": "PS00001",
+        "mopireviewgroup": {
+          "code": "C",
+          "description": "Group 3"
+        },
+        "notifiabletomoj": {
+          "code": "Y",
+          "description": "YES"
+        },
+        "seatbeltoffence": {
+          "code": "N",
+          "description": "No"
+        },
+        "fptgraduatedhigh": 0.0,
+        "roadsidedeposits": {
+          "code": "N",
+          "description": "No"
+        },
+        "fptissuedbypolice": 0.0,
+        "pndissuedbyothers": 0.0,
+        "pndissuedbypolice": 0.0,
+        "pncacpooffencecode": "12.2.69.1",
+        "disqualificationclass": {
+          "code": "N",
+          "description": "discretionary disqualification not endorsable"
+        },
+        "recordableonpncindicator": {
+          "code": "N",
+          "description": "NO"
+        },
+        "pndissuedbylocalauthorities": 0.0
+      },
+      "libra": {
+        "miscode": {
+          "code": "XXX",
+          "description": "Other indictable offence"
+        },
+        "fineindicator": {
+          "code": "Y",
+          "description": "YES"
+        },
+        "libracategory": {
+          "code": "CE",
+          "description": "Either Way"
+        },
+        "maxfinetypemagct": {
+          "code": "S",
+          "description": "Statutory maximum"
+        },
+        "custodialindicator": {
+          "code": "N",
+          "description": "NO"
+        },
+        "maxfinetypecrownct": {
+          "code": "U",
+          "description": "Unlimited"
+        }
+      },
+      "other": {
+        "penalty": "SUMMARY:      A fine not    exceeding the statutory maximum<br />    INDICTMENT:  A fine<br /><br />Time limit for prosecutions:<br />    6 months",
+        "modeoftrial": {
+          "code": "EWAY",
+          "description": "EITHER WAY"
+        },
+        "powersofarrest": "Arrest without warrant",
+        "geographicregion": {
+          "code": "UK",
+          "description": "United Kingdom"
+        },
+        "timelimitforprosecutions": "6 months"
+      },
+      "english": {
+        "notes": "(i)   No proceedings shall be instigated in    England or Wales in respect of an offence under Section 6(2) except by or on behalf of the    Postal Services Commission or the Secretary of State.<br />    (ii)  See Section 6(6) for \"conveying a letter\"<br />    (iii) See Section 7 for exceptions",
+        "title": "Postal service - convey a letter without a licence",
+        "legislation": "Contrary to section 6(2) of the    Postal Services Act 2000.",
+        "pointstoprove": "date and location<br />conveyed a letter<br />    other than under a licence<br />    issued by Postal Services Commission",
+        "additionalkeywords": {
+          "additionalkeyword": [
+            "CONVEYING",
+            "CONVEYED",
+            "POST",
+            "POSTED",
+            "POSTING",
+            "\n    SERVICES",
+            "LICENSE",
+            "6",
+            "POSTAL SERVICES ACT 2000"
+          ]
+        },
+        "investigatoractions": {
+          "investigatoraction": [
+            {
+              "code": "IA27",
+              "description": "Confirm proposed charge is appropriately authorised (Police or CPS)"
+            },
+            {
+              "code": "IA28",
+              "description": "Ensure compliance with investigator's obligations re disclosure"
+            },
+            {
+              "code": "IA29",
+              "description": "Consider if case suitable for referral to Financial Investigation Unit and CPS for asset recovery eg confiscation order"
+            },
+            {
+              "code": "IA6",
+              "description": "Offences brought to justice scheme"
+            },
+            {
+              "code": "IA5",
+              "description": "Submit a crime report"
+            },
+            {
+              "code": "IA3",
+              "description": "Audio record interview unless exempt"
+            }
+          ]
+        },
+        "standardoffencewording": "On **(..SPECIFY DATE..) at **(..SPECIFY TOWNSHIP..)    conveyed a letter from one place, namely **(..SPECIFY DESPATCH    LOCATION..) to another, namely **(..SPECIFY RECEIPT LOCATION..), otherwise than under the    authority of a licence issued by the Postal Services Commission",
+        "policeandcpschargingresponsibilities": "D27968"
+      },
+      "pnldref": "H3801",
+      "ancillary": {
+        "groups": {
+          "code": "GP04",
+          "description": "Postal services"
+        },
+        "lastupdate": "300911 Omitted by Schedule 12 to the Postal Services Act 2011.",
+        "offenceenddate": "2011-10-01",
+        "legislationcode": {
+          "link": "S433"
+        },
+        "dateoflastupdate": "2011-09-30",
+        "offencestartdate": "2001-03-26",
+        "offencewordinggroup": "Y20"
+      },
+      "indictment": {
+        "indictmentindicator": {
+          "code": "N",
+          "description": "NO"
+        },
+        "structuredindictmentindicator": {
+          "code": "N",
+          "description": "NO"
+        }
+      }
+    }
+  },
+  "title": "Postal service - convey a letter without a licence",
+  "legislation": "Contrary to section 6(2) of the Postal Services Act 2000.",
+  "offenceStartDate": "2001-03-26",
+  "offenceEndDate": "2011-10-01"
+}

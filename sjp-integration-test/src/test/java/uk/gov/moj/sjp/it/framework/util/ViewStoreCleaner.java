@@ -12,8 +12,14 @@ public class ViewStoreCleaner {
                 "offence",
                 "financial_means",
                 "employer",
+                "case_search_result",
+                "offence",
+                "case_document",
                 "defendant",
+                "online_plea",
+                "session",
                 "case_details",
+                "ready_cases",
                 "processed_event");
     }
 }

@@ -14,6 +14,7 @@ import uk.gov.justice.services.test.utils.persistence.TestJdbcDataSourceProvider
 import uk.gov.moj.sjp.it.framework.util.SystemCommandInvoker;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreQueryUtil;
+import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +30,7 @@ public class RunCatchupIT {
     private static final String CONTEXT_NAME = "sjp";
 
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
+    private final SjpDatabaseCleaner sjp = new SjpDatabaseCleaner();
     private final DataSource viewStoreDataSource = new TestJdbcDataSourceProvider().getViewStoreDataSource(CONTEXT_NAME);
     private final Poller poller = new Poller();
 
@@ -38,7 +40,6 @@ public class RunCatchupIT {
 
     @Before
     public void cleanDatabase() {
-
         databaseCleaner.cleanEventStoreTables(CONTEXT_NAME);
         databaseCleaner.cleanSystemTables(CONTEXT_NAME);
         databaseCleaner.cleanStreamStatusTable(CONTEXT_NAME);

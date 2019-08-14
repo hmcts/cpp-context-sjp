@@ -18,19 +18,27 @@ import static org.apache.commons.io.Charsets.UTF_8;
 import static org.apache.http.HttpHeaders.ACCEPT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
+import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.UUID;
 
+import javax.json.JsonObject;
+
+import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
 import org.apache.commons.io.IOUtils;
 
 public class ReferenceDataServiceStub {
+
+
 
     public static void stubQueryOffences(final String resourceName) {
         InternalEndpointMockUtils.stubPingFor("referencedataoffences-service");
@@ -44,6 +52,19 @@ public class ReferenceDataServiceStub {
                         .withBody(getPayload(resourceName))));
 
         waitForStubToBeReady(urlPath + "?cjsoffencecode=ANY&date=2018-08-27", "application/vnd.referencedataoffences.offences-list+json");
+    }
+
+    public static JsonObject stubQueryOffencesByCode(final String code) {
+        return stubQueryOffencesByCode(code, equalTo(code));
+    }
+
+    public static JsonObject stubAnyQueryOffences() {
+        return stubQueryOffencesByCode("PS00001", matching(".*"));
+    }
+
+    public static void stubAllProsecutorsQuery() {
+        Arrays.stream(ProsecutingAuthority.values()).forEach(
+                prosecutingAuthority -> stubProsecutorQuery(prosecutingAuthority.name(), randomUUID()));
     }
 
     public static void stubProsecutorQuery(final String prosecutingAuthorityCode, final UUID prosecutorId) {
@@ -195,7 +216,24 @@ public class ReferenceDataServiceStub {
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(getPayload(resourceName))));
-        waitForStubToBeReady(urlPath, query);
+    }
+
+    private static JsonObject stubQueryOffencesByCode(final String code, final ValueMatchingStrategy offenceCodeMatcher) {
+        InternalEndpointMockUtils.stubPingFor("referencedataoffences-service");
+
+        final String urlPath = "/referencedataoffences-service/query/api/rest/referencedataoffences/offences";
+        final JsonObject offenceDefinition = getFileContentAsJson(format("stub-data/offences/%s.json", code));
+        final JsonObject stubbedResponse = createObjectBuilder()
+                .add("offences", createArrayBuilder().add(offenceDefinition))
+                .build();
+
+        stubFor(get(urlPathEqualTo(urlPath))
+                .withQueryParam("cjsoffencecode", offenceCodeMatcher)
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(stubbedResponse.toString())));
+        return offenceDefinition;
     }
 
     private static String getOrganisationUnit(final String localJusticeAreaNationalCourtCode, final String courtHouseName) {

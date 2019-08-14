@@ -23,13 +23,12 @@ import static uk.gov.moj.sjp.it.command.CreateCase.DefendantBuilder.defaultDefen
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
 import static uk.gov.moj.sjp.it.helper.TransparencyReportDBHelper.checkIfFileExists;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffences;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllProsecutorsQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAnyQueryOffences;
 import static uk.gov.moj.sjp.it.stub.SystemDocumentGeneratorStub.pollDocumentGenerationRequests;
 import static uk.gov.moj.sjp.it.stub.SystemDocumentGeneratorStub.stubDocumentGeneratorEndPoint;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 import uk.gov.moj.sjp.it.helper.EventListener;
@@ -70,9 +69,8 @@ public class TransparencyReportIT extends BaseIntegrationTest {
     @Before
     public void setUp() {
         stubDocumentGeneratorEndPoint();
-        stubProsecutorQuery(ProsecutingAuthority.TFL.toString(), randomUUID());
-        stubProsecutorQuery(ProsecutingAuthority.TVL.toString(), randomUUID());
-        stubQueryOffences("stub-data/referencedata.query.offences.json");
+        stubAllProsecutorsQuery();
+        stubAnyQueryOffences();
     }
 
     @Test
@@ -193,7 +191,7 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         final String expectedTown = getTown(address);
         final String expectedPostcode = getPostcode(address);
         final String expectedProsecutorName = casePayloadBuilder.getProsecutingAuthority().name();
-        final String expectedOffenceTitle = "Public service vehicle - passenger use altered / defaced ticket";
+        final String expectedOffenceTitle = "Postal service - convey a letter without a licence";
 
         assertThat(readyCase.optString("county", null), is(expectedCounty));
         assertThat(readyCase.optString("town", null), is(expectedTown));

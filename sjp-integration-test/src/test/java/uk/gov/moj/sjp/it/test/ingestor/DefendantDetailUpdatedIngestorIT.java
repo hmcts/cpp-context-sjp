@@ -3,6 +3,8 @@ package uk.gov.moj.sjp.it.test.ingestor;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -29,6 +31,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 
@@ -36,6 +39,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
+
+    private static final String LABEL_TITLE = "title";
+    private static final String LABEL_FIRST_NAME = "firstName";
+    private static final String _LABEL_LAST_NAME = "lastName";
+    private static final String INDEX_LABEL = "index";
+    private static final String TITLE = "Mr";
+    private static final String FIRST_NAME = "Jonathan";
+    private static final String LAST_NAME = "Alpanso";
+    private static final String POST_CODE = "IG6 1JY";
+
     private final UUID caseIdOne = randomUUID();
     private final Poller poller = new Poller(1200, 1000L);
     private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
@@ -48,18 +61,62 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldIngestCaseReceivedEvent() {
+    public void should_Ingest_Update_Defendant_Details() {
+
+        pushDefendantDetailsUpdatedEvent(getDefendantPayloadBuilder());
+
+        final Optional<JsonObject> caseCreatedResponseObject = queryElasticSearch(FIRST_NAME);
+
+        final JsonObject outputCase = jsonFromString(getJsonArray(caseCreatedResponseObject.get(), INDEX_LABEL).get().getString(0));
+        final JsonObject defendant = (JsonObject) outputCase.getJsonArray("parties").get(0);
+        final JsonArray aliases = defendant.getJsonArray("aliases");
+
+        assertThat(aliases.size(), is(2));
+        assertThat(defendant.getString("_party_type"), is("defendant"));
+        assertThat(defendant.getString(LABEL_TITLE), is(TITLE));
+        assertThat(defendant.getString(LABEL_FIRST_NAME), is(FIRST_NAME));
+        assertThat(defendant.getString(_LABEL_LAST_NAME), is(LAST_NAME));
+        assertThat(defendant.getString("dateOfBirth"), is("1981-08-16"));
+        assertThat(defendant.getString("gender"), is("Female"));
+        assertThat(defendant.getString("addressLines"), is("14 Shaftesbury Road Croydon Wales US New London"));
+        assertThat(defendant.getString("postCode"), is(POST_CODE));
+        assertAliases(aliases);
+
+    }
+
+    @Test
+    public void should_Ingest_Update_Defendant_Details_With_No_Name_Change() {
+        final UpdateDefendantDetails.DefendantDetailsPayloadBuilder builder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder
+                .withDefaults()
+                .withDateOfBirth(LocalDate.of(1911, 8, 16))
+                .withLastName("LLOYD");
+
+        pushDefendantDetailsUpdatedEvent(builder);
+
+        final Optional<JsonObject> caseCreatedResponseObject = queryElasticSearch("1911-08-16");
+
+        final JsonObject outputCase = jsonFromString(getJsonArray(caseCreatedResponseObject.get(), INDEX_LABEL).get().getString(0));
+        final JsonObject defendant = (JsonObject) outputCase.getJsonArray("parties").get(0);
+        final JsonArray aliases = defendant.getJsonArray("aliases");
+
+        assertThat(aliases.size(), is(1));
+    }
+
+    private void pushDefendantDetailsUpdatedEvent(final UpdateDefendantDetails.DefendantDetailsPayloadBuilder builder) {
         new EventListener()
                 .subscribe(EVENT_NAME)
                 .run(() -> createCaseForPayloadBuilder(CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseIdOne)));
 
-        UUID defendantId = UUID.fromString(pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id"));
-        updateDefendantDetailsForCaseAndPayload(caseIdOne, defendantId, getDefendantPayloadBuilder());
+        final UUID defendantId = UUID.fromString(pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id"));
+        updateDefendantDetailsForCaseAndPayload(caseIdOne, defendantId, builder);
+    }
 
-        final Optional<JsonObject> caseCreatedResponseObject = poller.pollUntilFound(() -> {
+    private Optional<JsonObject> queryElasticSearch(final String criteria) {
+
+        return poller.pollUntilFound(() -> {
             try {
                 final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
-                if (jsonObject.getInt("totalResults") == 1 && checkDefendantUpdated(jsonObject)) {
+                if (jsonObject.getInt("totalResults") == 1 && checkDefendantUpdated(jsonObject, criteria)) {
                     return of(jsonObject);
                 }
             } catch (final IOException e) {
@@ -67,19 +124,18 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
             }
             return empty();
         });
-
-        final JsonObject outputCase = jsonFromString(getJsonArray(caseCreatedResponseObject.get(), "index").get().getString(0));
-        final JsonObject defendant = (JsonObject) outputCase.getJsonArray("parties").get(0);
-
-        assertThat(getStringFromJson(defendant, "_party_type"), is("defendant"));
-        assertThat(getStringFromJson(defendant, "title"), is("Mr"));
-        assertThat(getStringFromJson(defendant, "firstName"), is("Jonathan"));
-        assertThat(getStringFromJson(defendant, "lastName"), is("Alpanso"));
-        assertThat(getStringFromJson(defendant, "dateOfBirth"), is("1981-08-16"));
-        assertThat(getStringFromJson(defendant, "gender"), is("Female"));
-        assertThat(getStringFromJson(defendant, "addressLines"), is("14 Shaftesbury Road Croydon Wales US New London"));
-        assertThat(getStringFromJson(defendant, "postCode"), is("IG6 1JY"));
     }
+
+    private void assertAliases(final JsonArray aliases) {
+
+        for (int i = 0; i < aliases.size(); i++) {
+            final JsonObject alias = (JsonObject) aliases.get(i);
+            assertThat(alias.getString(LABEL_TITLE), anyOf(equalTo(TITLE)));
+            assertThat(alias.getString(LABEL_FIRST_NAME), anyOf(equalTo(FIRST_NAME), equalTo("David")));
+            assertThat(alias.getString(_LABEL_LAST_NAME), anyOf(equalTo(LAST_NAME), equalTo("LLOYD")));
+        }
+    }
+
 
     private UpdateDefendantDetails.DefendantDetailsPayloadBuilder getDefendantPayloadBuilder() {
         AddressBuilder addressBuilder = AddressBuilder.withDefaults()
@@ -88,22 +144,18 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
                 .withAddress3("Wales")
                 .withAddress4("US")
                 .withAddress5("New London")
-                .withPostcode("IG6 1JY");
+                .withPostcode(POST_CODE);
 
         return UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults()
-                .withTitle("Mr")
-                .withFirstName("Jonathan")
-                .withLastName("Alpanso")
+                .withTitle(TITLE)
+                .withFirstName(FIRST_NAME)
+                .withLastName(LAST_NAME)
                 .withDateOfBirth(LocalDate.of(1981, 8, 16))
                 .withGender(Gender.FEMALE)
                 .withAddress(addressBuilder);
     }
 
-    private String getStringFromJson(final JsonObject transformedJson, final String child) {
-        return transformedJson.getString(child);
-    }
-
-    private boolean checkDefendantUpdated(final JsonObject jsonObject) {
-        return ((JsonString) jsonObject.getJsonArray("index").get(0)).getString().indexOf("Jonathan") > -1;
+    private boolean checkDefendantUpdated(final JsonObject jsonObject, final String criteria) {
+        return ((JsonString) jsonObject.getJsonArray(INDEX_LABEL).get(0)).getString().indexOf(criteria) > -1;
     }
 }

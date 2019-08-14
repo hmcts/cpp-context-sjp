@@ -18,6 +18,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class DefendantDetailsMovedFromPeopleTransformationTest {
+    private static final String TITLE = "title";
+    private static final String FIRST_NAME = "firstName";
+    private static final String LAST_NAME = "lastName";
+
     private final JoltTransformer joltTransformer = new JoltTransformer();
 
     @Before
@@ -34,23 +38,32 @@ public class DefendantDetailsMovedFromPeopleTransformationTest {
         final JsonObject inputJson = readJson("/sjp.events.defendant-details-moved-from-people.json");
         final JsonObject transformedJson = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
 
-        final JsonObject outputParties = (JsonObject) transformedJson.getJsonArray("parties").get(0);
-
-        verifyParties(inputJson, outputParties, transformedJson);
+        verifyParties(inputJson, transformedJson);
     }
 
-    private void verifyParties(final JsonObject inputDefendant, final JsonObject outputParties, final JsonObject transformedJson) {
-        assertThat(inputDefendant.getString("caseId"), is(transformedJson.getString("caseId")));
-        assertThat(inputDefendant.getString("defendantId"), is(outputParties.getString("partyId")));
-        assertThat(inputDefendant.getString("firstName"), is(outputParties.getString("firstName")));
-        assertThat(inputDefendant.getString("lastName"), is(outputParties.getString("lastName")));
-        assertThat(inputDefendant.getString("title"), is(outputParties.getString("title")));
-        assertThat(inputDefendant.getString("dateOfBirth"), is(outputParties.getString("dateOfBirth")));
-        assertThat(inputDefendant.getString("gender"), is(outputParties.getString("gender")));
-        assertThat(outputParties.getString("_party_type"), is("defendant"));
+    private void verifyParties(final JsonObject inputDefendant, final JsonObject transformedJson) {
 
-        assertAddressDetails(inputDefendant.getJsonObject("address"), outputParties.getString("addressLines")
-                , outputParties.getString("postCode"));
+        final JsonObject defendant = (JsonObject) transformedJson.getJsonArray("parties").get(0);
+        final JsonObject aliases = defendant.getJsonArray("aliases").getJsonObject(0);
 
+        assertThat(transformedJson.getString("caseId"), is(inputDefendant.getString("caseId")));
+        assertThat(defendant.getString("partyId"), is(inputDefendant.getString("defendantId")));
+        assertThat(defendant.getString(TITLE), is(inputDefendant.getString(TITLE)));
+        assertThat(defendant.getString(FIRST_NAME), is(inputDefendant.getString(FIRST_NAME)));
+        assertThat(defendant.getString(LAST_NAME), is(inputDefendant.getString(LAST_NAME)));
+        assertThat(defendant.getString("dateOfBirth"), is(inputDefendant.getString("dateOfBirth")));
+        assertThat(defendant.getString("gender"), is(inputDefendant.getString("gender")));
+        assertThat(defendant.getString("_party_type"), is("defendant"));
+
+        assertAliases(aliases, defendant);
+
+        assertAddressDetails(inputDefendant.getJsonObject("address"), defendant.getString("addressLines")
+                , defendant.getString("postCode"));
+    }
+
+    private void assertAliases(final JsonObject aliases, final JsonObject defendant) {
+        assertThat(aliases.getString(TITLE), is(defendant.getString(TITLE)));
+        assertThat(aliases.getString(FIRST_NAME), is(defendant.getString(FIRST_NAME)));
+        assertThat(aliases.getString(LAST_NAME), is(defendant.getString(LAST_NAME)));
     }
 }

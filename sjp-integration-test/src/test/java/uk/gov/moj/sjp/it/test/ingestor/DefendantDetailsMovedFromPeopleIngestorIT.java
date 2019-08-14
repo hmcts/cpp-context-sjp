@@ -4,6 +4,8 @@ import static com.jayway.jsonassert.JsonAssert.with;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -29,6 +31,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 
@@ -148,6 +151,9 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
     }
 
     private void verifyCaseDefendantDetailUpdated(final CreateCase.CreateCasePayloadBuilder createCase, final JsonObject jsonObject, final String defendantId) {
+        final JsonObject defendant = (JsonObject) jsonObject.getJsonArray("parties").get(0);
+        final JsonArray aliases = defendant.getJsonArray("aliases");
+
         with(jsonObject.toString())
                 .assertThat("caseId", is(createCase.getId().toString()))
                 .assertThat("prosecutingAuthority", is(createCase.getProsecutingAuthority().name()))
@@ -166,6 +172,16 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
                 .assertThat("parties[0].addressLines", is("14 Shaftesbury Road London England UK Greater London")) //updated addressLines
                 .assertThat("parties[0].postCode", is("EC2 2HJ")) //updated postCode
                 .assertThat("parties[0].partyId", is(defendantId));
+        assertAliases(aliases);
     }
 
+    private void assertAliases(final JsonArray aliases) {
+
+        for(int i=0; i < aliases.size(); i++) {
+            final JsonObject alias = (JsonObject) aliases.get(i);
+            assertThat(alias.getString("title"), anyOf(equalTo("Mr"), equalTo("Dr")));
+            assertThat(alias.getString("firstName"), equalTo("David"));
+            assertThat(alias.getString("lastName"), anyOf(equalTo("LLOYD"),equalTo("SMITH")));
+        }
+    }
 }

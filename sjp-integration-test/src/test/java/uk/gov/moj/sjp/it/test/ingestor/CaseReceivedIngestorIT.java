@@ -8,17 +8,17 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
-import static uk.gov.moj.cpp.sjp.event.CaseReceived.*;
+import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.AddressVerificationHelper.addressLinesFrom;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.jsonFromString;
 
 import uk.gov.justice.services.test.utils.core.messaging.Poller;
-import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
@@ -83,17 +83,27 @@ public class CaseReceivedIngestorIT extends BaseIntegrationTest {
 
         //Party
         final JsonObject outputParties = (JsonObject) outputCase.getJsonArray("parties").get(0);
+        final CreateCase.DefendantBuilder defendantBuilder = createCase.getDefendantBuilder();
 
-        assertThat(createCase.getDefendantBuilder().getId().toString(), is(outputParties.getString("partyId")));
-        assertThat(createCase.getDefendantBuilder().getFirstName(), is(outputParties.getString("firstName")));
-        assertThat(createCase.getDefendantBuilder().getLastName(), is(outputParties.getString("lastName")));
-        assertThat(createCase.getDefendantBuilder().getTitle(), is(outputParties.getString("title")));
-        assertThat(createCase.getDefendantBuilder().getDateOfBirth().toString(), is(outputParties.getString("dateOfBirth")));
-        assertThat(createCase.getDefendantBuilder().getGender().toString(), is(outputParties.getString("gender")));
+        assertThat(defendantBuilder.getId().toString(), is(outputParties.getString("partyId")));
+        assertThat(defendantBuilder.getFirstName(), is(outputParties.getString("firstName")));
+        assertThat(defendantBuilder.getLastName(), is(outputParties.getString("lastName")));
+        assertThat(defendantBuilder.getTitle(), is(outputParties.getString("title")));
+        assertThat(defendantBuilder.getDateOfBirth().toString(), is(outputParties.getString("dateOfBirth")));
+        assertThat(defendantBuilder.getGender().toString(), is(outputParties.getString("gender")));
         assertThat(outputParties.getString("_party_type"), is("defendant"));
 
+        final JsonObject aliases = outputParties.getJsonArray("aliases").getJsonObject(0);
+        assertAliases(aliases, defendantBuilder);
+
         //Address
-        assertThat(addressLinesFrom(createCase.getDefendantBuilder()), is(outputParties.getString("addressLines")));
-        assertThat(createCase.getDefendantBuilder().getAddressBuilder().getPostcode(), is(outputParties.getString("postCode")));
+        assertThat(addressLinesFrom(defendantBuilder), is(outputParties.getString("addressLines")));
+        assertThat(defendantBuilder.getAddressBuilder().getPostcode(), is(outputParties.getString("postCode")));
+    }
+
+    private void assertAliases(final JsonObject aliases, final CreateCase.DefendantBuilder defendantBuilder) {
+        assertThat(defendantBuilder.getTitle(), is(aliases.getString("title")));
+        assertThat(defendantBuilder.getFirstName(), is(aliases.getString("firstName")));
+        assertThat(defendantBuilder.getLastName(), is(aliases.getString("lastName")));
     }
 }

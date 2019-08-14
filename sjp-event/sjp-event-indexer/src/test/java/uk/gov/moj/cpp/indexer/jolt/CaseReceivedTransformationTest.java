@@ -22,6 +22,11 @@ import org.junit.Test;
 
 public class CaseReceivedTransformationTest {
 
+    private static final String TITLE = "title";
+    private static final String FIRST_NAME = "firstName";
+    private static final String LAST_NAME = "lastName";
+    private static final String DOB = "dateOfBirth";
+    private static final String GENDER = "gender";
 
     private final JoltTransformer joltTransformer = new JoltTransformer();
 
@@ -45,19 +50,16 @@ public class CaseReceivedTransformationTest {
 
     private void verifyCase(final DocumentContext inputCase, final JsonObject outputCase) {
 
-        assertThat(((JsonString) inputCase.read("$.caseId")).getString(), is(outputCase.getString("caseId")));
-        assertThat(((JsonString) inputCase.read("$.urn")).getString(), is(outputCase.getString("caseReference")));
-        assertThat(((JsonString) inputCase.read("$.prosecutingAuthority")).getString(), is(outputCase.getString("prosecutingAuthority")));
-        assertThat(((JsonString) inputCase.read("$.postingDate")).getString(), is(outputCase.getString("sjpNoticeServed")));
-
+        assertThat(outputCase.getString("caseId"), is(((JsonString) inputCase.read("$.caseId")).getString()));
+        assertThat(outputCase.getString("caseReference"), is(((JsonString) inputCase.read("$.urn")).getString()));
+        assertThat(outputCase.getString("prosecutingAuthority"), is(((JsonString) inputCase.read("$.prosecutingAuthority")).getString()));
+        assertThat(outputCase.getString("sjpNoticeServed"), is(((JsonString) inputCase.read("$.postingDate")).getString()));
         assertThat(outputCase.getString("caseStatus"), is("NO_PLEA_RECEIVED"));
         assertThat(outputCase.getString("_case_type"), is("prosecution"));
-
         assertThat(outputCase.getBoolean("_is_sjp"), is(true));
         assertThat(outputCase.getBoolean("_is_magistrates"), is(false));
         assertThat(outputCase.getBoolean("_is_crown"), is(false));
         assertThat(outputCase.getBoolean("_is_charging"), is(false));
-
 
         final JsonObject inputDefendant = inputCase.read("$.defendant");
         final JsonObject outputParties = (JsonObject) outputCase.getJsonArray("parties").get(0);
@@ -66,16 +68,25 @@ public class CaseReceivedTransformationTest {
     }
 
     private void verifyParties(final JsonObject inputDefendant, final JsonObject outputParties) {
-        assertThat(inputDefendant.getString("id"), is(outputParties.getString("partyId")));
-        assertThat(inputDefendant.getString("firstName"), is(outputParties.getString("firstName")));
-        assertThat(inputDefendant.getString("lastName"), is(outputParties.getString("lastName")));
-        assertThat(inputDefendant.getString("title"), is(outputParties.getString("title")));
-        assertThat(inputDefendant.getString("dateOfBirth"), is(outputParties.getString("dateOfBirth")));
-        assertThat(inputDefendant.getString("gender"), is(outputParties.getString("gender")));
+        final JsonObject aliases = outputParties.getJsonArray("aliases").getJsonObject(0);
+
+        assertThat(outputParties.getString("partyId"), is(inputDefendant.getString("id")));
+        assertThat(outputParties.getString(TITLE), is(inputDefendant.getString(TITLE)));
+        assertThat(outputParties.getString(FIRST_NAME), is(inputDefendant.getString(FIRST_NAME)));
+        assertThat(outputParties.getString(LAST_NAME), is(inputDefendant.getString(LAST_NAME)));
+        assertThat(outputParties.getString(DOB), is(inputDefendant.getString(DOB)));
+        assertThat(outputParties.getString(GENDER), is(inputDefendant.getString(GENDER)));
         assertThat(outputParties.getString("_party_type"), is("defendant"));
+
+        assertAliases(aliases, inputDefendant);
 
         assertAddressDetails(inputDefendant.getJsonObject("address"), outputParties.getString("addressLines")
                 , outputParties.getString("postCode"));
+    }
 
+    private void assertAliases(final JsonObject aliases, final JsonObject defendant) {
+        assertThat(aliases.getString(TITLE), is(defendant.getString(TITLE)));
+        assertThat(aliases.getString(FIRST_NAME), is(defendant.getString(FIRST_NAME)));
+        assertThat(aliases.getString(LAST_NAME), is(defendant.getString(LAST_NAME)));
     }
 }

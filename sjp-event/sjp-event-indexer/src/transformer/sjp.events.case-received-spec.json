@@ -12,9 +12,9 @@
         "defendant": {
           "id": "parties[0].partyId",
           "#defendant": "parties[0]._party_type",
-          "title": "parties[0].title",
-          "firstName": "parties[0].firstName",
-          "lastName": "parties[0].lastName",
+          "title": ["parties[0].title", "parties[0].aliases[0].title"],
+          "firstName": ["parties[0].firstName", "parties[0].aliases[0].firstName"],
+          "lastName": ["parties[0].lastName", "parties[0].aliases[0].lastName"],
           "dateOfBirth": "parties[0].dateOfBirth",
           "gender": "parties[0].gender",
           "address": {

@@ -8,7 +8,7 @@
         "prosecutingAuthority": "prosecutingAuthority",
         "postingDate": "sjpNoticeServed",
         "#NO_PLEA_RECEIVED": "caseStatus",
-        "#prosecution": "_case_type",
+        "#PROSECUTION": "_case_type",
         "defendant": {
           "id": "parties[0].partyId",
           "#defendant": "parties[0]._party_type",

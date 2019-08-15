@@ -6,7 +6,7 @@
         "caseId": "caseId",
         "urn": "caseReference",
         "defendantId": "parties[0].partyId",
-        "#prosecution": "_case_type",
+        "#PROSECUTION": "_case_type",
         "#defendant": "parties[0]._party_type",
         "personalDetails": {
           "firstName": "parties[0].firstName",

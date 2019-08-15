@@ -55,7 +55,7 @@ public class CaseReceivedTransformationTest {
         assertThat(outputCase.getString("prosecutingAuthority"), is(((JsonString) inputCase.read("$.prosecutingAuthority")).getString()));
         assertThat(outputCase.getString("sjpNoticeServed"), is(((JsonString) inputCase.read("$.postingDate")).getString()));
         assertThat(outputCase.getString("caseStatus"), is("NO_PLEA_RECEIVED"));
-        assertThat(outputCase.getString("_case_type"), is("prosecution"));
+        assertThat(outputCase.getString("_case_type"), is("PROSECUTION"));
         assertThat(outputCase.getBoolean("_is_sjp"), is(true));
         assertThat(outputCase.getBoolean("_is_magistrates"), is(false));
         assertThat(outputCase.getBoolean("_is_crown"), is(false));

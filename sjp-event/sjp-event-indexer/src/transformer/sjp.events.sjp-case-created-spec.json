@@ -7,7 +7,7 @@
         "urn": "caseReference",
         "prosecutingAuthority": "prosecutingAuthority",
         "#NO_PLEA_RECEIVED": "caseStatus",
-        "#prosecution": "_case_type",
+        "#PROSECUTION": "_case_type",
         "postingDate": "sjpNoticeServed"
       }
     },

@@ -76,7 +76,7 @@ public class SjpCaseCreatedIngesterIT extends BaseIntegrationTest {
         assertThat(actualCase.getString("sjpNoticeServed"), is("2015-12-02"));
         assertThat(actualCase.getString("prosecutingAuthority"), is("DVLA"));
         assertThat(actualCase.getString("caseStatus"), is("NO_PLEA_RECEIVED"));
-        assertThat(actualCase.getString("_case_type"), is("prosecution"));
+        assertThat(actualCase.getString("_case_type"), is("PROSECUTION"));
         assertThat(actualCase.getBoolean("_is_sjp"), is(true));
         assertThat(actualCase.getBoolean("_is_magistrates"), is(false));
         assertThat(actualCase.getBoolean("_is_crown"), is(false));

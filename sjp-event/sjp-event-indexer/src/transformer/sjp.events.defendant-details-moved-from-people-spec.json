@@ -4,7 +4,7 @@
       "operation": "shift",
       "spec": {
         "caseId": "caseId",
-        "#prosecution": "_case_type",
+        "#PROSECUTION": "_case_type",
         "defendantId": "parties[0].partyId",
         "title": ["parties[0].title", "parties[0].aliases[0].title"],
         "firstName": ["parties[0].firstName", "parties[0].aliases[0].firstName"],

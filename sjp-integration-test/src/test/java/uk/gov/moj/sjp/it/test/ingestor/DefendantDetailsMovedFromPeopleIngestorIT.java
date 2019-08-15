@@ -159,7 +159,7 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
                 .assertThat("prosecutingAuthority", is(createCase.getProsecutingAuthority().name()))
                 .assertThat("caseReference", is(createCase.getUrn()))
                 .assertThat("caseStatus", is("NO_PLEA_RECEIVED"))
-                .assertThat("_case_type", is("prosecution"))
+                .assertThat("_case_type", is("PROSECUTION"))
                 .assertThat("_is_crown", is("false"))
                 .assertThat("_is_magistrates", is("false"))
                 .assertThat("_is_sjp", is("true"))

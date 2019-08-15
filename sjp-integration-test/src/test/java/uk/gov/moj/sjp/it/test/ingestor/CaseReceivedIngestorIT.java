@@ -75,7 +75,7 @@ public class CaseReceivedIngestorIT extends BaseIntegrationTest {
         assertThat(createCase.getPostingDate().toString(), is(outputCase.getString("sjpNoticeServed")));
         assertThat(createCase.getProsecutingAuthority().name(), is(outputCase.getString("prosecutingAuthority")));
         assertThat(outputCase.getString("caseStatus"), is("NO_PLEA_RECEIVED"));
-        assertThat(outputCase.getString("_case_type"), is("prosecution"));
+        assertThat(outputCase.getString("_case_type"), is("PROSECUTION"));
         assertThat(outputCase.getBoolean("_is_sjp"), is(true));
         assertThat(outputCase.getBoolean("_is_magistrates"), is(false));
         assertThat(outputCase.getBoolean("_is_crown"), is(false));

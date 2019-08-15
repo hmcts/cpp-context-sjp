@@ -24,6 +24,7 @@ import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
@@ -37,6 +38,7 @@ import javax.json.JsonString;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTest {
@@ -49,6 +51,9 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
 
     private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
     private final Poller poller = new Poller(1200, 1000L);
+    private final UUID caseId = randomUUID();
+    private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
+
 
     @Before
     public void setUp() throws IOException {
@@ -60,12 +65,12 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
 
     @After
     public void tearDown() {
+        viewStoreCleaner.cleanDataInViewStore(caseId);
         privateEventsProducer.close();
     }
 
     @Test
     public void shouldIngestDefendantDetailsMovedFromPeopleEvent() {
-        final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
 
         final CreateCase.CreateCasePayloadBuilder createCase = getCreateCasePayloadBuilder(caseId, defendantId);

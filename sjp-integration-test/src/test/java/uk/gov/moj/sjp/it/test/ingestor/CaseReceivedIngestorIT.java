@@ -18,22 +18,28 @@ import uk.gov.justice.services.test.utils.core.messaging.Poller;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
+import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class CaseReceivedIngestorIT extends BaseIntegrationTest {
 
     private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
     private final Poller poller = new Poller(1200, 1000L);
+    private final UUID uuid = randomUUID();
+    private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
 
     @Before
     public void setUp() throws IOException {
@@ -42,11 +48,16 @@ public class CaseReceivedIngestorIT extends BaseIntegrationTest {
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
     }
 
+    @After
+    public void cleanDatabase() {
+        viewStoreCleaner.cleanDataInViewStore(uuid);
+    }
+
     @Test
     public void shouldIngestCaseReceivedEvent() {
         final CreateCasePayloadBuilder createCase = CreateCasePayloadBuilder
                 .withDefaults()
-                .withId(randomUUID())
+                .withId(uuid)
                 .withProsecutingAuthority(TFL)
                 .withDefendantId(randomUUID());
 

@@ -28,8 +28,10 @@ import java.util.UUID;
 import javax.sql.DataSource;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("This test needs to be re-written as its deleting data which has dependency on other sjpIT tests")
 public class ShutteringIT {
 
     private static final String CONTEXT_NAME = "sjp";

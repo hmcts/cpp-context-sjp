@@ -4,6 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertThat;
@@ -22,17 +23,21 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
+import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.json.JsonObject;
 
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class PleaReceivedIngestorIT extends BaseIntegrationTest {
@@ -43,11 +48,17 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
     private CreateCasePayloadBuilder casePayloadBuilder;
 
     private final Poller poller = new Poller(1200, 1000L);
+    private final UUID caseIdOne = randomUUID();
+    private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
+
+    @After
+    public void cleanDatabase() {
+        viewStoreCleaner.cleanDataInViewStore(caseIdOne);
+    }
 
     @Before
     public void setUp() throws IOException {
-        casePayloadBuilder = CreateCasePayloadBuilder.withDefaults();
-
+        casePayloadBuilder = CreateCasePayloadBuilder.withDefaults().withId(caseIdOne);
         createCaseForPayloadBuilder(this.casePayloadBuilder);
 
         pollUntilCaseByIdIsOk(casePayloadBuilder.getId());

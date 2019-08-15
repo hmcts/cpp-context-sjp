@@ -16,15 +16,18 @@ import uk.gov.justice.services.test.utils.core.messaging.Poller;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
+import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.json.JsonObject;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class SjpCaseCreatedIngesterIT extends BaseIntegrationTest {
@@ -36,6 +39,7 @@ public class SjpCaseCreatedIngesterIT extends BaseIntegrationTest {
 
     private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
     private final Poller poller = new Poller(1200, 1000L);
+    private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
 
     @Before
     public void setUp() throws IOException {
@@ -47,6 +51,7 @@ public class SjpCaseCreatedIngesterIT extends BaseIntegrationTest {
 
     @After
     public void tearDown() {
+        viewStoreCleaner.cleanDataInViewStore(UUID.fromString("7e2f843e-d639-40b3-8611-8015f3a18958"));
         privateEventsProducer.close();
     }
 

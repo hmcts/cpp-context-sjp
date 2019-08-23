@@ -2,26 +2,21 @@ package uk.gov.moj.sjp.it.test.ingestor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostcodeQuery;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getElasticSearchResponse;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.jsonFromString;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
-import uk.gov.justice.services.test.utils.core.messaging.Poller;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
@@ -37,17 +32,14 @@ import javax.json.JsonObject;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class PleaReceivedIngestorIT extends BaseIntegrationTest {
     private static final String ONLINE_PLEA_PAYLOAD = "raml/json/sjp.command.plead-online__not-guilty_for_ingester.json";
 
-    private ElasticSearchIndexFinderUtil elasticSearch;
 
     private CreateCasePayloadBuilder casePayloadBuilder;
 
-    private final Poller poller = new Poller(1200, 1000L);
     private final UUID caseIdOne = randomUUID();
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
 
@@ -63,7 +55,6 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
 
         pollUntilCaseByIdIsOk(casePayloadBuilder.getId());
 
-        elasticSearch = new ElasticSearchIndexFinderUtil(new ElasticSearchClient());
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
 
         stubCountryByPostcodeQuery("W1T 1JY", "England");
@@ -91,20 +82,6 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
                         withJsonPath("parties[0].addressLines", equalTo("15 Harvey Avenue Barking Essex Wales Bhirmingham")),
                         withJsonPath("parties[0].postCode", equalTo("W1T 1JY"))
                 )));
-    }
-
-    private Optional<JsonObject> getElasticSearchResponse() {
-        return poller.pollUntilFound(() -> {
-            try {
-                final JsonObject jsonObject = elasticSearch.findAll("crime_case_index");
-                if (jsonObject.getInt("totalResults") == 1) {
-                    return of(jsonObject);
-                }
-            } catch (final IOException e) {
-                fail();
-            }
-            return empty();
-        });
     }
 
     private JSONObject pleadOnline() {

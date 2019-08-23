@@ -1,20 +1,15 @@
 package uk.gov.moj.sjp.it.test.ingestor;
 
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getElasticSearchResponse;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.buildEnvelope;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.jsonFromString;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
-import uk.gov.justice.services.test.utils.core.messaging.Poller;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
@@ -27,7 +22,6 @@ import javax.json.JsonObject;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class SjpCaseCreatedIngesterIT extends BaseIntegrationTest {
@@ -37,15 +31,11 @@ public class SjpCaseCreatedIngesterIT extends BaseIntegrationTest {
 
     private final MessageProducerClient privateEventsProducer = new MessageProducerClient();
 
-    private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
-    private final Poller poller = new Poller(1200, 1000L);
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
 
     @Before
     public void setUp() throws IOException {
         privateEventsProducer.startProducer(SJP_EVENT);
-        final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
-        elasticSearchIndexFinderUtil = new ElasticSearchIndexFinderUtil(elasticSearchClient);
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
     }
 
@@ -58,17 +48,7 @@ public class SjpCaseCreatedIngesterIT extends BaseIntegrationTest {
     @Test
     public void shouldIngestSjpCaseCreatedEvent() {
         publishSjpCaseCreatedEvent();
-        final Optional<JsonObject> caseCreatedResponseObject = poller.pollUntilFound(() -> {
-            try {
-                final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
-                if (jsonObject.getInt("totalResults") == 1) {
-                    return of(jsonObject);
-                }
-            } catch (final IOException e) {
-                fail();
-            }
-            return empty();
-        });
+        final Optional<JsonObject> caseCreatedResponseObject = getElasticSearchResponse();
 
         final JsonObject actualCase = jsonFromString(getJsonArray(caseCreatedResponseObject.get(), "index").get().getString(0));
 

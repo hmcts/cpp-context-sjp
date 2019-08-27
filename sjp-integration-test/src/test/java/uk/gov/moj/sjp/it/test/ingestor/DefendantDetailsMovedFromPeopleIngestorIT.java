@@ -169,7 +169,7 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
                 .assertThat("_is_magistrates", is("false"))
                 .assertThat("_is_sjp", is("true"))
                 .assertThat("_is_charging", is("false"))
-                .assertThat("parties[0]._party_type", is("defendant"))
+                .assertThat("parties[0]._party_type", is("DEFENDANT"))
                 .assertThat("parties[0].firstName", is("David"))
                 .assertThat("parties[0].lastName", is("SMITH")) //updated lastName
                 .assertThat("parties[0].gender", is("Male"))

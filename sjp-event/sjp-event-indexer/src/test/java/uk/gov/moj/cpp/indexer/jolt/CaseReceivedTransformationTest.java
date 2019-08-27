@@ -76,7 +76,7 @@ public class CaseReceivedTransformationTest {
         assertThat(outputParties.getString(LAST_NAME), is(inputDefendant.getString(LAST_NAME)));
         assertThat(outputParties.getString(DOB), is(inputDefendant.getString(DOB)));
         assertThat(outputParties.getString(GENDER), is(inputDefendant.getString(GENDER)));
-        assertThat(outputParties.getString("_party_type"), is("defendant"));
+        assertThat(outputParties.getString("_party_type"), is("DEFENDANT"));
 
         assertAliases(aliases, inputDefendant);
 

@@ -48,7 +48,7 @@ public class DefendantDetailsUpdatedTransformationTest {
         final JsonObject aliases = defendant.getJsonArray("aliases").getJsonObject(0);
 
         assertThat(result.getString("caseId"), is(inputPayload.getString("caseId")));
-        assertThat(defendant.getString("_party_type"), is("defendant"));
+        assertThat(defendant.getString("_party_type"), is("DEFENDANT"));
         assertThat(defendant.getString("partyId"), is(inputPayload.getString("defendantId")));
         assertThat(defendant.getString("title"), is(inputPayload.getString("title")));
         assertThat(defendant.getString("firstName"), is(inputPayload.getString("firstName")));

@@ -6,6 +6,12 @@
         "caseId": "caseId",
         "caseStatus": "caseStatus"
       }
+    },
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "caseStatus":   "=toUpper"
+      }
     }
   ]
 }

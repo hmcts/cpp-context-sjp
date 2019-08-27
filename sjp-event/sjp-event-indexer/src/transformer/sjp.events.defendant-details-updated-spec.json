@@ -39,6 +39,17 @@
         "addressLines": "parties[0].addressLines",
         "postCode": "parties[0].postcode"
       }
+    },
+    {
+      "operation": "modify-overwrite-beta",
+      "spec": {
+        "\\_case_type": "=toUpper",
+        "parties": {
+          "*": {
+            "\\_party_type": "=toUpper"
+          }
+        }
+      }
     }
   ]
 }

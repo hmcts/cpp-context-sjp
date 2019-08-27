@@ -81,7 +81,7 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
         final JsonArray aliases = defendant.getJsonArray("aliases");
 
         assertThat(aliases.size(), is(2));
-        assertThat(defendant.getString("_party_type"), is("defendant"));
+        assertThat(defendant.getString("_party_type"), is("DEFENDANT"));
         assertThat(defendant.getString(LABEL_TITLE), is(TITLE));
         assertThat(defendant.getString(LABEL_FIRST_NAME), is(FIRST_NAME));
         assertThat(defendant.getString(_LABEL_LAST_NAME), is(LAST_NAME));

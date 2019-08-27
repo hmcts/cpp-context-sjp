@@ -53,7 +53,7 @@ public class DefendantDetailsMovedFromPeopleTransformationTest {
         assertThat(defendant.getString(LAST_NAME), is(inputDefendant.getString(LAST_NAME)));
         assertThat(defendant.getString("dateOfBirth"), is(inputDefendant.getString("dateOfBirth")));
         assertThat(defendant.getString("gender"), is(inputDefendant.getString("gender")));
-        assertThat(defendant.getString("_party_type"), is("defendant"));
+        assertThat(defendant.getString("_party_type"), is("DEFENDANT"));
 
         assertAliases(aliases, defendant);
 

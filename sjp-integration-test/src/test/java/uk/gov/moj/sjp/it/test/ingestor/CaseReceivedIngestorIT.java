@@ -82,7 +82,7 @@ public class CaseReceivedIngestorIT extends BaseIntegrationTest {
         assertThat(defendantBuilder.getTitle(), is(outputParties.getString("title")));
         assertThat(defendantBuilder.getDateOfBirth().toString(), is(outputParties.getString("dateOfBirth")));
         assertThat(defendantBuilder.getGender().toString(), is(outputParties.getString("gender")));
-        assertThat(outputParties.getString("_party_type"), is("defendant"));
+        assertThat(outputParties.getString("_party_type"), is("DEFENDANT"));
 
         final JsonObject aliases = outputParties.getJsonArray("aliases").getJsonObject(0);
         assertAliases(aliases, defendantBuilder);

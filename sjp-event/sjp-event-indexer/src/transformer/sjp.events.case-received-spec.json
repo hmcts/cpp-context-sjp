@@ -81,7 +81,15 @@
         "\\_is_crown": [
           "=toBoolean",
           false
-        ]
+        ],
+        "\\_case_type": "=toUpper",
+        "caseStatus":   "=toUpper",
+        "prosecutingAuthority": "=toUpper",
+        "parties": {
+          "*": {
+            "\\_party_type": "=toUpper"
+          }
+        }
       }
     }
   ]

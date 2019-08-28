@@ -2,10 +2,8 @@ package uk.gov.moj.sjp.it.test.ingestor;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getElasticSearchResponse;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.buildEnvelope;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.jsonFromString;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -15,7 +13,6 @@ import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -48,9 +45,8 @@ public class SjpCaseCreatedIngesterIT extends BaseIntegrationTest {
     @Test
     public void shouldIngestSjpCaseCreatedEvent() {
         publishSjpCaseCreatedEvent();
-        final Optional<JsonObject> caseCreatedResponseObject = getElasticSearchResponse();
 
-        final JsonObject actualCase = jsonFromString(getJsonArray(caseCreatedResponseObject.get(), "index").get().getString(0));
+        final JsonObject actualCase = getCaseFromElasticSearch();
 
         verifyCase(actualCase);
     }

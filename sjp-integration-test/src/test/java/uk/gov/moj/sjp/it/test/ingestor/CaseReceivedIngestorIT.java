@@ -3,14 +3,12 @@ package uk.gov.moj.sjp.it.test.ingestor;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.AddressVerificationHelper.addressLinesFrom;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getElasticSearchResponse;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.jsonFromString;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
 
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.command.CreateCase;
@@ -19,7 +17,6 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -56,9 +53,7 @@ public class CaseReceivedIngestorIT extends BaseIntegrationTest {
                 .run(() -> createCaseForPayloadBuilder(createCase))
                 .popEvent(EVENT_NAME);
 
-        final Optional<JsonObject> caseCreatedResponseObject = getElasticSearchResponse();
-
-        final JsonObject outputCase = jsonFromString(getJsonArray(caseCreatedResponseObject.get(), "index").get().getString(0));
+        final JsonObject outputCase = getCaseFromElasticSearch();
 
         //Case
         assertThat(createCase.getId().toString(), is(outputCase.getString("caseId")));

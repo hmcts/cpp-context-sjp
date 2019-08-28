@@ -13,6 +13,7 @@ import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.command.UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getPoller;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.jsonFromString;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
@@ -38,7 +39,6 @@ import javax.json.JsonString;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
@@ -53,7 +53,7 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
     private static final String POST_CODE = "IG6 1JY";
 
     private final UUID caseIdOne = randomUUID();
-    private final Poller poller = new Poller(1200, 1000L);
+    private final Poller poller = getPoller();
     private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
 

@@ -6,13 +6,11 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertThat;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostcodeQuery;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getElasticSearchResponse;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.jsonFromString;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
@@ -24,7 +22,6 @@ import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -64,9 +61,7 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
     public void shouldIngestCaseReceivedEvent() {
         pleadOnline();
 
-        final Optional<JsonObject> searchResponse = getElasticSearchResponse();
-
-        final JsonObject outputCase = jsonFromString(getJsonArray(searchResponse.get(), "index").get().getString(0));
+        final JsonObject outputCase = getCaseFromElasticSearch();
 
         verifyElasticSearchResponse(outputCase);
     }

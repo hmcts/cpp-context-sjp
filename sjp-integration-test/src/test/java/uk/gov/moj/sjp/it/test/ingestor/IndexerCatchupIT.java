@@ -3,12 +3,10 @@ package uk.gov.moj.sjp.it.test.ingestor;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getElasticSearchResponse;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.jsonFromString;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
@@ -70,7 +68,7 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
     }
 
     private void checkThatCaseIsinElasticSearch() {
-        final JsonObject actualCase = jsonFromString(getJsonArray(getElasticSearchResponse().get(), "index").get().getString(0));
+        final JsonObject actualCase = getCaseFromElasticSearch();
         assertThat(actualCase.getString("caseId"), is(CASE_ID));
     }
 

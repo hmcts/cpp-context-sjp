@@ -13,6 +13,8 @@ import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJ
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getPoller;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.buildEnvelope;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.jsonFromString;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
@@ -38,7 +40,6 @@ import javax.json.JsonString;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTest {
@@ -50,7 +51,7 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
     private final MessageProducerClient privateEventsProducer = new MessageProducerClient();
 
     private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
-    private final Poller poller = new Poller(1200, 1000L);
+    private final Poller poller = getPoller();
     private final UUID caseId = randomUUID();
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
 
@@ -94,24 +95,8 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
                 .run(() -> createCaseForPayloadBuilder(createCase))
                 .popEvent(EVENT_NAME);
 
-        final Optional<JsonObject> caseCreatedResponseObject = getCaseIndexDetails();
-
-        final JsonObject outputCase = jsonFromString(getJsonArray(caseCreatedResponseObject.get(), "index").get().getString(0));
+        final JsonObject outputCase = getCaseFromElasticSearch();
         assertThat(createCase.getId().toString(), is(outputCase.getString("caseId")));
-    }
-
-    private Optional<JsonObject> getCaseIndexDetails() {
-        return poller.pollUntilFound(() -> {
-                try {
-                    final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
-                    if (jsonObject.getInt("totalResults") == 1) {
-                        return of(jsonObject);
-                    }
-                } catch (final IOException e) {
-                    fail();
-                }
-                return empty();
-            });
     }
 
     private CreateCase.CreateCasePayloadBuilder getCreateCasePayloadBuilder(final UUID caseId, final UUID defendantId) {

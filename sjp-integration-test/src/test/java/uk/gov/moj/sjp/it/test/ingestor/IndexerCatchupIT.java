@@ -1,24 +1,22 @@
 package uk.gov.moj.sjp.it.test.ingestor;
 
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static uk.gov.justice.services.jmx.system.command.client.connection.JmxParametersBuilder.jmxParameters;
-import static uk.gov.justice.services.test.utils.common.host.TestHostProvider.getHost;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
+import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
+import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getElasticSearchResponse;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.buildEnvelope;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.jsonFromString;
-import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
-import uk.gov.justice.services.jmx.api.command.IndexerCatchupCommand;
-import uk.gov.justice.services.jmx.system.command.client.SystemCommanderClient;
-import uk.gov.justice.services.jmx.system.command.client.TestSystemCommanderClientFactory;
-import uk.gov.justice.services.jmx.system.command.client.connection.JmxParameters;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
+import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.framework.util.SystemCommandInvoker;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
+import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
@@ -32,16 +30,10 @@ import org.junit.Test;
 
 
 public class IndexerCatchupIT extends BaseIntegrationTest {
-    private static final String HOST = getHost();
-    private static final int JMX_PORT = 9990;
     private static final String CONTEXT = "sjp";
     public static final String CASE_ID = "7e2f843e-d639-40b3-8611-8015f3a18958";
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
-    private final TestSystemCommanderClientFactory testSystemCommanderClientFactory = new TestSystemCommanderClientFactory();
-    private static final String EVENT_NAME = "sjp.events.sjp-case-created";
-    private static final String PAYLOAD_PATH = "stub-data/sjp.events.sjp-case-created.json";
-    private static final String SJP_EVENT = "sjp.event";
-
+    private final SystemCommandInvoker systemCommandInvoker = new SystemCommandInvoker();
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
     private final MessageProducerClient privateEventsProducer = new MessageProducerClient();
     private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
@@ -52,7 +44,6 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
         databaseCleaner.cleanSystemTables(CONTEXT);
         databaseCleaner.cleanViewStoreTables(CONTEXT, "processed_event", "stream_status", "stream_buffer");
 
-        privateEventsProducer.startProducer(SJP_EVENT);
         elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
     }
 
@@ -65,38 +56,35 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
     @Test
     public void shouldRunIndexerCatchupAndDataShouldBeInElasticSearch() throws Exception {
 
-        publishSjpCaseCreatedEvent();
-        final JsonObject actualCase = jsonFromString(getJsonArray(getElasticSearchResponse().get(), "index").get().getString(0));
-        assertThat(actualCase.getString("caseId"), is(CASE_ID));
+        publishSjpCaseReceivedEvent();
+
+        checkThatCaseIsinElasticSearch();
 
         /* Clear the data again so that we can do catchup */
         elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
         databaseCleaner.cleanViewStoreTables(CONTEXT, "processed_event", "stream_status", "stream_buffer");
 
-        runIndexerCatchup();
+        systemCommandInvoker.invokeIndexerCatchup();
 
-        final JsonObject actualCaseAfterCatchup = jsonFromString(getJsonArray(getElasticSearchResponse().get(), "index").get().getString(0));
-        assertThat(actualCaseAfterCatchup.getString("caseId"), is(CASE_ID));
+        checkThatCaseIsinElasticSearch();
     }
 
-    private void runIndexerCatchup() {
-        final String contextName = "sjp-service";
-        final JmxParameters jmxParameters = jmxParameters()
-                .withContextName(contextName)
-                .withHost(HOST)
-                .withPort(JMX_PORT)
-                .withUsername("admin")
-                .withPassword("admin")
-                .build();
-
-        try (final SystemCommanderClient systemCommanderClient = testSystemCommanderClientFactory.create(jmxParameters)) {
-            systemCommanderClient.getRemote(contextName).call(new IndexerCatchupCommand());
-        }
+    private void checkThatCaseIsinElasticSearch() {
+        final JsonObject actualCase = jsonFromString(getJsonArray(getElasticSearchResponse().get(), "index").get().getString(0));
+        assertThat(actualCase.getString("caseId"), is(CASE_ID));
     }
 
-    private void publishSjpCaseCreatedEvent() {
-        final String payload = getPayload(PAYLOAD_PATH);
-        final JsonEnvelope jsonEnvelope = buildEnvelope(payload, EVENT_NAME);
-        privateEventsProducer.sendMessage(EVENT_NAME, jsonEnvelope);
+
+    private void publishSjpCaseReceivedEvent() {
+        final CreateCase.CreateCasePayloadBuilder createCase = CreateCase.CreateCasePayloadBuilder
+                .withDefaults()
+                .withId(UUID.fromString(CASE_ID))
+                .withProsecutingAuthority(TFL)
+                .withDefendantId(randomUUID());
+
+        new EventListener()
+                .subscribe(EVENT_NAME)
+                .run(() -> createCaseForPayloadBuilder(createCase))
+                .popEvent(EVENT_NAME);
     }
 }

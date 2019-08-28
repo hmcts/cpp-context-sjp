@@ -4,8 +4,10 @@ import static uk.gov.justice.services.jmx.system.command.client.connection.JmxPa
 import static uk.gov.justice.services.test.utils.common.host.TestHostProvider.getHost;
 
 import uk.gov.justice.services.jmx.api.command.CatchupCommand;
+import uk.gov.justice.services.jmx.api.command.IndexerCatchupCommand;
 import uk.gov.justice.services.jmx.api.command.RebuildCommand;
 import uk.gov.justice.services.jmx.api.command.ShutterSystemCommand;
+import uk.gov.justice.services.jmx.api.command.SystemCommand;
 import uk.gov.justice.services.jmx.api.command.UnshutterSystemCommand;
 import uk.gov.justice.services.jmx.system.command.client.SystemCommanderClient;
 import uk.gov.justice.services.jmx.system.command.client.TestSystemCommanderClientFactory;
@@ -22,31 +24,24 @@ public class SystemCommandInvoker {
     private final TestSystemCommanderClientFactory testSystemCommanderClientFactory = new TestSystemCommanderClientFactory();
 
     public void invokeRebuild() {
-
-        try (final SystemCommanderClient systemCommanderClient = testSystemCommanderClientFactory.create(jmxParameter())) {
-            systemCommanderClient.getRemote(CONTEXT_NAME).call(new RebuildCommand());
-        }
+        invokeSystemCommand(new RebuildCommand());
     }
 
     public void invokeCatchup() {
+        invokeSystemCommand(new CatchupCommand());
+    }
 
-        try (final SystemCommanderClient systemCommanderClient = testSystemCommanderClientFactory.create(jmxParameter())) {
-            systemCommanderClient.getRemote(CONTEXT_NAME).call(new CatchupCommand());
-        }
+
+    public void invokeIndexerCatchup() {
+        invokeSystemCommand(new IndexerCatchupCommand());
     }
 
     public void invokeShutter() {
-
-        try (final SystemCommanderClient systemCommanderClient = testSystemCommanderClientFactory.create(jmxParameter())) {
-            systemCommanderClient.getRemote(CONTEXT_NAME).call(new ShutterSystemCommand());
-        }
+        invokeSystemCommand(new ShutterSystemCommand());
     }
 
     public void invokeUnshutter() {
-
-        try (final SystemCommanderClient systemCommanderClient = testSystemCommanderClientFactory.create(jmxParameter())) {
-            systemCommanderClient.getRemote(CONTEXT_NAME).call(new UnshutterSystemCommand());
-        }
+        invokeSystemCommand(new UnshutterSystemCommand());
     }
 
     private JmxParameters jmxParameter() {
@@ -57,5 +52,11 @@ public class SystemCommandInvoker {
                 .withUsername(USERNAME)
                 .withPassword(PASSWORD)
                 .build();
+    }
+
+    private void invokeSystemCommand(final SystemCommand systemCommand) {
+        try (final SystemCommanderClient systemCommanderClient = testSystemCommanderClientFactory.create(jmxParameter())) {
+            systemCommanderClient.getRemote(CONTEXT_NAME).call(systemCommand);
+        }
     }
 }

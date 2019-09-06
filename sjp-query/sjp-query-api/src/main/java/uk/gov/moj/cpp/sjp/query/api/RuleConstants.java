@@ -42,7 +42,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getQueryFindCaseSearchResultsActionGroups() {
-        return asList(GROUP_SJP_PROSECUTORS, GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_SJP_PROSECUTORS, GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getQueryCaseDocumentsActionGroups() {

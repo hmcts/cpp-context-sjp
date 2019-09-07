@@ -57,6 +57,7 @@ import uk.gov.moj.sjp.it.producer.DecisionToReferCaseForCourtHearingSavedProduce
 import uk.gov.moj.sjp.it.producer.ReferToCourtHearingProducer;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.MaterialStub;
+import uk.gov.moj.sjp.it.stub.NotifyStub;
 import uk.gov.moj.sjp.it.stub.ProgressionServiceStub;
 import uk.gov.moj.sjp.it.stub.ProsecutionCaseFileServiceStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
@@ -70,6 +71,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.json.JsonObject;
 
@@ -100,6 +102,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
     private static final UUID DOCUMENT_TYPE_ID = randomUUID();
     private static final String DOCUMENT_TYPE = "SJPN";
+    private static final String FINANCIAL_MEANS_DOCUMENT_TYPE = "FINANCIAL_MEANS";
     private static final UUID MATERIAL_ID = randomUUID();
     private static final UUID DOCUMENT_ID = randomUUID();
     private static final String FILE_NAME = "Bank Statement";
@@ -112,7 +115,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
     private static final JsonObject EMPLOYER_DETAILS = createEmployerDetails();
 
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
-    private String defendantId;
+    private String defendantIdValue;
     private ProsecutingAuthority prosecutingAuthority;
     private String caseUrn;
 
@@ -120,6 +123,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
     private UUID caseId;
     private UUID decisionId;
     private UUID offenceId;
+    private UUID defendantId;
     private User legalAdviser;
 
     @Before
@@ -143,16 +147,18 @@ public class CourtReferralIT extends BaseIntegrationTest {
         ReferenceDataServiceStub.stubHearingTypesQuery(HEARING_TYPE_ID.toString(), HEARING_DESCRIPTION);
         ReferenceDataServiceStub.stubProsecutorQuery(prosecutingAuthority.name(), PROSECUTOR_ID);
         ReferenceDataServiceStub.stubQueryOffences("stub-data/referencedata.query.offences.json");
+        ReferenceDataServiceStub.stubCountryByPostcodeQuery("W1T 1JY", "UK-");
         ReferenceDataServiceStub.stubCountryNationalities("stub-data/referencedata.query.country-nationality.json");
         ReferenceDataServiceStub.stubEthnicities("stub-data/referencedata.query.ethnicities.json");
         ReferenceDataServiceStub.stubReferralDocumentMetadataQuery(DOCUMENT_TYPE_ID.toString(), REFERENCE_DATA_DOCUMENT_TYPE);
         ResultingStub.stubGetCaseDecisionsWithDecision(caseId);
         UsersGroupsStub.stubForUserDetails(legalAdviser);
+        NotifyStub.stubNotifications();
         MaterialStub.stubMaterialMetadata(MATERIAL_ID, FILE_NAME, MIME_TYPE, ADDED_AT);
         ProgressionServiceStub.stubReferCaseToCourtCommand();
-        ProsecutionCaseFileServiceStub.stubCaseDetails(caseId, "stub-data/prosecutioncasefile.query.case-details.json");
+        ProsecutionCaseFileServiceStub.stubCaseDetails(caseId, fromString("4a1e66ab-8673-4300-aed8-b2391e38d8db"), fromString("63f61b32-0fd0-4a76-bab1-ee68fb54e93f"), "stub-data/prosecutioncasefile.query.case-details.json");
 
-        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
+        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseId)
                 .withProsecutingAuthority(prosecutingAuthority)
                 .withOffenceId(offenceId)
                 .withOffenceBuilder(CreateCase.OffenceBuilder.withDefaults()
@@ -161,13 +167,16 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 .withDefendantBuilder(CreateCase.DefendantBuilder.withDefaults()
                         .withNationalInsuranceNumber(NATIONAL_INSURANCE_NUMBER))
                 .withId(caseId);
+        defendantId = createCasePayloadBuilder.getDefendantBuilder().getId();
+        offenceId = createCasePayloadBuilder.getOffenceBuilder().getId();
+
 
         new EventListener()
                 .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
                 .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder))
                 .popEvent(CaseMarkedReadyForDecision.EVENT_NAME);
 
-        defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
+        defendantIdValue = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
         caseUrn = createCasePayloadBuilder.getUrn();
 
         startSession(sessionId, legalAdviser.getUserId(), LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
@@ -176,7 +185,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
         eventListener
                 .subscribe(CaseDocumentAdded.EVENT_NAME, EmployerUpdated.EVENT_NAME)
                 .run(() -> new CaseDocumentHelper(caseId).addCaseDocument(USER_ID, DOCUMENT_ID, MATERIAL_ID, DOCUMENT_TYPE))
-                .run(() -> new EmployerHelper().updateEmployer(caseId, defendantId, EMPLOYER_DETAILS));
+                .run(() -> new EmployerHelper().updateEmployer(caseId, defendantIdValue, EMPLOYER_DETAILS));
 
         eventListener.popEvent(CaseDocumentAdded.EVENT_NAME);
         eventListener.popEvent(EmployerUpdated.EVENT_NAME);
@@ -184,7 +193,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
     @Test
     public void shouldReferCaseForCourtHearing() {
-        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId, defendantId, offenceId);
         final DecisionToReferCaseForCourtHearingSavedProducer decisionToReferCaseForCourtHearingSavedProducer = new DecisionToReferCaseForCourtHearingSavedProducer(
                 caseId,
                 decisionId,
@@ -210,7 +219,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
     public void shouldRecordCaseReferralRejection() {
 
         final String referralRejectionReason = "Test referral rejection reason";
-        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId, defendantId, offenceId);
         final ReferToCourtHearingProducer referToCourtHearingProducer = new ReferToCourtHearingProducer(caseId, REFERRAL_REASON_ID, HEARING_TYPE_ID, referralRejectionReason);
         final DecisionToReferCaseForCourtHearingSavedProducer decisionToReferCaseForCourtHearingSavedProducer = new DecisionToReferCaseForCourtHearingSavedProducer(
                 caseId,
@@ -248,6 +257,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
     @Test
     public void shouldSendReferToCourtHearingCommandToProgressionContext_WithPlea() {
+        final UUID legalAdviserId = randomUUID();
         final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId);
         pleadOnlineHelper.pleadOnline(getPayload("raml/json/sjp.command.plead-online__not-guilty.json")
                 .replace("ecf30a03-8a17-4fc5-81d2-b72ac0a13d17", offenceId.toString())
@@ -258,7 +268,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
     }
 
     private void referCaseToCourtAndVerifyCommandSendToProgressionMatchesExpected(String expectedCommandPayloadFile) {
-        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId, defendantId, offenceId);
         final DecisionToReferCaseForCourtHearingSavedProducer decisionToReferCaseForCourtHearingSavedProducer = new DecisionToReferCaseForCourtHearingSavedProducer(
                 caseId,
                 decisionId,
@@ -275,21 +285,24 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 .run(decisionToReferCaseForCourtHearingSavedProducer::saveDecisionToReferCaseForCourtHearing);
 
         final JsonObject expectedCommandPayload = prepareExpectedCommandPayload(expectedCommandPayloadFile);
-
-        await().until(() ->
-                findAll(postRequestedFor(urlPathMatching(REFER_TO_COURT_COMMAND_URL + ".*"))
-                        .withHeader(CONTENT_TYPE, WireMock.equalTo(REFER_TO_COURT_COMMAND_CONTENT)))
-                        .stream()
-                        .map(LoggedRequest::getBodyAsString)
-                        .map(JsonHelper::getJsonObject)
-                        .anyMatch(commandPayload -> lenientCompare(commandPayload, expectedCommandPayload)));
+        await()
+                .atMost(40, TimeUnit.SECONDS)
+                .pollInterval(2, TimeUnit.SECONDS)
+                .pollDelay(1, TimeUnit.SECONDS)
+                .until(() ->
+                        findAll(postRequestedFor(urlPathMatching(REFER_TO_COURT_COMMAND_URL + ".*"))
+                                .withHeader(CONTENT_TYPE, WireMock.equalTo(REFER_TO_COURT_COMMAND_CONTENT)))
+                                .stream()
+                                .map(LoggedRequest::getBodyAsString)
+                                .map(JsonHelper::getJsonObject)
+                                .anyMatch(commandPayload -> lenientCompare(commandPayload, expectedCommandPayload)));
     }
 
     private JsonObject prepareExpectedCommandPayload(String payloadFileLocation) {
         return FileUtil.getFileContentAsJson(payloadFileLocation, ImmutableMap.<String, Object>builder()
                 .put("OFFENCE_ID", offenceId.toString())
                 .put("CASE_ID", caseId.toString())
-                .put("DEFENDANT_ID", defendantId)
+                .put("DEFENDANT_ID", defendantIdValue)
                 .put("PROSECUTING_AUTHORITY_REFERENCE", caseUrn)
                 .put("PROSECUTING_AUTHORITY_ID", PROSECUTOR_ID.toString())
                 .put("HEARING_TYPE_ID", HEARING_TYPE_ID.toString())

@@ -32,6 +32,7 @@ import static uk.gov.moj.sjp.it.stub.NotifyStub.stubNotifications;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.verifyNotification;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostcodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.COURT_ADMINISTRATORS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.LEGAL_ADVISERS_GROUP;
@@ -102,10 +103,14 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private FinancialMeansHelper financialMeansHelper;
     private PersonInfoVerifier personInfoVerifier;
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
+    private UUID defendantId;
+    private UUID offenceId;
 
     @Before
     public void setUp() throws UnsupportedEncodingException {
         this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        defendantId = createCasePayloadBuilder.getDefendantBuilder().getId();
+        offenceId = createCasePayloadBuilder.getOffenceBuilder().getId();
         CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
         pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId());
 
@@ -114,6 +119,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         personInfoVerifier = PersonInfoVerifier.personInfoVerifierForCasePayload(createCasePayloadBuilder);
         stubCountryByPostcodeQuery("W1T 1JY", "England");
         stubNotifications();
+        stubQueryOffenceById(randomUUID());
     }
 
     @After
@@ -219,7 +225,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     @Test
     public void shouldPleaOnlineShouldRejectIfCaseIsInCompletedStatus() {
-        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(createCasePayloadBuilder.getId());
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(createCasePayloadBuilder.getId(), defendantId, offenceId);
         completeCaseProducer.completeCase();
         completeCaseProducer.assertCaseCompleted();
 

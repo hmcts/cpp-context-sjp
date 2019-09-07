@@ -19,6 +19,7 @@ import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
@@ -66,6 +67,8 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
     private static final String PROCESS_NAME = "caseState";
     final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
 
+    private UUID defendantId;
+
     @Before
     public void setUp() throws SQLException {
         caseId = randomUUID();
@@ -78,6 +81,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
         AssignmentStub.stubAddAssignmentCommand();
         AssignmentStub.stubRemoveAssignmentCommand();
         SchedulingStub.stubStartSjpSessionCommand();
+        stubQueryOffenceById(randomUUID());
         ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
 
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
@@ -85,7 +89,8 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
                 .withId(caseId)
                 .withOffenceId(offenceId)
                 .withPostingDate(postingDate);
-
+        defendantId = createCasePayloadBuilder.getDefendantBuilder().getId();
+        offenceId = createCasePayloadBuilder.getOffenceBuilder().getId();
         CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
         pollUntilCaseReady(caseId);
 
@@ -116,7 +121,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
             pollUntilCaseByIdIsOk(caseId, allOf(caseAssigned(false), caseAdjourned(adjournmentDate)));
         }
 
-        new CompleteCaseProducer(caseId).completeCase();
+        new CompleteCaseProducer(caseId, defendantId, offenceId).completeCase();
 
         pollUntilCaseByIdIsOk(caseId, CoreMatchers.allOf(
                 withJsonPath("$.completed", CoreMatchers.is(true)),

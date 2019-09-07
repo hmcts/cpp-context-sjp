@@ -22,11 +22,14 @@ import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
+import uk.gov.justice.services.common.http.HeaderConstants;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.util.UUID;
+
+import javax.json.JsonObject;
 
 import org.apache.commons.io.IOUtils;
 
@@ -45,6 +48,24 @@ public class ReferenceDataServiceStub {
 
         waitForStubToBeReady(urlPath + "?cjsoffencecode=ANY&date=2018-08-27", "application/vnd.referencedataoffences.offences-list+json");
     }
+
+
+    public static void stubQueryOffenceById(final UUID offenceId) {
+        InternalEndpointMockUtils.stubPingFor("referencedataoffences-service");
+        final JsonObject offence = createObjectBuilder()
+                .add("offenceId", offenceId.toString())
+                .add("cjsOffenceCode", "1")
+                .add("modeOfTrial", "SIMP").build();
+        final String urlPath = "/referencedataoffences-service/query/api/rest/referencedataoffences/offences";
+        stubFor(get(urlPathEqualTo(format(urlPath, offenceId)))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(HeaderConstants.ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(offence.toString())));
+        waitForStubToBeReady(urlPath, "application/vnd.referencedataoffences.offence+json");
+
+    }
+
 
     public static void stubProsecutorQuery(final String prosecutingAuthorityCode, final UUID prosecutorId) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");

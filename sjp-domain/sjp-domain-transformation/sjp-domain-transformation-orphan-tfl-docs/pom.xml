@@ -7,12 +7,10 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>sjp-domain-transformation-defendant-updated-date</artifactId>
-
-    <name>sjp-domain-transformation-defendant-updated-date</name>
+    <artifactId>sjp-domain-transformation-orphan-tfl-docs</artifactId>
 
     <properties>
-        <stream-transformation-tool.version>4.2.0</stream-transformation-tool.version>
+        <stream-transformation-tool.version>5.2.1</stream-transformation-tool.version>
     </properties>
 
     <dependencies>
@@ -36,10 +34,6 @@
             <artifactId>org.everit.json.schema</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>uk.gov.justice.services</groupId>
@@ -47,5 +41,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 </project>

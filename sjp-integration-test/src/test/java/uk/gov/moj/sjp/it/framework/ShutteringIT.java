@@ -56,35 +56,27 @@ public class ShutteringIT {
 
         systemCommandCaller.callShutter();
 
-        final int numberOfCases = 2;
-
-        for (int i = 0; i < numberOfCases; i++) {
+        final int numberOfCommands = 2;
+        for (int i = 0; i < numberOfCommands; i++) {
             createCaseForPayloadBuilder(withDefaults().withId(randomUUID()));
         }
 
-        final Optional<Integer> shutteredEvents = poller.pollUntilFound(() -> countEventsShuttered(numberOfCases));
+        final Optional<Integer> shutteredEvents = poller.pollUntilFound(() -> countEventsShuttered(numberOfCommands));
+        assertThat(shutteredEvents.isPresent(), is(true));
+        assertThat(shutteredEvents.get() >= numberOfCommands, is(true));
 
-        if (!shutteredEvents.isPresent()) {
-            fail("Failed to shutter events");
-        }
+        assertThat(viewStoreQueryUtil.countEventsProcessed(numberOfCommands), is(empty()));
 
-        assertThat(shutteredEvents.get() >= numberOfCases, is(true));
-
-        assertThat(viewStoreQueryUtil.countEventsProcessed(numberOfCases), is(Optional.empty()));
-
-        final List<UUID> idsFromViewStore = viewStoreQueryUtil.findIdsFromViewStore();
-
-        assertThat(idsFromViewStore.size(), is(0));
+        final Optional<List<UUID>> idsFromViewStore = poller.pollUntilFound(() -> viewStoreQueryUtil.findIdsFromViewStore(numberOfCommands));
+        assertThat(idsFromViewStore, is(empty()));
 
         systemCommandCaller.callUnshutter();
 
-        if (!poller.pollUntilFound(() -> viewStoreQueryUtil.countEventsProcessed(numberOfCases)).isPresent()) {
-            fail();
-        }
+        assertThat(poller.pollUntilFound(() -> viewStoreQueryUtil.countEventsProcessed(numberOfCommands)).isPresent(), is(true));
 
-        final List<UUID> catchupIdsFromViewStore = viewStoreQueryUtil.findIdsFromViewStore();
-
-        assertThat(catchupIdsFromViewStore.size(), is(numberOfCases));
+        final Optional<List<UUID>> catchupIdsFromViewStore = poller.pollUntilFound(() -> viewStoreQueryUtil.findIdsFromViewStore(numberOfCommands));
+        assertThat(catchupIdsFromViewStore.isPresent(), is(true));
+        assertThat(catchupIdsFromViewStore.get().size(), is(numberOfCommands));
     }
 
     private Optional<Integer> countEventsShuttered(final int expectedNumberOfEvents) {

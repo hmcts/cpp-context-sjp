@@ -1,5 +1,5 @@
 event_sources:
-  - name: sjp.event.source
+  - name: sjp
     is_default: true
     location:
       jms_uri:  jms:topic:sjp.event

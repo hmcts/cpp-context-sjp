@@ -146,4 +146,4 @@ subscriptions_descriptor:
         - name: sjp.events.case-note-added
           schema_uri: http://cpp.moj.gov.uk/sjp/event/case-note-added.json
 
-      event_source_name: sjp.event.source
+      event_source_name: sjp

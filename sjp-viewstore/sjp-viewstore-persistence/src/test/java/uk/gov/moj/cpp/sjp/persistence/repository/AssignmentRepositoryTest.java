@@ -452,7 +452,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
                     .addDefendantDetail(defendant)
                     .build();
 
-            final StreamStatus caseStreamStatus = new StreamStatus(caseId, "sjp.event.source", "EVENT_LISTENER", version);
+            final StreamStatus caseStreamStatus = new StreamStatus(caseId, "sjp", "EVENT_LISTENER", version);
             em.persist(caseDetail);
             em.persist(caseStreamStatus);
 

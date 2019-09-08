@@ -3,8 +3,8 @@
 ${VAGRANT_DIR:?"Please export VAGRANT_DIR environment variable to point at atcm-vagrant"}
 WILDFLY_DEPLOYMENT_DIR="${VAGRANT_DIR}/deployments"
 CONTEXT_NAME=sjp
-FRAMEWORK_VERSION=6.0.11
-EVENT_STORE_VERSION=2.0.13
+FRAMEWORK_VERSION=6.0.12
+EVENT_STORE_VERSION=2.0.14
 FILE_SERVICE_VERSION=1.17.10
 CPP_ACTIVITI_VERSION=5.22.0
 
@@ -164,17 +164,17 @@ function integrationTests {
 }
 
 function buildDeployAndTest {
-#  buildWars
+  buildWars
   deployAndTest
 }
 
 function deployAndTest {
-#  startVagrant
-#  deleteWars
-#  runLiquibase
-#  deployWars
-#  deployWiremock
-#  healthCheck
+  startVagrant
+  deleteWars
+  runLiquibase
+  deployWars
+  deployWiremock
+  healthCheck
   integrationTests
 }
 

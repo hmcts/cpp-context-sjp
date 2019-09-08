@@ -22,7 +22,7 @@ public class ViewStoreQueryUtil {
         this.viewStoreDataSource = viewStoreDataSource;
     }
 
-    public List<UUID> findCaseIdsFromViewStore() {
+    public List<UUID> findIdsFromViewStore() {
 
         final List<UUID> ids = new ArrayList<>();
 

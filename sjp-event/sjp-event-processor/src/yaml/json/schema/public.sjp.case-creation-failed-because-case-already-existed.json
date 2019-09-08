@@ -1,22 +1,17 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://cpp.moj.gov.uk/sjp/json/schemas/case-created.json",
+  "id": "http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-creation-failed-because-case-already-existed.json",
   "type": "object",
   "properties": {
-    "urn": {
-      "id": "/urn",
+    "caseId": {
       "type": "string"
     },
-    "id": {
-      "id": "/id",
+    "urn": {
       "type": "string"
     }
   },
   "required": [
-    "urn",
-    "id"
+    "caseId",
+    "urn"
   ]
 }
-
-
-

@@ -32,7 +32,7 @@ public class AssignmentRepository {
                     "   s.position AS case_stream_version" +
                     " FROM ready_cases rc" +
                     "   JOIN case_details c ON rc.case_id = c.id AND c.completed = FALSE" +
-                    "   JOIN stream_status s ON s.stream_id = rc.case_id AND s.source = 'sjp' AND s.component = 'EVENT_LISTENER'" +
+                    "   JOIN stream_status s ON s.stream_id = rc.case_id AND s.source = 'sjp.event.source' AND s.component = 'EVENT_LISTENER'" +
                     " WHERE (rc.assignee_id IS NULL OR rc.assignee_id = :assigneeId)" +
                     "   AND rc.reason IN(:reasons)" +
                     "   AND" +

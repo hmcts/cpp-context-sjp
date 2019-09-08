@@ -1,17 +1,18 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/dates-to-avoid-updated.json",
+  "id": "http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-reopened-in-libra-undone-failed.json",
   "type": "object",
   "properties": {
     "caseId": {
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
-    "datesToAvoid": {
+    "description": {
       "type": "string"
     }
   },
+  "additionalProperties": false,
   "required": [
     "caseId",
-    "datesToAvoid"
+    "description"
   ]
 }

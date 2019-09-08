@@ -13,6 +13,7 @@
     <packaging>jar</packaging>
 
     <properties>
+        <jboss-logging.version>3.3.1.Final</jboss-logging.version>
         <wildfly.version>10.0.0.Final</wildfly.version>
         <baseUri>http://localhost:PORT</baseUri>
         <queueUri>tcp://localhost:PORT</queueUri>
@@ -35,20 +36,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>uk.gov.justice.services</groupId>
-            <artifactId>test-utils-framework-persistence</artifactId>
-            <version>${cpp.framework.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-client-all</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.justice.services</groupId>
-            <artifactId>test-utils-jmx</artifactId>
-            <version>${cpp.framework.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -57,17 +46,7 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>uk.gov.justice.event-store</groupId>
-            <artifactId>test-utils-persistence</artifactId>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-beanutils</groupId>
-                    <artifactId>commons-beanutils-core</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+
         <!-- Once the common bom (version 2.1.4-SNAPSHOT) is upgraded in sjp parent, the version number can be removed. -->
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -203,6 +182,49 @@
             <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- added for framework 6-->
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-client-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>test-utils-framework-persistence</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.logging</groupId>
+                    <artifactId>jboss-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- need this specific version to get the test working -->
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+            <version>${jboss-logging.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.event-store</groupId>
+            <artifactId>event-domain</artifactId>
+            <version>${event-store.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>test-utils-jmx</artifactId>
+            <version>${cpp.framework.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.event-store</groupId>
+            <artifactId>test-utils-persistence</artifactId>
+            <version>${event-store.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- added for framework 6-->
     </dependencies>
 
     <build>

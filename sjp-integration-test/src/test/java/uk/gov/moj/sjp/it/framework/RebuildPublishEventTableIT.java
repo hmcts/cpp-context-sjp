@@ -8,14 +8,15 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.framework.ContextNameProvider.CONTEXT_NAME;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
+import uk.gov.justice.services.jmx.system.command.client.SystemCommandCaller;
 import uk.gov.justice.services.test.utils.core.messaging.Poller;
 import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
 import uk.gov.justice.services.test.utils.persistence.SequenceSetter;
 import uk.gov.justice.services.test.utils.persistence.TestJdbcDataSourceProvider;
-import uk.gov.moj.sjp.it.framework.util.SystemCommandInvoker;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 
 import java.sql.Connection;
@@ -34,15 +35,13 @@ import org.junit.Test;
 
 public class RebuildPublishEventTableIT {
 
-    private static final String CONTEXT_NAME = "sjp";
-
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
     private final SequenceSetter sequenceSetter = new SequenceSetter();
     private final DataSource eventStoreDataSource = new TestJdbcDataSourceProvider().getEventStoreDataSource(CONTEXT_NAME);
-    private final Poller poller = new Poller();
+    private final Poller poller = new Poller(10, 2000l);
 
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
-    private final SystemCommandInvoker systemCommandInvoker = new SystemCommandInvoker();
+    private final SystemCommandCaller systemCommandCaller = new SystemCommandCaller(CONTEXT_NAME);
 
     @Before
     public void cleanDatabase() {
@@ -72,7 +71,7 @@ public class RebuildPublishEventTableIT {
             fail();
         }
 
-        systemCommandInvoker.invokeRebuild();
+        systemCommandCaller.callRebuild();
 
         final Optional<List<PublishedEvent>> rebuiltPublishedEvents = poller.pollUntilFound(() -> findPublishedEvents(numberOfEvents));
 

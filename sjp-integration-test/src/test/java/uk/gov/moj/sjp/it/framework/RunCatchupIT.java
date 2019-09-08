@@ -7,11 +7,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.framework.ContextNameProvider.CONTEXT_NAME;
 
+import uk.gov.justice.services.jmx.system.command.client.SystemCommandCaller;
 import uk.gov.justice.services.test.utils.core.messaging.Poller;
 import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
 import uk.gov.justice.services.test.utils.persistence.TestJdbcDataSourceProvider;
-import uk.gov.moj.sjp.it.framework.util.SystemCommandInvoker;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreQueryUtil;
 
@@ -26,15 +27,13 @@ import org.junit.Test;
 
 public class RunCatchupIT {
 
-    private static final String CONTEXT_NAME = "sjp";
-
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
     private final DataSource viewStoreDataSource = new TestJdbcDataSourceProvider().getViewStoreDataSource(CONTEXT_NAME);
-    private final Poller poller = new Poller();
+    private final Poller poller = new Poller(10, 2000l);
 
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
     private final ViewStoreQueryUtil viewStoreQueryUtil = new ViewStoreQueryUtil(viewStoreDataSource);
-    private final SystemCommandInvoker systemCommandInvoker = new SystemCommandInvoker();
+    private final SystemCommandCaller systemCommandCaller = new SystemCommandCaller(CONTEXT_NAME);
 
     @Before
     public void cleanDatabase() {
@@ -63,25 +62,25 @@ public class RunCatchupIT {
 
         assertThat(publishedEventCount.get() >= numberOfCases, is(true));
 
-        final List<UUID> caseIdsFromViewStore = viewStoreQueryUtil.findCaseIdsFromViewStore();
+        final List<UUID> idsFromViewStore = viewStoreQueryUtil.findIdsFromViewStore();
 
-        assertThat(caseIdsFromViewStore.size(), is(numberOfCases));
+        assertThat(idsFromViewStore.size(), is(numberOfCases));
 
         viewStoreCleaner.cleanViewstoreTables();
         databaseCleaner.cleanStreamStatusTable(CONTEXT_NAME);
 
-        systemCommandInvoker.invokeCatchup();
+        systemCommandCaller.callCatchup();
 
         if (!poller.pollUntilFound(() -> viewStoreQueryUtil.countEventsProcessed(numberOfCases)).isPresent()) {
             fail();
         }
 
-        final List<UUID> catchupCaseIdsFromViewStore = viewStoreQueryUtil.findCaseIdsFromViewStore();
+        final List<UUID> catchupIdsFromViewStore = viewStoreQueryUtil.findIdsFromViewStore();
 
-        assertThat(catchupCaseIdsFromViewStore.size(), is(numberOfCases));
+        assertThat(catchupIdsFromViewStore.size(), is(numberOfCases));
 
-        for (int i = 0; i < catchupCaseIdsFromViewStore.size(); i++) {
-            assertThat(catchupCaseIdsFromViewStore, hasItem(caseIdsFromViewStore.get(i)));
+        for (int i = 0; i < catchupIdsFromViewStore.size(); i++) {
+            assertThat(catchupIdsFromViewStore, hasItem(idsFromViewStore.get(i)));
         }
     }
 }

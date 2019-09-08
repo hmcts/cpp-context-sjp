@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp_public/events/defendant-details-updates-acknowledged.json",
+  "id": "http://cpp.moj.gov.uk/sjp/json/schema/event/public-defendant-details-updates-acknowledged.json",
   "type": "object",
   "properties": {
     "caseId": {

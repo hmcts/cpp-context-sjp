@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/public/events/plea-updated.json",
+  "id": "http://cpp.moj.gov.uk/sjp/json/schema/event/public-plea-updated.json",
   "type": "object",
   "properties": {
     "caseId": {

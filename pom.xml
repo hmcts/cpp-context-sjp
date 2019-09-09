@@ -11,7 +11,7 @@
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>6.0.3-FRAMEWORK-SNAPSHOT</version>
+    <version>6.0.4-FRAMEWORK-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>

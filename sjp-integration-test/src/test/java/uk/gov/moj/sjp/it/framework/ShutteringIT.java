@@ -11,6 +11,7 @@ import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.with
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.sjp.it.framework.util.ApplicationStateUtil.getApplicationState;
+import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.setup;
 
 import uk.gov.justice.services.jmx.system.command.client.SystemCommandCaller;
 import uk.gov.justice.services.test.utils.core.messaging.Poller;
@@ -66,6 +67,7 @@ public class ShutteringIT {
         systemCommandCaller.callShutter();
         assertThat(getApplicationState(SHUTTERED), is(of(SHUTTERED)));
 
+        setup();
         final int numberOfCommands = 2;
         for (int i = 0; i < numberOfCommands; i++) {
             createCaseForPayloadBuilder(withDefaults().withId(randomUUID()));

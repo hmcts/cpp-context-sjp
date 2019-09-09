@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.framework.ContextNameProvider.CONTEXT_NAME;
+import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.setup;
 
 import uk.gov.justice.services.jmx.system.command.client.SystemCommandCaller;
 import uk.gov.justice.services.test.utils.core.messaging.Poller;
@@ -48,6 +49,7 @@ public class RunCatchupIT {
     public void shouldRebuildThePublishedEventTable() throws Exception {
 
         final int numberOfCommands = 10;
+        setup();
         for (int i = 0; i < numberOfCommands; i++) {
             createCaseForPayloadBuilder(withDefaults().withId(randomUUID()));
         }

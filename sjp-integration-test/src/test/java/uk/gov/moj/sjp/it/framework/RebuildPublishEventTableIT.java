@@ -9,6 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.framework.ContextNameProvider.CONTEXT_NAME;
+import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.setup;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
@@ -58,6 +59,7 @@ public class RebuildPublishEventTableIT {
 
         final long nextEventNumber = sequenceSetter.getCurrentSequenceValue("event_sequence_seq", eventStoreDataSource) + 1;
 
+        setup();
         createCaseForPayloadBuilder(withDefaults().withId(randomUUID()));
 
         final int numberOfEvents = 1;

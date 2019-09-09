@@ -3,12 +3,14 @@ package uk.gov.moj.sjp.it.framework;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
-import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.jmx.api.state.ApplicationManagementState.SHUTTERED;
+import static uk.gov.justice.services.jmx.api.state.ApplicationManagementState.UNSHUTTERED;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.framework.ContextNameProvider.CONTEXT_NAME;
+import static uk.gov.moj.sjp.it.framework.util.ApplicationStateUtil.getApplicationState;
 
 import uk.gov.justice.services.jmx.system.command.client.SystemCommandCaller;
 import uk.gov.justice.services.test.utils.core.messaging.Poller;
@@ -27,6 +29,7 @@ import java.util.UUID;
 
 import javax.sql.DataSource;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,10 +54,17 @@ public class ShutteringIT {
         viewStoreCleaner.cleanViewstoreTables();
     }
 
+    @After
+    public void tearDown() {
+        systemCommandCaller.callUnshutter();
+        assertThat(getApplicationState(UNSHUTTERED), is(of(UNSHUTTERED)));
+    }
+
     @Test
     public void shouldRebuildThePublishedEventTable() throws Exception {
 
         systemCommandCaller.callShutter();
+        assertThat(getApplicationState(SHUTTERED), is(of(SHUTTERED)));
 
         final int numberOfCommands = 2;
         for (int i = 0; i < numberOfCommands; i++) {
@@ -71,6 +81,7 @@ public class ShutteringIT {
         assertThat(idsFromViewStore, is(empty()));
 
         systemCommandCaller.callUnshutter();
+        assertThat(getApplicationState(UNSHUTTERED), is(of(UNSHUTTERED)));
 
         assertThat(poller.pollUntilFound(() -> viewStoreQueryUtil.countEventsProcessed(numberOfCommands)).isPresent(), is(true));
 

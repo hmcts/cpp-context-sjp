@@ -22,6 +22,8 @@ import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.pollingquery.PendingDatesToAvoidPoller.pollUntilPendingDatesToAvoidIsOk;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
@@ -41,7 +43,6 @@ import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
-import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -69,6 +70,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
     private UUID tflUserId;
     private UUID tvlUserId;
+    private UUID offenceId;
     private CreateCase.CreateCasePayloadBuilder tflCaseBuilder;
     private CreateCase.CreateCasePayloadBuilder tvlCaseBuilder;
     private int tflInitialPendingDatesToAvoidCount;
@@ -86,12 +88,14 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         this.tflInitialPendingDatesToAvoidCount = pollForPendingDatesToAvoidCount(tflUserId);
 
         tvlUserId = randomUUID();
+        offenceId = randomUUID();
         this.tvlCaseBuilder = createCase(TVL, 2);
         stubGroupForUser(tvlUserId, SJP_PROSECUTORS_GROUP);
         stubForUserDetails(tvlUserId, TVL);
         this.tvlInitialPendingDatesToAvoidCount = pollForPendingDatesToAvoidCount(tvlUserId);
 
-        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_COURT_HOUSE_LJA_NATIONAL_COURT_CODE);
+        stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_COURT_HOUSE_LJA_NATIONAL_COURT_CODE);
+        stubQueryOffenceById(offenceId);
         updatePleaHelper = new UpdatePleaHelper();
     }
 
@@ -217,7 +221,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     }
 
     private void completeCase(CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder) {
-        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(createCasePayloadBuilder.getId());
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getDefendantBuilder().getId(), createCasePayloadBuilder.getOffenceBuilder().getId());
         completeCaseProducer.completeCase();
     }
 

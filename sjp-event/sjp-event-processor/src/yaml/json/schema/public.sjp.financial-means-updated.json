@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/json/schema/event/public-financial-means-udpated.json",
+  "type": "object",
+  "properties": {
+    "defendantId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "income": {
+      "type": "object",
+      "properties": {
+        "frequency": {
+          "enum": [
+            "WEEKLY",
+            "MONTHLY",
+            "FORTNIGHTLY",
+            "YEARLY"
+          ]
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "benefits": {
+      "type": "object",
+      "properties": {
+        "claimed": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string"
+        },
+        "deductPenaltyPreference": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "employmentStatus": {
+      "type": "string"
+    },
+    "outgoings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "updatedByOnlinePlea": {
+      "type": "boolean"
+    },
+    "updatedDate": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    }
+  },
+  "required": [
+    "defendantId",
+    "income",
+    "benefits"
+  ],
+  "additionalProperties": false
+}

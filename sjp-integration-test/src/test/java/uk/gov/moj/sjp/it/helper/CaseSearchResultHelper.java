@@ -136,8 +136,8 @@ public class CaseSearchResultHelper {
         requestCaseAssignment(sessionId, userId);
     }
 
-    public void completeCase() {
-        new CompleteCaseProducer(caseId).completeCase();
+    public void completeCase(final UUID defendantId, final UUID offenceId) {
+        new CompleteCaseProducer(caseId, defendantId, offenceId).completeCase();
     }
 
     private void verifyPersonInfo(final String query, final String lastName, final LocalDate dateOfBirth) {

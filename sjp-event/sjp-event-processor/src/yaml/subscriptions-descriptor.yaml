@@ -116,7 +116,7 @@ subscriptions_descriptor:
         - name: sjp.events.case-completed
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-completed.json
 
-      event_source_name: sjp.event.source
+      event_source_name: sjp
 
     - name: public event subscription
       events:

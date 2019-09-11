@@ -6,12 +6,12 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>9.0.22-FRAMEWORK-SNAPSHOT</version>
+        <version>9.1.5</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>6.0.7-SC-SNAPSHOT</version>
+    <version>6.0.8-SC-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -19,17 +19,17 @@
         </sonar.jacoco.itReportPath>
         <sonar.report.export.path>sonar-report.json</sonar.report.export.path>
         <sonar.scm.provider>git</sonar.scm.provider>
-        <assignment.version>2.0.99</assignment.version>
-        <material.version>2.0.114</material.version>
+        <assignment.version>2.0.105</assignment.version>
+        <material.version>2.0.118</material.version>
         <notification.notify.version>0.0.26</notification.notify.version>
         <referencedata.version>2.0.261</referencedata.version>
         <referencedata.offences.version>1.0.26</referencedata.offences.version>
-        <resulting.version>2.0.224</resulting.version>
-        <scheduling.version>2.0.88</scheduling.version>
+        <resulting.version>2.0.233</resulting.version>
+        <scheduling.version>2.0.93</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>2.0.115</usersgroups.version>
-        <progression.version>2.0.138</progression.version>
-        <prosecutioncasefile.version>1.0.31</prosecutioncasefile.version>
+        <progression.version>2.0.145</progression.version>
+        <prosecutioncasefile.version>1.0.33</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>

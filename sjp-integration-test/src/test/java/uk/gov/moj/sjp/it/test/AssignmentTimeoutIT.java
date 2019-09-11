@@ -8,6 +8,7 @@ import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAddAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.pollUntilProcessDeleted;
@@ -34,6 +35,8 @@ public class AssignmentTimeoutIT extends BaseIntegrationTest {
     private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
 
     private UUID caseId;
+    private UUID defendantId;
+    private UUID offenceId;
 
     @Before
     public void setUp() throws Exception {
@@ -48,6 +51,7 @@ public class AssignmentTimeoutIT extends BaseIntegrationTest {
         stubStartSjpSessionCommand();
 
         createCaseAndWaitUntilReady(caseId);
+        stubQueryOffenceById(randomUUID());
     }
 
     @Test
@@ -68,22 +72,24 @@ public class AssignmentTimeoutIT extends BaseIntegrationTest {
         assertCaseUnassigned(caseId);
     }
 
-    private static void createCaseAndWaitUntilReady(final UUID caseId) {
+    private void createCaseAndWaitUntilReady(final UUID caseId) {
         try (final MessageConsumerClient messageConsumerClient = new MessageConsumerClient()) {
             messageConsumerClient.startConsumer(CaseMarkedReadyForDecision.EVENT_NAME, "sjp.event");
             CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
                     .withPostingDate(now().minusDays(30)).withId(caseId);
             CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
+            defendantId = createCasePayloadBuilder.getDefendantBuilder().getId();
+            offenceId = createCasePayloadBuilder.getOffenceBuilder().getId();
             messageConsumerClient.retrieveMessage();
         }
     }
 
-    private static void startSession(final UUID sessionId, final UUID userId) {
+    private void startSession(final UUID sessionId, final UUID userId) {
         SessionHelper.startMagistrateSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, "John Smith");
     }
 
-    private static void saveDecision(final UUID caseId) {
-        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId);
+    private void saveDecision(final UUID caseId) {
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId, defendantId, offenceId);
         completeCaseProducer.completeCase();
         completeCaseProducer.assertCaseCompleted();
     }

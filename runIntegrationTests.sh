@@ -3,8 +3,8 @@
 ${VAGRANT_DIR:?"Please export VAGRANT_DIR environment variable to point at atcm-vagrant"}
 WILDFLY_DEPLOYMENT_DIR="${VAGRANT_DIR}/deployments"
 CONTEXT_NAME=sjp
-FRAMEWORK_VERSION=6.0.0-RC9
-EVENT_STORE_VERSION=2.0.0-RC10
+FRAMEWORK_VERSION=6.0.12
+EVENT_STORE_VERSION=2.0.14
 FILE_SERVICE_VERSION=1.17.10
 CPP_ACTIVITI_VERSION=5.22.0
 
@@ -102,6 +102,17 @@ function runActivitiLiquibase() {
     echo "finished running event buffer liquibase"
 }
 
+function runLiquibase {
+  runEventLogLiquibase
+  runEventLogAggregateSnapshotLiquibase
+  runViewstoreLiquibase
+  runEventBufferLiquibase
+  runSystemLiquibase
+  runEventTrackingLiquibase
+  runActivitiLiquibase
+  runFileServiceLiquibase
+}
+
 function healthCheck {
   CONTEXT=("$CONTEXT_NAME-command-api" "$CONTEXT_NAME-command-controller" "$CONTEXT_NAME-command-handler" "${CONTEXT_NAME}-query-api" "${CONTEXT_NAME}-query-controller" "${CONTEXT_NAME}-query-view" "${CONTEXT_NAME}-event-listener" "${CONTEXT_NAME}-event-processor")
   CONTEXT_COUNT=${#CONTEXT[@]}
@@ -160,14 +171,7 @@ function buildDeployAndTest {
 function deployAndTest {
   startVagrant
   deleteWars
-  runEventLogLiquibase
-  runEventLogAggregateSnapshotLiquibase
-  runViewstoreLiquibase
-  runEventBufferLiquibase
-  runSystemLiquibase
-  runEventTrackingLiquibase
-  runActivitiLiquibase
-  runFileServiceLiquibase
+  runLiquibase
   deployWars
   deployWiremock
   healthCheck

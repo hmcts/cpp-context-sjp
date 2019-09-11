@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-update-rejected.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "reason": {
+      "enum": ["WITHDRAWAL_PENDING", "CASE_ASSIGNED", "CASE_COMPLETED", "PLEA_ALREADY_SUBMITTED"]
+    }
+  },
+  "required": [
+    "caseId",
+    "reason"
+  ],
+  "additionalProperties": false
+}

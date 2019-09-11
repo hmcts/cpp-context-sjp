@@ -26,7 +26,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-
 public class IndexerCatchupIT extends BaseIntegrationTest {
     private static final String CONTEXT = "sjp";
     public static final String CASE_ID = "7e2f843e-d639-40b3-8611-8015f3a18958";

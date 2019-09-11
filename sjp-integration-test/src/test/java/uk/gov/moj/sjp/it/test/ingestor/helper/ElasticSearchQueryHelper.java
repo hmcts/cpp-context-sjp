@@ -2,6 +2,7 @@ package uk.gov.moj.sjp.it.test.ingestor.helper;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.jsonFromString;
@@ -16,7 +17,7 @@ import java.util.Optional;
 import javax.json.JsonObject;
 
 public class ElasticSearchQueryHelper {
-    private static final Poller poller = new Poller(10, 2000L);
+    private static final Poller poller = new Poller(30, 2000L);
     private static final ElasticSearchIndexFinderUtil elasticSearch = new ElasticSearchIndexFinderUtil(new ElasticSearchClient());
 
 
@@ -28,7 +29,7 @@ public class ElasticSearchQueryHelper {
     }
 
     public static Optional<JsonObject> getElasticSearchResponse() {
-        return poller.pollUntilFound(() -> {
+        final Optional<JsonObject> outcome = poller.pollUntilFound(() -> {
             try {
                 final JsonObject jsonObject = elasticSearch.findAll("crime_case_index");
                 if (jsonObject.getInt("totalResults") == 1) {
@@ -39,6 +40,9 @@ public class ElasticSearchQueryHelper {
             }
             return empty();
         });
+
+        assertTrue("Expected crime_case_index data is not found", outcome.isPresent());
+        return outcome;
     }
 
     public static JsonObject getCaseFromElasticSearch() {

@@ -4,8 +4,6 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static junit.framework.TestCase.fail;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.framework.ContextNameProvider.CONTEXT_NAME;
@@ -63,30 +61,22 @@ public class RebuildPublishEventTableIT {
         createCaseForPayloadBuilder(withDefaults().withId(randomUUID()));
 
         final int numberOfEvents = 1;
-        final Optional<List<PublishedEvent>> publishedEvents = poller.pollUntilFound(() -> findPublishedEvents(numberOfEvents));
+        final Optional<List<PublishedEvent>> publishedEvents = poller.pollUntilFound(() -> findPublishedEvents(numberOfEvents, nextEventNumber));
 
-        if (publishedEvents.isPresent()) {
-            final Long eventNumber = publishedEvents.get().get(0).getEventNumber().orElse(-1L);
-
-            assertThat(eventNumber, is(nextEventNumber));
-        } else {
+        if (!publishedEvents.isPresent()) {
             fail();
         }
 
         systemCommandCaller.callRebuild();
 
-        final Optional<List<PublishedEvent>> rebuiltPublishedEvents = poller.pollUntilFound(() -> findPublishedEvents(numberOfEvents));
+        final Optional<List<PublishedEvent>> rebuiltPublishedEvents = poller.pollUntilFound(() -> findPublishedEvents(numberOfEvents, 1l));
 
-        if (rebuiltPublishedEvents.isPresent()) {
-            final Long eventNumber = rebuiltPublishedEvents.get().get(0).getEventNumber().orElse(-1L);
-
-            assertThat(eventNumber, is(1L));
-        } else {
+        if (!rebuiltPublishedEvents.isPresent()) {
             fail();
         }
     }
 
-    private Optional<List<PublishedEvent>> findPublishedEvents(final int numberOfEvents) {
+    private Optional<List<PublishedEvent>> findPublishedEvents(final int numberOfEvents, final Long expectedEventNumber) {
 
         final List<PublishedEvent> publishedEvents = new ArrayList<>();
 
@@ -115,7 +105,7 @@ public class RebuildPublishEventTableIT {
             throw new RuntimeException("Failed to run " + sql, e);
         }
 
-        if (publishedEvents.size() >= numberOfEvents) {
+        if (publishedEvents.size() >= numberOfEvents && publishedEvents.get(0).getEventNumber().get() == expectedEventNumber) {
             return of(publishedEvents);
         }
 

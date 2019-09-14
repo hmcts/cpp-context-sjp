@@ -4,9 +4,14 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static junit.framework.TestCase.fail;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.jmx.api.state.ApplicationManagementState.SHUTTERED;
+import static uk.gov.justice.services.jmx.api.state.ApplicationManagementState.UNSHUTTERED;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.framework.ContextNameProvider.CONTEXT_NAME;
+import static uk.gov.moj.sjp.it.framework.util.ApplicationStateUtil.getApplicationState;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.setup;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -30,10 +35,8 @@ import java.util.UUID;
 import javax.sql.DataSource;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore
 public class RebuildPublishEventTableIT {
 
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
@@ -46,6 +49,12 @@ public class RebuildPublishEventTableIT {
 
     @Before
     public void cleanDatabase() {
+
+        systemCommandCaller.callShutter();
+        assertThat(getApplicationState(SHUTTERED), is(of(SHUTTERED)));
+
+        systemCommandCaller.callUnshutter();
+        assertThat(getApplicationState(UNSHUTTERED), is(of(UNSHUTTERED)));
 
         databaseCleaner.cleanEventStoreTables(CONTEXT_NAME);
         databaseCleaner.cleanSystemTables(CONTEXT_NAME);
@@ -107,7 +116,7 @@ public class RebuildPublishEventTableIT {
             throw new RuntimeException("Failed to run " + sql, e);
         }
 
-        if (publishedEvents.size() >= numberOfEvents && publishedEvents.get(0).getEventNumber().get() == expectedEventNumber) {
+        if (publishedEvents.size() >= numberOfEvents && publishedEvents.get(0).getEventNumber().get().longValue() == expectedEventNumber) {
             return of(publishedEvents);
         }
 

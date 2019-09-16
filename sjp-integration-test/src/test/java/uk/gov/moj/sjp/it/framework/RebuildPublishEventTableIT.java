@@ -10,6 +10,7 @@ import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.with
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.setup;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getPoller;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
@@ -39,7 +40,7 @@ public class RebuildPublishEventTableIT {
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
     private final SequenceSetter sequenceSetter = new SequenceSetter();
     private final DataSource eventStoreDataSource = new TestJdbcDataSourceProvider().getEventStoreDataSource(CONTEXT_NAME);
-    private final Poller poller = new Poller(10, 2000l);
+    private final Poller poller = getPoller();
 
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
     private final SystemCommandCaller systemCommandCaller = new SystemCommandCaller(CONTEXT_NAME);
@@ -63,7 +64,7 @@ public class RebuildPublishEventTableIT {
         createCaseForPayloadBuilder(withDefaults().withId(randomUUID()));
 
         final int numberOfEvents = 1;
-        final Optional<List<PublishedEvent>> publishedEvents = poller.pollUntilFound(() -> findPublishedEvents(numberOfEvents));
+        final Optional<List<PublishedEvent>> publishedEvents = poller.pollUntilFound(() -> findPublishedEvents(numberOfEvents, 0));
 
         if (publishedEvents.isPresent()) {
             final Long eventNumber = publishedEvents.get().get(0).getEventNumber().orElse(-1L);
@@ -75,7 +76,7 @@ public class RebuildPublishEventTableIT {
 
         systemCommandCaller.callRebuild();
 
-        final Optional<List<PublishedEvent>> rebuiltPublishedEvents = poller.pollUntilFound(() -> findPublishedEvents(numberOfEvents));
+        final Optional<List<PublishedEvent>> rebuiltPublishedEvents = poller.pollUntilFound(() -> findPublishedEvents(numberOfEvents, nextEventNumber));
 
         if (rebuiltPublishedEvents.isPresent()) {
             final Long eventNumber = rebuiltPublishedEvents.get().get(0).getEventNumber().orElse(-1L);
@@ -86,7 +87,7 @@ public class RebuildPublishEventTableIT {
         }
     }
 
-    private Optional<List<PublishedEvent>> findPublishedEvents(final int numberOfEvents) {
+    private Optional<List<PublishedEvent>> findPublishedEvents(final int numberOfEvents, final long notEventNumber) {
 
         final List<PublishedEvent> publishedEvents = new ArrayList<>();
 
@@ -115,7 +116,9 @@ public class RebuildPublishEventTableIT {
             throw new RuntimeException("Failed to run " + sql, e);
         }
 
-        if (publishedEvents.size() >= numberOfEvents) {
+        if (publishedEvents.size() >= numberOfEvents &&
+                publishedEvents.get(0).getEventNumber().get() != notEventNumber) {
+
             return of(publishedEvents);
         }
 

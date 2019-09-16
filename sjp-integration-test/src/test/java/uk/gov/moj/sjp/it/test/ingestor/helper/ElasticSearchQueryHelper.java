@@ -17,7 +17,7 @@ import java.util.Optional;
 import javax.json.JsonObject;
 
 public class ElasticSearchQueryHelper {
-    private static final Poller poller = new Poller(30, 2000L);
+    private static final Poller poller = new Poller(30, 4000L);
     private static final ElasticSearchIndexFinderUtil elasticSearch = new ElasticSearchIndexFinderUtil(new ElasticSearchClient());
 
 
@@ -41,7 +41,7 @@ public class ElasticSearchQueryHelper {
             return empty();
         });
 
-        assertTrue("Expected crime_case_index data is not found", outcome.isPresent());
+        assertTrue("No data found in crime_case_index data ", outcome.isPresent());
         return outcome;
     }
 

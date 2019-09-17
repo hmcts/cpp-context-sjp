@@ -23,8 +23,10 @@ import java.util.UUID;
 import javax.sql.DataSource;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("SCUS-444")
 public class RunCatchupIT {
 
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();

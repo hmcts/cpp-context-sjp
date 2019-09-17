@@ -42,8 +42,10 @@ import javax.json.JsonObject;
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("SCUS-444")
 public class ReadyCaseIT extends BaseIntegrationTest {
 
     private static final String QUERY_READY_CASES_RESOURCE = "/cases/ready-cases";

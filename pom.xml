@@ -22,7 +22,7 @@
         <notification.notify.version>0.0.26</notification.notify.version>
         <referencedata.version>2.0.191</referencedata.version>
         <referencedata.offences.version>1.0.19</referencedata.offences.version>
-        <resulting.version>2.0.231-C2I-SNAPSHOT</resulting.version>
+        <resulting.version>2.0.235</resulting.version>
         <scheduling.version>2.0.88</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>2.0.106</usersgroups.version>

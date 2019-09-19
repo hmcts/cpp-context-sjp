@@ -6,7 +6,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>9.1.9</version>
+        <version>9.1.11</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
@@ -24,7 +24,7 @@
         <notification.notify.version>0.0.26</notification.notify.version>
         <referencedata.version>2.0.261</referencedata.version>
         <referencedata.offences.version>1.0.26</referencedata.offences.version>
-        <resulting.version>2.0.233</resulting.version>
+        <resulting.version>2.0.236</resulting.version>
         <scheduling.version>2.0.93</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>2.0.115</usersgroups.version>

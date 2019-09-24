@@ -1,0 +1,149 @@
+subscriptions_descriptor:
+  spec_version: 1.0.0
+  service: sjp
+  service_component: EVENT_LISTENER
+  subscriptions:
+    - name: event listener subscription
+      events:
+        - name: sjp.events.case-document-added
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/sjp.events.case-document-added.json
+
+        - name: sjp.events.case-received
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/sjp.events.case-received.json
+
+        - name: sjp.events.sjp-case-created
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp-case-created.json
+
+        - name: sjp.events.plea-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/plea-updated.json
+
+        - name: sjp.events.plea-cancelled
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.plea-cancelled.json
+
+        - name: sjp.events.case-completed
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-completed.json
+
+        - name: sjp.events.financial-means-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/financial-means-updated.json
+
+        - name: sjp.events.employer-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/employer-updated.json
+
+        - name: sjp.events.employer-deleted
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/employer-deleted.json
+
+        - name: sjp.events.employment-status-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/employment-status-updated.json
+
+        - name: sjp.events.defendant-national-insurance-number-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-national-insurance-number-updated.json
+
+        - name: sjp.events.interpreter-for-defendant-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/interpreter-for-defendant-updated.json
+
+        - name: sjp.events.interpreter-for-defendant-cancelled
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/interpreter-for-defendant-cancelled.json
+
+        - name: sjp.events.hearing-language-preference-for-defendant-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/hearing-language-preference-for-defendant-updated.json
+
+        - name: sjp.events.hearing-language-preference-for-defendant-cancelled
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/hearing-language-preference-for-defendant-cancelled.json
+
+        - name: sjp.events.all-offences-withdrawal-requested
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/all-offences-withdrawal-requested.json
+
+        - name: sjp.events.all-offences-withdrawal-request-cancelled
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/all-offences-withdrawal-request-cancelled.json
+
+        - name: sjp.events.case-reopened-in-libra
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/case-reopened-in-libra.json
+
+        - name: sjp.events.case-reopened-in-libra-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/case-reopened-in-libra-updated.json
+
+        - name: sjp.events.case-reopened-in-libra-undone
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/case-reopened-in-libra-undone.json
+
+        - name: sjp.events.enterprise-id-associated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/enterprise-id-associated.json
+
+        - name: sjp.events.case-assigned
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-assigned.json
+
+        - name: sjp.events.case-unassigned
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-unassigned.json
+
+        - name: sjp.events.defendant-details-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-details-updated.json
+
+        - name: sjp.events.defendant-details-moved-from-people
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-details-moved-from-people.json
+
+        - name: sjp.events.trial-requested
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/trial-requested.json
+
+        - name: sjp.events.trial-request-cancelled
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/trial-request-cancelled.json
+
+        - name: sjp.events.defendant-address-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-address-updated.json
+
+        - name: sjp.events.defendant-date-of-birth-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-date-of-birth-updated.json
+
+        - name: sjp.events.defendant-personal-name-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-personal-name.json
+
+        - name: sjp.events.online-plea-received
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/online-plea-received.json
+
+        - name: sjp.events.magistrate-session-started
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/magistrate-session-started.json
+
+        - name: sjp.events.delegated-powers-session-started
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/delegated-powers-session-started.json
+
+        - name: sjp.events.magistrate-session-ended
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/magistrate-session-ended.json
+
+        - name: sjp.events.delegated-powers-session-ended
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/delegated-powers-session-ended.json
+
+        - name: sjp.events.case-marked-ready-for-decision
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-marked-ready-for-decision.json
+
+        - name: sjp.events.case-unmarked-ready-for-decision
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-unmarked-ready-for-decision.json
+
+        - name: sjp.events.dates-to-avoid-added
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/dates-to-avoid-added.json
+
+        - name: sjp.events.dates-to-avoid-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/dates-to-avoid-updated.json
+
+        - name: sjp.events.defendant-details-updates-acknowledged
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-details-updates-acknowledged.json
+
+        - name: sjp.events.case-referred-for-court-hearing
+          schema_uri: http://cpp.moj.gov.uk/sjp/event/case-referred-for-court-hearing.json
+
+        - name: sjp.events.case-referral-for-court-hearing-rejection-recorded
+          schema_uri: http://cpp.moj.gov.uk/sjp/event/case-referral-for-court-hearing-rejection-recorded.json
+
+        - name: sjp.events.case-listed-in-criminal-courts
+          schema_uri: http://cpp.moj.gov.uk/sjp/event/case-listed-in-criminal-courts.json
+
+        - name: sjp.events.case-adjourned-to-later-sjp-hearing-recorded
+          schema_uri: http://cpp.moj.gov.uk/sjp/event/case-adjourned-to-later-sjp-hearing-recorded.json
+
+        - name: sjp.events.case-adjournment-to-later-sjp-hearing-elapsed
+          schema_uri: http://cpp.moj.gov.uk/sjp/event/case-adjournment-to-later-sjp-hearing-elapsed.json
+
+        - name: sjp.events.transparency-report-generated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.transparency-report-generated.json
+
+        - name: sjp.events.case-note-added
+          schema_uri: http://cpp.moj.gov.uk/sjp/event/case-note-added.json
+
+      event_source_name: sjp

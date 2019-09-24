@@ -7,7 +7,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithDefaults;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -159,17 +159,18 @@ public class OffenceUpdatedListenerTest {
     }
 
     private Metadata whenUpdatePleaIsInvoked(PleaUpdated pleaUpdated) {
-        Metadata metadataBuilder = metadataWithDefaults().build();
+
+        final Metadata metadata = metadataWithRandomUUID("dummy").build();
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(envelope.metadata().createdAt()).thenReturn(Optional.empty());
         when(jsonObjectToObjectConverter.convert(payload, PleaUpdated.class)).thenReturn(pleaUpdated);
         when(offenceRepository.findBy(offenceId)).thenReturn(offence);
         when(offence.getDefendantDetail()).thenReturn(defendant);
         when(searchResultRepository.findByCaseId(caseId)).thenReturn(singletonList(searchResult));
-        when(envelope.metadata()).thenReturn(metadataBuilder);
+        when(envelope.metadata()).thenReturn(metadata);
 
         listener.updatePlea(envelope);
-        return metadataBuilder;
+        return metadata;
     }
 
     @Test

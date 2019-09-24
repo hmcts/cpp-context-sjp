@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-domain</artifactId>
-        <version>1.0.111-SNAPSHOT</version>
+        <version>6.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>sjp-domain-event</artifactId>
@@ -48,8 +50,8 @@
     <build>
         <plugins>
             <plugin>
-                <artifactId>generator-plugin</artifactId>
-                <groupId>uk.gov.justice.maven.generator</groupId>
+                <groupId>uk.gov.justice.generators</groupId>
+                <artifactId>pojo-generation-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>pojo-generation</id>
@@ -58,19 +60,39 @@
                             <includes>
                                 <include>json/schema/fragments/gender.json</include>
                                 <include>json/schema/fragments/listing-details.json</include>
-                                <include>json/schema/events/sjp.events.case-note-added.json</include>
-                                <include>json/schema/events/sjp.events.case-referred-for-court-hearing.json</include>
-                                <include>json/schema/events/sjp.events.case-referral-for-court-hearing-rejection-recorded.json</include>
-                                <include>json/schema/events/sjp.events.case-adjourned-to-later-sjp-hearing-recorded.json</include>
-                                <include>json/schema/events/sjp.events.case-adjournment-to-later-sjp-hearing-elapsed.json</include>
+                                <include>json/schema/events/sjp.events.case-note-added.json
+                                </include>
+                                <include>
+                                    json/schema/events/sjp.events.case-referred-for-court-hearing.json
+                                </include>
+                                <include>
+                                    json/schema/events/sjp.events.case-referral-for-court-hearing-rejection-recorded.json
+                                </include>
+                                <include>
+                                    json/schema/events/sjp.events.case-adjourned-to-later-sjp-hearing-recorded.json
+                                </include>
+                                <include>
+                                    json/schema/events/sjp.events.case-adjournment-to-later-sjp-hearing-elapsed.json
+                                </include>
                             </includes>
-                            <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
+                            <generatorProperties
+                                    implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin</plugin>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin</plugin>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddToStringMethodToClassPlugin</plugin>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddHashcodeAndEqualsPlugin</plugin>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddEventAnnotationToClassPlugin</plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin
+                                    </plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin
+                                    </plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.classmodifying.AddToStringMethodToClassPlugin
+                                    </plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.classmodifying.AddHashcodeAndEqualsPlugin
+                                    </plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.classmodifying.AddEventAnnotationToClassPlugin
+                                    </plugin>
                                 </plugins>
                                 <typeMappings>
                                     <typeMapping>

@@ -6,10 +6,10 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjectMetadata;
 import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -84,7 +84,7 @@ public class CaseReopenedListenerTest {
         when(caseRepository.findBy(caseId)).thenReturn(caseDetails);
 
         final JsonEnvelope event = JsonEnvelopeBuilder.envelope()
-                .with(JsonObjectMetadata.metadataWithRandomUUID("sjp.events.case-reopened-in-libra-undone"))
+                .with(metadataWithRandomUUID("sjp.events.case-reopened-in-libra-undone"))
                 .withPayloadOf(caseId, "caseId").build();
         listener.undoCaseReopened(event);
 
@@ -98,7 +98,7 @@ public class CaseReopenedListenerTest {
 
 
         final JsonEnvelope event = JsonEnvelopeBuilder.envelope()
-                .with(JsonObjectMetadata.metadataWithRandomUUID("sjp.events.case-reopened-in-libra"))
+                .with(metadataWithRandomUUID("sjp.events.case-reopened-in-libra"))
                 .withPayloadOf(caseReopenDetails.getCaseId(), "caseId")
                 .withPayloadOf(caseReopenDetails.getReopenedDate().toString(), "reopenedDate")
                 .withPayloadOf(caseReopenDetails.getLibraCaseNumber(), "libraCaseNumber")

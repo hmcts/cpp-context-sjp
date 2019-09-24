@@ -172,7 +172,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void nonLondonCourtsShouldHandleOnlyNonTflCases() {
+    public void nonLondonCourtsShouldHandleOnlyNonTflCases() throws Exception {
         verifyCaseAssignedFromMagistrateSession(NON_LONDON_COURT_HOUSE_OU_CODE, dvlaPiaCasePayloadBuilder.getId());
         verifyCaseAssignedFromMagistrateSession(NON_LONDON_COURT_HOUSE_OU_CODE, tvlPiaCasePayloadBuilder.getId());
 

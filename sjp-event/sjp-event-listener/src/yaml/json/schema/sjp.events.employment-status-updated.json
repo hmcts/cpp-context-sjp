@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/employment-status-updated.json",
+  "type": "object",
+  "properties": {
+    "defendantId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "employmentStatus": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "defendantId"
+  ],
+  "additionalProperties": false
+}

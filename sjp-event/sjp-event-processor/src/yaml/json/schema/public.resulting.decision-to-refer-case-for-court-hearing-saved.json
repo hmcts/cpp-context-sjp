@@ -1,0 +1,5 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/public.resulting.decision-to-refer-case-for-court-hearing-saved.json",
+  "ref": "http://cpp.moj.gov.uk/resulting/event/decision-to-refer-case-for-court-hearing-saved.json"
+}

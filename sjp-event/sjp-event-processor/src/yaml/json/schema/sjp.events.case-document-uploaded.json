@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/case-document-uploaded.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "id": "/caseId",
+      "type": "string"
+    },
+    "documentReference": {
+      "type": "string"
+    },
+    "documentType": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "caseId",
+    "documentReference",
+    "documentType"
+  ]
+}

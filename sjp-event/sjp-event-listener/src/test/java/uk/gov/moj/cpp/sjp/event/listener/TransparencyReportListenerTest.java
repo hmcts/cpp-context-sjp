@@ -7,13 +7,12 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import uk.gov.justice.services.fileservice.domain.FileReference;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.persistence.entity.CasePublishStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.TransparencyReportMetadata;
@@ -56,7 +55,7 @@ public class TransparencyReportListenerTest {
         final Integer welshReportNumberOfPages = 4;
         final Integer welshPdfSizeInBytes = 412;
 
-        final JsonEnvelope eventEnvelope = JsonEnvelope.envelopeFrom(metadataWithRandomUUID("sjp.events.transparency-report-generated"),
+        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.transparency-report-generated"),
                 createObjectBuilder()
                         .add("englishReportMetadata",
                                 buildFileMetadataJsonObject("transparency-report-english.pdf", englishReportNumberOfPages, englishPdfSizeInBytes, englishReportFileId))

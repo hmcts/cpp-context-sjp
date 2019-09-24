@@ -4,6 +4,7 @@ import static com.google.common.io.Resources.getResource;
 import static java.util.stream.Stream.of;
 import static org.everit.json.schema.loader.SchemaLoader.load;
 import static org.slf4j.LoggerFactory.getLogger;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.NO_ACTION;
 import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.TRANSFORM;
 
@@ -62,7 +63,7 @@ public class PleaDateTransformer implements EventTransformation {
 
         validateAgainstSchema(PLEA_UPDATED_SCHEMA_FILE, transformedEvent.toString());
 
-        final JsonEnvelope transformedEnvelope = JsonEnvelope.envelopeFrom(
+        final JsonEnvelope transformedEnvelope = envelopeFrom(
                 eventEnvelope.metadata(),
                 transformedEvent);
 

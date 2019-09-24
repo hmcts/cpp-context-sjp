@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -48,7 +50,7 @@ public class CaseCommandHandler {
         final CaseAggregate aCase = aggregateService.get(eventStream, CaseAggregate.class);
 
         final Stream<Object> events = function.apply(aCase);
-        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(command.metadata(), JsonValue.NULL);
+        final JsonEnvelope jsonEnvelope = envelopeFrom(command.metadata(), JsonValue.NULL);
         eventStream.append(events.map(enveloper.withMetadataFrom(jsonEnvelope)));
 
     }

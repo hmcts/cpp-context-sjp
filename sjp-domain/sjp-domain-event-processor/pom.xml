@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>sjp-domain</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>1.0.111-SNAPSHOT</version>
+        <version>6.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -35,28 +37,54 @@
             <plugin>
                 <artifactId>generator-plugin</artifactId>
                 <groupId>uk.gov.justice.maven.generator</groupId>
+                <version>${cpp.generator-plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>pojo-generation</id>
+                        <id>other-pojo-generation</id>
                         <configuration>
+                            <skip>${skip.schema.pojo.generation}</skip>
                             <sourceDirectory>CLASSPATH</sourceDirectory>
                             <outputDirectory>${project.build.directory}/generated-sources
                             </outputDirectory>
                             <includes>
-                                <include>raml/json/schema/public.resulting.decision-to-refer-case-for-court-hearing-saved.json</include>
-                                <include>raml/json/schema/sjp.command.refer-case-for-court-hearing.json</include>
-                                <include>raml/json/schema/sjp.command.record-case-referral-for-court-hearing-rejection.json</include>
-                                <include>raml/json/schema/sjp.events.case-referred-for-court-hearing.json</include>
+                                <include>
+                                    raml/json/schema/public.resulting.decision-to-refer-case-for-court-hearing-saved.json
+                                </include>
+                                <include>
+                                    raml/json/schema/sjp.command.refer-case-for-court-hearing.json
+                                </include>
+                                <include>
+                                    raml/json/schema/sjp.command.record-case-referral-for-court-hearing-rejection.json
+                                </include>
+                                <include>
+                                    raml/json/schema/sjp.events.case-referred-for-court-hearing.json
+                                </include>
                                 <include>raml/json/schema/sjp.query.case-details.json</include>
-                                <include>raml/json/schema/sjp.query.defendants-online-plea.json</include>
+                                <include>raml/json/schema/sjp.query.defendants-online-plea.json
+                                </include>
                                 <include>raml/json/schema/sjp.query.employer.json</include>
                             </includes>
-                            <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
+                            <generatorName>
+                                uk.gov.justice.generation.SchemaPojoGeneratorFactory
+                            </generatorName>
+                            <parserName>
+                                uk.gov.justice.generation.io.files.parser.SchemaDefinitionParserFactory
+                            </parserName>
+                            <generatorProperties
+                                    implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin</plugin>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin</plugin>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddHashcodeAndEqualsPlugin</plugin>
-                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.AddToStringMethodToClassPlugin</plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin
+                                    </plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.typemodifying.FormatCustomReturnTypePlugin
+                                    </plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.classmodifying.AddHashcodeAndEqualsPlugin
+                                    </plugin>
+                                    <plugin>
+                                        uk.gov.justice.generation.pojo.plugin.classmodifying.AddToStringMethodToClassPlugin
+                                    </plugin>
                                 </plugins>
                                 <typeMappings>
                                     <typeMapping>
@@ -82,6 +110,10 @@
                                 </typeMappings>
                             </generatorProperties>
                         </configuration>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
                     </execution>
                 </executions>
                 <dependencies>

@@ -2,17 +2,18 @@ package uk.gov.moj.cpp.sjp.command.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
 import static uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder.aDefaultSjpCase;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_ID;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.REOPEN_DATE;
@@ -30,9 +31,7 @@ import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjectMetadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 import uk.gov.moj.cpp.sjp.command.handler.builder.CaseReopenDetailsBuilder;
 import uk.gov.moj.cpp.sjp.command.handler.common.EventNamesHolder;
 import uk.gov.moj.cpp.sjp.domain.Case;
@@ -132,8 +131,8 @@ public class CaseReopenedHandlerTest {
         caseAggregate.updateCaseReopened(CASE_REOPEN_DETAILS_UPDATED.getCaseReopenDetails());
 
         // when
-        JsonEnvelope jsonEnvelope = JsonEnvelopeBuilder.envelopeFrom(
-                JsonObjectMetadata.metadataOf(CASE_ID, EventNamesHolder.CASE_REOPENED_UNDONE).build(),
+        JsonEnvelope jsonEnvelope = envelopeFrom(
+                metadataOf(CASE_ID, EventNamesHolder.CASE_REOPENED_UNDONE).build(),
                 Json.createObjectBuilder().add("caseId", CASE_ID.toString()).build());
 
         caseReopenedHandler.undoCaseReopenedInLibra(jsonEnvelope);

@@ -5,6 +5,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.sjp.event.processor.DefendantDetailsUpdatesAcknowledgedProcessor.PUBLIC_SJP_EVENTS_DEFENDANT_DETAILS_UPDATES_ACKNOWLEDGED;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -55,7 +56,7 @@ public class DefendantDetailsUpdatesAcknowledgedProcessorTest {
                 .add("acknowledgedAt", ZonedDateTime.now(UTC).format(DateTimeFormatter.ISO_DATE_TIME))
                 .build();
 
-        final JsonEnvelope eventEnvelope = JsonEnvelope.envelopeFrom(
+        final JsonEnvelope eventEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID(DefendantDetailsUpdatesAcknowledged.EVENT_NAME),
                 eventPayload);
 

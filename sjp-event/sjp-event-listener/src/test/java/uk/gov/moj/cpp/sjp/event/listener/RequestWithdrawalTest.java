@@ -5,8 +5,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -82,7 +82,7 @@ public class RequestWithdrawalTest {
         final JsonObject inputPayload = Json.createObjectBuilder()
                 .add("caseId", caseId.toString())
                 .build();
-        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID("command").build(), inputPayload);
+        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID("command"), inputPayload);
 
         listener.allOffencesWithdrawalRequested(envelope);
 
@@ -97,7 +97,7 @@ public class RequestWithdrawalTest {
         final JsonObject inputPayload = Json.createObjectBuilder()
                 .add("caseId", caseId.toString())
                 .build();
-        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID("command").build(), inputPayload);
+        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID("command"), inputPayload);
 
         listener.allOffencesWithdrawalRequestCancelled(envelope);
 

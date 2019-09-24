@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/json/schema/event/public-dates-to-avoid-added.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "datesToAvoid": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "datesToAvoid"
+  ]
+}

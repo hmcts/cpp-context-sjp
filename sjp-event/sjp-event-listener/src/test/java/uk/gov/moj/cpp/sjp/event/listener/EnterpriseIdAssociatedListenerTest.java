@@ -7,10 +7,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataOf;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
@@ -32,7 +32,7 @@ public class EnterpriseIdAssociatedListenerTest {
 
     @Mock
     private CaseRepository caseRepository;
-    
+
     @InjectMocks
     private EnterpriseIdAssociatedListener enterpriseIdAssociatedListener;
 
@@ -57,7 +57,7 @@ public class EnterpriseIdAssociatedListenerTest {
                 .add(CASE_ID_PROPERTY, caseId.toString())
                 .add(ENTERPRISE_ID_PROPERTY, enterpriseId);
 
-        return JsonEnvelopeBuilder.envelopeFrom(
+        return envelopeFrom(
                 metadataOf(randomUUID(), "sjp.events.enterprise-id-associated"),
                 payload.build());
     }

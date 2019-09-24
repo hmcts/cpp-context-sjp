@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event.listener;
 import static javax.json.Json.createObjectBuilder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -57,7 +58,7 @@ public class DefendantDetailsMovedFromPeopleListenerTest {
     private AddressToAddressEntity addressToAddressEntity;
 
     @Spy
-    private JsonEnvelope eventEnvelope = JsonEnvelope.envelopeFrom(
+    private JsonEnvelope eventEnvelope = envelopeFrom(
             MetadataBuilderFactory.metadataWithRandomUUIDAndName(),
             createObjectBuilder()
                     .add("caseId", CASE_ID.toString())

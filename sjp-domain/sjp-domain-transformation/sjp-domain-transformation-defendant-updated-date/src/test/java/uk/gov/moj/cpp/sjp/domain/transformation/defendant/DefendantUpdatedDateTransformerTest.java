@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
@@ -44,14 +45,14 @@ public class DefendantUpdatedDateTransformerTest {
 
     @Test
     public void shouldNotProcessEventOtherThanDefendantDetailsUpdated() {
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-personal-name-updated"), JsonValue.NULL);
+        final JsonEnvelope envelope = envelopeFrom(MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-personal-name-updated"), JsonValue.NULL);
         final Action action = whenTransformerActionIsCheckedFor(envelope);
         assertThat(action, is(NO_ACTION));
     }
 
     @Test
     public void shouldProcessDefendantDetailsUpdatedEventIfUpdatedDateNotSet() {
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-details-updated"),
+        final JsonEnvelope envelope = envelopeFrom(MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-details-updated"),
                 buildPayloadForDefendantDetailsUpdatedEventWithUpdatedDateSet(null));
         final Action action = whenTransformerActionIsCheckedFor(envelope);
         assertThat(action, is(TRANSFORM));
@@ -59,16 +60,16 @@ public class DefendantUpdatedDateTransformerTest {
 
     @Test
     public void shouldNotProcessDefendantDetailsUpdatedEventIfUpdatedDateIsSet() {
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-details-updated"),
+        final JsonEnvelope envelope = envelopeFrom(MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-details-updated"),
                 buildPayloadForDefendantDetailsUpdatedEventWithUpdatedDateSet(true));
         final Action action = whenTransformerActionIsCheckedFor(envelope);
         assertThat(action, is(NO_ACTION));
     }
 
     @Test
-    public void shouldAddDefendantDetailsUpdatedEventWithUpdatedDate(){
+    public void shouldAddDefendantDetailsUpdatedEventWithUpdatedDate() {
         ZonedDateTime updatedDate = ZonedDateTime.now();
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-details-updated").createdAt(updatedDate),
+        final JsonEnvelope envelope = envelopeFrom(MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-details-updated").createdAt(updatedDate),
                 buildPayloadForDefendantDetailsUpdatedEventWithUpdatedDateSet(null));
         final Stream<JsonEnvelope> jsonEnvelopeStream = transformer.apply(envelope);
         final List<JsonEnvelope> actual = jsonEnvelopeStream.collect(Collectors.toList());

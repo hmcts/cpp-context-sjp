@@ -11,6 +11,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
@@ -279,14 +280,14 @@ public class DefendantUpdatedListenerTest {
     }
 
     private JsonEnvelope command(DefendantsNationalInsuranceNumberUpdated defendantsNationalInsuranceNumberUpdated) {
-        return JsonEnvelope.envelopeFrom(
+        return envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-national-insurance-number-updated"),
                 objectToJsonObjectConverter.convert(defendantsNationalInsuranceNumberUpdated)
         );
     }
 
     private JsonEnvelope command(DefendantDetailsUpdated defendantDetailsUpdated) {
-        return JsonEnvelope.envelopeFrom(
+        return envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-details-updated"),
                 objectToJsonObjectConverter.convert(defendantDetailsUpdated)
         );

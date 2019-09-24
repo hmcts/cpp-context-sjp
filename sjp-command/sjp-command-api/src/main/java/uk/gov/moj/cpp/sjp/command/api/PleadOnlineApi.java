@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.command.api;
 
 import static java.util.Arrays.asList;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
-import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
 import static uk.gov.moj.cpp.sjp.command.api.service.AddressService.normalizePostcodeInAddress;
@@ -76,7 +75,7 @@ public class PleadOnlineApi {
             pleaOnlineObjectBuilder.add(EMPLOYER, replacePostcodeInPayload(payload, EMPLOYER));
         }
 
-        sender.send(envelopeFrom(
+        sender.send(Envelope.envelopeFrom(
                 metadataFrom(envelope.metadata())
                         .withName("sjp.command.plead-online").build(),
                 pleaOnlineObjectBuilder.build()));

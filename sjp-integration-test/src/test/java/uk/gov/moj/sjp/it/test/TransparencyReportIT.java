@@ -58,13 +58,14 @@ import org.junit.Test;
 
 public class TransparencyReportIT extends BaseIntegrationTest {
 
-    private TransparencyReportHelper transparencyReportHelper = new TransparencyReportHelper();
-    private CreateCasePayloadBuilder createCasePayloadBuilder;
+    private static final String SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED = "sjp.events.transparency-report-requested";
+    private static final String SJP_EVENTS_TRANSPARENCY_REPORT_GENERATED = "sjp.events.transparency-report-generated";
+
+    private final TransparencyReportHelper transparencyReportHelper = new TransparencyReportHelper();
     private final UUID caseId1 = randomUUID(), caseId2 = randomUUID();
     private final UUID offenceId1 = randomUUID(), offenceId2 = randomUUID();
 
-    private static final String SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED = "sjp.events.transparency-report-requested";
-    private static final String SJP_EVENTS_TRANSPARENCY_REPORT_GENERATED = "sjp.events.transparency-report-generated";
+    private CreateCasePayloadBuilder createCasePayloadBuilder;
 
     @Before
     public void setUp() {
@@ -87,11 +88,10 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         final CreateCasePayloadBuilder case1 = createCase(caseId1, offenceId1, defendant1);
         final CreateCasePayloadBuilder case2 = createCase(caseId2, offenceId2, defendant2);
 
-        final EventListener eventListener = new EventListener().withMaxWaitTime(50000);
-        eventListener
-                .subscribe(SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED)
-                .subscribe(SJP_EVENTS_TRANSPARENCY_REPORT_GENERATED)
-                .run(() -> transparencyReportHelper.requestToGenerateTransparencyReport());
+        final EventListener eventListener = new EventListener()
+                .withMaxWaitTime(50000)
+                .subscribe(SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED, SJP_EVENTS_TRANSPARENCY_REPORT_GENERATED)
+                .run(transparencyReportHelper::requestToGenerateTransparencyReport);
 
         final Optional<JsonEnvelope> transparencyReportRequestedEvent = eventListener.popEvent(SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED);
         final Optional<JsonEnvelope> transparencyReportDataEvent = eventListener.popEvent(SJP_EVENTS_TRANSPARENCY_REPORT_GENERATED);

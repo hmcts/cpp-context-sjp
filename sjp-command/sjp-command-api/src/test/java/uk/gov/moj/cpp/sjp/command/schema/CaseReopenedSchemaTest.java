@@ -3,9 +3,9 @@ package uk.gov.moj.cpp.sjp.command.schema;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
@@ -26,8 +26,8 @@ import org.junit.runners.Parameterized.Parameters;
 public class CaseReopenedSchemaTest {
 
     /**
-     *  Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648"
-     *  ============ TODO: delete this block of code once the framework gets updated: ==============
+     * Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648"
+     * ============ TODO: delete this block of code once the framework gets updated: ==============
      */
     @BeforeClass
     public static void init() {
@@ -39,16 +39,13 @@ public class CaseReopenedSchemaTest {
         try {
             assertThat(envelopeFrom(metadataWithRandomUUID("sjp.mark-case-reopened-in-libra"), JsonValue.NULL), jsonEnvelope().thatMatchesSchema());
         } catch (Exception e) {
-            return ! e.getMessage().equals("java.net.UnknownHostException: justice.gov.uk");
+            return !e.getMessage().equals("java.net.UnknownHostException: justice.gov.uk");
         }
 
         return true;
     }
 
     // =============================================================================================
-
-
-
 
 
     @Parameters

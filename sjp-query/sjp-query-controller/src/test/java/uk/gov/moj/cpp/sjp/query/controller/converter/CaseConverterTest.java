@@ -5,8 +5,8 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -160,7 +160,7 @@ public class CaseConverterTest {
                                 .add("welsh", Json.createObjectBuilder()
                                         .add("welshoffencetitle", titleWelsh)
                                         .add("welshlegislation", legislationWelsh)
-                )))
+                                )))
                 .build();
     }
 }

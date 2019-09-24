@@ -131,8 +131,8 @@ public class AssignmentHandlerTest {
 
         when(eventSource.getStreamById(assignmentCandidate1Id)).thenReturn(case1EventStream);
         when(eventSource.getStreamById(assignmentCandidate2Id)).thenReturn(case2EventStream);
-        when(case1EventStream.getCurrentVersion()).thenReturn(assignmentCandidate1Version + 1);
-        when(case2EventStream.getCurrentVersion()).thenReturn(assignmentCandidate2Version);
+        when(case1EventStream.size()).thenReturn(assignmentCandidate1Version + 1);
+        when(case2EventStream.size()).thenReturn(assignmentCandidate2Version);
         when(caseAggregate2.assignCase(assigneeId, assignedAt, MAGISTRATE_DECISION)).thenReturn(Stream.of(caseAssigned));
 
         assignmentHandler.assignCaseFromCandidatesList(assignCaseFromCandidatesListCommand);
@@ -182,8 +182,8 @@ public class AssignmentHandlerTest {
         when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
         when(eventSource.getStreamById(assignmentCandidate1Id)).thenReturn(case1EventStream);
         when(eventSource.getStreamById(assignmentCandidate2Id)).thenReturn(case2EventStream);
-        when(case1EventStream.getCurrentVersion()).thenReturn(assignmentCandidate1Version + 1);
-        when(case2EventStream.getCurrentVersion()).thenReturn(assignmentCandidate2Version + 1);
+        when(case1EventStream.size()).thenReturn(assignmentCandidate1Version + 1);
+        when(case2EventStream.size()).thenReturn(assignmentCandidate2Version + 1);
 
         when(session.rejectCaseAssignment(STALE_CANDIDATES)).thenReturn(Stream.of(new CaseAssignmentRejected(STALE_CANDIDATES)));
 

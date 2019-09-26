@@ -57,11 +57,9 @@ import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mortbay.log.Log;
 
-@Ignore("SCUS-444")
 public class AssignmentRulesIT extends BaseIntegrationTest {
 
     private static final String LONDON_LJA_NATIONAL_COURT_CODE = "2572", NON_LONDON_LJA_NATIONAL_COURT_CODE = "2905";

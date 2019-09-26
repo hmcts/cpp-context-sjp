@@ -42,10 +42,8 @@ import javax.json.JsonValue;
 
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("SCUS-444")
 public class UpdatePleaIT extends BaseIntegrationTest {
 
     private UpdatePleaHelper updatePleaHelper;

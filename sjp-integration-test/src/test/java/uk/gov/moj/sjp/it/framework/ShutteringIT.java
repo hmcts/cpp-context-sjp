@@ -32,9 +32,7 @@ import javax.sql.DataSource;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-@Ignore("SCUS-444")
 public class ShutteringIT {
 
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();

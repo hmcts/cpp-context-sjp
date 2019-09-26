@@ -6,11 +6,13 @@ import static java.util.UUID.randomUUID;
 import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.jmx.api.state.ApplicationManagementState.SHUTTERED;
+import static uk.gov.justice.services.jmx.api.state.ApplicationManagementState.UNSHUTTERED;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.framework.ContextNameProvider.CONTEXT_NAME;
+import static uk.gov.moj.sjp.it.framework.util.ApplicationStateUtil.getApplicationState;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.setup;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getPoller;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.event.PublishedEvent;
@@ -33,22 +35,26 @@ import java.util.UUID;
 import javax.sql.DataSource;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("SCUS-444")
 public class RebuildPublishEventTableIT {
 
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
     private final SequenceSetter sequenceSetter = new SequenceSetter();
     private final DataSource eventStoreDataSource = new TestJdbcDataSourceProvider().getEventStoreDataSource(CONTEXT_NAME);
-    private final Poller poller = getPoller();
+    private final Poller poller = new Poller(10, 2000l);
 
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
     private final SystemCommandCaller systemCommandCaller = new SystemCommandCaller(CONTEXT_NAME);
 
     @Before
     public void cleanDatabase() {
+
+        systemCommandCaller.callShutter();
+        assertThat(getApplicationState(SHUTTERED), is(of(SHUTTERED)));
+
+        systemCommandCaller.callUnshutter();
+        assertThat(getApplicationState(UNSHUTTERED), is(of(UNSHUTTERED)));
 
         databaseCleaner.cleanEventStoreTables(CONTEXT_NAME);
         databaseCleaner.cleanSystemTables(CONTEXT_NAME);
@@ -65,31 +71,23 @@ public class RebuildPublishEventTableIT {
         setup();
         createCaseForPayloadBuilder(withDefaults().withId(randomUUID()));
 
-        final int numberOfEvents = 1;
-        final Optional<List<PublishedEvent>> publishedEvents = poller.pollUntilFound(() -> findPublishedEvents(numberOfEvents, 0));
+        final int numberOfEvents = 2;
+        final Optional<List<PublishedEvent>> publishedEvents = poller.pollUntilFound(() -> findPublishedEvents(numberOfEvents, nextEventNumber));
 
-        if (publishedEvents.isPresent()) {
-            final Long eventNumber = publishedEvents.get().get(0).getEventNumber().orElse(-1L);
-
-            assertThat(eventNumber, is(nextEventNumber));
-        } else {
+        if (!publishedEvents.isPresent()) {
             fail();
         }
 
         systemCommandCaller.callRebuild();
 
-        final Optional<List<PublishedEvent>> rebuiltPublishedEvents = poller.pollUntilFound(() -> findPublishedEvents(numberOfEvents, nextEventNumber));
+        final Optional<List<PublishedEvent>> rebuiltPublishedEvents = poller.pollUntilFound(() -> findPublishedEvents(numberOfEvents, 1l));
 
-        if (rebuiltPublishedEvents.isPresent()) {
-            final Long eventNumber = rebuiltPublishedEvents.get().get(0).getEventNumber().orElse(-1L);
-
-            assertThat(eventNumber, is(1L));
-        } else {
+        if (!rebuiltPublishedEvents.isPresent()) {
             fail();
         }
     }
 
-    private Optional<List<PublishedEvent>> findPublishedEvents(final int numberOfEvents, final long notEventNumber) {
+    private Optional<List<PublishedEvent>> findPublishedEvents(final int numberOfEvents, final Long expectedEventNumber) {
 
         final List<PublishedEvent> publishedEvents = new ArrayList<>();
 
@@ -118,9 +116,7 @@ public class RebuildPublishEventTableIT {
             throw new RuntimeException("Failed to run " + sql, e);
         }
 
-        if (publishedEvents.size() >= numberOfEvents &&
-                publishedEvents.get(0).getEventNumber().get() != notEventNumber) {
-
+        if (publishedEvents.size() >= numberOfEvents && publishedEvents.get(0).getEventNumber().get().longValue() == expectedEventNumber) {
             return of(publishedEvents);
         }
 

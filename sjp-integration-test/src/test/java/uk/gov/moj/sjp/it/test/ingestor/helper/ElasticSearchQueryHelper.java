@@ -17,7 +17,7 @@ import java.util.Optional;
 import javax.json.JsonObject;
 
 public class ElasticSearchQueryHelper {
-    private static final Poller poller = new Poller(30, 4000L);
+    private static final Poller poller = new Poller(100, 3000L);
     private static final ElasticSearchIndexFinderUtil elasticSearch = new ElasticSearchIndexFinderUtil(new ElasticSearchClient());
 
 

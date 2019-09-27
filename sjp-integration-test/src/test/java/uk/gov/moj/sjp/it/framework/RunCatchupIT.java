@@ -33,7 +33,7 @@ public class RunCatchupIT {
 
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
     private final DataSource viewStoreDataSource = new TestJdbcDataSourceProvider().getViewStoreDataSource(CONTEXT_NAME);
-    private final Poller poller = new Poller(10, 2000l);
+    private final Poller poller = new Poller(100, 3000l);
 
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
     private final ViewStoreQueryUtil viewStoreQueryUtil = new ViewStoreQueryUtil(viewStoreDataSource);

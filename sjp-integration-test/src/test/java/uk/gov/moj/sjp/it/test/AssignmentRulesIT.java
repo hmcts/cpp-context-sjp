@@ -78,6 +78,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
         databaseCleaner.cleanAll();
 
+        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(DEFAULT_LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
         ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
         ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(NON_LONDON_COURT_HOUSE_OU_CODE, NON_LONDON_LJA_NATIONAL_COURT_CODE);
         AssignmentStub.stubAddAssignmentCommand();

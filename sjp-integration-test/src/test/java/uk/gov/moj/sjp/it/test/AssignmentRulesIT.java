@@ -4,11 +4,11 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
@@ -65,6 +65,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
     private static final String LONDON_LJA_NATIONAL_COURT_CODE = "2572", NON_LONDON_LJA_NATIONAL_COURT_CODE = "2905";
     private static final String LONDON_COURT_HOUSE_OU_CODE = "B01OK00", NON_LONDON_COURT_HOUSE_OU_CODE = "B20EB00";
     private static final String DATE_TO_AVOID = "a-date-to-avoid";
+    public static final String DEFAULT_LONDON_COURT_HOUSE_OU_CODE = "B01OK";
 
     private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
     private CreateCase.CreateCasePayloadBuilder tflPiaCasePayloadBuilder, tflOldPiaCasePayloadBuilder, tflPleadedGuiltyCasePayloadBuilder, tflPleadedNotGuiltyCasePayloadBuilder, tflPendingWithdrawalCasePayloadBuilder,
@@ -74,7 +75,10 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
+        final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
+        databaseCleaner.cleanAll();
 
+        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(DEFAULT_LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
         ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
         ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(NON_LONDON_COURT_HOUSE_OU_CODE, NON_LONDON_LJA_NATIONAL_COURT_CODE);
         AssignmentStub.stubAddAssignmentCommand();
@@ -84,16 +88,16 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper();
 
         tflPiaCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
-                .withPostingDate(daysAgo(30));
+                .withPostingDate(daysAgo(31));
 
         tflOldPiaCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
-                .withPostingDate(daysAgo(31));
+                .withPostingDate(daysAgo(312));
 
         tflPleadedGuiltyCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
                 .withPostingDate(daysAgo(10));
 
         tflPleadedNotGuiltyCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
-                .withPostingDate(daysAgo(10));
+                .withPostingDate(daysAgo(11));
 
         tflPendingWithdrawalCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
                 .withPostingDate(daysAgo(5));
@@ -108,14 +112,14 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
                 .withProsecutingAuthority(ProsecutingAuthority.TVL);
 
         dvlaPiaCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
-                .withPostingDate(daysAgo(32))
+                .withPostingDate(daysAgo(33))
                 .withProsecutingAuthority(ProsecutingAuthority.DVLA);
 
         dvlaPleadedNotGuiltyCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
                 .withPostingDate(daysAgo(5))
                 .withProsecutingAuthority(ProsecutingAuthority.DVLA);
 
-        databaseCleaner.cleanAll();
+        this.databaseCleaner.cleanAll();
 
         final List<CreateCase.CreateCasePayloadBuilder> caseHelpers = Arrays.asList(
                 tflPiaCasePayloadBuilder,
@@ -158,17 +162,15 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void londonCourtsShouldHandleOnlyTflCases() {
-        verifyCaseAssignedFromMagistrateSession(LONDON_COURT_HOUSE_OU_CODE, tflPleadedGuiltyCasePayloadBuilder.getId());
-        verifyCaseAssignedFromMagistrateSession(LONDON_COURT_HOUSE_OU_CODE, tflOldPiaCasePayloadBuilder.getId());
-        verifyCaseAssignedFromMagistrateSession(LONDON_COURT_HOUSE_OU_CODE, tflPiaCasePayloadBuilder.getId());
+    public void londonCourtsCanHandleBothTflAndTvlCases() {
+        verifyCaseAssignedFromMagistrateSession(DEFAULT_LONDON_COURT_HOUSE_OU_CODE, tflPleadedGuiltyCasePayloadBuilder.getId());
+        verifyCaseAssignedFromMagistrateSession(DEFAULT_LONDON_COURT_HOUSE_OU_CODE, tflOldPiaCasePayloadBuilder.getId());
+        verifyCaseAssignedFromMagistrateSession(DEFAULT_LONDON_COURT_HOUSE_OU_CODE, tflPiaCasePayloadBuilder.getId());
+        verifyCaseAssignedFromMagistrateSession(DEFAULT_LONDON_COURT_HOUSE_OU_CODE, tvlPiaCasePayloadBuilder.getId());
 
-        verifyCaseNotFoundInMagistrateSession(LONDON_COURT_HOUSE_OU_CODE);
-
-        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT_HOUSE_OU_CODE, tflPendingWithdrawalCasePayloadBuilder.getId());
-        verifyCaseAssignedFromDelegatedPowersSession(LONDON_COURT_HOUSE_OU_CODE, tflPleadedNotGuiltyCasePayloadBuilder.getId());
-
-        verifyCaseNotFoundInDelegatedPowersSession(LONDON_COURT_HOUSE_OU_CODE);
+        verifyCaseAssignedFromDelegatedPowersSession(DEFAULT_LONDON_COURT_HOUSE_OU_CODE, tflPendingWithdrawalCasePayloadBuilder.getId());
+        verifyCaseAssignedFromDelegatedPowersSession(DEFAULT_LONDON_COURT_HOUSE_OU_CODE, tflPleadedNotGuiltyCasePayloadBuilder.getId());
+        verifyCaseAssignedFromDelegatedPowersSession(DEFAULT_LONDON_COURT_HOUSE_OU_CODE, tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getId());
     }
 
     @Test

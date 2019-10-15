@@ -10,7 +10,7 @@
     <artifactId>sjp-domain-transformation-orphan-case-listed-events</artifactId>
 
     <properties>
-        <stream-transformation-tool.version>5.2.1</stream-transformation-tool.version>
+        <stream-transformation-tool.version>6.1.1</stream-transformation-tool.version>
     </properties>
 
     <dependencies>

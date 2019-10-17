@@ -1,0 +1,131 @@
+{
+  "events": [
+    {
+      "eventName": "sjp.events.case-assigned",
+      "fieldsToBeIgnored": [
+        "$.caseAssignmentType"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-assignment-rejected",
+      "fieldsToBeIgnored": [
+        "$.reason"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-assignment-requested",
+      "fieldsToBeIgnored": [
+        "$.session.type",
+        "$.session.courtHouseCode"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-document-added",
+      "fieldsToBeIgnored": [
+        "$.documentType"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-document-uploaded",
+      "fieldsToBeIgnored": [
+        "$.documentType"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-listed-in-criminal-courts",
+      "fieldsToBeIgnored": [
+        "$.hearingCourtName"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-marked-ready-for-decision",
+      "fieldsToBeIgnored": [
+        "$.reason"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-note-added",
+      "fieldsToBeIgnored": [
+        "$.note.type"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-received",
+      "fieldsToBeIgnored": [
+        "$.urn",
+        "$.enterpriseId",
+        "$.prosecutingAuthority",
+        "$.defendant.offences[*].libraOffenceCode"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-referred-for-court-hearing",
+      "fieldsToBeIgnored": [
+        "$.urn"
+      ]
+    },
+    {
+      "eventName": "sjp.events.case-unassignment-rejected",
+      "fieldsToBeIgnored": [
+        "$.reason"
+      ]
+    },
+    {
+      "eventName": "sjp.events.defendant-personal-name-updated",
+      "fieldsToBeIgnored": [
+        "$.oldPersonalName.title",
+        "$.newPersonalName.title"
+      ]
+    },
+    {
+      "eventName": "sjp.events.defendant-details-updated",
+      "fieldsToBeIgnored": [
+        "$.title",
+        "$.gender"
+      ]
+    },
+    {
+      "eventName": "sjp.events.delegated-powers-session-started",
+      "fieldsToBeIgnored": [
+        "$.courtHouseCode",
+        "$.courtHouseName",
+        "$.localJusticeAreaNationalCourtCode"
+      ]
+    },
+    {
+      "eventName": "sjp.events.financial-means-updated",
+      "fieldsToBeIgnored": [
+        "$.income.frequency"
+      ]
+    },
+    {
+      "eventName": "sjp.events.magistrate-session-started",
+      "fieldsToBeIgnored": [
+        "$.courtHouseCode",
+        "$.courtHouseName",
+        "$.localJusticeAreaNationalCourtCode"
+      ]
+    },
+    {
+      "eventName": "sjp.events.online-plea-received",
+      "fieldsToBeIgnored": [
+        "$.urn"
+      ]
+    },
+    {
+      "eventName": "sjp.events.plea-updated",
+      "fieldsToBeIgnored": [
+        "$.plea",
+        "$.pleaMethod"
+      ]
+    },
+    {
+      "eventName": "sjp.events.transparency-report-generated",
+      "fieldsToBeIgnored": [
+        "$.englishReportMetadata.fileName",
+        "$.welshReportMetadata.fileName",
+        "$.pleaMethod"
+      ]
+    }
+  ]
+}

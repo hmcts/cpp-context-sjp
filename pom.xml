@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>9.2.1</version>
+        <version>9.3.1</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
@@ -20,15 +20,15 @@
         <assignment.version>6.0.0</assignment.version>
         <material.version>6.0.0</material.version>
         <notification.notify.version>0.0.26</notification.notify.version>
-        <referencedata.version>2.0.261</referencedata.version>
+        <referencedata.version>2.0.275</referencedata.version>
         <referencedata.offences.version>1.0.26</referencedata.offences.version>
         <resulting.version>2.0.236</resulting.version>
         <scheduling.version>6.0.0</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>6.0.0</usersgroups.version>
-        <progression.version>2.0.149</progression.version>
+        <progression.version>2.0.152</progression.version>
         <prosecutioncasefile.version>1.0.33</prosecutioncasefile.version>
-        <access-control-sjp-providers.version>6.2.0</access-control-sjp-providers.version>
+        <access-control-sjp-providers.version>6.3.3</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>

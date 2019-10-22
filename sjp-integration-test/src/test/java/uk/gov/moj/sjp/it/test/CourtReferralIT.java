@@ -142,6 +142,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
         AssignmentStub.stubAddAssignmentCommand();
         AssignmentStub.stubRemoveAssignmentCommand();
         SchedulingStub.stubStartSjpSessionCommand();
+        ReferenceDataServiceStub.stubResultDefinitions();
         ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, "2572");
         ReferenceDataServiceStub.stubReferralReasonsQuery(REFERRAL_REASON_ID.toString(), REFERRAL_REASON);
         ReferenceDataServiceStub.stubHearingTypesQuery(HEARING_TYPE_ID.toString(), HEARING_DESCRIPTION);
@@ -262,7 +263,6 @@ public class CourtReferralIT extends BaseIntegrationTest {
         pleadOnlineHelper.pleadOnline(getPayload("raml/json/sjp.command.plead-online__not-guilty.json")
                 .replace("ecf30a03-8a17-4fc5-81d2-b72ac0a13d17", offenceId.toString())
                 .replace("AB123456A", NATIONAL_INSURANCE_NUMBER));
-
         verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(caseId, true);
         referCaseToCourtAndVerifyCommandSendToProgressionMatchesExpected("payload/referral/progression.refer-for-court-hearing_plea-present.json");
     }

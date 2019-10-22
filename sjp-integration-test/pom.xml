@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
@@ -42,6 +44,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Once the common bom (version 2.1.4-SNAPSHOT) is upgraded in sjp parent, the version number can be removed. -->
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>2.1</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Once the common bom (version 2.1.4-SNAPSHOT) is upgraded in sjp parent, the version number can be removed. -->
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -93,10 +102,10 @@
             <artifactId>persistence-deltaspike</artifactId>
         </dependency>
         <dependency>
-        	<groupId>org.hibernate</groupId>
-        	<artifactId>hibernate-core</artifactId>
-        	<scope>provided</scope>
-      	</dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -164,7 +173,8 @@
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
             <scope>test</scope>
-            <version>${jsonpath.version}</version><!-- allows usage of -1 in array to get last element of array-->
+            <version>${jsonpath.version}
+            </version><!-- allows usage of -1 in array to get last element of array-->
         </dependency>
         <dependency>
             <groupId>joda-time</groupId>

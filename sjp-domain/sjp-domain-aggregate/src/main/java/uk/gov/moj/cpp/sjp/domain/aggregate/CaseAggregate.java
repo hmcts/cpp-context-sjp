@@ -41,8 +41,9 @@ import java.util.stream.Stream;
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 9L;
+    private static final long serialVersionUID = -7550132883773956916L;
     private static final AggregateStateMutator<Object, CaseAggregateState> AGGREGATE_STATE_MUTATOR = AggregateStateMutator.compositeCaseAggregateStateMutator();
+
     @SuppressWarnings("squid:S1948")
     private final CaseAggregateState state = new CaseAggregateState();
 
@@ -93,6 +94,10 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> updateFinancialMeans(final UUID userId, final FinancialMeans financialMeans) {
         return apply(CaseFinancialMeansHandler.INSTANCE.updateFinancialMeans(userId, financialMeans, state));
+    }
+
+    public Stream<Object> deleteFinancialMeans(final UUID defendantId) {
+        return apply(CaseFinancialMeansHandler.INSTANCE.deleteFinancialMeans(defendantId, state));
     }
 
     public Stream<Object> updateEmployer(final UUID userId, final Employer employer) {
@@ -213,6 +218,10 @@ public class CaseAggregate implements Aggregate {
                 author,
                 decisionId,
                 state));
+    }
+
+    public CaseAggregateState getState() {
+        return state;
     }
 
     @Override

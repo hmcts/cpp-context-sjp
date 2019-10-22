@@ -11,7 +11,11 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAddAssignmentCommand;
+import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
+import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
@@ -32,8 +36,9 @@ public class SearchCasesIT extends BaseIntegrationTest {
     private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
 
     @Before
-    public void setUp(){
+    public void setUp() {
         stubQueryOffenceById(randomUUID());
+        stubResultDefinitions();
     }
 
     @Test
@@ -113,6 +118,9 @@ public class SearchCasesIT extends BaseIntegrationTest {
     @Test
     public void verifyCaseAssignmentIsReflected() throws Exception {
         databaseCleaner.cleanAll();
+        stubStartSjpSessionCommand();
+        stubAddAssignmentCommand();
+        stubRemoveAssignmentCommand();
 
         //given case is created
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = withDefaults();

@@ -9,6 +9,7 @@ import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDom
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.pollUntilProcessDeleted;
@@ -48,6 +49,7 @@ public class AssignmentTimeoutIT extends BaseIntegrationTest {
         stubGetCaseDecisionsWithNoDecision(caseId);
         stubAddAssignmentCommand();
         stubRemoveAssignmentCommand();
+        stubResultDefinitions();
         stubStartSjpSessionCommand();
 
         createCaseAndWaitUntilReady(caseId);
@@ -72,7 +74,7 @@ public class AssignmentTimeoutIT extends BaseIntegrationTest {
         assertCaseUnassigned(caseId);
     }
 
-    private  void createCaseAndWaitUntilReady(final UUID caseId) {
+    private void createCaseAndWaitUntilReady(final UUID caseId) {
         try (final MessageConsumerClient messageConsumerClient = new MessageConsumerClient()) {
             messageConsumerClient.startConsumer(CaseMarkedReadyForDecision.EVENT_NAME, "sjp.event");
             CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()

@@ -146,4 +146,7 @@ subscriptions_descriptor:
         - name: sjp.events.case-note-added
           schema_uri: http://cpp.moj.gov.uk/sjp/event/case-note-added.json
 
+        - name: sjp.events.financial-means-deleted
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.financial-means-deleted.json
+
       event_source_name: sjp

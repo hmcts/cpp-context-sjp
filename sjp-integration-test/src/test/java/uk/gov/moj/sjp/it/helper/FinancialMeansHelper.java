@@ -2,12 +2,20 @@ package uk.gov.moj.sjp.it.helper;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static java.lang.String.format;
+import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.getOnlinePlea;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessageAsJsonObject;
 
+import uk.gov.moj.sjp.it.stub.MaterialStub;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.TopicUtil;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -21,9 +29,12 @@ public class FinancialMeansHelper implements AutoCloseable {
 
     private MessageConsumer messageConsumer;
 
+    public static final String FINANCIAL_MEANS_DOCUMENT_TYPE = "FINANCIAL_MEANS";
+    public static final String SJPN_DOCUMENT_TYPE = "SJPN";
+
     public FinancialMeansHelper() {
         messageConsumer = TopicUtil.publicEvents.createConsumerForMultipleSelectors(
-                "public.sjp.financial-means-updated", "public.sjp.case-update-rejected");
+                "public.sjp.financial-means-updated", "public.sjp.case-update-rejected", "public.sjp.events.defendant-financial-means-deleted");
     }
 
     public void updateFinancialMeans(final UUID caseId, final String defendantId, final JsonObject payload) {
@@ -48,8 +59,63 @@ public class FinancialMeansHelper implements AutoCloseable {
         return event;
     }
 
+    public void deleteFinancialMeans(final UUID caseId, final String defendantId, final JsonObject payload) {
+        final String resource = String.format("/cases/%s/defendant/%s/financial-means", caseId, defendantId);
+        final String contentType = "application/vnd.sjp.delete-financial-means+json";
+        HttpClientUtil.makePostCall(resource, contentType, payload.toString());
+    }
+
+    public static void assertDocumentDeleted(CaseDocumentHelper caseDocumentHelper, UUID userId, List<String> fmiMaterials) {
+        JsonObject caseDocument = caseDocumentHelper.findAllDocumentsForTheUser(userId);
+        String materialIdFromQuery = caseDocument.getString("materialId");
+        fmiMaterials.forEach(materialId -> assertFalse("A deleted materialis present", materialIdFromQuery.equals(materialId)));
+    }
+
+    public void pleadOnline(final String payload, UUID caseId, String defendantId) {
+        String writeUrl = String.format("/cases/%s/defendants/%s/plead-online", caseId, defendantId);
+        HttpClientUtil.makePostCall(writeUrl, "application/vnd.sjp.plead-online+json", payload, Response.Status.ACCEPTED);
+    }
+
+    public static String getOnlinePleaData(final String caseId, final Matcher<Object> jsonMatcher, final UUID userId) {
+        return await().atMost(20, TimeUnit.SECONDS).until(() -> {
+            final Response onlinePlea = getOnlinePlea(caseId, userId);
+            if (onlinePlea.getStatus() != OK.getStatusCode()) {
+                return "{}";
+            }
+            return onlinePlea.readEntity(String.class);
+        }, jsonMatcher);
+    }
+
     @Override
     public void close() throws Exception {
         messageConsumer.close();
     }
+
+    public List<String> associateCaseWithFinancialMeansDocuments(UUID userId, UUID caseId, CaseDocumentHelper caseDocumentHelper) {
+
+        final int NUMBER_OF_FMI_DOCUMENTS = 2;
+        List<String> fmiMaterials = new ArrayList<>();
+        final UUID legalAdviserId = randomUUID();
+        try {
+            //Create a Non FinancialDocument...
+            caseDocumentHelper.addCaseDocumentWithDocumentType(legalAdviserId, SJPN_DOCUMENT_TYPE);
+
+            //retain the materialID
+            for (int i = 0; i < NUMBER_OF_FMI_DOCUMENTS; i++) {
+
+                //Create Financial Documents for this case....with defined material ids from the test.
+                final UUID documentId = randomUUID();
+                final UUID materialId = randomUUID();
+                caseDocumentHelper.addCaseDocument(userId, documentId, materialId, FINANCIAL_MEANS_DOCUMENT_TYPE);
+
+                //Add to a list of Financial Means materials ids and raise a stub,stubbing the Materials command
+                fmiMaterials.add(materialId.toString());
+                MaterialStub.stubDeleteMaterial(materialId.toString());
+            }
+        } catch (Exception exception) {
+            fail("An Exception has occured on the creation of case documents and the defendant");
+        }
+        return fmiMaterials;
+    }
+
 }

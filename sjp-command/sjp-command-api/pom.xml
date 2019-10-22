@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>sjp-command</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
@@ -127,7 +129,8 @@
                             <includes>
                                 <include>raml/json/schema/sjp.command.plead-online.json</include>
                             </includes>
-                            <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
+                            <generatorProperties
+                                    implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>
                                     <plugin>
                                         uk.gov.justice.generation.pojo.plugin.typemodifying.ReferenceCustomReturnTypePlugin
@@ -181,6 +184,18 @@
                     <dependency>
                         <groupId>uk.gov.moj.cpp.sjp</groupId>
                         <artifactId>sjp-command-controller</artifactId>
+                        <version>${project.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.sjp</groupId>
+                        <artifactId>sjp-query-api</artifactId>
                         <version>${project.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>

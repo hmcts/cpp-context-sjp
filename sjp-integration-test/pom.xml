@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-parent</artifactId>
-        <version>6.0.13-SC-SNAPSHOT</version>
+        <version>6.0.14-SC-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -183,37 +183,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>uk.gov.moj.cpp.unifiedsearch</groupId>
-            <artifactId>unifiedsearch-test-utils</artifactId>
-            <version>${unified.search-library.version}</version>
-        </dependency>
-
-        <!-- added for framework 6-->
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-client-all</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.justice.services</groupId>
-            <artifactId>test-utils-framework-persistence</artifactId>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jboss.logging</groupId>
-                    <artifactId>jboss-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!-- need this specific version to get the test working -->
-        <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging</artifactId>
-            <version>${jboss-logging.version}</version>
-        </dependency>
-        <dependency>
             <groupId>uk.gov.justice.event-store</groupId>
-            <artifactId>event-domain</artifactId>
+            <artifactId>test-utils-persistence</artifactId>
             <version>${event-store.version}</version>
             <scope>test</scope>
         </dependency>
@@ -224,12 +195,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>uk.gov.justice.event-store</groupId>
-            <artifactId>test-utils-persistence</artifactId>
-            <version>${event-store.version}</version>
-            <scope>test</scope>
+            <groupId>uk.gov.moj.cpp.unifiedsearch</groupId>
+            <artifactId>unifiedsearch-test-utils</artifactId>
+            <version>${unified.search-library.version}</version>
         </dependency>
-        <!-- added for framework 6-->
     </dependencies>
 
     <build>

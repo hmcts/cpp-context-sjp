@@ -8,11 +8,11 @@ import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
 
+import uk.gov.justice.services.jmx.system.command.client.SystemCommandCaller;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.framework.util.SystemCommandInvoker;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
@@ -30,7 +30,7 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
     private static final String CONTEXT = "sjp";
     public static final String CASE_ID = "7e2f843e-d639-40b3-8611-8015f3a18958";
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
-    private final SystemCommandInvoker systemCommandInvoker = new SystemCommandInvoker();
+    private final SystemCommandCaller systemCommandCaller = new SystemCommandCaller("sjp");
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
     private final MessageProducerClient privateEventsProducer = new MessageProducerClient();
     private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
@@ -61,7 +61,7 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
         elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
         databaseCleaner.cleanViewStoreTables(CONTEXT, "processed_event", "stream_status", "stream_buffer");
 
-        systemCommandInvoker.invokeIndexerCatchup();
+        systemCommandCaller.callIndexerCatchup();
 
         checkThatCaseIsinElasticSearch();
     }

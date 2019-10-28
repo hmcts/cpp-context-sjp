@@ -70,19 +70,23 @@ subscriptions_descriptor:
 
         - name: public.sjp.case-assigned
           schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-assigned.json
-          
+
         - name: public.sjp.case-assignment-rejected
           schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-assignment-rejected.json
-          
+
         - name: public.sjp.dates-to-avoid-added
           schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-dates-to-avoid-added.json
-          
+
         - name: public.sjp.dates-to-avoid-updated
           schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-dates-to-avoid-updated.json
-          
+
         - name: public.sjp.defendant-details-updates-acknowledged
           schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-defendant-details-updates-acknowledged.json
-          
-        
+
+        - name: public.sjp.events.defendant-financial-means-deleted
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp_public/events/public.sjp.financial-means-deleted.json
+
+        - name: public.sjp.all-offences-for-defendant-dismissed-or-withdrawn
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp_public/events/public.sjp.all-offences-for-defendant-dismissed-or-withdrawn.json
 
       event_source_name: public.event.source

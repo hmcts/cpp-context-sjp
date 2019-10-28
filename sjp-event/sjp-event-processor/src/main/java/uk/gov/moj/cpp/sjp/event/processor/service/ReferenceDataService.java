@@ -9,6 +9,7 @@ import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.LocalDate;
@@ -16,6 +17,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import javax.inject.Inject;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 public class ReferenceDataService {
@@ -96,5 +98,17 @@ public class ReferenceDataService {
                 envelope, "referencedata.get-all-document-metadata").apply(payload);
         final JsonEnvelope response = requester.requestAsAdmin(request);
         return response.payloadAsJsonObject();
+    }
+
+    public JsonArray getAllResultDefinitions(final JsonEnvelope envelope) {
+
+        final Envelope<JsonObject> request = Enveloper
+                .envelop(createObjectBuilder().build())
+                .withName("referencedata.get-all-result-definitions")
+                .withMetadataFrom(envelope);
+
+        return requester.request(request)
+                .payloadAsJsonObject()
+                .getJsonArray("resultDefinitions");
     }
 }

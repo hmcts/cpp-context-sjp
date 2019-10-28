@@ -20,6 +20,11 @@ import static uk.gov.moj.sjp.it.Constants.COMMAND_HANDLE_ACTIVE_MQ_QUEUE;
 import static uk.gov.moj.sjp.it.Constants.EVENT_CASE_ASSIGNMENT_REJECTED;
 import static uk.gov.moj.sjp.it.Constants.EVENT_CASE_MARKED_READY_FOR_DECISION;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_CASE_ASSIGNMENT_REJECTED;
+import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAddAssignmentCommand;
+import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
+import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
+import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.util.QueueUtil.sendToQueue;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -31,9 +36,6 @@ import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
-import uk.gov.moj.sjp.it.stub.AssignmentStub;
-import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
-import uk.gov.moj.sjp.it.stub.SchedulingStub;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -53,10 +55,13 @@ public class AssignmentRejectionIT extends BaseIntegrationTest {
         sessionId = randomUUID();
         userId = randomUUID();
 
-        AssignmentStub.stubAddAssignmentCommand();
-        AssignmentStub.stubRemoveAssignmentCommand();
-        SchedulingStub.stubStartSjpSessionCommand();
-        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
+        stubAddAssignmentCommand();
+        stubRemoveAssignmentCommand();
+
+        stubStartSjpSessionCommand();
+        stubEndSjpSessionCommand();
+
+        stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
     }
 
     @Test

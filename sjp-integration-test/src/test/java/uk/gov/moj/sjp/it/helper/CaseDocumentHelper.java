@@ -5,6 +5,7 @@ import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.JsonPath.compile;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -30,6 +31,7 @@ import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeMultipartFormPostCall;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithTimeParams;
 import static uk.gov.moj.sjp.it.util.TopicUtil.privateEvents;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
@@ -237,6 +239,25 @@ public class CaseDocumentHelper implements AutoCloseable {
         return JsonHelper.getJsonObject(documents.getPayload()).getJsonArray("caseDocuments").getJsonObject(0);
     }
 
+    public JsonObject findAllDocumentsForTheUser(final UUID userId) {
+        final ResponseData documents = pollWithTimeParams(getCaseDocumentsByCaseId(caseId, userId), 2000, 100)
+                .until(
+                        status().is(OK),
+                        payload().isJson(withJsonPath("$.caseDocuments[" + 0 + "].documentNumber", Matchers.notNullValue())
+                        ));
+        return JsonHelper.getJsonObject(documents.getPayload()).getJsonArray("caseDocuments").getJsonObject(0);
+    }
+
+    public void assertDocumentNotExist(final UUID userId, final UUID caseId) {
+        pollWithDefaults(getCaseDocumentsByCaseId(caseId, userId))
+                .until(
+                        status().is(Response.Status.OK),
+                        payload().isJson(allOf(
+                                withoutJsonPath("$.caseDocuments")
+                        ))
+                );
+    }
+
     public void verifyDocumentNotVisibleForProsecutorWhenQueryingForCaseDocuments(final UUID tflUserId) {
         final Filter caseDocumentFilter = Filter.filter(where("id").is(id));
         pollWithDefaults(getCaseDocumentsByCaseId(caseId, tflUserId))
@@ -267,6 +288,10 @@ public class CaseDocumentHelper implements AutoCloseable {
 
     public String getDocumentId() {
         return id;
+    }
+
+    public String getMaterialId() {
+        return this.materialId;
     }
 
     @Override

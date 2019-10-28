@@ -93,6 +93,22 @@ public abstract class CaseAggregateBaseTest {
         return eventType.cast(firstEvent);
     }
 
+    <T> T collectFirstEvent(final Stream<Object> events, final Class<T> eventType) {
+        return collectFirstEvent(events.collect(toList()), eventType);
+    }
+
+    <T> T collectFirstEvent(final List<Object> events, final Class<T> eventType) {
+        final Object firstEvent = events.get(0);
+        if (!eventType.isInstance(firstEvent)) {
+            fail(format(
+                    "Expected a single instance of %s, but found %s.",
+                    eventType.getSimpleName(),
+                    firstEvent.getClass().getSimpleName()));
+        }
+
+        return eventType.cast(firstEvent);
+    }
+
     /**
      * Fluid high coverage aggregate tester
      */

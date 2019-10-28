@@ -24,6 +24,7 @@ import org.hamcrest.Matcher;
 public class CasePoller {
 
     private static final int POLLING_TIMEOUT = 40;
+    private static final int POLLING_INTERVAL = 1;
 
     public static JsonPath pollUntilCaseByIdIsOk(final UUID caseId) {
         return pollUntilCaseByIdIsOk(caseId, any(ReadContext.class));
@@ -32,6 +33,7 @@ public class CasePoller {
     public static JsonPath pollUntilCaseByIdIsOk(final UUID caseId, final Matcher<? super ReadContext> jsonPayloadMatcher) {
         ResponseData responseData = pollWithDefaults(getCaseById(caseId))
                 .timeout(POLLING_TIMEOUT, SECONDS)
+                .pollInterval(POLLING_INTERVAL, SECONDS)
                 .until(
                         anyOf(
                                 allOf(

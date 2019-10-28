@@ -33,6 +33,7 @@ import static uk.gov.moj.sjp.it.stub.NotifyStub.verifyNotification;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostcodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.COURT_ADMINISTRATORS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.LEGAL_ADVISERS_GROUP;
@@ -59,7 +60,6 @@ import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import uk.gov.moj.sjp.it.producer.DecisionToReferCaseForCourtHearingSavedProducer;
-import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 
@@ -120,6 +120,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         stubCountryByPostcodeQuery("W1T 1JY", "England");
         stubNotifications();
         stubQueryOffenceById(randomUUID());
+        stubResultDefinitions();
     }
 
     @After

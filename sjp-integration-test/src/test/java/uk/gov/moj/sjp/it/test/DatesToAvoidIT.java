@@ -21,12 +21,15 @@ import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_PLEA_CANCELLED;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.pollingquery.PendingDatesToAvoidPoller.pollUntilPendingDatesToAvoidIsOk;
+import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAddAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
+import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.util.Clock;
@@ -43,7 +46,6 @@ import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
-
 
 import java.time.LocalDate;
 import java.util.List;
@@ -96,8 +98,12 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         this.tvlInitialPendingDatesToAvoidCount = pollForPendingDatesToAvoidCount(tvlUserId);
 
         stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_COURT_HOUSE_LJA_NATIONAL_COURT_CODE);
+        stubResultDefinitions();
         stubQueryOffenceById(offenceId);
         updatePleaHelper = new UpdatePleaHelper();
+
+        stubStartSjpSessionCommand();
+        stubAddAssignmentCommand();
     }
 
     @After

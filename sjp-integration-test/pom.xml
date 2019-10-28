@@ -36,11 +36,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-client-all</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>uk.gov.moj.cpp.sjp</groupId>
             <artifactId>sjp-domain-event</artifactId>
             <version>${project.version}</version>
@@ -98,10 +93,10 @@
             <artifactId>persistence-deltaspike</artifactId>
         </dependency>
         <dependency>
-        	<groupId>org.hibernate</groupId>
-        	<artifactId>hibernate-core</artifactId>
-        	<scope>provided</scope>
-      	</dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -169,7 +164,8 @@
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
             <scope>test</scope>
-            <version>${jsonpath.version}</version><!-- allows usage of -1 in array to get last element of array-->
+            <version>${jsonpath.version}
+            </version><!-- allows usage of -1 in array to get last element of array-->
         </dependency>
         <dependency>
             <groupId>joda-time</groupId>

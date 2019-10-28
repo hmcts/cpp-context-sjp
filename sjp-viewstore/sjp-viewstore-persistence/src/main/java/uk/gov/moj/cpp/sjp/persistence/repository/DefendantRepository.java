@@ -15,6 +15,7 @@ import org.apache.deltaspike.data.api.EntityRepository;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.Repository;
+import org.apache.deltaspike.data.api.SingleResultType;
 
 /**
  * Repository for {@link DefendantDetail}
@@ -41,7 +42,7 @@ public abstract class DefendantRepository implements EntityRepository<DefendantD
             "AND (((dd.personalDetails.addressUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.personalDetails.addressUpdatedAt IS NOT NULL AND dd.personalDetails.updatesAcknowledgedAt is NULL OR dd.personalDetails.addressUpdatedAt > dd.personalDetails.updatesAcknowledgedAt)) " +
             "OR ((dd.personalDetails.dateOfBirthUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.personalDetails.dateOfBirthUpdatedAt IS NOT NULL AND dd.personalDetails.updatesAcknowledgedAt IS NULL OR dd.personalDetails.dateOfBirthUpdatedAt > dd.personalDetails.updatesAcknowledgedAt)) " +
             "OR ((dd.personalDetails.nameUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.personalDetails.nameUpdatedAt IS NOT NULL AND dd.personalDetails.updatesAcknowledgedAt IS NULL OR dd.personalDetails.nameUpdatedAt > dd.personalDetails.updatesAcknowledgedAt)))";
-    
+
     public List<UpdatedDefendantDetails> findUpdatedByCaseProsecutingAuthority(
             String prosecutingAuthority,
             ZonedDateTime fromDate,
@@ -58,5 +59,9 @@ public abstract class DefendantRepository implements EntityRepository<DefendantD
 
     @Query("SELECT d.caseDetail.id FROM DefendantDetail d WHERE d.id=:id")
     public abstract UUID findCaseIdByDefendantId(@QueryParam("id") final UUID id);
+
+    @Query(value = "SELECT d.caseDetail.id FROM DefendantDetail d WHERE d.id=:id",
+            singleResult = SingleResultType.OPTIONAL)
+    public abstract UUID findOptionalCaseIdByDefendantId(@QueryParam("id") final UUID id);
 
 }

@@ -19,7 +19,9 @@ import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
@@ -35,7 +37,6 @@ import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.producer.CaseAdjournmentProducer;
 import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
-import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.ActivitiHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
@@ -82,7 +83,8 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
         AssignmentStub.stubRemoveAssignmentCommand();
         SchedulingStub.stubStartSjpSessionCommand();
         stubQueryOffenceById(randomUUID());
-        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
+        stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
+        stubResultDefinitions();
 
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
                 .withDefaults()

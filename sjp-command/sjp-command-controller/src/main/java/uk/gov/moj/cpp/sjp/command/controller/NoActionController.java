@@ -13,8 +13,8 @@ import java.lang.annotation.Repeatable;
 import javax.inject.Inject;
 
 /**
- * Controller what directly forwards the payload from the API to the Handler
- * TODO: refactor once {@link Handles} becomes {@link Repeatable}
+ * Controller what directly forwards the payload from the API to the Handler TODO: refactor once
+ * {@link Handles} becomes {@link Repeatable}
  */
 @ServiceComponent(COMMAND_CONTROLLER)
 public class NoActionController {
@@ -109,6 +109,11 @@ public class NoActionController {
 
     @Handles("sjp.command.update-financial-means")
     public void updateFinancialMeans(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
+    @Handles("sjp.command.delete-defendant-financial-means-information")
+    public void deleteDefendantFinancialMeansInformation(final JsonEnvelope envelope) {
         send(envelope);
     }
 

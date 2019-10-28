@@ -21,6 +21,8 @@
         <module>sjp-domain-transformation-offence-date</module>
         <module>sjp-domain-transformation-case-assignment-deleted-to-case-unassigned</module>
         <module>sjp-domain-transformation-orphan-tfl-docs</module>
+        <module>sjp-domain-transformation-orphan-case-listed-events</module>
+        <module>sjp-domain-transformation-add-defendantId-to-defendant-details-moved-from-people</module>
         <module>sjp-domain-transformation-anonymise</module>
     </modules>
 

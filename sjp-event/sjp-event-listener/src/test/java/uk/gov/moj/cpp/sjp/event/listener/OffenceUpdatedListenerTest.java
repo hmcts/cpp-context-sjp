@@ -29,6 +29,8 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,6 +50,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class OffenceUpdatedListenerTest {
 
+    public static final ZoneId ZONE_ID_UTC = ZoneId.of("UTC");
     private UUID offenceId = UUID.randomUUID();
     private UUID caseId = UUID.randomUUID();
 
@@ -138,7 +141,7 @@ public class OffenceUpdatedListenerTest {
         verify(offence).setPleaMethod(pleaUpdated.getPleaMethod());
         verify(offence).setPleaDate(Optional.ofNullable(pleaUpdated.getUpdatedDate()).orElseGet(() -> envelope.metadata().createdAt().orElse(null)));
         //TODO: should use a fixed clock for 100% test reliability
-        verify(searchResult).setPleaDate(now());
+        verify(searchResult).setPleaDate(nowUTC());
         verify(searchResult).setPleaType(pleaUpdated.getPlea());
 
         if (onlinePlea) {
@@ -156,6 +159,10 @@ public class OffenceUpdatedListenerTest {
         } else {
             verify(onlinePleaRepository, never()).saveOnlinePlea(onlinePleaCaptor.capture());
         }
+    }
+
+    private LocalDate nowUTC() {
+        return now(ZONE_ID_UTC);
     }
 
     private Metadata whenUpdatePleaIsInvoked(PleaUpdated pleaUpdated) {

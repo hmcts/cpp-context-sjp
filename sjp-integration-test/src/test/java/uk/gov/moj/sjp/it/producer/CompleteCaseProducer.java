@@ -10,6 +10,8 @@ import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSessionAndWa
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.ProsecutionCaseFileServiceStub.stubCaseDetails;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
+import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
+import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
@@ -54,8 +56,10 @@ public class CompleteCaseProducer extends BaseIntegrationTest {
 
     private UUID startAndEndSession() {
         final UUID sessionId = randomUUID();
+        stubStartSjpSessionCommand();
         stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
         startMagistrateSessionAndWaitForEvent(sessionId, USER_ID, LONDON_COURT_HOUSE_OU_CODE, "Alan Smith", SessionProcessor.PUBLIC_SJP_SESSION_STARTED);
+        stubEndSjpSessionCommand();
         endSession(sessionId, USER_ID);
         return sessionId;
     }

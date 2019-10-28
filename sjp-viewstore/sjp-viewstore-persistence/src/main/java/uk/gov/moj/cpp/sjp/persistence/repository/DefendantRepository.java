@@ -15,6 +15,7 @@ import org.apache.deltaspike.data.api.EntityRepository;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.Repository;
+import org.apache.deltaspike.data.api.SingleResultType;
 
 /**
  * Repository for {@link DefendantDetail}
@@ -59,7 +60,8 @@ public abstract class DefendantRepository implements EntityRepository<DefendantD
     @Query("SELECT d.caseDetail.id FROM DefendantDetail d WHERE d.id=:id")
     public abstract UUID findCaseIdByDefendantId(@QueryParam("id") final UUID id);
 
-    @Query("SELECT d.caseDetail.id FROM DefendantDetail d WHERE d.id=:id")
+    @Query(value = "SELECT d.caseDetail.id FROM DefendantDetail d WHERE d.id=:id",
+            singleResult = SingleResultType.OPTIONAL)
     public abstract UUID findOptionalCaseIdByDefendantId(@QueryParam("id") final UUID id);
 
 }

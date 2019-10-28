@@ -8,6 +8,9 @@ import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAddAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
+import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -47,6 +50,7 @@ public class CaseUpdateRejectedIT extends BaseIntegrationTest {
         new SjpDatabaseCleaner().cleanAll();
         stubQueryOffenceById(offenceId);
         stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
+        stubResultDefinitions();
         //TODO remove after ATCM-3219
         stubStartSjpSessionCommand();
         stubAddAssignmentCommand();

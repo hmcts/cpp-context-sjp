@@ -10,7 +10,9 @@ import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDom
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
+import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
@@ -47,6 +49,8 @@ public class AssignmentReplicationIT extends BaseIntegrationTest {
         stubGetCaseDecisionsWithNoDecision(caseId);
         stubAddAssignmentCommand();
         stubRemoveAssignmentCommand();
+        stubResultDefinitions();
+        stubStartSjpSessionCommand();
 
         createCaseAndWaitUntilReady(caseId);
 

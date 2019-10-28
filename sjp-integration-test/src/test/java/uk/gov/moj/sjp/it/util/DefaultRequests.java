@@ -39,4 +39,5 @@ public class DefaultRequests {
         return requestParams(getReadUrl("/cases-for-citizen?urn=" + caseUrn + "&postcode=" + postcode), GET_CASE_BY_URN_AND_POSTCODE_MEDIA_TYPE)
                 .withHeader(HeaderConstants.USER_ID, USER_ID);
     }
+
 }

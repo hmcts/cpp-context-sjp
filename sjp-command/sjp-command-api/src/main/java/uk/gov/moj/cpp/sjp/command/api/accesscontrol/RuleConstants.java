@@ -110,5 +110,9 @@ public final class RuleConstants {
         return Arrays.asList(GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
     }
 
+    public static List<String> getDeleteFinancialMeansGroups() {
+        return Arrays.asList(GROUP_SYSTEM_USERS);
+    }
+
 }
 

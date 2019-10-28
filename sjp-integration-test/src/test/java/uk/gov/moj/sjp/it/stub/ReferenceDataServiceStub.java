@@ -190,12 +190,12 @@ public class ReferenceDataServiceStub {
                             .withBody(createObjectBuilder().add("country", country).build().toString())));
             waitForStubToBeReady(urlPath + "?postCode=" + encodedPostcode, "application/vnd.reference-data.country-by-postcode+json");
 
-        } catch (UnsupportedEncodingException e) {
+        } catch (final UnsupportedEncodingException e) {
             throw new IllegalArgumentException(format("Not able to URL encode postcode: %s", postcode), e);
         }
     }
 
-    public static void stubCountryNationalities(String resourceName) {
+    public static void stubCountryNationalities(final String resourceName) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
 
         final String urlPath = "/referencedata-service/query/api/rest/referencedata/country-nationality";
@@ -208,7 +208,7 @@ public class ReferenceDataServiceStub {
         waitForStubToBeReady(urlPath, "application/vnd.reference-data.country-nationality+json");
     }
 
-    public static void stubEthnicities(String resourceName) {
+    public static void stubEthnicities(final String resourceName) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
 
         final String query = "application/vnd.reference-data.ethnicities+json";
@@ -248,6 +248,20 @@ public class ReferenceDataServiceStub {
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    public static void stubResultDefinitions() {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+
+        final String query = "application/vnd.referencedata.get-all-result-definitions+json";
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/result-definitions";
+
+        stubFor(get(urlPathEqualTo(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(getPayload("stub-data/referencedata.result-definitions.json"))));
+        waitForStubToBeReady(urlPath, query);
     }
 
 }

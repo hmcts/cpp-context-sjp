@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-command</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>6.0.15-SC-SNAPSHOT</version>
+        <version>6.0.16-SC-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -181,6 +181,18 @@
                     <dependency>
                         <groupId>uk.gov.moj.cpp.sjp</groupId>
                         <artifactId>sjp-command-controller</artifactId>
+                        <version>${project.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.sjp</groupId>
+                        <artifactId>sjp-query-api</artifactId>
                         <version>${project.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>

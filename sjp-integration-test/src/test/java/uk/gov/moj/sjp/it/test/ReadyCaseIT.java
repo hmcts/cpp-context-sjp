@@ -16,6 +16,9 @@ import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
+import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaultsUntilResponseIsJson;
@@ -56,6 +59,7 @@ public class ReadyCaseIT extends BaseIntegrationTest {
     public void setUp() throws Exception {
 
         stubQueryOffenceById(offenceId);
+        stubResultDefinitions();
     }
 
     @Test
@@ -171,6 +175,9 @@ public class ReadyCaseIT extends BaseIntegrationTest {
 
     @Test
     public void shouldUnmarkCaseReadyWhenCaseCompleted() {
+
+        stubRemoveAssignmentCommand();
+
         final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
 
         CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder

@@ -11,7 +11,7 @@ CPP_ACTIVITI_VERSION=5.22.0
 #fail script on error
 set -e
 
-function buildWars {
+function buildWars() {
   echo
   echo "Building wars."
   mvn clean install -nsu
@@ -19,20 +19,20 @@ function buildWars {
   echo "Finished building wars"
 }
 
-function deleteWars {
+function deleteWars() {
   echo
   echo "Deleting wars from $WILDFLY_DEPLOYMENT_DIR....."
   rm -rf $WILDFLY_DEPLOYMENT_DIR/*.war
   rm -rf $WILDFLY_DEPLOYMENT_DIR/*.deployed
 }
 
-function deployWars {
+function deployWars() {
   rm -rf $WILDFLY_DEPLOYMENT_DIR/*.undeployed
   find . \( -iname "${CONTEXT_NAME}-service-*.war" \) -exec cp {} $WILDFLY_DEPLOYMENT_DIR \;
   echo "Copied wars to $WILDFLY_DEPLOYMENT_DIR"
 }
 
-function startVagrant {
+function startVagrant() {
   export VAGRANT_CWD=$VAGRANT_DIR
 
   if (vagrant status | grep -cq "VM is running"); then
@@ -44,65 +44,65 @@ function startVagrant {
 }
 
 function deployWiremock() {
-    mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=$WILDFLY_DEPLOYMENT_DIR -Dartifact=uk.gov.justice.services:wiremock-service:1.1.0:war
+  mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=$WILDFLY_DEPLOYMENT_DIR -Dartifact=uk.gov.justice.services:wiremock-service:1.1.0:war
 }
 
 function runEventLogLiquibase() {
-    echo "Executing event log Liquibase"
-    mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.event-store:event-repository-liquibase:${EVENT_STORE_VERSION}:jar
-    java -jar target/event-repository-liquibase-${EVENT_STORE_VERSION}.jar --url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}eventstore --username=${CONTEXT_NAME} --password=${CONTEXT_NAME} --logLevel=info update
-    echo "Finished executing event log liquibase"
+  echo "Executing event log Liquibase"
+  mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.event-store:event-repository-liquibase:${EVENT_STORE_VERSION}:jar
+  java -jar target/event-repository-liquibase-${EVENT_STORE_VERSION}.jar --url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}eventstore --username=${CONTEXT_NAME} --password=${CONTEXT_NAME} --logLevel=info update
+  echo "Finished executing event log liquibase"
 }
 
 function runEventLogAggregateSnapshotLiquibase() {
-    echo "Running EventLogAggregateSnapshotLiquibase"
-    mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.event-store:aggregate-snapshot-repository-liquibase:${EVENT_STORE_VERSION}:jar
-    java -jar target/aggregate-snapshot-repository-liquibase-${EVENT_STORE_VERSION}.jar --url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}eventstore --username=${CONTEXT_NAME} --password=${CONTEXT_NAME} --logLevel=info update
-    echo "Finished executing EventLogAggregateSnapshotLiquibase liquibase"
+  echo "Running EventLogAggregateSnapshotLiquibase"
+  mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.event-store:aggregate-snapshot-repository-liquibase:${EVENT_STORE_VERSION}:jar
+  java -jar target/aggregate-snapshot-repository-liquibase-${EVENT_STORE_VERSION}.jar --url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}eventstore --username=${CONTEXT_NAME} --password=${CONTEXT_NAME} --logLevel=info update
+  echo "Finished executing EventLogAggregateSnapshotLiquibase liquibase"
 }
 
-function runViewstoreLiquibase {
+function runViewstoreLiquibase() {
   echo "running runViewstoreLiquibase"
   mvn -f ${CONTEXT_NAME}-viewstore/${CONTEXT_NAME}-viewstore-liquibase/pom.xml -Dliquibase.url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}viewstore -Dliquibase.username=${CONTEXT_NAME} -Dliquibase.password=${CONTEXT_NAME} -Dliquibase.logLevel=info resources:resources liquibase:update
   echo "Finished executing runViewstoreLiquibase"
 }
 
 function runEventBufferLiquibase() {
-    echo "running event buffer liquibase"
-    mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.event-store:event-buffer-liquibase:${EVENT_STORE_VERSION}:jar
-    java -jar target/event-buffer-liquibase-${EVENT_STORE_VERSION}.jar --url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}viewstore --username=${CONTEXT_NAME} --password=${CONTEXT_NAME} --logLevel=info update
-    echo "finished running event buffer liquibase"
+  echo "running event buffer liquibase"
+  mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.event-store:event-buffer-liquibase:${EVENT_STORE_VERSION}:jar
+  java -jar target/event-buffer-liquibase-${EVENT_STORE_VERSION}.jar --url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}viewstore --username=${CONTEXT_NAME} --password=${CONTEXT_NAME} --logLevel=info update
+  echo "finished running event buffer liquibase"
 }
 
-function runSystemLiquibase {
-    echo "Running system liquibase"
-    mvn org.apache.maven.plugins:maven-dependency-plugin:3.0.1:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.services:framework-system-liquibase:${FRAMEWORK_VERSION}:jar
-    java -jar target/framework-system-liquibase-${FRAMEWORK_VERSION}.jar --url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}system --username=${CONTEXT_NAME} --password=${CONTEXT_NAME} --logLevel=info update
-    echo "Finished executing system liquibase"
+function runSystemLiquibase() {
+  echo "Running system liquibase"
+  mvn org.apache.maven.plugins:maven-dependency-plugin:3.0.1:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.services:framework-system-liquibase:${FRAMEWORK_VERSION}:jar
+  java -jar target/framework-system-liquibase-${FRAMEWORK_VERSION}.jar --url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}system --username=${CONTEXT_NAME} --password=${CONTEXT_NAME} --logLevel=info update
+  echo "Finished executing system liquibase"
 }
 
-function runEventTrackingLiquibase {
-    echo "Running event tracking liquibase"
-    mvn org.apache.maven.plugins:maven-dependency-plugin:3.0.1:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.event-store:event-tracking-liquibase:${EVENT_STORE_VERSION}:jar
-    java -jar target/event-tracking-liquibase-${EVENT_STORE_VERSION}.jar --url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}viewstore --username=${CONTEXT_NAME} --password=${CONTEXT_NAME} --logLevel=info update
-    echo "Finished executing event tracking liquibase"
+function runEventTrackingLiquibase() {
+  echo "Running event tracking liquibase"
+  mvn org.apache.maven.plugins:maven-dependency-plugin:3.0.1:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.event-store:event-tracking-liquibase:${EVENT_STORE_VERSION}:jar
+  java -jar target/event-tracking-liquibase-${EVENT_STORE_VERSION}.jar --url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}viewstore --username=${CONTEXT_NAME} --password=${CONTEXT_NAME} --logLevel=info update
+  echo "Finished executing event tracking liquibase"
 }
 
-function runFileServiceLiquibase {
-    echo "Running file service liquibase"
-    mvn org.apache.maven.plugins:maven-dependency-plugin:3.0.1:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.services:file-service-liquibase:${FILE_SERVICE_VERSION}:jar
-    java -jar target/file-service-liquibase-${FILE_SERVICE_VERSION}.jar --url=jdbc:postgresql://localhost:5432/fileservice --username=fileservice --password=fileservice --logLevel=info update
-    echo "Finished executing file service liquibase"
+function runFileServiceLiquibase() {
+  echo "Running file service liquibase"
+  mvn org.apache.maven.plugins:maven-dependency-plugin:3.0.1:copy -DoutputDirectory=target -Dartifact=uk.gov.justice.services:file-service-liquibase:${FILE_SERVICE_VERSION}:jar
+  java -jar target/file-service-liquibase-${FILE_SERVICE_VERSION}.jar --url=jdbc:postgresql://localhost:5432/fileservice --username=fileservice --password=fileservice --logLevel=info update
+  echo "Finished executing file service liquibase"
 }
 
 function runActivitiLiquibase() {
-    echo "running activiti liquibase"
-    mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.moj.cpp.activiti:activiti-liquibase:${CPP_ACTIVITI_VERSION}:jar
-    java -jar target/activiti-liquibase-${CPP_ACTIVITI_VERSION}.jar --url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}activiti --username=${CONTEXT_NAME} --password=${CONTEXT_NAME} --logLevel=info update
-    echo "finished running event buffer liquibase"
+  echo "running activiti liquibase"
+  mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -DoutputDirectory=target -Dartifact=uk.gov.moj.cpp.activiti:activiti-liquibase:${CPP_ACTIVITI_VERSION}:jar
+  java -jar target/activiti-liquibase-${CPP_ACTIVITI_VERSION}.jar --url=jdbc:postgresql://localhost:5432/${CONTEXT_NAME}activiti --username=${CONTEXT_NAME} --password=${CONTEXT_NAME} --logLevel=info update
+  echo "finished running event buffer liquibase"
 }
 
-function runLiquibase {
+function runLiquibase() {
   runEventLogLiquibase
   runEventLogAggregateSnapshotLiquibase
   runViewstoreLiquibase
@@ -113,7 +113,7 @@ function runLiquibase {
   runFileServiceLiquibase
 }
 
-function healthCheck {
+function healthCheck() {
   CONTEXT=("$CONTEXT_NAME-command-api" "$CONTEXT_NAME-command-controller" "$CONTEXT_NAME-command-handler" "${CONTEXT_NAME}-query-api" "${CONTEXT_NAME}-query-controller" "${CONTEXT_NAME}-query-view" "${CONTEXT_NAME}-event-listener" "${CONTEXT_NAME}-event-processor")
   CONTEXT_COUNT=${#CONTEXT[@]}
   TIMEOUT=210
@@ -126,54 +126,52 @@ function healthCheck {
   echo "TIMEOUT is $TIMEOUT Seconds"
   echo "RETRY_DELAY $RETRY_DELAY Seconds"
 
-  while [ true ]
-  do
-      DEPLOYED=0
+  while [ true ]; do
+    DEPLOYED=0
 
-      for i in ${CONTEXT[@]}
-      do
-        CHECK_STRING="curl --connect-timeout 1 -s http://localhost:8080/$i/internal/metrics/ping"
-        echo -n $CHECK_STRING
-        CHECK=$( $CHECK_STRING )  >/dev/null 2>&1
-        echo $CHECK | grep pong >/dev/null 2>&1 && DEPLOYED=$((DEPLOYED + 1))
-        echo $CHECK | grep pong >/dev/null 2>&1 && echo " pong" || echo " DOWN"
-      done
+    for i in ${CONTEXT[@]}; do
+      CHECK_STRING="curl --connect-timeout 1 -s http://localhost:8080/$i/internal/metrics/ping"
+      echo -n $CHECK_STRING
+      CHECK=$($CHECK_STRING) >/dev/null 2>&1
+      echo $CHECK | grep pong >/dev/null 2>&1 && DEPLOYED=$((DEPLOYED + 1))
+      echo $CHECK | grep pong >/dev/null 2>&1 && echo " pong" || echo " DOWN"
+    done
 
-      echo
-      echo RESULT:  ${DEPLOYED} out of  ${CONTEXT_COUNT} wars came back with pong
+    echo
+    echo RESULT: ${DEPLOYED} out of ${CONTEXT_COUNT} wars came back with pong
 
-      [ "${DEPLOYED}" -eq "${CONTEXT_COUNT}" ] && break
+    [ "${DEPLOYED}" -eq "${CONTEXT_COUNT}" ] && break
 
-      TIME_NOW=$(date +%s)
-      TIME_ELAPSED=$(( $TIME_NOW - $START_TIME ))
+    TIME_NOW=$(date +%s)
+    TIME_ELAPSED=$(($TIME_NOW - $START_TIME))
 
-      echo "Start time is $START_TIME"
-      echo "Time Now is $TIME_NOW"
-      echo "Time elapsed is $TIME_ELAPSED"
+    echo "Start time is $START_TIME"
+    echo "Time Now is $TIME_NOW"
+    echo "Time elapsed is $TIME_ELAPSED"
 
-     [ "${TIME_ELAPSED}" -gt "${TIMEOUT}" ] && exit
-      sleep $RETRY_DELAY
+    [ "${TIME_ELAPSED}" -gt "${TIMEOUT}" ] && exit
+    sleep $RETRY_DELAY
   done
 }
 
-function integrationTests {
+function integrationTests() {
   echo
   echo "Running Integration Tests"
   mvn -B verify -pl ${CONTEXT_NAME}-integration-test -P${CONTEXT_NAME}-integration-test -DINTEGRATION_HOST_KEY=localhost
   echo "Finished running Integration Tests"
 }
 
-function buildDeployAndTest {
+function buildDeployAndTest() {
   buildWars
   deployAndTest
 }
 
-function deployAndTest {
+function deployAndTest() {
   startVagrant
   deleteWars
   runLiquibase
-  deployWars
   deployWiremock
+  deployWars
   healthCheck
   integrationTests
 }

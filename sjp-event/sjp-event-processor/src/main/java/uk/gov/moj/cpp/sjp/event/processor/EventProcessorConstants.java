@@ -4,6 +4,7 @@ public class EventProcessorConstants {
 
     public static final String ID = "id";
     public static final String CASE_ID = "caseId";
+    public static final String DEFENDANT_ID = "defendantId";
     public static final String OFFENCE_ID = "offenceId";
     public static final String SESSION_ID = "sessionId";
     public static final String USER_ID = "userId";

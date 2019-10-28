@@ -1,9 +1,17 @@
 package uk.gov.moj.sjp.it.test;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertFalse;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
@@ -15,6 +23,7 @@ import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,6 +38,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
     @Before
     public void setUp() {
         stubRemoveAssignmentCommand();
+        stubResultDefinitions();
 
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseId);
         stubQueryOffenceById(createCasePayloadBuilder.getOffenceBuilder().getId());
@@ -53,6 +63,41 @@ public class CompleteCaseIT extends BaseIntegrationTest {
                 .run(completeCaseProducer::completeCase);
 
         completeCaseProducer.assertCaseCompleted();
+    }
+
+    @Test
+    public void shouldGenerateAllOffencesWithdrawnOrDismissedEvent() {
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId, defendantId, offenceId, DISMISSED_RESULT_ID);
+        final EventListener eventListener = new EventListener()
+                .subscribe("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn")
+                .run(completeCaseProducer::completeCaseResults);
+
+        completeCaseProducer.assertCaseResults();
+
+        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn");
+        assertTrue(jsonEnvelope.isPresent());
+        final JsonEnvelope envelope = jsonEnvelope.get();
+        assertThat((JsonEnvelope) envelope,
+                jsonEnvelope(
+                        metadata().withName("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.caseId", CoreMatchers.equalTo(caseId.toString())),
+
+                                withJsonPath("$.defendantId", CoreMatchers.equalTo(defendantId.toString()))
+                        ))));
+    }
+
+    @Test
+    public void shouldNotGenerateAllOffencesWithdrawnOrDismissedEvent() {
+        final CompleteCaseProducer completeCaseProducer = new CompleteCaseProducer(caseId, defendantId, offenceId, PAY_COSTS_RESULT_ID);
+        final EventListener eventListener = new EventListener()
+                .subscribe("public.sjp.case-resulted")
+                .subscribe("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn")
+                .run(completeCaseProducer::completeCaseResults);
+
+        completeCaseProducer.assertCaseResults();
+        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn");
+        assertFalse(jsonEnvelope.isPresent());
     }
 
 }

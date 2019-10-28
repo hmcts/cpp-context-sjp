@@ -11,7 +11,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import javax.inject.Inject;
 
 @ServiceComponent(COMMAND_API)
-public class UpdateFinancialMeansApi {
+public class FinancialMeansApi {
 
     @Inject
     private Enveloper enveloper;
@@ -22,5 +22,10 @@ public class UpdateFinancialMeansApi {
     @Handles("sjp.update-financial-means")
     public void updateFinancialMeans(final JsonEnvelope envelope) {
         sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.update-financial-means").apply(envelope.payloadAsJsonObject()));
+    }
+
+    @Handles("sjp.delete-financial-means")
+    public void deleteDefendantFinancialMeans(final JsonEnvelope envelope) {
+        sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.delete-defendant-financial-means-information").apply(envelope.payloadAsJsonObject()));
     }
 }

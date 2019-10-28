@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -12,17 +14,23 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
+import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleted;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.listener.converter.FinancialMeansConverter;
 import uk.gov.moj.cpp.sjp.event.listener.converter.OnlinePleaConverter;
+import uk.gov.moj.cpp.sjp.persistence.entity.Employer;
 import uk.gov.moj.cpp.sjp.persistence.entity.FinancialMeans;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.DefendantRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.EmployerRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.FinancialMeansRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -68,6 +76,12 @@ public class FinancialMeansListenerTest {
     @Mock
     private DefendantRepository defendantRepository;
 
+    @Mock
+    private CaseDocumentRepository caseDocumentRepository;
+
+    @Mock
+    private EmployerRepository employerRepository;
+
     @InjectMocks
     private FinancialMeansListener financialMeansListener = new FinancialMeansListener();
 
@@ -75,7 +89,7 @@ public class FinancialMeansListenerTest {
     private ZonedDateTime now = clock.now();
 
     private UUID caseId;
-    
+
     private UUID defendantId;
 
     @Before
@@ -118,10 +132,61 @@ public class FinancialMeansListenerTest {
 
     private void setMocks(final FinancialMeansUpdated financialMeansUpdated) {
         when(financialMeansConverter.convertToFinancialMeansEntity(financialMeansUpdated)).thenReturn(financialMeans);
+        when(defendantRepository.findOptionalCaseIdByDefendantId(defendantId)).thenReturn(caseId);
         when(defendantRepository.findCaseIdByDefendantId(defendantId)).thenReturn(caseId);
         when(onlinePleaConverter.convertToOnlinePleaEntity(caseId, financialMeansUpdated)).thenReturn(onlinePlea);
         when(eventEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectConverter.convert(payload, FinancialMeansUpdated.class)).thenReturn(financialMeansUpdated);
+    }
+
+    @Test
+    public void shouldSaveFinancialMeansDeletedEventAndDeleteFinancialMeansInformationData() {
+
+        final UUID defendantId = UUID.randomUUID();
+        final FinancialMeansDeleted financialMeansDeleted = new FinancialMeansDeleted(defendantId, addCaseDocuments());
+
+        setMocks(financialMeansDeleted);
+
+        financialMeansListener.deleteFinancialMeans(eventEnvelope);
+
+        verify(jsonObjectConverter).convert(payload, FinancialMeansDeleted.class);
+        verify(eventEnvelope).payloadAsJsonObject();
+        verify(financialMeansRepository).findBy(defendantId);
+        verify(financialMeansRepository).remove(anyObject());
+        verify(defendantRepository).findOptionalCaseIdByDefendantId(defendantId);
+        verify(onlinePleaRepository).findOnlinePleaByDefendantIdAndCaseId(anyObject(),
+                anyObject());
+        verify(onlinePleaRepository).save(anyObject());
+        verify(caseDocumentRepository).findByMaterialId(financialMeansDeleted.getMaterialIds().get(0));
+        verify(caseDocumentRepository).remove(anyObject());
+        verify(employerRepository).findBy(anyObject());
+        verify(employerRepository).remove(anyObject());
+    }
+
+    private List<UUID> addCaseDocuments() {
+        final UUID materialId = UUID.randomUUID();
+        List<UUID> materialIds = new ArrayList<>();
+        materialIds.add(materialId);
+        return materialIds;
+    }
+
+    private void setMocks(final FinancialMeansDeleted financialMeansDeleted) {
+        when(jsonObjectConverter.convert(payload, FinancialMeansDeleted.class)).thenReturn(financialMeansDeleted);
+        when(eventEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        final FinancialMeans financialMeans = new FinancialMeans(financialMeansDeleted.getDefendantId(), "SELF-EMPLOYED");
+        when(financialMeansRepository.findBy(financialMeans.getDefendantId())).thenReturn(financialMeans);
+        doNothing().when(financialMeansRepository).remove(financialMeans);
+        final UUID caseId = UUID.randomUUID();
+        when(defendantRepository.findOptionalCaseIdByDefendantId(financialMeansDeleted.getDefendantId())).thenReturn(caseId);
+        final OnlinePlea onlinePlea = new OnlinePlea();
+        when(onlinePleaRepository.findOnlinePleaByDefendantIdAndCaseId(caseId, financialMeansDeleted.getDefendantId())).thenReturn(onlinePlea);
+        when(onlinePleaRepository.save(onlinePlea)).thenReturn(onlinePlea);
+        uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument caseDocumentEntity = new uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument();
+        when(caseDocumentRepository.findByMaterialId(financialMeansDeleted.getMaterialIds().get(0))).thenReturn(caseDocumentEntity);
+        doNothing().when(caseDocumentRepository).remove(caseDocumentEntity);
+        Employer employer = new Employer();
+        when(employerRepository.findBy(financialMeansDeleted.getDefendantId())).thenReturn(employer);
+        doNothing().when(employerRepository).remove(employer);
     }
 
 }

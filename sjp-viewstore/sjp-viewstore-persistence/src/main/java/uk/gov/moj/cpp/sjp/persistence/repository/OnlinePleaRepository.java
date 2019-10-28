@@ -76,8 +76,8 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
 
     private static final String INSERT_STATEMENT =
             "INSERT INTO online_plea(case_id, submitted_on, defendant_id) " +
-            " VALUES (?, ?, (SELECT d.id FROM defendant d WHERE d.case_id=?)) " +
-            " ON CONFLICT (case_id) DO NOTHING";
+                    " VALUES (?, ?, (SELECT d.id FROM defendant d WHERE d.case_id=?)) " +
+                    " ON CONFLICT (case_id) DO NOTHING";
 
     public void saveOnlinePlea(OnlinePlea onlinePlea) {
         final Query insertStatement = entityManager.createNativeQuery(INSERT_STATEMENT);
@@ -187,7 +187,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
 
     public abstract static class FinancialMeansOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate(){
+        final List<FIELDS> getFieldsToUpdate() {
             return asList(
                     EMPLOYMENT_INCOME_PAYMENT_AMOUNT,
                     EMPLOYMENT_INCOME_FREQUENCY,
@@ -209,7 +209,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
 
     public abstract static class EmployerOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate(){
+        final List<FIELDS> getFieldsToUpdate() {
             return asList(
                     EMPLOYER_REFERENCE,
                     EMPLOYER_NAME,
@@ -226,7 +226,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
 
     public abstract static class TrialOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate(){
+        final List<FIELDS> getFieldsToUpdate() {
             return asList(
                     CASE_ID,
                     WITNESS_DISPUTE,
@@ -238,21 +238,21 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
 
     public abstract static class InterpreterLanguageOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate(){
+        final List<FIELDS> getFieldsToUpdate() {
             return singletonList(INTERPRETER_LANGUAGE);
         }
     }
 
     public abstract static class HearingLanguageOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate(){
+        final List<FIELDS> getFieldsToUpdate() {
             return singletonList(HEARING_LANGUAGE);
         }
     }
 
     public abstract static class PersonDetailsOnlinePleaRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate(){
+        final List<FIELDS> getFieldsToUpdate() {
             return asList(
                     PERSON_FIRST_NAME,
                     PERSON_LAST_NAME,
@@ -273,7 +273,7 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
 
     public abstract static class PleaDetailsRepository extends OnlinePleaRepository {
         @Override
-        final List<FIELDS> getFieldsToUpdate(){
+        final List<FIELDS> getFieldsToUpdate() {
             return asList(
                     PLEA,
                     COME_TO_COURT,
@@ -282,5 +282,10 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
             );
         }
     }
+
+    @org.apache.deltaspike.data.api.Query(
+            value = "SELECT op FROM OnlinePlea op WHERE op.caseId = :caseId AND op.defendantId = :defendantId",
+            singleResult = SingleResultType.OPTIONAL)
+    public abstract OnlinePlea findOnlinePleaByDefendantIdAndCaseId(@QueryParam("caseId") final UUID caseId, @QueryParam("defendantId") final UUID defendantId);
 
 }

@@ -1,0 +1,40 @@
+package uk.gov.moj.cpp.sjp.domain.transformation;
+
+import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.DEACTIVATE;
+import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.NO_ACTION;
+
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.tools.eventsourcing.transformation.api.Action;
+import uk.gov.justice.tools.eventsourcing.transformation.api.EventTransformation;
+import uk.gov.justice.tools.eventsourcing.transformation.api.annotation.Transformation;
+
+import java.util.stream.Stream;
+
+@Transformation
+public class DeactivateOrphanCaseListedEvents implements EventTransformation {
+
+    private static final String EVENT_CASE_LISTED_IN_CRIMINAL_COURTS = "sjp.events.case-listed-in-criminal-courts";
+    private static final long EVENT_FIRST_IN_STREAM_POSITION = 1L;
+
+    @Override
+    public Action actionFor(final JsonEnvelope eventEnvelope) {
+        final Metadata metadata = eventEnvelope.metadata();
+        if (metadata.name().equals(EVENT_CASE_LISTED_IN_CRIMINAL_COURTS) &&
+                metadata.position().orElse(0L).equals(EVENT_FIRST_IN_STREAM_POSITION)) {
+            return DEACTIVATE;
+        }
+        return NO_ACTION;
+    }
+
+    @Override
+    public Stream<JsonEnvelope> apply(final JsonEnvelope envelope) {
+        return Stream.empty();
+    }
+
+    @Override
+    public void setEnveloper(final Enveloper enveloper) {
+        // No action to take here
+    }
+}

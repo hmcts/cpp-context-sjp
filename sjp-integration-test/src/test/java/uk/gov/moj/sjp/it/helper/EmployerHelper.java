@@ -1,7 +1,14 @@
 package uk.gov.moj.sjp.it.helper;
 
 import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessageAsJsonObject;
 
 import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
@@ -16,11 +23,22 @@ import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
+import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 
 public class EmployerHelper implements AutoCloseable {
 
     private MessageConsumer messageConsumer;
+    public static final String FIELD_NAME = "name";
+    public static final String FIELD_EMPLOYEE_REFERENCE = "employeeReference";
+    public static final String FIELD_PHONE = "phone";
+    public static final String FIELD_ADDRESS = "address";
+    public static final String FIELD_ADDRESS_1 = "address1";
+    public static final String FIELD_ADDRESS_2 = "address2";
+    public static final String FIELD_ADDRESS_3 = "address3";
+    public static final String FIELD_ADDRESS_4 = "address4";
+    public static final String FIELD_ADDRESS_5 = "address5";
+    public static final String FIELD_POST_CODE = "postcode";
 
     public EmployerHelper() {
         messageConsumer = TopicUtil.publicEvents.createConsumerForMultipleSelectors(
@@ -57,5 +75,38 @@ public class EmployerHelper implements AutoCloseable {
     @Override
     public void close() throws Exception {
         messageConsumer.close();
+    }
+
+    private Matcher<ReadContext> getEmployerUpdatedPayloadContentMatcher(final JsonObject employer) {
+
+        final JsonObject address = employer.getJsonObject(FIELD_ADDRESS);
+        return allOf(
+                withJsonPath("$.name", equalTo(employer.getString(FIELD_NAME))),
+                withJsonPath("$.employeeReference", equalTo(employer.getString(FIELD_EMPLOYEE_REFERENCE))),
+                withJsonPath("$.phone", equalTo(employer.getString(FIELD_PHONE))),
+                withJsonPath("$.address.address1", equalTo(address.getString(FIELD_ADDRESS_1))),
+                withJsonPath("$.address.address2", equalTo(address.getString(FIELD_ADDRESS_2))),
+                withJsonPath("$.address.address3", equalTo(address.getString(FIELD_ADDRESS_3))),
+                withJsonPath("$.address.address4", equalTo(address.getString(FIELD_ADDRESS_4))),
+                withJsonPath("$.address.address5", equalTo(address.getString(FIELD_ADDRESS_5))),
+                withJsonPath("$.address.postcode", equalTo(address.getString(FIELD_POST_CODE)))
+        );
+    }
+
+    public Matcher<Object> getEmployerUpdatedPayloadMatcher(final JsonObject employer) {
+        return isJson(getEmployerUpdatedPayloadContentMatcher(employer));
+    }
+
+    public Matcher<JsonEnvelope> getEmployerUpdatedPublicEventMatcher(final JsonObject employer) {
+        final Matcher<ReadContext> payloadContentMatcher = getEmployerUpdatedPayloadContentMatcher(employer);
+        return jsonEnvelope()
+                .withMetadataOf(metadata().withName("public.sjp.employer-updated"))
+                .withPayloadOf(payloadIsJson(payloadContentMatcher));
+    }
+
+    public Matcher<JsonEnvelope> getEmployerDeletedPublicEventMatcher(final String defendantId) {
+        return jsonEnvelope()
+                .withMetadataOf(metadata().withName("public.sjp.employer-deleted"))
+                .withPayloadOf(payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId))));
     }
 }

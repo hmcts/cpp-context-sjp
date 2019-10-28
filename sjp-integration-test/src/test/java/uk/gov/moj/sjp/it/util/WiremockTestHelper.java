@@ -22,6 +22,10 @@ public class WiremockTestHelper {
         waitForStubToBeReady(resource, mediaType, Status.OK);
     }
 
+    public static void waitForCommandToBeReady(String resource, String mediaType) {
+        waitForStubToBeReady(resource, mediaType, Status.ACCEPTED);
+    }
+
     public static void waitForStubToBeReady(String resource, String mediaType, Status expectedStatus) {
         final RequestParams requestParams = requestParams(BASE_URI + resource, mediaType).build();
         pollWithDefaults(requestParams).until(status().is(expectedStatus));

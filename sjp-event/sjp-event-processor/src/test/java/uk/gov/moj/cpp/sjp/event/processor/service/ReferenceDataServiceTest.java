@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -43,6 +44,22 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ReferenceDataServiceTest {
 
+    private static final String FIELD_ID = "id";
+    private static final String FIELD_VERSION = "version";
+    private static final String FIELD_LABEL = "label";
+    private static final String FIELD_WELSH_LABEL = "welshLabel";
+    private static final String FIELD_IS_AVAILABLE_FOR_COURT_EXTRACT = "isAvailableForCourtExtract";
+    private static final String FIELD_SHORT_CODE = "shortCode";
+    private static final String FIELD_LEVEL = "level";
+    private static final String FIELD_RANK = "rank";
+    private static final String FIELD_START_DATE = "startDate";
+    private static final String FIELD_USER_GROUPS = "userGroups";
+    private static final String PLACEHOLDER = "PLACEHOLDER";
+    private static final String WITHDRAWN_RESULT_ID = "6feb0f2e-8d1e-40c7-af2c-05b28c69e5fc";
+    private static final String DISMISSED_RESULT_ID = "14d66587-8fbe-424f-a369-b1144f1684e3";
+    private static final String WITHDRAWN_SHORT_CODE = "WDRNNOT";
+    private static final String DISMISSED_SHORT_CODE = "D";
+    private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
@@ -51,8 +68,6 @@ public class ReferenceDataServiceTest {
 
     @InjectMocks
     private ReferenceDataService referenceDataService;
-
-    private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
 
     @Test
     public void shouldReturnCountryForAPostcode() {
@@ -181,6 +196,26 @@ public class ReferenceDataServiceTest {
         assertThat(documentsMetadata, is(responsePayload));
     }
 
+
+    @Test
+    public void shouldReturnAllResultDefinitions() {
+
+        final JsonEnvelope queryResponse = envelopeFrom(metadataWithRandomUUIDAndName(), getAllResultsDefinitionJsonObject());
+
+        when(requester.request(any())).thenReturn(queryResponse);
+
+        final JsonArray allResultDefinitions = referenceDataService.getAllResultDefinitions(envelope);
+
+        assertThat(allResultDefinitions.getJsonObject(0).getString(FIELD_SHORT_CODE), is(WITHDRAWN_SHORT_CODE));
+        assertThat(allResultDefinitions.getJsonObject(0).getString(FIELD_ID), is(WITHDRAWN_RESULT_ID));
+    }
+
+    private JsonEnvelope organisationUnitsQuery(final String oucode) {
+        return requester.requestAsAdmin(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(envelope).withName("referencedata.query.organisationunits"),
+                payloadIsJson(withJsonPath("$.oucode", equalTo(oucode))))));
+    }
+
     private Object requestEthnicity(final String ethnicityCode) {
         return requester.requestAsAdmin(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("referencedata.query.ethnicities"),
@@ -229,5 +264,42 @@ public class ReferenceDataServiceTest {
                 metadataWithRandomUUID("referencedata.query.prosecutors"),
                 responsePayload);
     }
+
+    private final JsonObject getAllResultsDefinitionJsonObject() {
+
+        final JsonObject withdrawnResultDefinitionJsonObject = createObjectBuilder()
+                .add(FIELD_ID, WITHDRAWN_RESULT_ID)
+                .add(FIELD_VERSION, PLACEHOLDER)
+                .add(FIELD_LABEL, PLACEHOLDER)
+                .add(FIELD_WELSH_LABEL, PLACEHOLDER)
+                .add(FIELD_SHORT_CODE, WITHDRAWN_SHORT_CODE)
+                .add(FIELD_LEVEL, PLACEHOLDER)
+                .add(FIELD_USER_GROUPS, PLACEHOLDER)
+                .add(FIELD_RANK, PLACEHOLDER)
+                .add(FIELD_START_DATE, PLACEHOLDER)
+                .add(FIELD_IS_AVAILABLE_FOR_COURT_EXTRACT, PLACEHOLDER)
+                .build();
+
+        final JsonObject dismissedResultDefinitionJsonObject = createObjectBuilder()
+                .add(FIELD_ID, DISMISSED_RESULT_ID)
+                .add(FIELD_VERSION, PLACEHOLDER)
+                .add(FIELD_LABEL, PLACEHOLDER)
+                .add(FIELD_WELSH_LABEL, PLACEHOLDER)
+                .add(FIELD_SHORT_CODE, DISMISSED_SHORT_CODE)
+                .add(FIELD_LEVEL, PLACEHOLDER)
+                .add(FIELD_USER_GROUPS, PLACEHOLDER)
+                .add(FIELD_RANK, PLACEHOLDER)
+                .add(FIELD_START_DATE, PLACEHOLDER)
+                .add(FIELD_IS_AVAILABLE_FOR_COURT_EXTRACT, PLACEHOLDER)
+                .build();
+
+        return createObjectBuilder()
+                .add("resultDefinitions", createArrayBuilder()
+                        .add(withdrawnResultDefinitionJsonObject)
+                        .add(dismissedResultDefinitionJsonObject)
+                        .build())
+                .build();
+    }
+
 
 }

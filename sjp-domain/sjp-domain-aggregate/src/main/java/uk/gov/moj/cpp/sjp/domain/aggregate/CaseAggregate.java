@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
+import static java.util.stream.Stream.empty;
+
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.json.schemas.domains.sjp.ListingDetails;
 import uk.gov.justice.json.schemas.domains.sjp.Note;
@@ -39,8 +41,9 @@ import java.util.stream.Stream;
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 9L;
+    private static final long serialVersionUID = -7550132883773956916L;
     private static final AggregateStateMutator<Object, CaseAggregateState> AGGREGATE_STATE_MUTATOR = AggregateStateMutator.compositeCaseAggregateStateMutator();
+
     @SuppressWarnings("squid:S1948")
     private final CaseAggregateState state = new CaseAggregateState();
 
@@ -55,7 +58,10 @@ public class CaseAggregate implements Aggregate {
     public Stream<Object> updateCaseListedInCriminalCourts(final UUID caseId,
                                                            final String hearingCourtName,
                                                            final ZonedDateTime hearingTime) {
-        return apply(CaseCoreHandler.INSTANCE.updateCaseListedInCriminalCourts(caseId, hearingCourtName, hearingTime));
+        if (state.isCaseReceived()) {
+            return apply(CaseCoreHandler.INSTANCE.updateCaseListedInCriminalCourts(caseId, hearingCourtName, hearingTime));
+        }
+        return empty();
     }
 
     public Stream<Object> markCaseReopened(final CaseReopenDetails caseReopenDetails) {
@@ -88,6 +94,10 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> updateFinancialMeans(final UUID userId, final FinancialMeans financialMeans) {
         return apply(CaseFinancialMeansHandler.INSTANCE.updateFinancialMeans(userId, financialMeans, state));
+    }
+
+    public Stream<Object> deleteFinancialMeans(final UUID defendantId) {
+        return apply(CaseFinancialMeansHandler.INSTANCE.deleteFinancialMeans(defendantId, state));
     }
 
     public Stream<Object> updateEmployer(final UUID userId, final Employer employer) {
@@ -208,6 +218,10 @@ public class CaseAggregate implements Aggregate {
                 author,
                 decisionId,
                 state));
+    }
+
+    public CaseAggregateState getState() {
+        return state;
     }
 
     @Override

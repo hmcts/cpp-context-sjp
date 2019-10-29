@@ -17,7 +17,6 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.sjp.domain.resulting.Offence;
 import uk.gov.moj.cpp.sjp.domain.resulting.ReferencedDecisionsSaved;
@@ -39,7 +38,7 @@ import javax.json.JsonObject;
 @ServiceComponent(EVENT_PROCESSOR)
 public class DecisionProcessor {
 
-    private static final String[] WITHDRAWN_OR_DISMISSED_SHORTCODES = {"D", "WDRNNOT"};
+    private static final String[] WITHDRAWN_OR_DISMISSED_SHORTCODES = {"DISM", "WDRNNOT"};
     private static final String FIELD_SHORT_CODE = "shortCode";
     private static final String FIELD_ID = "id";
     private static final JsonObject EMPTY_JSON_OBJECT = createObjectBuilder().build();
@@ -68,7 +67,9 @@ public class DecisionProcessor {
                 .withName("sjp.command.complete-case")
                 .withMetadataFrom(envelope));
 
-        final Map<UUID, String> resultDefinitionsWorD = getWithdrawnOrDismissedResultDefinitions(envelope.metadata());
+        final Map<UUID, String> resultDefinitionsWorD = getWithdrawnOrDismissedResultDefinitions(
+                envelope.metadata(),
+                referencedDecisionsSaved.getResultedOn().toLocalDate());
 
         if (allOffencesWithdrawnOrDismissed(offences, resultDefinitionsWorD)) {
             sender.send(envelop(
@@ -110,10 +111,10 @@ public class DecisionProcessor {
         return withdrawnOrDismissedResultDefinitions.keySet().contains(result.getResultDefinitionId());
     }
 
-    private Map<UUID, String> getWithdrawnOrDismissedResultDefinitions(final Metadata metadata) {
+    private Map<UUID, String> getWithdrawnOrDismissedResultDefinitions(final Metadata metadata, final LocalDate onDate) {
 
         final Map<UUID, String> withdrawnOrDismissedResultDefinitions = new HashMap<>();
-        final JsonArray allResultDefinitions = referenceDataService.getAllResultDefinitions(envelopeFrom(metadata, EMPTY_JSON_OBJECT));
+        final JsonArray allResultDefinitions = referenceDataService.getAllResultDefinitions(envelopeFrom(metadata, EMPTY_JSON_OBJECT), onDate);
 
         for (final JsonObject resultDefinition : allResultDefinitions.getValuesAs(JsonObject.class)) {
             if (withdrawnOrDismissedResultDefinition(resultDefinition)) {

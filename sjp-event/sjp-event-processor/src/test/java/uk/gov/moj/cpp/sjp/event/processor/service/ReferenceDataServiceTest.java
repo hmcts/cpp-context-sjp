@@ -58,7 +58,7 @@ public class ReferenceDataServiceTest {
     private static final String WITHDRAWN_RESULT_ID = "6feb0f2e-8d1e-40c7-af2c-05b28c69e5fc";
     private static final String DISMISSED_RESULT_ID = "14d66587-8fbe-424f-a369-b1144f1684e3";
     private static final String WITHDRAWN_SHORT_CODE = "WDRNNOT";
-    private static final String DISMISSED_SHORT_CODE = "D";
+    private static final String DISMISSED_SHORT_CODE = "DISM";
     private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
@@ -204,7 +204,7 @@ public class ReferenceDataServiceTest {
 
         when(requester.request(any())).thenReturn(queryResponse);
 
-        final JsonArray allResultDefinitions = referenceDataService.getAllResultDefinitions(envelope);
+        final JsonArray allResultDefinitions = referenceDataService.getAllResultDefinitions(envelope, LocalDate.now());
 
         assertThat(allResultDefinitions.getJsonObject(0).getString(FIELD_SHORT_CODE), is(WITHDRAWN_SHORT_CODE));
         assertThat(allResultDefinitions.getJsonObject(0).getString(FIELD_ID), is(WITHDRAWN_RESULT_ID));

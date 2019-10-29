@@ -54,8 +54,10 @@ import org.hamcrest.Matcher;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("To be fixed in ATCM-5184")
 public class TransparencyReportIT extends BaseIntegrationTest {
 
     private static final String SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED = "sjp.events.transparency-report-requested";

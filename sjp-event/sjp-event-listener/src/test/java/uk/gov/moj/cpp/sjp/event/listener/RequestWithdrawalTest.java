@@ -70,7 +70,7 @@ public class RequestWithdrawalTest {
         // Super class because the converter is modified by mockito so it does not have this field
         final Class<?> aClass = jsonObjectToObjectConverter.getClass().getSuperclass();
 
-        final Field objectMapperField = aClass.getDeclaredField("mapper");
+        final Field objectMapperField = aClass.getDeclaredField("objectMapper");
         objectMapperField.setAccessible(true);
 
         objectMapperField.set(jsonObjectToObjectConverter, new ObjectMapperProducer().objectMapper());

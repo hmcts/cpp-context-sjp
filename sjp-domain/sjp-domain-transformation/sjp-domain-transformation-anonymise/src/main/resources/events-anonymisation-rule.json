@@ -28,7 +28,6 @@
     {
       "eventName": "sjp.events.case-document-uploaded",
       "fieldsToBeIgnored": [
-        "$.documentType"
       ]
     },
     {

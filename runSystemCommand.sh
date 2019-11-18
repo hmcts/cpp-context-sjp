@@ -17,7 +17,7 @@
 #
 ##################################################################################################
 
-FRAMEWORK_JMX_COMMAND_CLIENT_VERSION=2.2.3
+FRAMEWORK_JMX_COMMAND_CLIENT_VERSION=2.4.0
 CONTEXT_NAME="sjp"
 USER_NAME="admin"
 PASSWORD="admin"

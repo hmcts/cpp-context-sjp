@@ -11,6 +11,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
@@ -28,7 +29,6 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.ws.rs.core.Response;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.json.JSONObject;
@@ -109,13 +109,16 @@ public class AssignmentStub {
     }
 
     private static void verifyCommandSent(final String contentType, final Predicate<JSONObject> payloadPredicate) {
-        await().until(() ->
-                findAll(postRequestedFor(urlPathEqualTo(ASSIGNMENT_COMMAND_URL))
-                        .withHeader(CONTENT_TYPE, equalTo(contentType)))
-                        .stream()
-                        .map(LoggedRequest::getBodyAsString)
-                        .map(JSONObject::new)
-                        .anyMatch(payloadPredicate));
+        await()
+                .timeout(30, SECONDS)
+                .pollInterval(2, SECONDS)
+                .until(() ->
+                        findAll(postRequestedFor(urlPathEqualTo(ASSIGNMENT_COMMAND_URL))
+                                .withHeader(CONTENT_TYPE, equalTo(contentType)))
+                                .stream()
+                                .map(LoggedRequest::getBodyAsString)
+                                .map(JSONObject::new)
+                                .anyMatch(payloadPredicate));
     }
 
 }

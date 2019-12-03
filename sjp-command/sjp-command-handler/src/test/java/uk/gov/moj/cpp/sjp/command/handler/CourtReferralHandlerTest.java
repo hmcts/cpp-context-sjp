@@ -45,6 +45,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -154,7 +155,7 @@ public class CourtReferralHandlerTest {
     public void shouldAcknowledgeCaseCourtHearingReferral() throws EventStreamException {
         String rejectionReason = "rejection reason";
         UUID caseId = randomUUID();
-        ZonedDateTime rejectionTimestamp = now(UTC);
+        ZonedDateTime rejectionTimestamp = ZonedDateTime.of(2019, 12, 3, 11, 23, 2, 0, UTC);
 
         final RecordCaseReferralForCourtHearingRejection recordCaseReferralForCourtHearingRejection =
                 recordCaseReferralForCourtHearingRejection()
@@ -193,7 +194,7 @@ public class CourtReferralHandlerTest {
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
                                         withJsonPath("$.rejectionReason", equalTo(rejectionReason)),
-                                        withJsonPath("$.rejectedAt", equalTo(rejectionTimestamp.toString()))
+                                        withJsonPath("$.rejectedAt", equalTo("2019-12-03T11:23:02.000Z"))
                                 ))))));
     }
 

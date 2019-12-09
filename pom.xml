@@ -4,12 +4,12 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>9.4.4</version>
+        <version>9.4.5</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
     <artifactId>sjp-parent</artifactId>
-    <version>6.4.2-SNAPSHOT</version>
+    <version>6.4.2-FRAMEWORK-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>

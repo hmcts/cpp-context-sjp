@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-domain</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>6.0.17-SC-SNAPSHOT</version>
+        <version>6.4.1-SC-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -24,6 +24,7 @@
         <module>sjp-domain-transformation-orphan-case-listed-events</module>
         <module>sjp-domain-transformation-add-defendantId-to-defendant-details-moved-from-people</module>
         <module>sjp-domain-transformation-anonymise</module>
+        <module>sjp-domain-transformation-remove-unlinked-defendant-update-failed</module>
     </modules>
 
 </project>

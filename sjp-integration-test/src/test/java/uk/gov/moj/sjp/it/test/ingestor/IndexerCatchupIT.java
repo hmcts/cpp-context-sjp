@@ -3,12 +3,17 @@ package uk.gov.moj.sjp.it.test.ingestor;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static uk.gov.justice.services.eventstore.management.commands.IndexerCatchupCommand.INDEXER_CATCHUP;
+import static uk.gov.justice.services.jmx.system.command.client.connection.JmxParametersBuilder.jmxParameters;
+import static uk.gov.justice.services.test.utils.common.host.TestHostProvider.getHost;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
 
-import uk.gov.justice.services.jmx.system.command.client.SystemCommandCaller;
+import uk.gov.justice.services.jmx.system.command.client.SystemCommanderClient;
+import uk.gov.justice.services.jmx.system.command.client.TestSystemCommanderClientFactory;
+import uk.gov.justice.services.jmx.system.command.client.connection.JmxParameters;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.justice.services.test.utils.persistence.DatabaseCleaner;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
@@ -27,13 +32,18 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class IndexerCatchupIT extends BaseIntegrationTest {
-    private static final String CONTEXT = "sjp";
     public static final String CASE_ID = "7e2f843e-d639-40b3-8611-8015f3a18958";
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
-    private final SystemCommandCaller systemCommandCaller = new SystemCommandCaller("sjp");
+    private final TestSystemCommanderClientFactory systemCommanderClientFactory = new TestSystemCommanderClientFactory();
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
     private final MessageProducerClient privateEventsProducer = new MessageProducerClient();
     private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
+
+    private static final String HOST = getHost();
+    private static final int PORT = 9990;
+    private static final String CONTEXT = "sjp";
+    private static final String USERNAME = "admin";
+    private static final String PASSWORD = "admin";
 
     @Before
     public void before() throws IOException {
@@ -43,6 +53,7 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
 
         elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
     }
+
 
     @After
     public void tearDown() {
@@ -61,16 +72,29 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
         elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
         databaseCleaner.cleanViewStoreTables(CONTEXT, "processed_event", "stream_status", "stream_buffer");
 
-        systemCommandCaller.callIndexerCatchup();
+        runIndexerCatchup();
 
         checkThatCaseIsinElasticSearch();
+    }
+
+    private void runIndexerCatchup() throws Exception {
+        final JmxParameters jmxParameters = jmxParameters()
+                .withContextName(CONTEXT)
+                .withHost(HOST)
+                .withPort(PORT)
+                .withUsername(USERNAME)
+                .withPassword(PASSWORD)
+                .build();
+        try (final SystemCommanderClient systemCommanderClient = systemCommanderClientFactory.create(jmxParameters)) {
+
+            systemCommanderClient.getRemote(CONTEXT).call(INDEXER_CATCHUP);
+        }
     }
 
     private void checkThatCaseIsinElasticSearch() {
         final JsonObject actualCase = getCaseFromElasticSearch();
         assertThat(actualCase.getString("caseId"), is(CASE_ID));
     }
-
 
     private void publishSjpCaseReceivedEvent() {
         final CreateCase.CreateCasePayloadBuilder createCase = CreateCase.CreateCasePayloadBuilder

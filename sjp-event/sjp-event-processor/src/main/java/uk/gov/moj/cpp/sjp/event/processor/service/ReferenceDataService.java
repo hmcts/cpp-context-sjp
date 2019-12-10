@@ -22,6 +22,8 @@ import javax.json.JsonObject;
 
 public class ReferenceDataService {
 
+    private static final String ON_QUERY_PARAMETER = "on";
+
     @Inject
     private Enveloper enveloper;
 
@@ -100,10 +102,14 @@ public class ReferenceDataService {
         return response.payloadAsJsonObject();
     }
 
-    public JsonArray getAllResultDefinitions(final JsonEnvelope envelope) {
+    public JsonArray getAllResultDefinitions(final JsonEnvelope envelope, final LocalDate onDate) {
 
         final Envelope<JsonObject> request = Enveloper
-                .envelop(createObjectBuilder().build())
+                .envelop(
+                        createObjectBuilder()
+                                .add(ON_QUERY_PARAMETER, onDate.toString())
+                                .build()
+                )
                 .withName("referencedata.get-all-result-definitions")
                 .withMetadataFrom(envelope);
 

@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-parent</artifactId>
-        <version>6.0.17-SC-SNAPSHOT</version>
+        <version>6.4.1-SC-SNAPSHOT</version>
     </parent>
     <artifactId>sjp-service</artifactId>
     <packaging>war</packaging>
@@ -26,6 +26,12 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.sjp</groupId>
             <artifactId>sjp-command-handler</artifactId>
+            <version>${project.version}</version>
+            <classifier>classes</classifier>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.sjp</groupId>
+            <artifactId>sjp-event-indexer</artifactId>
             <version>${project.version}</version>
             <classifier>classes</classifier>
         </dependency>
@@ -70,12 +76,6 @@
             <artifactId>sjp-event-sources</artifactId>
             <version>${project.version}</version>
             <classifier>yaml</classifier>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.moj.cpp.sjp</groupId>
-            <artifactId>sjp-event-indexer</artifactId>
-            <version>${project.version}</version>
-            <classifier>classes</classifier>
         </dependency>
 
         <!-- Test dependencies -->

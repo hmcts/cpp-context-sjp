@@ -56,6 +56,8 @@ import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
 import java.io.StringReader;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -94,7 +96,7 @@ public class DecisionProcessorTest {
     private static final String WITHDRAWN_RESULT_ID = "6feb0f2e-8d1e-40c7-af2c-05b28c69e5fc";
     private static final String DISMISSED_RESULT_ID = "14d66587-8fbe-424f-a369-b1144f1684e3";
     private static final String WITHDRAWN_SHORT_CODE = "WDRNNOT";
-    private static final String DISMISSED_SHORT_CODE = "D";
+    private static final String DISMISSED_SHORT_CODE = "DISM";
 
     private static final DefaultJsonEnvelopeProvider defaultJsonEnvelopeProvider = new DefaultJsonEnvelopeProvider();
     private static final ObjectMapperProducer objectMapperProducer = new ObjectMapperProducer();
@@ -153,7 +155,7 @@ public class DecisionProcessorTest {
         setField(objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
         when(sjpService.getSessionDetails(any(), any())).thenReturn(getSJPSessionJsonObject());
         when(sjpService.getCaseDetails(any(), any())).thenReturn(buildCaseDetails());
-        when(referenceDataService.getAllResultDefinitions(any())).thenReturn(getAllResultsDefinitionJsonObject());
+        when(referenceDataService.getAllResultDefinitions(any(), any())).thenReturn(getAllResultsDefinitionJsonObject());
     }
 
     @Test
@@ -163,6 +165,7 @@ public class DecisionProcessorTest {
         final ReferencedDecisionsSaved referencedDecisionsSaved =
                 referenceDecisionsSaved()
                         .withCaseId(caseId)
+                        .withResultedOn(ZonedDateTime.now(ZoneId.of("UTC")))
                         .withOffences(asList(new Offence(randomUUID(), asList(new Result(randomUUID(), asList(new Prompt(randomUUID(), "value1")))))))
                         .build();
 

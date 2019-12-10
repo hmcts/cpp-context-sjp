@@ -20,6 +20,16 @@
       ]
     },
     {
+      "eventName": "sjp.events.sjp-case-created",
+      "fieldsToBeIgnored": [
+        "$.urn",
+        "$.prosecutingAuthority",
+        "$.initiationCode",
+        "$.ptiUrn",
+        "$.summonsCode"
+      ]
+    },
+    {
       "eventName": "sjp.events.case-document-added",
       "fieldsToBeIgnored": [
         "$.documentType"
@@ -28,7 +38,6 @@
     {
       "eventName": "sjp.events.case-document-uploaded",
       "fieldsToBeIgnored": [
-        "$.documentType"
       ]
     },
     {
@@ -55,7 +64,9 @@
         "$.urn",
         "$.enterpriseId",
         "$.prosecutingAuthority",
-        "$.defendant.offences[*].libraOffenceCode"
+        "$.defendant.offences[*].libraOffenceCode",
+        "$.defendant.gender",
+        "$.defendant.title"
       ]
     },
     {
@@ -78,6 +89,13 @@
       ]
     },
     {
+      "eventName": "sjp.events.defendant-details-moved-from-people",
+      "fieldsToBeIgnored": [
+        "$.title",
+        "$.gender"
+      ]
+    },
+    {
       "eventName": "sjp.events.defendant-details-updated",
       "fieldsToBeIgnored": [
         "$.title",
@@ -95,7 +113,8 @@
     {
       "eventName": "sjp.events.financial-means-updated",
       "fieldsToBeIgnored": [
-        "$.income.frequency"
+        "$.income.frequency",
+        "$.outgoings[*].description"
       ]
     },
     {

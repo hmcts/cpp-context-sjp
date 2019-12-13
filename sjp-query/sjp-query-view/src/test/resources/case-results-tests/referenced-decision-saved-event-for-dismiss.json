@@ -1,0 +1,21 @@
+{
+  "id": "${decisionId}",
+  "caseId": "${caseId}",
+  "sjpSessionId": "${sessionId}",
+  "created": "${resultedOn}",
+  "accountDivisionCode": "${accountDivisionCode}",
+  "enforcingCourtCode": "${enforcingCourtCode}",
+  "offences": [
+    {
+      "id": "${offenceId}",
+      "results": [
+        {
+          "code": "D",
+          "resultTypeId": "${resultTypeId}",
+          "terminalEntries": []
+        }
+      ]
+    }
+  ],
+  "interim": false
+}

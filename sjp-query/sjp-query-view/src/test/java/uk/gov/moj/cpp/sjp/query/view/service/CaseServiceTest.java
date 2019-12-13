@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.query.view.service;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
+import static java.time.LocalDate.now;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -31,12 +32,15 @@ import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDocumentBuilder;
+import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.OffenceSummary;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
@@ -53,9 +57,11 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -74,20 +80,18 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class CaseServiceTest {
 
-    private Clock clock = new StoppedClock(new UtcClock().now());
-
     private static final UUID CASE_ID = randomUUID();
+    private static final CaseStatus CASE_STATUS_REFERRED_FOR_COURT_HEARING = CaseStatus.REFERRED_FOR_COURT_HEARING;
     private static final String URN = "TFL1234";
     private static final String PROSECUTING_AUTHORITY = "prosecutingAuthority";
     private static final Boolean COMPLETED = Boolean.TRUE;
     private static final String ENTERPRISE_ID = "2K2SLYFC743H";
-
-    private static final LocalDate POSTING_DATE = LocalDate.now(UTC);
+    private static final LocalDate POSTING_DATE = now(UTC);
     private static final String FIRST_NAME = "Adam";
     private static final String LAST_NAME = "Zuma";
     private static final String POSTCODE = "AB1 2CD";
-    private final LocalDate DATE_OF_BIRTH = LocalDate.now(UTC).minusYears(30);
-
+    private final LocalDate DATE_OF_BIRTH = now(UTC).minusYears(30);
+    private final Clock clock = new StoppedClock(new UtcClock().now());
     @Mock
     private CaseRepository caseRepository;
 
@@ -129,6 +133,7 @@ public class CaseServiceTest {
         assertThat(caseView.getUrn(), is(URN));
         assertThat(caseView.getCaseDocuments(), hasSize(3));
         assertThat(caseView.isOnlinePleaReceived(), is(onlinePleaReceived));
+        assertThat(caseView.getStatus(), is(CASE_STATUS_REFERRED_FOR_COURT_HEARING));
     }
 
     @Test
@@ -179,7 +184,7 @@ public class CaseServiceTest {
     @Test
     public void shouldFindCaseByUrnAndContainsReopenedDateAndLibraCaseNumber() {
         final CaseDetail caseDetail = createCaseDetail(true);
-        final LocalDate reopenedDate = LocalDate.now();
+        final LocalDate reopenedDate = now();
         final String reason = "REASON";
         caseDetail.setReopenedDate(reopenedDate);
         caseDetail.setLibraCaseNumber("LIBRA12345");
@@ -224,7 +229,7 @@ public class CaseServiceTest {
 
         assertThat(caseView, notNullValue());
         assertThat(caseView.getDefendant(), notNullValue());
-        assertThat(caseView.getDefendant().getSpeakWelsh(), nullValue());
+        assertThat(caseView.getDefendant().getSpeakWelsh(), is(false));
     }
 
     @Test
@@ -248,7 +253,7 @@ public class CaseServiceTest {
 
     @Test
     public void shouldFindByUrnPostcode() {
-        CaseDetail caseDetail = createCaseDetail();
+        final CaseDetail caseDetail = createCaseDetail();
 
         given(caseRepository.findByUrnPostcode(URN, POSTCODE)).willReturn(caseDetail);
         final CaseView caseView = service.findCaseByUrnPostcode(URN, POSTCODE);
@@ -339,7 +344,7 @@ public class CaseServiceTest {
 
         when(caseRepository.findByMaterialId(materialId)).thenThrow(new NoResultException());
 
-        SearchCaseByMaterialIdView searchCaseByMaterialIdView =
+        final SearchCaseByMaterialIdView searchCaseByMaterialIdView =
                 service.searchCaseByMaterialId(materialId);
 
         assertThat(searchCaseByMaterialIdView.getCaseId(), is(nullValue()));
@@ -585,6 +590,7 @@ public class CaseServiceTest {
         assertThat(result.getEnterpriseId(), equalTo(ENTERPRISE_ID));
         assertThat(result.getProsecutingAuthority(), equalTo(PROSECUTING_AUTHORITY));
         assertThat(result.getPostingDate(), equalTo(POSTING_DATE));
+        assertThat(result.getStatus(), equalTo(CASE_STATUS_REFERRED_FOR_COURT_HEARING));
         assertThat(result.getDefendant().getFirstName(), equalTo(FIRST_NAME));
         assertThat(result.getDefendant().getLastName(), equalTo(LAST_NAME));
         assertThat(result.getDefendant().getDateOfBirth(), equalTo(DATE_OF_BIRTH));
@@ -612,8 +618,9 @@ public class CaseServiceTest {
 
     private CaseDetail createCaseDetail(final boolean onlinePleaReceived) {
         final CaseDetail caseDetail = new CaseDetail(CASE_ID, URN, ENTERPRISE_ID, CPS, COMPLETED,
-                null, clock.now(), new DefendantDetail(), null, null);
+                null, clock.now(), DefendantDetailBuilder.aDefendantDetail().build(), null, now().minusDays(5));
         caseDetail.setOnlinePleaReceived(onlinePleaReceived);
+        caseDetail.setCaseStatus(CASE_STATUS_REFERRED_FOR_COURT_HEARING);
         return caseDetail;
     }
 
@@ -633,7 +640,7 @@ public class CaseServiceTest {
                 .collect(Collectors.toList());
     }
 
-    private CaseDocument createCaseDocument(String documentType) {
+    private CaseDocument createCaseDocument(final String documentType) {
         return CaseDocumentBuilder.aCaseDocument().withDocumentType(documentType).build();
     }
 
@@ -645,12 +652,16 @@ public class CaseServiceTest {
         caseSummary.setEnterpriseId(ENTERPRISE_ID);
         caseSummary.setProsecutingAuthority(PROSECUTING_AUTHORITY);
         caseSummary.setPostingDate(POSTING_DATE);
+        caseSummary.setCaseStatus(CASE_STATUS_REFERRED_FOR_COURT_HEARING);
         caseSearchResult.setId(randomUUID());
         caseSearchResult.setCaseId(CASE_ID);
         caseSearchResult.setCaseSummary(caseSummary);
         caseSearchResult.setCurrentFirstName(FIRST_NAME);
         caseSearchResult.setCurrentLastName(LAST_NAME);
         caseSearchResult.setDateOfBirth(DATE_OF_BIRTH);
+        final Set<OffenceSummary> offenceSummary = new HashSet<>();
+        offenceSummary.add(new OffenceSummary());
+        caseSearchResult.setOffenceSummary(offenceSummary);
         // not resulted
         return caseSearchResult;
     }

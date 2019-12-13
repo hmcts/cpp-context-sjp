@@ -1,18 +1,20 @@
 package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonValueIsJsonMatcher.isJson;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.DELEGATED_POWERS_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
@@ -20,52 +22,55 @@ import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
-import static uk.gov.moj.sjp.it.Constants.PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
-import static uk.gov.moj.sjp.it.Constants.PUBLIC_SJP_CASE_UPDATE_REJECTED;
-import static uk.gov.moj.sjp.it.Constants.SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
-import static uk.gov.moj.sjp.it.Constants.SJP_EVENTS_CASE_UPDATE_REJECTED;
+import static uk.gov.moj.sjp.it.Constants.EVENT_OFFENCES_WITHDRAWAL_STATUS_SET;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_OFFENCES_WITHDRAWAL_STATUS_SET;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SET_PLEAS;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAsync;
-import static uk.gov.moj.sjp.it.helper.UpdatePleaHelper.getPleaPayload;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
-import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE;
 
+import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.event.processor.AssignmentProcessor;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.commandclient.AssignCaseClient;
+import uk.gov.moj.sjp.it.commandclient.AssignNextCaseClient;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
-import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestCancelHelper;
+import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.SessionHelper;
-import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
+import uk.gov.moj.sjp.it.helper.SetPleasHelper;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.time.LocalDate;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.After;
+import org.apache.commons.lang3.tuple.Triple;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mortbay.log.Log;
 
 public class AssignmentRulesIT extends BaseIntegrationTest {
 
-    private static final String LONDON_LJA_NATIONAL_COURT_CODE = "2572", NON_LONDON_LJA_NATIONAL_COURT_CODE = "2905";
-    private static final String LONDON_COURT_HOUSE_OU_CODE = "B01OK00", NON_LONDON_COURT_HOUSE_OU_CODE = "B20EB00";
     private static final String DATE_TO_AVOID = "a-date-to-avoid";
-    public static final String DEFAULT_LONDON_COURT_HOUSE_OU_CODE = "B01OK";
+
+    private final UUID withdrawalRequestReasonId = randomUUID();
+
+    private EventListener eventListener = new EventListener();
 
     private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
     private CreateCase.CreateCasePayloadBuilder tflPiaCasePayloadBuilder, tflOldPiaCasePayloadBuilder, tflPleadedGuiltyCasePayloadBuilder, tflPleadedNotGuiltyCasePayloadBuilder, tflPendingWithdrawalCasePayloadBuilder,
@@ -78,20 +83,15 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
         databaseCleaner.cleanAll();
 
-        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(DEFAULT_LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
-        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
-        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(NON_LONDON_COURT_HOUSE_OU_CODE, NON_LONDON_LJA_NATIONAL_COURT_CODE);
-        AssignmentStub.stubAddAssignmentCommand();
-        AssignmentStub.stubRemoveAssignmentCommand();
+        ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery();
+        AssignmentStub.stubAssignmentReplicationCommands();
         SchedulingStub.stubStartSjpSessionCommand();
-
-        final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper();
 
         tflPiaCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
                 .withPostingDate(daysAgo(31));
 
         tflOldPiaCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
-                .withPostingDate(daysAgo(312));
+                .withPostingDate(daysAgo(32));
 
         tflPleadedGuiltyCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
                 .withPostingDate(daysAgo(10));
@@ -121,7 +121,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
 
         this.databaseCleaner.cleanAll();
 
-        final List<CreateCase.CreateCasePayloadBuilder> caseHelpers = Arrays.asList(
+        final List<CreateCase.CreateCasePayloadBuilder> caseHelpers = asList(
                 tflPiaCasePayloadBuilder,
                 tflOldPiaCasePayloadBuilder,
                 tflPleadedGuiltyCasePayloadBuilder,
@@ -134,31 +134,78 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
 
         caseHelpers.forEach(helper -> {
             stubGetEmptyAssignmentsByDomainObjectId(helper.getId());
-            stubGetCaseDecisionsWithNoDecision(helper.getId());
         });
 
         caseHelpers.forEach(CreateCase::createCaseForPayloadBuilder);
 
-        updatePleaHelper.updatePlea(tflPleadedGuiltyCasePayloadBuilder.getId(), tflPleadedGuiltyCasePayloadBuilder.getOffenceId(), getPleaPayload(GUILTY));
-        updatePleaHelper.updatePlea(tflPleadedNotGuiltyCasePayloadBuilder.getId(), tflPleadedNotGuiltyCasePayloadBuilder.getOffenceId(), getPleaPayload(NOT_GUILTY));
-        updatePleaHelper.updatePlea(tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getId(), tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getOffenceId(), getPleaPayload(GUILTY_REQUEST_HEARING));
-        updatePleaHelper.updatePlea(dvlaPleadedNotGuiltyCasePayloadBuilder.getId(), dvlaPleadedNotGuiltyCasePayloadBuilder.getOffenceId(), getPleaPayload(NOT_GUILTY));
+        // pleaded guilty case
+        SetPleasHelper.requestSetPleas(tflPleadedGuiltyCasePayloadBuilder.getId(),
+                eventListener,
+                true,
+                false,
+                true,
+                null,
+                false,
+                asList(Triple.of(tflPleadedGuiltyCasePayloadBuilder.getOffenceId(),
+                        tflPleadedGuiltyCasePayloadBuilder.getDefendantBuilder().getId(), GUILTY)),
+                PUBLIC_EVENT_SET_PLEAS);
 
-        final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(tflPendingWithdrawalCasePayloadBuilder.getId(), SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
+        // pleaded not guilty case
+        SetPleasHelper.requestSetPleas(tflPleadedNotGuiltyCasePayloadBuilder.getId(),
+                eventListener,
+                true,
+                false,
+                true,
+                null,
+                false,
+                asList(Triple.of(tflPleadedNotGuiltyCasePayloadBuilder.getOffenceId(),
+                        tflPleadedNotGuiltyCasePayloadBuilder.getDefendantBuilder().getId(), NOT_GUILTY)),
+                PUBLIC_EVENT_SET_PLEAS);
 
-        userId = UUID.randomUUID();
-        offencesWithdrawalRequestHelper.requestWithdrawalForAllOffences(userId);
-        offencesWithdrawalRequestHelper.verifyAllOffencesWithdrawalRequestedInPublicActiveMQ();
+        // pleaded guilty request hearing case
+        SetPleasHelper.requestSetPleas(tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getId(),
+                eventListener,
+                true,
+                false,
+                true,
+                null,
+                false,
+                asList(Triple.of(tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getOffenceId(),
+                        tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getDefendantBuilder().getId(), GUILTY_REQUEST_HEARING)),
+                PUBLIC_EVENT_SET_PLEAS);
+
+        // dvla not guilty
+        SetPleasHelper.requestSetPleas(dvlaPleadedNotGuiltyCasePayloadBuilder.getId(),
+                eventListener,
+                true,
+                false,
+                true,
+                null,
+                false,
+                asList(Triple.of(dvlaPleadedNotGuiltyCasePayloadBuilder.getOffenceId(), dvlaPleadedNotGuiltyCasePayloadBuilder.getDefendantBuilder().getId(), NOT_GUILTY)),
+                PUBLIC_EVENT_SET_PLEAS);
+
+
+        userId = randomUUID();
+
+        OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(userId, EVENT_OFFENCES_WITHDRAWAL_STATUS_SET);
+        offencesWithdrawalRequestHelper.requestWithdrawalOfOffences(tflPendingWithdrawalCasePayloadBuilder.getId(), getRequestWithdrawalPayload(tflPendingWithdrawalCasePayloadBuilder.getOffenceBuilder().getId()));
+
+        final Matcher offencesWithdrawalStatusSetPayloadMatcher = allOf(
+                withJsonPath("$.caseId", Matchers.equalTo(tflPendingWithdrawalCasePayloadBuilder.getId().toString())),
+                withJsonPath("$.setAt", Matchers.notNullValue()),
+                withJsonPath("$.setBy", Matchers.equalTo(userId.toString())),
+                withJsonPath("$.withdrawalRequestsStatus[0].offenceId", Matchers.equalTo(tflPendingWithdrawalCasePayloadBuilder.getOffenceId().toString())),
+                withJsonPath("$.withdrawalRequestsStatus[0].withdrawalRequestReasonId", Matchers.equalTo(withdrawalRequestReasonId.toString())),
+                withJsonPath("$.withdrawalRequestsStatus.length()", Matchers.equalTo(1)));
+
+        final JsonEnvelope offencesWithdrawalStatusSetPublicEvent = offencesWithdrawalRequestHelper.getEventFromPublicTopic();
+        assertThat(offencesWithdrawalStatusSetPublicEvent, jsonEnvelope(
+                metadata().withName(PUBLIC_EVENT_OFFENCES_WITHDRAWAL_STATUS_SET),
+                payload(isJson(offencesWithdrawalStatusSetPayloadMatcher))));
 
         addDatesToAvoid(tflPleadedNotGuiltyCasePayloadBuilder.getId(), DATE_TO_AVOID);
         addDatesToAvoid(dvlaPleadedNotGuiltyCasePayloadBuilder.getId(), DATE_TO_AVOID);
-    }
-
-    @After
-    public void cancelOffenceWithdrawalsAndCloseHelpers() {
-        final OffencesWithdrawalRequestCancelHelper offencesWithdrawalRequestCancelHelper = new OffencesWithdrawalRequestCancelHelper(tflPendingWithdrawalCasePayloadBuilder.getId(), SJP_EVENTS_CASE_UPDATE_REJECTED, PUBLIC_SJP_CASE_UPDATE_REJECTED);
-        offencesWithdrawalRequestCancelHelper.cancelRequestWithdrawalForAllOffences(userId);
-        offencesWithdrawalRequestCancelHelper.close();
     }
 
     @Test
@@ -174,16 +221,16 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
     }
 
     @Test
-    public void nonLondonCourtsShouldHandleOnlyNonTflCases() throws Exception {
-        verifyCaseAssignedFromMagistrateSession(NON_LONDON_COURT_HOUSE_OU_CODE, dvlaPiaCasePayloadBuilder.getId());
-        verifyCaseAssignedFromMagistrateSession(NON_LONDON_COURT_HOUSE_OU_CODE, tvlPiaCasePayloadBuilder.getId());
+    public void nonLondonCourtsShouldHandleOnlyNonTflCases() {
+        verifyCaseAssignedFromMagistrateSession(DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE, dvlaPiaCasePayloadBuilder.getId());
+        verifyCaseAssignedFromMagistrateSession(DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE, tvlPiaCasePayloadBuilder.getId());
 
-        verifyCaseNotFoundInMagistrateSession(NON_LONDON_COURT_HOUSE_OU_CODE);
+        verifyCaseNotFoundInMagistrateSession(DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE);
 
-        verifyCaseAssignedFromDelegatedPowersSession(NON_LONDON_COURT_HOUSE_OU_CODE, tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getId());
-        verifyCaseAssignedFromDelegatedPowersSession(NON_LONDON_COURT_HOUSE_OU_CODE, dvlaPleadedNotGuiltyCasePayloadBuilder.getId());
+        verifyCaseAssignedFromDelegatedPowersSession(DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE, tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getId());
+        verifyCaseAssignedFromDelegatedPowersSession(DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE, dvlaPleadedNotGuiltyCasePayloadBuilder.getId());
 
-        verifyCaseNotFoundInDelegatedPowersSession(NON_LONDON_COURT_HOUSE_OU_CODE);
+        verifyCaseNotFoundInDelegatedPowersSession(DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE);
     }
 
     @Test
@@ -193,7 +240,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         sessionIdByUserId
                 .entrySet()
                 .parallelStream()
-                .forEach(sessionByUser -> startSessionAsync(sessionByUser.getValue(), sessionByUser.getKey(), LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE));
+                .forEach(sessionByUser -> startSessionAsync(sessionByUser.getValue(), sessionByUser.getKey(), DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE));
 
         final Map<UUID, UUID> assignedCaseByUserId = sessionIdByUserId
                 .entrySet()
@@ -234,7 +281,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
 
         SessionHelper.startSession(sessionId, userId, courtHouseOUCode, sessionType);
 
-        AssignCaseClient assignCase = AssignCaseClient.builder().sessionId(sessionId).build();
+        AssignNextCaseClient assignCase = AssignNextCaseClient.builder().sessionId(sessionId).build();
         assignCase.assignedPrivateHandler = (envelope) -> {
             assertThat((JsonEnvelope) envelope,
                     jsonEnvelope(
@@ -264,12 +311,18 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
 
         SessionHelper.startSession(sessionId, userId, courtHouseOUCode, sessionType);
 
-        AssignCaseClient assignCase = AssignCaseClient.builder().sessionId(sessionId).build();
+        AssignNextCaseClient assignCase = AssignNextCaseClient.builder().sessionId(sessionId).build();
         assignCase.notAssignedHandler = (envelope) -> Log.info("Case Not Assigned");
         assignCase.getExecutor().setExecutingUserId(userId).executeSync();
     }
 
     private static LocalDate daysAgo(int days) {
         return LocalDate.now().minusDays(days);
+    }
+
+    private List<WithdrawalRequestsStatus> getRequestWithdrawalPayload(UUID offence1Id) {
+        final List<WithdrawalRequestsStatus> withdrawalRequestsStatuses = new ArrayList<>();
+        withdrawalRequestsStatuses.add(new WithdrawalRequestsStatus(offence1Id, withdrawalRequestReasonId));
+        return withdrawalRequestsStatuses;
     }
 }

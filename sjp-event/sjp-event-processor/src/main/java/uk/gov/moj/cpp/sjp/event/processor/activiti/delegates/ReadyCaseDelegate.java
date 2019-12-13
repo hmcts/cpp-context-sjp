@@ -64,6 +64,7 @@ public class ReadyCaseDelegate extends AbstractCaseDelegate {
         } else {
             //TODO remove as part of ATCM-4169
             execution.setVariable(IS_READY_VARIABLE, false);
+
             final LocalDate expectedDateReady = expectedDateReadyCalculator.calculateExpectedDateReady(execution).toLocalDate();
             sendUnmarkCaseReadyForDecisionCommand(caseId, expectedDateReady, metadata);
         }

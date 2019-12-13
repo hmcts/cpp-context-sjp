@@ -128,7 +128,8 @@
     {
       "eventName": "sjp.events.online-plea-received",
       "fieldsToBeIgnored": [
-        "$.urn"
+        "$.urn",
+        "$.financialMeans.income.frequency"
       ]
     },
     {

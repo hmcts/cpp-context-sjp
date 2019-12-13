@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
+import static java.time.LocalTime.now;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -8,7 +9,6 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.joda.time.LocalDate.now;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -37,6 +37,7 @@ import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientPro
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -127,9 +128,9 @@ public class TransparencyReportRequestedProcessorTest {
         final List<UUID> caseIds = range(0, numberOfPendingCasesForExport)
                 .mapToObj(e -> randomUUID()).collect(toList());
 
-        final JsonObject CA03011_referenceDataPayload = createObjectBuilder()
+        final Optional<JsonObject> CA03011_referenceDataPayload = Optional.of(createObjectBuilder()
                 .add("title", offenceTitle)
-                .build();
+                .build());
 
         when(referenceDataService.getProsecutor(eq(prosecutorName), eq(false), any())).thenReturn(prosecutorEnglish);
         when(referenceDataService.getProsecutor(eq(prosecutorName), eq(true), any())).thenReturn(prosecutorWelsh);
@@ -244,7 +245,7 @@ public class TransparencyReportRequestedProcessorTest {
                             .add("offenceStartDate", now().toString()))
                     .add(createObjectBuilder()
                             .add("offenceCode", "CA03011")
-                            .add("offenceStartDate", now().minusMonths(1).toString()));
+                            .add("offenceStartDate", LocalDateTime.now().minusMonths(1).toLocalDate().toString()));
 
             final JsonObjectBuilder pendingCase = createObjectBuilder()
                     .add("caseId", caseIds.get(caseNumber).toString())

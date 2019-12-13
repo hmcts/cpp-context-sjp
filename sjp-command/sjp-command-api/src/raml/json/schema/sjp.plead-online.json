@@ -50,9 +50,7 @@
             "type": "string",
             "enum": ["NOT_GUILTY", "GUILTY"]
           },
-          "comeToCourt": {
-            "type": "boolean"
-          },
+
           "mitigation": {
             "type": "string"
           },
@@ -67,11 +65,17 @@
         "additionalProperties": false
       }
     },
+    "comeToCourt": {
+      "type": "boolean"
+    },
     "witnessDispute": {
       "type": "string"
     },
     "witnessDetails": {
       "type": "string"
+    },
+    "outstandingFines": {
+      "type": "boolean"
     },
     "interpreterLanguage": {
       "type": "string"

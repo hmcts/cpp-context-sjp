@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/query-offence-decision.json",
+  "type": "object",
+  "properties": {
+    "adjournedTo": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
+    "offenceId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "decisionType": {
+      "$ref": "http://cpp.moj.gov.uk/core/sjp/decision/decision-type.json"
+    },
+    "withdrawalReasonId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "verdict": {
+      "$ref": "http://cpp.moj.gov.uk/core/sjp/verdict/verdict-type.json"
+    },
+    "referralReasonId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "estimatedHearingDuration": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 999
+    },
+    "dischargeType": {
+      "enum": [
+        "ABSOLUTE",
+        "CONDITIONAL"
+      ]
+    },
+    "dischargedFor": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "integer"
+        },
+        "unit": {
+          "enum": [
+            "DAY",
+            "WEEK",
+            "MONTH",
+            "YEAR"
+          ]
+        }
+      }
+    },
+    "compensation": {
+      "type": "number"
+    },
+    "noCompensationReason": {
+      "type": "string"
+    },
+    "guiltyPleaTakenIntoAccount": {
+      "type": "boolean"
+    },
+    "fine": {
+      "type": "number"
+    },
+    "magistratesCourt": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "referredToCourt": {
+      "type": "string"
+    },
+    "referredToRoom": {
+      "type": "integer"
+    },
+    "referredToDateTime": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    }
+  },
+  "required": [
+    "decisionType",
+    "offenceId",
+    "verdict"
+  ],
+  "additionalProperties": false
+}

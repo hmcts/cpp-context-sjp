@@ -1,0 +1,31 @@
+{
+  "caseId": "fd51dc11-dc3c-40c8-90c6-79bb50b5752a",
+  "sessionId": "515604eb-a244-423c-8dcf-80be1b3751b8",
+  "decisionId": "dee6daad-087d-4b6b-b409-cedb7dacda5d",
+  "savedAt": "2019-03-01T11:03:58.998Z",
+  "offenceDecisions": [
+    {
+      "id": "%s",
+      "type": "REFER_FOR_COURT_HEARING",
+      "referralReasonId": "d10c5cc4-ec2a-41ac-bd6e-a3659c5cfeb1",
+      "listingNotes": "Listing notes",
+      "estimatedHearingDuration": 20,
+      "defendantCourtOptions": {
+        "welshHearing": false,
+        "interpreter": {
+          "needed": false
+        }
+      },
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "e76ab6f5-9156-4ecd-81f4-01fb9241ad5f",
+          "verdict": "NO_VERDICT"
+        }
+      ]
+    }
+  ],
+  "_metadata": {
+    "id": "fd51dc11-dc3c-40c0-90c6-79bb50b5752a",
+    "name": "sjp.events.decision-saved"
+  }
+}

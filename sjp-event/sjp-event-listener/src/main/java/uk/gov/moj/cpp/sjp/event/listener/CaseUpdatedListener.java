@@ -1,10 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
 
-import static java.lang.Boolean.TRUE;
-import static java.time.LocalDate.now;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
-
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -15,6 +11,7 @@ import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourts;
+import uk.gov.moj.cpp.sjp.event.CaseStatusChanged;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseDocumentAddedToCaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
@@ -23,14 +20,17 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
+import javax.inject.Inject;
+import javax.json.JsonObject;
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.transaction.Transactional;
+import static java.lang.Boolean.TRUE;
+import static java.time.LocalDate.now;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 @ServiceComponent(EVENT_LISTENER)
 public class CaseUpdatedListener {
@@ -66,12 +66,20 @@ public class CaseUpdatedListener {
                 .ifPresent(readyCaseRepository::remove);
     }
 
+    @Handles(CaseStatusChanged.EVENT_NAME)
+    @Transactional
+    public void caseStatusChanged(final JsonEnvelope envelope) {
+        final CaseStatusChanged caseStatusChanged = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), CaseStatusChanged.class);
+        final CaseDetail caseDetail = findCaseById(caseStatusChanged.getCaseId());
+        caseDetail.setCaseStatus(caseStatusChanged.getCaseStatus());
+    }
+
     @Handles(AllOffencesWithdrawalRequested.EVENT_NAME)
     @Transactional
     public void allOffencesWithdrawalRequested(final JsonEnvelope envelope) {
         final AllOffencesWithdrawalRequested event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), AllOffencesWithdrawalRequested.class);
-        caseRepository.requestWithdrawalAllOffences(event.getCaseId());
 
+        //ATCM-4086 - As a part of this story update the withdrawalRequestReasonId in Offence to other.
         updateWithdrawalRequestedDate(event.getCaseId(), envelope.metadata().createdAt().map(ZonedDateTime::toLocalDate).orElse(now()));
     }
 
@@ -79,8 +87,8 @@ public class CaseUpdatedListener {
     @Transactional
     public void allOffencesWithdrawalRequestCancelled(final JsonEnvelope envelope) {
         final AllOffencesWithdrawalRequestCancelled event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), AllOffencesWithdrawalRequestCancelled.class);
-        caseRepository.cancelRequestWithdrawalAllOffences(event.getCaseId());
 
+        //ATCM-4086 - As a part of this story update the withdrawalRequestReasonId to null.
         updateWithdrawalRequestedDate(event.getCaseId(), null);
     }
 

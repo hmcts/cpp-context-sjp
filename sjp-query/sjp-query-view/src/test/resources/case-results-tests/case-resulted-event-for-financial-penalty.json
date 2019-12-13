@@ -1,0 +1,67 @@
+{
+  "resultedOn": "${resultedOn}",
+  "offences": [
+    {
+      "id": "${offenceId}",
+      "results": [
+        {
+          "resultDefinitionId": "${foResultTypeId}",
+          "prompts": [
+            {
+              "promptDefinitionId": "${foPromptDefinitionId}",
+              "value": "40"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "${fcompResultTypeId}",
+          "prompts": [
+            {
+              "promptDefinitionId": "${fcomp1PromptDefinitionId}",
+              "value": "15.3"
+            },
+            {
+              "promptDefinitionId": "${fcomp2PromptDefinitionId}",
+              "value": "Television Licensing Organisation"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "results": [
+        {
+          "resultDefinitionId": "${fcostResultTypeId}",
+          "prompts": [
+            {
+              "promptDefinitionId": "${fcost1PromptDefinitionId}",
+              "value": "20.1"
+            },
+            {
+              "promptDefinitionId": "${fcost2PromptDefinitionId}",
+              "value": "Television Licensing Organisation"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "${fvsResultTypeId}",
+          "prompts": [
+            {
+              "promptDefinitionId": "${fvsPromptDefinitionId}",
+              "value": "32"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "${lsumResultTypeId}",
+          "prompts": [
+            {
+              "promptDefinitionId": "${lsumPromptDefinitionId}",
+              "value": "2019-11-21"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

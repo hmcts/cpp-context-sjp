@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id" : "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.set-pleas.json",
+  "type": "object",
+  "properties": {
+    "defendantCourtOptions": {
+      "type": "object",
+      "properties" : {
+        "welshHearing": {
+          "type": "boolean"
+        },
+        "interpreter": {
+          "type": "object",
+          "properties" : {
+            "language": {
+              "type": "string"
+            },
+            "needed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "needed"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "welshHearing"
+      ],
+      "additionalProperties": false
+    },
+    "pleas" : {
+      "type": "array",
+      "items": {
+        "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/plea.json",
+        "type": "object",
+        "properties": {
+          "defendantId": {
+            "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+          },
+          "offenceId": {
+            "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+          },
+          "pleaType": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": ["GUILTY","NOT_GUILTY", "GUILTY_REQUEST_HEARING"]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notGuiltyBecause": {
+            "type": "string"
+          },
+          "mitigation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "defendantId",
+          "offenceId"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "pleas"
+  ],
+  "additionalProperties": false
+}

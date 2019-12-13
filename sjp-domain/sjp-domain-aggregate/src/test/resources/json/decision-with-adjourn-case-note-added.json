@@ -1,0 +1,20 @@
+[
+  {
+    "_metadata": {
+      "name": "sjp.events.case-note-added"
+    },
+    "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+    "note": {
+      "id": "*",
+      "text": "Insufficient evidence",
+      "type": "ADJOURNMENT",
+      "addedAt": "2019-05-01T13:47:06.517Z"
+    },
+    "author": {
+      "userId": "4c8770db-02e6-4f4b-829e-2af9ea97d12f",
+      "firstName": "Erica",
+      "lastName": "Wilson"
+    },
+    "decisionId": "7dfcf915-adb2-4ce0-9a81-bf45072f7bac"
+  }
+]

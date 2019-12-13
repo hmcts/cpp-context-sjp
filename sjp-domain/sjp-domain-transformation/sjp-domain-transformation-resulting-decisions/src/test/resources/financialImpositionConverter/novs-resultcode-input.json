@@ -1,0 +1,17 @@
+{
+  "results": [
+    {
+      "code":"NOVS",
+      "terminalEntries":[
+        {
+          "index":5,
+          "value":"not imposed"
+        },
+        {
+          "index":10,
+          "value":"Absolute Discharge"
+        }
+      ]
+    }
+  ]
+}

@@ -24,6 +24,7 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
+import uk.gov.moj.cpp.sjp.event.DatesToAvoidTimerExpired;
 
 import java.util.UUID;
 
@@ -40,7 +41,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class AddDatesToAvoidHandlerTest extends CaseAggregateBaseTest {
 
     @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(DatesToAvoidAdded.class);
+    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(DatesToAvoidAdded.class, DatesToAvoidTimerExpired.class);
 
     @InjectMocks
     private AddDatesToAvoidHandler addDatesToAvoidHandler;
@@ -74,13 +75,40 @@ public class AddDatesToAvoidHandlerTest extends CaseAggregateBaseTest {
                 )));
     }
 
-    private static JsonEnvelope createAddDatesToAvoidHandlerCommand(UUID caseId, String datesToAvoid) {
+    @Test
+    public void verifyDatesToAvoidTimerExpiredRaisedWhenDatesToAvoidTimerElapsed() throws EventStreamException {
+        final JsonEnvelope command = createDatesToAvoidElapsedHandlerCommand(caseReceivedEvent.getCaseId());
+
+        when(eventSource.getStreamById(caseReceivedEvent.getCaseId())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        addDatesToAvoidHandler.expireDatesToAvoidTimer(command);
+
+        assertThat(eventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(command)
+                                        .withName("sjp.events.dates-to-avoid-expired"),
+                                payloadIsJson(withJsonPath("$.caseId", equalTo(caseId.toString()))))
+                )));
+    }
+
+    private static JsonEnvelope createAddDatesToAvoidHandlerCommand(final UUID caseId, final String datesToAvoid) {
         JsonObjectBuilder payload = createObjectBuilder()
                 .add("caseId", caseId.toString())
                 .add("datesToAvoid", datesToAvoid);
 
         return envelopeFrom(
                 metadataOf(randomUUID(), "sjp.command.add-dates-to-avoid"),
+                payload.build());
+    }
+
+    private static JsonEnvelope createDatesToAvoidElapsedHandlerCommand(final UUID caseId) {
+        JsonObjectBuilder payload = createObjectBuilder()
+                .add("caseId", caseId.toString());
+
+        return JsonEnvelope.envelopeFrom(
+                metadataOf(randomUUID(), "sjp.command.expire-dates-to-avoid-timer"),
                 payload.build());
     }
 }

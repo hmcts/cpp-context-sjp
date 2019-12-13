@@ -2,8 +2,8 @@ package uk.gov.moj.sjp.it.command.builder;
 
 public class ContactDetailsBuilder {
 
-    private final String email;
-    private final String email2;
+    private String email;
+    private String email2;
     private final String home;
     private final String mobile;
     private final String business;
@@ -40,4 +40,13 @@ public class ContactDetailsBuilder {
         return business;
     }
 
+    public ContactDetailsBuilder withEmail(final String email) {
+        this.email = email;
+        return this;
+    }
+
+    public ContactDetailsBuilder withEmail2(final String email2) {
+        this.email2 = email2;
+        return this;
+    }
 }

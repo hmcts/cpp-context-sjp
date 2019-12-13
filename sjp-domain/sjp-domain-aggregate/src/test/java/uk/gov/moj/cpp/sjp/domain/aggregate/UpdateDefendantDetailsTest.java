@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -21,6 +22,7 @@ import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,10 +34,12 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
     private static final LocalDate DATE_OF_BIRTH_UPDATED = LocalDate.of(1980, 6, 15);
 
     private Person person;
+    private UUID userId;
 
     @Before
     @Override
     public void setUp() {
+        userId = randomUUID();
         super.setUp();
 
         this.person = aCase.getDefendant();
@@ -50,7 +54,7 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
     public void shouldCreateUpdateEvents() {
         ZonedDateTime updateDate = clock.now();
 
-        List<Object> events = caseAggregate.updateDefendantDetails(caseId, defendantId, person, updateDate)
+        List<Object> events = caseAggregate.updateDefendantDetails(userId, caseId, defendantId, person, updateDate)
                 .collect(toList());
 
         assertThat(events, contains(instanceOf(DefendantDetailsUpdated.class)));
@@ -86,7 +90,7 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
                 ),
                 person.getContactDetails());
 
-        events = caseAggregate.updateDefendantDetails(caseId, defendantId, updatedPerson, clock.now())
+        events = caseAggregate.updateDefendantDetails(userId, caseId, defendantId, updatedPerson, clock.now())
                 .collect(toList());
 
         assertThat(events, contains(
@@ -123,7 +127,7 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
                 person.getAddress(),
                 person.getContactDetails());
 
-        final List<Object> events = caseAggregate.updateDefendantDetails(caseId, defendantId, personWithoutTitle, clock.now())
+        final List<Object> events = caseAggregate.updateDefendantDetails(userId, caseId, defendantId, personWithoutTitle, clock.now())
                 .collect(toList());
 
         assertThat("has defendant details Updated Failed event", events,

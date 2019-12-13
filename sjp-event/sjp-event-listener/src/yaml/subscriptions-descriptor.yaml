@@ -17,6 +17,18 @@ subscriptions_descriptor:
         - name: sjp.events.plea-updated
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/plea-updated.json
 
+        - name: sjp.events.case-status-changed
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.case-status-changed.json
+
+        - name: sjp.events.pleaded-guilty
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/pleaded-guilty.json
+
+        - name: sjp.events.pleaded-guilty-court-hearing-requested
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/pleaded-guilty-court-hearing-requested.json
+
+        - name: sjp.events.pleaded-not-guilty
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/pleaded-not-guilty.json
+
         - name: sjp.events.plea-cancelled
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.plea-cancelled.json
 
@@ -145,6 +157,21 @@ subscriptions_descriptor:
 
         - name: sjp.events.case-note-added
           schema_uri: http://cpp.moj.gov.uk/sjp/event/case-note-added.json
+
+        - name: sjp.events.offence-withdrawal-requested
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/offence-withdrawal-requested.json
+
+        - name: sjp.events.offence-withdrawal-request-cancelled
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/offence-withdrawal-request-cancelled.json
+
+        - name: sjp.events.offence-withdrawal-request-reason-changed
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/offence-withdrawal-request-reason-changed.json
+
+        - name: sjp.events.decision-saved
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/decision-saved.json
+
+        - name: sjp.events.outstanding-fines-updated
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schemas/event/sjp.events.outstanding-fines-updated.json
 
         - name: sjp.events.financial-means-deleted
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.financial-means-deleted.json

@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/query-financial-imposition.json",
+  "type": "object",
+  "properties": {
+    "costsAndSurcharge" : {
+      "type": "object",
+      "properties" : {
+        "costs" : {
+          "type": "number"
+        },
+        "reasonForNoCosts": {
+          "type": "string"
+        },
+        "victimSurcharge" : {
+          "type": "number"
+        },
+        "reasonForNoVictimSurcharge": {
+          "type": "string"
+        },
+        "collectionOrderMade" : {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "collectionOrderMade"
+      ]
+    },
+    "payment" : {
+      "type": "object",
+      "properties" : {
+        "totalSum": {
+          "type": "number"
+        },
+        "paymentType" : {
+          "enum": [
+            "PAY_TO_COURT",
+            "ATTACH_TO_EARNINGS",
+            "DEDUCT_FROM_BENEFITS"
+          ]
+        },
+        "reasonWhyNotAttachedOrDeducted" : {
+          "type": "string"
+        },
+        "reasonForDeductingFromBenefits" : {
+          "enum": [
+            "COMPENSATION_ORDERED",
+            "DEFENDANT_KNOWN_DEFAULTER",
+            "DEFENDANT_REQUESTED"
+          ]
+        },
+        "paymentTerms" : {
+          "type": "object",
+          "properties": {
+            "reserveTerms" : {
+              "type": "boolean"
+            },
+            "lumpSum" : {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "number"
+                },
+                "withinDays" : {
+                  "type": "integer"
+                },
+                "payByDate" : {
+                  "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+                }
+              },
+              "required": [
+                "amount"
+              ],
+              "additionalProperties": false
+            },
+            "installments" : {
+              "properties": {
+                "amount" : {
+                  "type" : "number"
+                },
+                "installmentPeriod" : {
+                  "enum": [
+                    "WEEKLY",
+                    "FORTNIGHTLY",
+                    "MONTHLY"
+                  ]
+                },
+                "startDate" : {
+                  "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+                }
+              },
+              "required": [
+                "amount",
+                "installmentPeriod",
+                "startDate"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "reserveTerms"
+          ]
+        },
+        "fineTransferredTo" : {
+          "type": "object",
+          "properties" : {
+            "nationalCourtCode": {
+              "type": "string"
+            },
+            "nationalCourtName" : {
+              "type": "string"
+            }
+          },
+          "required": [
+            "nationalCourtCode",
+            "nationalCourtName"
+          ]
+        }
+      },
+      "required": [
+        "paymentType",
+        "paymentTerms"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "costsAndSurcharge",
+    "payment"
+  ],
+  "additionalProperties": false
+}

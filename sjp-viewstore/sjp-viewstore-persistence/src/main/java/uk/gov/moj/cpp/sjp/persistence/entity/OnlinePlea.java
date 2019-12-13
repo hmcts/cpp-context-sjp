@@ -6,18 +6,23 @@ import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
+import uk.gov.moj.cpp.sjp.event.OutstandingFinesUpdated;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
+import uk.gov.moj.cpp.sjp.event.PleadedGuilty;
+import uk.gov.moj.cpp.sjp.event.PleadedGuiltyCourtHearingRequested;
+import uk.gov.moj.cpp.sjp.event.PleadedNotGuilty;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,6 +52,10 @@ public class OnlinePlea {
 
     @Column(name = "submitted_on", updatable = false, nullable = false)
     private ZonedDateTime submittedOn;
+
+    @Transient
+    private List<OnlinePleaDetail> onlinePleaDetails = new ArrayList<>();
+
     @Embedded
     private OnlinePleaPersonalDetails personalDetails;
     @Embedded
@@ -58,7 +67,8 @@ public class OnlinePlea {
     @Embedded
     private Outgoings outgoings;
 
-    public OnlinePlea() { }
+    public OnlinePlea() {
+    }
 
     public OnlinePlea(final UUID caseId, final FinancialMeansUpdated financialMeansUpdated, final String employmentStatus,
                       final String employmentStatusDetails, final Outgoings outgoings) {
@@ -80,6 +90,18 @@ public class OnlinePlea {
         this(pleaUpdated.getCaseId(), new PleaDetails(pleaUpdated), pleaUpdated.getUpdatedDate());
     }
 
+    public OnlinePlea(final PleadedGuilty pleadedGuilty) {
+        this(pleadedGuilty.getCaseId(), new PleaDetails(false), pleadedGuilty.getPleadDate());
+    }
+
+    public OnlinePlea(final PleadedGuiltyCourtHearingRequested pleadedGuiltyCourtHearingRequested) {
+        this(pleadedGuiltyCourtHearingRequested.getCaseId(), new PleaDetails(true), pleadedGuiltyCourtHearingRequested.getPleadDate());
+    }
+
+    public OnlinePlea(final PleadedNotGuilty pleadedNotGuilty) {
+        this(pleadedNotGuilty.getCaseId(), new PleaDetails(true), pleadedNotGuilty.getPleadDate());
+    }
+
     public OnlinePlea(final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant) {
         this(interpreterUpdatedForDefendant.getCaseId(), new PleaDetails(interpreterUpdatedForDefendant), interpreterUpdatedForDefendant.getUpdatedDate());
     }
@@ -93,9 +115,13 @@ public class OnlinePlea {
         this.personalDetails = new OnlinePleaPersonalDetails(defendantDetailsUpdated);
     }
 
+    public OnlinePlea(final OutstandingFinesUpdated outstandingFinesUpdated) {
+        this(outstandingFinesUpdated.getCaseId(), new PleaDetails(outstandingFinesUpdated), outstandingFinesUpdated.getUpdatedDate());
+    }
+
     /**
-     * Used in {@link OnlinePleaRepository#findOnlinePleaWithoutFinances} to filter finances
-     * It must include every field apart finances (employment, employer, outgoings)
+     * Used in {@link OnlinePleaRepository#findOnlinePleaWithoutFinances} to filter finances It must
+     * include every field apart finances (employment, employer, outgoings)
      */
     public OnlinePlea(final UUID caseId, final PleaDetails pleaDetails, final UUID defendantId, final OnlinePleaPersonalDetails personalDetails, final ZonedDateTime submittedOn) {
         this(caseId, pleaDetails, submittedOn);
@@ -137,6 +163,14 @@ public class OnlinePlea {
 
     public void setSubmittedOn(final ZonedDateTime submittedOn) {
         this.submittedOn = submittedOn;
+    }
+
+    public List<OnlinePleaDetail> getOnlinePleaDetails() {
+        return onlinePleaDetails;
+    }
+
+    public void setOnlinePleaDetails(final List<OnlinePleaDetail> onlinePleaDetails) {
+        this.onlinePleaDetails = onlinePleaDetails;
     }
 
     public OnlinePleaPersonalDetails getPersonalDetails() {
@@ -181,15 +215,9 @@ public class OnlinePlea {
 
     @Embeddable
     public static class PleaDetails {
-        @Enumerated(EnumType.STRING)
-        @Column(name = "plea")
-        private PleaType plea;
+
         @Column(name = "come_to_court")
         private Boolean comeToCourt;
-        @Column(name = "mitigation")
-        private String mitigation;
-        @Column(name = "not_guilty_because")
-        private String notGuiltyBecause;
         @Column(name = "interpreter_language")
         private String interpreterLanguage;
         @Column(name = "witness_dispute")
@@ -200,8 +228,15 @@ public class OnlinePlea {
         private String unavailability;
         @Column(name = "speak_welsh")
         private Boolean speakWelsh;
+        @Column(name = "outstanding_fines")
+        private Boolean outstandingFines;
 
-        public PleaDetails() {}
+        public PleaDetails() {
+        }
+
+        public PleaDetails(final OutstandingFinesUpdated outstandingFinesUpdated) {
+            this.outstandingFines = outstandingFinesUpdated.getOutstandingFines();
+        }
 
         public PleaDetails(final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant) {
             this.interpreterLanguage = Optional.ofNullable(interpreterUpdatedForDefendant.getInterpreter())
@@ -220,26 +255,15 @@ public class OnlinePlea {
         }
 
         public PleaDetails(final PleaUpdated pleaUpdated) {
-            this.plea =  pleaUpdated.getPlea();
-            this.mitigation = pleaUpdated.getMitigation();
-            this.notGuiltyBecause = pleaUpdated.getNotGuiltyBecause();
-            this.comeToCourt = asList(GUILTY_REQUEST_HEARING, NOT_GUILTY).contains(plea);
+            this.comeToCourt = asList(GUILTY_REQUEST_HEARING, NOT_GUILTY).contains(pleaUpdated.getPlea());
         }
 
-        public PleaType getPlea() {
-            return plea;
+        public PleaDetails(final boolean comeToCourt) {
+            this.comeToCourt = comeToCourt;
         }
 
         public Boolean getComeToCourt() {
             return comeToCourt;
-        }
-
-        public String getMitigation() {
-            return mitigation;
-        }
-
-        public String getNotGuiltyBecause() {
-            return notGuiltyBecause;
         }
 
         public String getInterpreterLanguage() {
@@ -286,6 +310,14 @@ public class OnlinePlea {
         public void setUnavailability(final String unavailability) {
             this.unavailability = unavailability;
         }
+
+        public Boolean getOutstandingFines() {
+            return outstandingFines;
+        }
+
+        public void setOutstandingFines(Boolean outstandingFines) {
+            this.outstandingFines = outstandingFines;
+        }
     }
 
     @Embeddable
@@ -306,7 +338,8 @@ public class OnlinePlea {
         @Column(name = "benefits_deduct_penalty_preference")
         private Boolean benefitsDeductPenaltyPreference;
 
-        public Employment() {}
+        public Employment() {
+        }
 
         public Employment(final FinancialMeansUpdated financialMeansUpdated, final String employmentStatus, final String employmentStatusDetails) {
             this.incomePaymentFrequency = financialMeansUpdated.getIncome().getFrequency();
@@ -385,16 +418,17 @@ public class OnlinePlea {
         private String phone;
 
         @AttributeOverrides({
-                @AttributeOverride(name="address1", column=@Column(name="employer_address_1")),
-                @AttributeOverride(name="address2", column=@Column(name="employer_address_2")),
-                @AttributeOverride(name="address3", column=@Column(name="employer_address_3")),
-                @AttributeOverride(name="address4", column=@Column(name="employer_address_4")),
-                @AttributeOverride(name="address5", column=@Column(name="employer_address_5")),
-                @AttributeOverride(name="postcode", column=@Column(name="employer_postcode"))
+                @AttributeOverride(name = "address1", column = @Column(name = "employer_address_1")),
+                @AttributeOverride(name = "address2", column = @Column(name = "employer_address_2")),
+                @AttributeOverride(name = "address3", column = @Column(name = "employer_address_3")),
+                @AttributeOverride(name = "address4", column = @Column(name = "employer_address_4")),
+                @AttributeOverride(name = "address5", column = @Column(name = "employer_address_5")),
+                @AttributeOverride(name = "postcode", column = @Column(name = "employer_postcode"))
         })
         private Address address;
 
-        public Employer() {}
+        public Employer() {
+        }
 
         public Employer(final EmployerUpdated employerUpdated) {
             this.employeeReference = employerUpdated.getEmployeeReference();

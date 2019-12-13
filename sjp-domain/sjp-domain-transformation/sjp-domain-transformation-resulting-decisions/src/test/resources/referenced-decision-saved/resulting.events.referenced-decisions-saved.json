@@ -1,0 +1,113 @@
+{
+  "id": "704e1976-11b0-4d13-aeed-e0ffff5aa0d6",
+  "caseId": "2933c5ef-193a-4368-a528-501f6475cfdd",
+  "sjpSessionId": "c4d5df26-5188-44c4-99c3-d7d8b38b5a8c",
+  "created": "2019-09-05T14:08:16.630Z",
+  "verdict": "PSJ",
+  "offences": [
+    {
+      "id": "7af538f9-e922-4982-a40c-e241e248cff7",
+      "results": [
+        {
+          "code": "AD",
+          "resultTypeId": "789870af-531f-4c94-8fb9-456ea413a3c9",
+          "terminalEntries": [
+
+          ]
+        },
+        {
+          "code": "NCR",
+          "resultTypeId": "34caaf8e-30b6-42ad-95aa-84d80e462de9",
+          "terminalEntries": [
+            {
+              "index": 1,
+              "value": "Limited means of the defendant"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "results": [
+        {
+          "code": "COLLO",
+          "resultTypeId": "bbabf61c-aa80-4b0f-8e93-77c873210217",
+          "terminalEntries": [
+            {
+              "index": 4,
+              "value": "Attach to earnings"
+            },
+            {
+              "index": 9,
+              "value": "No information from the defendant"
+            }
+          ]
+        },
+        {
+          "code": "FCOST",
+          "resultTypeId": "b6996db3-cafd-473a-9e94-9060478e5ccd",
+          "terminalEntries": [
+            {
+              "index": 1,
+              "value": "20"
+            }
+          ]
+        },
+        {
+          "code": "FVS",
+          "resultTypeId": "58a12d7d-81f5-473a-8c7d-3d19cfe3e781",
+          "terminalEntries": [
+            {
+              "index": 1,
+              "value": "100"
+            }
+          ]
+        },
+        {
+          "code": "NOVS",
+          "resultTypeId": "a0b553fb-5071-4457-9d49-185c84af0f8d",
+          "terminalEntries": [
+            {
+              "index": 5,
+              "value": "reduced"
+            },
+            {
+              "index": 10,
+              "value": "No charm"
+            }
+          ]
+        },
+        {
+          "code": "LSUM",
+          "resultTypeId": "8b35952f-2d6e-479d-99aa-25b55611b130",
+          "terminalEntries": [
+            {
+              "index": 5,
+              "value": "620"
+            },
+            {
+              "index": 6,
+              "value": "Lump sum within 14 days"
+            }
+          ]
+        },
+        {
+          "code": "AEOC",
+          "resultTypeId": "37ce4bde-501f-40a4-9137-740b13ef0825",
+          "terminalEntries": [
+            {
+              "index": 15,
+              "value": "120"
+            },
+            {
+              "index": 10,
+              "value": "Compensation ordered"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "accountDivisionCode": 77,
+  "enforcingCourtCode": 828
+}

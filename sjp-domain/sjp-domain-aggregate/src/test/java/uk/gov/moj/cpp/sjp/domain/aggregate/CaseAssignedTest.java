@@ -1,11 +1,16 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
+import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
+import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest.AggregateTester.when;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_ASSIGNED_TO_OTHER_USER;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_COMPLETED;
 
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
+import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.domain.testutils.AggregateHelper;
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.session.CaseAlreadyAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
@@ -15,15 +20,21 @@ import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * Tests for {@link CaseAggregate#assignCase}
  */
+@RunWith(MockitoJUnitRunner.class)
 public class CaseAssignedTest extends CaseAggregateBaseTest {
 
-    private static final CaseAssignmentType CASE_ASSIGNMENT_TYPE = CaseAssignmentType.MAGISTRATE_DECISION;
+    private static final CaseAssignmentType CASE_ASSIGNMENT_TYPE = MAGISTRATE_DECISION;
 
     private UUID assigneeId;
+
+
 
     @Before
     @Override
@@ -53,7 +64,10 @@ public class CaseAssignedTest extends CaseAggregateBaseTest {
 
     @Test
     public void shouldNotAssignCompletedCase() {
-        caseAggregate.completeCase();
+        Mockito.when(session.getSessionType()).thenReturn(SessionType.DELEGATED_POWERS);
+        AggregateHelper.saveDecision(caseAggregate, aCase, session, VerdictType.FOUND_NOT_GUILTY);
+
+        caseAggregate.assignCase(assigneeId, now(), MAGISTRATE_DECISION);
 
         when(callAggregateAssignCase(assigneeId))
                 .thenExpect(new CaseAssignmentRejected(CASE_COMPLETED));

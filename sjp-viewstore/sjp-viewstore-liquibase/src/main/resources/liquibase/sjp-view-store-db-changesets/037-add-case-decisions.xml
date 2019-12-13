@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="37" author="team/ATCM/JustIce/justin.oliver"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <createTable tableName="case_decision">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="case_id" type="uuid"/>
+            <column name="session_id" type="uuid"/>
+            <column name="saved_at" type="timestamp without time zone"/>
+        </createTable>
+
+        <createIndex tableName="case_decision" indexName="case_decision_case_id_idx">
+            <column name="case_id" type="uuid"/>
+        </createIndex>
+
+        <createTable tableName="offence_decision">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="offence_id" type="uuid"/>
+            <column name="case_decision_id" type="uuid"/>
+            <column name="decision_type" type="text"/>
+            <column name="reason" type="text"/>
+        </createTable>
+
+        <createIndex tableName="offence_decision" indexName="case_decision_id_idx">
+            <column name="case_decision_id" type="uuid"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>

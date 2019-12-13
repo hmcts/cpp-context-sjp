@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -9,7 +8,7 @@ import static uk.gov.justice.json.schemas.domains.sjp.PleaType.GUILTY;
 import static uk.gov.justice.json.schemas.domains.sjp.PleaType.GUILTY_REQUEST_HEARING;
 import static uk.gov.justice.json.schemas.domains.sjp.PleaType.NOT_GUILTY;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.Offence.offence;
-import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
+import static uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.NotifiedPleaViewHelper.createNotifiedPleaView;
 
 import uk.gov.justice.json.schemas.domains.sjp.PleaType;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.NotifiedPleaView;
@@ -29,8 +28,6 @@ public class NotifiedPleaViewHelperTest {
     private static ZonedDateTime REFERRAL_DATE = ZonedDateTime.now();
     private static ZonedDateTime YESTERDAY = ZonedDateTime.now().minusDays(1);
     private static final UUID OFFENCE_ID = randomUUID();
-
-    private NotifiedPleaViewHelper notifiedPleaViewHelper = new NotifiedPleaViewHelper();
 
     @Parameterized.Parameter(0)
     public PleaType plea;
@@ -56,13 +53,13 @@ public class NotifiedPleaViewHelperTest {
 
     @Test
     public void shouldCreateNotifiedPleaView() {
-        final NotifiedPleaView notifiedPleaView = notifiedPleaViewHelper.createNotifiedPleaView(
-                caseReferredForCourtHearing().withReferredAt(REFERRAL_DATE).build(),
-                singletonList(offence()
+        final NotifiedPleaView notifiedPleaView = createNotifiedPleaView(
+                REFERRAL_DATE.toLocalDate(),
+                offence()
                         .withId(OFFENCE_ID)
                         .withPlea(plea)
                         .withPleaDate(pleaDate)
-                        .build()));
+                        .build());
 
         assertThat(notifiedPleaView.getOffenceId(), is(OFFENCE_ID));
         assertThat(notifiedPleaView.getNotifiedPleaDate(), is(notifiedPleaDate));

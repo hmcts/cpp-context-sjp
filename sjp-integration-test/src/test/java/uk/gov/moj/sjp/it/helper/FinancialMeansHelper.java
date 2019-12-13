@@ -37,9 +37,20 @@ public class FinancialMeansHelper implements AutoCloseable {
                 "public.sjp.financial-means-updated", "public.sjp.case-update-rejected", "public.sjp.events.defendant-financial-means-deleted");
     }
 
+    public FinancialMeansHelper(String eventName) {
+        messageConsumer = TopicUtil.publicEvents.createConsumerForMultipleSelectors(
+                eventName);
+    }
+
     public void updateFinancialMeans(final UUID caseId, final String defendantId, final JsonObject payload) {
         final String resource = String.format("/cases/%s/defendant/%s/financial-means", caseId, defendantId);
         final String contentType = "application/vnd.sjp.update-financial-means+json";
+        HttpClientUtil.makePostCall(resource, contentType, payload.toString());
+    }
+
+    public void updateAllFinancialMeans(final UUID caseId, final String defendantId, final JsonObject payload) {
+        final String resource = String.format("/cases/%s/defendant/%s/all-financial-means", caseId, defendantId);
+        final String contentType = "application/vnd.sjp.update-all-financial-means+json";
         HttpClientUtil.makePostCall(resource, contentType, payload.toString());
     }
 
@@ -76,9 +87,9 @@ public class FinancialMeansHelper implements AutoCloseable {
         HttpClientUtil.makePostCall(writeUrl, "application/vnd.sjp.plead-online+json", payload, Response.Status.ACCEPTED);
     }
 
-    public static String getOnlinePleaData(final String caseId, final Matcher<Object> jsonMatcher, final UUID userId) {
+    public static String getOnlinePleaData(final String caseId, final Matcher<Object> jsonMatcher, final UUID userId, final String defendantId) {
         return await().atMost(20, TimeUnit.SECONDS).until(() -> {
-            final Response onlinePlea = getOnlinePlea(caseId, userId);
+            final Response onlinePlea = getOnlinePlea(caseId, defendantId, userId);
             if (onlinePlea.getStatus() != OK.getStatusCode()) {
                 return "{}";
             }

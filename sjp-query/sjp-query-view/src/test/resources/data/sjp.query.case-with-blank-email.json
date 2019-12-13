@@ -1,0 +1,85 @@
+{
+  "id": "5c019f8a-b3a3-40e5-9709-c54bc4f1c55c",
+  "urn": "TFL75947ZQ8UE",
+  "defendant": {
+    "id": "c4d922ba-20c6-4d68-ab56-3611401bbc7c",
+    "offences": [
+      {
+        "id": "b511eb31-c8e7-4223-8626-958c34dfb3f9",
+        "offenceCode": "PS90010",
+        "offenceSequenceNumber": 1,
+        "wording": "On 02/07/2015 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction ",
+        "wordingWelsh": "Welsh wording: On 02/07/2015 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction ",
+        "cjsCode": "PS90010",
+        "sequenceNumber": 1,
+        "startDate": "2017-12-29",
+        "chargeDate": "2018-01-03",
+        "compensation": 10,
+        "prosecutionFacts": "An incident took place at GREEN PARK station whereby you were spoken to by a member of London Underground staff regarding your train journey and the associated fare.The facts of this incidents are now being considered and I must advise you that legal proceedings may be initiated against you regarding this matter in accordance with the LU prosecution policy"
+      },
+      {
+        "id": "68dc17b3-e783-4c33-bd31-f84dc467b60f",
+        "offenceCode": "PS90011",
+        "plea": "GUILTY",
+        "offenceSequenceNumber": 2,
+        "chargeDate": "2016-02-18",
+        "wording": "On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable",
+        "pendingWithdrawal": false
+      },
+      {
+        "id": "c6e95db8-b9a7-4aff-89d4-4aba39bd8300",
+        "offenceCode": "PS90015",
+        "plea": "GUILTY",
+        "pleaMethod": "ONLINE",
+        "offenceSequenceNumber": 3,
+        "chargeDate": "2016-02-18",
+        "wording": "On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable",
+        "pendingWithdrawal": false
+      }
+    ],
+    "caseId": "5c019f8a-b3a3-40e5-9709-c54bc4f1c55c",
+    "interpreter": {
+      "needed": false
+    },
+    "numPreviousConvictions": 2,
+    "personalDetails": {
+      "title": "Mr",
+      "firstName": "John",
+      "lastName": "Smith",
+      "dateOfBirth": "1965-12-27",
+      "gender": "Male",
+      "nationalInsuranceNumber": "QQ 12 34 56 C",
+      "address": {
+        "address1": "Flat 1",
+        "address2": "Armageddon House",
+        "address3": "Giggleswick",
+        "address4": "Merton",
+        "address5": "Greater London",
+        "postcode": "L32 1AB"
+      },
+      "contactDetails": {
+        "home": "020 7219 5206",
+        "mobile": "020 7219 5207",
+        "email": ""
+      }
+    }
+  },
+  "dateTimeCreated": "2018-02-02T12:51:58.742Z",
+  "caseDocuments": [
+    {
+      "id": "7bde207f-ce57-49e5-b961-7577831171fb",
+      "materialId": "7bde207f-ce57-49e5-b961-7577831171fb",
+      "documentType": "SJPN",
+      "documentNumber": 1,
+      "addedAt": "2018-08-26T14:55:47.631Z"
+    }
+  ],
+  "prosecutingAuthority": "DVLA",
+  "completed": false,
+  "assigned": false,
+  "costs": 20,
+  "postingDate": "2018-01-05",
+  "enterpriseId": "FNHMNHBQNV7L",
+  "status": "NO_PLEA_RECEIVED_READY_FOR_DECISION",
+  "listedInCriminalCourts": true
+}

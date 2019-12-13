@@ -5,6 +5,7 @@ import static java.lang.String.format;
 import static java.lang.System.lineSeparator;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
 
@@ -16,12 +17,15 @@ import uk.gov.moj.cpp.sjp.domain.Offence;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import org.hamcrest.Matcher;
 import org.junit.Before;
+import org.mockito.Mock;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 
 public abstract class CaseAggregateBaseTest {
@@ -35,11 +39,14 @@ public abstract class CaseAggregateBaseTest {
     protected UUID defendantId;
     protected UUID offenceId;
 
+    @Mock
+    protected Session session;
+
     @Before
     public void setUp() {
         caseAggregate = new CaseAggregate();
         aCase = buildCaseReceived();
-        caseReceivedEvent = collectSingleEvent(caseAggregate.receiveCase(buildCaseReceived(), clock.now()), CaseReceived.class);
+        caseReceivedEvent = collectFirstEvent(caseAggregate.receiveCase(aCase, clock.now()), CaseReceived.class);
 
         caseId = caseReceivedEvent.getCaseId();
         defendantId = caseReceivedEvent.getDefendant().getId();
@@ -71,26 +78,6 @@ public abstract class CaseAggregateBaseTest {
         caseId = defendantId = offenceId = null;
         aCase = null;
         caseReceivedEvent = null;
-    }
-
-    <T> T collectSingleEvent(final Stream<Object> events, final Class<T> eventType) {
-        return collectSingleEvent(events.collect(toList()), eventType);
-    }
-
-    <T> T collectSingleEvent(final List<Object> events, final Class<T> eventType) {
-        if (events.size() != 1) {
-            fail("Collection has more than 1 item: " + events.stream().map(o -> o.getClass().getSimpleName()).collect(toList()));
-        }
-
-        final Object firstEvent = events.get(0);
-        if (!eventType.isInstance(firstEvent)) {
-            fail(format(
-                    "Expected a single instance of %s, but found %s.",
-                    eventType.getSimpleName(),
-                    firstEvent.getClass().getSimpleName()));
-        }
-
-        return eventType.cast(firstEvent);
     }
 
     <T> T collectFirstEvent(final Stream<Object> events, final Class<T> eventType) {
@@ -141,12 +128,22 @@ public abstract class CaseAggregateBaseTest {
         /**
          * List all the events after the aggregate execution
          */
-        //TODO FIX-ME ATCM-4334
         void thenExpect(final Object... items) {
-
-            if (!new ReflectionEquals(events.toArray()).matches(items)) {
+            if (events.toArray().length != items.length) {
                 fail(buildErrorMessage());
             }
+            Arrays.stream(events.toArray()).forEach(input -> {
+                if (Arrays.stream(items).noneMatch(expected -> new ReflectionEquals(input).matches(expected))) {
+                    fail(buildErrorMessage());
+                }
+            });
+        }
+
+        /**
+         * List all the events after the aggregate execution
+         */
+        void thenExpect(final Matcher... matchers) {
+            Arrays.stream(matchers).forEach(matcher -> assertThat(events, matcher));
         }
 
         private String buildErrorMessage() {

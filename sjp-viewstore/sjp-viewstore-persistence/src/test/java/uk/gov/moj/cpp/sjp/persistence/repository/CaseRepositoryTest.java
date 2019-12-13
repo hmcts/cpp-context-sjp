@@ -1,5 +1,35 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
+import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
+import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
+
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.NonUniqueResultException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.is;
@@ -16,37 +46,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
-
-import uk.gov.justice.services.common.util.Clock;
-import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
-import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
-import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.NonUniqueResultException;
-
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
 @RunWith(CdiTestRunner.class)
 public class CaseRepositoryTest extends BaseTransactionalTest {
@@ -77,10 +78,8 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     private static final String ENTERPRISE_ID = "2K2SLYFC743H";
     private static final String POSTCODE = "CR0 1AB";
     private static final String OFFENCE_CODE = "PS0001";
-    private static LocalDate postingDate = LocalDate.of(2015, 12, 31);
-
     private static final List<ReadyCase> READY_CASES = new ArrayList<>();
-
+    private static LocalDate postingDate = LocalDate.of(2015, 12, 31);
     @Inject
     private EntityManager entityManager;
 
@@ -96,6 +95,10 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     private ZonedDateTime caseCreatedOn;
 
     private CaseDetail case1, case2, case3, case4;
+
+    private static String randomUrn() {
+        return PROSECUTING_AUTHORITY_PREFIX + RandomGenerator.integer(100000000, 999999999).next();
+    }
 
     @Override
     public void setUpBefore() {
@@ -118,9 +121,9 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         // test duplicate cases aren't possible
         caseRepository.save(case1);
 
-        READY_CASES.add(new ReadyCase(case1.getId(), CaseReadinessReason.PIA));
-        READY_CASES.add(new ReadyCase(case2.getId(), CaseReadinessReason.WITHDRAWAL_REQUESTED));
-        READY_CASES.add(new ReadyCase(case3.getId(), CaseReadinessReason.PLEADED_GUILTY));
+        READY_CASES.add(new ReadyCase(case1.getId(), CaseReadinessReason.PIA, null, MAGISTRATE, 3, TFL, now().minusDays(30)));
+        READY_CASES.add(new ReadyCase(case2.getId(), CaseReadinessReason.WITHDRAWAL_REQUESTED, null, DELEGATED_POWERS, 1, TFL, now().minusDays(15)));
+        READY_CASES.add(new ReadyCase(case3.getId(), CaseReadinessReason.PLEADED_GUILTY, null, MAGISTRATE, 2, TFL, now().minusDays(30)));
         // leave case 4 as not ready
 
         READY_CASES.forEach(readyCaseRepository::save);
@@ -201,14 +204,14 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
                 CASES.get(VALID_CASE_ID_1).isCompleted());
 
         caseRepository.completeCase(VALID_CASE_ID_1);
-        CaseDetail actualCase = caseRepository.findBy(VALID_CASE_ID_1);
+        final CaseDetail actualCase = caseRepository.findBy(VALID_CASE_ID_1);
         assertTrue("CaseAggregate should be completed", actualCase.isCompleted());
         assertNull(actualCase.getAdjournedTo());
     }
 
     @Test
     public void shouldUpdateLibraCaseReopenedDetails() {
-        final LocalDate reopenedDate = LocalDate.now();
+        final LocalDate reopenedDate = now();
         final String reason = "REASON";
         final CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_1);
         actualCase.setLibraCaseNumber("LIBRA12345");
@@ -222,36 +225,6 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     }
 
     @Test
-    public void shouldPersistWithdrawnInformation() {
-        //given case_2 is withdrawn
-
-        CaseDetail caseDetailForWithdrawnCase = caseRepository.findBy(VALID_CASE_ID_2);
-
-        // all offence are withdrawn
-        isCasePendingWithdrawal(caseDetailForWithdrawnCase);
-
-        final CaseDetail caseDetailForNotWithdrawnCase = caseRepository.findBy(VALID_CASE_ID_1);
-        isCaseNotPendingWithdrawal(caseDetailForNotWithdrawnCase);
-
-        caseRepository.requestWithdrawalAllOffences(VALID_CASE_ID_1);
-
-        caseDetailForWithdrawnCase = caseRepository.findBy(VALID_CASE_ID_1);
-        isCasePendingWithdrawal(caseDetailForWithdrawnCase);
-    }
-
-    @Test
-    public void shouldPersistCancelWithdrawnInformation() {
-        //given: case_2 is withdrawn
-        isCasePendingWithdrawal(caseRepository.findBy(VALID_CASE_ID_2));
-
-        //when: cancel withdraw request
-        caseRepository.cancelRequestWithdrawalAllOffences(VALID_CASE_ID_2);
-
-        //then: no longer withdrawn
-        isCaseNotPendingWithdrawal(caseRepository.findBy(VALID_CASE_ID_2));
-    }
-
-    @Test
     public void shouldFindCaseByMaterialIdWhenMaterialIsDocument() {
 
         final CaseDetail actualCase = caseRepository.findByUrn(VALID_URN_2);
@@ -260,7 +233,6 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
         assertThat(caseReturned.getId(), is(actualCase.getId()));
     }
-
 
     @Test
     public void shouldPersistCurrencyAndOtherSupportingInformation() {
@@ -365,40 +337,29 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         //then throws exception
     }
 
-    private void isCaseNotPendingWithdrawal(CaseDetail caseDetail) {
-        checkAllOffencesForACase(caseDetail, false);
-        assertFalse(caseDetail.isAnyOffencePendingWithdrawal());
-    }
-
-    private void checkAllOffencesForACase(CaseDetail caseDetail, boolean withdrawn) {
+    private void checkAllOffencesForACase(final CaseDetail caseDetail, final boolean withdrawn) {
         final List<OffenceDetail> offences = caseDetail.getDefendant().getOffences();
 
         assertThat(offences, not(empty()));
-        offences.forEach(offence -> assertEquals(withdrawn, offence.getPendingWithdrawal()));
+        offences.forEach(offence -> assertTrue(offence.getWithdrawalRequestReasonId() != null));
     }
 
-    private void isCasePendingWithdrawal(CaseDetail caseDetail) {
-        checkAllOffencesForACase(caseDetail, true);
-        assertTrue(caseDetail.isAnyOffencePendingWithdrawal());
-    }
-
-    private CaseDetail getCase(UUID caseId, String urn) {
+    private CaseDetail getCase(final UUID caseId, final String urn) {
         return getCase(caseId, urn, randomUUID());
     }
 
-    private CaseDetail getCase(UUID caseId, String urn, String postcode) {
+    private CaseDetail getCase(final UUID caseId, final String urn, final String postcode) {
         return getCase(caseId, urn, randomUUID(), false, postcode, randomUUID());
     }
 
-    private CaseDetail getCase(UUID caseId, String urn, UUID defendantId) {
+    private CaseDetail getCase(final UUID caseId, final String urn, final UUID defendantId) {
         return getCase(caseId, urn, defendantId, false, POSTCODE, randomUUID());
     }
 
-    private CaseDetail getCase(UUID caseId, String urn, UUID defendantId, boolean withdrawn, String postcode, UUID... materialIds) {
+    private CaseDetail getCase(final UUID caseId, final String urn, final UUID defendantId, final boolean withdrawn, final String postcode, final UUID... materialIds) {
 
         final DefendantDetail defendantDetail = DefendantDetailBuilder.aDefendantDetail()
                 .withId(defendantId)
-                .withOffencePendingWithdrawal(withdrawn)
                 .withPostcode(postcode)
                 .withLastName(RandomGenerator.string(10).next())
                 .withOffenceCode(OFFENCE_CODE)
@@ -425,10 +386,6 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     private CaseDocument getCaseDocument(final UUID caseId, final UUID materialId) {
         return new CaseDocument(randomUUID(), materialId, "SJPN", clock.now(), caseId, 1);
-    }
-
-    private static String randomUrn() {
-        return PROSECUTING_AUTHORITY_PREFIX + RandomGenerator.integer(100000000, 999999999).next();
     }
 
 }

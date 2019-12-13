@@ -1,0 +1,47 @@
+{
+  "caseId": "fd51dc11-dc3c-40c8-90c6-79bb50b5752a",
+  "sessionId": "18620cce-a3fc-484c-a832-eff2aada1856",
+  "decisionId": "f9d22550-bcab-4a4b-91bf-9682173952d9",
+  "savedAt": "2018-12-14T10:51:56.576Z",
+  "offenceDecisions": [
+    {
+      "id": "%s",
+      "type": "FINANCIAL_PENALTY",
+      "offenceDecisionInformation": {
+        "offenceId": "e76ab6f5-9156-4ecd-81f4-01fb9241ad5f",
+        "verdict": "FOUND_GUILTY"
+      },
+      "fine": 200,
+      "compensation": 10,
+      "guiltyPleaTakenIntoAccount": true
+    }
+  ],
+  "financialImposition": {
+    "costsAndSurcharge": {
+      "costs": 12,
+      "victimSurcharge": 35,
+      "collectionOrderMade": true
+    },
+    "payment": {
+      "reasonWhyNotAttachedOrDeducted": "",
+      "totalSum": 257,
+      "reasonForAttachingToEarnings": "DEFENDANT_KNOWN_DEFAULTER",
+      "paymentType": "ATTACH_TO_EARNINGS",
+      "fineTransferredTo": {
+        "nationalCourtName": "South London Magistrates' Court",
+        "nationalCourtCode": "2576"
+      },
+      "paymentTerms": {
+        "reserveTerms": true,
+        "lumpSum": {
+          "withinDays": 28,
+          "amount": 257
+        }
+      }
+    }
+  },
+  "_metadata": {
+    "id": "fd51dc11-dc3c-40c0-90c6-79bb50b5752a",
+    "name": "sjp.events.decision-saved"
+  }
+}

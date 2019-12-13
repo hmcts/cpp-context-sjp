@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
@@ -15,16 +16,25 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatch
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.OFFENCE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.PLEA;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.PLEAD_DATE;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.UPDATED_DATE;
 
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
+import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
+import uk.gov.moj.cpp.sjp.event.PleadedGuilty;
+import uk.gov.moj.cpp.sjp.event.PleadedGuiltyCourtHearingRequested;
+import uk.gov.moj.cpp.sjp.event.PleadedNotGuilty;
 import uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService;
 
 import java.time.ZonedDateTime;
@@ -44,8 +54,16 @@ public class PleaUpdatedProcessorTest {
     @Mock
     private CaseStateService caseStateService;
 
+    @Mock
+    private Clock clock;
+
     @InjectMocks
     private PleaUpdatedProcessor pleaUpdatedProcessor;
+
+    @Mock
+    private Sender sender;
+
+    private final Clock stoppedClock = new StoppedClock(new UtcClock().now());
 
     @Test
     public void shouldUpdateCaseStateWhenPleaUpdated() {
@@ -63,7 +81,6 @@ public class PleaUpdatedProcessorTest {
                         .build());
 
         pleaUpdatedProcessor.handlePleaUpdated(privateEvent);
-
         verify(caseStateService).pleaUpdated(caseId, offenceId, pleaType, pleaUpdatedDate, privateEvent.metadata());
     }
 
@@ -105,25 +122,62 @@ public class PleaUpdatedProcessorTest {
         assertThat(privateEvent.payloadAsJsonObject().containsKey(UPDATED_DATE), is(false));
         assertThat(privateEvent.metadata().createdAt().isPresent(), is(false));
 
+        when(clock.now()).thenReturn(stoppedClock.now());
+
         pleaUpdatedProcessor.handlePleaUpdated(privateEvent);
 
         verify(caseStateService).pleaUpdated(eq(caseId), eq(offenceId), eq(pleaType), notNull(ZonedDateTime.class), eq(privateEvent.metadata()));
     }
 
     @Test
-    public void shouldUpdateCaseStateWhenPleaCancelled() {
+    public void shouldUpdateCaseStateWhenPleadedGuilty() {
         final UUID caseId = randomUUID();
         final UUID offenceId = randomUUID();
 
-        final JsonEnvelope privateEvent = createEnvelope(PleaCancelled.EVENT_NAME,
+        final JsonEnvelope privateEvent = createEnvelope(PleadedGuilty.EVENT_NAME,
                 Json.createObjectBuilder()
                         .add(CASE_ID, caseId.toString())
                         .add(OFFENCE_ID, offenceId.toString())
+                        .add(PLEAD_DATE, stoppedClock.now().toString())
                         .build());
 
-        pleaUpdatedProcessor.handlePleaCancelled(privateEvent);
+        pleaUpdatedProcessor.handlePleadedGuilty(privateEvent);
+        verify(caseStateService).pleaUpdated(eq(caseId), eq(offenceId), eq(GUILTY),
+                notNull(ZonedDateTime.class), eq(privateEvent.metadata()));
+    }
 
-        verify(caseStateService).pleaCancelled(caseId, offenceId, privateEvent.metadata());
+    @Test
+    public void shouldUpdateCaseStateWhenPleadedGuiltyCourtHearingRequested() {
+        final UUID caseId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final JsonEnvelope privateEvent = createEnvelope(PleadedGuiltyCourtHearingRequested.EVENT_NAME,
+                Json.createObjectBuilder()
+                        .add(CASE_ID, caseId.toString())
+                        .add(OFFENCE_ID, offenceId.toString())
+                        .add(PLEAD_DATE, stoppedClock.now().toString())
+                        .build());
+
+        pleaUpdatedProcessor.handlePleadedGuiltyCourtHearingRequested(privateEvent);
+        verify(caseStateService).pleaUpdated(eq(caseId), eq(offenceId), eq(GUILTY_REQUEST_HEARING),
+                notNull(ZonedDateTime.class), eq(privateEvent.metadata()));
+    }
+
+    @Test
+    public void shouldUpdateCaseStateWhenPleadedNotGuilty() {
+        final UUID caseId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final JsonEnvelope privateEvent = createEnvelope(PleadedNotGuilty.EVENT_NAME,
+                Json.createObjectBuilder()
+                        .add(CASE_ID, caseId.toString())
+                        .add(OFFENCE_ID, offenceId.toString())
+                        .add(PLEAD_DATE, stoppedClock.now().toString())
+                        .build());
+
+        pleaUpdatedProcessor.handlePleadedNotGuilty(privateEvent);
+        verify(caseStateService).pleaUpdated(eq(caseId), eq(offenceId), eq(NOT_GUILTY),
+                notNull(ZonedDateTime.class), eq(privateEvent.metadata()));
     }
 
     @Test
@@ -131,7 +185,10 @@ public class PleaUpdatedProcessorTest {
         assertThat(PleaUpdatedProcessor.class, isHandlerClass(EVENT_PROCESSOR)
                 .with(allOf(
                         method("handlePleaUpdated").thatHandles(PleaUpdated.EVENT_NAME),
-                        method("handlePleaCancelled").thatHandles(PleaCancelled.EVENT_NAME)
+                        method("handlePleaCancelled").thatHandles(PleaCancelled.EVENT_NAME),
+                        method("handlePleadedGuilty").thatHandles(PleadedGuilty.EVENT_NAME),
+                        method("handlePleadedGuiltyCourtHearingRequested").thatHandles(PleadedGuiltyCourtHearingRequested.EVENT_NAME),
+                        method("handlePleadedNotGuilty").thatHandles(PleadedNotGuilty.EVENT_NAME)
                 )));
     }
 

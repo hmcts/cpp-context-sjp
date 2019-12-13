@@ -1,10 +1,21 @@
 {
+  "onlinePleaDetails": [
+    {
+      "offenceId": "${offenceId}",
+      "mitigation": "I was drunk at the time",
+      "offenceTitle": "Postal service - convey a letter without a licence",
+      "caseId": "${caseId}",
+      "id": "${onlinePleaDetailId}",
+      "defendantId": "${defendantId}",
+      "plea": "GUILTY"
+    }
+  ],
   "caseId": "${caseId}",
   "pleaDetails": {
     "comeToCourt": false,
-    "mitigation": "I was drunk at the time",
-    "interpreterRequired": false,
-    "plea": "GUILTY"
+    "speakWelsh": false,
+    "outstandingFines": false,
+    "interpreterRequired": false
   },
   "submittedOn": "${submittedOn}",
   "personalDetails": {

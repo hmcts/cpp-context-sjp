@@ -14,14 +14,26 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
+import uk.gov.moj.cpp.sjp.query.view.response.CaseSummaryView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnView;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,7 +47,7 @@ public class FindCasesMissingSjpnTest {
 
     private static final String QUERY_NAME = "sjp.query.cases-missing-sjpn";
     private static final int COUNT = 1234;
-    private final CasesMissingSjpnView resultView = new CasesMissingSjpnView(Arrays.asList("1", "2"), COUNT);
+    private final CasesMissingSjpnView resultView = newResultView();
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
@@ -45,6 +57,29 @@ public class FindCasesMissingSjpnTest {
 
     @InjectMocks
     private SjpQueryView sjpQueryView;
+
+    private static CasesMissingSjpnView newResultView(){
+        final List<CaseSummaryView> cases = new ArrayList<>();
+        cases.add(new CaseSummaryView(new CaseDetail(
+                UUID.randomUUID(), "AAA", "1",
+                ProsecutingAuthority.TFL, false, null, ZonedDateTime.now(),
+                new DefendantDetail(UUID.randomUUID(),
+                        new PersonalDetails("Mr", "Defen", "Dant",
+                                LocalDate.of(1970, 3,1), Gender.MALE,
+                                "54321", null,null),
+                        null, 2),
+                new BigDecimal(100), LocalDate.now())));
+        cases.add(new CaseSummaryView(new CaseDetail(
+                UUID.randomUUID(), "BBB", "1",
+                ProsecutingAuthority.TFL, false, null, ZonedDateTime.now(),
+                new DefendantDetail(UUID.randomUUID(),
+                        new PersonalDetails("Mr", "Defen", "Dant",
+                                LocalDate.of(1970, 2,1), Gender.MALE,
+                                "12345", null,null),
+                        null, 2),
+                new BigDecimal(100), LocalDate.now())));
+        return new CasesMissingSjpnView(Arrays.asList("1", "2"), cases, COUNT);
+    }
 
     @Test
     public void shouldFindAllCasesMissingSjpn() {
@@ -86,7 +121,11 @@ public class FindCasesMissingSjpnTest {
     private void verifyResponse(final JsonEnvelope responseEnvelope) {
         assertThat(responseEnvelope, jsonEnvelope(metadata().withName(QUERY_NAME), payload().isJson(allOf(
                 withJsonPath("$.count", is(COUNT)),
-                withJsonPath("$.ids", containsInAnyOrder("1", "2"))
+                withJsonPath("$.ids", containsInAnyOrder("1", "2")),
+                withJsonPath("$.cases[0].urn", is("AAA")),
+                withJsonPath("$.cases[0].defendant.firstName", is("Defen")),
+                withJsonPath("$.cases[1].defendant.firstName", is("Defen")),
+                withJsonPath("$.cases[1].urn", is("BBB"))
         ))).thatMatchesSchema());
     }
 }

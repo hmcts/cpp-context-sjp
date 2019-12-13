@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
 import static java.util.Collections.emptyList;
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyCollectionOf;
@@ -11,6 +12,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.StringContains.containsString;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
+import uk.gov.justice.json.schemas.domains.sjp.Language;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
@@ -21,6 +23,7 @@ import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.Offence;
 import uk.gov.moj.cpp.sjp.domain.Person;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
@@ -59,11 +62,13 @@ public class CaseAggregateDefendantTest {
     private final String title = "Mr";
     private final Address address = new Address("address1", "address2", "address3", "address4", "address5", "CR02FW");
     private final Clock clock = new UtcClock();
+    private final Language hearingLanguage = Language.E;
     private final String languageNeeds = "languageNeeds_" + RandomStringUtils.randomAlphabetic(10);
     private final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
     private final int numPreviousConvictions = 0;
     private final List<Offence> offences = emptyList();
     private CaseAggregate caseAggregate;
+    private UUID userId;
 
     @Before
     public void setUp() {
@@ -72,6 +77,7 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void updatesToValidTitle() {
+        userId = randomUUID();
         givenCaseWasReceivedWithDefaultDefendantData();
 
         updatesToValidTitle("Mr");
@@ -133,10 +139,10 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void acceptsNewFirstName() {
-
+        givenCaseWasReceivedWithDefaultDefendantData();
         final String newFirstName = "Newname";
         final List<Object> events = whenTheDefendantIsUpdated(
-                new DefendantData().withNewDateOfBirth(null).withNewFirstName(newFirstName)
+                new DefendantData().withNewFirstName(newFirstName)
         );
 
         assertThat(events, hasSize(2));
@@ -150,10 +156,10 @@ public class CaseAggregateDefendantTest {
 
     @Test
     public void acceptsNewLastName() {
-
+        givenCaseWasReceivedWithDefaultDefendantData();
         final String newLastName = "Newname";
         final List<Object> events = whenTheDefendantIsUpdated(
-                new DefendantData().withNewDateOfBirth(null).withNewLastName(newLastName)
+                new DefendantData().withNewLastName(newLastName)
         );
 
         assertThat(events, hasSize(2));
@@ -271,7 +277,7 @@ public class CaseAggregateDefendantTest {
 
         caseAggregate.assignCase(assigneeId, clock.now(), CaseAssignmentType.MAGISTRATE_DECISION);
 
-        final List<Object> eventsRaised = caseAggregate.updateHearingRequirements(assigneeId, caseReceivedEvent.getDefendant().getId(), "welsh", true)
+        final List<Object> eventsRaised = caseAggregate.updateHearingRequirements(assigneeId, caseReceivedEvent.getDefendant().getId(), "welsh", true, PleaMethod.ONLINE, clock.now())
                 .collect(toList());
 
         final InterpreterUpdatedForDefendant interpreterUpdatedEvent = (InterpreterUpdatedForDefendant) eventsRaised.get(0);
@@ -294,8 +300,8 @@ public class CaseAggregateDefendantTest {
 
         caseAggregate.assignCase(assigneeId, clock.now(), CaseAssignmentType.MAGISTRATE_DECISION);
 
-        caseAggregate.updateHearingRequirements(assigneeId, caseReceivedEvent.getDefendant().getId(), "welsh", true);
-        final List<Object> eventsRaised = caseAggregate.updateHearingRequirements(assigneeId, caseReceivedEvent.getDefendant().getId(), "", false)
+        caseAggregate.updateHearingRequirements(assigneeId, caseReceivedEvent.getDefendant().getId(), "welsh", true, PleaMethod.ONLINE, clock.now());
+        final List<Object> eventsRaised = caseAggregate.updateHearingRequirements(assigneeId, caseReceivedEvent.getDefendant().getId(), "", false, PleaMethod.ONLINE, clock.now())
                 .collect(toList());
 
         final InterpreterCancelledForDefendant interpreterCancelledForDefendant = (InterpreterCancelledForDefendant) eventsRaised.get(0);
@@ -337,6 +343,7 @@ public class CaseAggregateDefendantTest {
                                 defendantData.contactDetails,
                                 defendantData.numPreviousConvictions,
                                 defendantData.offences,
+                                defendantData.hearingLanguage,
                                 defendantData.languageNeeds
                         )).build(),
                 clock.now()
@@ -356,6 +363,7 @@ public class CaseAggregateDefendantTest {
                 updatedDefendantData.contactDetails);
 
         final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(
+                userId,
                 updatedDefendantData.caseId,
                 updatedDefendantData.defendantId,
                 person,
@@ -370,6 +378,7 @@ public class CaseAggregateDefendantTest {
         private final Gender gender = CaseAggregateDefendantTest.this.gender;
         private final String nationalInsuranceNumber = CaseAggregateDefendantTest.this.nationalInsuranceNumber;
         private final String driverNumber = CaseAggregateDefendantTest.this.driverNumber;
+        private final Language hearingLanguage = CaseAggregateDefendantTest.this.hearingLanguage;
         private final String languageNeeds = CaseAggregateDefendantTest.this.languageNeeds;
         private final ContactDetails contactDetails = CaseAggregateDefendantTest.this.contactDetails;
         private final int numPreviousConvictions = CaseAggregateDefendantTest.this.numPreviousConvictions;

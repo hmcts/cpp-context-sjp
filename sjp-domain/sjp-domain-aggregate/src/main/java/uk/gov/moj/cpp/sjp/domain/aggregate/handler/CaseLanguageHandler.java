@@ -1,9 +1,12 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
+import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.ONLINE;
 
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
 import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
@@ -26,24 +29,19 @@ public class CaseLanguageHandler {
                                                     final UUID defendantId,
                                                     final String interpreterLanguage,
                                                     final Boolean speakWelsh,
-                                                    final CaseAggregateState state) {
+                                                    final CaseAggregateState state,
+                                                    final PleaMethod pleaMethod,
+                                                    final ZonedDateTime createdOn) {
 
+        final boolean updatedByOnlinePlea = ONLINE.equals(pleaMethod);
         return createRejectionEvents(
                 userId,
                 "Update hearing requirements",
                 defendantId,
                 state
-        ).orElse(updateHearingRequirementsForPostalPlea(defendantId, interpreterLanguage, speakWelsh, state));
+        ).orElse(updateHearingRequirements(updatedByOnlinePlea, updatedByOnlinePlea ? createdOn : null, defendantId, interpreterLanguage, speakWelsh, state));
     }
 
-
-    private Stream<Object> updateHearingRequirementsForPostalPlea(final UUID defendantId,
-                                                                  final String interpreterLanguage,
-                                                                  final Boolean speakWelsh,
-                                                                  final CaseAggregateState state) {
-
-        return updateHearingRequirements(false, null, defendantId, interpreterLanguage, speakWelsh, state);
-    }
 
     public Stream<Object> updateHearingRequirements(final boolean updatedByOnlinePlea,
                                                     final ZonedDateTime createdOn,

@@ -1,0 +1,204 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/case-court-extract.json",
+  "type": "object",
+  "properties": {
+    "generationDate": {
+      "type": "string"
+    },
+    "generationTime": {
+      "type": "string"
+    },
+    "defendant": {
+      "type": "object",
+      "required": [
+        "address",
+        "firstName",
+        "lastName",
+        "dateOfBirth",
+        "age"
+      ],
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "dateOfBirth": {
+          "type": "string"
+        },
+        "age": {
+          "type": "integer"
+        }
+      }
+    },
+    "offences": {
+      "type": "array",
+      "items": {
+        "required": [
+          "sequenceNumber",
+          "title",
+          "wording",
+          "legislation",
+          "offenceDecisions"
+        ],
+        "properties": {
+          "sequenceNumber": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "wording": {
+            "type": "string"
+          },
+          "legislation": {
+            "type": "string"
+          },
+          "offenceDecisions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "heading",
+                "lines"
+              ],
+              "properties": {
+                "heading": {
+                  "type": "string"
+                },
+                "lines": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "label",
+                      "value:"
+                    ],
+                    "properties": {
+                      "title": {
+                        "type": "string"
+                      },
+                      "value:": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "caseDetails": {
+      "type": "object",
+      "properties": {
+        "reference": {
+          "type": "string"
+        },
+        "prosecutor": {
+          "type": "string"
+        },
+        "prosecutorAddress": {
+          "type": "object",
+          "required": [
+            "line1",
+            "line2",
+            "line3",
+            "line4",
+            "line5",
+            "postcode"
+          ],
+          "properties": {
+            "line1": {
+              "type": "string"
+            },
+            "line2": {
+              "type": "string"
+            },
+            "line3": {
+              "type": "string"
+            },
+            "line4": {
+              "type": "string"
+            },
+            "line5": {
+              "type": "string"
+            },
+            "postCode": {
+              "type": "string"
+            }
+          }
+        },
+        "courtHouseName": {
+          "type": "string"
+        },
+        "courtHouseCode": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "reference",
+        "prosecutor"
+      ]
+    },
+    "payment": {
+      "type": "object",
+      "properties": {
+        "totalFine": {
+        "type": "string"
+       },
+        "totalToPay": {
+          "type": "string"
+        },
+        "paymentTerms": {
+          "type": "string"
+        },
+        "reserveTerms": {
+          "type": "string"
+        },
+        "prosecutionCosts": {
+          "type": "string"
+        },
+        "reasonForNoCosts": {
+          "type": "string"
+        },
+        "victimSurcharge": {
+          "type": "string"
+        },
+        "noVictimSurchargeReason": {
+          "type": "string"
+        },
+        "collectionOrderMade": {
+          "type": "boolean"
+        },
+        "paymentMethod": {
+          "type": "string"
+        },
+        "paymentMethodReason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "totalToPay",
+        "paymentMethod"
+      ]
+    },
+    "hasFinancialImposition": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "generationDate",
+    "generationTime",
+    "defendant",
+    "offences",
+    "caseDetails",
+    "hasFinancialImposition"
+  ]
+}

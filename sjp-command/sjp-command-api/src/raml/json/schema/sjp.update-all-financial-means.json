@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/api/sjp.update-all-financial-means.json",
+  "type": "object",
+  "properties": {
+    "income": {
+      "$ref":  "http://justice.gov.uk/json/schemas/domains/sjp/income.json"
+    },
+    "benefits": {
+      "$ref":  "http://justice.gov.uk/json/schemas/domains/sjp/benefits.json"
+    },
+    "employment": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/employment.json"
+    },
+    "employer": {
+      "$ref": "http://cpp.moj.gov.uk/sjp/employer.json"
+    }
+  },
+  "required": [
+    "income",
+    "benefits"
+  ],
+  "additionalProperties": false
+}

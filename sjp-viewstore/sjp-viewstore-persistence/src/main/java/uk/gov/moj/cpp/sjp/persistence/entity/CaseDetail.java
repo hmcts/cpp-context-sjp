@@ -1,22 +1,11 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
-import static org.apache.commons.lang3.BooleanUtils.isTrue;
-import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
-
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
-
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -24,6 +13,8 @@ import javax.persistence.ColumnResult;
 import javax.persistence.ConstructorResult;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
@@ -31,9 +22,21 @@ import javax.persistence.OneToOne;
 import javax.persistence.SqlResultSetMapping;
 import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import static com.google.common.collect.ImmutableList.copyOf;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
+import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED;
 
 @SqlResultSetMappings({
         @SqlResultSetMapping(
@@ -74,6 +77,9 @@ public class CaseDetail implements Serializable {
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "caseDetail")
     private DefendantDetail defendant = new DefendantDetail();
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "caseId")
+    private List<CaseDecision> caseDecisions = new ArrayList<>();
 
     @Column(name = "date_time_created")
     private ZonedDateTime dateTimeCreated;
@@ -124,6 +130,10 @@ public class CaseDetail implements Serializable {
     @Column(name = "adjourned_to")
     private LocalDate adjournedTo;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "case_status")
+    private CaseStatus caseStatus;
+
     public CaseDetail() {
         defendant.setCaseDetail(this);
     }
@@ -139,7 +149,10 @@ public class CaseDetail implements Serializable {
                       final ProsecutingAuthority prosecutingAuthority,
                       final Boolean completed,
                       final UUID assigneeId,
-                      final ZonedDateTime createdOn, final DefendantDetail defendantDetail, final BigDecimal costs, final LocalDate postingDate) {
+                      final ZonedDateTime createdOn,
+                      final DefendantDetail defendantDetail,
+                      final BigDecimal costs,
+                      final LocalDate postingDate) {
         this(id);
         this.urn = urn;
         this.enterpriseId = enterpriseId;
@@ -150,6 +163,7 @@ public class CaseDetail implements Serializable {
         setDefendant(defendantDetail);
         this.costs = costs;
         this.postingDate = postingDate;
+        this.caseStatus = NO_PLEA_RECEIVED;
     }
 
     public void acknowledgeDefendantDetailsUpdates(final ZonedDateTime acknowledgedAt) {
@@ -189,6 +203,14 @@ public class CaseDetail implements Serializable {
         Objects.requireNonNull(defendantDetail);
         defendantDetail.setCaseDetail(this);
         this.defendant = defendantDetail;
+    }
+
+    public List<CaseDecision> getCaseDecisions() {
+        return copyOf(caseDecisions);
+    }
+
+    public void setCaseDecisions(List<CaseDecision> caseDecisions) {
+        this.caseDecisions = copyOf(caseDecisions);
     }
 
     public ZonedDateTime getDateTimeCreated() {
@@ -343,7 +365,7 @@ public class CaseDetail implements Serializable {
         return adjournedTo;
     }
 
-    public void setAdjournedTo(LocalDate adjournedTo) {
+    public void setAdjournedTo(final LocalDate adjournedTo) {
         this.adjournedTo = adjournedTo;
     }
 
@@ -355,25 +377,12 @@ public class CaseDetail implements Serializable {
         this.hearingTime = hearingTime;
     }
 
-    public PleaType getFirstOffencePlea() {
-        return defendant.getOffences() == null ? null :
-                defendant
-                        .getOffences()
-                        .stream()
-                        .findFirst()
-                        .map(OffenceDetail::getPlea)
-                        .orElse(null);
+    public CaseStatus getCaseStatus() {
+        return caseStatus;
     }
 
-    public LocalDate getFirstOffencePleaDate() {
-        return defendant.getOffences() == null ? null :
-                defendant
-                        .getOffences()
-                        .stream()
-                        .findFirst()
-                        .map(OffenceDetail::getPleaDate)
-                        .map(ZonedDateTime::toLocalDate)
-                        .orElse(null);
+    public void setCaseStatus(final CaseStatus caseStatus) {
+        this.caseStatus = caseStatus;
     }
 
     @Override
@@ -381,9 +390,4 @@ public class CaseDetail implements Serializable {
         return ToStringBuilder.reflectionToString(this, SHORT_PREFIX_STYLE);
     }
 
-    public boolean isAnyOffencePendingWithdrawal() {
-        return defendant.getOffences().stream()
-                .map(OffenceDetail::getPendingWithdrawal)
-                .anyMatch(BooleanUtils::isTrue);
-    }
 }

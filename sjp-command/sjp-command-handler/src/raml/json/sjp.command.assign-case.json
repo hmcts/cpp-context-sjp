@@ -1,3 +1,5 @@
 {
-  "sessionId": "fd51dc11-dc3c-40c8-90c6-79bb50b5752a"
+  "assignCase": "fd51dc11-dc3c-40c8-90c6-79bb50b5752a",
+  "unassignCases": ["a7079159-968f-45e7-8411-1fa0488e25e9", "83bffbe7-85d4-4457-bb17-e72d11ac2ae5"],
+  "userId": "91dd856f-fc0c-407d-8db6-7139f4e60a12"
 }

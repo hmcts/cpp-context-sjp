@@ -1,5 +1,6 @@
 package uk.gov.moj.sjp.it.util;
 
+import static java.util.Collections.emptyMap;
 import static org.junit.Assert.fail;
 
 import java.nio.charset.Charset;
@@ -36,5 +37,9 @@ public class FileUtil {
 
     public static JsonObject getFileContentAsJson(final String path, final Map<String, Object> namedPlaceholders) {
         return JsonHelper.getJsonObject(getFileContent(path, namedPlaceholders));
+    }
+
+    public static JsonObject getFileContentAsJson(final String path) {
+        return JsonHelper.getJsonObject(getFileContent(path, emptyMap()));
     }
 }

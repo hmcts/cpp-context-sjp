@@ -81,10 +81,6 @@ public class UpdateHearingRequirementsHelper implements AutoCloseable {
         return pollForSpeakWelsh(caseId, defendantId, withJsonPath("speakWelsh", is(expectedSpeakWelsh)));
     }
 
-    public String pollForEmptySpeakWelsh(final UUID caseId, final String defendantId) {
-        return pollForSpeakWelsh(caseId, defendantId, withoutJsonPath("speakWelsh"));
-    }
-
     private String pollForSpeakWelsh(final UUID caseId, final String defendantId, final Matcher<? super ReadContext> speakWelshMatcher) {
         return await().atMost(20, TimeUnit.SECONDS).until(() -> getCase(caseId.toString()).readEntity(String.class),
                 isJson(withJsonPath("$.defendant",

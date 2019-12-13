@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="42" author="ATCM" logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <addColumn tableName="offence_decision">
+            <column name="plea_at_decision_time" type="text"/>
+        </addColumn>
+
+        <addColumn tableName="offence_decision">
+            <column name="plea_date" type="datetime"/>
+        </addColumn>
+
+    </changeSet>
+
+</databaseChangeLog>

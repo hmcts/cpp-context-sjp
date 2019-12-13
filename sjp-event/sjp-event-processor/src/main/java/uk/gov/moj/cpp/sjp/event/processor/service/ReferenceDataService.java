@@ -102,6 +102,15 @@ public class ReferenceDataService {
         return response.payloadAsJsonObject();
     }
 
+    public JsonObject getHearingTypes(final JsonEnvelope envelope) {
+        final JsonEnvelope request = enveloper.withMetadataFrom(
+                envelope,
+                "referencedata.query.hearing-types")
+                .apply(createObjectBuilder().build());
+        final JsonEnvelope response = requester.requestAsAdmin(request);
+        return response.payloadAsJsonObject();
+    }
+
     public JsonArray getAllResultDefinitions(final JsonEnvelope envelope, final LocalDate onDate) {
 
         final Envelope<JsonObject> request = Enveloper

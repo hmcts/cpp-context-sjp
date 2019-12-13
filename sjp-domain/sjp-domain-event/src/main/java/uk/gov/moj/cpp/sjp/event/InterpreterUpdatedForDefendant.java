@@ -1,18 +1,25 @@
 package uk.gov.moj.cpp.sjp.event;
 
+
+
+import static uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant.EVENT_NAME;
+
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Event("sjp.events.interpreter-for-defendant-updated")
+@Event(EVENT_NAME)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InterpreterUpdatedForDefendant {
+
+    public static final String EVENT_NAME = "sjp.events.interpreter-for-defendant-updated";
 
     private final UUID caseId;
     private final UUID defendantId;
@@ -62,4 +69,23 @@ public class InterpreterUpdatedForDefendant {
         return updatedDate;
     }
 
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final InterpreterUpdatedForDefendant that = (InterpreterUpdatedForDefendant) o;
+        return updatedByOnlinePlea == that.updatedByOnlinePlea &&
+                caseId.equals(that.caseId) &&
+                defendantId.equals(that.defendantId) &&
+                interpreter.equals(that.interpreter);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(caseId, defendantId, interpreter, updatedByOnlinePlea);
+    }
 }

@@ -67,11 +67,26 @@ public class CaseDefendantHandler {
         return Stream.of(event);
     }
 
-    public Stream<Object> updateDefendantDetails(final UUID caseId,
+    public Stream<Object> updateDefendantDetails(final UUID userId,
+                                                 final UUID caseId,
                                                  final UUID defendantId,
                                                  final Person person,
                                                  final ZonedDateTime updatedDate,
                                                  final CaseAggregateState state) {
+
+        return createRejectionEvents(
+                userId,
+                "Update defendant detail",
+                defendantId,
+                state
+        ).orElse(createDefendantUpdateEvent(caseId, defendantId, person, updatedDate, state));
+    }
+
+    private Stream<Object> createDefendantUpdateEvent(final UUID caseId,
+                                                      final UUID defendantId,
+                                                      final Person person,
+                                                      final ZonedDateTime updatedDate,
+                                                      final CaseAggregateState state) {
 
         final Stream.Builder<Object> events = Stream.builder();
         final boolean updatedByOnlinePlea = false;

@@ -4,27 +4,27 @@ import static java.util.Optional.ofNullable;
 
 import uk.gov.justice.json.schemas.domains.sjp.PleaType;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
-import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.NotifiedPleaView;
 
-import java.util.List;
+import java.time.LocalDate;
 
 public class NotifiedPleaViewHelper {
 
-    public NotifiedPleaView createNotifiedPleaView(
-            final CaseReferredForCourtHearing caseReferredForCourtHearing,
-            final List<Offence> defendantOffences) {
+    private NotifiedPleaViewHelper() {
+    }
 
-        final Offence firstOffence = defendantOffences.get(0);
+    public static NotifiedPleaView createNotifiedPleaView(
+            final LocalDate referredAt,
+            final Offence offence) {
 
-        return ofNullable(firstOffence.getPlea())
+        return ofNullable(offence.getPlea())
                 .map(plea -> new NotifiedPleaView(
-                        firstOffence.getId(),
-                        firstOffence.getPleaDate().toLocalDate(),
+                        offence.getId(),
+                        offence.getPleaDate().toLocalDate(),
                         getNotifiedPlea(plea)))
                 .orElseGet(() -> new NotifiedPleaView(
-                        firstOffence.getId(),
-                        caseReferredForCourtHearing.getReferredAt().toLocalDate(),
+                        offence.getId(),
+                        referredAt,
                         "NO_NOTIFICATION"));
     }
 

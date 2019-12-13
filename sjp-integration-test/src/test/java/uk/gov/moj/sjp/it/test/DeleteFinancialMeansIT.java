@@ -16,6 +16,7 @@ import static uk.gov.moj.sjp.it.stub.MaterialStub.stubAddCaseMaterial;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.stubNotifications;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostcodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
@@ -62,7 +63,7 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
         //Following 3 stubs require to post online plead successfully
         stubCountryByPostcodeQuery("W1T 1JY", "England");
         stubNotifications();
-        stubQueryOffenceById(randomUUID());
+        stubQueryOffencesByCode("PS00001");
         stubResultDefinitions();
 
         financialMeansHelper = new FinancialMeansHelper();
@@ -155,7 +156,7 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
 
     private void verifyOnlinePleaDataDeletion(final JSONObject pleaPayload, final UUID caseId, final String defendantId) throws InterruptedException {
         final Matcher<Object> expectedOnlinePleaResultAfterDelete = getSavedOnlinePleaPayloadContentMatcher(pleaPayload, caseId.toString(), defendantId, true);
-        DEFAULT_STUBBED_USER_ID.forEach(userId -> getOnlinePleaData(caseId.toString(), expectedOnlinePleaResultAfterDelete, userId));
+        DEFAULT_STUBBED_USER_ID.forEach(userId -> getOnlinePleaData(caseId.toString(),  expectedOnlinePleaResultAfterDelete, userId, defendantId.toString()));
     }
 
     private void verifyFinancialMeansDataDeletion(final String defendantId) {
@@ -166,7 +167,7 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
         financialMeansHelper.pleadOnline(pleaPayload.toString(), caseId, defendantId);
         final Matcher<Object> expectedOnlinePleaResultBeforeDelete = getSavedOnlinePleaPayloadContentMatcher(pleaPayload, caseId.toString(), defendantId, false);
 
-        DEFAULT_STUBBED_USER_ID.forEach(userId -> getOnlinePleaData(caseId.toString(), expectedOnlinePleaResultBeforeDelete, userId));
+        DEFAULT_STUBBED_USER_ID.forEach(userId -> getOnlinePleaData(caseId.toString(), expectedOnlinePleaResultBeforeDelete, userId, defendantId.toString()));
         verifyEmployerDataExist(caseId, defendantId, pleaPayload);
     }
 

@@ -1,0 +1,31 @@
+{
+  "id":"092d6c88-f1c0-44c3-9a99-f9d26548e9e7",
+  "results":[
+    {
+      "code":"SUMRCC",
+      "resultTypeId":"0c28787f-536d-410c-ad22-ebb2810ec67a",
+      "terminalEntries":[
+        {
+          "index":5,
+          "value":"20"
+        },
+        {
+          "index":10,
+          "value":"Listing notes"
+        },
+        {
+          "index":-1,
+          "value":"d10c5cc4-ec2a-41ac-bd6e-a3659c5cfeb1"
+        },
+        {
+          "index":35,
+          "value":"Case unsuitable for SJP"
+        },
+        {
+          "index":-2,
+          "value":"06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+        }
+      ]
+    }
+  ]
+}

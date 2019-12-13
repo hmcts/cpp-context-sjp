@@ -175,18 +175,6 @@
                         </exclusions>
                     </dependency>
                     <dependency>
-                        <groupId>uk.gov.moj.cpp.resulting</groupId>
-                        <artifactId>resulting-query-api</artifactId>
-                        <version>${resulting.version}</version>
-                        <classifier>raml</classifier>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
                         <groupId>uk.gov.moj.cpp.usersgroups</groupId>
                         <artifactId>usersgroups-query-api</artifactId>
                         <version>${usersgroups.version}</version>

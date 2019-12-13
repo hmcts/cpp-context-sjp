@@ -1,13 +1,20 @@
 package uk.gov.moj.cpp.sjp.event.processor.service;
 
-import static javax.json.Json.createObjectBuilder;
+import static java.util.UUID.fromString;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 
-import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+
+import java.time.LocalDate;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -22,14 +29,12 @@ public class ReferenceDataOffencesService {
     @ServiceComponent(Component.EVENT_PROCESSOR)
     private Requester requester;
 
-    public JsonObject getOffences(final Offence offence, final JsonEnvelope envelope) {
-        final JsonObject payload = createObjectBuilder().add("cjsoffencecode", offence.getCjsCode()).build();
-        final JsonEnvelope request = enveloper.withMetadataFrom(envelope, "referencedataoffences.query.offences-list").apply(payload);
-        final JsonEnvelope response = requester.requestAsAdmin(request);
-        return response.payloadAsJsonObject();
+    public Map<String, UUID> getOffenceDefinitionIdByOffenceCode(final Set<String> offenceCodes, final LocalDate referredAt, final JsonEnvelope envelope) {
+        return offenceCodes.stream().collect(toMap(identity(), offenceCode -> getOffenceDefinitionId(offenceCode, referredAt, envelope)));
+
     }
 
-    public JsonObject getOffenceReferenceData(final JsonEnvelope envelope, final String offenceCode, final String date) {
+    public Optional<JsonObject> getOffenceReferenceData(final JsonEnvelope envelope, final String offenceCode, final String date) {
         final JsonEnvelope request = enveloper
                 .withMetadataFrom(envelope, "referencedataoffences.query.offences-list")
                 .apply(Json.createObjectBuilder()
@@ -37,6 +42,12 @@ public class ReferenceDataOffencesService {
                         .add("date", date)
                         .build());
         final JsonEnvelope response = requester.request(request);
-        return response.payloadAsJsonObject().getJsonArray("offences").getJsonObject(0);
+        return response.payloadAsJsonObject().getJsonArray("offences").getValuesAs(JsonObject.class).stream().findFirst();
+    }
+
+    private UUID getOffenceDefinitionId(final String offenceCode, final LocalDate referredAt, final JsonEnvelope envelope) {
+        return getOffenceReferenceData(envelope, offenceCode, referredAt.toString())
+                .map(offenceDefinitionId -> fromString(offenceDefinitionId.getString("offenceId")))
+                .orElse(null);
     }
 }

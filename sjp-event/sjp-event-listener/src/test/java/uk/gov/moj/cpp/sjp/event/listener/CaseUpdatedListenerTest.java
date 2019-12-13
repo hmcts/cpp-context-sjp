@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.lang.Boolean.TRUE;
+import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.equalTo;
@@ -12,6 +13,8 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -86,7 +89,7 @@ public class CaseUpdatedListenerTest {
     public void shouldUpdateCompletedStatusAndRemoveCaseReadinessIfExists() {
         final JsonObject caseCompletedEventPayload = createObjectBuilder().build();
         final JsonEnvelope envelopeIn = envelopeFrom(metadataWithRandomUUID(CaseCompleted.EVENT_NAME), caseCompletedEventPayload);
-        final ReadyCase readyCase = new ReadyCase(caseId, PIA);
+        final ReadyCase readyCase = new ReadyCase(caseId, PIA, null, MAGISTRATE, 3, TFL, now());
 
         when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId));
         when(readyCaseRepository.findBy(caseId)).thenReturn(readyCase);

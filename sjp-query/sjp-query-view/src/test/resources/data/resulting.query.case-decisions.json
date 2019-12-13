@@ -1,0 +1,117 @@
+{
+  "caseDecisions": [
+    {
+      "id": "b08d65a8-e561-489c-8fc8-8bf13836c570",
+      "caseId": "c342204a-cc67-423f-b302-6c641e72be95",
+      "sjpSessionId": "96789f0a-aeaf-456d-98f9-0dc32a315bdb",
+      "created": "2016-10-31T20:40:35.668Z[UTC]",
+      "offences": [
+        {
+          "id": "b511eb31-c8e7-4223-8626-958c34dfb3f9",
+          "results": [
+            {
+              "terminalEntries": [
+                {
+                  "index": 1,
+                  "value": "200"
+                }
+              ],
+              "code": "FO",
+              "registerText": "Fined £200."
+            },
+            {
+              "terminalEntries": [
+                {
+                  "index": 1,
+                  "value": "10"
+                }
+              ],
+              "code": "FCOMP",
+              "registerText": "To pay compensation of £10."
+            }
+          ]
+        },
+        {
+          "id": "68dc17b3-e783-4c33-bd31-f84dc467b60f",
+          "results": [
+            {
+              "terminalEntries": [
+                {
+                  "index": 1,
+                  "value": "50"
+                }
+              ],
+              "code": "FO",
+              "registerText": "To pay compensation of £50."
+            }
+          ]
+        },
+        {
+          "id": "c6e95db8-b9a7-4aff-89d4-4aba39bd8300",
+          "results": [
+            {
+              "code": "D",
+              "registerText": "Dismissed"
+            }
+          ]
+        },
+        {
+          "results": [
+            {
+              "terminalEntries": [
+                {
+                  "index": 4,
+                  "value": "Pay directly to court"
+                },
+                {
+                  "index": 9,
+                  "value": "No information from the defendant"
+                }
+              ],
+              "code": "COLLO",
+              "registerText": "Collection order made. Pay directly to court. Reason: No information from the defendant."
+            },
+            {
+              "terminalEntries": [
+                {
+                  "index": 1,
+                  "value": "30"
+                }
+              ],
+              "code": "FVS",
+              "registerText": "To pay victim surcharge of £30."
+            },
+            {
+              "terminalEntries": [
+                {
+                  "index": 1,
+                  "value": "125"
+                }
+              ],
+              "code": "FCOST",
+              "registerText": "To pay costs of £125."
+            },
+            {
+              "terminalEntries": [
+                {
+                  "index": 96,
+                  "value": "12"
+                },
+                {
+                  "index": 97,
+                  "value": "fortnightly"
+                },
+                {
+                  "index": 98,
+                  "value": "23 Dec 2016"
+                }
+              ],
+              "code": "INSTL",
+              "registerText": "£12 to be paid Fortnightly starting 23 Dec 2016."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -2,7 +2,6 @@ package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
@@ -11,9 +10,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAddAssignmentCommand;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
+import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
@@ -22,6 +20,7 @@ import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
+import uk.gov.moj.sjp.it.helper.DecisionHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
@@ -37,7 +36,6 @@ public class SearchCasesIT extends BaseIntegrationTest {
 
     @Before
     public void setUp() {
-        stubQueryOffenceById(randomUUID());
         stubResultDefinitions();
     }
 
@@ -45,7 +43,7 @@ public class SearchCasesIT extends BaseIntegrationTest {
     public void verifyInitialSearchDetailsAndUpdateToDefendantDetails() {
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = withDefaults();
         createCaseForPayloadBuilder(createCasePayloadBuilder);
-        final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(createCasePayloadBuilder.getId(),
+        final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
                 createCasePayloadBuilder.getUrn(),
                 createCasePayloadBuilder.getDefendantBuilder().getLastName(),
                 createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
@@ -119,14 +117,14 @@ public class SearchCasesIT extends BaseIntegrationTest {
     public void verifyCaseAssignmentIsReflected() throws Exception {
         databaseCleaner.cleanAll();
         stubStartSjpSessionCommand();
-        stubAddAssignmentCommand();
-        stubRemoveAssignmentCommand();
+        stubAssignmentReplicationCommands();
 
         //given case is created
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = withDefaults();
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
         createCaseForPayloadBuilder(createCasePayloadBuilder);
 
-        final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(createCasePayloadBuilder.getId(),
+        final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
                 createCasePayloadBuilder.getUrn(),
                 createCasePayloadBuilder.getDefendantBuilder().getLastName(),
                 createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
@@ -140,7 +138,7 @@ public class SearchCasesIT extends BaseIntegrationTest {
 
         // when
         //TODO change to end session when it is ready (ATCM-2957)
-        caseSearchResultHelper.completeCase(createCasePayloadBuilder.getDefendantBuilder().getId(), createCasePayloadBuilder.getOffenceBuilder().getId());
+        DecisionHelper.saveDefaultDecision(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceId());
         // then
         caseSearchResultHelper.verifyAssignment(false);
     }

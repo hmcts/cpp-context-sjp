@@ -23,6 +23,7 @@ import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterC
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
+import uk.gov.moj.cpp.sjp.query.view.response.CaseSummaryView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnView;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
@@ -119,11 +120,15 @@ public class CaseService {
 
         final List<String> casesIds = casesDetails.stream()
                 .map(caseDetails -> caseDetails.getId().toString()).collect(toList());
+
+        final List<CaseSummaryView> cases = casesDetails.stream()
+                .map(CaseSummaryView::new).collect(toList());
+
         final int casesCount = postedBefore
                 .map(localDate -> caseRepository.countCasesMissingSjpn(prosecutingAuthorityFilterValue, localDate))
                 .orElseGet(() -> caseRepository.countCasesMissingSjpn(prosecutingAuthorityFilterValue));
 
-        return new CasesMissingSjpnView(casesIds, casesCount);
+        return new CasesMissingSjpnView(casesIds, cases, casesCount);
     }
 
     /**
@@ -316,5 +321,4 @@ public class CaseService {
         return isNotEmpty(pendingCaseToPublishWithAnyOffence.getPostcode()) && pendingCaseToPublishWithAnyOffence.getPostcode().length() > 2
                 ? pendingCaseToPublishWithAnyOffence.getPostcode().substring(0, 2) : pendingCaseToPublishWithAnyOffence.getPostcode();
     }
-
 }

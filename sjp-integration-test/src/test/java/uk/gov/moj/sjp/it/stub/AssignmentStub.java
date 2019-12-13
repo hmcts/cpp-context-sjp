@@ -10,13 +10,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.jayway.awaitility.Awaitility.await;
-import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
-import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
@@ -68,30 +66,16 @@ public class AssignmentStub {
                         .withHeader("CPPID", UUID.randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(payload.toString())));
-
-        waitForStubToBeReady(format("%s?%s=%s", ASSIGNMENTS_QUERY_URL, "domainObjectId", caseId), ASSIGNMENTS_QUERY_MEDIA_TYPE);
     }
 
     public static void stubGetAssignmentsByDomainObjectId(final UUID caseId, final UUID... assignees) {
         stubGetAssignmentsByDomainObjectId(caseId, Optional.empty(), assignees);
     }
 
-    public static void stubAddAssignmentCommand() {
+    public static void stubAssignmentReplicationCommands() {
         InternalEndpointMockUtils.stubPingFor("assignment-service");
-
-        stubFor(post(urlPathEqualTo(ASSIGNMENT_COMMAND_URL))
-                .withHeader(CONTENT_TYPE, equalTo(ADD_ASSIGNMENT_MEDIA_TYPE))
-                .willReturn(aResponse().withStatus(SC_ACCEPTED)
-                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)));
-    }
-
-    public static void stubRemoveAssignmentCommand() {
-        InternalEndpointMockUtils.stubPingFor("assignment-service");
-
-        stubFor(post(urlPathEqualTo(ASSIGNMENT_COMMAND_URL))
-                .withHeader(CONTENT_TYPE, equalTo(REMOVE_ASSIGNMENT_MEDIA_TYPE))
-                .willReturn(aResponse().withStatus(SC_ACCEPTED)
-                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)));
+        stubAddAssignmentCommand();
+        stubRemoveAssignmentCommand();
     }
 
     public static void verifyAddAssignmentCommandSent(final UUID caseId, final UUID assigneeId, final CaseAssignmentType caseAssignmentType) {
@@ -119,6 +103,20 @@ public class AssignmentStub {
                                 .map(LoggedRequest::getBodyAsString)
                                 .map(JSONObject::new)
                                 .anyMatch(payloadPredicate));
+    }
+
+    private static void stubAddAssignmentCommand() {
+        stubFor(post(urlPathEqualTo(ASSIGNMENT_COMMAND_URL))
+                .withHeader(CONTENT_TYPE, equalTo(ADD_ASSIGNMENT_MEDIA_TYPE))
+                .willReturn(aResponse().withStatus(SC_ACCEPTED)
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)));
+    }
+
+    private static void stubRemoveAssignmentCommand() {
+        stubFor(post(urlPathEqualTo(ASSIGNMENT_COMMAND_URL))
+                .withHeader(CONTENT_TYPE, equalTo(REMOVE_ASSIGNMENT_MEDIA_TYPE))
+                .willReturn(aResponse().withStatus(SC_ACCEPTED)
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)));
     }
 
 }

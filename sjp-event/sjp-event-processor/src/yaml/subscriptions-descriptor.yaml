@@ -41,6 +41,15 @@ subscriptions_descriptor:
         - name: sjp.events.plea-updated
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/plea-updated.json
 
+        - name: sjp.events.pleaded-guilty
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/pleaded-guilty.json
+
+        - name: sjp.events.pleaded-guilty-court-hearing-requested
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/pleaded-guilty-court-hearing-requested.json
+
+        - name: sjp.events.pleaded-not-guilty
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/pleaded-not-guilty.json
+
         - name: sjp.events.plea-cancelled
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.plea-cancelled.json
 
@@ -49,6 +58,9 @@ subscriptions_descriptor:
 
         - name: sjp.events.financial-means-updated
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/financial-means-updated.json
+
+        - name: sjp.events.all-financial-means-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/all-financial-means-udpated.json
 
         - name: sjp.events.employer-updated
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/employer-updated.json
@@ -98,6 +110,9 @@ subscriptions_descriptor:
         - name: sjp.events.dates-to-avoid-added
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/dates-to-avoid-added.json
 
+        - name: sjp.events.dates-to-avoid-required
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/dates-to-avoid-required.json
+
         - name: sjp.events.dates-to-avoid-updated
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/dates-to-avoid-updated.json
 
@@ -113,8 +128,17 @@ subscriptions_descriptor:
         - name: sjp.events.transparency-report-requested
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/transparency-report-requested.json
 
+        - name: sjp.events.offences-withdrawal-status-set
+          schema_uri: http://cpp.moj.gov.uk/json/schemas/domains/sjp/event/sjp.offences-withdrawal-requests-status-set.json
+
         - name: sjp.events.case-completed
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-completed.json
+
+        - name: sjp.events.pleas-set
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.command.set-pleas.json
+
+        - name: sjp.events.decision-saved
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/decision-saved.json
 
         - name: sjp.events.financial-means-deleted
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.financial-means-deleted.json
@@ -123,22 +147,13 @@ subscriptions_descriptor:
 
     - name: public event subscription
       events:
-        - name: public.resulting.referenced-decisions-saved
-          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/public.resulting.referenced-decisions-saved.json
-
         - name: material.material-added
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/material.material-added.json
-
-        - name: public.resulting.decision-to-refer-case-for-court-hearing-saved
-          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/public.resulting.decision-to-refer-case-for-court-hearing-saved.json
 
         - name: public.progression.prosecution-cases-referred-to-court
           schema_uri: http://cpp.moj.gov.uk/sjp/prosecution-cases-referred-to-court
 
         - name: public.progression.refer-prosecution-cases-to-court-rejected
           schema_uri: http://justice.gov.uk/progression/courts/prosecutionCasesReferredToCourt.json
-
-        - name: public.resulting.case-adjourned-to-later-sjp-hearing
-          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/public.resulting.case-adjourned-to-later-sjp-hearing.json
 
       event_source_name: public.event.source

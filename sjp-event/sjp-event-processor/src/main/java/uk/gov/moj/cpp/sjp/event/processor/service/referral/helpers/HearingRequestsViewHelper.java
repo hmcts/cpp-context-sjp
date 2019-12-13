@@ -21,14 +21,13 @@ import javax.json.JsonObject;
 
 public class HearingRequestsViewHelper {
 
-    private static final String WELSH_HEARING_LANGUAGE_CODE = "W";
-
     public List<HearingRequestView> createHearingRequestViews(
             final CaseDetails caseDetails,
             final JsonObject referralReasons,
             final DefendantsOnlinePlea defendantPleaDetails,
-            final JsonObject caseFileDefendantDetails,
-            final CaseReferredForCourtHearing caseReferredForCourtHearingEvent) {
+            final CaseReferredForCourtHearing caseReferredForCourtHearingEvent,
+            final JsonObject hearingTypes,
+            final List<UUID> referredOffenceIds) {
 
         final Optional<PleaDetails> defendantPleaDetailsOptional = Optional.ofNullable(defendantPleaDetails)
                 .map(DefendantsOnlinePlea::getPleaDetails);
@@ -41,15 +40,24 @@ public class HearingRequestsViewHelper {
                 caseDetails,
                 referralReasons,
                 defendantUnavailability,
-                caseFileDefendantDetails,
-                caseReferredForCourtHearingEvent);
+                caseReferredForCourtHearingEvent,
+                referredOffenceIds);
+
+        final String hearingTypeId = extractHearingTypeId(
+                referralReasons,
+                caseReferredForCourtHearingEvent.getReferralReasonId(), hearingTypes)
+                .orElseThrow(() -> new IllegalStateException(
+                        format("Hearing type Id not found for case %s and referral reason %s",
+                                caseDetails.getId(),
+                                caseReferredForCourtHearingEvent.getReferralReasonId()))
+                );
 
         final HearingRequestView listHearingRequestView = new HearingRequestView(
                 "MAGISTRATES",
                 caseReferredForCourtHearingEvent.getEstimatedHearingDuration(),
                 caseDetails.getDatesToAvoid(),
                 caseReferredForCourtHearingEvent.getListingNotes(),
-                new HearingTypeView(caseReferredForCourtHearingEvent.getHearingTypeId()),
+                new HearingTypeView(UUID.fromString(hearingTypeId)),
                 singletonList(defendantRequestView));
 
         return singletonList(listHearingRequestView);
@@ -59,8 +67,8 @@ public class HearingRequestsViewHelper {
             final CaseDetails caseDetails,
             final JsonObject referralReasons,
             final String defendantUnavailability,
-            final JsonObject caseFileDefendantDetails,
-            final CaseReferredForCourtHearing caseReferredForCourtHearingEvent) {
+            final CaseReferredForCourtHearing caseReferredForCourtHearingEvent,
+            final List<UUID> referredOffenceIds) {
 
         final Defendant defendant = caseDetails.getDefendant();
         final UUID referralReasonId = caseReferredForCourtHearingEvent.getReferralReasonId();
@@ -77,10 +85,8 @@ public class HearingRequestsViewHelper {
                                 caseDetails.getId(),
                                 referralReasonId)));
 
-        final String hearingLanguage = Optional.ofNullable(caseFileDefendantDetails)
-                .map(details -> details.getString("hearingLanguage"))
-                .map(language -> WELSH_HEARING_LANGUAGE_CODE.equals(language) ? "WELSH" : "ENGLISH")
-                .orElse("ENGLISH");
+        final String hearingLanguage = (caseDetails.getDefendant().getSpeakWelsh() != null &&
+                caseDetails.getDefendant().getSpeakWelsh()) ? "WELSH" : "ENGLISH";
 
         return new DefendantRequestView(
                 caseReferredForCourtHearingEvent.getCaseId(),
@@ -88,7 +94,7 @@ public class HearingRequestsViewHelper {
                 defendantUnavailability,
                 "SJP_REFERRAL",
                 hearingLanguage,
-                singletonList(defendant.getOffences().get(0).getId()));
+                referredOffenceIds);
     }
 
     private static Optional<String> extractReferralReason(final JsonObject allReferralReasons, final UUID referralReasonId) {
@@ -105,5 +111,32 @@ public class HearingRequestsViewHelper {
                         return reason.getString("reason");
                     }
                 });
+    }
+
+    private static Optional<String> extractHearingCode(final JsonObject allReferralReasons, final UUID referralReasonId) {
+        return allReferralReasons
+                .getJsonArray("referralReasons")
+                .getValuesAs(JsonObject.class)
+                .stream()
+                .filter(reason -> reason.getString("id").equals(referralReasonId.toString()))
+                .findFirst()
+                .map(reason -> reason.getString("hearingCode"));
+    }
+
+    private static Optional<String> extractHearingTypeId(final JsonObject allReferralReasons, final UUID referralReasonId, final JsonObject hearingTypes) {
+
+        final String hearingCode = extractHearingCode(
+                allReferralReasons, referralReasonId)
+                .orElseThrow(() -> new IllegalStateException(
+                        format("Referral reason not found for referral reason %s",
+                                referralReasonId)));
+
+        return hearingTypes
+                .getJsonArray("hearingTypes")
+                .getValuesAs(JsonObject.class)
+                .stream()
+                .filter(reason -> reason.getString("hearingCode").equals(hearingCode))
+                .findFirst()
+                .map(reason -> reason.getString("id"));
     }
 }

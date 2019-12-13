@@ -1,0 +1,14 @@
+{
+  "id": "%s",
+  "type": "DISCHARGE",
+  "offenceDecisionInformation": {
+    "offenceId": "d1f4f315-6645-412c-89bd-f1eb45c663c8",
+    "verdict": "FOUND_GUILTY"
+  },
+  "dischargeType": "CONDITIONAL",
+  "compensation": 10.01,
+  "dischargedFor": {
+    "value": 10,
+    "unit": "MONTH"
+  }
+}

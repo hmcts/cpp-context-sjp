@@ -32,7 +32,7 @@ Feature: Update hearing requirements
      And case is assigned
     When you updateHearingRequirements on a CaseAggregate using a hearing requirements with assignee user id
     Then interpreter for defendant updated
-     And hearing language preference for defendant updated with wish to do not speak welsh
+    And hearing language preference for defendant updated with wish to do not speak welsh
 
   Scenario: When case isn hearing language preference for defendant updated with wish to speak welsh assigned to some other user
 

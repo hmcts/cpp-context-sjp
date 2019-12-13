@@ -5,16 +5,10 @@
     "caseId": {
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
-    "urn": {
-      "type": "string"
-    },
-    "sessionId": {
+    "decisionId": {
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
     "referralReasonId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
-    },
-    "hearingTypeId": {
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
     "listingNotes": {
@@ -27,14 +21,18 @@
     },
     "referredAt": {
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/date-time"
+    },
+    "referredOffenceIds": {
+      "type": "array",
+      "items": {
+        "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      }
     }
   },
   "required": [
     "caseId",
-    "urn",
-    "sessionId",
+    "decisionId",
     "referralReasonId",
-    "hearingTypeId",
     "estimatedHearingDuration",
     "referredAt"
   ]

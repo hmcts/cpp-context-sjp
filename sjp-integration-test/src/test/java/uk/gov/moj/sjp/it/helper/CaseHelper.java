@@ -25,15 +25,20 @@ public class CaseHelper {
     private static final String QUERY_READY_CASES_RESOURCE = "/cases/ready-cases";
     private static final String QUERY_READY_CASES = "application/vnd.sjp.query.ready-cases+json";
 
-    public static void pollUntilCaseReady(UUID caseId) {
-        pollReadyCasesUntilResponseIsJson(withJsonPath("readyCases.*", hasItem(
+    public static JsonObject pollUntilCaseReady(UUID caseId) {
+        final JsonObject readyCases = pollReadyCasesUntilResponseIsJson(withJsonPath("readyCases.*", hasItem(
                 isJson(
                         withJsonPath("caseId", Matchers.equalTo(caseId.toString())))
         )));
+
+        return readyCases.getJsonArray("readyCases").getValuesAs(JsonObject.class).stream()
+                .filter(readyCase -> readyCase.getString("caseId").equals(caseId.toString()))
+                .findFirst()
+                .get();
     }
 
-    public static void pollUntilCaseNotReady(UUID caseId) {
-        pollReadyCasesUntilResponseIsJson(withJsonPath("readyCases.*", not(hasItem(
+    public static JsonObject pollUntilCaseNotReady(UUID caseId) {
+        return pollReadyCasesUntilResponseIsJson(withJsonPath("readyCases.*", not(hasItem(
                 isJson(withJsonPath("caseId", Matchers.equalTo(caseId.toString())))
         ))));
     }

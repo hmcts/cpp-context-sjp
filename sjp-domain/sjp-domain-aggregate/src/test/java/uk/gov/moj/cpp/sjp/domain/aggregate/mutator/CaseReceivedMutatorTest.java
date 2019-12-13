@@ -46,6 +46,7 @@ public class CaseReceivedMutatorTest {
         assertThat(state.getDefendantDateOfBirth(), is(aCase.getDefendant().getDateOfBirth()));
         assertThat(state.getDefendantAddress(), is(aCase.getDefendant().getAddress()));
         assertThat(state.getExpectedDateReady(), is(event.getExpectedDateReady()));
+        assertThat(state.getDefendantId(), is(event.getDefendant().getId()));
         assertTrue(state.isCaseReceived());
     }
 }

@@ -37,6 +37,7 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
+import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
@@ -49,6 +50,8 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import javax.json.Json;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -59,9 +62,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class AssignmentHandlerTest {
 
-    private static final String ASSIGN_CASE_COMMAND = "sjp.command.assign-case";
+    private static final String ASSIGN_CASE_COMMAND = "sjp.command.assign-next-case";
     private static final String UNASSIGN_CASE_COMMAND = "sjp.command.unassign-case";
     private static final String ASSIGN_CASE__FROM_CANDIDATES_LIST_COMMAND = "sjp.command.assign-case-from-candidates-list";
+    private static final String ASSIGN_CASE_TO_USER_COMMAND = "sjp.command.assign-case";
 
     @Mock
     private EventSource eventSource;
@@ -79,7 +83,7 @@ public class AssignmentHandlerTest {
     private CaseAggregate caseAggregate1, caseAggregate2, caseAggregate3;
 
     @Spy
-    private Enveloper enveloper = createEnveloperWithEvents(CaseAssigned.class, CaseAssignmentRequested.class, CaseAssignmentRejected.class);
+    private Enveloper enveloper = createEnveloperWithEvents(CaseAssigned.class, CaseAssignmentRequested.class, CaseAssignmentRejected.class, CaseUnassigned.class);
 
     @Spy
     private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
@@ -218,7 +222,7 @@ public class AssignmentHandlerTest {
         when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);
         when(session.requestCaseAssignment(userId)).thenReturn(Stream.of(caseAssignmentRequested));
 
-        assignmentHandler.assignCase(assignCaseCommand);
+        assignmentHandler.assignNextCase(assignCaseCommand);
 
         assertThat(sessionEventStream, eventStreamAppendedWith(
                 streamContaining(
@@ -234,7 +238,7 @@ public class AssignmentHandlerTest {
 
     public void shouldUnassignCase() throws EventStreamException {
 
-        final UUID caseId = UUID.randomUUID();
+        final UUID caseId = randomUUID();
         final JsonEnvelope unassignCaseCommand = envelopeFrom(
                 metadataWithRandomUUID(UNASSIGN_CASE_COMMAND),
                 createObjectBuilder().add("caseId", caseId.toString()).build()
@@ -256,12 +260,81 @@ public class AssignmentHandlerTest {
     }
 
     @Test
+    public void shouldAssignCaseToUser() throws EventStreamException {
+        final UUID caseToBeAssignedId = randomUUID();
+        final UUID caseToBeUnassignedId1 = randomUUID();
+        final UUID caseToBeUnassignedId2 = randomUUID();
+        final UUID userId = randomUUID();
+        final ZonedDateTime assignedAt = clock.now();
+
+        final JsonEnvelope assignCaseCommand = envelopeFrom(
+                metadataWithRandomUUID(ASSIGN_CASE_TO_USER_COMMAND),
+                createObjectBuilder()
+                        .add("assignCase", caseToBeAssignedId.toString())
+                        .add("unassignCases", Json.createArrayBuilder()
+                                .add(caseToBeUnassignedId1.toString())
+                                .add(caseToBeUnassignedId2.toString()))
+                        .add("userId", userId.toString())
+                        .build()
+        );
+
+        final CaseAssignmentType caseAssignmentType = MAGISTRATE_DECISION;
+
+        final CaseAssigned caseAssigned = new CaseAssigned(caseToBeAssignedId, userId, clock.now(), caseAssignmentType);
+
+        final CaseUnassigned caseUnassigned1 = new CaseUnassigned(caseToBeUnassignedId1);
+        final CaseUnassigned caseUnassigned2 = new CaseUnassigned(caseToBeUnassignedId2);
+
+        when(eventSource.getStreamById(caseToBeAssignedId)).thenReturn(case1EventStream);
+        when(aggregateService.get(case1EventStream, CaseAggregate.class)).thenReturn(caseAggregate1);
+        when(caseAggregate1.assignCaseToUser(userId, clock.now())).thenReturn(Stream.of(caseAssigned));
+
+        when(eventSource.getStreamById(caseToBeUnassignedId1)).thenReturn(case2EventStream);
+        when(aggregateService.get(case2EventStream, CaseAggregate.class)).thenReturn(caseAggregate2);
+        when(caseAggregate2.unassignCase()).thenReturn(Stream.of(caseUnassigned1));
+
+        when(eventSource.getStreamById(caseToBeUnassignedId2)).thenReturn(case3EventStream);
+        when(aggregateService.get(case3EventStream, CaseAggregate.class)).thenReturn(caseAggregate3);
+        when(caseAggregate3.unassignCase()).thenReturn(Stream.of(caseUnassigned2));
+
+        assignmentHandler.assignCase(assignCaseCommand);
+
+        assertThat(case1EventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(assignCaseCommand)
+                                        .withName(CaseAssigned.EVENT_NAME),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.caseId", equalTo(caseToBeAssignedId.toString())),
+                                        withJsonPath("$.assigneeId", equalTo(userId.toString())),
+                                        withJsonPath("$.assignedAt", equalTo(assignedAt.toString())),
+                                        withJsonPath("$.caseAssignmentType", equalTo(caseAssignmentType.toString()))
+                                ))))));
+
+        assertThat(case2EventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(assignCaseCommand)
+                                        .withName(CaseUnassigned.EVENT_NAME),
+                                payloadIsJson(withJsonPath("$.caseId", equalTo(caseToBeUnassignedId1.toString())))
+                        ))));
+
+        assertThat(case3EventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(assignCaseCommand),
+                                payloadIsJson(withJsonPath("$.caseId", equalTo(caseToBeUnassignedId2.toString())))
+                        ))));
+    }
+
+    @Test
     public void shouldHandleAssignCaseCommand() {
         assertThat(AssignmentHandler.class, isHandlerClass(COMMAND_HANDLER)
                 .with(allOf(
-                        method("assignCase").thatHandles(ASSIGN_CASE_COMMAND),
+                        method("assignNextCase").thatHandles(ASSIGN_CASE_COMMAND),
                         method("unassignCase").thatHandles(UNASSIGN_CASE_COMMAND),
-                        method("assignCaseFromCandidatesList").thatHandles(ASSIGN_CASE__FROM_CANDIDATES_LIST_COMMAND)
+                        method("assignCaseFromCandidatesList").thatHandles(ASSIGN_CASE__FROM_CANDIDATES_LIST_COMMAND),
+                        method("assignCase").thatHandles(ASSIGN_CASE_TO_USER_COMMAND)
                 )));
     }
 }

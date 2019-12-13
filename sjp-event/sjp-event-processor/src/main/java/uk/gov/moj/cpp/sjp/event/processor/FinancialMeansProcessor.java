@@ -31,6 +31,16 @@ public class FinancialMeansProcessor {
                 .apply(envelope.payloadAsJsonObject()));
     }
 
+    @Handles("sjp.events.all-financial-means-updated")
+    public void updateAllFinancialMeans(final JsonEnvelope event) {
+        final JsonObject newPayload = createObjectBuilder()
+                .add("defendantId", event.payloadAsJsonObject().getString("defendantId"))
+                .build();
+        final JsonEnvelope newEventEnvelope = enveloper.withMetadataFrom(event,
+                "public.sjp.all-financial-means-updated").apply(newPayload);
+        sender.send(newEventEnvelope);
+    }
+
     @Handles("sjp.events.financial-means-deleted")
     public void deleteFinancialMeans(final JsonEnvelope envelope) {
 

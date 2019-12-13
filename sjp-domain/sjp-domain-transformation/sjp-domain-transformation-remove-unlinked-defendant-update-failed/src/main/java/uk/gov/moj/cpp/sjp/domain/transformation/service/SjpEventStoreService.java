@@ -44,7 +44,7 @@ public class SjpEventStoreService {
     }
 
     @SuppressWarnings({"squid:S00112","squid:S1141","squid:S2139"})
-    public boolean hasInitialEventInStream(final String streamId) {
+    public synchronized boolean hasInitialEventInStream(final String streamId) {
         try(
             final Connection connection = connectionProvider.getConnection();
             final PreparedStatement preparedStatement = connection.prepareStatement(INITIAL_STREAM_EVENT)){

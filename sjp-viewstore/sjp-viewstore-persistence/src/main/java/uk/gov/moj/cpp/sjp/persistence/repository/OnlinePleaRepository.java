@@ -22,8 +22,6 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYMENT_STATUS_DETAILS;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.HEARING_LANGUAGE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.INTERPRETER_LANGUAGE;
-import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.MITIGATION;
-import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.NOT_GUILTY_BECAUSE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_ACCOMMODATION_AMOUNT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_CHILD_MAINTENANCE_AMOUNT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_COUNCIL_TAX_AMOUNT;
@@ -31,6 +29,7 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_OTHER_AMOUNT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_OTHER_DESCRIPTION;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTGOINGS_TRAVEL_EXPENSES_AMOUNT;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.OUTSTANDING_FINES;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_ADDRESS_1;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_ADDRESS_2;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_ADDRESS_3;
@@ -44,7 +43,6 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_POSTCODE;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_TELEPHONE_HOME;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_TELEPHONE_MOBILE;
-import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PLEA;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.UNAVAILABILITY;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.WITNESS_DETAILS;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.WITNESS_DISPUTE;
@@ -159,10 +157,9 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         PERSON_ADDRESS_5(o -> o.getPersonalDetails().getAddress().getAddress5(), "personalDetails", "address", "address5"),
         PERSON_POSTCODE(o -> o.getPersonalDetails().getAddress().getPostcode(), "personalDetails", "address", "postcode"),
 
-        PLEA(o -> o.getPleaDetails().getPlea(), "pleaDetails", "plea"),
         COME_TO_COURT(o -> o.getPleaDetails().getComeToCourt(), "pleaDetails", "comeToCourt"),
-        MITIGATION(o -> o.getPleaDetails().getMitigation(), "pleaDetails", "mitigation"),
-        NOT_GUILTY_BECAUSE(o -> o.getPleaDetails().getNotGuiltyBecause(), "pleaDetails", "notGuiltyBecause");
+
+        OUTSTANDING_FINES(o -> o.getPleaDetails().getOutstandingFines(), "pleaDetails", "outstandingFines");
 
         private String[] fieldPath;
         private Function<OnlinePlea, Object> fieldGetter;
@@ -275,10 +272,16 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         @Override
         final List<FIELDS> getFieldsToUpdate() {
             return asList(
-                    PLEA,
-                    COME_TO_COURT,
-                    MITIGATION,
-                    NOT_GUILTY_BECAUSE
+                    COME_TO_COURT
+            );
+        }
+    }
+
+    public abstract static class OutstandingFinesOnlinePleaRepository extends OnlinePleaRepository {
+        @Override
+        final List<FIELDS> getFieldsToUpdate() {
+            return asList(
+                    OUTSTANDING_FINES
             );
         }
     }

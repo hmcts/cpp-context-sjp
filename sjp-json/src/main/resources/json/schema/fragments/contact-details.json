@@ -13,12 +13,10 @@
       "type": "string"
     },
     "email": {
-      "type": "string",
-      "format": "email"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/email"
     },
     "email2": {
-      "type": "string",
-      "format": "email"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/email"
     }
   },
   "additionalProperties": false

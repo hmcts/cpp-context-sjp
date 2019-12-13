@@ -35,6 +35,12 @@
             <artifactId>javaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.core.domain</groupId>
+            <artifactId>common-core-domain</artifactId>
+            <version>${coredomain.version}</version>
+            <scope>compile</scope>
+        </dependency>
 
         <!-- Test Dependencies -->
 
@@ -82,11 +88,10 @@
                             </sourceDirectory>
                             <includes>
                                 <include>**/sjp.command.update-employer.json</include>
-                                <include>**/sjp.command.refer-case-for-court-hearing.json</include>
-                                <include>
-                                    **/sjp.command.record-case-referral-for-court-hearing-rejection.json
-                                </include>
+                                <include>**/sjp.command.record-case-referral-for-court-hearing-rejection.json</include>
                                 <include>**/sjp.command.add-case-note.json</include>
+                                <include>**/sjp.command.set-offences-withdrawal-requests-status.json</include>
+                                <include>**/sjp.command.update-all-financial-means.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>

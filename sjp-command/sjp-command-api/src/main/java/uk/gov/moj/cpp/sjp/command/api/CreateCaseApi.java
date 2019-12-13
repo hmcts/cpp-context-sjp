@@ -1,8 +1,10 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
+import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
 import static uk.gov.moj.cpp.sjp.command.api.service.AddressService.normalizePostcodeInAddress;
+import static uk.gov.moj.cpp.sjp.command.api.service.ContactDetailsService.convertBlankEmailsToNull;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -19,6 +21,7 @@ public class CreateCaseApi {
 
     private static final String DEFENDANT = "defendant";
     private static final String ADDRESS = "address";
+    private static final String CONTACT_DETAILS = "contactDetails";
 
     @Inject
     private Enveloper enveloper;
@@ -33,6 +36,9 @@ public class CreateCaseApi {
 
         final JsonObjectBuilder defendantObjectBuilder = createObjectBuilderWithFilter(defendantObject, field -> !ADDRESS.equals(field));
         defendantObjectBuilder.add(ADDRESS, normalizePostcodeInAddress(defendantObject.getJsonObject(ADDRESS)));
+        ofNullable(defendantObject.getJsonObject(CONTACT_DETAILS))
+                .ifPresent(contactDetails -> defendantObjectBuilder.add(CONTACT_DETAILS, convertBlankEmailsToNull(contactDetails)));
+
 
         final JsonObjectBuilder createCaseObjectBuilder = createObjectBuilderWithFilter(payload, field -> !DEFENDANT.equals(field));
         createCaseObjectBuilder.add(DEFENDANT, defendantObjectBuilder);

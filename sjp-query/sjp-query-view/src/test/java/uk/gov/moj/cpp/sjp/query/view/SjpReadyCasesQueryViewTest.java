@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.query.view;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
+import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -21,6 +22,8 @@ import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuil
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -42,7 +45,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class SjpReadyCasesQueryViewTest {
 
     @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloper();
+    private final Enveloper enveloper = EnveloperFactory.createEnveloper();
 
     @Mock
     private ReadyCaseRepository readyCaseRepository;
@@ -56,8 +59,8 @@ public class SjpReadyCasesQueryViewTest {
                 .with(metadataWithRandomUUID("sjp.query.ready-cases"))
                 .build();
 
-        final ReadyCase readyCase1 = new ReadyCase(randomUUID(), PIA);
-        final ReadyCase readyCase2 = new ReadyCase(randomUUID(), PLEADED_GUILTY, randomUUID());
+        final ReadyCase readyCase1 = new ReadyCase(randomUUID(), PIA, null, MAGISTRATE, 3, TFL, now().minusDays(30));
+        final ReadyCase readyCase2 = new ReadyCase(randomUUID(), PLEADED_GUILTY, randomUUID(), MAGISTRATE, 2, TFL, now().minusDays(15));
 
         when(readyCaseRepository.findAll()).thenReturn(asList(readyCase1, readyCase2));
 
@@ -87,8 +90,8 @@ public class SjpReadyCasesQueryViewTest {
                 .with(metadataWithRandomUUID("sjp.query.ready-cases")).withPayloadOf(assigneeId, "assigneeId")
                 .build();
 
-        final ReadyCase readyCase1 = new ReadyCase(randomUUID(), PIA, assigneeId);
-        final ReadyCase readyCase2 = new ReadyCase(randomUUID(), PLEADED_GUILTY, assigneeId);
+        final ReadyCase readyCase1 = new ReadyCase(randomUUID(), PIA, assigneeId, MAGISTRATE, 3, TFL, now().minusDays(30));
+        final ReadyCase readyCase2 = new ReadyCase(randomUUID(), PLEADED_GUILTY, assigneeId, MAGISTRATE, 2, TFL, now().minusDays(15));
 
         when(readyCaseRepository.findByAssigneeId(assigneeId)).thenReturn(asList(readyCase1, readyCase2));
 

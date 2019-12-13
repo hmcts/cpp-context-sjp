@@ -62,6 +62,34 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
+/cases/{caseId}/defendant/{defendantId}/all-financial-means:
+  uriParameters:
+    caseId:
+      description: The ID of the case to modify
+      type: string
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  post:
+    description: |
+      Update all financial means
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.update-all-financial-means+json
+          name: sjp.update-all-financial-means
+      ...
+    body:
+      application/vnd.sjp.update-all-financial-means+json:
+        example:
+          !include json/sjp.update-all-financial-means.json
+        schema:
+          !include json/schema/sjp.update-all-financial-means.json
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted
+
 /cases/{caseId}/defendant/{defendantId}:
   uriParameters:
     caseId:
@@ -176,65 +204,6 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
         schema:
           !include json/schema/sjp.update-employer.json
       application/vnd.sjp.delete-employer+json: !!null
-    responses:
-      500:
-        description: Internal Server Error
-      202:
-        description: Accepted
-
-/cases/{caseId}/offences-withdrawal-request:
-  uriParameters:
-    caseId:
-      description: The ID of the case update
-      type: string
-  post:
-    description: |
-      Request all offences for a case to be withdrawn or cancel withdrawl request
-      ...
-      (mapping):
-          requestType: application/vnd.sjp.request-withdrawal-all-offences+json
-          name: sjp.request-withdrawal-all-offences
-      (mapping):
-          requestType: application/vnd.sjp.cancel-request-withdrawal-all-offences+json
-          name: sjp.cancel-request-withdrawal-all-offences
-      ...
-    body:
-      application/vnd.sjp.request-withdrawal-all-offences+json: !!null
-      application/vnd.sjp.cancel-request-withdrawal-all-offences+json: !!null
-    responses:
-      500:
-        description: Internal Server Error
-      400:
-        description: Bad request
-      202:
-        description: Accepted
-
-/cases/{caseId}/offences/{offenceId}/pleas:
-  uriParameters:
-    caseId:
-      description: The ID of the offence update
-      type: string
-    offenceId:
-      description: The ID of the offence update
-      type: string
-  post:
-    description: |
-      Update/cancel a case's plea
-      ...
-      (mapping):
-          requestType: application/vnd.sjp.update-plea+json
-          name: sjp.update-plea
-      (mapping):
-          requestType: application/vnd.sjp.cancel-plea+json
-          name: sjp.cancel-plea
-      ...
-    body:
-      application/vnd.sjp.update-plea+json:
-        example:
-          !include json/sjp.update-plea.json
-        schema:
-          !include json/schema/sjp.update-plea.json
-      application/vnd.sjp.cancel-plea+json: !!null
     responses:
       500:
         description: Internal Server Error
@@ -407,6 +376,26 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
+/cases/{caseId}:
+  post:
+    description: |
+      Assigning a case to a user
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.assign-case+json
+          name: sjp.assign-case
+      ...
+    body:
+      application/vnd.sjp.assign-case+json:
+        example:
+          !include json/sjp.assign-case.json
+        schema:
+          !include json/schema/sjp.assign-case.json
+
+    responses:
+      202:
+        description: Accepted
+
 /cases/{caseId}/unassign:
   post:
     description: |
@@ -434,8 +423,8 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
           requestType: application/vnd.sjp.end-session+json
           name: sjp.end-session
       (mapping):
-          requestType: application/vnd.sjp.assign-case+json
-          name: sjp.assign-case
+          requestType: application/vnd.sjp.assign-next-case+json
+          name: sjp.assign-next-case
       ...
     body:
       application/vnd.sjp.start-session+json:
@@ -444,7 +433,7 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
         schema:
           !include json/schema/sjp.start-session.json
       application/vnd.sjp.end-session+json: !!null
-      application/vnd.sjp.assign-case+json: !!null
+      application/vnd.sjp.assign-next-case+json: !!null
     responses:
       202:
         description: Accepted
@@ -513,3 +502,122 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
     responses:
       202:
         description: Accepted
+
+
+/cases/{caseId}/offences-withdrawal-requests-status:
+  uriParameters:
+    caseId:
+      description: Id of the case for which withdrawal request is made
+      type: string
+  post:
+    description: |
+      Offence withdrawal requests
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.set-offences-withdrawal-requests-status+json
+          name: sjp.set-offences-withdrawal-requests-status
+      ...
+    body:
+          application/vnd.sjp.set-offences-withdrawal-requests-status+json:
+            example:
+              !include json/sjp.set-offences-withdrawal-requests-status.json
+            schema:
+              !include json/schema/sjp.set-offences-withdrawal-requests-status.json
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted
+
+/cases/{caseId}/set-pleas:
+  uriParameters:
+    caseId:
+      description: The ID of the case to set the pleas for
+      type: string
+  post:
+    description: |
+      Set pleas for case offences
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.set-pleas+json
+          name: sjp.set-pleas
+      ...
+    body:
+      application/vnd.sjp.set-pleas+json:
+        example:
+          !include json/sjp.set-pleas.json
+        schema:
+          !include json/schema/sjp.set-pleas.json
+    responses:
+          500:
+            description: Internal Server Error
+          202:
+            description: Accepted
+
+/cases/{caseId}/decision:
+  uriParameters:
+    caseId:
+      description: Id of the case for which decision is made
+      type: string
+  post:
+    description: |
+      decision
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.save-decision+json
+          name: sjp.save-decision
+      ...
+    body:
+          application/vnd.sjp.save-decision+json:
+            example:
+              !include json/sjp.save-decision.json
+            schema:
+              !include json/schema/sjp.save-decision.json
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted
+
+
+/cases/{caseId}/set-dates-to-avoid-required:
+  uriParameters:
+    caseId:
+      description: The ID of the case to modify
+      type: string
+  post:
+    description: |
+      creates sjp.events.dates-to-avoid-required event
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.set-dates-to-avoid-required+json
+          name: sjp.set-dates-to-avoid-required
+      ...
+    body:
+      application/vnd.sjp.set-dates-to-avoid-required+json: !!null
+    responses:
+      202:
+        description: Accepted
+      500:
+        description: Internal Server Error
+
+/cases/{caseId}/resolve-case-status:
+  uriParameters:
+    caseId:
+      description: The ID of the case to resolve
+      type: string
+  post:
+    description: |
+      creates sjp.resolve-case-status event
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.resolve-case-status+json
+          name: sjp.resolve-case-status
+      ...
+    body:
+      application/vnd.sjp.resolve-case-status+json: !!null
+    responses:
+      202:
+        description: Accepted
+      500:
+        description: Internal Server Error

@@ -84,7 +84,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
     @Test
     public void shouldFindByLastNameEvenThoughItWasChanged() {
         // given
-        CaseSearchResult caseSearchResult = createCaseSearchResult();
+        final CaseSearchResult caseSearchResult = createCaseSearchResult();
         // when
         final List<CaseSearchResult> results = caseSearchResultRepository.findByLastName(PROSECUTING_AUTHORITY_1, LAST_NAME.toLowerCase());
         // then
@@ -196,7 +196,7 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldCreateWithoutCaseSummary() {
-        final CaseSearchResult caseSearchResult = new CaseSearchResult(UUID.randomUUID(), "firstName", "lastName", LocalDates.from("2001-02-03"), null);
+        final CaseSearchResult caseSearchResult = new CaseSearchResult(UUID.randomUUID(), UUID.randomUUID(), "firstName", "lastName", LocalDates.from("2001-02-03"), null);
 
         caseSearchResultRepository.save(caseSearchResult);
 
@@ -211,12 +211,12 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
         return createCaseSearchResultWithFirstname(FIRST_NAME, prosecutingAuthority);
     }
 
-    private CaseSearchResult createCaseSearchResultWithFirstname(String firstName, final String prosecutingAuthority) {
+    private CaseSearchResult createCaseSearchResultWithFirstname(final String firstName, final String prosecutingAuthority) {
         return createCaseSearchResultWith(UUID.randomUUID(), URN, firstName, LAST_NAME, prosecutingAuthority);
     }
 
-    private void simulateDefendantLastNameChanged(String newLastName, UUID caseId) {
-        List<CaseSearchResult> caseSearchResults = caseSearchResultRepository.findByCaseId(caseId);
+    private void simulateDefendantLastNameChanged(final String newLastName, final UUID caseId) {
+        final List<CaseSearchResult> caseSearchResults = caseSearchResultRepository.findByCaseId(caseId);
         caseSearchResults.forEach(r -> {
             r.setCurrentLastName(newLastName);
             r.setDeprecated(true);
@@ -230,12 +230,12 @@ public class CaseSearchResultRepositoryTest extends BaseTransactionalTest {
                 newLastName);
     }
 
-    private CaseSearchResult createCaseSearchResultWith(UUID caseId, String urn, String firstName, String lastName) {
+    private CaseSearchResult createCaseSearchResultWith(final UUID caseId, final String urn, final String firstName, final String lastName) {
         return createCaseSearchResultWith(caseId, urn, firstName, lastName, PROSECUTING_AUTHORITY_1);
     }
 
     private CaseSearchResult createCaseSearchResultWith(
-            UUID caseId, String urn, String firstName, String lastName, final String prosecutingAuthority) {
+            final UUID caseId, final String urn, final String firstName, final String lastName, final String prosecutingAuthority) {
         CaseSummary caseSummary = new CaseSummary();
         caseSummary.setId(caseId);
         caseSummary.setUrn(urn);

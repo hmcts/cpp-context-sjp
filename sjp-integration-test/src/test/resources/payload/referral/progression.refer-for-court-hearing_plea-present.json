@@ -2,6 +2,7 @@
   "courtReferral": {
     "prosecutionCases": [
       {
+        "statementOfFacts":"No ticket at the gates, forgery",
         "statementOfFactsWelsh": "some facts in welsh",
         "defendants": [
           {
@@ -11,14 +12,14 @@
                 "count": 1,
                 "convictionDate": "${CONVICTION_DATE}",
                 "orderIndex": 1,
-                "id": "${OFFENCE_ID}",
+                "id": "${OFFENCE_ID1}",
                 "wording": "Committed some offence",
                 "chargeDate": "2016-01-01",
-                "offenceDefinitionId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                "offenceDefinitionId": "9efdbffa-08f0-4cb5-905d-139511ddcadc",
                 "startDate": "2016-01-01",
                 "notifiedPlea": {
-                  "offenceId": "${OFFENCE_ID}",
-                  "notifiedPleaValue": "NOTIFIED_NOT_GUILTY",
+                  "offenceId": "${OFFENCE_ID1}",
+                  "notifiedPleaValue": "NOTIFIED_GUILTY",
                   "notifiedPleaDate": "${PLEA_DATE}"
                 }
               }
@@ -27,6 +28,7 @@
             "id": "${DEFENDANT_ID}",
             "prosecutionCaseId": "${CASE_ID}",
             "personDefendant": {
+              "selfDefinedEthnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
               "personDetails": {
                 "lastName": "Testerson",
                 "occupation": "worker",
@@ -42,7 +44,7 @@
                 "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363",
                 "dateOfBirth": "1990-09-09",
                 "title": "MR",
-                "documentationLanguageNeeds": "WELSH",
+                "documentationLanguageNeeds": "${HEARING_LANGUAGE}",
                 "firstName": "Testy",
                 "interpreterLanguageNeeds": "French",
                 "occupationCode": "1",
@@ -71,7 +73,8 @@
                 },
                 "name": "Pret a manger"
               }
-            }
+            },
+            "mitigation":"I was drunk at the time"
           }
         ],
         "initiationCode": "J",
@@ -92,11 +95,7 @@
         "judiciary": [
           {
             "judicialRoleTypeSJP": "LEGAL_ADVISER",
-            "judicialName": "IT User without prosecuting access"
-          },
-          {
-            "judicialRoleTypeSJP": "MAGISTRATE",
-            "judicialName": "John Smith ${MAGISTRATE_ID}"
+            "judicialName": "John Smith"
           }
         ]
       }
@@ -110,7 +109,7 @@
         "estimateMinutes": 10,
         "listDefendantRequests": [
           {
-            "hearingLanguageNeeds": "WELSH",
+            "hearingLanguageNeeds": "${HEARING_LANGUAGE}",
             "referralReason": {
               "description": "referral reason",
               "id": "${REFERRAL_REASON_ID}",
@@ -118,10 +117,9 @@
             },
             "summonsRequired": "SJP_REFERRAL",
             "defendantOffences": [
-              "${OFFENCE_ID}"
+              "${OFFENCE_ID1}"
             ],
-            "prosecutionCaseId": "${CASE_ID}",
-            "datesToAvoid": "I'm on holiday November 17 to 19"
+            "prosecutionCaseId": "${CASE_ID}"
           }
         ],
         "listingDirections": "${LISTING_NOTES}"

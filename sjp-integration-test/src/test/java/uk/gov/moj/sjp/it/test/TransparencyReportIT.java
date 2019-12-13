@@ -12,24 +12,24 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.equalToCompressingWhiteSpace;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.text.IsEqualCompressingWhiteSpace.equalToCompressingWhiteSpace;
+import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_TITLE;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.DefendantBuilder.defaultDefendant;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
 import static uk.gov.moj.sjp.it.helper.TransparencyReportDBHelper.checkIfFileExists;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffences;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllProsecutorsQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAnyQueryOffences;
 import static uk.gov.moj.sjp.it.stub.SystemDocumentGeneratorStub.pollDocumentGenerationRequests;
 import static uk.gov.moj.sjp.it.stub.SystemDocumentGeneratorStub.stubDocumentGeneratorEndPoint;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 import uk.gov.moj.sjp.it.helper.EventListener;
@@ -54,35 +54,26 @@ import org.hamcrest.Matcher;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TransparencyReportIT extends BaseIntegrationTest {
 
-    private static final String SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED = "sjp.events.transparency-report-requested";
-    private static final String SJP_EVENTS_TRANSPARENCY_REPORT_GENERATED = "sjp.events.transparency-report-generated";
-
-    private final TransparencyReportHelper transparencyReportHelper = new TransparencyReportHelper();
+    private TransparencyReportHelper transparencyReportHelper = new TransparencyReportHelper();
+    private CreateCasePayloadBuilder createCasePayloadBuilder;
     private final UUID caseId1 = randomUUID(), caseId2 = randomUUID();
     private final UUID offenceId1 = randomUUID(), offenceId2 = randomUUID();
 
-    private CreateCasePayloadBuilder createCasePayloadBuilder;
+    private static final String SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED = "sjp.events.transparency-report-requested";
+    private static final String SJP_EVENTS_TRANSPARENCY_REPORT_GENERATED = "sjp.events.transparency-report-generated";
 
     @Before
     public void setUp() {
         stubDocumentGeneratorEndPoint();
-
-        stubProsecutorQuery(ProsecutingAuthority.TFL.toString(), randomUUID());
-        stubProsecutorQuery(ProsecutingAuthority.TVL.toString(), randomUUID());
-        stubQueryOffences("stub-data/referencedata.query.offences.json");
+        stubAllProsecutorsQuery();
+        stubAnyQueryOffences();
     }
 
     @Test
-    @Ignore
-    @SuppressWarnings("squid:S1607")
-    // TODO this test fails on jenkins and passes locally
-    // Flaky test is ignored since it is preventing master builds
-    // ticket ATCM-5184 has been created for ATCM to fix this test
     public void shouldGenerateTransparencyReports() throws IOException {
 
         final CreateCase.DefendantBuilder defendant1 = defaultDefendant()
@@ -200,7 +191,7 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         final String expectedTown = getTown(address);
         final String expectedPostcode = getPostcode(address);
         final String expectedProsecutorName = casePayloadBuilder.getProsecutingAuthority().name();
-        final String expectedOffenceTitle = "Public service vehicle - passenger use altered / defaced ticket";
+        final String expectedOffenceTitle = DEFAULT_OFFENCE_TITLE;
 
         assertThat(readyCase.optString("county", null), is(expectedCounty));
         assertThat(readyCase.optString("town", null), is(expectedTown));

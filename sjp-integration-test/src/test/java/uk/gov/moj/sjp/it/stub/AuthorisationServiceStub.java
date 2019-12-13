@@ -9,7 +9,6 @@ import static java.lang.String.format;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
-import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
@@ -37,7 +36,5 @@ public class AuthorisationServiceStub {
                         .withHeader("CPPID", UUID.randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(responsePayload)));
-
-        waitForStubToBeReady(stubUrl, CAPABILITY_ENABLEMENT_QUERY_MEDIA_TYPE);
     }
 }

@@ -17,6 +17,9 @@ public class DefendantToDefendantDetails implements Converter<Defendant, Defenda
     @Inject
     private OffenceToOffenceDetail offenceToOffenceDetailConverter;
 
+    @Inject
+    private SpeaksWelshConverter speaksWelshConverter;
+
     @Override
     public DefendantDetail convert(final Defendant defendant) {
         final PersonalDetails personalDetails = personToPersonalDetailsEntity.convert(defendant);
@@ -25,7 +28,8 @@ public class DefendantToDefendantDetails implements Converter<Defendant, Defenda
                 defendant.getId(),
                 personalDetails,
                 defendant.getOffences().stream().map(offenceToOffenceDetailConverter::convert).collect(toList()),
-                defendant.getNumPreviousConvictions());
+                defendant.getNumPreviousConvictions(),
+                speaksWelshConverter.convert(defendant.getHearingLanguage()));
     }
 
 }

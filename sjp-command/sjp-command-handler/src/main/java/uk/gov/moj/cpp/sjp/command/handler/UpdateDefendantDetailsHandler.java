@@ -73,7 +73,7 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
         final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
         final Person person = new Person(title, firstName, lastName, birthDate, gender, nationalInsuranceNumber, driverNumber, address, contactDetails);
 
-        final Stream<Object> events = caseAggregate.updateDefendantDetails(caseId, defendantId, person, createdAt);
+        final Stream<Object> events = caseAggregate.updateDefendantDetails(getUserId(command), caseId, defendantId, person, createdAt);
 
         eventStream.append(events.map(enveloper.withMetadataFrom(command)));
     }

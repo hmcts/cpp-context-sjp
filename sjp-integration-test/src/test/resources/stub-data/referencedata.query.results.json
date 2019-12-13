@@ -1,0 +1,32 @@
+{
+  "results": [
+    {
+      "id": "6feb0f2e-8d1e-40c7-af2c-05b28c69e5fc",
+      "code": "WDRNNOT"
+    },
+    {
+      "id": "14d66587-8fbe-424f-a369-b1144f1684e3",
+      "code": "D"
+    },
+    {
+      "id": "45b0c1fe-afe6-4652-822f-7842d79eada3",
+      "code": "CD"
+    },
+    {
+      "id": "45b0c1fe-afe6-4652-822f-7842d79eada4",
+      "code": "FCOMP"
+    },
+    {
+      "id": "45b0c1fe-afe6-4652-822f-6842d79eada4",
+      "code": "FCOST"
+    },
+    {
+      "id": "35b0c1fe-afe6-4652-822f-6842d79eada4",
+      "code": "FVS"
+    },
+    {
+      "id": "35b0c1fe-afe6-4652-822f-6842d79eada9",
+      "code": "LSUMI"
+    }
+  ]
+}

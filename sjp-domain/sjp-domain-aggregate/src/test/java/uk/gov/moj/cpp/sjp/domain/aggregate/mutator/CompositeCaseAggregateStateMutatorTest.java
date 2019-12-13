@@ -1,46 +1,17 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
-import static java.time.ZonedDateTime.now;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
-
-import uk.gov.moj.cpp.sjp.domain.Benefits;
-import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
-import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
-import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
-import uk.gov.moj.cpp.sjp.domain.Income;
-import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
-import uk.gov.moj.cpp.sjp.domain.Interpreter;
+import org.junit.Test;
+import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
+import uk.gov.moj.cpp.sjp.domain.*;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
+import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
+import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
-import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
-import uk.gov.moj.cpp.sjp.event.CaseCompleted;
-import uk.gov.moj.cpp.sjp.event.CaseExpectedDateReadyChanged;
-import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
-import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
-import uk.gov.moj.cpp.sjp.event.CaseReopenedUpdated;
-import uk.gov.moj.cpp.sjp.event.CaseStarted;
-import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
-import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
-import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
-import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
-import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
-import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
-import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceCancelledForDefendant;
-import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
-import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
-import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
-import uk.gov.moj.cpp.sjp.event.PleaCancelled;
-import uk.gov.moj.cpp.sjp.event.PleaUpdated;
-import uk.gov.moj.cpp.sjp.event.TrialRequestCancelled;
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
+import uk.gov.moj.cpp.sjp.event.*;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.decommissioned.CaseAssignmentDeleted;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
@@ -49,9 +20,18 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-import org.junit.Test;
+import static com.google.common.collect.Lists.newArrayList;
+import static java.time.ZonedDateTime.now;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+import static uk.gov.moj.cpp.sjp.domain.Priority.MEDIUM;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
+import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
 public class CompositeCaseAggregateStateMutatorTest {
 
@@ -59,6 +39,8 @@ public class CompositeCaseAggregateStateMutatorTest {
     private final UUID userId = randomUUID();
     private final UUID defendantId = randomUUID();
     private final UUID offenceId = randomUUID();
+    private final UUID oldWithdrawalReasonId = randomUUID();
+    private final UUID newWithdrawalReasonId = randomUUID();
     private final CaseAggregateState caseAggregateState = new CaseAggregateState();
     private final CompositeCaseAggregateStateMutator compositeCaseAggregateStateMutator = CompositeCaseAggregateStateMutator.INSTANCE;
 
@@ -116,7 +98,7 @@ public class CompositeCaseAggregateStateMutatorTest {
         caseAggregateState.setCaseReceived(true);
 
         final CaseReadinessReason readinessReason = CaseReadinessReason.PLEADED_GUILTY;
-        final CaseMarkedReadyForDecision caseMarkedReadyForDecision = new CaseMarkedReadyForDecision(caseId, readinessReason, now());
+        final CaseMarkedReadyForDecision caseMarkedReadyForDecision = new CaseMarkedReadyForDecision(caseId, readinessReason, now(), MAGISTRATE, MEDIUM);
 
         compositeCaseAggregateStateMutator.apply(caseMarkedReadyForDecision, caseAggregateState);
 
@@ -220,6 +202,17 @@ public class CompositeCaseAggregateStateMutatorTest {
     }
 
     @Test
+    public void shouldMutateStateOnEmployerUpdatedEvent() {
+        final EmployerUpdated employerUpdated = EmployerUpdated.createEvent(defendantId,
+                new Employer(defendantId, "name", "employerReference", "0208123456",
+                        new Address("address1", "address2", "address3", "address4", "address5", "BN16HD")));
+
+        compositeCaseAggregateStateMutator.apply(employerUpdated, caseAggregateState);
+
+        assertTrue(caseAggregateState.hasEmployerDetailsUpdated());
+    }
+
+    @Test
     public void shouldMutateStateOnEmployerDeletedEvent() {
         caseAggregateState.updateEmploymentStatusForDefendant(defendantId, "employed");
 
@@ -303,19 +296,31 @@ public class CompositeCaseAggregateStateMutatorTest {
 
     @Test
     public void shouldMutateStateOnPleaUpdatedEvent() {
+        final UUID defendantId = UUID.randomUUID();
         caseAggregateState.setCaseReceived(true);
+        caseAggregateState.setDefendantId(defendantId);
+        final ZonedDateTime dateTime = ZonedDateTime.now();
 
-        final PleaUpdated pleaUpdated = new PleaUpdated(caseId, offenceId, PleaType.GUILTY, PleaMethod.ONLINE, ZonedDateTime.now());
+        final PleaUpdated pleaUpdated = new PleaUpdated(caseId, offenceId, PleaType.GUILTY,
+                "mitigation" , "reason" , PleaMethod.ONLINE ,dateTime);
+        final Plea plea = new Plea(defendantId, offenceId, PleaType.GUILTY, "reason", "mitigation");
         compositeCaseAggregateStateMutator.apply(pleaUpdated, caseAggregateState);
 
         assertTrue(caseAggregateState.getOffenceIdsWithPleas().contains(offenceId));
+
+        assertThat(caseAggregateState.getOffencePleaDates().get(offenceId).getDayOfMonth(), is(dateTime.getDayOfMonth()));
+        assertThat(caseAggregateState.getOffencePleaDates().get(offenceId).getMonth(), is(dateTime.getMonth()));
+        assertThat(caseAggregateState.getOffencePleaDates().get(offenceId).getYear(), is(dateTime.getYear()));
+
+        assertThat(caseAggregateState.getPleas().size(), is(1));
+        assertThat(caseAggregateState.getPleas().get(0), is(plea));
     }
 
     @Test
     public void shouldMutateStateOnPleaCancelledEvent() {
         caseAggregateState.setCaseReceived(true);
 
-        final PleaCancelled pleaCancelled = new PleaCancelled(caseId, offenceId);
+        final PleaCancelled pleaCancelled = new PleaCancelled(caseId, offenceId, defendantId);
         compositeCaseAggregateStateMutator.apply(pleaCancelled, caseAggregateState);
 
         assertFalse(caseAggregateState.getOffenceIdsWithPleas().contains(offenceId));
@@ -327,5 +332,57 @@ public class CompositeCaseAggregateStateMutatorTest {
         compositeCaseAggregateStateMutator.apply(trialRequestCancelled, caseAggregateState);
 
         assertFalse(caseAggregateState.isTrialRequested());
+    }
+
+    @Test
+    public void shouldMutateStateOnOffenceWithdrawalRequestCancelled() {
+        final OffenceWithdrawalRequested offenceWithdrawalRequested = new OffenceWithdrawalRequested(caseId,
+                offenceId,
+                oldWithdrawalReasonId,
+                randomUUID(),
+                ZonedDateTime.now());
+        compositeCaseAggregateStateMutator.apply(offenceWithdrawalRequested, caseAggregateState);
+        assertThat(caseAggregateState.getWithdrawalRequests(), contains(new WithdrawalRequestsStatus(offenceId, oldWithdrawalReasonId)));
+
+        final OffenceWithdrawalRequestCancelled offenceWithdrawalRequestCancelled = new OffenceWithdrawalRequestCancelled(caseId,
+                offenceId,
+                randomUUID(),
+                ZonedDateTime.now());
+        compositeCaseAggregateStateMutator.apply(offenceWithdrawalRequestCancelled, caseAggregateState);
+        assertThat(caseAggregateState.getWithdrawalRequests().size(), is(0));
+    }
+
+    @Test
+    public void shouldMutateStateOnOffenceWithdrawalRequestReasonChanged() {
+         final OffenceWithdrawalRequested offenceWithdrawalRequested = new OffenceWithdrawalRequested(caseId,
+                 offenceId,
+                 oldWithdrawalReasonId,
+                 randomUUID(),
+                 ZonedDateTime.now());
+
+        compositeCaseAggregateStateMutator.apply(offenceWithdrawalRequested, caseAggregateState);
+
+        assertThat(caseAggregateState.getWithdrawalRequests(), contains(new WithdrawalRequestsStatus(offenceId, oldWithdrawalReasonId)));
+
+        final OffenceWithdrawalRequestReasonChanged offenceWithdrawalRequestReasonChanged = new OffenceWithdrawalRequestReasonChanged(caseId,
+                offenceId,
+                randomUUID(),
+                ZonedDateTime.now(),
+                newWithdrawalReasonId,
+                oldWithdrawalReasonId);
+        CompositeCaseAggregateStateMutator.INSTANCE.apply(offenceWithdrawalRequestReasonChanged, caseAggregateState);
+        assertThat(caseAggregateState.getWithdrawalRequests(), contains(new WithdrawalRequestsStatus(offenceId, newWithdrawalReasonId)));
+    }
+
+    @Test
+    public void shouldMutateOnDecisionSavedEvent() {
+        final Withdraw offence1Decision = new Withdraw(randomUUID(), createOffenceDecisionInformation(randomUUID(), VerdictType.NO_VERDICT), randomUUID());
+        final Withdraw offence2Decision = new Withdraw(randomUUID(), createOffenceDecisionInformation(randomUUID(), VerdictType.NO_VERDICT), randomUUID());
+        final List<OffenceDecision> offenceDecisions = newArrayList(offence1Decision, offence2Decision);
+        final DecisionSaved decisionSaved = new DecisionSaved(randomUUID(), randomUUID(), caseId, now(), offenceDecisions);
+
+        compositeCaseAggregateStateMutator.apply(decisionSaved, caseAggregateState);
+
+        assertThat(caseAggregateState.getOffenceDecisions(), containsInAnyOrder(offence1Decision, offence2Decision));
     }
 }

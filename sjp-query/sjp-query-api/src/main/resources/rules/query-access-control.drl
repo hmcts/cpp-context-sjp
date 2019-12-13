@@ -16,6 +16,15 @@ rule "sjp.query.case"
     $outcome.setSuccess(true);
 end
 
+rule "sjp.query.case-with-document-metadata"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-with-document-metadata");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCaseActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "sjp.query.case-by-urn"
   when
     $outcome: Outcome();
@@ -105,7 +114,7 @@ end
 rule "sjp.query.financial-means"
   when
     $outcome: Outcome();
-    $action: Action(name == "sjp.query.financial-means");
+    $action: Action(name == "sjp.query.financial-means" || name == "sjp.query.all-financial-means");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryFinancialMeansActionGroups()))
   then
     $outcome.setSuccess(true);
@@ -215,6 +224,33 @@ rule "sjp - Query - API - Get Transparency Report Content"
     $outcome: Outcome();
     $action: Action(name == "sjp.query.transparency-report-content");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAllowedGroupsForTransparencyReport()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get Offence Verdicts"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.offence-verdicts");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAllowedGroupsForVerdictCalculation()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get Court Extract"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-court-extract");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAllowedGroupsForCourtExtract()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get Case Results"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-results");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAllowedGroupsForCaseResults()))
   then
     $outcome.setSuccess(true);
 end

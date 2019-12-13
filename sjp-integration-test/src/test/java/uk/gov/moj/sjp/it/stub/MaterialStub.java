@@ -24,7 +24,6 @@ import static org.hamcrest.Matchers.not;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_ACTIVE_MQ_TOPIC;
-import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.justice.services.common.http.HeaderConstants;
@@ -60,8 +59,6 @@ public class MaterialStub {
 
         stubFor(get(urlPathEqualTo(COMMAND_URL))
                 .willReturn(aResponse().withStatus(SC_OK)));
-
-        waitForStubToBeReady(COMMAND_URL, COMMAND_MEDIA_TYPE);
     }
 
     public static UUID processMaterialAddedCommand(final UUID documentReference) {

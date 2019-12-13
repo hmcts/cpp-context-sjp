@@ -1,0 +1,9 @@
+{
+  "payment": {
+    "reasonWhyNotAttachedOrDeducted": "No information from the defendant",
+    "paymentType": "PAY_TO_COURT"
+  },
+  "costsAndSurcharge": {
+    "collectionOrderMade": true
+  }
+}

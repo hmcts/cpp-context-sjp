@@ -106,10 +106,29 @@ public final class RuleConstants {
         return singletonList(GROUP_SYSTEM_USERS);
     }
 
+    public static List<String> datesToAvoidRequiredGroups() {
+        return singletonList(GROUP_SYSTEM_USERS);
+    }
+
     public static List<String> getAddCaseNoteGroups() {
         return Arrays.asList(GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
     }
 
+    public static List<String> getOffenceWithdrawalRequestActionGroups() {
+        return Arrays.asList(GROUP_SJP_PROSECUTORS);
+    }
+
+    public static List<String> getSetPleasGroups(){
+        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+    }
+
+    public static List<String> getSaveDecisionActionGroups() {
+        return Arrays.asList(GROUP_LEGAL_ADVISERS);
+    }
+
+    public static List<String> resolveCaseStatusGroups() {
+        return singletonList(GROUP_SYSTEM_USERS);
+    }
     public static List<String> getDeleteFinancialMeansGroups() {
         return Arrays.asList(GROUP_SYSTEM_USERS);
     }

@@ -23,6 +23,8 @@
         <module>sjp-domain-transformation-orphan-tfl-docs</module>
         <module>sjp-domain-transformation-orphan-case-listed-events</module>
         <module>sjp-domain-transformation-add-defendantId-to-defendant-details-moved-from-people</module>
+        <module>sjp-domain-transformation-singleoffence-migration</module>
+        <module>sjp-domain-transformation-resulting-decisions</module>
         <module>sjp-domain-transformation-anonymise</module>
         <module>sjp-domain-transformation-remove-unlinked-defendant-update-failed</module>
     </modules>

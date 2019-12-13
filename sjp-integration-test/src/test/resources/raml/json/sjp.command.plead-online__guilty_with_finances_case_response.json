@@ -11,6 +11,8 @@
         "offenceCode": "PS00001",
         "cjsCode": "PS00001",
         "pleaMethod": "ONLINE",
+        "pendingWithdrawal": false,
+        "hasFinalDecision": false,
         "pleaDate": "${pleaDate}",
         "compensation": 2.34,
         "id": "${offenceId}",
@@ -18,7 +20,13 @@
         "offenceSequenceNumber": 1,
         "wording": "Committed some offence",
         "chargeDate": "2016-01-01",
-        "startDate": "2016-01-01"
+        "startDate": "2016-01-01",
+        "title": "Postal service - convey a letter without a licence",
+        "legislation": "Contrary to section 6(2) of the Postal Services Act 2000.",
+        "notInEffect": true,
+        "outOfTime": false,
+        "imprisonable": true,
+        "maxFineLevel": "S"
       }
     ],
     "caseId": "${caseId}",
@@ -50,10 +58,12 @@
     "interpreter": {
       "needed": false
     },
-    "id": "${defendantId}"
+    "id": "${defendantId}",
+    "speakWelsh": false
   },
   "caseDocuments": [
-
+  ],
+  "caseDecisions": [
   ],
   "listedInCriminalCourts": false,
   "assigned": false,

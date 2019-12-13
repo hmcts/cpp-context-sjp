@@ -1,23 +1,25 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
-import static java.util.Objects.nonNull;
-
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
-import uk.gov.moj.cpp.sjp.domain.common.PleaInformation;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+
+import com.google.common.collect.ImmutableList;
 
 public class CaseView {
 
     private final String id;
     private final String urn;
     private final DefendantView defendant;
+    private final List<CaseDecisionView> caseDecisions;
     private final ZonedDateTime dateTimeCreated;
     private final Set<CaseDocumentView> caseDocuments;
     private final ProsecutingAuthority prosecutingAuthority;
@@ -44,6 +46,8 @@ public class CaseView {
         this.prosecutingAuthority = caseDetail.getProsecutingAuthority();
 
         this.defendant = new DefendantView(caseDetail.getDefendant());
+        this.caseDecisions = new ArrayList<>();
+        caseDetail.getCaseDecisions().forEach(caseDecisionEntity -> caseDecisions.add(new CaseDecisionView(caseDecisionEntity)));
         this.dateTimeCreated = caseDetail.getDateTimeCreated();
 
         this.caseDocuments = new LinkedHashSet<>();
@@ -63,15 +67,8 @@ public class CaseView {
         this.onlinePleaReceived = Boolean.TRUE.equals(caseDetail.getOnlinePleaReceived());
         this.datesToAvoid = caseDetail.getDatesToAvoid();
         this.adjournedTo = caseDetail.getAdjournedTo();
-        //TODO SINGLE OFFENCE only implementation
-        this.status = CaseStatus.calculateStatus(caseDetail.getPostingDate(),
-                caseDetail.isAnyOffencePendingWithdrawal(),
-                new PleaInformation(caseDetail.getFirstOffencePlea(), caseDetail.getFirstOffencePleaDate()),
-                caseDetail.getDatesToAvoid(),
-                caseDetail.isCompleted(),
-                caseDetail.isReferredForCourtHearing(),
-                caseDetail.getReopenedDate(),
-                nonNull(caseDetail.getAdjournedTo()));
+
+        this.status = caseDetail.getCaseStatus();
         this.listedInCriminalCourts = caseDetail.getListedInCriminalCourts();
         this.hearingCourtName = caseDetail.getHearingCourtName();
         this.hearingTime = caseDetail.getHearingTime();
@@ -91,6 +88,10 @@ public class CaseView {
 
     public DefendantView getDefendant() {
         return defendant;
+    }
+
+    public List<CaseDecisionView> getCaseDecisions() {
+        return ImmutableList.copyOf(caseDecisions);
     }
 
     public ProsecutingAuthority getProsecutingAuthority() {

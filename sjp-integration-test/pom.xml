@@ -596,65 +596,20 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
-                        <configuration>
-                            <systemPropertyVariables>
-                                <INTEGRATION_ELASTIC_SEARCH_URI_KEY>http://localhost:9500</INTEGRATION_ELASTIC_SEARCH_URI_KEY>
-                            </systemPropertyVariables>
-                        </configuration>
-                    </plugin>
-                    <!-- Running with embedded elasticsearch by default -->
-                    <plugin>
-                        <groupId>com.github.alexcojocaru</groupId>
-                        <artifactId>elasticsearch-maven-plugin</artifactId>
-                        <version>${elasticsearch-maven-plugin.version}</version>
-                        <configuration>
-                            <skip>false</skip>
-                            <version>${elasticsearch.embedded.version}</version>
-                            <flavour>default</flavour>
-                            <clusterName>test</clusterName>
-                            <httpPort>9500</httpPort>
-                            <transportPort>9600</transportPort>
-                            <!-- How long to wait for ES to start-->
-                            <timeout>60</timeout>
-                            <instanceSettings>
-                                <properties>
-                                    <discovery.type>single-node</discovery.type>
-                                </properties>
-                            </instanceSettings>
-                            <!-- TODO: xpack security not implemented:
-                            https://github.com/alexcojocaru/elasticsearch-maven-plugin/issues/42
-                            -->
-                        </configuration>
                         <executions>
                             <execution>
-                                <id>start-elasticsearch</id>
-                                <phase>pre-integration-test</phase>
+                                <id>integration-test</id>
                                 <goals>
-                                    <goal>runforked</goal>
+                                    <goal>integration-test</goal>
                                 </goals>
                             </execution>
                             <execution>
-                                <id>stop-elasticsearch</id>
-                                <phase>post-integration-test</phase>
+                                <id>verify</id>
                                 <goals>
-                                    <goal>stop</goal>
+                                    <goal>verify</goal>
                                 </goals>
                             </execution>
                         </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>sjp-integration-test-with-standalone-elasticsearch</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>

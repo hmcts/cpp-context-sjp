@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-parent</artifactId>
-        <version>6.4.1-SC-SNAPSHOT</version>
+        <version>6.4.2-SC-SNAPSHOT</version>
     </parent>
     <artifactId>sjp-service</artifactId>
     <packaging>war</packaging>

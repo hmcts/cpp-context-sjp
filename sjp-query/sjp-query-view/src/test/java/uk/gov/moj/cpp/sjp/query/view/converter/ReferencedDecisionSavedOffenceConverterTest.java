@@ -41,6 +41,7 @@ public class ReferencedDecisionSavedOffenceConverterTest {
     private static final UUID SESSION_ID = randomUUID();
     private final UUID OFFENCE1_ID = randomUUID();
     private final UUID OFFENCE2_ID = randomUUID();
+    private final UUID OFFENCE3_ID = randomUUID();
     private final UUID DECISION1_ID = randomUUID();
     private static final String DISMISS_RESULT_CODE = "D";
     private static final String FINE_RESULT_CODE = "FO";
@@ -48,12 +49,15 @@ public class ReferencedDecisionSavedOffenceConverterTest {
     private static final String FCOST_RESULT_CODE = "FCOST";
     private static final String FVS_RESULT_CODE = "FVS";
     private static final String LSUM_RESULT_CODE = "LSUM";
+    private static final String REFERRED_RESULT_CODE = "SUMRCC";
+
     private static final UUID LSUM_RESULT_TYPE_ID = randomUUID();
     private static final UUID FVS_RESULT_TYPE_ID = randomUUID();
     private static final UUID FCOST_RESULT_TYPE_ID = randomUUID();
     private static final UUID FINE_RESULT_TYPE_ID = randomUUID();
     private static final UUID DISMISS_RESULT_TYPE_ID = randomUUID();
     private static final UUID FCOMP_RESULT_TYPE_ID = randomUUID();
+    private static final UUID REFERRED_RESULT_TYPE_ID = randomUUID();
 
     private static final DateTimeFormatter DATE_FORMAT = ofPattern("yyyy-MM-dd");
 
@@ -75,6 +79,7 @@ public class ReferencedDecisionSavedOffenceConverterTest {
                                 .put("resultedOn", DATE_FORMAT.format(ZonedDateTime.now()))
                                 .put("offence1Id", OFFENCE1_ID)
                                 .put("offence2Id", OFFENCE2_ID)
+                                .put("offence3Id", OFFENCE3_ID)
                                 .build()));
 
         final List<JsonObject> resultIds = asList(
@@ -95,18 +100,21 @@ public class ReferencedDecisionSavedOffenceConverterTest {
                         .add("code", FVS_RESULT_CODE).build(),
                 createObjectBuilder()
                         .add("id", LSUM_RESULT_TYPE_ID.toString())
-                        .add("code", LSUM_RESULT_CODE).build()
+                        .add("code", LSUM_RESULT_CODE).build(),
+                createObjectBuilder()
+                        .add("id", REFERRED_RESULT_TYPE_ID.toString())
+                        .add("code", REFERRED_RESULT_CODE).build()
                 );
 
         when(referenceDataService.getResultIds(decisionSavedEvent)).thenReturn(resultIds);
 
         final JsonArray actualPayload = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
 
-        assertThat(actualPayload, hasSize(3));
+        assertThat(actualPayload, hasSize(4));
         final JsonObject dismissResults = actualPayload.getJsonObject(0);
         final JsonObject fcostResults = actualPayload.getJsonObject(1);
-        final JsonObject fvsResults = actualPayload.getJsonObject(2);
-        //final JsonObject lsumResults = actualPayload.getJsonObject(3);
+        final JsonObject refResults = actualPayload.getJsonObject(2);
+        final JsonObject fvsResults = actualPayload.getJsonObject(3);
 
         assertThat(dismissResults, payloadIsJson(allOf(
             withJsonPath("$.id", is(OFFENCE1_ID.toString())),
@@ -140,6 +148,10 @@ public class ReferencedDecisionSavedOffenceConverterTest {
                 withJsonPath("$.results[2].terminalEntries[0].value", is("107.4")),
                 withJsonPath("$.results[2].terminalEntries[1].index", is(6)),
                 withJsonPath("$.results[2].terminalEntries[1].value", is("Lump sum within 14 days"))
+        )));
+        assertThat(refResults, payloadIsJson(allOf(
+                withJsonPath("$.results[0].code", is(REFERRED_RESULT_CODE)),
+                withJsonPath("$.results[0].resultTypeId", is(REFERRED_RESULT_TYPE_ID.toString()))
         )));
     }
 }

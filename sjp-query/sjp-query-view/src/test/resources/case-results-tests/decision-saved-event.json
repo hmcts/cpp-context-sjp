@@ -46,6 +46,15 @@
           "verdict": "FOUND_GUILTY"
         }
       ]
+    },
+    {
+      "type": "REFER_FOR_COURT_HEARING",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence3Id}",
+          "verdict": "NO_VERDICT"
+        }
+      ]
     }
   ]
 }

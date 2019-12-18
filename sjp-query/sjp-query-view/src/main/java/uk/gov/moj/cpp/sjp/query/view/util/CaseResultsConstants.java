@@ -131,6 +131,8 @@ public class CaseResultsConstants {
 
     public static final String REFERRED_FOR_FUTURE_SJP_SESSION_RESULT_CODE = "RSJP";
     public static final String REFERRED_TO_OPEN_COURT_RESULT_CODE = "SUMRTO";
+    public static final String REFER_FOR_COURT_HEARING_RESULT_CODE = "SUMRCC";
+
 
     public static final DateTimeFormatter DATE_FORMAT = ofPattern("yyyy-MM-dd");
     public static final DateTimeFormatter HOUR_FORMAT = ofPattern("hh:mm a");

@@ -19,7 +19,6 @@ import javax.json.JsonObject;
 
 import org.junit.Before;
 import org.junit.Test;
-import uk.gov.moj.cpp.sjp.domain.transformation.util.UUIDGenerator;
 
 public class ResultingDecisionsConverterTest {
 
@@ -113,10 +112,6 @@ public class ResultingDecisionsConverterTest {
     @Test
     public void shouldConvertRSJPDecisionWithoutSessionID() {
         // given the offence decision
-        UUIDGenerator uuidGenerator = mock(UUIDGenerator.class);
-        when(uuidGenerator.generateRandomUUID()).thenReturn("64e09001-3b83-4b04-994d-9e69bedaae7c");
-        resultingDecisionsConverter.setUUIDGenerator(uuidGenerator);
-
         final JsonObject offenceDecisionJsonObject = readJson(
                 "resultingDecisionsConverter/rsjp-input-no-session-id.json",
                 JsonObject.class);

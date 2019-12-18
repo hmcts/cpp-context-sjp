@@ -7,86 +7,7 @@ import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DecisionName.ADJOURN;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ABSOLUTE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ABSOLUTE_DISCHARGE_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.AMOUNT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.APPLICATION_MADE_FOR_BENEFIT_DEDUCTIONS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ATTACHMENT_OF_EARNINGS_ORDER;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ATTACH_TO_EARNINGS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COLLECTION_ORDER_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COLLECTION_ORDER_MADE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COMPENSATION;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COMPENSATION_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COMPENSATION_ORDERED;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.CONDITIONAL;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.CONDITIONAL_DISCHARGE_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COSTS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COSTS_AND_SURCHARGE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DATE_FORMAT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DEDUCT_FROM_BENEFITS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DEFENDANT_KNOWN_DEFAULTER;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DEFENDANT_REQUESTED;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISCHARGE_FOR;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISCHARGE_FOR_DAY;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISCHARGE_FOR_MONTH;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISCHARGE_FOR_WEEK;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISCHARGE_FOR_YEAR;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISCHARGE_TYPE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISMISS_RESULT_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.FINANCIAL_COSTS_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.FINANCIAL_IMPOSITION;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.FINE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.FINE_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.HOUR_FORMAT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ID;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.INDEX;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.INSTALLMENTS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.INSTALLMENTS_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.LUMP_SUM;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.LUMP_SUM_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.LUMP_SUM_PLUS_INSTALLMENTS_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.MAGISTRATES_COURT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.NO_COMPENSATION_REASON;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.NO_COMPENSATION_REASON_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.NO_VICTIM_SURCHARGE_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.OFFENCE_DECISIONS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.OFFENCE_DECISION_INFORMATION;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.OFFENCE_ID;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PAYMENT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PAYMENT_TERMS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PAYMENT_TYPE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PAY_TO_COURT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PERIOD;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PROVED_SJP;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PROVED_SJP_NAME;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REASON;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REASON_FOR_DEDUCTING_FROM_BENEFITS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REASON_WHY_NOT_ATTACHED_OR_DEDUCTED;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REFERRED_FOR_FUTURE_SJP_SESSION_RESULT_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REFERRED_TO_COURT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REFERRED_TO_DATE_TIME;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REFERRED_TO_OPEN_COURT_RESULT_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REFERRED_TO_ROOM;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.RESERVE_TERMS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.RESERVE_TERMS_INSTALLMENTS_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.RESERVE_TERMS_LUMP_SUM_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.RESERVE_TERMS_LUMP_SUM_PLUS_INSTALLMENTS_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.RESULTS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.RESULT_TYPE_ID;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.START_DATE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.TERMINAL_ENTRIES;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.TERMINAL_ENTRIES_DATE_FORMAT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.TOTAL_SUM;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.TYPE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.UNIT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.VALUE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.VERDICT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.VICTIM_SURCHARGE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.VICTIM_SURCHARGE_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.WITHDRAW_REASON_ID;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.WITHDRAW_RESULT_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.WITHIN_DAYS;
+import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.*;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
@@ -177,6 +98,8 @@ public class ReferencedDecisionSavedOffenceConverter {
                 return convertReferredToOpenCourtDecision(offenceDecision, referenceData);
             case REFERRED_FOR_FUTURE_SJP_SESSION:
                 return convertReferredForFutureSjpDecision(offenceDecision, referenceData);
+            case REFER_FOR_COURT_HEARING:
+                return convertReferredForCourtHearing(offenceDecision, referenceData);
             default:
                 return emptyList();
         }
@@ -268,6 +191,12 @@ public class ReferencedDecisionSavedOffenceConverter {
         return offenceDecision.getJsonArray(OFFENCE_DECISION_INFORMATION).getValuesAs(JsonObject.class).stream()
                 .map(offenceDecisionInformation -> convertDecision(offenceDecisionInformation, ADJOURN, terminalEntry(-1, offenceDecision.getString("adjournTo")), referenceData) )
                 .collect(toList());
+    }
+
+    private List<JsonObject> convertReferredForCourtHearing(JsonObject offenceDecision, CachedReferenceData referenceData) {
+        final JsonObject offenceDecisionInformation = offenceDecision.getJsonArray(OFFENCE_DECISION_INFORMATION).getJsonObject(0);
+        return asList(convertDecision(
+                offenceDecisionInformation, REFER_FOR_COURT_HEARING_RESULT_CODE, null, referenceData));
     }
 
     private JsonObject convertDecision(JsonObject offenceDecisionInformation, final String decisionType, final JsonObject terminalEntry, final CachedReferenceData referenceData) {

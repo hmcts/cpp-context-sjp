@@ -20,9 +20,11 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher;
 import uk.gov.justice.tools.eventsourcing.transformation.api.Action;
 import uk.gov.moj.cpp.sjp.domain.transformation.exception.TransformationException;
+import uk.gov.moj.cpp.sjp.domain.transformation.service.SjpEventStoreService;
 import uk.gov.moj.cpp.sjp.domain.transformation.service.SjpViewStoreService;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,10 +43,11 @@ public class CaseMarkedReadyForDecisionEventTransformerTest {
     private CaseMarkedReadyForDecisionEventTransformer caseMarkedReadyForDecisionEventTransformer;
     private static final String MEDIUM_PRIORITY = "MEDIUM";
     private SjpViewStoreService sjpViewStoreService = mock(SjpViewStoreService.class);
+    private SjpEventStoreService sjpEventStoreService = mock(SjpEventStoreService.class);
 
     @Before
     public void setup() {
-        caseMarkedReadyForDecisionEventTransformer = new CaseMarkedReadyForDecisionEventTransformer(sjpViewStoreService);
+        caseMarkedReadyForDecisionEventTransformer = new CaseMarkedReadyForDecisionEventTransformer(sjpViewStoreService, sjpEventStoreService);
         caseMarkedReadyForDecisionEventTransformer.setEnveloper(EnveloperFactory.createEnveloper());
     }
 
@@ -93,8 +96,16 @@ public class CaseMarkedReadyForDecisionEventTransformerTest {
         final SessionType sessionType = SessionType.MAGISTRATE;
         final LocalDate postingDate = LocalDate.now().minusDays(30);
 
-        when(sjpViewStoreService.getPostingDateWhenPresentInReadyCases(caseId.toString())).thenReturn(Optional.of(postingDate));
+        when(sjpViewStoreService.getPostingDate(caseId.toString())).thenReturn(Optional.of(postingDate));
+
         final JsonEnvelope caseMarkedReadyForDecision = envelope(caseId, reason, CaseMarkedReadyForDecisionEventTransformer.CASE_MARKED_READY_FOR_DECISION_EVENT_NAME);
+
+        final CaseMarkedReadyReadyMetaData caseMarkedReadyReadyMetaData =
+                new CaseMarkedReadyReadyMetaData(caseMarkedReadyForDecision.metadata().id().toString(), LocalDate.now());
+        final List<CaseMarkedReadyReadyMetaData> caseMarkedReadyReadyMetaDataList = new ArrayList<>();
+        caseMarkedReadyReadyMetaDataList.add(caseMarkedReadyReadyMetaData);
+
+        when(sjpEventStoreService.getMarkedReadyForDecisionMetadata(caseId.toString())).thenReturn(caseMarkedReadyReadyMetaDataList);
 
         final Stream<JsonEnvelope> transformedEventsStream = caseMarkedReadyForDecisionEventTransformer.apply(caseMarkedReadyForDecision);
 
@@ -118,7 +129,7 @@ public class CaseMarkedReadyForDecisionEventTransformerTest {
     private void shouldTransformEventThatIsReadyForMigration(final String reason, final SessionType sessionType) {
 
         final UUID caseId = randomUUID();
-        when(sjpViewStoreService.getPostingDateWhenPresentInReadyCases(caseId.toString())).thenReturn(Optional.empty());
+        when(sjpViewStoreService.getPostingDate(caseId.toString())).thenReturn(Optional.empty());
         final JsonEnvelope caseMarkedReadyForDecision = envelope(caseId, reason, CaseMarkedReadyForDecisionEventTransformer.CASE_MARKED_READY_FOR_DECISION_EVENT_NAME);
 
         Stream<JsonEnvelope> transformedEventsStream =  caseMarkedReadyForDecisionEventTransformer.apply(caseMarkedReadyForDecision);
@@ -148,4 +159,105 @@ public class CaseMarkedReadyForDecisionEventTransformerTest {
                         .build()
         );
     }
+
+    @Test
+    public void shouldCreate28DaysTimerExpiredOnFirstReadyForDecisionEventWhenTheReadyForDecisionIsFiredForThe28DaysTimerExpiredReason() {
+
+        final UUID caseId = randomUUID();
+        final String reason = CaseReadinessReason.PIA.name();
+        final SessionType sessionType = SessionType.MAGISTRATE;
+        final LocalDate postingDate = LocalDate.now().minusDays(30);
+
+        when(sjpViewStoreService.getPostingDate(caseId.toString())).thenReturn(Optional.of(postingDate));
+
+        JsonEnvelope caseMarkedReadyForDecision = envelope(caseId, reason, CaseMarkedReadyForDecisionEventTransformer.CASE_MARKED_READY_FOR_DECISION_EVENT_NAME);
+
+        final List<CaseMarkedReadyReadyMetaData> caseMarkedReadyReadyMetaDataList = new ArrayList<>();
+        CaseMarkedReadyReadyMetaData caseMarkedReadyReadyMetaData =
+                new CaseMarkedReadyReadyMetaData(caseMarkedReadyForDecision.metadata().id().toString(), LocalDate.now());
+        caseMarkedReadyReadyMetaDataList.add(caseMarkedReadyReadyMetaData);
+        caseMarkedReadyReadyMetaData =
+                new CaseMarkedReadyReadyMetaData(UUID.randomUUID().toString(), LocalDate.now());
+        caseMarkedReadyReadyMetaDataList.add(caseMarkedReadyReadyMetaData);
+
+        when(sjpEventStoreService.getMarkedReadyForDecisionMetadata(caseId.toString())).thenReturn(caseMarkedReadyReadyMetaDataList);
+
+        Stream<JsonEnvelope> transformedEventsStream = caseMarkedReadyForDecisionEventTransformer.apply(caseMarkedReadyForDecision);
+        List<JsonEnvelope> events = transformedEventsStream.collect(Collectors.toList());
+
+        assertThat(events.size(), is(2));
+        assertThat(events.get(0).metadata().name(), is("sjp.events.defendant-response-timer-expired"));
+        assertThat(events.get(0).metadata().id(), is(notNullValue()));
+        assertThat(events.get(0).payloadAsJsonObject().getString("caseId"), is(caseId.toString()));
+
+
+        assertThat(events.get(1).metadata().name(), is(CaseMarkedReadyForDecisionEventTransformer.CASE_MARKED_READY_FOR_DECISION_EVENT_NAME));
+        assertThat(events.get(1).metadata().id().toString(), is(caseMarkedReadyForDecision.metadata().id().toString()));
+    }
+
+    @Test
+    public void shouldCreate28DaysTimerExpiredOnSecondReadyForDecisionEventWhenTheReadyForDecisionIsFiredForThe28DaysTimerExpiredReason() {
+
+        final UUID caseId = randomUUID();
+        final String reason = CaseReadinessReason.PIA.name();
+        final SessionType sessionType = SessionType.MAGISTRATE;
+        final LocalDate postingDate = LocalDate.now().minusDays(30);
+
+        when(sjpViewStoreService.getPostingDate(caseId.toString())).thenReturn(Optional.of(postingDate));
+
+        JsonEnvelope caseMarkedReadyForDecision = envelope(caseId, reason, CaseMarkedReadyForDecisionEventTransformer.CASE_MARKED_READY_FOR_DECISION_EVENT_NAME);
+
+        final List<CaseMarkedReadyReadyMetaData> caseMarkedReadyReadyMetaDataList = new ArrayList<>();
+        CaseMarkedReadyReadyMetaData caseMarkedReadyReadyMetaData =
+                new CaseMarkedReadyReadyMetaData(UUID.randomUUID().toString(), LocalDate.now().minusDays(10));
+        caseMarkedReadyReadyMetaDataList.add(caseMarkedReadyReadyMetaData);
+        caseMarkedReadyReadyMetaData =
+                new CaseMarkedReadyReadyMetaData(caseMarkedReadyForDecision.metadata().id().toString(), LocalDate.now());
+        caseMarkedReadyReadyMetaDataList.add(caseMarkedReadyReadyMetaData);
+
+        when(sjpEventStoreService.getMarkedReadyForDecisionMetadata(caseId.toString())).thenReturn(caseMarkedReadyReadyMetaDataList);
+
+        Stream<JsonEnvelope> transformedEventsStream = caseMarkedReadyForDecisionEventTransformer.apply(caseMarkedReadyForDecision);
+        List<JsonEnvelope> events = transformedEventsStream.collect(Collectors.toList());
+
+        assertThat(events.size(), is(2));
+        assertThat(events.get(0).metadata().name(), is("sjp.events.defendant-response-timer-expired"));
+        assertThat(events.get(0).metadata().id(), is(notNullValue()));
+        assertThat(events.get(0).payloadAsJsonObject().getString("caseId"), is(caseId.toString()));
+
+
+        assertThat(events.get(1).metadata().name(), is(CaseMarkedReadyForDecisionEventTransformer.CASE_MARKED_READY_FOR_DECISION_EVENT_NAME));
+        assertThat(events.get(1).metadata().id().toString(), is(caseMarkedReadyForDecision.metadata().id().toString()));
+    }
+
+    @Test
+    public void shouldNotCreate28DaysTimerExpiredOnSecondReadyForDecisionEventWhenTheReadyForDecisionIsFiredForThe28DaysTimerExpiredReason() {
+
+        final UUID caseId = randomUUID();
+        final String reason = CaseReadinessReason.PIA.name();
+        final SessionType sessionType = SessionType.MAGISTRATE;
+        final LocalDate postingDate = LocalDate.now().minusDays(30);
+
+        when(sjpViewStoreService.getPostingDate(caseId.toString())).thenReturn(Optional.of(postingDate));
+
+        JsonEnvelope caseMarkedReadyForDecision = envelope(caseId, reason, CaseMarkedReadyForDecisionEventTransformer.CASE_MARKED_READY_FOR_DECISION_EVENT_NAME);
+
+        final List<CaseMarkedReadyReadyMetaData> caseMarkedReadyReadyMetaDataList = new ArrayList<>();
+        CaseMarkedReadyReadyMetaData caseMarkedReadyReadyMetaData =
+                new CaseMarkedReadyReadyMetaData(UUID.randomUUID().toString(), LocalDate.now());
+        caseMarkedReadyReadyMetaDataList.add(caseMarkedReadyReadyMetaData);
+        caseMarkedReadyReadyMetaData =
+                new CaseMarkedReadyReadyMetaData(caseMarkedReadyForDecision.metadata().id().toString(), LocalDate.now());
+        caseMarkedReadyReadyMetaDataList.add(caseMarkedReadyReadyMetaData);
+
+        when(sjpEventStoreService.getMarkedReadyForDecisionMetadata(caseId.toString())).thenReturn(caseMarkedReadyReadyMetaDataList);
+
+        Stream<JsonEnvelope> transformedEventsStream = caseMarkedReadyForDecisionEventTransformer.apply(caseMarkedReadyForDecision);
+        List<JsonEnvelope> events = transformedEventsStream.collect(Collectors.toList());
+
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0).metadata().name(), is(CaseMarkedReadyForDecisionEventTransformer.CASE_MARKED_READY_FOR_DECISION_EVENT_NAME));
+        assertThat(events.get(0).metadata().id().toString(), is(caseMarkedReadyForDecision.metadata().id().toString()));
+    }
+
 }

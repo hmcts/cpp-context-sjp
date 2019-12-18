@@ -25,10 +25,6 @@ public class SjpViewStoreService {
 
     private static final String SJP_VIEW_STORE_DS_NAME = "java:/app/event-tool/DS.viewstore";
 
-    private static final String GET_POSTNG_DATE = "select cd.posting_date " +
-            "from case_details cd, ready_cases rc " +
-            "where cd.id = rc.case_id and rc.case_id = ?";
-
     private static final String OFFENCE_PLEA =
             "select id as offenceId, plea " +
                     "from offence";
@@ -49,6 +45,8 @@ public class SjpViewStoreService {
 
     private static final String SELECT_STATUS_QUERY = "SELECT id, referred_for_court_hearing, reopened_date, completed from case_details where completed = true";
 
+    private static final String POSTING_DATE_QUERY = "SELECT id, posting_date from case_details";
+
     private static final String OFFENCE_COURT_OPTIONS =
             "select o.id as id, d.speak_welsh as speakWelsh, d.interpreter_language as language from  defendant d, offence o where d.id = o.defendant_id";
 
@@ -58,6 +56,7 @@ public class SjpViewStoreService {
 
     private static final Map<String, String> offenceIdPleaCache = new HashMap<>();
     private static final Map<String, String> caseIdStatusCache = new HashMap<>();
+    private static final Map<String, LocalDate> caseIdPostingDateCache = new HashMap<>();
     private static final Map<String, Pair<Boolean, String>> offenceIdCourtOptionsCache = new HashMap<>();
 
     private ConnectionProvider connectionProvider;
@@ -68,7 +67,8 @@ public class SjpViewStoreService {
         this(new ConnectionProvider(SJP_VIEW_STORE_DS_NAME));
         initCaseIdPleatMap();
         initCaseIdCourtOptionsMap();
-        initCaseStatusMap();
+        initCaseStatusAndPostingDateMap();
+        initPostingDateMap();
     }
 
     @VisibleForTesting
@@ -136,7 +136,7 @@ public class SjpViewStoreService {
     }
 
     @SuppressWarnings("squid:S134")
-    private void initCaseStatusMap() {
+    private void initCaseStatusAndPostingDateMap() {
 
         try (final Connection connection = connectionProvider.getConnection();
              final PreparedStatement statement = connection
@@ -162,6 +162,24 @@ public class SjpViewStoreService {
             throw new TransformationException("Error retrieving data using prepared statement", sqlException);
         }
         LOGGER.info("SjpViewStoreService#caseIdStatusCache size is:{}", caseIdStatusCache.size());
+    }
+
+    private void initPostingDateMap() {
+        try (final Connection connection = connectionProvider.getConnection();
+             final PreparedStatement statement = connection
+                     .prepareStatement(POSTING_DATE_QUERY)) {
+
+            try (final ResultSet resultSet = statement.executeQuery()) {
+                while(resultSet.next()) {
+                    final String caseId = resultSet.getString(1);
+                    final LocalDate postingDate = resultSet.getDate(2).toLocalDate();
+                    caseIdPostingDateCache.put(caseId, postingDate);
+                }
+            }
+        } catch (SQLException sqlException) {
+            throw new TransformationException("Error retrieving data using prepared statement", sqlException);
+        }
+        LOGGER.info("SjpViewStoreService#initPostingDateMap size is:{}", caseIdPostingDateCache.size());
     }
 
     public Optional<String> getOffenceId(final String caseId) {
@@ -223,22 +241,8 @@ public class SjpViewStoreService {
 
 
     @SuppressWarnings("squid:S2139")
-    public Optional<LocalDate> getPostingDateWhenPresentInReadyCases(final String caseId) {
-        final LocalDatePersistenceConverter converter = new LocalDatePersistenceConverter();
-        try (final Connection connection = connectionProvider.getConnection();
-             final PreparedStatement preparedStatement =
-                     connection.prepareStatement(GET_POSTNG_DATE)) {
-            preparedStatement.setObject(1, UUID.fromString(caseId));
-            try (final ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return Optional.ofNullable(converter.convertToEntityAttribute(resultSet.getDate(1)));
-                }
-            }
-        } catch (final SQLException e) {
-            LOGGER.error("Exception while retrieving posting date when present in ready cases ", e);
-            throw new TransformationException("Error retrieving data using prepared statement", e);
-        }
-        return Optional.empty();
+    public Optional<LocalDate> getPostingDate(final String caseId) {
+        return Optional.ofNullable(caseIdPostingDateCache.get(caseId));
     }
 
 }

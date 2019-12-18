@@ -196,6 +196,19 @@ public class ReferenceDataServiceTest {
         assertThat(documentsMetadata, is(responsePayload));
     }
 
+    @Test
+    public void shouldReturnHearingTypes() {
+        final JsonObject responsePayload = createObjectBuilder().add("hearingTypes", Json.createArrayBuilder()).build();
+        final JsonEnvelope queryResponse = envelopeFrom(
+                metadataWithRandomUUID("referencedata.query.hearing-types"),
+                responsePayload);
+
+        when(requestHearingTypes()).thenReturn(queryResponse);
+
+        final JsonObject hearingTypes = referenceDataService.getHearingTypes(envelope);
+        assertThat(hearingTypes, is(responsePayload));
+    }
+
 
     @Test
     public void shouldReturnAllResultDefinitions() {
@@ -263,6 +276,12 @@ public class ReferenceDataServiceTest {
         return envelopeFrom(
                 metadataWithRandomUUID("referencedata.query.prosecutors"),
                 responsePayload);
+    }
+
+    private Object requestHearingTypes() {
+        return requester.requestAsAdmin(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(envelope).withName("referencedata.query.hearing-types"),
+                payloadIsJson(notNullValue()))));
     }
 
     private final JsonObject getAllResultsDefinitionJsonObject() {

@@ -3,7 +3,10 @@ package uk.gov.moj.cpp.sjp.command.handler;
 import static uk.gov.justice.services.messaging.JsonObjects.getJsonObject;
 import static uk.gov.justice.services.messaging.JsonObjects.getString;
 
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.sjp.domain.Address;
+
+import java.util.UUID;
 
 import javax.json.JsonObject;
 
@@ -21,5 +24,11 @@ public class BasePersonInfoHandler {
 
     protected String getStringOrNull(final JsonObject object, final String fieldName) {
         return getString(object, fieldName).orElse(null);
+    }
+
+    protected UUID getUserId(final Envelope<?> command) {
+        return command.metadata().userId()
+                .map(UUID::fromString)
+                .orElseThrow(RuntimeException::new);
     }
 }

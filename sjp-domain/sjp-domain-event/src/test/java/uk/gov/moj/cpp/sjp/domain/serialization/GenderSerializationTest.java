@@ -14,7 +14,7 @@ import org.hamcrest.Matcher;
 public class GenderSerializationTest extends AbstractSerializationTest<Gender> {
 
     @Override
-    Map<Gender, Matcher<String>> getParams() {
+    protected Map<Gender, Matcher<String>> getParams() {
         return Arrays.stream(Gender.values())
                 .collect(toMap(identity(), g -> equalTo("\"" + g.toString() + "\"")));
     }

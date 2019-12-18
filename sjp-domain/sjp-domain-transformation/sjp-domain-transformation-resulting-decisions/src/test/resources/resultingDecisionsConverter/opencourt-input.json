@@ -1,0 +1,49 @@
+{
+  "id":"6114313a-37ed-4df8-885a-6719724b706a",
+  "caseId":"fd51dc11-dc3c-40c8-90c6-79bb50b5752a",
+  "sjpSessionId":"b6d37ba4-4aab-4175-ba8a-021573f24939",
+  "created":"2018-12-28T16:58:58.346Z",
+  "offences":[
+    {
+      "id":"e76ab6f5-9156-4ecd-81f4-01fb9241ad5f",
+      "results":[
+        {
+          "code":"SUMRTO",
+          "resultTypeId":"5ea16ab3-6a93-454d-82ea-2f103017350b",
+          "terminalEntries":[
+            {
+              "index":-1,
+              "value":"809f7aac-d285-43a5-9fb1-3a894db71530"
+            },
+            {
+              "index":5,
+              "value":"2019-01-01"
+            },
+            {
+              "index":10,
+              "value":"11:30"
+            },
+            {
+              "index":20,
+              "value":"Lavender Hill Magistrates' Court"
+            },
+            {
+              "index":35,
+              "value":"For trial"
+            },
+            {
+              "index":30,
+              "value":"01"
+            },
+            {
+              "index":15,
+              "value":"South West London Magistrates' Court"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "accountDivisionCode":36,
+  "enforcingCourtCode":1
+}

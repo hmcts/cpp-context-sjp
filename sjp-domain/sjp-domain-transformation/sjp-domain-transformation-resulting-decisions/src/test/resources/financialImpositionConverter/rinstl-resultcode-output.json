@@ -1,0 +1,12 @@
+{
+  "payment": {
+    "paymentTerms": {
+      "reserveTerms": true,
+      "installments": {
+        "period": "WEEKLY",
+        "startDate": "2019-08-10",
+        "amount": 10
+      }
+    }
+  }
+}

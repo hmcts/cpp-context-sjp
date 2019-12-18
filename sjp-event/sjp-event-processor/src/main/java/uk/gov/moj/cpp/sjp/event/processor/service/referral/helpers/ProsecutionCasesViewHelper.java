@@ -1,9 +1,10 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers;
 
-import static com.google.common.collect.Iterables.getFirst;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
+import static uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.NotifiedPleaViewHelper.createNotifiedPleaView;
 
 import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
@@ -13,6 +14,9 @@ import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
 import uk.gov.justice.json.schemas.domains.sjp.query.EmployerDetails;
+import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.AddressView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ContactView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.DefendantView;
@@ -26,48 +30,47 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.json.JsonObject;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class ProsecutionCasesViewHelper {
 
     private static final String WELSH_LANGUAGE_CODE = "W";
-    private static final String NO_VERDICT = "NO_VERDICT";
     private static final String OFFENCES_KEY = "offences";
 
     @SuppressWarnings("squid:S00107")
     public List<ProsecutionCaseView> createProsecutionCaseViews(
             final CaseDetails caseDetails,
-            final JsonObject referenceDataOffences,
             final JsonObject prosecutors,
-            final JsonObject caseDecision,
             final JsonObject caseFileDefendantDetails,
             final EmployerDetails employer,
             final String nationalityId,
             final String ethnicityId,
-            final LocalDate referredAt,
-            final NotifiedPleaView notifiedPleaView,
-            final String pleaMitigation) {
+            final CaseReferredForCourtHearing caseReferredForCourtHearing,
+            final String pleaMitigation,
+            final Map<String, UUID> offenceDefinitionIdByOffenceCode,
+            final List<Offence> referredOffences) {
 
-        final Offence offenceDetails = ofNullable(getFirst(caseDetails.getDefendant().getOffences(), null))
-                .orElseThrow(() -> new IllegalStateException(String.format("Offence not found for case %s", caseDetails.getId())));
-
-        final String verdict = caseDecision.getString("verdict", NO_VERDICT);
-        final LocalDate convictionDate = NO_VERDICT.equals(verdict) ? null : referredAt;
+        final String prosecutionFacts = getProsecutionFacts(referredOffences)
+                .orElse(getProsecutionFacts(caseDetails.getDefendant().getOffences()).orElse(null));
 
         final DefendantView defendantView = createDefendantView(
                 caseDetails,
-                referenceDataOffences,
-                offenceDetails,
-                convictionDate,
+                referredOffences,
+                caseReferredForCourtHearing.getReferredOffences(),
+                caseReferredForCourtHearing.getReferredAt().toLocalDate(),
                 caseFileDefendantDetails,
                 employer,
                 nationalityId,
                 ethnicityId,
-                notifiedPleaView,
-                pleaMitigation);
+                pleaMitigation,
+                offenceDefinitionIdByOffenceCode);
 
         final JsonObject prosecutor = prosecutors.getJsonArray("prosecutors").getJsonObject(0);
         final ProsecutionCaseIdentifierView prosecutionCaseIdentifier = new ProsecutionCaseIdentifierView(
@@ -83,7 +86,7 @@ public class ProsecutionCasesViewHelper {
         final ProsecutionCaseView prosecutionCaseView = new ProsecutionCaseView(
                 caseDetails.getId(),
                 "J",
-                offenceDetails.getProsecutionFacts(),
+                prosecutionFacts,
                 statementOfFactsWelsh,
                 prosecutionCaseIdentifier,
                 singletonList(defendantView));
@@ -94,15 +97,15 @@ public class ProsecutionCasesViewHelper {
     @SuppressWarnings("squid:S00107")
     private DefendantView createDefendantView(
             final CaseDetails caseDetails,
-            final JsonObject referenceDataOffences,
-            final Offence offenceDetails,
-            final LocalDate convictionDate,
+            final List<Offence> referredOffences,
+            final List<OffenceDecisionInformation> offenceDecisionInformationList,
+            final LocalDate referredAt,
             final JsonObject caseFileDefendantDetails,
             final EmployerDetails employer,
             final String nationalityId,
             final String ethnicityId,
-            final NotifiedPleaView notifiedPleaView,
-            final String pleaMitigation) {
+            final String pleaMitigation,
+            final Map<String, UUID> offenceDefinitionIdByOffenceCode) {
 
         final Defendant defendantDetails = caseDetails.getDefendant();
         final PersonDefendantView personDefendantView = createPersonDefendantView(
@@ -112,19 +115,21 @@ public class ProsecutionCasesViewHelper {
                 nationalityId,
                 ethnicityId);
 
-        final OffenceView offence = createOffenceView(
-                referenceDataOffences,
-                convictionDate,
-                offenceDetails,
-                caseFileDefendantDetails,
-                notifiedPleaView);
+        final List<OffenceView> offenceViews = referredOffences
+                .stream().map(offence -> createOffenceView(offenceDecisionInformationList,
+                        referredAt,
+                        offence,
+                        caseFileDefendantDetails,
+                        createNotifiedPleaView(referredAt, offence),
+                        offenceDefinitionIdByOffenceCode))
+                .collect(Collectors.toList());
 
         return new DefendantView(
                 defendantDetails.getId(),
                 caseDetails.getId(),
                 defendantDetails.getNumPreviousConvictions(),
                 pleaMitigation,
-                singletonList(offence),
+                offenceViews,
                 personDefendantView);
     }
 
@@ -150,7 +155,6 @@ public class ProsecutionCasesViewHelper {
                                         .map(Interpreter::getLanguage)
                                         .orElse(null))
                         .withNationalityId(nationalityId)
-                        .withEthnicityId(ethnicityId)
                         .withDocumentationLanguageNeeds(ofNullable(caseFileDefendantDetails)
                                 .map(defendantDetails -> defendantDetails.getString("documentationLanguage", null))
                                 .map(documentationLanguage -> WELSH_LANGUAGE_CODE.equals(documentationLanguage) ? "WELSH" : "ENGLISH")
@@ -171,28 +175,33 @@ public class ProsecutionCasesViewHelper {
                                 employerName,
                                 createAddressView(employer.getAddress()),
                                 new ContactView(employer.getPhone())))
-                        .orElse(null));
+                        .orElse(null), ethnicityId);
 
     }
 
     private static OffenceView createOffenceView(
-            final JsonObject referenceDataOffences,
-            final LocalDate convictionDate,
+            final List<OffenceDecisionInformation> offenceDecisionInformationList,
+            final LocalDate referredAt,
             final Offence offenceDetails,
             final JsonObject caseFileDefendantDetails,
-            final NotifiedPleaView notifiedPleaView) {
-
-        final Optional<String> offenceDefinitionIdOptional = referenceDataOffences.getJsonArray(OFFENCES_KEY).getValuesAs(JsonObject.class).stream()
-                .filter(referenceDataOffence -> referenceDataOffence.getString("cjsOffenceCode").equals(offenceDetails.getCjsCode()))
-                .map(referenceDataOffence -> referenceDataOffence.getString("offenceId"))
-                .findFirst();
+            final NotifiedPleaView notifiedPleaView,
+            final Map<String, UUID> offenceDefinitionIdByOffenceCode) {
 
         final Optional<JsonObject> caseFileOffenceDetailsOptional = ofNullable(caseFileDefendantDetails)
                 .map(defendantDetails -> defendantDetails.getJsonArray(OFFENCES_KEY).getJsonObject(0));
 
+        final VerdictType verdict = offenceDecisionInformationList
+                .stream()
+                .filter(offenceDecisionInformation -> offenceDecisionInformation.getOffenceId().equals(offenceDetails.getId()))
+                .map(OffenceDecisionInformation::getVerdict)
+                .findFirst()
+                .orElse(NO_VERDICT);
+
+        final LocalDate convictionDate = NO_VERDICT.equals(verdict) ? null : referredAt;
+
         return OffenceView.builder()
                 .withId(offenceDetails.getId())
-                .withOffenceDefinitionId(offenceDefinitionIdOptional.map(UUID::fromString).orElse(null))
+                .withOffenceDefinitionId(offenceDefinitionIdByOffenceCode.get(offenceDetails.getCjsCode()))
                 .withWording(offenceDetails.getWording())
                 .withWordingWelsh(offenceDetails.getWordingWelsh())
                 .withStartDate(LocalDate.parse(offenceDetails.getStartDate()))
@@ -232,4 +241,11 @@ public class ProsecutionCasesViewHelper {
                 caseFileDefendantPersonalInformation.map(personalInformation -> personalInformation.getString("secondaryEmail", null)).orElse(null));
     }
 
+    private static Optional<String> getProsecutionFacts(final List<Offence> offences) {
+        return offences
+                .stream()
+                .map(Offence::getProsecutionFacts)
+                .filter(StringUtils::isNotEmpty)
+                .findFirst();
+    }
 }

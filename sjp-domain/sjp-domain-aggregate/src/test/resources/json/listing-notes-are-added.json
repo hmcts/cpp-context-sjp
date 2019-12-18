@@ -1,0 +1,18 @@
+{
+  "_metadata": {
+    "name": "sjp.events.case-note-added"
+  },
+  "author": {
+    "firstName": "Erica",
+    "lastName": "Wilson",
+    "userId": "4c8770db-02e6-4f4b-829e-2af9ea97d12f"
+  },
+  "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "decisionId": "7dfcf915-adb2-4ce0-9a81-bf45072f7bac",
+  "note": {
+    "addedAt": "2019-05-01T13:47:06.517Z",
+    "id": "*",
+    "text": "Wheelchair access needed",
+    "type": "LISTING"
+  }
+}

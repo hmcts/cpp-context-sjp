@@ -1,0 +1,175 @@
+package uk.gov.moj.sjp.it.test;
+
+
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.cpp.sjp.domain.IncomeFrequency.MONTHLY;
+import static uk.gov.moj.cpp.sjp.domain.IncomeFrequency.YEARLY;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.*;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerDeletedPublicEventMatcher;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerPayload;
+import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerUpdatedPublicEventMatcher;
+
+import uk.gov.moj.cpp.sjp.domain.Benefits;
+import uk.gov.moj.cpp.sjp.domain.Income;
+import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.EmployerHelper;
+import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
+import uk.gov.moj.sjp.it.pollingquery.CasePoller;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import org.hamcrest.Matcher;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+public class UpdateAllFinancialMeanIT extends BaseIntegrationTest {
+
+    final private FinancialMeansHelper financialMeansHelper = new FinancialMeansHelper();
+    final private FinancialMeansHelper allFinancialMeansHelper = new FinancialMeansHelper("public.sjp.all-financial-means-updated");
+    final private EmployerHelper employerHelper = new EmployerHelper();
+    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
+
+    @Before
+    public void setUp() {
+        this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        financialMeansHelper.close();
+    }
+
+    @Test
+    public void shouldUpdateFinancialMeansWithEmployerDetails() {
+
+        final UUID caseId = createCasePayloadBuilder.getId();
+        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
+        final Income income = new Income(MONTHLY, BigDecimal.valueOf(1000.50));
+        final Benefits benefits = new Benefits(false, "", null);
+        final String employmentStatus = "EMPLOYED";
+        final JsonObject employer = getEmployerPayload();
+
+        final JsonObject payload = createObjectBuilder()
+                .add("income", createObjectBuilder()
+                        .add("frequency", income.getFrequency().name())
+                        .add("amount", income.getAmount()))
+                .add("benefits", createObjectBuilder()
+                        .add("claimed", benefits.getClaimed())
+                        .add("type", benefits.getType()))
+                .add("employment", createObjectBuilder()
+                        .add("status", employmentStatus))
+                .add("employer", employer)
+                .build();
+
+        final Matcher<Object> expected = isJson(allOf(
+                withJsonPath("$.income.frequency", is(income.getFrequency().name())),
+                withJsonPath("$.income.amount", is(income.getAmount().doubleValue())),
+                withJsonPath("$.benefits.claimed", is(benefits.getClaimed())),
+                withJsonPath("$.benefits.type", is(benefits.getType())),
+                withJsonPath("$.employmentStatus", is(employmentStatus))
+        ));
+
+        financialMeansHelper.updateAllFinancialMeans(caseId, defendantId, payload);
+        financialMeansHelper.getFinancialMeans(defendantId, expected);
+        financialMeansHelper.getEventFromPublicTopic(expected);
+
+        shouldGetAllFinancialMeansUpdatedEventFromPublicTopic(defendantId);
+
+        // assert the employer details
+        employerHelper.getEmployer(defendantId, getEmployerUpdatedPayloadMatcher(employer));
+        assertThat(employerHelper.getEventFromPublicTopic(), getEmployerUpdatedPublicEventMatcher(employer));
+    }
+
+    private void shouldGetAllFinancialMeansUpdatedEventFromPublicTopic(final String defendantId) {
+        final Matcher<Object> jsonMatcher = isJson(allOf(
+                withJsonPath("$.defendantId", is(defendantId))
+        ));
+        allFinancialMeansHelper.getEventFromPublicTopic(jsonMatcher);
+    }
+
+    @Test
+    public void shouldDeleteEmployerDetails() {
+
+        final UUID caseId = createCasePayloadBuilder.getId();
+        final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
+        final Income incomeBefore = new Income(MONTHLY, BigDecimal.valueOf(1000.51));
+        final Benefits benefitsBefore = new Benefits(false, "", null);
+        final String employmentStatusBefore = "EMPLOYED";
+        final JsonObject employerBefore = getEmployerPayload();
+
+        final JsonObject payloadBefore = createObjectBuilder()
+                .add("income", createObjectBuilder()
+                        .add("frequency", incomeBefore.getFrequency().name())
+                        .add("amount", incomeBefore.getAmount()))
+                .add("benefits", createObjectBuilder()
+                        .add("claimed", benefitsBefore.getClaimed())
+                        .add("type", benefitsBefore.getType()))
+                .add("employment", createObjectBuilder()
+                        .add("status", employmentStatusBefore))
+                .add("employer", employerBefore)
+                .build();
+
+        final Matcher<Object> expectedBefore = isJson(allOf(
+                withJsonPath("$.income.frequency", is(incomeBefore.getFrequency().name())),
+                withJsonPath("$.income.amount", is(incomeBefore.getAmount().doubleValue())),
+                withJsonPath("$.benefits.claimed", is(benefitsBefore.getClaimed())),
+                withJsonPath("$.benefits.type", is(benefitsBefore.getType())),
+                withJsonPath("$.employmentStatus", is(employmentStatusBefore))
+        ));
+
+        // update the financial means
+        financialMeansHelper.updateAllFinancialMeans(caseId, defendantId, payloadBefore);
+
+        financialMeansHelper.getFinancialMeans(defendantId, expectedBefore);
+        financialMeansHelper.getEventFromPublicTopic(expectedBefore);
+
+        // assert the employer details
+        employerHelper.getEmployer(defendantId, getEmployerUpdatedPayloadMatcher(employerBefore));
+        assertThat(employerHelper.getEventFromPublicTopic(), getEmployerUpdatedPublicEventMatcher(employerBefore));
+
+
+        final Income incomeAfter = new Income(YEARLY, BigDecimal.valueOf(10000.52));
+        final Benefits benefitsAfter = new Benefits(false, "NONE", null);
+        final String employmentStatusAfter = "UNEMPLOYED";
+
+        final JsonObject payloadAfter = createObjectBuilder()
+                .add("income", createObjectBuilder()
+                        .add("frequency", incomeAfter.getFrequency().name())
+                        .add("amount", incomeAfter.getAmount()))
+                .add("benefits", createObjectBuilder()
+                        .add("claimed", benefitsAfter.getClaimed())
+                        .add("type", benefitsAfter.getType()))
+                .add("employment", createObjectBuilder()
+                        .add("status", employmentStatusAfter))
+                .build();
+        financialMeansHelper.updateAllFinancialMeans(caseId, defendantId, payloadAfter);
+
+        final Matcher<Object> expectedAfter = isJson(allOf(
+                withJsonPath("$.income.frequency", is(incomeAfter.getFrequency().name())),
+                withJsonPath("$.income.amount", is(incomeAfter.getAmount().doubleValue())),
+                withJsonPath("$.benefits.claimed", is(benefitsAfter.getClaimed())),
+                withJsonPath("$.benefits.type", is(benefitsAfter.getType())),
+                withJsonPath("$.employmentStatus", is(employmentStatusAfter))
+        ));
+
+        financialMeansHelper.getFinancialMeans(defendantId, expectedAfter);
+        financialMeansHelper.getEventFromPublicTopic(expectedAfter);
+
+        shouldGetAllFinancialMeansUpdatedEventFromPublicTopic(defendantId);
+        // assert the employer details
+        employerHelper.getEmployer(defendantId, isJson(withJsonPath("$.size()", is(0))));
+        assertThat(employerHelper.getEventFromPublicTopic(), getEmployerDeletedPublicEventMatcher(defendantId));
+    }
+
+
+}

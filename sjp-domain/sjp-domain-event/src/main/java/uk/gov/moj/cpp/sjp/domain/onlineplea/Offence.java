@@ -14,19 +14,16 @@ public class Offence implements Serializable {
 
     private UUID id;
     private PleaType plea;
-    private Boolean comeToCourt;
     private String mitigation;
     private String notGuiltyBecause;
 
     @JsonCreator
     public Offence(@JsonProperty("id") final UUID id,
                    @JsonProperty("plea") final PleaType plea,
-                   @JsonProperty("comeToCourt") final Boolean comeToCourt,
                    @JsonProperty("mitigation") final String mitigation,
                    @JsonProperty("notGuiltyBecause") final String notGuiltyBecause) {
         this.id = id;
         this.plea = plea;
-        this.comeToCourt = comeToCourt;
         this.mitigation = mitigation;
         this.notGuiltyBecause = notGuiltyBecause;
     }
@@ -37,10 +34,6 @@ public class Offence implements Serializable {
 
     public PleaType getPlea() {
         return plea;
-    }
-
-    public Boolean getComeToCourt() {
-        return comeToCourt;
     }
 
     public String getMitigation() {

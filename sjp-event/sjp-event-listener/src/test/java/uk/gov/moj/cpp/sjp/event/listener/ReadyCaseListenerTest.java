@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
+import static java.time.LocalDate.now;
 import static java.time.ZoneOffset.UTC;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -11,9 +12,12 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
+import uk.gov.moj.cpp.sjp.domain.Priority;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CasePublishStatus;
@@ -22,6 +26,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CasePublishStatusRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,38 +44,28 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ReadyCaseListenerTest {
 
+    private static final LocalDate POSTING_DATE = now().minusDays(15);
+    private final UUID caseId = randomUUID();
     @Mock
     private ReadyCaseRepository readyCaseRepository;
-
     @Mock
     private CaseRepository caseRepository;
-
     @Mock
     private CasePublishStatusRepository casePublishStatusRepository;
-
-    @Mock
     private CaseDetail caseDetail;
-
     @InjectMocks
     private ReadyCaseListener readyCaseListener;
-
     @Captor
     private ArgumentCaptor<ReadyCase> readyCasesCaptor;
-
     @Captor
     private ArgumentCaptor<CasePublishStatus> casePublishedStatusCaptor;
-
-    private final UUID caseId = randomUUID();
 
     @Test
     public void shouldHandleCaseMarkedReadyForDecision() {
         setupAndMarkReadyForDecision(null);
         verify(readyCaseRepository).save(readyCasesCaptor.capture());
         verify(casePublishStatusRepository).save(casePublishedStatusCaptor.capture());
-
-        final ReadyCase readyCase = readyCasesCaptor.getValue();
-        assertThat(readyCase.getReason(), equalTo(PLEADED_GUILTY));
-        assertThat(readyCase.getCaseId(), equalTo(caseId));
+        checkReadyCase();
     }
 
     @Test
@@ -98,13 +93,16 @@ public class ReadyCaseListenerTest {
     }
 
     private void setupAndMarkReadyForDecision(final CasePublishStatus casePublishStatus) {
+        caseDetail = new CaseDetail();
+        caseDetail.setProsecutingAuthority(TFL);
+        caseDetail.setPostingDate(POSTING_DATE);
         final JsonEnvelope caseMarkedReadyForDecisionEvent = givenCaseMarkedReadyForDecisionEventIsRaised();
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
         when(casePublishStatusRepository.findBy(caseId)).thenReturn(casePublishStatus);
         whenCaseMarkedReadyForDecisionEventIsProcessed(caseMarkedReadyForDecisionEvent);
     }
 
-    private void whenCaseMarkedReadyForDecisionEventIsProcessed(JsonEnvelope caseMarkedReadyForDecisionEvent) {
+    private void whenCaseMarkedReadyForDecisionEventIsProcessed(final JsonEnvelope caseMarkedReadyForDecisionEvent) {
         readyCaseListener.handleCaseMarkedReadyForDecision(caseMarkedReadyForDecisionEvent);
     }
 
@@ -114,6 +112,8 @@ public class ReadyCaseListenerTest {
                         .add("caseId", caseId.toString())
                         .add("reason", CaseReadinessReason.PLEADED_GUILTY.name())
                         .add("markedAt", LocalDateTime.now(UTC).toString())
+                        .add("sessionType", MAGISTRATE.name())
+                        .add("priority", Priority.MEDIUM.name())
                         .build());
     }
 
@@ -125,8 +125,18 @@ public class ReadyCaseListenerTest {
                 payload.build());
     }
 
-    private void whenCaseUnMarkForDecisionEventIsProcessed(JsonEnvelope caseUnmarkedReadyForDecisionEvent) {
+    private void whenCaseUnMarkForDecisionEventIsProcessed(final JsonEnvelope caseUnmarkedReadyForDecisionEvent) {
         readyCaseListener.handleCaseUnmarkedReadyForDecision(caseUnmarkedReadyForDecisionEvent);
+    }
+
+    private void checkReadyCase() {
+        final ReadyCase readyCase = readyCasesCaptor.getValue();
+        assertThat(readyCase.getReason(), equalTo(PLEADED_GUILTY));
+        assertThat(readyCase.getCaseId(), equalTo(caseId));
+        assertThat(readyCase.getPostingDate(), equalTo(POSTING_DATE));
+        assertThat(readyCase.getPriority(), equalTo(2));
+        assertThat(readyCase.getProsecutionAuthority(), equalTo(TFL));
+        assertThat(readyCase.getSessionType(), equalTo(MAGISTRATE));
     }
 
 }

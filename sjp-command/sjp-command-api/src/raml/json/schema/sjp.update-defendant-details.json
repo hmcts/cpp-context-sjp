@@ -23,7 +23,7 @@
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/gender.json"
     },
     "email": {
-      "type": "string"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/email"
     },
     "address": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"

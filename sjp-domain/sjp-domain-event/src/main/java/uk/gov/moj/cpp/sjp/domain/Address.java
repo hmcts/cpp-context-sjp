@@ -1,14 +1,13 @@
 package uk.gov.moj.cpp.sjp.domain;
 
-import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
-
-import java.io.Serializable;
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+
+import java.io.Serializable;
+
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 public class Address implements Serializable {
 
@@ -70,22 +69,23 @@ public class Address implements Serializable {
     }
 
     @Override
+    @SuppressWarnings("squid:S1067")
     public boolean equals(Object o) {
         if (!(o instanceof Address)) {
             return false;
         }
         final Address other = (Address) o;
-        return Objects.equals(address1, other.address1) &&
-                Objects.equals(address2, other.address2) &&
-                Objects.equals(address3, other.address3) &&
-                Objects.equals(address4, other.address4) &&
-                Objects.equals(address5, other.address5) &&
-                Objects.equals(postcode, other.postcode);
+        return DomainUtils.equals(address1, other.address1) &&
+                DomainUtils.equals(address2, other.address2) &&
+                DomainUtils.equals(address3, other.address3) &&
+                DomainUtils.equals(address4, other.address4) &&
+                DomainUtils.equals(address5, other.address5) &&
+                DomainUtils.equals(postcode, other.postcode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(address1, address2, address3, address4, address5, postcode);
+        return DomainUtils.hash(address1, address2, address3, address4, address5, postcode);
     }
 
     @Override

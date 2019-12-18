@@ -6,22 +6,27 @@ import uk.gov.moj.sjp.it.helper.CaseReopenedInLibraHelper;
 import uk.gov.moj.sjp.it.helper.CaseReopenedInLibraHelper.MarkCaseReopenedInLibraHelper;
 import uk.gov.moj.sjp.it.helper.CaseReopenedInLibraHelper.UndoCaseReopenedInLibraHelper;
 import uk.gov.moj.sjp.it.helper.CaseReopenedInLibraHelper.UpdateCaseReopenedInLibraHelper;
+import uk.gov.moj.sjp.it.helper.DecisionHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
+import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import org.junit.Before;
 import org.junit.Test;
 
 public class CaseReopenedInLibraIT extends BaseIntegrationTest {
 
-    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
+    private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
+    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
 
     @Before
-    public void setUp()  {
-        createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+    public void setUp() throws Exception {
+        databaseCleaner.cleanAll();
 
         new EventListener()
                 .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
                 .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder));
+
+        DecisionHelper.saveDefaultDecision(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceIds());
     }
 
     @Test

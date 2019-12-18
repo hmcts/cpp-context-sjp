@@ -1,0 +1,13 @@
+package uk.gov.moj.cpp.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+
+
+rule "Command - Rule for set pleas"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.set-pleas");
+  then
+    $outcome.setSuccess(true);
+end

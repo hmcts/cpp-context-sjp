@@ -11,6 +11,8 @@
         "prosecutionFacts": "No ticket at the gates, forgery",
         "offenceCode": "PS00001",
         "cjsCode": "PS00001",
+        "pendingWithdrawal": false,
+        "hasFinalDecision": false,
         "pleaMethod": "ONLINE",
         "pleaDate": "${pleaDate}",
         "compensation": 2.34,
@@ -19,7 +21,13 @@
         "offenceSequenceNumber": 1,
         "wording": "Committed some offence",
         "chargeDate": "2016-01-01",
-        "startDate": "2016-01-01"
+        "startDate": "2016-01-01",
+        "title": "Postal service - convey a letter without a licence",
+        "legislation": "Contrary to section 6(2) of the Postal Services Act 2000.",
+        "notInEffect": true,
+        "outOfTime": false,
+        "imprisonable": true,
+        "maxFineLevel": "S"
       }
     ],
     "caseId": "${caseId}",
@@ -55,6 +63,8 @@
     "id": "${defendantId}"
   },
   "caseDocuments": [
+  ],
+  "caseDecisions": [
 
   ],
   "listedInCriminalCourts": false,

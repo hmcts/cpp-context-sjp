@@ -1,0 +1,41 @@
+{
+  "decision": {
+    "decisionId": "7dfcf915-adb2-4ce0-9a81-bf45072f7bac",
+    "sessionId": "ab73f106-ec06-48a3-8cf4-f329891ba548",
+    "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+    "savedAt": "2019-05-01T13:47:06.517Z",
+    "savedBy": {
+      "firstName": "Erica",
+      "lastName": "Wilson",
+      "userId": "4c8770db-02e6-4f4b-829e-2af9ea97d12f"
+    },
+    "offenceDecisions": [
+      {
+        "type": "REFER_FOR_COURT_HEARING",
+        "offenceDecisionInformation" : [
+          {
+            "offenceId": "042c541a-55b5-4f66-98f0-46b9e560f1b5",
+            "verdict" : "PROVED_SJP"
+          },
+          {
+            "offenceId": "b6c0eb95-e27d-42b8-8f42-e8765860a46c",
+            "verdict" : "PROVED_SJP"
+          }
+        ],
+        "referralReasonId": "809f7aac-d285-43a5-9fb1-3a894db71530",
+        "estimatedHearingDuration": 30,
+        "listingNotes": "Wheelchair access needed",
+        "defendantCourtOptions": {
+          "welshHearing": false,
+          "interpreter": {
+            "language": "French",
+            "needed": true
+          }
+        }
+      }
+    ]
+  },
+  "session": {
+    "sessionType": "MAGISTRATE"
+  }
+}

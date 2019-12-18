@@ -102,12 +102,12 @@ public class Person {
             return false;
         }
         Person that = (Person) o;
-        return Objects.equals(title, that.title) &&
-                Objects.equals(firstName, that.firstName) &&
-                Objects.equals(lastName, that.lastName) &&
+        return DomainUtils.equals(title, that.title) &&
+                DomainUtils.equals(firstName, that.firstName) &&
+                DomainUtils.equals(lastName, that.lastName) &&
                 Objects.equals(dateOfBirth, that.dateOfBirth) &&
                 Objects.equals(gender, that.gender) &&
-                Objects.equals(nationalInsuranceNumber, that.nationalInsuranceNumber) &&
+                DomainUtils.equals(nationalInsuranceNumber, that.nationalInsuranceNumber) &&
                 Objects.equals(driverNumber, that.driverNumber) &&
                 Objects.equals(address, that.address) &&
                 Objects.equals(contactDetails, that.contactDetails);
@@ -115,7 +115,7 @@ public class Person {
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber,
+        return DomainUtils.hash(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber,
                 driverNumber, address, contactDetails);
     }
 

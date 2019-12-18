@@ -5,6 +5,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.OFFENCE_ID;
+import static uk.gov.moj.cpp.sjp.event.processor.PleaUpdatedProcessor.PLEA_CANCELLED_PUBLIC_EVENT_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.OFFENCE_ID_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_READY_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_TYPE_VARIABLE;
@@ -26,7 +27,6 @@ import org.slf4j.LoggerFactory;
 public class PleaCancelledDelegate extends AbstractCaseDelegate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PleaCancelledDelegate.class);
-    private static final String PLEA_CANCELLED_PUBLIC_EVENT_NAME = "public.sjp.plea-cancelled";
 
     @Override
     public void execute(final UUID caseId, final Metadata metadata, final DelegateExecution execution, boolean processMigration) {

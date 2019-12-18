@@ -1,0 +1,8 @@
+{
+  "id": "%s",
+  "type": "DISMISS",
+  "offenceDecisionInformation": {
+    "offenceId": "d1f4f315-6645-412c-89bd-f1eb45c663c8",
+    "verdict": "FOUND_NOT_GUILTY"
+  }
+}

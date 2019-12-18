@@ -61,10 +61,10 @@ public class SjpCaseCreatedToCaseTest {
 
     @Spy
     @SuppressWarnings("unused")
-    private OffenceToOffenceDetail offenceToOffenceDetailConverter = new OffenceToOffenceDetail();
+    private final OffenceToOffenceDetail offenceToOffenceDetailConverter = new OffenceToOffenceDetail();
 
     @InjectMocks
-    private SjpCaseCreatedToCase caseConverter = new SjpCaseCreatedToCase();
+    private final SjpCaseCreatedToCase caseConverter = new SjpCaseCreatedToCase();
 
     @Test
     public void shouldConvertToCase() {

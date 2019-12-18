@@ -91,6 +91,17 @@ public class SjpEventTransformationTest {
                 ));
     }
 
+    @Test
+    public void sjp_events_online_plea_received() {
+        initialize("sjp.events.online-plea-received");
+
+        assertThat(anonymisedJsonObject.toString(),
+                isJson(allOf(
+                        withJsonPath("$.urn", is(inputJsonPath.getString("urn"))),
+                        withJsonPath("$.financialMeans.income.frequency", is(inputJsonPath.getString("financialMeans.income.frequency")))
+                        )
+                ));
+    }
 
     private static JsonObject jsonFromString(String jsonObjectStr) {
         JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));

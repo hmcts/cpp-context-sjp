@@ -1,0 +1,25 @@
+{
+  "results": [
+    {
+      "code": "LSUMI",
+      "terminalEntries": [
+        {
+          "index": 96,
+          "value": "8"
+        },
+        {
+          "index": 98,
+          "value": "10"
+        },
+        {
+          "index": 100,
+          "value": "weekly"
+        },
+        {
+          "index": 99,
+          "value": "1 Aug 2019"
+        }
+      ]
+    }
+  ]
+}

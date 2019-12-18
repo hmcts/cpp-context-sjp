@@ -54,10 +54,10 @@
           },
           "plea": {
             "type": "string",
-            "enum": ["NOT_GUILTY", "GUILTY"]
-          },
-          "comeToCourt": {
-            "type": "boolean"
+            "enum": [
+              "NOT_GUILTY",
+              "GUILTY"
+            ]
           },
           "mitigation": {
             "type": "string"
@@ -73,11 +73,17 @@
         "additionalProperties": false
       }
     },
+    "comeToCourt": {
+      "type": "boolean"
+    },
     "witnessDispute": {
       "type": "string"
     },
     "witnessDetails": {
       "type": "string"
+    },
+    "outstandingFines": {
+      "type": "boolean"
     },
     "interpreterLanguage": {
       "type": "string"
@@ -99,7 +105,12 @@
             },
             "frequency": {
               "type": "string",
-              "enum": ["WEEKLY", "FORTNIGHTLY", "MONTHLY", "YEARLY"]
+              "enum": [
+                "WEEKLY",
+                "FORTNIGHTLY",
+                "MONTHLY",
+                "YEARLY"
+              ]
             }
           },
           "required": [

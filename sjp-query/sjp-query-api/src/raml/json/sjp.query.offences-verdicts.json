@@ -1,0 +1,6 @@
+{
+  "verdicts": [
+    {"offenceNumber":  1, "verdict":  "PROVED_SJP"},
+    {"offenceNumber":  2, "verdict":  "FOUND_GUILTY"}
+  ]
+}

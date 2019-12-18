@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-domain</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>6.4.3-FRAMEWORK-SNAPSHOT</version>
+        <version>6.4.10-FRAMEWORK-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -23,6 +23,8 @@
         <module>sjp-domain-transformation-orphan-tfl-docs</module>
         <module>sjp-domain-transformation-orphan-case-listed-events</module>
         <module>sjp-domain-transformation-add-defendantId-to-defendant-details-moved-from-people</module>
+        <module>sjp-domain-transformation-singleoffence-migration</module>
+        <module>sjp-domain-transformation-resulting-decisions</module>
         <module>sjp-domain-transformation-anonymise</module>
         <module>sjp-domain-transformation-remove-unlinked-defendant-update-failed</module>
     </modules>

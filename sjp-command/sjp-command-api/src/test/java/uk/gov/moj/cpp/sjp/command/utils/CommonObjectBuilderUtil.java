@@ -37,6 +37,19 @@ public class CommonObjectBuilderUtil {
                 .build();
     }
 
+    public static JsonObject buildDefendantWithContactDetails(final JsonObject contactDetails){
+        return createObjectBuilder()
+                .add("firstName", "David")
+                .add("gender", "Male")
+                .add("address", createObjectBuilder()
+                        .add("address1", "line1")
+                        .add("address2", "line2")
+                        .add("postcode", "SE16 1AB")
+                        .build())
+                .add("contactDetails", contactDetails)
+                .build();
+    }
+
     public static PleadOnline buildPleadOnline(final Plea plea, final UUID caseId, final FinancialMeans financialMeans,
                                                final PersonalDetails personalDetails, final Employer employer) {
         return pleadOnline()

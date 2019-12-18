@@ -6,21 +6,23 @@ Feature: Plead Online
 
     When you pleadOnline on a CaseAggregate using a plea details
 
-    Then plea-updated, defendant-details-updated, defendant-personal-name-updated, financial-means-updated-by-onlineplea, employer-updated-by-onlineplea, employment-status-updated-by-onlineplea, online-plea-received
+    Then pleas is set
+    And hearing language preference for defendant is updated
+    And pleaded guilty
+    And defendant details updated
+    And defendant personal name updated
+    And financial means updated
+    And employer is updated
+    And employment status updated
+    And online plea received
 
   Scenario: Block online plea in the backend when case is in completed state
 
     Given case is created
 
-    And case is assigned
+    And case is completed
 
-    When you completeCase on a CaseAggregate
-
-    When you updatePlea on a CaseAggregate using a update plea details
-
-    Then case is unassigned
-
-    Then case is completed
+    When you setPleas on a CaseAggregate using a set pleas details
 
     Then case update rejected because case completed
 
@@ -28,12 +30,8 @@ Feature: Plead Online
 
     Given case is created
 
-    When you referCaseForCourtHearing on a CaseAggregate using a court referral details
+    And all case offences are referred for court hearing
 
-    Then case is referred for court hearing
+    When you setPleas on a CaseAggregate using a set pleas details
 
-    And listing case note is added
-
-    When you updatePlea on a CaseAggregate using a update plea details
-
-    Then case update rejected because case referred to court hearing
+    And case update rejected because case referred to court hearing

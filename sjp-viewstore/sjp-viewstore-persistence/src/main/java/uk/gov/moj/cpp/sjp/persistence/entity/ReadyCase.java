@@ -1,12 +1,17 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.domain.SessionType;
 
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -28,19 +33,39 @@ public class ReadyCase {
     @Column(name = "assignee_id")
     private UUID assigneeId;
 
+    @Column(name = "session_type")
+    @Enumerated(EnumType.STRING)
+    private SessionType sessionType;
+
+    @Column(name = "priority")
+    private Integer priority;
+
+    @Column(name = "prosecuting_authority")
+    @Enumerated(EnumType.STRING)
+    private ProsecutingAuthority prosecutionAuthority;
+
+    @Column(name = "posting_date")
+    @Convert(converter = LocalDatePersistenceConverter.class)
+    private LocalDate postingDate;
+
     public ReadyCase() {
         //required for hibernate
     }
 
-    public ReadyCase(final UUID caseId, final CaseReadinessReason reason) {
-        this.caseId = caseId;
-        this.reason = reason;
-    }
-
-    public ReadyCase(final UUID caseId, final CaseReadinessReason reason, final UUID assigneeId) {
+    public ReadyCase(final UUID caseId,
+                     final CaseReadinessReason reason,
+                     final UUID assigneeId,
+                     final SessionType sessionType,
+                     final Integer priority,
+                     final ProsecutingAuthority prosecutionAuthority,
+                     final LocalDate postingDate) {
         this.caseId = caseId;
         this.reason = reason;
         this.assigneeId = assigneeId;
+        this.sessionType = sessionType;
+        this.priority = priority;
+        this.prosecutionAuthority = prosecutionAuthority;
+        this.postingDate = postingDate;
     }
 
     public UUID getCaseId() {
@@ -59,8 +84,40 @@ public class ReadyCase {
         this.assigneeId = assigneeId;
     }
 
+    public SessionType getSessionType() {
+        return sessionType;
+    }
+
+    public void setSessionType(final SessionType sessionType) {
+        this.sessionType = sessionType;
+    }
+
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(final Integer priority) {
+        this.priority = priority;
+    }
+
+    public ProsecutingAuthority getProsecutionAuthority() {
+        return prosecutionAuthority;
+    }
+
+    public void setProsecutionAuthority(final ProsecutingAuthority prosecutionAuthority) {
+        this.prosecutionAuthority = prosecutionAuthority;
+    }
+
+    public LocalDate getPostingDate() {
+        return postingDate;
+    }
+
+    public void setPostingDate(final LocalDate postingDate) {
+        this.postingDate = postingDate;
+    }
+
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) {
             return true;
         }

@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.moj.cpp.sjp.event.processor.DatesToAvoidProcessor.DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.DATES_TO_AVOID;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.DATES_TO_AVOID_VARIABLE;
@@ -17,13 +18,11 @@ import javax.inject.Named;
 import org.activiti.engine.delegate.DelegateExecution;
 
 /**
- * This delegate is made to run just once.
- * To verify this we ensure that the DATES_TO_AVOID_VARIABLE is set and verify the presence of this variable elsewhere.
+ * This delegate is made to run just once. To verify this we ensure that the DATES_TO_AVOID_VARIABLE
+ * is set and verify the presence of this variable elsewhere.
  */
 @Named
 public class DatesToAvoidProcessedDelegate extends AbstractCaseDelegate {
-
-    private static final String DATES_TO_AVOID_ADDED_PUBLIC_EVENT_NAME = "public.sjp.dates-to-avoid-added";
 
     @Override
     @SuppressWarnings("squid:S4274")

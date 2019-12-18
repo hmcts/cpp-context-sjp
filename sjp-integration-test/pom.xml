@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-parent</artifactId>
-        <version>6.4.3-FRAMEWORK-SNAPSHOT</version>
+        <version>6.4.10-FRAMEWORK-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -14,17 +14,8 @@
 
     <properties>
         <jboss-logging.version>3.3.1.Final</jboss-logging.version>
-        <wildfly.version>10.0.0.Final</wildfly.version>
-        <baseUri>http://localhost:PORT</baseUri>
-        <queueUri>tcp://localhost:PORT</queueUri>
-        <dbUrl>jdbc:h2:tcp://localhost:PORT/sjp;MODE=PostgreSQL</dbUrl>
-        <dbUser>sa</dbUser>
-        <dbPassword>sa</dbPassword>
-        <!-- Can't be random due to generated call to external services hard coded to 8080 -->
-        <jboss.http.port>8080</jboss.http.port>
+
         <skip.integration.tests>true</skip.integration.tests>
-        <!-- Increase default wildfly timeout from 60s, some of our infrastructure is *really* slow -->
-        <wildfly.timeout>120</wildfly.timeout>
 
         <jsonpath.version>2.4.0</jsonpath.version>
     </properties>
@@ -93,10 +84,10 @@
             <artifactId>persistence-deltaspike</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
+        	<groupId>org.hibernate</groupId>
+        	<artifactId>hibernate-core</artifactId>
+        	<scope>provided</scope>
+      	</dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -164,13 +155,7 @@
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
             <scope>test</scope>
-            <version>${jsonpath.version}
-            </version><!-- allows usage of -1 in array to get last element of array-->
-        </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>${joda-time.version}</version>
+            <version>${jsonpath.version}</version><!-- allows usage of -1 in array to get last element of array-->
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -200,28 +185,6 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <skipITs>${skip.integration.tests}</skipITs>
-                    <systemProperties>
-                        <property>
-                            <name>baseUri</name>
-                            <value>${baseUri.processed}</value>
-                        </property>
-                        <property>
-                            <name>dbUrl</name>
-                            <value>${dbUrl.processed}</value>
-                        </property>
-                        <property>
-                            <name>dbUser</name>
-                            <value>${dbUser}</value>
-                        </property>
-                        <property>
-                            <name>dbPassword</name>
-                            <value>${dbPassword}</value>
-                        </property>
-                        <property>
-                            <name>queueUri</name>
-                            <value>${queueUri.processed}</value>
-                        </property>
-                    </systemProperties>
                 </configuration>
                 <executions>
                     <execution>
@@ -238,326 +201,18 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>reserve-network-port</id>
-                        <goals>
-                            <goal>reserve-network-port</goal>
-                        </goals>
-                        <phase>process-resources</phase>
-                        <configuration>
-                            <portNames>
-                                <portName>jboss.management.http.port</portName>
-                                <portName>h2.server.port</portName>
-                            </portNames>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>set-db-url</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>regex-properties</goal>
-                        </goals>
-                        <configuration>
-                            <regexPropertySettings>
-                                <regexPropertySetting>
-                                    <name>dbUrl.processed</name>
-                                    <value>${dbUrl}</value>
-                                    <regex>PORT</regex>
-                                    <replacement>${h2.server.port}</replacement>
-                                    <failIfNoMatch>false</failIfNoMatch>
-                                </regexPropertySetting>
-                                <regexPropertySetting>
-                                    <name>baseUri.processed</name>
-                                    <value>${baseUri}</value>
-                                    <regex>PORT</regex>
-                                    <replacement>${jboss.http.port}</replacement>
-                                    <failIfNoMatch>false</failIfNoMatch>
-                                </regexPropertySetting>
-                                <regexPropertySetting>
-                                    <name>queueUri.processed</name>
-                                    <value>${queueUri}</value>
-                                    <regex>PORT</regex>
-                                    <!-- special case, inbuilt wildfly artemis is on same port as API -->
-                                    <replacement>${jboss.http.port}?httpUpgradeEnabled=true
-                                    </replacement>
-                                    <failIfNoMatch>false</failIfNoMatch>
-                                </regexPropertySetting>
-                            </regexPropertySettings>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
     <profiles>
         <profile>
-            <id>local</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <skip.integration.tests>false</skip.integration.tests>
-                <plugins.maven.wildfly.skip>false</plugins.maven.wildfly.skip>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <configuration>
-                            <skipITs>${skip.integration.tests}</skipITs>
-                            <systemProperties>
-                                <property>
-                                    <name>baseUri</name>
-                                    <value>${baseUri.processed}</value>
-                                </property>
-                                <property>
-                                    <name>queueUri</name>
-                                    <value>${queueUri.processed}</value>
-                                </property>
-                                <property>
-                                    <name>dbUrl</name>
-                                    <value>${dbUrl.processed}</value>
-                                </property>
-                                <property>
-                                    <name>dbUser</name>
-                                    <value>${dbUser}</value>
-                                </property>
-                                <property>
-                                    <name>dbPassword</name>
-                                    <value>${dbPassword}</value>
-                                </property>
-                            </systemProperties>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>com.edugility</groupId>
-                        <artifactId>h2-maven-plugin</artifactId>
-                        <version>1.0</version>
-                        <configuration>
-                            <port>${h2.server.port}</port>
-                            <allowOthers>true</allowOthers>
-                            <baseDirectory>${project.build.directory}</baseDirectory>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>start-h2</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>spawn</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>stop-h2</id>
-                                <phase>post-integration-test</phase>
-                                <goals>
-                                    <goal>stop</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.liquibase</groupId>
-                        <artifactId>liquibase-maven-plugin</artifactId>
-                        <configuration>
-                            <driver>org.h2.Driver</driver>
-                            <url>${dbUrl.processed}</url>
-                            <username>${dbUser}</username>
-                            <password>${dbPassword}</password>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>update-sjp-database</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>update</goal>
-                                </goals>
-                                <configuration>
-                                    <changeLogFile>liquibase/sjp-view-store-db-changelog.xml
-                                    </changeLogFile>
-                                    <databaseChangeLogLockTableName>sjp_lock
-                                    </databaseChangeLogLockTableName>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>update-event-database</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>update</goal>
-                                </goals>
-                                <configuration>
-                                    <changeLogFile>liquibase/event-store-db-changelog.xml
-                                    </changeLogFile>
-                                    <databaseChangeLogLockTableName>event_lock
-                                    </databaseChangeLogLockTableName>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <configuration>
-                            <serverConfig>../../../../../src/main/configuration/standalone.xml
-                            </serverConfig>
-                            <jvmArgs>-Dactivemq.uri=${queueUri.processed}
-                                -Ddb.url=${dbUrl.processed}
-                                -Ddb.user=${dbUser} -Ddb.password=${dbPassword}
-                                -Djboss.http.port=${jboss.http.port}
-                                -Djboss.management.http.port=${jboss.management.http.port}
-                                -Djava.security.egd=file:/dev/./urandom
-                            </jvmArgs>
-                            <port>${jboss.management.http.port}</port>
-                            <timeout>${wildfly.timeout}</timeout>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>start-wildfly</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>start</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>deploy-command-api</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>deploy-artifact</goal>
-                                </goals>
-                                <configuration>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>sjp-command-api</artifactId>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>deploy-command-controller</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>deploy-artifact</goal>
-                                </goals>
-                                <configuration>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>sjp-command-controller</artifactId>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>deploy-command-handler</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>deploy-artifact</goal>
-                                </goals>
-                                <configuration>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>sjp-command-handler</artifactId>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>deploy-event-listener</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>deploy-artifact</goal>
-                                </goals>
-                                <configuration>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>sjp-event-listener</artifactId>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>deploy-query-api</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>deploy-artifact</goal>
-                                </goals>
-                                <configuration>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>sjp-query-api</artifactId>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>deploy-query-controller</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>deploy-artifact</goal>
-                                </goals>
-                                <configuration>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>sjp-query-controller</artifactId>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>deploy-query-view</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>deploy-artifact</goal>
-                                </goals>
-                                <configuration>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>sjp-query-view</artifactId>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>deploy-wiremock-service</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>deploy-artifact</goal>
-                                </goals>
-                                <configuration>
-                                    <groupId>uk.gov.justice.services</groupId>
-                                    <artifactId>wiremock-service</artifactId>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>stop-wildfly</id>
-                                <phase>post-integration-test</phase>
-                                <goals>
-                                    <goal>shutdown</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>validation-test-config</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>INTEGRATION_HOST_KEY</name>
-                </property>
-            </activation>
-            <properties>
-                <skip.integration.tests>false</skip.integration.tests>
-                <baseUri>http://${INTEGRATION_HOST_KEY}:8080</baseUri>
-                <queueUri>tcp://${INTEGRATION_HOST_KEY}:61616</queueUri>
-                <dbUrl>jdbc:postgresql://${INTEGRATION_HOST_KEY}:5432/sjpviewstore</dbUrl>
-                <dbUser>sjp</dbUser>
-                <dbPassword>sjp</dbPassword>
-            </properties>
-        </profile>
-        <profile>
-            <id>release</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>performRelease</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <properties>
-                <skip.integration.tests>true</skip.integration.tests>
-            </properties>
-        </profile>
-        <profile>
             <id>sjp-integration-test</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
+            <properties>
+                <skip.integration.tests>false</skip.integration.tests>
+            </properties>
             <build>
                 <plugins>
                     <plugin>

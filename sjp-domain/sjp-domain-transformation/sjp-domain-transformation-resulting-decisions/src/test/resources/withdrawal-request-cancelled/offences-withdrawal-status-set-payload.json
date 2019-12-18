@@ -1,0 +1,11 @@
+{
+  "caseId": "d4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "setBy": "4c8770db-02e6-4f4b-829e-2af9ea97d12f",
+  "setAt": "2019-08-05T12:13:44.362Z",
+  "withdrawalRequestsStatus": [
+    {
+      "offenceId": "k4ec3a35-76bf-4649-b43a-761e71c3765e",
+      "withdrawalRequestReasonId": "11b9087a-4681-3484-b2cf-684295353ac6"
+    }
+  ]
+}

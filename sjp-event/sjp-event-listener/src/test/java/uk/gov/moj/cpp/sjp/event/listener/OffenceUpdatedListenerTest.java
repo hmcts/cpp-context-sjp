@@ -1,14 +1,17 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
-import static java.time.LocalDate.now;
 import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.ONLINE;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.POSTAL;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.util.Clock;
@@ -16,21 +19,26 @@ import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequestCancelled;
+import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequestReasonChanged;
+import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
 import uk.gov.moj.cpp.sjp.event.PleaUpdated;
-import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
+import uk.gov.moj.cpp.sjp.event.PleadedGuilty;
+import uk.gov.moj.cpp.sjp.event.PleadedGuiltyCourtHearingRequested;
+import uk.gov.moj.cpp.sjp.event.PleadedNotGuilty;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
+import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,9 +58,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class OffenceUpdatedListenerTest {
 
-    public static final ZoneId ZONE_ID_UTC = ZoneId.of("UTC");
-    private UUID offenceId = UUID.randomUUID();
-    private UUID caseId = UUID.randomUUID();
+    private UUID caseId = randomUUID();
+    private UUID defendantId = randomUUID();
+    private UUID offenceId = randomUUID();
 
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -85,10 +93,6 @@ public class OffenceUpdatedListenerTest {
     private CaseSearchResult searchResult;
 
     @Spy
-    @InjectMocks
-    private CaseSearchResultService caseSearchResultService = new CaseSearchResultService();
-
-    @Spy
     private Clock clock = new StoppedClock(new UtcClock().now());
 
     @Mock
@@ -97,10 +101,23 @@ public class OffenceUpdatedListenerTest {
     @Captor
     private ArgumentCaptor<OnlinePlea> onlinePleaCaptor;
 
+    @Mock
+    private OnlinePleaDetailRepository onlinePleaDetailRepository;
+
+    @Captor
+    private ArgumentCaptor<OnlinePleaDetail> onlinePleaDetailCaptor;
+
     @Test
-    public void shouldUpdateGuiltyPleaOnline() {
+    @Deprecated
+    public void shouldUpdateGuiltyPleaOnlineLegacy() {
         final PleaUpdated pleaUpdated = givenPleaUpdatedWithPleaType(PleaType.GUILTY, clock.now());
         assertExpectationsForPleaUpdate(true, true, pleaUpdated, false);
+    }
+
+    @Test
+    public void shouldUpdateGuiltyPleaOnline() {
+        final PleadedGuilty pleadedGuilty = new PleadedGuilty(caseId, defendantId, offenceId, ONLINE, "The dog ate my ticket", clock.now());
+        assertExpectationsForPleadGuilty(pleadedGuilty, true);
     }
 
     @Test
@@ -110,74 +127,45 @@ public class OffenceUpdatedListenerTest {
     }
 
     @Test
-    public void shouldUpdateGuiltyRequestHearingPleaOnline() {
+    @Deprecated
+    public void shouldUpdateGuiltyRequestHearingPleaOnlineLegacy() {
         final PleaUpdated pleaUpdated = givenPleaUpdatedWithPleaType(GUILTY_REQUEST_HEARING, clock.now());
         assertExpectationsForPleaUpdate(true, true, pleaUpdated, true);
     }
 
     @Test
-    public void shouldUpdateNotGuiltyPleaOnlineWithUpdateDate() {
+    public void shouldUpdateGuiltyRequestHearingPleaOnline() {
+        final PleadedGuiltyCourtHearingRequested pleadedGuiltyCourtHearingRequested =
+                new PleadedGuiltyCourtHearingRequested(caseId, defendantId, offenceId, ONLINE, "The dog ate my ticket", clock.now());
+        assertExpectationsForPleadGuiltyCourtHearingRequested(pleadedGuiltyCourtHearingRequested);
+    }
+
+    @Test
+    @Deprecated
+    public void shouldUpdateNotGuiltyPleaOnlineWithUpdateDateLegacy() {
         final PleaUpdated pleaUpdated = new PleaUpdated(caseId, offenceId, PleaType.NOT_GUILTY,
-                null, "I was not there, they are lying", PleaMethod.ONLINE, clock.now());
+                null, "I was not there, they are lying", ONLINE, clock.now());
         assertExpectationsForPleaUpdate(true, true, pleaUpdated, true);
     }
 
     @Test
-    public void shouldUpdateByPost() {
+    public void shouldUpdateNotGuiltyPleaOnlineWithUpdateDate() {
+        final PleadedNotGuilty pleadedNotGuilty = new PleadedNotGuilty(caseId, defendantId, offenceId, "I was not there, they are lying", clock.now(), ONLINE);
+        assertExpectationsForPleadNotGuilty(pleadedNotGuilty);
+    }
+
+    @Test
+    @Deprecated
+    public void shouldUpdateByPostLegacy() {
         final PleaUpdated pleaUpdated = new PleaUpdated(caseId, offenceId, PleaType.GUILTY,
-                null, null, PleaMethod.POSTAL, clock.now());
+                null, null, POSTAL, clock.now());
         assertExpectationsForPleaUpdate(false, false, pleaUpdated, null);
     }
 
-    private PleaUpdated givenPleaUpdatedWithPleaType(PleaType pleaType, ZonedDateTime updatedDate) {
-        return new PleaUpdated(caseId, offenceId, pleaType,
-                "It was an accident", null, PleaMethod.ONLINE, updatedDate);
-    }
-
-    private void assertExpectationsForPleaUpdate(boolean onlinePlea, boolean pleaUpdatedEventHasUpdatedDate, PleaUpdated pleaUpdated, Boolean comeToCourt) {
-        Metadata metadataBuilder = whenUpdatePleaIsInvoked(pleaUpdated);
-
-        verify(offence).setPlea(pleaUpdated.getPlea());
-        verify(offence).setPleaMethod(pleaUpdated.getPleaMethod());
-        verify(offence).setPleaDate(Optional.ofNullable(pleaUpdated.getUpdatedDate()).orElseGet(() -> envelope.metadata().createdAt().orElse(null)));
-        //TODO: should use a fixed clock for 100% test reliability
-        verify(searchResult).setPleaDate(nowUTC());
-        verify(searchResult).setPleaType(pleaUpdated.getPlea());
-
-        if (onlinePlea) {
-            verify(onlinePleaRepository).saveOnlinePlea(onlinePleaCaptor.capture());
-            if (pleaUpdatedEventHasUpdatedDate) {
-                assertThat(onlinePleaCaptor.getValue().getSubmittedOn(), is(pleaUpdated.getUpdatedDate()));
-            } else {
-                assertThat(onlinePleaCaptor.getValue().getSubmittedOn(), is(metadataBuilder.createdAt().get()));
-            }
-            assertThat(onlinePleaCaptor.getValue().getCaseId(), is(caseId));
-            assertThat(onlinePleaCaptor.getValue().getPleaDetails().getPlea(), is(pleaUpdated.getPlea()));
-            assertThat(onlinePleaCaptor.getValue().getPleaDetails().getComeToCourt(), is(comeToCourt));
-            assertThat(onlinePleaCaptor.getValue().getPleaDetails().getMitigation(), is(pleaUpdated.getMitigation()));
-            assertThat(onlinePleaCaptor.getValue().getPleaDetails().getNotGuiltyBecause(), is(pleaUpdated.getNotGuiltyBecause()));
-        } else {
-            verify(onlinePleaRepository, never()).saveOnlinePlea(onlinePleaCaptor.capture());
-        }
-    }
-
-    private LocalDate nowUTC() {
-        return now(ZONE_ID_UTC);
-    }
-
-    private Metadata whenUpdatePleaIsInvoked(PleaUpdated pleaUpdated) {
-
-        final Metadata metadata = metadataWithRandomUUID("dummy").build();
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(envelope.metadata().createdAt()).thenReturn(Optional.empty());
-        when(jsonObjectToObjectConverter.convert(payload, PleaUpdated.class)).thenReturn(pleaUpdated);
-        when(offenceRepository.findBy(offenceId)).thenReturn(offence);
-        when(offence.getDefendantDetail()).thenReturn(defendant);
-        when(searchResultRepository.findByCaseId(caseId)).thenReturn(singletonList(searchResult));
-        when(envelope.metadata()).thenReturn(metadata);
-
-        listener.updatePlea(envelope);
-        return metadata;
+    @Test
+    public void shouldUpdateByPost() {
+        final PleadedGuilty pleadedGuilty = new PleadedGuilty(caseId, defendantId, offenceId, POSTAL, "The dog ate my ticket", clock.now());
+        assertExpectationsForPleadGuilty(pleadedGuilty, false);
     }
 
     @Test
@@ -195,8 +183,148 @@ public class OffenceUpdatedListenerTest {
         verify(offence).setPlea(null);
         verify(offence).setPleaMethod(null);
         verify(offence).setPleaDate(null);
-        verify(searchResult).setPleaDate(null);
-        verify(searchResult).setPleaType(null);
+    }
+
+    @Test
+    public void requestOffenceWithdrawal() {
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        final OffenceWithdrawalRequested offenceWithdrawalRequested = new OffenceWithdrawalRequested(caseId, offenceId, randomUUID(), randomUUID(), ZonedDateTime.now());
+        when(jsonObjectToObjectConverter.convert(payload, OffenceWithdrawalRequested.class)).thenReturn(offenceWithdrawalRequested);
+        when(offenceRepository.findBy(offenceWithdrawalRequested.getOffenceId())).thenReturn(offence);
+        listener.requestOffenceWithdrawal(envelope);
+        verify(offence).setWithdrawalRequestReasonId(offenceWithdrawalRequested.getWithdrawalRequestReasonId());
+    }
+
+    @Test
+    public void cancelOffenceWithdrawal() {
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        final OffenceWithdrawalRequestCancelled offenceWithdrawalRequestCancelled = new OffenceWithdrawalRequestCancelled(caseId, offenceId, randomUUID(), ZonedDateTime.now());
+        when(jsonObjectToObjectConverter.convert(payload, OffenceWithdrawalRequestCancelled.class)).thenReturn(offenceWithdrawalRequestCancelled);
+        when(offenceRepository.findBy(offenceWithdrawalRequestCancelled.getOffenceId())).thenReturn(offence);
+        listener.cancelOffenceWithdrawal(envelope);
+        verify(offence).setWithdrawalRequestReasonId(null);
+    }
+
+    @Test
+    public void offenceWithdrawalReasonChange() {
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        final OffenceWithdrawalRequestReasonChanged offenceWithdrawalRequestReasonChanged = new OffenceWithdrawalRequestReasonChanged(caseId, offenceId, randomUUID(),
+                ZonedDateTime.now(), randomUUID(), randomUUID());
+        when(jsonObjectToObjectConverter.convert(payload, OffenceWithdrawalRequestReasonChanged.class)).thenReturn(offenceWithdrawalRequestReasonChanged);
+        when(offenceRepository.findBy(offenceWithdrawalRequestReasonChanged.getOffenceId())).thenReturn(offence);
+        listener.offenceWithdrawalReasonChange(envelope);
+        verify(offence).setWithdrawalRequestReasonId(offenceWithdrawalRequestReasonChanged.getNewWithdrawalRequestReasonId());
+    }
+
+    private PleaUpdated givenPleaUpdatedWithPleaType(PleaType pleaType, ZonedDateTime updatedDate) {
+        return new PleaUpdated(caseId, offenceId, pleaType,
+                "It was an accident", null, ONLINE, updatedDate);
+    }
+
+    private void assertExpectationsForPleaUpdate(boolean onlinePlea, boolean pleaUpdatedEventHasUpdatedDate, PleaUpdated pleaUpdated, Boolean comeToCourt) {
+        when(jsonObjectToObjectConverter.convert(payload, PleaUpdated.class)).thenReturn(pleaUpdated);
+        Metadata metadata = whenUpdatePleaIsInvoked();
+
+        verify(offence).setPlea(pleaUpdated.getPlea());
+        verify(offence).setPleaMethod(pleaUpdated.getPleaMethod());
+        verify(offence).setPleaDate(Optional.ofNullable(pleaUpdated.getUpdatedDate()).orElseGet(() -> envelope.metadata().createdAt().orElse(null)));
+
+        if (onlinePlea) {
+            verify(onlinePleaRepository).saveOnlinePlea(onlinePleaCaptor.capture());
+            if (pleaUpdatedEventHasUpdatedDate) {
+                assertThat(onlinePleaCaptor.getValue().getSubmittedOn(), is(pleaUpdated.getUpdatedDate()));
+            } else {
+                assertThat(onlinePleaCaptor.getValue().getSubmittedOn(), is(metadata.createdAt().get()));
+            }
+            assertThat(onlinePleaCaptor.getValue().getCaseId(), is(caseId));
+            assertThat(onlinePleaCaptor.getValue().getPleaDetails().getComeToCourt(), is(comeToCourt));
+
+            verify(onlinePleaDetailRepository).save(onlinePleaDetailCaptor.capture());
+            assertThat(onlinePleaDetailCaptor.getValue().getPlea(), is(pleaUpdated.getPlea()));
+            assertThat(onlinePleaDetailCaptor.getValue().getMitigation(), is(pleaUpdated.getMitigation()));
+            assertThat(onlinePleaDetailCaptor.getValue().getNotGuiltyBecause(), is(pleaUpdated.getNotGuiltyBecause()));
+
+
+        } else {
+            verify(onlinePleaRepository, never()).saveOnlinePlea(onlinePleaCaptor.capture());
+            verify(onlinePleaDetailRepository, never()).save(onlinePleaDetailCaptor.capture());
+        }
+    }
+
+    private void assertExpectationsForPleadGuilty(final PleadedGuilty pleadedGuilty, final boolean onlinePlea) {
+        final PleaType plea = GUILTY;
+        when(jsonObjectToObjectConverter.convert(payload, PleadedGuilty.class)).thenReturn(pleadedGuilty);
+        whenPleadGuiltyIsInvoked();
+
+        verify(offence).setPlea(plea);
+        verify(offence).setPleaMethod(pleadedGuilty.getMethod());
+        verify(offence).setPleaDate(pleadedGuilty.getPleadDate());
+        assertOnlinePlea(plea, onlinePlea, false);
+    }
+
+    private void assertExpectationsForPleadGuiltyCourtHearingRequested(final PleadedGuiltyCourtHearingRequested pleadedGuiltyCourtHearingRequested) {
+        final PleaType plea = GUILTY_REQUEST_HEARING;
+        when(jsonObjectToObjectConverter.convert(payload, PleadedGuiltyCourtHearingRequested.class)).thenReturn(pleadedGuiltyCourtHearingRequested);
+        whenPleadGuiltyCourtHearingRequestedIsInvoked();
+
+        verify(offence).setPlea(plea);
+        verify(offence).setPleaMethod(pleadedGuiltyCourtHearingRequested.getMethod());
+        verify(offence).setPleaDate(pleadedGuiltyCourtHearingRequested.getPleadDate());
+        assertOnlinePlea(plea, true, true);
+    }
+
+    private void assertExpectationsForPleadNotGuilty(final PleadedNotGuilty pleadedNotGuilty) {
+        final PleaType plea = NOT_GUILTY;
+        when(jsonObjectToObjectConverter.convert(payload, PleadedNotGuilty.class)).thenReturn(pleadedNotGuilty);
+        whenPleadNotGuiltyIsInvoked();
+
+        verify(offence).setPlea(plea);
+        verify(offence).setPleaMethod(pleadedNotGuilty.getMethod());
+        assertOnlinePlea(plea, true, true);
+    }
+
+    private void assertOnlinePlea(final PleaType plea, final boolean onlinePlea, final boolean comeToCourt) {
+        if (onlinePlea) {
+            verify(onlinePleaRepository).saveOnlinePlea(onlinePleaCaptor.capture());
+            verify(onlinePleaDetailRepository).save(onlinePleaDetailCaptor.capture());
+            assertThat(onlinePleaCaptor.getValue().getCaseId(), is(caseId));
+            assertThat(onlinePleaCaptor.getValue().getPleaDetails().getComeToCourt(), is(comeToCourt));
+            assertThat(onlinePleaDetailCaptor.getValue().getPlea(), is(plea));
+        } else {
+            verify(onlinePleaRepository, never()).saveOnlinePlea(onlinePleaCaptor.capture());
+            verify(onlinePleaDetailRepository, never()).save(onlinePleaDetailCaptor.capture());
+        }
+    }
+
+    private Metadata whenUpdatePleaIsInvoked() {
+        final Metadata metadata = createMockMetadata();
+        listener.updatePlea(envelope);
+        return metadata;
+    }
+
+    private void whenPleadGuiltyIsInvoked() {
+        createMockMetadata();
+        listener.updateOffenceDetailsWithPleadedGuilty(envelope);
+    }
+
+    private void whenPleadGuiltyCourtHearingRequestedIsInvoked() {
+        createMockMetadata();
+        listener.updateOffenceDetailsWithPleadedGuiltyCourtHearingRequested(envelope);
+    }
+
+    private void whenPleadNotGuiltyIsInvoked() {
+        createMockMetadata();
+        listener.updateOffenceDetailsWithPleadedNotGuilty(envelope);
+    }
+
+    private Metadata createMockMetadata() {
+        Metadata metadataBuilder = MetadataBuilderFactory.metadataWithDefaults().build();
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(offenceRepository.findBy(offenceId)).thenReturn(offence);
+        when(offence.getDefendantDetail()).thenReturn(defendant);
+        when(searchResultRepository.findByCaseId(caseId)).thenReturn(singletonList(searchResult));
+        when(envelope.metadata()).thenReturn(metadataBuilder);
+        return metadataBuilder;
     }
 
 }

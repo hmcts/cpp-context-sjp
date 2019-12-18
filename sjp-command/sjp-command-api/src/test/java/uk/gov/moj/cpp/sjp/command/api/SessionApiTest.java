@@ -125,15 +125,31 @@ public class SessionApiTest {
 
 
     @Test
+    public void shouldRenameAssignNextCaseCommand() {
+        final JsonEnvelope assignCaseCommand = envelope().with(metadataWithRandomUUID("sjp.assign-next-case"))
+                .withPayloadOf(sessionId.toString(), "sessionId")
+                .build();
+
+        sessionApi.assignNextCase(assignCaseCommand);
+
+        verify(sender).send(argThat(jsonEnvelope(withMetadataEnvelopedFrom(assignCaseCommand).withName("sjp.command.assign-next-case"),
+                payloadIsJson(withJsonPath("$.sessionId", equalTo(sessionId.toString()))))));
+    }
+
+    @Test
     public void shouldRenameAssignCaseCommand() {
         final JsonEnvelope assignCaseCommand = envelope().with(metadataWithRandomUUID("sjp.assign-case"))
-                .withPayloadOf(sessionId.toString(), "sessionId")
+                .withPayloadOf(caseId.toString(), "caseId")
+                .withPayloadOf(userId.toString(), "userId")
                 .build();
 
         sessionApi.assignCase(assignCaseCommand);
 
-        verify(sender).send(argThat(jsonEnvelope(withMetadataEnvelopedFrom(assignCaseCommand).withName("sjp.command.assign-case"),
-                payloadIsJson(withJsonPath("$.sessionId", equalTo(sessionId.toString()))))));
+        verify(sender).send(argThat(jsonEnvelope(withMetadataEnvelopedFrom(assignCaseCommand).withName("sjp.command.controller.assign-case"),
+                payloadIsJson(allOf(
+                        withJsonPath("$.caseId", equalTo(caseId.toString())),
+                        withJsonPath("$.userId", equalTo(userId.toString()))
+                )))));
     }
 
     @Test
@@ -154,6 +170,7 @@ public class SessionApiTest {
                 .with(allOf(
                         method("startSession").thatHandles("sjp.start-session"),
                         method("endSession").thatHandles("sjp.end-session"),
+                        method("assignNextCase").thatHandles("sjp.assign-next-case"),
                         method("assignCase").thatHandles("sjp.assign-case"),
                         method("unassignCase").thatHandles("sjp.unassign-case")
                 )));

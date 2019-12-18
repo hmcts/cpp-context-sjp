@@ -117,6 +117,7 @@ public class PleaNotificationProcessorTest {
     }
 
     private static OnlinePleaReceived generateOnlinePleaReceived(final String email, final String urn, final String postcode) {
+        final Boolean outstandingFines = false;
         final PersonalDetails personalDetails = new PersonalDetails(
                 "Bobby", "Davro",
                 new Address("82 Old Rd", "Leicester", "London", "UK", "United Kingdom", postcode),
@@ -124,7 +125,7 @@ public class PleaNotificationProcessorTest {
                 LocalDate.of(1981, 1, 1),
                 "JH41 1269B");
         return new OnlinePleaReceived(urn, UUID.randomUUID(), UUID.randomUUID(),
-                "6th March 2018", "French", TRUE, "Joe Cornish", "He was not there",
+                "6th March 2018", "French", TRUE, "Joe Cornish", "He was not there", outstandingFines,
                 personalDetails, null, null, emptyList());
     }
 }

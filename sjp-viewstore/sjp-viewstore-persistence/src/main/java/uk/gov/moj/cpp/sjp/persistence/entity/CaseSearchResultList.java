@@ -20,7 +20,7 @@ public class CaseSearchResultList {
         return caseSearchResults.stream().filter(r -> !r.isDeprecated()).findFirst();
     }
 
-    public void setName(final UUID caseId, final String newFirstName, final String newLastName,
+    public void setName(final UUID caseId, final UUID defendantId, final String newFirstName, final String newLastName,
                         final LocalDate newDateOfBirth, final ZonedDateTime dateAdded) {
         final Optional<CaseSearchResult> latest = getCurrent();
 
@@ -30,12 +30,9 @@ public class CaseSearchResultList {
             entry.setCurrentLastName(newLastName);
         });
 
-        final CaseSearchResult newEntry = new CaseSearchResult(caseId, newFirstName, newLastName, newDateOfBirth, dateAdded);
+        final CaseSearchResult newEntry = new CaseSearchResult(caseId, defendantId, newFirstName, newLastName, newDateOfBirth, dateAdded);
 
-        latest.ifPresent(r -> {
-            newEntry.setPleaDate(r.getPleaDate());
-            newEntry.setWithdrawalRequestedDate(r.getWithdrawalRequestedDate());
-        });
+        latest.ifPresent(r -> newEntry.setWithdrawalRequestedDate(r.getWithdrawalRequestedDate()));
 
         caseSearchResults.add(newEntry);
     }

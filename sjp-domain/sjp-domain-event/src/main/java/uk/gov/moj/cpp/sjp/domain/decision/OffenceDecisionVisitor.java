@@ -1,0 +1,21 @@
+package uk.gov.moj.cpp.sjp.domain.decision;
+
+public interface OffenceDecisionVisitor {
+
+    void visit(Dismiss dismiss);
+
+    void visit(Withdraw withdraw);
+
+    void visit(Adjourn adjourn);
+
+    void visit(ReferForCourtHearing referForCourtHearing);
+
+    void visit(Discharge discharge);
+
+    void visit(FinancialPenalty discharge);
+
+    void visit(ReferredToOpenCourt referredToOpenCourt);
+
+    void visit(ReferredForFutureSJPSession referredForFutureSJPSession);
+
+}

@@ -1,8 +1,6 @@
 package uk.gov.moj.cpp.sjp.persistence.builder;
 
 
-import static java.util.Collections.singletonList;
-
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
@@ -15,6 +13,8 @@ import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.time.LocalDate;
 import java.util.UUID;
+
+import static java.util.Collections.singletonList;
 
 public class DefendantDetailBuilder {
 
@@ -48,11 +48,6 @@ public class DefendantDetailBuilder {
 
     public DefendantDetailBuilder withId(final UUID defendantId) {
         defendantDetail.setId(defendantId);
-        return this;
-    }
-
-    public DefendantDetailBuilder withOffencePendingWithdrawal(final boolean isOffencePendingWithdrawal) {
-        offenceBuilder.setPendingWithdrawal(isOffencePendingWithdrawal);
         return this;
     }
 

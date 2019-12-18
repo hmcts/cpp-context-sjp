@@ -2,6 +2,8 @@ package uk.gov.moj.cpp.sjp.domain.resulting;
 
 import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
 
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -16,17 +18,38 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 public class Offence {
 
     private final UUID id;
+    private final Boolean provedSJP;
+    private final Boolean preConviction;
+    private final VerdictType verdict;
     private final List<Result> results;
 
     @JsonCreator
     public Offence(@JsonProperty("id") final UUID id,
+                   @JsonProperty("provedSJP") final Boolean provedSJP,
+                   @JsonProperty("preConviction") final Boolean preConviction,
+                   @JsonProperty("verdict") final VerdictType verdict,
                    @JsonProperty("results") final List<Result> results) {
         this.id = id;
+        this.provedSJP = provedSJP;
+        this.preConviction = preConviction;
+        this.verdict = verdict;
         this.results = results;
     }
 
     public UUID getId() {
         return id;
+    }
+
+    public Boolean getProvedSJP() {
+        return provedSJP;
+    }
+
+    public Boolean getPreConviction() {
+        return preConviction;
+    }
+
+    public VerdictType getVerdict() {
+        return verdict;
     }
 
     public List<Result> getResults() {

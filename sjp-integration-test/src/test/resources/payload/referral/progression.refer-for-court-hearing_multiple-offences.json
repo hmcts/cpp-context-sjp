@@ -1,0 +1,173 @@
+{
+  "courtReferral": {
+    "prosecutionCases": [
+      {
+        "statementOfFacts": "No ticket at the gates, forgery",
+        "statementOfFactsWelsh": "some facts in welsh",
+        "defendants": [
+          {
+            "offences": [
+              {
+                "endDate": "2019-01-10",
+                "count": 1,
+                "convictionDate": "${CONVICTION_DATE}",
+                "orderIndex": 1,
+                "id": "${OFFENCE_ID1}",
+                "wording": "Committed some offence",
+                "chargeDate": "2016-01-01",
+                "offenceDefinitionId": "9efdbffa-08f0-4cb5-905d-139511ddcadc",
+                "startDate": "2016-01-01",
+                "notifiedPlea": {
+                  "offenceId": "${OFFENCE_ID1}",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "notifiedPleaDate": "${PLEA_DATE}"
+                }
+              },
+              {
+                "endDate": "2019-01-10",
+                "count": 1,
+                "convictionDate": "${CONVICTION_DATE}",
+                "orderIndex": 2,
+                "id": "${OFFENCE_ID2}",
+                "wording": "Committed some offence",
+                "chargeDate": "2016-01-01",
+                "offenceDefinitionId": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+                "startDate": "2016-01-01",
+                "notifiedPlea": {
+                  "offenceId": "${OFFENCE_ID2}",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "notifiedPleaDate": "${PLEA_DATE}"
+                }
+              }
+            ],
+            "numberOfPreviousConvictionsCited": 2,
+            "id": "${DEFENDANT_ID}",
+            "prosecutionCaseId": "${CASE_ID}",
+            "personDefendant": {
+              "selfDefinedEthnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
+              "personDetails": {
+                "lastName": "LLOYD",
+                "occupation": "worker",
+                "address": {
+                  "address3": "England",
+                  "address2": "London",
+                  "address1": "14 Tottenham Court Road",
+                  "postcode": "W1T 1JY",
+                  "address5": "Greater London",
+                  "address4": "UK"
+                },
+                "gender": "MALE",
+                "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363",
+                "dateOfBirth": "1980-07-15",
+                "title": "MR",
+                "interpreterLanguageNeeds": "French",
+                "documentationLanguageNeeds": "${HEARING_LANGUAGE}",
+                "firstName": "David",
+                "occupationCode": "1",
+                "ethnicityId": "1daefec3-2f76-8109-82d9-2e60544a6c01",
+                "nationalInsuranceNumber": "${NINO}",
+                "contact": {
+                  "secondaryEmail": "secondary-email@abv.bg",
+                  "work": "+21312321312312",
+                  "mobile": "07123456789",
+                  "primaryEmail": "email@email.com",
+                  "home": "02087654321"
+                },
+                "specificRequirements": "wobbling a bit, but I am fine"
+              },
+              "employerOrganisation": {
+                "address": {
+                  "address3": "Lant House",
+                  "address2": "Flat 8",
+                  "address1": "Foo",
+                  "postcode": "SE1 1PJ",
+                  "address5": "Greater London",
+                  "address4": "London"
+                },
+                "contact": {
+                  "work": "02020202020"
+                },
+                "name": "Test Org"
+              }
+            }
+          }
+        ],
+        "initiationCode": "J",
+        "id": "${CASE_ID}",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityReference": "${PROSECUTING_AUTHORITY_REFERENCE}",
+          "prosecutionAuthorityId": "${PROSECUTING_AUTHORITY_ID}",
+          "prosecutionAuthorityCode": "TVL"
+        },
+        "statementOfFacts": "No ticket at the gates, forgery"
+      }
+    ],
+    "sjpReferral": {
+      "noticeDate": "2015-12-02",
+      "referralDate": "${REFERRAL_DATE}",
+      "referringJudicialDecision": {
+        "location": "court house name",
+        "judiciary": [
+          {
+            "judicialRoleTypeSJP": "LEGAL_ADVISER",
+            "judicialName": "John Smith"
+          },
+          {
+            "judicialRoleTypeSJP": "MAGISTRATE",
+            "judicialName": "John Smith ${MAGISTRATE_ID}"
+          }
+        ]
+      }
+    },
+    "listHearingRequests": [
+      {
+        "hearingType": {
+          "id": "${HEARING_TYPE_ID}"
+        },
+        "jurisdictionType": "MAGISTRATES",
+        "estimateMinutes": 10,
+        "listDefendantRequests": [
+          {
+            "hearingLanguageNeeds": "${HEARING_LANGUAGE}",
+            "referralReason": {
+              "description": "referral reason",
+              "id": "${REFERRAL_REASON_ID}",
+              "defendantId": "${DEFENDANT_ID}"
+            },
+            "summonsRequired": "SJP_REFERRAL",
+            "defendantOffences": [
+              "${OFFENCE_ID1}",
+              "${OFFENCE_ID2}"
+            ],
+            "prosecutionCaseId": "${CASE_ID}"
+          }
+        ],
+        "listingDirections": "${LISTING_NOTES}"
+      }
+    ],
+    "courtDocuments": [
+      {
+        "courtDocumentId": "${DOCUMENT_ID}",
+        "materials": [
+          {
+            "name": "Bank Statement",
+            "id": "${MATERIAL_ID}",
+            "uploadDateTime": "${UPLOAD_DATE_TIME}"
+          }
+        ],
+        "name": "Bank Statement",
+        "documentTypeId": "${DOCUMENT_TYPE_ID}",
+        "containsFinancialMeans":false,
+        "documentCategory": {
+          "defendantDocument": {
+            "defendants": [
+              "${DEFENDANT_ID}"
+            ],
+            "prosecutionCaseId": "${CASE_ID}"
+          }
+        },
+        "mimeType": "pdf"
+      }
+    ]
+  }
+}

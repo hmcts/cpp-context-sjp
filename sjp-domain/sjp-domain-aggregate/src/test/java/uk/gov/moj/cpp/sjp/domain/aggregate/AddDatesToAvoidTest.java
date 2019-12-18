@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -7,18 +8,23 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
+import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.domain.testutils.AggregateHelper;
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseNotFound;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
-
     private static final String DATES_TO_AVOID = "12th July 2018";
     private static final String DATES_TO_AVOID_UPDATED = "13th August 2018";
 
@@ -64,8 +70,9 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
 
     @Test
     public void caseCompletedDoesNotAcceptDatesToAvoid() {
+        Mockito.when(session.getSessionType()).thenReturn(SessionType.DELEGATED_POWERS);
         //given a completed case
-        caseAggregate.completeCase();
+        AggregateHelper.saveDecision(caseAggregate, aCase, session, VerdictType.FOUND_NOT_GUILTY);
 
         //when
         final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID).collect(toList());
@@ -80,7 +87,7 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
     @Test
     public void caseAssignedDoesNotAcceptDatesToAvoid() {
         //given an assigned case
-        caseAggregate.assignCase(UUID.randomUUID(), clock.now(), CaseAssignmentType.DELEGATED_POWERS_DECISION);
+        caseAggregate.assignCase(randomUUID(), clock.now(), CaseAssignmentType.DELEGATED_POWERS_DECISION);
 
         //when
         final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID).collect(toList());
@@ -94,7 +101,6 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
 
     @Test
     public void caseNotFound() {
-
         //when
         final List<Object> events = new CaseAggregate().addDatesToAvoid(DATES_TO_AVOID).collect(toList());
 

@@ -1,5 +1,13 @@
 package uk.gov.moj.cpp.sjp.domain;
 
 public enum CaseReadinessReason {
-    PIA, PLEADED_GUILTY, PLEADED_NOT_GUILTY, PLEADED_GUILTY_REQUEST_HEARING, WITHDRAWAL_REQUESTED
+    PIA,
+    PLEADED_GUILTY, // all the offences are gulty
+    PLEADED_NOT_GUILTY,
+    PLEADED_GUILTY_REQUEST_HEARING,
+    WITHDRAWAL_REQUESTED,
+    UNKNOWN;
+
+
+    public static final CaseReadinessReason DEFAULT_STATUS = UNKNOWN;
 }

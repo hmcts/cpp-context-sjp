@@ -15,6 +15,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
+import org.json.JSONObject;
 import org.skyscreamer.jsonassert.JSONCompareResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,5 +62,9 @@ public class JsonHelper {
             LOGGER.error(compareResult.getMessage());
             return false;
         }
+    }
+
+    public static boolean lenientCompare(JsonObject json1, JSONObject json2) {
+        return lenientCompare(json1, JsonHelper.getJsonObject(json2.toString()));
     }
 }

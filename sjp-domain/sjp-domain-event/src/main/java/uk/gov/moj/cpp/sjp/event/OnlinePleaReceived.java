@@ -23,6 +23,7 @@ public class OnlinePleaReceived {
     private final Boolean speakWelsh;
     private final String witnessDetails;
     private final String witnessDispute;
+    private final Boolean outstandingFines;
     private final PersonalDetails personalDetails;
     private final FinancialMeans financialMeans;
     private final Employer employer;
@@ -37,6 +38,7 @@ public class OnlinePleaReceived {
                               @JsonProperty("speakWelsh") final Boolean speakWelsh,
                               @JsonProperty("witnessDetails") final String witnessDetails,
                               @JsonProperty("witnessDispute") final String witnessDispute,
+                              @JsonProperty("outstandingFines") final Boolean outstandingFines,
                               @JsonProperty("personalDetails") final PersonalDetails personalDetails,
                               @JsonProperty("financialMeans") final FinancialMeans financialMeans,
                               @JsonProperty("employer") final Employer employer,
@@ -53,6 +55,7 @@ public class OnlinePleaReceived {
         this.financialMeans = financialMeans;
         this.employer = employer;
         this.outgoings = outgoings;
+        this.outstandingFines = outstandingFines;
     }
 
     public String getUrn() {
@@ -85,6 +88,10 @@ public class OnlinePleaReceived {
 
     public String getWitnessDispute() {
         return witnessDispute;
+    }
+
+    public Boolean getOutstandingFines() {
+        return outstandingFines;
     }
 
     public PersonalDetails getPersonalDetails() {

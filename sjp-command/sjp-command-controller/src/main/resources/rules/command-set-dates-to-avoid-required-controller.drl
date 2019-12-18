@@ -1,0 +1,12 @@
+package uk.gov.moj.cpp.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+
+rule "Command - set dates to avoid required"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.set-dates-to-avoid-required");
+  then
+    $outcome.setSuccess(true);
+end

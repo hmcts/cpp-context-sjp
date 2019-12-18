@@ -1,16 +1,17 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
-import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
-import uk.gov.moj.cpp.sjp.domain.common.PleaInformation;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
+import uk.gov.moj.cpp.sjp.persistence.entity.OffenceSummary;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class CaseSearchResultsView {
@@ -19,7 +20,7 @@ public class CaseSearchResultsView {
 
     private final List<CaseSearchResultView> results;
 
-    public CaseSearchResultsView(List<CaseSearchResult> results) {
+    public CaseSearchResultsView(final List<CaseSearchResult> results) {
         this.foundCasesWithOutdatedDefendantsName = results.stream().anyMatch(
                 CaseSearchResult::isDeprecated
         );
@@ -52,7 +53,7 @@ public class CaseSearchResultsView {
         private final CaseStatus status;
         private final Boolean listedInCriminalCourts;
 
-        public CaseSearchResultView(CaseSearchResult caseSearchResult) {
+        public CaseSearchResultView(final CaseSearchResult caseSearchResult) {
             this.caseId = caseSearchResult.getCaseId();
             this.urn = caseSearchResult.getCaseSummary().getUrn();
             this.assigned = caseSearchResult.getAssigned();
@@ -61,17 +62,26 @@ public class CaseSearchResultsView {
             this.prosecutingAuthority = caseSearchResult.getCaseSummary().getProsecutingAuthority();
             this.postingDate = caseSearchResult.getCaseSummary().getPostingDate();
             this.reopenedDate = caseSearchResult.getCaseSummary().getReopenedDate();
-            this.pleaDate = caseSearchResult.getPleaDate();
+            this.pleaDate = getOldestPleaDateFromSearchResult(caseSearchResult).orElse(null);
             this.withdrawalRequestedDate = caseSearchResult.getWithdrawalRequestedDate();
-            this.status = CaseStatus.calculateStatus(caseSearchResult.getCaseSummary().getPostingDate(),
-                    nonNull(caseSearchResult.getWithdrawalRequestedDate()),
-                    new PleaInformation(caseSearchResult.getPleaType(), caseSearchResult.getPleaDate()), caseSearchResult.getCaseSummary().getDatesToAvoid(),
-                    caseSearchResult.getCaseSummary().isCompleted(),
-                    caseSearchResult.getCaseSummary().isReferredForCourtHearing(),
-                    caseSearchResult.getCaseSummary().getReopenedDate(),
-                    nonNull(caseSearchResult.getCaseSummary().getAdjournedTo()));
+            this.status = caseSearchResult.getCaseSummary().getCaseStatus();
             this.listedInCriminalCourts = caseSearchResult.getCaseSummary().getListedInCriminalCourts();
             this.defendant = new CaseSearchResultDefendantView(caseSearchResult);
+        }
+
+        private static boolean notNull(Object object) {
+            return object != null;
+        }
+
+        private Optional<LocalDate> getOldestPleaDateFromSearchResult(final CaseSearchResult caseSearchResult) {
+            return caseSearchResult
+                    .getOffenceSummary()
+                    .stream()
+                    .map(OffenceSummary::getPleaDate)
+                    .filter(CaseSearchResultView::notNull)
+                    .map(ZonedDateTime::toLocalDate)
+                    .sorted()
+                    .findFirst();
         }
 
         public UUID getCaseId() {
@@ -132,7 +142,7 @@ public class CaseSearchResultsView {
             private final LocalDate dateOfBirth;
             private final boolean outdated;
 
-            public CaseSearchResultDefendantView(CaseSearchResult caseSearchResult) {
+            public CaseSearchResultDefendantView(final CaseSearchResult caseSearchResult) {
                 this.firstName = caseSearchResult.getCurrentFirstName();
                 this.lastName = caseSearchResult.getCurrentLastName();
                 this.dateOfBirth = caseSearchResult.getDateOfBirth();

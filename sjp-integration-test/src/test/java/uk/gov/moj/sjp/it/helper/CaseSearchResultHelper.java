@@ -15,14 +15,15 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMa
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startMagistrateSession;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_USER_ID;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
-import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -31,25 +32,21 @@ import java.util.concurrent.TimeUnit;
 public class CaseSearchResultHelper {
 
     public static final String CASE_SEARCH_RESULTS_MEDIA_TYPE = "application/vnd.sjp.query.case-search-results+json";
-    private static final String LONDON_LJA_NATIONAL_COURT_CODE = "2572";
-    private static final String LONDON_COURT_HOUSE_OU_CODE = "B01OK";
 
-    private final UUID caseId;
     private final String urn;
     private final String lastName;
     private final LocalDate dateOfBirth;
     private final UUID searchUserId;
 
     public CaseSearchResultHelper(final UUID searchUserId) {
-        this(null, null, null, null, searchUserId);
+        this(null, null, null, searchUserId);
     }
 
-    public CaseSearchResultHelper(final UUID caseId, final String urn, final String defendantLastName, final LocalDate dateOfBirth) {
-        this(caseId, urn, defendantLastName, dateOfBirth, USER_ID);
+    public CaseSearchResultHelper(final String urn, final String defendantLastName, final LocalDate dateOfBirth) {
+        this(urn, defendantLastName, dateOfBirth, USER_ID);
     }
 
-    private CaseSearchResultHelper(final UUID caseId, final String urn, final String defendantLastName, final LocalDate dateOfBirth, final UUID searchUserId) {
-        this.caseId = caseId;
+    private CaseSearchResultHelper(final String urn, final String defendantLastName, final LocalDate dateOfBirth, final UUID searchUserId) {
         this.urn = urn;
         this.lastName = defendantLastName;
         this.dateOfBirth = dateOfBirth;
@@ -127,17 +124,12 @@ public class CaseSearchResultHelper {
     }
 
     public void startSessionAndAssignCase() {
-        stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
+        stubDefaultCourtByCourtHouseOUCodeQuery();
 
         final UUID sessionId = randomUUID();
-        final UUID userId = randomUUID();
 
-        startMagistrateSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, "Alan Smith");
-        requestCaseAssignment(sessionId, userId);
-    }
-
-    public void completeCase(final UUID defendantId, final UUID offenceId) {
-        new CompleteCaseProducer(caseId, defendantId, offenceId).completeCase();
+        startMagistrateSession(sessionId, DEFAULT_USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, "Alan Smith");
+        requestCaseAssignment(sessionId, DEFAULT_USER_ID);
     }
 
     private void verifyPersonInfo(final String query, final String lastName, final LocalDate dateOfBirth) {

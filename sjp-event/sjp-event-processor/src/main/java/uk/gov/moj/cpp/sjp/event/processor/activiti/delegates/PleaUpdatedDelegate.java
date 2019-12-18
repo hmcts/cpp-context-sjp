@@ -5,6 +5,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.OFFENCE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.PLEA;
+import static uk.gov.moj.cpp.sjp.event.processor.PleaUpdatedProcessor.PLEA_UPDATED_PUBLIC_EVENT_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.DATES_TO_AVOID_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.OFFENCE_ID_VARIABLE;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.PLEA_READY_VARIABLE;
@@ -28,7 +29,6 @@ import org.slf4j.LoggerFactory;
 public class PleaUpdatedDelegate extends AbstractCaseDelegate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PleaUpdatedDelegate.class);
-    private static final String PLEA_UPDATED_PUBLIC_EVENT_NAME = "public.sjp.plea-updated";
 
     @Override
     @SuppressWarnings("squid:S4274")

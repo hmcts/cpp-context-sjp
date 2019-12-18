@@ -12,7 +12,6 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
-import static uk.gov.moj.sjp.it.util.WiremockTestHelper.waitForStubToBeReady;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
@@ -63,6 +62,10 @@ public class UsersGroupsStub {
         return stubForUserDetails(user.getUserId(), user.getFirstName(), user.getLastName(), null);
     }
 
+    public static void stubForUserDetails(final User user, final String prosecutingAuthority) {
+        stubForUserDetails(user.getUserId(), user.getFirstName(), user.getLastName(), prosecutingAuthority);
+    }
+
     public static JsonObject stubForUserDetails(final UUID userId, final String firstName, final String lastName, final String prosecutingAuthority) {
         final JsonObjectBuilder userDetailsBuilder = Json.createObjectBuilder()
                 .add("userId", userId.toString())
@@ -88,8 +91,6 @@ public class UsersGroupsStub {
                         .withHeader("CPPID", UUID.randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(responsePayload)));
-
-        waitForStubToBeReady(url, mediaType);
     }
 
     private static void stubPayloadForAllUsers(final String responsePayload, final String url) {
@@ -98,7 +99,5 @@ public class UsersGroupsStub {
                         .withHeader("CPPID", UUID.randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(responsePayload)));
-
-        waitForStubToBeReady(url, USER_GROUPS_USERS_QUERY_MEDIA_TYPE);
     }
 }

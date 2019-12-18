@@ -51,7 +51,7 @@ public class OffenceSerializationTest extends AbstractSerializationTest<Offence>
     private static final String EXPECTED_OFFENCE_WITHOUT_OPTIONAL_FIELDS_SERIALIZATION = "{\"id\":\"2159f6e6-aa4e-49e4-b983-6a3673de67f1\",\"offenceSequenceNo\":123,\"libraOffenceCode\":\"libra_offence_code\",\"chargeDate\":\"2010-01-01\",\"libraOffenceDateCode\":456,\"offenceCommittedDate\":\"2009-02-02\",\"offenceWording\":\"offence_wording\",\"prosecutionFacts\":\"prosecution_facts\",\"witnessStatement\":\"witness_statement\",\"compensation\":10}";
 
     @Override
-    Map<Offence, Matcher<String>> getParams() {
+    protected Map<Offence, Matcher<String>> getParams() {
         return ImmutableMap.of(
                 FULL_OFFENCE, equalTo(EXPECTED_FULL_OFFENCE_SERIALIZATION),
                 FULL_OFFENCE_WITH_LEGACY_OFFENCE_DATE, equalTo(EXPECTED_FULL_OFFENCE_WITH_LEGACY_OFFENCE_DATE_SERIALIZATION),

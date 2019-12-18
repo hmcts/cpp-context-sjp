@@ -4,10 +4,13 @@
   "type": "object",
   "properties": {
     "caseId": {
-      "type": "string"
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
     "offenceId": {
-      "type": "string"
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     }
   },
   "required": [

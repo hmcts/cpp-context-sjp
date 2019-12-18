@@ -4,6 +4,7 @@ package uk.gov.moj.cpp.sjp.persistence.builder;
 import static java.time.ZoneOffset.UTC;
 
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -11,7 +12,9 @@ import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -24,6 +27,7 @@ public class CaseDetailBuilder {
     private String enterpriseId = RandomStringUtils.randomAlphanumeric(12).toUpperCase();
     private ProsecutingAuthority prosecutingAuthority;
     private Set<CaseDocument> caseDocuments = new LinkedHashSet<>();
+    private List<CaseDecision> caseDecisions = new ArrayList<>();
     private DefendantDetail defendant;
     private Boolean completed;
     private UUID assigneeId;
@@ -34,7 +38,7 @@ public class CaseDetailBuilder {
 
     private CaseDetailBuilder() {
         this.defendant = new DefendantDetail();
-        this.prosecutingAuthority = ProsecutingAuthority.CPS;
+        this.prosecutingAuthority = ProsecutingAuthority.TFL;
         this.postingDate = createdOn.toLocalDate();
     }
 
@@ -86,7 +90,6 @@ public class CaseDetailBuilder {
         if (defendantDetail != null) {
             this.defendant = defendantDetail;
         }
-
         return this;
     }
 
@@ -94,7 +97,13 @@ public class CaseDetailBuilder {
         if (caseDocument != null) {
             this.caseDocuments.add(caseDocument);
         }
+        return this;
+    }
 
+    public CaseDetailBuilder addCaseDecision(final CaseDecision caseDecision) {
+        if (caseDecision != null) {
+            this.caseDecisions.add(caseDecision);
+        }
         return this;
     }
 
@@ -104,7 +113,7 @@ public class CaseDetailBuilder {
     }
 
     public CaseDetail build() {
-        CaseDetail caseDetail = new CaseDetail(
+        final CaseDetail caseDetail = new CaseDetail(
                 id,
                 urn,
                 enterpriseId,
@@ -113,6 +122,7 @@ public class CaseDetailBuilder {
                 assigneeId,
                 createdOn, defendant, costs, postingDate);
         caseDetail.setDatesToAvoid(datesToAvoid);
+        caseDetail.setCaseDecisions(caseDecisions);
 
         caseDocuments.forEach(caseDetail::addCaseDocuments);
 

@@ -1,5 +1,12 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
+import org.apache.deltaspike.data.api.AbstractEntityRepository;
+import org.apache.deltaspike.data.api.Query;
+import org.apache.deltaspike.data.api.QueryParam;
+import org.apache.deltaspike.data.api.QueryResult;
+import org.apache.deltaspike.data.api.Repository;
+import org.apache.deltaspike.data.api.SingleResultType;
+import org.apache.deltaspike.data.api.criteria.CriteriaSupport;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -8,14 +15,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-
-import org.apache.deltaspike.data.api.AbstractEntityRepository;
-import org.apache.deltaspike.data.api.Query;
-import org.apache.deltaspike.data.api.QueryParam;
-import org.apache.deltaspike.data.api.QueryResult;
-import org.apache.deltaspike.data.api.Repository;
-import org.apache.deltaspike.data.api.SingleResultType;
-import org.apache.deltaspike.data.api.criteria.CriteriaSupport;
 
 /**
  * Repository for {@link CaseDetail}
@@ -30,22 +29,6 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
         if (caseDetail != null) {
             caseDetail.setCompleted(true);
             caseDetail.setAdjournedTo(null);
-        }
-    }
-
-    public void requestWithdrawalAllOffences(final UUID caseId) {
-        final CaseDetail caseDetail = findBy(caseId);
-
-        if (caseDetail != null) {
-            caseDetail.getDefendant().getOffences().forEach(offence -> offence.setPendingWithdrawal(true));
-        }
-    }
-
-    public void cancelRequestWithdrawalAllOffences(final UUID caseId) {
-        final CaseDetail caseDetail = findBy(caseId);
-
-        if (caseDetail != null) {
-            caseDetail.getDefendant().getOffences().forEach(offence -> offence.setPendingWithdrawal(false));
         }
     }
 

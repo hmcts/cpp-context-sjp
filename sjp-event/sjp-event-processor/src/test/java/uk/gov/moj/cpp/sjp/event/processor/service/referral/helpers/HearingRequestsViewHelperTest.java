@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers;
 
 import static java.util.Collections.singletonList;
-import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -34,11 +33,13 @@ public class HearingRequestsViewHelperTest {
     private static final UUID REFERRAL_REASON_ID = randomUUID();
     private static final UUID OFFENCE_ID = randomUUID();
     private static final UUID HEARING_TYPE_ID = randomUUID();
+    private static final UUID DECISION_ID = randomUUID();
     private static final String REFERRAL_REASON = "Equivocal plea";
     private static final String REFERRAL_SUB_REASON = "For Trial";
     private static final int ESTIMATED_HEARING_DURATION = 10;
     private static final String DEFENDANT_UNAVAILABILITY = "defendant unavailability";
     private static final String PROSECUTOR_DATES_TO_AVOID = "prosecutor dates to avoid";
+    private static final String HEARING_CODE = "APL";
 
     private HearingRequestsViewHelper hearingRequestsViewHelper = new HearingRequestsViewHelper();
 
@@ -55,10 +56,11 @@ public class HearingRequestsViewHelperTest {
     }
 
     private void createHearingRequestAndVerifyAllDataPresent(final JsonObject caseFileDefendantDetails) {
-        final CaseDetails caseDetails = createCaseDetails();
+        final CaseDetails caseDetails = createCaseDetails(false);
         final String listingNotes = "listing notes";
         final CaseReferredForCourtHearing caseReferredForCourtHearingEvent = createCourtHearingEvent(listingNotes);
         final JsonObject referralReasons = createReferralReasonsObject();
+        final JsonObject hearingTypes = createHearingTypesObject();
         final DefendantsOnlinePlea defendantPlea = DefendantsOnlinePlea.defendantsOnlinePlea()
                 .withPleaDetails(PleaDetails.pleaDetails()
                         .withUnavailability(DEFENDANT_UNAVAILABILITY)
@@ -69,8 +71,9 @@ public class HearingRequestsViewHelperTest {
                 caseDetails,
                 referralReasons,
                 defendantPlea,
-                caseFileDefendantDetails,
-                caseReferredForCourtHearingEvent);
+                caseReferredForCourtHearingEvent,
+                hearingTypes,
+                singletonList(OFFENCE_ID));
 
         assertThat(hearingRequestViews.size(), is(1));
 
@@ -91,13 +94,14 @@ public class HearingRequestsViewHelperTest {
         assertThat(defendantRequest.getDatesToAvoid(), is(DEFENDANT_UNAVAILABILITY));
         assertThat(defendantRequest.getSummonsRequired(), is("SJP_REFERRAL"));
         assertThat(defendantRequest.getDefendantOffences(), is(singletonList(OFFENCE_ID)));
-        assertThat(defendantRequest.getHearingLanguageNeeds(), is(nonNull(caseFileDefendantDetails) ? "WELSH" : "ENGLISH"));
+        assertThat(defendantRequest.getHearingLanguageNeeds(), is(caseDetails.getDefendant().getSpeakWelsh() ? "WELSH" : "ENGLISH"));
     }
 
-    private CaseDetails createCaseDetails() {
+    private CaseDetails createCaseDetails(Boolean speakWelsh) {
         return CaseDetails.caseDetails()
                 .withDefendant(Defendant.defendant()
                         .withId(DEFENDANT_ID)
+                        .withSpeakWelsh(speakWelsh)
                         .withOffences(
                                 singletonList(
                                         Offence.offence()
@@ -116,6 +120,18 @@ public class HearingRequestsViewHelperTest {
                                         .add("id", REFERRAL_REASON_ID.toString())
                                         .add("reason", REFERRAL_REASON)
                                         .add("subReason", REFERRAL_SUB_REASON)
+                                        .add("hearingCode", HEARING_CODE)
+                        ))
+                .build();
+    }
+
+    private JsonObject createHearingTypesObject() {
+        return createObjectBuilder()
+                .add("hearingTypes", createArrayBuilder()
+                        .add(
+                                createObjectBuilder()
+                                        .add("id", HEARING_TYPE_ID.toString())
+                                        .add("hearingCode", HEARING_CODE)
                         ))
                 .build();
     }
@@ -124,9 +140,9 @@ public class HearingRequestsViewHelperTest {
         return caseReferredForCourtHearing()
                 .withReferralReasonId(REFERRAL_REASON_ID)
                 .withCaseId(CASE_ID)
+                .withDecisionId(DECISION_ID)
                 .withEstimatedHearingDuration(ESTIMATED_HEARING_DURATION)
                 .withListingNotes(listingNotes)
-                .withHearingTypeId(HEARING_TYPE_ID)
                 .build();
     }
 }

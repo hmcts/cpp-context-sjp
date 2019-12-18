@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.query.view.response;
 
 import static com.google.common.collect.ImmutableList.copyOf;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.view.UpdatedDefendantDetails;
@@ -10,6 +11,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Defines the instance returned when defendant personal detail updates are requested.
@@ -180,7 +182,9 @@ public class DefendantDetailsUpdatesView {
                     defendantDetail.getDefendantId().toString(),
                     defendantDetail.getCaseId().toString(),
                     defendantDetail.getCaseUrn(),
-                    defendantDetail.getDateOfBirth().format(DateTimeFormatter.ISO_LOCAL_DATE),
+                    ofNullable(defendantDetail.getDateOfBirth())
+                            .map(dob -> dob.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                            .orElse(null),
                     nonNull(defendantDetail.getNameUpdatedAt()),
                     nonNull(defendantDetail.getDateOfBirthUpdatedAt()),
                     nonNull(defendantDetail.getAddressUpdatedAt()),

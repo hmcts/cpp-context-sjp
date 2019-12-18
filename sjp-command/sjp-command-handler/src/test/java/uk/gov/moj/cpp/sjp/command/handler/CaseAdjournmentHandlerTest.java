@@ -20,6 +20,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.command.handler.common.matchers.ZonedDateTimeMatcher.isSameMoment;
 import static uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded.caseAdjournedToLaterSjpHearingRecorded;
 import static uk.gov.moj.cpp.sjp.event.CaseAdjournmentToLaterSjpHearingElapsed.caseAdjournmentToLaterSjpHearingElapsed;
 
@@ -41,7 +42,6 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -142,7 +142,7 @@ public class CaseAdjournmentHandlerTest {
                                         .withName("sjp.events.case-adjournment-to-later-sjp-hearing-elapsed"),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
-                                        withJsonPath("$.elapsedAt", equalTo(elapsedAt.toString()))
+                                        withJsonPath("$.elapsedAt", isSameMoment(elapsedAt))
                                 ))))));
     }
 

@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -26,7 +27,9 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.domain.Address;
+import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
 
@@ -40,12 +43,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UpdateDefendantDetailsHandlerTest {
+public class UpdateDefendantDetailsHandlerTest extends CaseAggregateBaseTest {
 
     @Spy
     private Clock clock = new UtcClock();
@@ -56,6 +58,9 @@ public class UpdateDefendantDetailsHandlerTest {
 
     @InjectMocks
     private UpdateDefendantDetailsHandler updateDefendantDetailsHandler;
+
+    @Mock
+    private EventStream eventStream;
 
     @Mock
     private EventSource eventSource;
@@ -85,12 +90,12 @@ public class UpdateDefendantDetailsHandlerTest {
     @Test
     public void shouldUpdateDefendantDetails() throws EventStreamException {
 
-        final CaseAggregate caseAggregate = new CaseAggregate();
+        final Defendant defendant = caseReceivedEvent.getDefendant();
+        final UUID defendantId = defendant.getId();
+        final UUID caseId = caseReceivedEvent.getCaseId();
 
-        final JsonEnvelope command = createUpdateDefendantDetailsCommand(caseId, defendantId, firstName,
-                lastName, email, gender, nationalInsuranceNumber, homeNumber, mobileNumber, ADDRESS, dateOfBirth);
+        final JsonEnvelope command = createUpdateDefendantDetailsCommand(randomUUID());
 
-        final EventStream eventStream = Mockito.mock(EventStream.class);
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
@@ -108,41 +113,40 @@ public class UpdateDefendantDetailsHandlerTest {
                                 payloadIsJson(allOf(
                                         withJsonPath("$.defendantId", equalTo(defendantId.toString())),
                                         withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                        withJsonPath("$.title", equalTo(defendant.getTitle())),
                                         withJsonPath("$.firstName", equalTo(firstName)),
-                                        withJsonPath("$.lastName", equalTo(lastName)),
-                                        withJsonPath("$.gender", equalTo(gender.toString())),
-                                        withJsonPath("$.nationalInsuranceNumber", equalTo(nationalInsuranceNumber)),
+                                        withJsonPath("$.lastName", equalTo(defendant.getLastName())),
+                                        withJsonPath("$.gender", equalTo(defendant.getGender().toString())),
+                                        withJsonPath("$.nationalInsuranceNumber", equalTo(defendant.getNationalInsuranceNumber())),
                                         withJsonPath("$.contactDetails.email", equalTo(email)),
-                                        withJsonPath("$.contactDetails.home", equalTo(homeNumber)),
-                                        withJsonPath("$.contactDetails.mobile", equalTo(mobileNumber)),
-                                        withJsonPath("$.dateOfBirth", equalTo(dateOfBirth)))))
+                                        withJsonPath("$.contactDetails.home", equalTo(defendant.getContactDetails().getHome())),
+                                        withJsonPath("$.contactDetails.mobile", equalTo(defendant.getContactDetails().getMobile())),
+                                        withJsonPath("$.dateOfBirth", equalTo(defendant.getDateOfBirth().format(ofPattern("YYY-MM-dd")))))))
                 )));
     }
 
-    private static JsonEnvelope createUpdateDefendantDetailsCommand(UUID caseId, UUID defendantId, String firstName,
-                                                                    String lastName, String email, Gender gender,
-                                                                    String nationalInsuranceNumber, String homeNumber,
-                                                                    String mobileNumber, Address address,
-                                                                    String dateOfBirth) {
+    private JsonEnvelope createUpdateDefendantDetailsCommand(UUID userId) {
+        final Defendant defendant = caseReceivedEvent.getDefendant();
         final JsonObject contactNumber = createObjectBuilder()
-                .add("home", homeNumber)
-                .add("mobile", mobileNumber)
+                .add("home", defendant.getContactDetails().getHome())
+                .add("mobile", defendant.getContactDetails().getMobile())
                 .build();
 
         final JsonObjectBuilder payload = createObjectBuilder()
-                .add("defendantId", defendantId.toString())
-                .add("caseId", caseId.toString())
+                .add("defendantId", defendant.getId().toString())
+                .add("caseId", caseReceivedEvent.getCaseId().toString())
+                .add("title", defendant.getTitle())
                 .add("firstName", firstName)
-                .add("lastName", lastName)
-                .add("dateOfBirth", dateOfBirth)
+                .add("lastName", defendant.getLastName())
+                .add("dateOfBirth", defendant.getDateOfBirth().format(ofPattern("YYY-MM-dd")))
                 .add("email", email)
-                .add("gender", gender.toString())
-                .add("nationalInsuranceNumber", nationalInsuranceNumber)
+                .add("gender", defendant.getGender().toString())
+                .add("nationalInsuranceNumber", defendant.getNationalInsuranceNumber())
                 .add("contactNumber", contactNumber)
-                .add("address", toJsonObject(address));
+                .add("address", toJsonObject(defendant.getAddress()));
 
         return envelopeFrom(
-                metadataOf(randomUUID(), "sjp.command.update-defendant-details"),
+                metadataOf(randomUUID(), "sjp.command.update-defendant-details").withUserId(userId.toString()),
                 payload.build());
     }
 

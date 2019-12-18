@@ -1,90 +1,136 @@
 package uk.gov.moj.sjp.it.helper;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
+import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.moj.sjp.it.Constants.PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
-import static uk.gov.moj.sjp.it.Constants.SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.sjp.it.Constants.EVENT_OFFENCES_WITHDRAWAL_STATUS_SET;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_OFFENCES_WITHDRAWAL_STATUS_SET;
+import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
-import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
+import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessageAsJsonObject;
 
-import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
+import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
+import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.justice.services.messaging.DefaultJsonObjectEnvelopeConverter;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.util.TopicUtil;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
-import com.jayway.restassured.path.json.JsonPath;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.hamcrest.Matcher;
 
 public class OffencesWithdrawalRequestHelper implements AutoCloseable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(OffencesWithdrawalRequestHelper.class);
-    private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.request-withdrawal-all-offences+json";
-    private static final String CASE_ID = "caseId";
+    private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.set-offences-withdrawal-requests-status+json";
+    private static final String GET_CASE_MEDIA_TYPE = "application/vnd.sjp.query.case+json";
+    private final MessageConsumer privateMessageConsumer;
+    private final MessageConsumer publicMessageConsumer;
 
-    private UUID caseId;
-    private String request;
-    private MessageConsumerClient publicConsumer = new MessageConsumerClient();
-    private MessageConsumer privateEventsConsumer;
-    private MessageConsumer publicEventsConsumer;
+    private UUID userId;
 
-    public OffencesWithdrawalRequestHelper(final UUID caseId) {
-        this(caseId, SJP_EVENTS_ALL_OFFENCES_WITHDRAWAL_REQUESTED, PUBLIC_SJP_ALL_OFFENCES_WITHDRAWAL_REQUESTED);
+    public OffencesWithdrawalRequestHelper(final UUID userId) {
+        this(userId, EVENT_OFFENCES_WITHDRAWAL_STATUS_SET);
     }
 
-    public OffencesWithdrawalRequestHelper(UUID caseId, String privateEvent, String publicEvent) {
-        this.caseId = caseId;
-        privateEventsConsumer = TopicUtil.privateEvents.createConsumer(privateEvent);
-        publicEventsConsumer = TopicUtil.publicEvents.createConsumer(publicEvent);
+    public OffencesWithdrawalRequestHelper(final UUID userId, final String... eventSelectors) {
+        this.userId = userId;
+        privateMessageConsumer = TopicUtil.privateEvents.createConsumerForMultipleSelectors(eventSelectors);
+        publicMessageConsumer = TopicUtil.publicEvents.createConsumerForMultipleSelectors(PUBLIC_EVENT_OFFENCES_WITHDRAWAL_STATUS_SET);
     }
 
-    public void requestWithdrawalForAllOffences(final UUID userId) {
-        final String writeUrl = String.format("/cases/%s/offences-withdrawal-request", caseId);
-        final JSONObject jsonObject = new JSONObject("{}");
-        request = jsonObject.toString();
-
-        makePostCall(userId, writeUrl, WRITE_MEDIA_TYPE, "{}", Response.Status.ACCEPTED);
+    public List<WithdrawalRequestsStatus> preparePayloadWithDefaultsForCase(final CreateCase.CreateCasePayloadBuilder aCase) {
+        return aCase.getOffenceIds()
+                .stream()
+                .map(id -> new WithdrawalRequestsStatus(id, randomUUID()))
+                .collect(toList());
     }
 
-    public void verifyCaseUpdateRejectedPrivateInActiveMQ(final String expectedReason) {
-        verifyCaseUpdateRejectedInActiveMQ(privateEventsConsumer, expectedReason);
+    public void requestWithdrawalOfOffences(final UUID caseId, final List<WithdrawalRequestsStatus> withdrawalRequestsStatuses) {
+        requestWithdrawalOfOffences(caseId, userId, withdrawalRequestsStatuses);
     }
 
-    public void verifyCaseUpdateRejectedPublicInActiveMQ(final String expectedReason) {
-        verifyCaseUpdateRejectedInActiveMQ(publicEventsConsumer, expectedReason);
+    public static void requestWithdrawalOfOffences(final UUID caseId, final UUID userId, final List<WithdrawalRequestsStatus> withdrawalRequestsStatuses) {
+        final String writeUrl = String.format("/cases/%s/offences-withdrawal-requests-status", caseId);
+        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
+        withdrawalRequestsStatuses.stream().forEach(withdrawalRequestsStatus -> {
+            jsonArrayBuilder.add(createObjectBuilder()
+                    .add("offenceId", withdrawalRequestsStatus.getOffenceId().toString())
+                    .add("withdrawalRequestReasonId", withdrawalRequestsStatus.getWithdrawalRequestReasonId().toString()));
+        });
+        final JsonObject payload = createObjectBuilder().add("withdrawalRequestsStatus", jsonArrayBuilder).build();
+        makePostCall(userId, writeUrl, WRITE_MEDIA_TYPE, payload.toString(), Response.Status.ACCEPTED);
     }
 
-    public void verifyAllOffencesWithdrawalInPrivateActiveMQ() {
-        verifyCaseUpdateRejectedInActiveMQ(privateEventsConsumer);
+    public JsonEnvelope getEventFromTopic() {
+        return getEventFromTopic(privateMessageConsumer);
     }
 
-    public void verifyAllOffencesWithdrawalRequestedInPublicActiveMQ() {
-        verifyCaseUpdateRejectedInActiveMQ(publicEventsConsumer);
+    public JsonEnvelope getEventFromPublicTopic() {
+        return getEventFromTopic(publicMessageConsumer);
     }
 
-    private void verifyCaseUpdateRejectedInActiveMQ(final MessageConsumer messageConsumer) {
-        final JsonPath jsRequest = new JsonPath(request);
-        LOGGER.info("Request payload: {}", jsRequest.prettify());
-        final JsonPath messageInQueue = retrieveMessage(messageConsumer);
-        assertThat(messageInQueue, notNullValue());
-        assertThat(messageInQueue.get(CASE_ID), equalTo(caseId.toString()));
+    private JsonEnvelope getEventFromTopic(final MessageConsumer messageConsumer) {
+        return retrieveMessageAsJsonObject(messageConsumer)
+                .map(event -> new DefaultJsonObjectEnvelopeConverter().asEnvelope(event)).orElse(null);
     }
 
-    private void verifyCaseUpdateRejectedInActiveMQ(final MessageConsumer messageConsumer, final String expectedReason) {
-        final JsonPath jsRequest = new JsonPath(request);
-        LOGGER.info("Request payload: {}", jsRequest.prettify());
-        final JsonPath messageInQueue = retrieveMessage(messageConsumer);
-        assertThat(messageInQueue, notNullValue());
-        assertThat(messageInQueue.get(CASE_ID), equalTo(caseId.toString()));
-        assertThat(messageInQueue.get("reason"), equalTo(expectedReason));
+    public static void assertCaseQueryReturnsWithdrawalReasons(final UUID caseId, final List<WithdrawalRequestsStatus> requestPayload) {
+        requestPayload.forEach(e -> assertCaseQueryWithdrawalReasons(caseId, e.getOffenceId(), withJsonPath("withdrawalRequestReasonId", equalTo(e.getWithdrawalRequestReasonId().toString()))));
+    }
+
+    public static void assertCaseQueryReturnsWithdrawalReasons(final UUID caseId, final List<WithdrawalRequestsStatus> requestPayload, final Map<UUID, String> withdrawalReasons) {
+        requestPayload.forEach(withdrawalRequest -> assertCaseQueryWithdrawalReasons(caseId, withdrawalRequest.getOffenceId(), allOf(
+                withJsonPath("withdrawalRequestReasonId", equalTo(withdrawalRequest.getWithdrawalRequestReasonId().toString())),
+                withJsonPath("withdrawalRequestReason", equalTo(withdrawalReasons.get(withdrawalRequest.getWithdrawalRequestReasonId())))
+        )));
+    }
+
+    public static void assertCaseQueryDoesNotReturnWithdrawalReasons(final UUID caseId, final UUID offenceId) {
+        assertCaseQueryWithdrawalReasons(caseId, offenceId, withoutJsonPath("withdrawalRequestReasonId"));
+    }
+
+    private static void assertCaseQueryWithdrawalReasons(final UUID caseId, final UUID offenceId, final Matcher reasonMatcher) {
+        final String queryUrl = String.format("/cases/%s", caseId);
+        pollWithDefaults(getCaseDetails(queryUrl))
+                .until(status().is(OK), payload().isJson(allOf(
+                        withJsonPath("$.id", equalTo(caseId.toString())),
+                        withJsonPath("$.defendant.offences[*]", hasItem(isJson(
+                                allOf(withJsonPath("id", is(offenceId.toString())), reasonMatcher)
+                        )))
+                )));
+    }
+
+    private static RequestParamsBuilder getCaseDetails(final String queryUrl) {
+        return requestParams(getReadUrl(queryUrl), GET_CASE_MEDIA_TYPE)
+                .withHeader(HeaderConstants.USER_ID, USER_ID);
     }
 
     @Override
-    public void close() {
-        publicConsumer.close();
+    public void close() throws JMSException {
+        privateMessageConsumer.close();
+        publicMessageConsumer.close();
     }
 }

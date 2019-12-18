@@ -1,19 +1,25 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
+import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.DELEGATED_POWERS_DECISION;
+import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
+import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.domain.SessionRules.getPriority;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.domain.SessionRules.getSessionType;
 import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_ASSIGNED_TO_OTHER_USER;
 import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_COMPLETED;
+import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_NOT_READY;
 
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
+import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.domain.aggregate.domain.SessionRules;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
-import uk.gov.moj.cpp.sjp.event.CaseAlreadyCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseAlreadyReopened;
-import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseCreationFailedBecauseCaseAlreadyExisted;
 import uk.gov.moj.cpp.sjp.event.CaseExpectedDateReadyChanged;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourts;
@@ -26,7 +32,9 @@ import uk.gov.moj.cpp.sjp.event.CaseReopenedUndone;
 import uk.gov.moj.cpp.sjp.event.CaseReopenedUpdated;
 import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
+import uk.gov.moj.cpp.sjp.event.DatesToAvoidTimerExpired;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
+import uk.gov.moj.cpp.sjp.event.DefendantResponseTimerExpired;
 import uk.gov.moj.cpp.sjp.event.session.CaseAlreadyAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected;
@@ -80,16 +88,6 @@ public class CaseCoreHandler {
         return Stream.of(event);
     }
 
-    public Stream<Object> completeCase(final CaseAggregateState state) {
-        final UUID caseId = state.getCaseId();
-        if (state.isCaseCompleted()) {
-            LOGGER.warn("Case has already been completed {}", caseId);
-            return Stream.of(new CaseAlreadyCompleted(caseId, "Complete Case"));
-        }
-
-        return Stream.of(new CaseUnassigned(caseId), new CaseCompleted(caseId));
-    }
-
     public Stream<Object> updateCaseListedInCriminalCourts(final UUID caseId, final String hearingCourtName,
                                                            final ZonedDateTime hearingTime) {
         return Stream.of(new CaseListedInCriminalCourts(caseId, hearingCourtName, hearingTime));
@@ -106,6 +104,14 @@ public class CaseCoreHandler {
         ).orElse(Stream.of(state.getDatesToAvoid() == null ?
                 new DatesToAvoidAdded(state.getCaseId(), datesToAvoid) :
                 new DatesToAvoidUpdated(state.getCaseId(), datesToAvoid)));
+    }
+
+    public Stream<Object> expireDatesToAvoidTimer(final CaseAggregateState state) {
+        return Stream.of(new DatesToAvoidTimerExpired(state.getCaseId()));
+    }
+
+    public Stream<Object> expireDefendantResponseTimer(final CaseAggregateState state) {
+        return Stream.of(new DefendantResponseTimerExpired(state.getCaseId()));
     }
 
     public Stream<Object> markCaseReopened(final CaseReopenDetails caseReopenDetails,
@@ -184,6 +190,27 @@ public class CaseCoreHandler {
         return streamBuilder.build();
     }
 
+    public Stream<Object> assignCaseToUser(final UUID assigneeId,
+                                           final ZonedDateTime assignedAt,
+                                           final CaseAggregateState state) {
+        if (!state.isCaseReadyForDecision()) {
+            return Stream.of(new CaseAssignmentRejected(CASE_NOT_READY));
+        }
+
+        final CaseReadinessReason caseReadinessReason = state.getReadinessReason();
+        final SessionType sessionType = SessionRules.getSessionType(caseReadinessReason);
+        final CaseAssignmentType caseAssignmentType = sessionType == SessionType.MAGISTRATE ? MAGISTRATE_DECISION : DELEGATED_POWERS_DECISION;
+
+        if (assigneeId.equals(state.getAssigneeId())) {
+            return Stream.of(new CaseAlreadyAssigned(state.getCaseId(), assigneeId));
+        }
+        if (state.getAssigneeId() == null) {
+            return Stream.of(new CaseAssigned(state.getCaseId(), assigneeId, assignedAt, caseAssignmentType));
+        }
+
+        return Stream.of(new CaseUnassigned(state.getCaseId()), new CaseAssigned(state.getCaseId(), assigneeId, assignedAt, caseAssignmentType));
+    }
+
     private void checkIfCaseAlreadyAssignedOrAsigneeIdInvalid(final UUID assigneeId,
                                                               final CaseAggregateState state,
                                                               final Stream.Builder<Object> streamBuilder) {
@@ -206,7 +233,7 @@ public class CaseCoreHandler {
                                                    final CaseAggregateState state) {
 
         return state.getReadinessReason() != readinessReason
-                ? Stream.of(new CaseMarkedReadyForDecision(state.getCaseId(), readinessReason, markedAt))
+                ? Stream.of(new CaseMarkedReadyForDecision(state.getCaseId(), readinessReason, markedAt, getSessionType(readinessReason), getPriority(state)))
                 : Stream.of();
     }
 

@@ -1,13 +1,20 @@
 package uk.gov.moj.sjp.it.command;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static javax.ws.rs.core.Response.Status.ACCEPTED;
+import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.getPostCallResponse;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
+import uk.gov.justice.json.schemas.domains.sjp.Language;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
@@ -16,15 +23,18 @@ import uk.gov.moj.sjp.it.util.UrnProvider;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.core.Response;
 
-import com.google.common.collect.Lists;
 import org.apache.commons.lang3.RandomStringUtils;
 
 public class CreateCase {
@@ -40,30 +50,36 @@ public class CreateCase {
         new CreateCase(payloadBuilder).createCase();
     }
 
+    public static String createCaseForPayloadBuilder(final CreateCasePayloadBuilder payloadBuilder, final Response.Status status) {
+        return new CreateCase(payloadBuilder).createCase(status);
+    }
+
     private void createCase() {
+        createCase(ACCEPTED);
+    }
+
+    private String createCase(final Response.Status status) {
         validatePayload(payloadBuilder);
         final JsonObject payload = toJsonObjectRepresentingPayload(payloadBuilder);
-        makePostCall("/cases", WRITE_MEDIA_TYPE, payload.toString());
+        return getPostCallResponse("/cases", WRITE_MEDIA_TYPE, payload.toString(), status);
     }
 
     private void validatePayload(final CreateCasePayloadBuilder payloadBuilder) {
-        Objects.requireNonNull(payloadBuilder.id, "ID is required");
-        Objects.requireNonNull(payloadBuilder.urn, "URN is required");
-        Objects.requireNonNull(payloadBuilder.prosecutingAuthority, "Prosecuting authority is required");
-        Objects.requireNonNull(payloadBuilder.postingDate, "Posting date is required");
-        Objects.requireNonNull(payloadBuilder.defendantBuilder, "Defendant is required");
-        Objects.requireNonNull(payloadBuilder.offenceBuilders, "One offence is required");
+        requireNonNull(payloadBuilder.id, "ID is required");
+        requireNonNull(payloadBuilder.urn, "URN is required");
+        requireNonNull(payloadBuilder.prosecutingAuthority, "Prosecuting authority is required");
+        requireNonNull(payloadBuilder.postingDate, "Posting date is required");
+        requireNonNull(payloadBuilder.defendantBuilder, "Defendant is required");
+        requireNonNull(payloadBuilder.offenceBuilders, "One offence is required");
 
-        if (payloadBuilder.offenceBuilders.size() > 1) {
-            throw new IllegalArgumentException("Only one offence is supported");
-        }
 
-        final OffenceBuilder offenceBuilder = payloadBuilder.offenceBuilders.get(0);
-        Objects.requireNonNull(offenceBuilder.id, "ID is required for offence");
-        Objects.requireNonNull(offenceBuilder.libraOffenceCode, "Libra offence code is required for offence");
-        Objects.requireNonNull(offenceBuilder.chargeDate, "Charge date is required for offence");
-        Objects.requireNonNull(offenceBuilder.offenceCommittedDate, "Offence committed date is required for offence");
-        Objects.requireNonNull(offenceBuilder.offenceWording, "Offence wording is required for offence");
+        payloadBuilder.offenceBuilders.forEach(offenceBuilder -> {
+            requireNonNull(offenceBuilder.id, "ID is required for offence");
+            requireNonNull(offenceBuilder.libraOffenceCode, "Libra offence code is required for offence");
+            requireNonNull(offenceBuilder.chargeDate, "Charge date is required for offence");
+            requireNonNull(offenceBuilder.offenceCommittedDate, "Offence committed date is required for offence");
+            requireNonNull(offenceBuilder.offenceWording, "Offence wording is required for offence");
+        });
     }
 
     private JsonObject toJsonObjectRepresentingPayload(final CreateCasePayloadBuilder payloadBuilder) {
@@ -76,21 +92,6 @@ public class CreateCase {
         payload.add("costs", payloadBuilder.costs.doubleValue());
         payload.add("postingDate", LocalDates.to(payloadBuilder.postingDate));
 
-        final JsonObjectBuilder offence = createObjectBuilder()
-                .add("id", payloadBuilder.offenceBuilders.get(0).id.toString())
-                .add("offenceSequenceNo", 1)
-                .add("libraOffenceCode", payloadBuilder.offenceBuilders.get(0).libraOffenceCode)
-                .add("chargeDate", LocalDates.to(payloadBuilder.offenceBuilders.get(0).chargeDate))
-                .add("libraOffenceDateCode", payloadBuilder.offenceBuilders.get(0).libraOffenceDateCode)
-                .add("offenceCommittedDate", LocalDates.to(payloadBuilder.offenceBuilders.get(0).offenceCommittedDate))
-                .add("offenceWording", payloadBuilder.offenceBuilders.get(0).offenceWording)
-                .add("prosecutionFacts", payloadBuilder.offenceBuilders.get(0).prosecutionFacts)
-                .add("witnessStatement", payloadBuilder.offenceBuilders.get(0).witnessStatement)
-                .add("compensation", payloadBuilder.offenceBuilders.get(0).compensation.doubleValue());
-
-        Optional.ofNullable(payloadBuilder.offenceBuilders.get(0).offenceWordingWelsh)
-                .ifPresent(offenceWordingWelsh -> offence.add("offenceWordingWelsh", offenceWordingWelsh));
-
         final JsonObjectBuilder addressBuilder = createObjectBuilder();
 
         ofNullable(payloadBuilder.defendantBuilder.addressBuilder.getAddress1()).ifPresent(a1 -> addressBuilder.add("address1", a1));
@@ -99,7 +100,6 @@ public class CreateCase {
         ofNullable(payloadBuilder.defendantBuilder.addressBuilder.getAddress4()).ifPresent(a4 -> addressBuilder.add("address4", a4));
         ofNullable(payloadBuilder.defendantBuilder.addressBuilder.getAddress5()).ifPresent(a5 -> addressBuilder.add("address5", a5));
         ofNullable(payloadBuilder.defendantBuilder.addressBuilder.getPostcode()).ifPresent(p -> addressBuilder.add("postcode", p));
-
 
         final JsonObjectBuilder defendantBuilder = createObjectBuilder()
                 .add("id", payloadBuilder.defendantBuilder.id.toString())
@@ -114,15 +114,43 @@ public class CreateCase {
                         .add("home", payloadBuilder.defendantBuilder.contactDetailsBuilder.getHome())
                         .add("mobile", payloadBuilder.defendantBuilder.contactDetailsBuilder.getMobile())
                         .add("email", payloadBuilder.defendantBuilder.contactDetailsBuilder.getEmail())
+                        .add("email2", payloadBuilder.defendantBuilder.contactDetailsBuilder.getEmail2())
                 )
-                .add("offences", createArrayBuilder().add(offence));
+                .add("offences", createOffencesBuilder());
 
-        Optional.ofNullable(payloadBuilder.defendantBuilder.dateOfBirth).map(LocalDates::to)
+        if(nonNull(payloadBuilder.defendantBuilder.hearingLanguage))
+            defendantBuilder.add("hearingLanguage", payloadBuilder.defendantBuilder.hearingLanguage.toString());
+
+        ofNullable(payloadBuilder.defendantBuilder.dateOfBirth).map(LocalDates::to)
                 .ifPresent(dateOfBirth -> defendantBuilder.add("dateOfBirth", dateOfBirth));
 
         payload.add("defendant", defendantBuilder);
-
         return payload.build();
+    }
+
+    private JsonArrayBuilder createOffencesBuilder() {
+        final JsonArrayBuilder offenceArrayBuilder = createArrayBuilder();
+        final AtomicInteger sequenceNumber = new AtomicInteger(1);
+
+        payloadBuilder.offenceBuilders.stream().map(offenceBuilder -> {
+            final JsonObjectBuilder offence = createObjectBuilder()
+                    .add("id", offenceBuilder.id.toString())
+                    .add("offenceSequenceNo", sequenceNumber.getAndAdd(1))
+                    .add("libraOffenceCode", offenceBuilder.libraOffenceCode)
+                    .add("chargeDate", LocalDates.to(offenceBuilder.chargeDate))
+                    .add("libraOffenceDateCode", offenceBuilder.libraOffenceDateCode)
+                    .add("offenceCommittedDate", LocalDates.to(offenceBuilder.offenceCommittedDate))
+                    .add("offenceWording", offenceBuilder.offenceWording)
+                    .add("prosecutionFacts", offenceBuilder.prosecutionFacts)
+                    .add("witnessStatement", offenceBuilder.witnessStatement)
+                    .add("compensation", offenceBuilder.compensation.doubleValue());
+
+            ofNullable(offenceBuilder.offenceWordingWelsh)
+                    .ifPresent(offenceWordingWelsh -> offence.add("offenceWordingWelsh", offenceWordingWelsh));
+            return offence;
+        }).forEach(offence -> offenceArrayBuilder.add(offence));
+
+        return offenceArrayBuilder;
     }
 
     public static class CreateCasePayloadBuilder {
@@ -140,11 +168,15 @@ public class CreateCase {
             this.costs = BigDecimal.valueOf(1.23);
             this.postingDate = LocalDate.of(2015, 12, 2);
             this.defendantBuilder = DefendantBuilder.withDefaults();
-            this.offenceBuilders = Lists.newArrayList(OffenceBuilder.withDefaults());
-            this.id = UUID.randomUUID();
+            this.offenceBuilders = newArrayList(OffenceBuilder.withDefaults());
+            this.id = randomUUID();
             this.urn = UrnProvider.generate(prosecutingAuthority);
             this.enterpriseId = RandomStringUtils.randomAlphanumeric(12).toUpperCase();
-            this.getOffenceBuilder().withId(UUID.randomUUID());
+            this.getOffenceBuilder().withId(randomUUID());
+        }
+
+        public static CreateCasePayloadBuilder defaultCaseBuilder() {
+            return withDefaults();
         }
 
         public static CreateCasePayloadBuilder withDefaults() {
@@ -166,8 +198,18 @@ public class CreateCase {
             return this;
         }
 
+        public CreateCasePayloadBuilder withDefendantDateOfBirth(final LocalDate dateOfBirth) {
+            this.defendantBuilder.withDateOfBirth(dateOfBirth);
+            return this;
+        }
+
         public CreateCasePayloadBuilder withOffenceId(final UUID offenceId) {
             this.offenceBuilders.get(0).withId(offenceId);
+            return this;
+        }
+
+        public CreateCasePayloadBuilder withOffenceCode(final String offenceCode) {
+            this.offenceBuilders.get(0).withLibraOffenceCode(offenceCode);
             return this;
         }
 
@@ -189,6 +231,12 @@ public class CreateCase {
 
         public OffenceBuilder getOffenceBuilder() {
             return offenceBuilders.get(0);
+        }
+
+        public Collection<UUID> getOffenceIds() {
+            return offenceBuilders.stream()
+                    .map(OffenceBuilder::getId)
+                    .collect(Collectors.toSet());
         }
 
         public DefendantBuilder getDefendantBuilder() {
@@ -219,8 +267,18 @@ public class CreateCase {
             return enterpriseId;
         }
 
+        public CreateCasePayloadBuilder withOffenceBuilders(final List<OffenceBuilder> offenceBuilders) {
+            this.offenceBuilders = offenceBuilders;
+            return this;
+        }
+
+        public CreateCasePayloadBuilder withOffenceBuilders(final OffenceBuilder... offenceBuilders) {
+            this.offenceBuilders = Arrays.asList(offenceBuilders);
+            return this;
+        }
+
         public CreateCasePayloadBuilder withOffenceBuilder(final OffenceBuilder offenceBuilder) {
-            this.offenceBuilders = Lists.newArrayList(offenceBuilder);
+            this.offenceBuilders = newArrayList(offenceBuilder);
             return this;
         }
     }
@@ -238,6 +296,8 @@ public class CreateCase {
         AddressBuilder addressBuilder;
         ContactDetailsBuilder contactDetailsBuilder;
 
+        Language hearingLanguage;
+
         private DefendantBuilder() {
 
         }
@@ -249,7 +309,7 @@ public class CreateCase {
         public static DefendantBuilder withDefaults() {
             final DefendantBuilder builder = new DefendantBuilder();
 
-            builder.id = UUID.randomUUID();
+            builder.id = randomUUID();
             builder.title = "Mr";
             builder.firstName = "David";
             builder.lastName = "LLOYD";
@@ -259,6 +319,7 @@ public class CreateCase {
             builder.nationalInsuranceNumber = "BB123456B";
             builder.addressBuilder = AddressBuilder.withDefaults();
             builder.contactDetailsBuilder = ContactDetailsBuilder.withDefaults();
+            builder.hearingLanguage = null;
 
             return builder;
         }
@@ -293,8 +354,18 @@ public class CreateCase {
             return this;
         }
 
+        public DefendantBuilder withDateOfBirth(final LocalDate dateOfBirth) {
+            this.dateOfBirth = dateOfBirth;
+            return this;
+        }
+
         public DefendantBuilder withDefaultShortAddress() {
             this.addressBuilder = AddressBuilder.addressWithMandatoryFieldsOnly();
+            return this;
+        }
+
+        public DefendantBuilder withHearingLanguage(Language language) {
+            this.hearingLanguage = language;
             return this;
         }
 
@@ -337,6 +408,10 @@ public class CreateCase {
         public ContactDetailsBuilder getContactDetailsBuilder() {
             return contactDetailsBuilder;
         }
+
+        public Language getHearingLanguage() {
+            return hearingLanguage;
+        }
     }
 
     public static class OffenceBuilder {
@@ -353,6 +428,10 @@ public class CreateCase {
 
         private OffenceBuilder() {
 
+        }
+
+        public static OffenceBuilder defaultOffenceBuilder() {
+            return withDefaults();
         }
 
         public static OffenceBuilder withDefaults() {
@@ -377,6 +456,16 @@ public class CreateCase {
 
         public OffenceBuilder withLibraOffenceCode(final String libraOffenceCode) {
             this.libraOffenceCode = libraOffenceCode;
+            return this;
+        }
+
+        public OffenceBuilder withOffenceCommittedDate(final LocalDate offenceCommittedDate) {
+            this.offenceCommittedDate = offenceCommittedDate;
+            return this;
+        }
+
+        public OffenceBuilder withOffenceChargeDate(final LocalDate offenceChargeDate) {
+            this.chargeDate = offenceChargeDate;
             return this;
         }
 

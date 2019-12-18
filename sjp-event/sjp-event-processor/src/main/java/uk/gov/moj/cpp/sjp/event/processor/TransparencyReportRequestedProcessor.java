@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
+import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
 import static java.util.Optional.ofNullable;
 import static javax.json.Json.createArrayBuilder;
@@ -19,6 +20,7 @@ import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
+import uk.gov.moj.cpp.sjp.event.processor.exception.OffenceNotFoundException;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.utils.PdfHelper;
@@ -208,7 +210,12 @@ public class TransparencyReportRequestedProcessor {
 
         final JsonObject offenceReferenceData;
         if (!offenceDataTable.contains(offenceCode, offenceStartDate)) {
-            offenceReferenceData = referenceDataOffencesService.getOffenceReferenceData(envelope, offenceCode, offenceStartDate);
+            offenceReferenceData = referenceDataOffencesService
+                    .getOffenceReferenceData(envelope, offenceCode, offenceStartDate)
+                    .orElseThrow(() -> new OffenceNotFoundException(
+                            format("Referral decision not found for case %s",
+                                    offenceCode))
+                    );
             offenceDataTable.put(offenceCode, offenceStartDate, offenceReferenceData);
         } else {
             offenceReferenceData = offenceDataTable.get(offenceCode, offenceStartDate);

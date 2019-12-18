@@ -1,0 +1,17 @@
+{
+  "results": [
+    {
+      "code": "ABDC",
+      "terminalEntries": [
+        {
+          "index": 1,
+          "value": "277"
+        },
+        {
+          "index": 2,
+          "value": "Compensation ordered"
+        }
+      ]
+    }
+  ]
+}

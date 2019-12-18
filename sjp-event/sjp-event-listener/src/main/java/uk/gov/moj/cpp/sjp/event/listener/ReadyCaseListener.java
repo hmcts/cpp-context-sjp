@@ -8,13 +8,18 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
+import uk.gov.moj.cpp.sjp.domain.Priority;
+import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CasePublishStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
 import uk.gov.moj.cpp.sjp.persistence.repository.CasePublishStatusRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -26,17 +31,26 @@ public class ReadyCaseListener {
 
     @Inject
     private ReadyCaseRepository readyCaseRepository;
-
     @Inject
     private CasePublishStatusRepository casePublishStatusRepository;
+    @Inject
+    private CaseRepository caseRepository;
 
     @Transactional
     @Handles(CaseMarkedReadyForDecision.EVENT_NAME)
     public void handleCaseMarkedReadyForDecision(final JsonEnvelope caseMarkedReadyForDecisionEvent) {
         final JsonObject caseMarkedReadyForDecision = caseMarkedReadyForDecisionEvent.payloadAsJsonObject();
+        final UUID caseId = fromString(caseMarkedReadyForDecision.getString("caseId"));
+        final CaseDetail caseDetail = caseRepository.findBy(caseId);
+
         final ReadyCase readyCase = new ReadyCase(
-                fromString(caseMarkedReadyForDecision.getString("caseId")),
-                CaseReadinessReason.valueOf(caseMarkedReadyForDecision.getString("reason"))
+                caseId,
+                CaseReadinessReason.valueOf(caseMarkedReadyForDecision.getString("reason")),
+                null,
+                SessionType.valueOf(caseMarkedReadyForDecision.getString("sessionType")),
+                Priority.valueOf(caseMarkedReadyForDecision.getString("priority")).getIntValue(),
+                caseDetail.getProsecutingAuthority(),
+                caseDetail.getPostingDate()
         );
         readyCaseRepository.save(readyCase);
 
@@ -61,8 +75,8 @@ public class ReadyCaseListener {
     }
 
     private void removeCaseDetails(final UUID caseId) {
-        final ReadyCase readyCase = readyCaseRepository.findBy(caseId);
-        readyCaseRepository.remove(readyCase);
+        Optional.ofNullable(readyCaseRepository.findBy(caseId))
+                .ifPresent(readyCaseRepository::remove);
     }
 
     private void resetCasePublishedCount(final UUID caseId) {

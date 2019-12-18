@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
+import static java.util.stream.Collectors.toSet;
+
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
-
-import static java.util.stream.Collectors.toSet;
 
 final class CaseCreatedMutator implements AggregateStateMutator<SjpCaseCreated, CaseAggregateState> {
 

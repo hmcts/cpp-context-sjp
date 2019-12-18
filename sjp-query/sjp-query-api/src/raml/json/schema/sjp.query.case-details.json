@@ -21,6 +21,12 @@
         "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/document.json"
       }
     },
+    "caseDecisions": {
+      "type": "array",
+      "items": {
+        "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/case-decision.json"
+      }
+    },
     "prosecutingAuthority": {
       "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/prosecuting-authority.json"
     },

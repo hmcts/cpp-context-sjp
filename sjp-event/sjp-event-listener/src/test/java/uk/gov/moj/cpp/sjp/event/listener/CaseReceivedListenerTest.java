@@ -18,12 +18,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
-import uk.gov.moj.cpp.sjp.event.listener.converter.AddressToAddressEntity;
-import uk.gov.moj.cpp.sjp.event.listener.converter.CaseReceivedToCase;
-import uk.gov.moj.cpp.sjp.event.listener.converter.ContactDetailsToContactDetailsEntity;
-import uk.gov.moj.cpp.sjp.event.listener.converter.DefendantToDefendantDetails;
-import uk.gov.moj.cpp.sjp.event.listener.converter.OffenceToOffenceDetail;
-import uk.gov.moj.cpp.sjp.event.listener.converter.PersonToPersonalDetailsEntity;
+import uk.gov.moj.cpp.sjp.event.listener.converter.*;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -75,6 +70,9 @@ public class CaseReceivedListenerTest {
     @Spy
     @InjectMocks
     private PersonToPersonalDetailsEntity personToPersonalDetailsEntity = new PersonToPersonalDetailsEntity();
+
+    @Spy
+    private SpeaksWelshConverter speaksWelshConverter = new SpeaksWelshConverter();
 
     @Spy
     @InjectMocks

@@ -1,0 +1,11 @@
+{
+  "payment": {
+    "paymentTerms": {
+      "reserveTerms": false,
+      "lumpSum": {
+        "withinDays": 28,
+        "amount": 277
+      }
+    }
+  }
+}

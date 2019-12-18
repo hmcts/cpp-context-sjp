@@ -1,11 +1,10 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
-import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest.AggregateTester.when;
-
+import org.junit.Before;
+import org.junit.Test;
+import uk.gov.justice.services.common.util.Clock;
+import uk.gov.justice.services.common.util.UtcClock;
+import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionEnded;
 import uk.gov.moj.cpp.sjp.event.session.DelegatedPowersSessionStarted;
 import uk.gov.moj.cpp.sjp.event.session.MagistrateSessionEnded;
@@ -15,11 +14,15 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
+import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest.AggregateTester.when;
 
-public class SessionTest extends CaseAggregateBaseTest {
+public class SessionTest  {
 
+    private final Clock clock = new StoppedClock(new UtcClock().now());
     private UUID sessionId, userId;
     private String courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode;
     private ZonedDateTime startedAt, endedAt;
@@ -70,9 +73,8 @@ public class SessionTest extends CaseAggregateBaseTest {
 
     @Test
     public void shouldNotEndAlreadyEndedSession() {
-        when(session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt))
-                .reason("no any events emitted")
-                .thenExpect();
+        session.startDelegatedPowersSession(sessionId, userId, courtHouseCode, courtHouseName, localJusticeAreaNationalCourtCode, startedAt);
+        session.endSession(sessionId, endedAt);
 
         when(session.endSession(sessionId, endedAt))
                 .reason("no any events emitted")

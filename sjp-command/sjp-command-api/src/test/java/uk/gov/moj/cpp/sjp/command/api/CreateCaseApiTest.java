@@ -12,6 +12,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuil
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildAddressWithPostcode;
 import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildDefendantWithAddress;
+import static uk.gov.moj.cpp.sjp.command.utils.CommonObjectBuilderUtil.buildDefendantWithContactDetails;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
@@ -66,6 +67,37 @@ public class CreateCaseApiTest {
 
         final JsonObject transformedPayload = createObjectBuilder()
                 .add("defendant", buildDefendantWithAddress(buildAddressWithPostcode("SE1 1PJ")))
+                .add("caseId", "4ebc5dd1-9629-4b7d-a56b-efbcf0ec5e1d")
+                .add("urn", "TFL736699173")
+                .build();
+
+        createCaseApi.createSjpCase(command);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        final JsonEnvelope newCommand = envelopeCaptor.getValue();
+        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName(NEW_COMMAND_NAME));
+        assertThat(newCommand.payloadAsJsonObject(), equalTo(transformedPayload));
+    }
+
+    @Test
+    public void shouldReplaceBlankEmailsToNull(){
+        final JsonEnvelope command = envelope().with(metadataWithRandomUUID(COMMAND_NAME))
+                .withPayloadOf(buildDefendantWithContactDetails(createObjectBuilder()
+                        .add("home", "02031234567")
+                        .add("mobile", "07777123123")
+                        .add("email", "   ")
+                        .add("email2", "  ")
+                        .build()), "defendant")
+                .withPayloadOf(UUID.fromString("4ebc5dd1-9629-4b7d-a56b-efbcf0ec5e1d"), "caseId")
+                .withPayloadOf("TFL736699173", "urn")
+                .build();
+
+        final JsonObject transformedPayload = createObjectBuilder()
+                .add("defendant", buildDefendantWithContactDetails(createObjectBuilder()
+                        .add("home", "02031234567")
+                        .add("mobile", "07777123123")
+                        .build()))
                 .add("caseId", "4ebc5dd1-9629-4b7d-a56b-efbcf0ec5e1d")
                 .add("urn", "TFL736699173")
                 .build();

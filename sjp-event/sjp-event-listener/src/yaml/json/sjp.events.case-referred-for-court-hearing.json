@@ -1,10 +1,11 @@
 {
-  "caseId": "7e2f843e-d639-40b3-8611-8015f3a18958",
-  "urn": "22C22222222",
-  "sessionId": "1e2f843e-d639-40b3-8611-8015f3a18958",
-  "referralReasonId": "2e2f843e-d639-40b3-8611-8015f3a18958",
-  "hearingTypeId": "4e2f843e-d639-40b3-8611-8015f3a18958",
-  "listingNotes": "Example listing notes",
-  "estimatedHearingDuration": 10,
-  "referredAt": "2018-06-01T09:00:00Z"
+  "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
+  "referredOffenceIds": [
+    "b6c0eb95-e27d-42b8-8f42-e8765860a46c"
+  ],
+  "decisionId": "2630237f-9e36-4f0e-9e3e-cf51e0900e30",
+  "referralReasonId": "8cda35cc-8073-41d7-a160-609bfe362f47",
+  "estimatedHearingDuration": 30,
+  "referredAt": "2018-06-01T09:00:00.000Z",
+  "listingNotes": "wheelchair access required"
 }

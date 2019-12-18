@@ -5,6 +5,7 @@ import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 
+import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
@@ -19,7 +20,9 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "session")
-public class Session {
+public class Session implements Serializable {
+
+    private static final long serialVersionUID = -252959194824297763L;
 
     @Id
     @Column(name = "id")

@@ -1,5 +1,37 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
+import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
+import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
+import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
+import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
+import uk.gov.moj.cpp.sjp.persistence.entity.StreamStatus;
+
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
 import static java.time.LocalDate.now;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Arrays.stream;
@@ -26,50 +58,17 @@ import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.CPS;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
+import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
-import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
-import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
-import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
-import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
-import uk.gov.moj.cpp.sjp.persistence.entity.ReadyCase;
-import uk.gov.moj.cpp.sjp.persistence.entity.StreamStatus;
-
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 @RunWith(CdiTestRunner.class)
 public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
-    private int NO_LIMIT = Integer.MAX_VALUE;
-
     private static final ZonedDateTime TODAY_MIDNIGHT = ZonedDateTime.now(UTC).truncatedTo(ChronoUnit.DAYS);
-
+    private final int NO_LIMIT = Integer.MAX_VALUE;
     @Inject
     private AssignmentRepository assignmentRepository;
 
@@ -383,6 +382,8 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
             this.prosecutingAuthority = prosecutingAuthority;
         }
 
+
+
         private CaseSaver notGuiltyWithDatesToAvoid() {
             return plea(NOT_GUILTY)
                     .datesToAvoid("dates-to-avoid")
@@ -436,8 +437,8 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
 
             final OffenceDetail offence = new OffenceDetail.OffenceDetailBuilder()
                     .setId(offenceId)
-                    .setPendingWithdrawal(pendingWithdrawal)
                     .setPlea(plea)
+                    .setSequenceNumber(1)
                     .build();
 
             final DefendantDetail defendant = new DefendantDetail(defendantId, new PersonalDetails(), singletonList(offence), 2);
@@ -481,9 +482,10 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
                     caseReadinessReason = PIA;
                 }
 
+
                 assertThat(caseReadinessReason, equalTo(expectedCaseReadinessReason));
 
-                em.persist(new ReadyCase(caseId, caseReadinessReason, assigneeId));
+                em.persist(new ReadyCase(caseId, caseReadinessReason, assigneeId, getSessionType(pendingWithdrawal, plea), getPriority(pendingWithdrawal, plea), caseDetail.getProsecutingAuthority(), caseDetail.getPostingDate()));
             }
 
             return caseDetail;
@@ -508,6 +510,29 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
             pendingDatesToAvoid.setPleaDate(datesToAvoidPleaDate);
 
             return pendingDatesToAvoid;
+        }
+
+        private Integer getPriority(final boolean pendingWithdrawal, final PleaType plea) {
+            if (pendingWithdrawal) {
+                return 1;
+            } else if (plea != null) {
+                return 2;
+            } else {
+                return 3;
+            }
+
+        }
+
+        private SessionType getSessionType(final boolean pendingWithdrawal, final PleaType plea) {
+            if (pendingWithdrawal) {
+                return DELEGATED_POWERS;
+            }
+            if (plea == GUILTY) {
+                return MAGISTRATE;
+            } else if (plea == NOT_GUILTY || plea == GUILTY_REQUEST_HEARING) {
+                return DELEGATED_POWERS;
+            }
+            return MAGISTRATE;
         }
 
     }

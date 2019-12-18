@@ -1,0 +1,21 @@
+{
+  "caseDecisions": [
+    {
+      "id": "b08d65a8-e561-489c-8fc8-8bf13836c570",
+      "caseId": "c342204a-cc67-423f-b302-6c641e72be95",
+      "sjpSessionId": "96789f0a-aeaf-456d-98f9-0dc32a315bdb",
+      "created": "2016-10-31T20:40:35.668Z[UTC]",
+      "offences": [
+        {
+          "id": "b511eb31-c8e7-4223-8626-958c34dfb3f9",
+          "results": [
+            {
+              "code": "D",
+              "registerText": "Dismissed"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

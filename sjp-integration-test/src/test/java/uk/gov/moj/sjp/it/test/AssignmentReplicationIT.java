@@ -3,22 +3,15 @@ package uk.gov.moj.sjp.it.test;
 import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
-import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
-import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAddAssignmentCommand;
+import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
-import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubRemoveAssignmentCommand;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
-import static uk.gov.moj.sjp.it.stub.ResultingStub.stubGetCaseDecisionsWithNoDecision;
-import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.commandclient.AssignCaseClient;
-import uk.gov.moj.sjp.it.producer.CompleteCaseProducer;
+import uk.gov.moj.sjp.it.helper.DecisionHelper;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
@@ -29,62 +22,39 @@ import org.junit.Test;
 
 public class AssignmentReplicationIT extends BaseIntegrationTest {
 
-    private static final String LONDON_LJA_NATIONAL_COURT_CODE = "2572";
-    private static final String LONDON_COURT_HOUSE_OU_CODE = "B01OK";
+    private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
 
-    private final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
+    private static final UUID CASE_ID = randomUUID();
+    private static final UUID OFFENCE_ID = randomUUID();
 
-    private UUID caseId;
-    private UUID defendantId;
-    private UUID offenceId;
+    private static CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
+            .withPostingDate(now().minusDays(30)).withId(CASE_ID).withOffenceId(OFFENCE_ID);
 
     @Before
     public void setUp() throws Exception {
         databaseCleaner.cleanAll();
-        caseId = UUID.randomUUID();
-        offenceId = UUID.randomUUID();
-        stubCourtByCourtHouseOUCodeQuery(LONDON_COURT_HOUSE_OU_CODE, LONDON_LJA_NATIONAL_COURT_CODE);
-        stubQueryOffenceById(offenceId);
-        stubGetEmptyAssignmentsByDomainObjectId(caseId);
-        stubGetCaseDecisionsWithNoDecision(caseId);
-        stubAddAssignmentCommand();
-        stubRemoveAssignmentCommand();
-        stubResultDefinitions();
-        stubStartSjpSessionCommand();
 
-        createCaseAndWaitUntilReady(caseId);
+        stubDefaultCourtByCourtHouseOUCodeQuery();
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        stubGetEmptyAssignmentsByDomainObjectId(CASE_ID);
+        stubAssignmentReplicationCommands();
 
+        createCaseAndWaitUntilReady(CASE_ID, OFFENCE_ID);
     }
 
     @Test
     public void shouldReplicateAssignmentEventsInAssignmentContext() {
-        final UUID sessionId = randomUUID();
-        final UUID userId = randomUUID();
+        DecisionHelper.saveDefaultDecision(CASE_ID, OFFENCE_ID);
 
-        startSession(sessionId, userId, LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
-
-        AssignCaseClient.builder().sessionId(sessionId).build().getExecutor().setExecutingUserId(userId).execute();
-
-        AssignmentStub.verifyAddAssignmentCommandSent(caseId, userId, MAGISTRATE_DECISION);
-
-        saveDecision(caseId);
-        AssignmentStub.verifyRemoveAssignmentCommandSend(caseId);
+        AssignmentStub.verifyAddAssignmentCommandSent(CASE_ID, USER_ID, MAGISTRATE_DECISION);
+        AssignmentStub.verifyRemoveAssignmentCommandSend(CASE_ID);
     }
 
-    private void createCaseAndWaitUntilReady(final UUID caseId) {
+    private static void createCaseAndWaitUntilReady(final UUID caseId, final UUID offenceId) {
         try (final MessageConsumerClient messageConsumerClient = new MessageConsumerClient()) {
-            final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
-                    .withPostingDate(now().minusDays(30)).withId(caseId);
             CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
             messageConsumerClient.startConsumer(CaseMarkedReadyForDecision.EVENT_NAME, "sjp.event");
             messageConsumerClient.retrieveMessage();
-            defendantId = createCasePayloadBuilder.getDefendantBuilder().getId();
-            offenceId = createCasePayloadBuilder.getOffenceBuilder().getId();
         }
     }
-
-    private void saveDecision(final UUID caseId) {
-        new CompleteCaseProducer(caseId, defendantId, offenceId).completeCase();
-    }
-
 }

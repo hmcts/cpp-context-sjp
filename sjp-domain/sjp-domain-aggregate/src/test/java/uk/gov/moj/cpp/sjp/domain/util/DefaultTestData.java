@@ -21,4 +21,5 @@ public class DefaultTestData {
     public static final LocalDate REOPEN_UPDATE_DATE = LocalDate.of(2016, 12, 31);
     public static final String REOPEN_UPDATE_LIBRA_NUMBER = "LIBRA9999999";
     public static final String REOPEN_UPDATE_REASON = "No particular reason";
+    public static final LocalDate EXPECTED_DATE_READY = LocalDate.of(2015, 12, 31);
 }

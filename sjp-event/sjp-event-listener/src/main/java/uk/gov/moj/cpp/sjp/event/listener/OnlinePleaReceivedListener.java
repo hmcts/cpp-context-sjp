@@ -1,17 +1,16 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
-
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
-import java.util.UUID;
-
 import javax.inject.Inject;
 import javax.json.JsonObject;
+import java.util.UUID;
+
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 @ServiceComponent(EVENT_LISTENER)
 public class OnlinePleaReceivedListener {

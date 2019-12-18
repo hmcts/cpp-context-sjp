@@ -28,8 +28,17 @@ end
 rule "Command - Rule for assigning case"
   when
     $outcome: Outcome();
-    $action: Action(name == "sjp.assign-case");
+    $action: Action(name == "sjp.assign-next-case");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAssignCaseGroups()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for assigning a case to a user"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.assign-case");
+    eval(userAndGroupProvider.isSystemUser($action));
   then
     $outcome.setSuccess(true);
 end

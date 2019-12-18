@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event;
 import uk.gov.justice.domain.annotation.Event;
 
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -51,5 +52,27 @@ public class TrialRequested {
 
     public ZonedDateTime getUpdatedDate() {
         return updatedDate;
+    }
+
+    @Override
+    @SuppressWarnings({"squid:S1067", "squid:S00122"})
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final TrialRequested that = (TrialRequested) o;
+        return Objects.equals(caseId, that.caseId) &&
+                Objects.equals(unavailability, that.unavailability) &&
+                Objects.equals(witnessDetails, that.witnessDetails) &&
+                Objects.equals(witnessDispute, that.witnessDispute) &&
+                Objects.equals(updatedDate, that.updatedDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(caseId, unavailability, witnessDetails, witnessDispute, updatedDate);
     }
 }

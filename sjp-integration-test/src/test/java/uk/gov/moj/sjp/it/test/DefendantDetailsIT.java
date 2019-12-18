@@ -3,9 +3,11 @@ package uk.gov.moj.sjp.it.test;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.text.MessageFormat.format;
 import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.notNullValue;
@@ -41,6 +43,7 @@ import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 import javax.ws.rs.core.Response;
 
 import com.google.common.collect.ImmutableList;
@@ -86,16 +89,44 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
     }
 
     @Test
+    public void shouldSchemaValidationFailWhenDefendantEmailBlank() {
+        shouldSchemaValidationFailWhenDefendantEmailInvalid("   ");
+    }
+
+    @Test
+    public void shouldSchemaValidationFailWhenDefendantEmailInvalid() {
+        shouldSchemaValidationFailWhenDefendantEmailInvalid("@b.co");
+    }
+
+    private void shouldSchemaValidationFailWhenDefendantEmailInvalid(final String email) {
+        UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults();
+        payloadBuilder.getContactDetailsBuilder().withEmail(email);
+
+        final String response = UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder, BAD_REQUEST);
+
+        JsonObject responseJson = responseToJsonObject(response);
+        JsonValue validationErrors = responseJson.get("validationErrors");
+        String validationTrace = validationErrors.toString();
+
+        assertThat(validationTrace, containsString(String.format("#/email: string [%s] does not match pattern", email)));
+
+    }
+
+    @Test
     public void shouldFindUpdatedDefendantDetails() {
         final JsonObject existingUpdatedDefendantDetails = getUpdatedDefendantDetails(USER_ID);
         final int existingUpdatedDefendantDetailsTotal = existingUpdatedDefendantDetails.getInt("total");
 
-        UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults();
+        final UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults();
 
-        UUID defendantId = UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id"));
+        validateDefendantUpdated(existingUpdatedDefendantDetailsTotal, payloadBuilder);
+    }
+
+    private void validateDefendantUpdated(final int existingUpdatedDefendantDetailsTotal, final UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder) {
+        final UUID defendantId = UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id"));
         UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseIdOne, defendantId, payloadBuilder);
 
-        List<Matcher<? super ReadContext>> matchers = ImmutableList.<Matcher<? super ReadContext>>builder()
+        final List<Matcher<? super ReadContext>> matchers = ImmutableList.<Matcher<? super ReadContext>>builder()
                 .add(withJsonPath("$.total", equalTo(existingUpdatedDefendantDetailsTotal + 1)))
                 .add(withJsonPath(format("$.defendantDetailsUpdates[{0}].firstName", existingUpdatedDefendantDetailsTotal), equalTo(payloadBuilder.getFirstName())))
                 .add(withJsonPath(format("$.defendantDetailsUpdates[{0}].lastName", existingUpdatedDefendantDetailsTotal), equalTo(payloadBuilder.getLastName())))
@@ -220,5 +251,9 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
         assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
 
         return Json.createReader(new StringReader(response.readEntity(String.class))).readObject();
+    }
+
+    private JsonObject responseToJsonObject(String response) {
+        return Json.createReader(new StringReader(response)).readObject();
     }
 }

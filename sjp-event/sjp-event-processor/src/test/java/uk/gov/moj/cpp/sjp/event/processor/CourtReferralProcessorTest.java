@@ -1,8 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.now;
 import static java.util.Collections.emptyList;
@@ -10,11 +8,8 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
-import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
@@ -32,11 +27,10 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.moj.cpp.resulting.event.DecisionToReferCaseForCourtHearingSaved.decisionToReferCaseForCourtHearingSaved;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
-import uk.gov.justice.json.schemas.domains.sjp.NoteType;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
+import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
@@ -44,7 +38,6 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
-import uk.gov.moj.cpp.resulting.event.DecisionToReferCaseForCourtHearingSaved;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.CourtDocumentView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.DefendantDocumentView;
@@ -58,7 +51,6 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReferringJudicialDecisi
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.SjpReferralView;
 import uk.gov.moj.cpp.sjp.event.processor.service.ProsecutionCaseFileService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
-import uk.gov.moj.cpp.sjp.event.processor.service.UsersGroupsService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.CourtDocumentsDataSourcingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.HearingRequestsDataSourcingService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.ProsecutionCasesDataSourcingService;
@@ -73,9 +65,6 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import com.jayway.jsonpath.ReadContext;
-import org.apache.commons.lang3.StringUtils;
-import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -108,9 +97,6 @@ public class CourtReferralProcessorTest {
     private SjpService sjpService;
 
     @Mock
-    private UsersGroupsService usersGroupsService;
-
-    @Mock
     private CourtDocumentsDataSourcingService courtDocumentsDataSourcingService;
 
     @Spy
@@ -118,24 +104,6 @@ public class CourtReferralProcessorTest {
 
     @InjectMocks
     private CourtReferralProcessor courtReferralProcessor;
-
-    @Test
-    public void shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSavedWithListingNotes() {
-        final String listingNote = randomAlphanumeric(100);
-        shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSaved(listingNote);
-    }
-
-    @Test
-    public void shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSavedWithoutListingNote() {
-        final String listingNote = null;
-        shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSaved(listingNote);
-    }
-
-    @Test
-    public void shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSavedWithEmptyListingNote() {
-        final String listingNote = "";
-        shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSaved(listingNote);
-    }
 
     @Test
     public void shouldIgnoreCourtReferralRejectionForNonSjpCase() {
@@ -182,6 +150,7 @@ public class CourtReferralProcessorTest {
     @Test
     public void shouldSendCommandToProgressionWhenCaseReferredForCourtHearing() {
         final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
 
         final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
                 .withCaseId(caseId)
@@ -195,6 +164,7 @@ public class CourtReferralProcessorTest {
         final CaseDetails caseDetails = CaseDetails.caseDetails()
                 .withId(caseId)
                 .withOnlinePleaReceived(true)
+                .withDefendant(Defendant.defendant().withId(defendantId).build())
                 .build();
         when(sjpService.getCaseDetails(any(), any(JsonEnvelope.class))).thenReturn(caseDetails);
 
@@ -210,7 +180,7 @@ public class CourtReferralProcessorTest {
         when(prosecutionCaseFileService.getCaseFileDefendantDetails(eq(caseId), any())).thenReturn(caseFileDefendantDetails);
 
         final HearingRequestView listHearingRequestView = createDummyHearingRequestView();
-        when(hearingRequestsDataSourcingService.createHearingRequestViews(any(), any(), any(), any(), any())).thenReturn(singletonList(listHearingRequestView));
+        when(hearingRequestsDataSourcingService.createHearingRequestViews(any(), any(), any(), any())).thenReturn(singletonList(listHearingRequestView));
 
         final CourtDocumentView courtDocumentView = createDummyCourtDocumentView();
         when(courtDocumentsDataSourcingService.createCourtDocumentViews(any(), any(), any())).thenReturn(singletonList(courtDocumentView));
@@ -249,72 +219,6 @@ public class CourtReferralProcessorTest {
                                 withJsonPath("$.courtReferral.courtDocuments[0].containsFinancialMeans", equalTo(courtDocumentView.getContainsFinancialMeans())),
                                 withJsonPath("$.courtReferral.courtDocuments[0].materials[0].id", equalTo(courtDocumentView.getMaterials().get(0).getId().toString())),
                                 withJsonPath("$.courtReferral.courtDocuments[0].materials[0].name", equalTo(courtDocumentView.getMaterials().get(0).getName()))
-                        )))));
-    }
-
-    private void shouldSentReferCaseForCourtHearingCommandWhenDecisionToReferCaseForCourtHearingSaved(final String listingNote) {
-
-        final UUID sessionId = randomUUID();
-        final UUID userId = randomUUID();
-
-        final DecisionToReferCaseForCourtHearingSaved decisionToReferCaseForCourtHearingSaved = decisionToReferCaseForCourtHearingSaved()
-                .withCaseId(randomUUID())
-                .withDecisionId(randomUUID())
-                .withSessionId(sessionId)
-                .withReferralReasonId(randomUUID())
-                .withHearingTypeId(randomUUID())
-                .withEstimatedHearingDuration(nextInt(0, 999))
-                .withListingNotes(listingNote)
-                .withDecisionSavedAt(now(UTC))
-                .build();
-
-        final Envelope<DecisionToReferCaseForCourtHearingSaved> event = envelopeFrom(metadataWithRandomUUID("public.resulting.decision-to-refer-case-for-court-hearing-saved"), decisionToReferCaseForCourtHearingSaved);
-
-        final JsonObject sessionDetails = createObjectBuilder()
-                .add("id", sessionId.toString())
-                .add("userId", userId.toString())
-                .build();
-
-        final JsonObject legalAdviserDetails = createObjectBuilder()
-                .add("userId", userId.toString())
-                .add("firstName", "Erica")
-                .add("lastName", "Wilson")
-                .build();
-
-        when(sjpService.getSessionDetails(eq(sessionId), any(JsonEnvelope.class))).thenReturn(sessionDetails);
-        when(usersGroupsService.getUserDetails(eq(userId), any(JsonEnvelope.class))).thenReturn(legalAdviserDetails);
-
-        courtReferralProcessor.decisionToReferCaseForCourtHearingSaved(event);
-
-        final Matcher<? super ReadContext> noteMatcher = StringUtils.isEmpty(listingNote) ?
-                withoutJsonPath("listingNotes")
-                :
-                withJsonPath("listingNotes", isJson(allOf(
-                        withJsonPath("id", notNullValue()),
-                        withJsonPath("text", equalTo(listingNote)),
-                        withJsonPath("type", equalTo(NoteType.LISTING.toString())),
-                        withJsonPath("addedAt", equalTo(decisionToReferCaseForCourtHearingSaved.getDecisionSavedAt().toString()))
-                )));
-
-        verify(sender).send(argThat(
-                jsonEnvelope(
-                        metadata().envelopedWith(event.metadata()).withName("sjp.command.refer-case-for-court-hearing"),
-                        payloadIsJson(allOf(
-                                withJsonPath("caseId", equalTo(decisionToReferCaseForCourtHearingSaved.getCaseId().toString())),
-                                withJsonPath("decisionId", equalTo(decisionToReferCaseForCourtHearingSaved.getDecisionId().toString())),
-                                withJsonPath("sessionId", equalTo(decisionToReferCaseForCourtHearingSaved.getSessionId().toString())),
-                                withJsonPath("legalAdviser", isJson(allOf(
-                                        withJsonPath("userId", equalTo(userId.toString())),
-                                        withJsonPath("firstName", equalTo(legalAdviserDetails.getString("firstName"))),
-                                        withJsonPath("lastName", equalTo(legalAdviserDetails.getString("lastName")))
-                                ))),
-                                withJsonPath("listingDetails", isJson(allOf(
-                                        withJsonPath("referralReasonId", equalTo(decisionToReferCaseForCourtHearingSaved.getReferralReasonId().toString())),
-                                        withJsonPath("hearingTypeId", equalTo(decisionToReferCaseForCourtHearingSaved.getHearingTypeId().toString())),
-                                        withJsonPath("estimatedHearingDuration", equalTo(decisionToReferCaseForCourtHearingSaved.getEstimatedHearingDuration())),
-                                        withJsonPath("requestedAt", equalTo(decisionToReferCaseForCourtHearingSaved.getDecisionSavedAt().toString())),
-                                        noteMatcher
-                                )))
                         )))));
     }
 
@@ -374,7 +278,6 @@ public class CourtReferralProcessorTest {
     public void shouldHandleCourtReferralRelatedEvents() {
         assertThat(CourtReferralProcessor.class, isHandlerClass(EVENT_PROCESSOR)
                 .with(allOf(
-                        method("decisionToReferCaseForCourtHearingSaved").thatHandles("public.resulting.decision-to-refer-case-for-court-hearing-saved"),
                         method("caseReferredForCourtHearing").thatHandles("sjp.events.case-referred-for-court-hearing"),
                         method("referToCourtHearingRejected").thatHandles("public.progression.refer-prosecution-cases-to-court-rejected")
                 )));

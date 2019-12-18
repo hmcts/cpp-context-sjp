@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/api/sjp.update-financial-means.json",
   "type": "object",
   "properties": {
     "income": {

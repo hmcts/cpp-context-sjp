@@ -125,4 +125,20 @@ public class DefendantDetailsApiTest {
         assertThat(newCommand.payloadAsJsonObject(), equalTo(command.payloadAsJsonObject()));
     }
 
+    @Test
+    public void shouldReplaceBlankEmailToNull() {
+        final JsonEnvelope command = envelopeFrom(metadataWithRandomUUID(UPDATE_DEFENDANT_COMMAND_NAME), createObjectBuilder()
+                .add("email", "  "));
+
+        final JsonObject expectedPayload = createObjectBuilder().build();
+
+        defendantDetailsApi.updateDefendantDetails(command);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        final JsonEnvelope newCommand = envelopeCaptor.getValue();
+        assertThat(newCommand.metadata(), withMetadataEnvelopedFrom(command).withName(UPDATE_DEFENDANT_NEW_COMMAND_NAME));
+        assertThat(newCommand.payloadAsJsonObject(), equalTo(expectedPayload));
+    }
+
 }

@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.persistence.entity;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -11,6 +12,8 @@ import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -47,6 +50,10 @@ public class CaseSummary implements Serializable {
 
     @Column(name = "adjourned_to")
     private LocalDate adjournedTo;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "case_status")
+    private CaseStatus caseStatus;
 
     public UUID getId() {
         return id;
@@ -134,5 +141,13 @@ public class CaseSummary implements Serializable {
 
     public LocalDate getAdjournedTo() {
         return adjournedTo;
+    }
+
+    public CaseStatus getCaseStatus() {
+        return caseStatus;
+    }
+
+    public void setCaseStatus(final CaseStatus caseStatus) {
+        this.caseStatus = caseStatus;
     }
 }

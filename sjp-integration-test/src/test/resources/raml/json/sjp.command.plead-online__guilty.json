@@ -22,10 +22,11 @@
     {
       "id": "ecf30a03-8a17-4fc5-81d2-b72ac0a13d17",
       "plea": "GUILTY",
-      "mitigation": "I was drunk at the time",
-      "comeToCourt": false
+      "mitigation": "I was drunk at the time"
     }
   ],
+  "outstandingFines": false,
+  "comeToCourt": false,
   "financialMeans": {
     "income": {
       "amount": 200.25,

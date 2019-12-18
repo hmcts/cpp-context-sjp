@@ -22,7 +22,15 @@ end
 rule "Command - Rule for assigning case"
   when
     $outcome: Outcome();
-    $action: Action(name == "sjp.command.assign-case");
+    $action: Action(name == "sjp.command.assign-next-case");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for assigning a case to a user"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.controller.assign-case");
   then
     $outcome.setSuccess(true);
 end

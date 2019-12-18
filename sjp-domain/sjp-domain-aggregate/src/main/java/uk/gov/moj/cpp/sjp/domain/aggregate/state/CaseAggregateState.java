@@ -1,20 +1,32 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.state;
 
+import static java.util.Collections.unmodifiableCollection;
+import static java.util.Collections.unmodifiableMap;
+import static java.util.Collections.unmodifiableSet;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
+import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
+import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
+import uk.gov.moj.cpp.sjp.domain.plea.Plea;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -34,6 +46,7 @@ public class CaseAggregateState implements AggregateState {
     private LocalDate caseReopenedDate;
     private boolean withdrawalAllOffencesRequested;
     private UUID assigneeId;
+    private UUID defendantId;
     private String defendantTitle;
     private String defendantFirstName;
     private String defendantLastName;
@@ -42,6 +55,10 @@ public class CaseAggregateState implements AggregateState {
     private CaseReadinessReason readinessReason;
     private LocalDate expectedDateReady;
     private boolean caseReceived;
+    private List<Plea> pleas = new ArrayList<>();
+    private LocalDate postingDate;
+
+    private ZonedDateTime markedReadyForDecision;
 
     private String datesToAvoid;
 
@@ -49,6 +66,7 @@ public class CaseAggregateState implements AggregateState {
 
     private final Map<UUID, CaseDocument> caseDocuments = new HashMap<>();
     private final Set<UUID> offenceIdsWithPleas = new HashSet<>();
+    private final Map<UUID, LocalDate> offencePleaDates = new HashMap<>();
 
     private final Map<UUID, String> defendantsInterpreterLanguages = new HashMap<>();
     private final Map<UUID, Boolean> defendantsSpeakWelsh = new HashMap<>();
@@ -62,8 +80,18 @@ public class CaseAggregateState implements AggregateState {
     private DocumentCountByDocumentType documentCountByDocumentType = new DocumentCountByDocumentType();
 
     private final Map<UUID, String> employmentStatusByDefendantId = new HashMap<>();
+    private boolean employerDetailsUpdated;
 
     private ProsecutingAuthority prosecutingAuthority;
+
+    private final Set<WithdrawalRequestsStatus> withdrawalRequests = new HashSet<>();
+
+    private final Map<UUID, OffenceDecision> offenceDecisionsByOffenceId = new HashMap<>();
+
+    private boolean defendantsResponseTimerExpired;
+    private boolean datesToAvoidPreviouslyRequested;
+    private LocalDate datesToAvoidExpirationDate;
+    private LocalDate adjournedTo;
 
     public UUID getCaseId() {
         return caseId;
@@ -177,10 +205,6 @@ public class CaseAggregateState implements AggregateState {
         return readinessReason != null;
     }
 
-    public void setReadinessReason(final CaseReadinessReason readinessReason) {
-        this.readinessReason = readinessReason;
-    }
-
     public boolean isCaseReceived() {
         return caseReceived;
     }
@@ -277,6 +301,12 @@ public class CaseAggregateState implements AggregateState {
         return employmentStatusByDefendantId;
     }
 
+    public boolean hasEmployerDetailsUpdated() { return employerDetailsUpdated; }
+
+    public void setEmployerDetailsUpdated(final boolean employerDetailsUpdated) {
+        this.employerDetailsUpdated = employerDetailsUpdated;
+    }
+
     public boolean hasDefendant(final UUID defendantId) {
         return offenceIdsByDefendantId.containsKey(defendantId);
     }
@@ -354,12 +384,184 @@ public class CaseAggregateState implements AggregateState {
         return nonNull(caseId) && caseId.equals(id);
     }
 
+    public void addWithdrawnOffences(final WithdrawalRequestsStatus withdrawalRequest) {
+        withdrawalRequests.add(withdrawalRequest);
+    }
+
+    public Set<WithdrawalRequestsStatus> getWithdrawalRequests() {
+        return unmodifiableSet(withdrawalRequests);
+    }
+
+    public void cancelWithdrawnOffence(final UUID offenceId) {
+        withdrawalRequests.removeIf(withdrawalRequestsStatus -> withdrawalRequestsStatus.getOffenceId().equals(offenceId));
+    }
+
+    public void updateWithdrawnOffence(final WithdrawalRequestsStatus withdrawalRequest) {
+        withdrawalRequests.removeIf(e -> e.getOffenceId().equals(withdrawalRequest.getOffenceId()));
+        withdrawalRequests.add(withdrawalRequest);
+    }
+
     public LocalDate getExpectedDateReady() {
         return expectedDateReady;
     }
 
-    public void setExpectedDateReady(LocalDate expectedDateReady) {
+    public void setExpectedDateReady(final LocalDate expectedDateReady) {
         this.expectedDateReady = expectedDateReady;
+    }
+
+    public Collection<OffenceDecision> getOffenceDecisions() {
+        return unmodifiableCollection(offenceDecisionsByOffenceId.values());
+    }
+
+    public Map<UUID, OffenceDecision> getOffenceDecisionsWithOffenceIds() {
+        return unmodifiableMap(offenceDecisionsByOffenceId);
+    }
+
+    public OffenceDecision getOffenceDecision(UUID offenceId) {
+        return offenceDecisionsByOffenceId.get(offenceId);
+    }
+
+    public void updateOffenceDecisions(final List<OffenceDecision> offenceDecisions) {
+        offenceDecisions.forEach(
+                offencesDecision -> offencesDecision.getOffenceIds().forEach(
+                        offenceId -> this.offenceDecisionsByOffenceId.put(offenceId, offencesDecision)
+                )
+        );
+    }
+
+    public UUID getDefendantId() {
+        return defendantId;
+    }
+
+    public void setDefendantId(final UUID defendantId) {
+        this.defendantId = defendantId;
+    }
+
+    public Set<UUID> getOffences() {
+        return offenceIdsByDefendantId.get(defendantId);
+    }
+
+    public LocalDate getPostingDate() {
+        return postingDate;
+    }
+
+    public void setPostingDate(final LocalDate postingDate) {
+        this.postingDate = postingDate;
+    }
+
+    public boolean withdrawalRequestedOnAllOffences() {
+        return this.getWithdrawalRequests().size()
+                == offenceIdsByDefendantId  // as of now only single defendant so should be ok
+                .values()
+                .stream()
+                .flatMap(Set::stream)
+                .count();
+    }
+
+    public List<Plea> getPleas() {
+        return pleas;
+    }
+
+    public boolean isPleaPresent() {
+        return nonNull(this.pleas) && !this.getPleas().isEmpty();
+    }
+
+    public void setPleas(final List<Plea> pleas) {
+        this.pleas = pleas;
+    }
+
+    public Map<UUID, LocalDate> getOffencePleaDates() {
+        return offencePleaDates;
+    }
+
+
+    public void putOffencePleaDate(UUID offenceId, LocalDate pleaDate) {
+        offencePleaDates.put(offenceId, pleaDate);
+    }
+
+    public void removeOffencePleaDate(UUID offenceId) {
+        offencePleaDates.remove(offenceId);
+    }
+
+    public void markReady(final ZonedDateTime markedAt, final CaseReadinessReason readinessReason) {
+        if (!isAlreadyMarkedAsReadyForDecision()) {
+            this.markedReadyForDecision = markedAt;
+        }
+        this.setExpectedDateReady(null);
+        this.readinessReason = readinessReason;
+    }
+
+    public boolean isAlreadyMarkedAsReadyForDecision() {
+        return nonNull(this.readinessReason);
+    }
+
+    public void unmarkReady() {
+        this.readinessReason = null;
+    }
+
+    public ZonedDateTime getMarkedReadyForDecision() {
+        return markedReadyForDecision;
+    }
+
+    public boolean isDefendantsResponseTimerExpired() {
+        return defendantsResponseTimerExpired;
+    }
+
+    public boolean isDatesToAvoidTimerExpired() {
+        return isNull(datesToAvoidExpirationDate);
+    }
+
+    public boolean isAdjourned() {
+        return nonNull(adjournedTo);
+    }
+
+    public LocalDate getAdjournedTo() {
+        return adjournedTo;
+    }
+
+    public void setDefendantsResponseTimerExpired() {
+        this.defendantsResponseTimerExpired = true;
+    }
+
+    public void makeNonAdjourned() {
+        this.adjournedTo = null;
+    }
+
+    public void setAdjournedTo(final LocalDate adjournedTo) {
+        this.adjournedTo = adjournedTo;
+    }
+
+    public PleaType getPleaTypeForOffenceId(final UUID offenceId) {
+        if (this.pleas == null) {
+            return null;
+        }
+
+        return this.pleas.stream()
+                .filter(plea -> Objects.nonNull(plea.getPleaType()))
+                .filter(plea -> plea.getOffenceId().equals(offenceId))
+                .map(Plea::getPleaType)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public boolean isDatesToAvoidTimerPreviouslyStarted() {
+        return datesToAvoidPreviouslyRequested;
+    }
+
+    public void setDatesToAvoidExpirationDate(final LocalDate datesToAvoidExpirationDate) {
+        this.datesToAvoidExpirationDate = datesToAvoidExpirationDate;
+    }
+
+    public void setDatesToAvoidPreviouslyRequested() {
+        this.datesToAvoidPreviouslyRequested = true;
+    }
+
+    public void datesToAvoidTimerExpired() {
+        this.datesToAvoidExpirationDate = null;
+    }
+
+    public LocalDate getDatesToAvoidExpirationDate() {
+        return datesToAvoidExpirationDate;
     }
 
     public void deleteFinancialMeansData() {

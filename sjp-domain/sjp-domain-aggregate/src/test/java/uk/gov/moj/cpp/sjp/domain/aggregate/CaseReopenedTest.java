@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REOPENED_IN_LIBRA;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
@@ -13,11 +14,13 @@ import uk.gov.moj.cpp.sjp.event.CaseNotFound;
 import uk.gov.moj.cpp.sjp.event.CaseNotReopened;
 import uk.gov.moj.cpp.sjp.event.CaseReopened;
 import uk.gov.moj.cpp.sjp.event.CaseReopenedUpdated;
+import uk.gov.moj.cpp.sjp.event.CaseStatusChanged;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,11 +46,14 @@ public class CaseReopenedTest extends CaseAggregateBaseTest {
     @Test
     public void shouldMarkCaseReopened() {
         final List<Object> events = reopenCase();
-        assertThat(events, hasSize(1));
+        assertThat(events, hasSize(2));
 
-        final Object event = events.get(0);
-        assertThat(event, instanceOf(CaseReopened.class));
-        assertCaseReopenedDetails(((CaseReopened) event).getCaseReopenDetails());
+        final Object event1 = events.get(0);
+        assertThat(event1, instanceOf(CaseReopened.class));
+        assertCaseReopenedDetails(((CaseReopened) event1).getCaseReopenDetails());
+        final Object event2 = events.get(1);
+        assertThat(event2, instanceOf(CaseStatusChanged.class));
+        assertThat(((CaseStatusChanged) event2).getCaseStatus(), Matchers.is(REOPENED_IN_LIBRA));
     }
 
     @Test

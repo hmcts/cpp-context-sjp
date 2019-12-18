@@ -18,7 +18,7 @@ public class SjpQueryApiTest {
     public void shouldHandlesQueries() {
         assertThat(SjpQueryApi.class, isHandlerClass(Component.QUERY_API)
                 .with(allOf(
-                        method("findCase").thatHandles("sjp.query.case").withRequesterPassThrough(),
+                        method("findCase").thatHandles("sjp.query.case"),
                         method("findCaseByUrn").thatHandles("sjp.query.case-by-urn").withRequesterPassThrough(),
                         method("findCaseByUrnPostcode").thatHandles("sjp.query.case-by-urn-postcode").withRequesterPassThrough(),
                         method("findFinancialMeans").thatHandles("sjp.query.financial-means").withRequesterPassThrough(),
@@ -31,7 +31,8 @@ public class SjpQueryApiTest {
                         method("getCaseAssignment").thatHandles("sjp.query.case-assignment").withRequesterPassThrough(),
                         method("getProsecutingAuthority").thatHandles("sjp.query.case-prosecuting-authority").withRequesterPassThrough(),
                         method("getDefendantDetailsUpdates").thatHandles("sjp.query.defendant-details-updates").withRequesterPassThrough(),
-                        method("getCaseNotes").thatHandles("sjp.query.case-notes").withRequesterPassThrough()
+                        method("getCaseNotes").thatHandles("sjp.query.case-notes").withRequesterPassThrough(),
+                        method("getOffencesVerdicts").thatHandles("sjp.query.offence-verdicts")
                 )));
     }
 }

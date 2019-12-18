@@ -24,7 +24,7 @@ public class DeleteEmployerTest extends CaseAggregateBaseTest {
 
         final Stream<Object> eventStream = caseAggregate.deleteEmployer(userId, defendantId);
 
-        final EmployerDeleted employerDeleted = collectSingleEvent(eventStream, EmployerDeleted.class);
+        final EmployerDeleted employerDeleted = collectFirstEvent(eventStream, EmployerDeleted.class);
 
         assertThat(employerDeleted.getDefendantId(), is(defendantId));
     }
@@ -33,7 +33,7 @@ public class DeleteEmployerTest extends CaseAggregateBaseTest {
     public void shouldCreateDefendantNotEmployedEventIfDefendantHasNotEmployer() {
         final Stream<Object> eventStream = caseAggregate.deleteEmployer(userId, defendantId);
 
-        final DefendantNotEmployed defendantNotEmployed = collectSingleEvent(eventStream, DefendantNotEmployed.class);
+        final DefendantNotEmployed defendantNotEmployed = collectFirstEvent(eventStream, DefendantNotEmployed.class);
 
         assertThat(defendantNotEmployed.getDefendantId(), is(defendantId));
     }

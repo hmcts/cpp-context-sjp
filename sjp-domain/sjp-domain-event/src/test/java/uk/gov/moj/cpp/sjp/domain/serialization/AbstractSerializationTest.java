@@ -1,16 +1,15 @@
 package uk.gov.moj.cpp.sjp.domain.serialization;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matcher;
+import org.junit.Test;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 
 import java.io.IOException;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hamcrest.Matcher;
-import org.junit.Test;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 /**
  * Serialise and Deserialize the same object to check that it doesn't lose information.
@@ -25,7 +24,7 @@ public abstract class AbstractSerializationTest<T> {
      * - K: object to serialise
      * - V: matcher to assert the expected serialization
      */
-    abstract Map<T, Matcher<String>> getParams();
+    protected abstract Map<T, Matcher<String>> getParams();
 
     @Test
     public void canSerializeDeserialize() throws IOException {

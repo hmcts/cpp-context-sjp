@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
+import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.DELEGATED_POWERS_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
@@ -27,6 +28,7 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
+import javax.json.JsonString;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +50,8 @@ public class AssignmentHandler {
     @Inject
     private Enveloper enveloper;
 
-    @Handles("sjp.command.assign-case")
-    public void assignCase(final JsonEnvelope command) throws EventStreamException {
+    @Handles("sjp.command.assign-next-case")
+    public void assignNextCase(final JsonEnvelope command) throws EventStreamException {
         final UUID sessionId = UUID.fromString(command.payloadAsJsonObject().getString("sessionId"));
         final UUID userId = UUID.fromString(command.metadata().userId().get());
 
@@ -60,9 +62,32 @@ public class AssignmentHandler {
         sessionEventStream.append(events.map(enveloper.withMetadataFrom(command)));
     }
 
+    @Handles("sjp.command.assign-case")
+    public void assignCase(final JsonEnvelope command) throws EventStreamException {
+        final UUID caseToBeAssignedId = fromString(command.payloadAsJsonObject().getString("assignCase"));
+        final UUID userId = fromString(command.payloadAsJsonObject().getString("userId"));
+
+        for (final JsonString unassignCaseId : command.payloadAsJsonObject().getJsonArray("unassignCases").getValuesAs(JsonString.class)) {
+            final UUID caseId = fromString(unassignCaseId.getString());
+            final EventStream caseEventStream = eventSource.getStreamById(caseId);
+            final CaseAggregate caseAggregate = aggregateService.get(caseEventStream, CaseAggregate.class);
+
+            final Stream<Object> events = caseAggregate.unassignCase();
+
+            caseEventStream.append(events.map(enveloper.withMetadataFrom(command)));
+        }
+
+        final EventStream caseEventStream = eventSource.getStreamById(caseToBeAssignedId);
+        final CaseAggregate aCase = aggregateService.get(caseEventStream, CaseAggregate.class);
+
+        final Stream<Object> events = aCase.assignCaseToUser(userId, clock.now());
+
+        caseEventStream.append(events.map(enveloper.withMetadataFrom(command)));
+    }
+
     @Handles("sjp.command.unassign-case")
     public void unassignCase(final JsonEnvelope command) throws EventStreamException {
-        final UUID caseId = UUID.fromString(command.payloadAsJsonObject().getString("caseId"));
+        final UUID caseId = fromString(command.payloadAsJsonObject().getString("caseId"));
 
         final EventStream caseEventStream = eventSource.getStreamById(caseId);
         final CaseAggregate aCase = aggregateService.get(caseEventStream, CaseAggregate.class);
@@ -73,7 +98,7 @@ public class AssignmentHandler {
 
     @Handles("sjp.command.assign-case-from-candidates-list")
     public void assignCaseFromCandidatesList(final JsonEnvelope command) throws EventStreamException {
-        final UUID sessionId = UUID.fromString(command.payloadAsJsonObject().getString("sessionId"));
+        final UUID sessionId = fromString(command.payloadAsJsonObject().getString("sessionId"));
 
         final EventStream sessionEventStream = eventSource.getStreamById(sessionId);
         final Session session = aggregateService.get(sessionEventStream, Session.class);
@@ -82,7 +107,7 @@ public class AssignmentHandler {
                 .getJsonArray("assignmentCandidates")
                 .getValuesAs(JsonObject.class)
                 .stream()
-                .map(assignmentCandidate -> new AssignmentCandidate(UUID.fromString(assignmentCandidate.getString("caseId")), assignmentCandidate.getInt("caseStreamVersion")))
+                .map(assignmentCandidate -> new AssignmentCandidate(fromString(assignmentCandidate.getString("caseId")), assignmentCandidate.getInt("caseStreamVersion")))
                 .collect(toList());
 
         for (final AssignmentCandidate assignmentCandidate : assignmentCandidates) {

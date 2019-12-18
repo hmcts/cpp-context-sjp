@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
 import static java.time.LocalDate.now;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -9,9 +10,14 @@ import static org.junit.Assert.fail;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
+import uk.gov.moj.cpp.sjp.persistence.entity.OffenceSummary;
 
+import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.google.common.collect.Lists;
 import org.junit.Before;
@@ -29,10 +35,10 @@ public class CaseSearchResultsViewTest {
     @Test
     public void shouldCalculateNoOutdatedCasesWhenEmpty() {
         // given
-        List<CaseSearchResult> data = Collections.emptyList();
+        final List<CaseSearchResult> data = Collections.emptyList();
 
         // when
-        CaseSearchResultsView caseSearchResultsView = new CaseSearchResultsView(data);
+        final CaseSearchResultsView caseSearchResultsView = new CaseSearchResultsView(data);
 
         // then
         assertFalse(caseSearchResultsView.isFoundCasesWithOutdatedDefendantsName());
@@ -44,7 +50,7 @@ public class CaseSearchResultsViewTest {
         caseSearchResult.setDeprecated(false);
 
         // when
-        CaseSearchResultsView caseSearchResultsView = new CaseSearchResultsView(Lists.newArrayList(caseSearchResult));
+        final CaseSearchResultsView caseSearchResultsView = new CaseSearchResultsView(Lists.newArrayList(caseSearchResult));
 
         // then
         assertFalse(caseSearchResultsView.isFoundCasesWithOutdatedDefendantsName());
@@ -56,7 +62,7 @@ public class CaseSearchResultsViewTest {
         caseSearchResult.setDeprecated(true);
 
         // when
-        CaseSearchResultsView caseSearchResultsView = new CaseSearchResultsView(Lists.newArrayList(caseSearchResult));
+        final CaseSearchResultsView caseSearchResultsView = new CaseSearchResultsView(Lists.newArrayList(caseSearchResult));
 
         // then
         assertTrue(caseSearchResultsView.isFoundCasesWithOutdatedDefendantsName());
@@ -65,8 +71,8 @@ public class CaseSearchResultsViewTest {
     @Test
     public void updatingUnderlyingDataShouldNotInfluenceTheView() {
         // given
-        List<CaseSearchResult> underlyingData = Lists.newArrayList(caseSearchResult);
-        CaseSearchResultsView caseSearchResultsView = new CaseSearchResultsView(underlyingData);
+        final List<CaseSearchResult> underlyingData = Lists.newArrayList(caseSearchResult);
+        final CaseSearchResultsView caseSearchResultsView = new CaseSearchResultsView(underlyingData);
 
         assertFalse(caseSearchResultsView.isFoundCasesWithOutdatedDefendantsName());
         assertThat(caseSearchResultsView.getResults(), hasSize(1));
@@ -83,7 +89,7 @@ public class CaseSearchResultsViewTest {
     @Test(expected = UnsupportedOperationException.class)
     public void modifyingTheViewIsNotAllowed() {
         // given
-        CaseSearchResultsView caseSearchResultsView = new CaseSearchResultsView(Lists.newArrayList(caseSearchResult));
+        final CaseSearchResultsView caseSearchResultsView = new CaseSearchResultsView(Lists.newArrayList(caseSearchResult));
 
         // when
         caseSearchResultsView.getResults().add(new CaseSearchResultsView.CaseSearchResultView(caseSearchResult));
@@ -96,14 +102,14 @@ public class CaseSearchResultsViewTest {
     public void whenMultipleValuesProvidedOneIsSufficientToInfluenceTheView() {
         // given
         caseSearchResult.setDeprecated(true);
-        List<CaseSearchResult> dataWithOutdatedEntry = Lists.newArrayList(caseSearchResult, createCaseSearchResult(), createCaseSearchResult());
-        List<CaseSearchResult> dataWithAllOutdatedEntries = Lists.newArrayList(caseSearchResult, caseSearchResult, caseSearchResult);
-        List<CaseSearchResult> dataWithoutOutdatedEntry = Lists.newArrayList(createCaseSearchResult(), createCaseSearchResult(), createCaseSearchResult());
+        final List<CaseSearchResult> dataWithOutdatedEntry = Lists.newArrayList(caseSearchResult, createCaseSearchResult(), createCaseSearchResult());
+        final List<CaseSearchResult> dataWithAllOutdatedEntries = Lists.newArrayList(caseSearchResult, caseSearchResult, caseSearchResult);
+        final List<CaseSearchResult> dataWithoutOutdatedEntry = Lists.newArrayList(createCaseSearchResult(), createCaseSearchResult(), createCaseSearchResult());
 
         // when
-        CaseSearchResultsView viewWithOutdatedEntry = new CaseSearchResultsView(dataWithOutdatedEntry);
-        CaseSearchResultsView viewWithAllOutdatedEntries = new CaseSearchResultsView(dataWithAllOutdatedEntries);
-        CaseSearchResultsView viewWithoutOutdatedEntry = new CaseSearchResultsView(dataWithoutOutdatedEntry);
+        final CaseSearchResultsView viewWithOutdatedEntry = new CaseSearchResultsView(dataWithOutdatedEntry);
+        final CaseSearchResultsView viewWithAllOutdatedEntries = new CaseSearchResultsView(dataWithAllOutdatedEntries);
+        final CaseSearchResultsView viewWithoutOutdatedEntry = new CaseSearchResultsView(dataWithoutOutdatedEntry);
 
         // then
         assertTrue(viewWithOutdatedEntry.isFoundCasesWithOutdatedDefendantsName());
@@ -111,11 +117,44 @@ public class CaseSearchResultsViewTest {
         assertFalse(viewWithoutOutdatedEntry.isFoundCasesWithOutdatedDefendantsName());
     }
 
+    @Test
+    public void shouldReturnOldestPleaDate() {
+        // given two offences with different plea dates
+        OffenceSummary offenceSummaryWithYesterdayPleaDate = new OffenceSummary();
+        final ZonedDateTime yesterdayDateTime = ZonedDateTime.now().minusDays(1);
+        offenceSummaryWithYesterdayPleaDate.setPleaDate(yesterdayDateTime);
+
+        OffenceSummary offenceSummaryWithTodayPleaDate = new OffenceSummary();
+        final ZonedDateTime now = ZonedDateTime.now();
+        offenceSummaryWithTodayPleaDate.setPleaDate(now);
+
+        final CaseSearchResult caseSearchResult = createCaseSearchResultWithOffenceSummaries(offenceSummaryWithTodayPleaDate, offenceSummaryWithYesterdayPleaDate);
+
+        //when case search result view is built
+        final CaseSearchResultsView caseSearchResultView = new CaseSearchResultsView(Collections.singletonList(caseSearchResult));
+        assertThat(caseSearchResultView.getResults().get(0).getPleaDate(), equalTo(yesterdayDateTime.toLocalDate()));
+    }
+
+
     private CaseSearchResult createCaseSearchResult() {
-        CaseSearchResult caseSearchResult = new CaseSearchResult();
+        return createCaseSearchResultWithOffenceSummaries(new OffenceSummary());
+    }
+
+    private CaseSearchResult createCaseSearchResultWithOffenceSummaries(OffenceSummary... offenceSummaries) {
+        final CaseSearchResult caseSearchResult = new CaseSearchResult();
         final CaseSummary caseSummary = new CaseSummary();
         caseSummary.setPostingDate(now());
         caseSearchResult.setCaseSummary(caseSummary);
+
+        addOffencesSummaryToTheSearchResults(caseSearchResult, offenceSummaries);
         return caseSearchResult;
+
+    }
+
+
+    private void addOffencesSummaryToTheSearchResults(final CaseSearchResult caseSearchResult, OffenceSummary... offenceSummaries) {
+        final Set<OffenceSummary> offenceSummariesCollection = new HashSet<>(Arrays.asList(offenceSummaries));
+        caseSearchResult.setOffenceSummary(offenceSummariesCollection);
+
     }
 }

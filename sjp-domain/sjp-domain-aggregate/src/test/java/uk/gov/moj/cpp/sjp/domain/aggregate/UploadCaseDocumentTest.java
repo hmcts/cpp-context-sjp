@@ -6,31 +6,43 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
-import static uk.gov.justice.json.schemas.domains.sjp.ListingDetails.listingDetails;
-import static uk.gov.justice.json.schemas.domains.sjp.Note.note;
-import static uk.gov.justice.json.schemas.domains.sjp.User.user;
+import static org.mockito.Mockito.when;
 
-import uk.gov.justice.json.schemas.domains.sjp.ListingDetails;
-import uk.gov.justice.json.schemas.domains.sjp.NoteType;
 import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
+import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.domain.decision.Decision;
+import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
+import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
+import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentUploadRejected;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentUploaded;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class UploadCaseDocumentTest extends CaseAggregateBaseTest {
 
     final UUID caseId = randomUUID();
     final UUID decisionId = randomUUID();
     final UUID sessionId = randomUUID();
     final UUID documentReference = randomUUID();
+    final UUID userId = randomUUID();
     final String documentType = "PLEA";
+    final ZonedDateTime savedAt = ZonedDateTime.now();
+    final UUID REFERRAL_REASON_ID = randomUUID();
 
     @Test
     public void raisesCaseStartedEvent_whenCaseIsNotStarted() {
@@ -88,18 +100,30 @@ public class UploadCaseDocumentTest extends CaseAggregateBaseTest {
     }
 
     private void givenCaseIsReferredToCourt() {
-        final User legalAdviser = user().build();
-        final ListingDetails listingDetails = listingDetails()
-                .withReferralReasonId(randomUUID())
-                .withHearingTypeId(randomUUID())
-                .withListingNotes(note()
-                        .withId(randomUUID())
-                        .withText("Note")
-                        .withType(NoteType.LISTING)
-                        .withAddedAt(ZonedDateTime.now())
-                        .build())
-                .build();
+        final User savedBy = new User("John", "Smith", userId);
+        final DefendantCourtOptions courtOptions =
+                new DefendantCourtOptions(
+                        new DefendantCourtInterpreter("EN", true),
+                        false);
 
-        caseAggregate.referCaseForCourtHearing(caseId, decisionId, sessionId, legalAdviser, listingDetails);
+        final List<OffenceDecisionInformation> offenceDecisionInformation = new ArrayList<>();
+        offenceDecisionInformation.add(OffenceDecisionInformation.createOffenceDecisionInformation(offenceId, VerdictType.NO_VERDICT));
+        final List<OffenceDecision> offenceDecisions = new ArrayList<>();
+        final OffenceDecision offenceDecision =
+                new ReferForCourtHearing(
+                        randomUUID(),
+                        offenceDecisionInformation,
+                        REFERRAL_REASON_ID,
+                        "Note",
+                        30,
+                        courtOptions);
+        offenceDecisions.add(offenceDecision);
+
+        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null);
+
+        caseAggregate.assignCase(savedBy.getUserId(), ZonedDateTime.now(), CaseAssignmentType.MAGISTRATE_DECISION);
+        when(session.getSessionType()).thenReturn(SessionType.MAGISTRATE);
+        when(session.getLocalJusticeAreaNationalCourtCode()).thenReturn("1080");
+        caseAggregate.saveDecision(decision, session);
     }
 }

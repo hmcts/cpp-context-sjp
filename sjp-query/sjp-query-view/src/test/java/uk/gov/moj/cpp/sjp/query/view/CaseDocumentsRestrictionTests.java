@@ -19,6 +19,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDocumentBuilder;
+import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
@@ -38,27 +39,31 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class CaseDocumentsRestrictionTests {
 
+    @Spy
+    private final Enveloper enveloper = EnveloperFactory.createEnveloper();
     @InjectMocks
     private SjpQueryView queryView;
-
     @Mock
     private CaseService caseService;
-
-    @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
     @Test
     public void findCaseFiltersOtherAndFinancialMeansDocuments() {
 
         //given
-        UUID caseId = UUID.randomUUID();
-        JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID("sjp.query.case-filter-other-and-financial-means-documents").build(),
+        final UUID caseId = UUID.randomUUID();
+        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID("sjp.query.case-filter-other-and-financial-means-documents").build(),
                 createObjectBuilder()
                         .add("caseId", caseId.toString())
                         .build());
 
 
-        CaseView caseView = new CaseView(CaseDetailBuilder.aCase().withCaseId(caseId).build());
+        final CaseView caseView = new CaseView(CaseDetailBuilder.aCase()
+                .withCaseId(caseId)
+                .addDefendantDetail(
+                        DefendantDetailBuilder
+                                .aDefendantDetail()
+                                .build())
+                .build());
         when(caseService.findCaseAndFilterOtherAndFinancialMeansDocuments(caseId.toString()))
                 .thenReturn(caseView);
 
@@ -75,15 +80,15 @@ public class CaseDocumentsRestrictionTests {
     @Test
     public void findCaseDocumentsFiltersOtherAndFinancialMeans() {
         //given
-        UUID caseId = UUID.randomUUID();
-        JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID("sjp.query.case-filter-other-and-financial-means-documents").build(),
+        final UUID caseId = UUID.randomUUID();
+        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID("sjp.query.case-filter-other-and-financial-means-documents").build(),
                 createObjectBuilder()
                         .add("caseId", caseId.toString())
                         .build());
 
-        UUID materialId = UUID.randomUUID();
+        final UUID materialId = UUID.randomUUID();
         final CaseDocument caseDocument = CaseDocumentBuilder.aCaseDocument().withMaterialId(materialId).build();
-        CaseDocumentsView caseDocumentsView = new CaseDocumentsView(Collections.singletonList(new CaseDocumentView(caseDocument)));
+        final CaseDocumentsView caseDocumentsView = new CaseDocumentsView(Collections.singletonList(new CaseDocumentView(caseDocument)));
 
         when(caseService.findCaseDocumentsFilterOtherAndFinancialMeans(caseId))
                 .thenReturn(caseDocumentsView);

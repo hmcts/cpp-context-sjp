@@ -17,13 +17,21 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
       (mapping):
           responseType: application/vnd.sjp.query.case+json
           name: sjp.query.case
+      (mapping):
+          responseType: application/vnd.sjp.query.case-with-document-metadata+json
+          name: sjp.query.case-with-document-metadata
+
       ...
     responses:
       200:
         body:
           application/vnd.sjp.query.case+json:
-            schema: !include json/schema/sjp.query.case-details.json
-            example: !include json/sjp.query.case-details.json
+            schema: !include json/schema/sjp.query.enriched-case-details.json
+            example: !include json/sjp.query.enriched-case-details.json
+          application/vnd.sjp.query.case-with-document-metadata+json:
+            schema: !include json/schema/sjp.query.case-details-with-document-metadata.json
+            example: !include json/sjp.query.case-details-with-document-metadata.json
+
 
 /cases:
   get:
@@ -290,7 +298,7 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
                   schema: !include json/schema/sjp.query.case-with-offence-reference-data.json
                   example: !include json/sjp.query.case-with-offence-reference-data.json
 
-/cases/{caseId}/defendants-online-plea:
+/cases/{caseId}/defendants/{defendantId}/defendants-online-plea:
   get:
     description: |
       Get defendant's online plea on a case.
@@ -441,3 +449,92 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
       200:
         body:
           application/vnd.sjp.query.transparency-report-content+json:
+
+
+/defendant/{defendantId}/all-financial-means:
+  uriParameters:
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  get:
+    description: |
+      Retrieve all financial means information
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.all-financial-means+json
+          name: sjp.query.all-financial-means
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.all-financial-means+json:
+                  schema: !include json/schema/sjp.query.all-financial-means.json
+                  example: !include json/sjp.query.all-financial-means.json
+
+/verdict:
+  post:
+    description: |
+      Calculate offences verdict from plea and type and decision result
+      ...
+      (mapping):
+        requestType: application/vnd.sjp.query.offences-decisions+json
+        responseType: application/vnd.sjp.query.offences-verdicts+json
+        name: sjp.query.offence-verdicts
+      ...
+    body:
+      application/vnd.sjp.query.offences-decisions+json:
+        example:
+          !include json/sjp.query.offences-decisions.json
+        schema:
+          !include json/schema/sjp.query.offences-decisions.json
+    responses:
+      200:
+        description: OK
+        body:
+            application/vnd.sjp.query.offences-verdicts+json:
+              schema:
+                !include json/schema/sjp.query.offences-verdicts.json
+              example:
+                !include json/sjp.query.offences-verdicts.json
+
+
+/cases/{caseId}/documents/court-extract:
+  uriParameters:
+     caseId:
+       description: Case ID
+       type: string
+       required: true
+  get:
+    description: |
+        ...
+        (mapping):
+            responseType: application/vnd.sjp.query.case-court-extract+json
+            name: sjp.query.case-court-extract
+        ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case-court-extract+json:
+
+/cases/{caseId}/results:
+  uriParameters:
+     caseId:
+       description: Case ID
+       type: string
+       required: true
+  get:
+    description: |
+      Get case results.
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-results+json
+          name: sjp.query.case-results
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.case-results+json:
+                  schema: !include json/schema/sjp.query.case-results.json
+                  example: !include json/sjp.query.case-results.json

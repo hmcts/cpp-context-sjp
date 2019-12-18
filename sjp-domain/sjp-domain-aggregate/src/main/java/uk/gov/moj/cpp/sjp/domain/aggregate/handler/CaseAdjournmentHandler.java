@@ -31,6 +31,7 @@ public class CaseAdjournmentHandler {
             LOGGER.error("Mismatch of IDs in aggregate: {} != {}", state.getCaseId(), caseId);
             return Stream.of(new CaseNotFound(caseId, "Record case adjourned to later sjp hearing"));
         }
+
         return Stream.of(
                 new CaseAdjournedToLaterSjpHearingRecorded(
                         adjournedTo,

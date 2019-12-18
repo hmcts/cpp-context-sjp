@@ -51,7 +51,10 @@ subscriptions_descriptor:
           schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-document-uploaded.json
 
         - name: public.sjp.financial-means-updated
-          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-financial-means-updated.json
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-financial-means-udpated.json
+
+        - name: public.sjp.all-financial-means-updated
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-all-financial-means-updated.json
 
         - name: public.sjp.employer-updated
           schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-employer-updated.json
@@ -83,10 +86,20 @@ subscriptions_descriptor:
         - name: public.sjp.defendant-details-updates-acknowledged
           schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-defendant-details-updates-acknowledged.json
 
+        - name: public.sjp.offences-withdrawal-status-set
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-offences-withdrawal-requests-status-set.json
+
+        - name: public.sjp.pleas-set
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-set-pleas.json
+
         - name: public.sjp.events.defendant-financial-means-deleted
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp_public/events/public.sjp.financial-means-deleted.json
 
         - name: public.sjp.all-offences-for-defendant-dismissed-or-withdrawn
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp_public/events/public.sjp.all-offences-for-defendant-dismissed-or-withdrawn.json
+
+        - name: public.sjp.case-decision-saved
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-case-decision-saved.json
+
 
       event_source_name: public.event.source

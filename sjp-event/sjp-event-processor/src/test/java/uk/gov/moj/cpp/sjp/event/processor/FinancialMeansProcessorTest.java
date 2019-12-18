@@ -95,6 +95,29 @@ public class FinancialMeansProcessorTest {
     }
 
     @Test
+    public void publishesPublicUpdateAllFinancialMeansEvent() {
+        String defendantId = UUID.randomUUID().toString();
+
+        JsonObject eventPayload = createObjectBuilder()
+                .add("defendantId", defendantId)
+                .build();
+
+        final JsonEnvelope eventEnvelope = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.all-financial-means-updated"),
+                eventPayload);
+
+        processor.updateAllFinancialMeans(eventEnvelope);
+
+        verify(sender).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(eventEnvelope)
+                        .withName("public.sjp.all-financial-means-updated"),
+                payloadIsJson(allOf(
+                        withJsonPath("$.defendantId", is(defendantId))
+                ))
+        )));
+    }
+
+    @Test
     public void shouldDeleteDefendantFinancialMeansWithoutAnyMaterials() {
 
         //Preparing the Response Payload and Envelope

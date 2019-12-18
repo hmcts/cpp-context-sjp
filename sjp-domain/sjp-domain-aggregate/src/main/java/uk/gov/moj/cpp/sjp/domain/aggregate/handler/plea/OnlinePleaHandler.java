@@ -1,28 +1,21 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea;
 
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
-import static uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason.PLEA_ALREADY_SUBMITTED;
-import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
-
-import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
-import uk.gov.moj.cpp.sjp.domain.Outgoing;
-import uk.gov.moj.cpp.sjp.domain.aggregate.domain.PleadOnlineOutcomes;
+import com.google.common.annotations.VisibleForTesting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.moj.cpp.sjp.domain.*;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseDefendantHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseEmployerHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseLanguageHandler;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
-import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
-import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
-import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
-import uk.gov.moj.cpp.sjp.event.PleaUpdated;
-import uk.gov.moj.cpp.sjp.event.TrialRequested;
+import uk.gov.moj.cpp.sjp.domain.plea.SetPleas;
+import uk.gov.moj.cpp.sjp.event.*;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -30,9 +23,20 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import com.google.common.annotations.VisibleForTesting;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Stream.concat;
+import static java.util.stream.Stream.of;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.lang.BooleanUtils.isTrue;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.PleaHandlerUtils.createSetPleasEvents;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.ONLINE;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
+import static uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason.PLEA_ALREADY_SUBMITTED;
+import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
 
 
 
@@ -47,8 +51,8 @@ public class OnlinePleaHandler {
     private final CaseLanguageHandler caseLanguageHandler;
 
     private OnlinePleaHandler() {
-        caseDefendantHandler = CaseDefendantHandler.INSTANCE;
         caseEmployerHandler = CaseEmployerHandler.INSTANCE;
+        caseDefendantHandler = CaseDefendantHandler.INSTANCE;
         caseLanguageHandler = CaseLanguageHandler.INSTANCE;
     }
 
@@ -63,83 +67,76 @@ public class OnlinePleaHandler {
         this.caseLanguageHandler = caseLanguageHandler;
     }
 
-    public Stream<Object> pleadOnline(final UUID caseId, final PleadOnline pleadOnline, final ZonedDateTime createdOn, CaseAggregateState state) {
+    public Stream<Object> pleadOnline(final UUID caseId, final PleadOnline pleadOnline, final ZonedDateTime createdOn, CaseAggregateState state, final UUID userId) {
         return createRejectionEvents(
-                null,
+                userId,
                 "Plead online",
                 pleadOnline.getDefendantId(),
                 state
-        ).orElse(this.createPleadOnlineEvents(caseId, pleadOnline, createdOn, state));
+        ).orElse(this.createPleadOnlineEvents(caseId, pleadOnline, createdOn, state, userId));
     }
 
-    private Stream<Object> createPleadOnlineEvents(final UUID caseId, final PleadOnline pleadOnline, final ZonedDateTime createdOn, CaseAggregateState state) {
-        final Stream.Builder<Object> streamBuilder = Stream.builder();
+    private Stream<Object> createPleadOnlineEvents(final UUID caseId, final PleadOnline pleadOnline, final ZonedDateTime createdOn, CaseAggregateState state, final UUID userId) {
 
-        final PleadOnlineOutcomes pleadOnlineOutcomes = addPleaEventsToStreamForStoreOnlinePlea(caseId, pleadOnline, streamBuilder, createdOn, state);
-        if (pleadOnlineOutcomes.isPleaForOffencePreviouslySubmitted()) {
-            return Stream.of(new CaseUpdateRejected(state.getCaseId(), PLEA_ALREADY_SUBMITTED));
+        final Optional<Offence> offencePreviouslySubmitted = pleadOnline.getOffences().stream().filter(offence -> state.getOffenceIdsWithPleas().contains(offence.getId())).findAny();
+
+        if (offencePreviouslySubmitted.isPresent()) {
+            return of(new CaseUpdateRejected(state.getCaseId(), PLEA_ALREADY_SUBMITTED));
         }
-        if (!pleadOnlineOutcomes.getOffenceNotFoundIds().isEmpty()) {
+
+        final List<Offence> offencesNotFound = pleadOnline.getOffences().stream().filter(offence -> !state.offenceExists(offence.getId())).collect(toList());
+        if (!offencesNotFound.isEmpty()) {
             final Stream.Builder<Object> offenceNotFoundStreamBuilder = Stream.builder();
-            pleadOnlineOutcomes.getOffenceNotFoundIds().forEach(offenceNotFoundId ->
-                    offenceNotFoundStreamBuilder.add(new OffenceNotFound(offenceNotFoundId, "Plead online")));
+            offencesNotFound.forEach(missingOffence -> {
+                LOGGER.warn("Cannot update plea for offence which doesn't exist, ID: {}", missingOffence.getId());
+                offenceNotFoundStreamBuilder.add(new OffenceNotFound(missingOffence.getId(), "Plead online"));
+            });
             return offenceNotFoundStreamBuilder.build();
         }
-        if (pleadOnlineOutcomes.isTrialRequested()) {
-            streamBuilder.add(new TrialRequested(caseId, pleadOnline.getUnavailability(),
-                    pleadOnline.getWitnessDetails(), pleadOnline.getWitnessDispute(), createdOn));
-        }
-        addAdditionalEventsToStreamForStoreOnlinePlea(streamBuilder, pleadOnline, createdOn, state);
 
-        return streamBuilder.build();
+        final SetPleas setPleas = mapToSetPleas(pleadOnline);
+        return HandlerUtils.createRejectionEvents(
+                userId,
+                state,
+                setPleas.getPleas(),
+                "Plead Online"
+        ).orElse(concat(createSetPleasEvents(caseId, setPleas, state, userId, createdOn, caseLanguageHandler, ONLINE),
+                addAdditionalEventsToStreamForStoreOnlinePlea(pleadOnline, createdOn, state)));
+
     }
 
-    private PleadOnlineOutcomes addPleaEventsToStreamForStoreOnlinePlea(final UUID caseId,
-                                                                        final PleadOnline pleadOnline,
-                                                                        final Stream.Builder<Object> streamBuilder,
-                                                                        final ZonedDateTime createdOn,
-                                                                        final CaseAggregateState state) {
-
-        final PleadOnlineOutcomes pleadOnlineOutcomes = new PleadOnlineOutcomes();
-        pleadOnline.getOffences().forEach(offence -> {
-            if (canPleaOnOffence(offence, pleadOnlineOutcomes, state)) {
-                PleaType pleaType = offence.getPlea();
-                if (pleaType.equals(PleaType.GUILTY) && offence.getComeToCourt() != null && offence.getComeToCourt()) {
-                    pleaType = PleaType.GUILTY_REQUEST_HEARING;
-                }
-                final PleaUpdated pleaUpdated = new PleaUpdated(
-                        caseId,
-                        offence.getId(),
-                        pleaType,
-                        offence.getMitigation(),
-                        offence.getNotGuiltyBecause(),
-                        PleaMethod.ONLINE,
-                        createdOn);
-                streamBuilder.add(pleaUpdated);
-                if (pleaType.equals(PleaType.NOT_GUILTY)) {
-                    pleadOnlineOutcomes.setTrialRequested(true);
-                }
+    private SetPleas mapToSetPleas(final PleadOnline pleadOnline){
+        final Interpreter interpreter = Interpreter.of(pleadOnline.getInterpreterLanguage());
+        final DefendantCourtInterpreter defendantCourtInterpreter = new DefendantCourtInterpreter(interpreter.getLanguage(), interpreter.isNeeded());
+        final Boolean welshHearing = pleadOnline.getSpeakWelsh();
+        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(defendantCourtInterpreter, isTrue(welshHearing));
+        final List<Plea> pleas = pleadOnline.getOffences().stream().map( offence ->
+        {
+            PleaType type = offence.getPlea();
+            if (offence.getPlea().equals(GUILTY) && isTrue(pleadOnline.getComeToCourt())) {
+                type = GUILTY_REQUEST_HEARING;
             }
-        });
-        return pleadOnlineOutcomes;
+            return new Plea(pleadOnline.getDefendantId(), offence.getId(), type, offence.getNotGuiltyBecause(), offence.getMitigation());
+        }).collect(toList());
+
+        return new SetPleas(defendantCourtOptions, pleas);
     }
 
-    private boolean canPleaOnOffence(Offence offence, final PleadOnlineOutcomes pleadOnlineOutcomes, final CaseAggregateState state) {
-        if (!state.offenceExists(offence.getId())) {
-            LOGGER.warn("Cannot update plea for offence which doesn't exist, ID: {}", offence.getId());
-            pleadOnlineOutcomes.getOffenceNotFoundIds().add(offence.getId());
-            return false;
-        } else if (state.getOffenceIdsWithPleas().contains(offence.getId())) {
-            pleadOnlineOutcomes.setPleaForOffencePreviouslySubmitted(true);
-            return false;
-        }
-        return true;
-    }
-
-    private void addAdditionalEventsToStreamForStoreOnlinePlea(final Stream.Builder<Object> streamBuilder,
-                                                               final PleadOnline pleadOnline,
+    private Stream<Object> addAdditionalEventsToStreamForStoreOnlinePlea(final PleadOnline pleadOnline,
                                                                final ZonedDateTime createdOn,
                                                                final CaseAggregateState state) {
+
+        if (!isThePleaNewOrDifferentThanPrevious(pleadOnline, state)){
+            return Stream.builder().build();
+        }
+
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        if (isTrialRequested(pleadOnline)) {
+            streamBuilder.add(new TrialRequested(state.getCaseId(), pleadOnline.getUnavailability(),
+                    pleadOnline.getWitnessDetails(), pleadOnline.getWitnessDispute(), createdOn));
+        }
+
         //TODO: we need to query the defendant to see if any of the incoming defendant data is different from the pre-existing defendant data. If no changes, no event
         final PersonalDetails personalDetails = pleadOnline.getPersonalDetails();
         final UUID defendantId = pleadOnline.getDefendantId();
@@ -174,20 +171,32 @@ public class OnlinePleaHandler {
                     createdOn));
         }
 
-        if (pleadOnline.getEmployer() != null) {
+        if (nonNull(pleadOnline.getEmployer())) {
             caseEmployerHandler.getEmployerEventStream(pleadOnline.getEmployer(), defendantId, updatedByOnlinePlea, createdOn, state)
                     .forEach(streamBuilder::add);
         }
-        caseLanguageHandler.updateHearingRequirements(true, createdOn, pleadOnline.getDefendantId(), pleadOnline.getInterpreterLanguage(), pleadOnline.getSpeakWelsh(), state)
-                .forEach(streamBuilder::add);
+
+        if (nonNull(pleadOnline.getOutstandingFines())) {
+            streamBuilder.add(new OutstandingFinesUpdated(state.getCaseId(), pleadOnline.getOutstandingFines(), createdOn));
+        }
+
         streamBuilder.add(new OnlinePleaReceived(state.getUrn(), state.getCaseId(), defendantId,
                 pleadOnline.getUnavailability(), pleadOnline.getInterpreterLanguage(), pleadOnline.getSpeakWelsh(),
-                pleadOnline.getWitnessDetails(), pleadOnline.getWitnessDispute(), personalDetails,
+                pleadOnline.getWitnessDetails(), pleadOnline.getWitnessDispute(), pleadOnline.getOutstandingFines(), personalDetails,
                 pleadOnline.getFinancialMeans(), pleadOnline.getEmployer(), pleadOnline.getOutgoings()
         ));
+        return streamBuilder.build();
+    }
+
+    private boolean isTrialRequested(final PleadOnline pleadOnline) {
+        return pleadOnline.getOffences().stream().anyMatch(offence -> offence.getPlea().equals(NOT_GUILTY));
     }
 
     private static boolean anyUpdatesOnFinancialMeans(final FinancialMeans financialMeans, final List<Outgoing> outgoings) {
         return financialMeans != null || !isEmpty(outgoings);
+    }
+
+    private static boolean isThePleaNewOrDifferentThanPrevious(final PleadOnline pleaseOnline, final CaseAggregateState state) {
+        return pleaseOnline.getOffences().stream().anyMatch(offence -> !offence.getPlea().equals(state.getPleaTypeForOffenceId(offence.getId())));
     }
 }

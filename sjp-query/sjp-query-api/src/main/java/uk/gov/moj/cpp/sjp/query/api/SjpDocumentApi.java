@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.api;
 
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.moj.cpp.sjp.query.api.helper.JsonHelper.getPayload;
 
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -8,8 +9,8 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.query.api.service.DocumentMetadataService;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -23,6 +24,9 @@ public class SjpDocumentApi {
 
     @Inject
     private Requester requester;
+
+    @Inject
+    private DocumentMetadataService documentMetadataService;
 
     @Handles("sjp.query.case-documents")
     public JsonEnvelope getCaseDocuments(final JsonEnvelope query) {
@@ -44,7 +48,7 @@ public class SjpDocumentApi {
         final JsonObject documentMetadata = getPayload(documentDetails)
                 .map(document -> document.getJsonObject("caseDocument").getString("materialId"))
                 .map(UUID::fromString)
-                .flatMap(materialId -> getMaterialMetadata(materialId, documentDetails))
+                .flatMap(materialId -> documentMetadataService.getMaterialMetadata(materialId, documentDetails))
                 .orElse(null);
 
         return enveloper.withMetadataFrom(documentDetails, "sjp.query.case-document-metadata").apply(documentMetadata);
@@ -70,24 +74,5 @@ public class SjpDocumentApi {
                 .build();
 
         return requester.request(enveloper.withMetadataFrom(sourceEnvelope, "sjp.query.case-document").apply(documentQueryParams));
-    }
-
-    private Optional<JsonObject> getMaterialMetadata(final UUID materialId, final JsonEnvelope envelope) {
-        final JsonObject materialMetadataQueryParams = createObjectBuilder().add("materialId", materialId.toString()).build();
-        final JsonEnvelope materialMetadata = requester.requestAsAdmin(enveloper.withMetadataFrom(envelope, "material.query.material-metadata").apply(materialMetadataQueryParams));
-
-        return getPayload(materialMetadata)
-                .map(metadata -> createObjectBuilder().add("caseDocumentMetadata",
-                        createObjectBuilder()
-                                .add("fileName", metadata.getString("fileName"))
-                                .add("mimeType", metadata.getString("mimeType"))
-                                .add("addedAt", metadata.getString("materialAddedDate")))
-                        .build());
-    }
-
-    private Optional<JsonObject> getPayload(JsonEnvelope envelope) {
-        return Optional.of(envelope.payload())
-                .filter(JsonObject.class::isInstance)
-                .map(JsonObject.class::cast);
     }
 }

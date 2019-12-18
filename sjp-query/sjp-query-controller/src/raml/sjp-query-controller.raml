@@ -262,7 +262,7 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
                   schema: !include json/schema/sjp.query.case-with-offence-reference-data.json
                   example: !include json/sjp.query.case-with-offence-reference-data.json
 
-/cases/{caseId}/defendants-online-plea:
+/cases/{caseId}/defendants/{defendantId}/defendants-online-plea:
   get:
     description: |
       Get defendant's online plea on a case.
@@ -399,3 +399,43 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
           application/vnd.sjp.query.transparency-report-metadata+json:
             schema: !include json/schema/sjp.query.transparency-report-metadata.json
             example: !include json/sjp.query.transparency-report-metadata.json
+
+/cases/{caseId}/documents/court-extract:
+  uriParameters:
+     caseId:
+       description: Case ID
+       type: string
+       required: true
+  get:
+    description: |
+        ...
+        (mapping):
+            responseType: application/vnd.sjp.query.case-court-extract+json
+            name: sjp.query.case-court-extract
+        ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case-court-extract+json:
+            schema: !include json/schema/sjp.query.case-court-extract.json
+            example: !include json/sjp.query.case-court-extract.json
+
+/cases/{caseId}/results:
+  uriParameters:
+     caseId:
+       description: Case ID
+       type: string
+       required: true
+  get:
+    description: |
+        ...
+        (mapping):
+            responseType: application/vnd.sjp.query.case-results+json
+            name: sjp.query.case-results
+        ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.case-results+json:
+            schema: !include json/schema/sjp.query.case-results.json
+            example: !include json/sjp.query.case-results.json

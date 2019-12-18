@@ -1,6 +1,8 @@
 package uk.gov.moj.sjp.it.helper;
 
+import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.is;
@@ -14,6 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import com.jayway.restassured.path.json.JsonPath;
@@ -22,7 +25,7 @@ import com.jayway.restassured.path.json.JsonPath;
 public class AssignmentHelper {
 
     public static UUID requestCaseAssignmentAsync(final UUID sessionId, final UUID userId) {
-        final String contentType = "application/vnd.sjp.assign-case+json";
+        final String contentType = "application/vnd.sjp.assign-next-case+json";
         final String url = String.format("/sessions/%s", sessionId);
         return HttpClientUtil.makePostCall(userId, url, contentType, "{}", ACCEPTED);
     }
@@ -52,8 +55,29 @@ public class AssignmentHelper {
                 .orElse(false);
     }
 
+    public static boolean pollUntilCaseAssignedToUser(final UUID caseId, final UUID userId) {
+        return await().until(() -> isCaseAssignedToUser(caseId, userId), is(true));
+    }
+
+    public static boolean pollUntilCaseNotAssignedToUser(final UUID caseId, final UUID userId) {
+        return await().until(() -> isCaseAssignedToUser(caseId, userId), is(false));
+    }
+
     public static void assertCaseUnassigned(final UUID caseId) {
         CasePoller.pollUntilCaseByIdIsOk(caseId, withJsonPath("$.assigned", is(false)));
     }
 
+    public static UUID assignCaseToUser(final UUID caseId,
+                                        final UUID assigneeId,
+                                        final UUID callerId,
+                                        final Response.Status expectedStatus) {
+        final String contentType = "application/vnd.sjp.assign-case+json";
+        final String url = String.format("/cases/%s", caseId);
+
+        final JsonObject payload = createObjectBuilder()
+                .add("userId", assigneeId.toString())
+                .build();
+
+        return HttpClientUtil.makePostCall(callerId, url, contentType, payload.toString(), expectedStatus);
+    }
 }

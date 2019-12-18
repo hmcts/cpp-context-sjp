@@ -1,0 +1,163 @@
+{
+  "offenceId": "a2804f0e-ecb1-3855-947d-01ea5bb2a70b",
+  "cjsOffenceCode": "CA03011",
+  "modeOfTrial": "SNONIMP",
+  "cppDateOfLastUpdate": "2019-02-28",
+  "pnldDateOfLastUpdate": "2009-07-14",
+  "details": {
+    "document": {
+      "type": "H",
+      "codes": {
+        "fptgraduated": 0.0,
+        "mojstatscode": "191/01",
+        "mopinoteslink": "D19586",
+        "cjsoffencecode": "CA03011",
+        "mopireviewgroup": {
+          "code": "C",
+          "description": "Group 3"
+        },
+        "notifiabletomoj": {
+          "code": "N",
+          "description": "NO"
+        },
+        "seatbeltoffence": {
+          "code": "N",
+          "description": "NO"
+        },
+        "fptgraduatedhigh": 0.0,
+        "roadsidedeposits": {
+          "code": "N",
+          "description": "NO"
+        },
+        "fptissuedbypolice": 0.0,
+        "pndissuedbyothers": 0.0,
+        "pndissuedbypolice": 0.0,
+        "disqualificationclass": {
+          "code": "N",
+          "description": "discretionary disqualification not endorsable"
+        },
+        "recordableonpncindicator": {
+          "code": "N",
+          "description": "NO"
+        },
+        "pndissuedbylocalauthorities": 0.0
+      },
+      "libra": {
+        "miscode": {
+          "code": "SNM",
+          "description": "Summary Non-Motoring"
+        },
+        "fineindicator": {
+          "code": "Y",
+          "description": "YES"
+        },
+        "libracategory": {
+          "code": "CS",
+          "description": "Summary Non-motoring"
+        },
+        "maxfinetypemagct": {
+          "code": "3",
+          "description": "fine not exceeding level three on the legislative standard scale"
+        },
+        "custodialindicator": {
+          "code": "N",
+          "description": "NO"
+        }
+      },
+      "other": {
+        "penalty": "A fine not exceeding level three on the standard scale<br /><br />Time limit for prosecutions:<br />6 months",
+        "modeoftrial": {
+          "code": "SNONIMP",
+          "description": "SUMMARY NON-IMPRISONABLE"
+        },
+        "powersofarrest": "Arrest without warrant",
+        "geographicregion": {
+          "code": "EWNI",
+          "description": "England, Wales and Northern Ireland"
+        },
+        "timelimitforprosecutions": "6"
+      },
+      "welsh": {
+        "welshlegislation": "Yn groes i adran 363(3)(a) a (4) Deddf Cyfathrebu 2003.",
+        "welshoffencetitle": "Bod â meddiant teledu gan fwriadu'i osod/ddefnyddio heb drwydded",
+        "welshstandardoffencewording": "<[Ar **(..SPECIFY DATE..) yn **(..SPECIFY TOWNSHIP..) roedd gennych yn eich meddiant neu dan eich<br /> rheolaeth dderbynnydd teledu<br /><br />(A)_[lliw]_<br />(B)_[du a gwyn]_<br /><br />gan fwriadu'i osod neu ei ddefnyddio heb drwydded",
+        "welshstandardstatementoffacts": "Ar **(..SPECIFY DATE..) yn **(..SPECIFY TOWNSHIP..) roedd gan y diffynnydd deledu<br /><br />(A)_[lliw]<br />(B)_[du a gwyn]_<br /><br /> yn ei feddiant neu dan ei reolaeth ac yn bwriadu'i osod neu ei ddefnyddio heb drwydded."
+      },
+      "english": {
+        "title": "Possess a television set with intent to install / use without a licence",
+        "legislation": "Contrary to section 363(3)(a) and (4) of the    Communications Act 2003.",
+        "pointstoprove": "date and location<br />    possess/control <br />    a colour/black and white TV set<br />    with intent to install/use it<br />    without a licence",
+        "additionalkeywords": {
+          "additionalkeyword": [
+            "Communications Act 2003",
+            "public electronic communication network",
+            "tv",
+            "receivers",
+            "license",
+            "colour",
+            "color",
+            "black and white",
+            "intend",
+            "intends",
+            "install",
+            "instal",
+            "installs"
+          ]
+        },
+        "investigatoractions": {
+          "investigatoraction": [
+            {
+              "code": "IA27",
+              "description": "Confirm proposed charge is appropriately authorised (Police or CPS)"
+            },
+            {
+              "code": "IA28",
+              "description": "Ensure compliance with investigator's obligations re disclosure"
+            },
+            {
+              "code": "IA29",
+              "description": "Consider if case suitable for referral to Financial Investigation Unit and CPS for asset recovery eg confiscation order"
+            },
+            {
+              "code": "IA13",
+              "description": "Guilty Plea by letter procedure may be offered for this offence"
+            }
+          ]
+        },
+        "standardoffencewording": "On **(..SPECIFY DATE..) at **(..SPECIFY    TOWNSHIP..) possessed or controlled a<br /><br />    (A)_[colour]_<br />    (B)_[black and white]_<br /><br />    television receiver with intent to install or use it without a licence",
+        "standardstatementoffacts": "On **(..SPECIFY DATE..) at **(..SPECIFY TOWNSHIP..) the defendant was in possession or control of a<br /><br />(A)_[colour]_<br />(B)_[black and white]_<br /><br />television set, and intended to install or use it without a licence",
+        "policeandcpschargingresponsibilities": "D27968"
+      },
+      "pnldref": "H6209",
+      "ancillary": {
+        "groups": {
+          "code": "GP03",
+          "description": "Television & satellite"
+        },
+        "legislationcode": {
+          "link": "S509"
+        },
+        "dateoflastupdate": "2009-07-14",
+        "offencestartdate": "2004-04-01",
+        "offencewordinggroup": "Y10"
+      },
+      "indictment": {
+        "indictmentindicator": {
+          "code": "N",
+          "description": "NO"
+        },
+        "structuredindictmentindicator": {
+          "code": "N",
+          "description": "NO"
+        }
+      }
+    }
+  },
+  "title": "Possess a television set with intent to install / use without a licence",
+  "legislation": "Contrary to section 363(3)(a) and (4) of the    Communications Act 2003.",
+  "offenceStartDate": "2004-04-01",
+  "drugsOrAlcoholRelated": "N",
+  "locationRequired": "Y",
+  "prosecutionTimeLimit": "6 months",
+  "offenceEndDate": "2016-01-01"
+}

@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.event.listener.handler;
 
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResultList;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 
@@ -17,14 +16,14 @@ public class CaseSearchResultService {
     private CaseSearchResultRepository repository;
 
     @Transactional
-    public void onDefendantDetailsUpdated(final UUID caseId, final String newFirstName, final String newLastName, final LocalDate newDateOfBirth, final ZonedDateTime dateAdded) {
+    public void onDefendantDetailsUpdated(final UUID caseId, final UUID defendantId, final String newFirstName, final String newLastName, final LocalDate newDateOfBirth, final ZonedDateTime dateAdded) {
         final CaseSearchResultList existingEntryList = new CaseSearchResultList(repository.findByCaseId(caseId));
 
         if (existingEntryList.hasDateOfBirthChanged(newDateOfBirth)) {
             existingEntryList.setDateOfBirth(newDateOfBirth);
         }
         if (existingEntryList.hasNameChanged(newFirstName, newLastName)) {
-            existingEntryList.setName(caseId, newFirstName, newLastName, newDateOfBirth, dateAdded);
+            existingEntryList.setName(caseId, defendantId, newFirstName, newLastName, newDateOfBirth, dateAdded);
         }
 
         existingEntryList.forEach(repository::save);
@@ -40,15 +39,7 @@ public class CaseSearchResultService {
         updateCaseAssignment(caseId, false);
     }
 
-    @Transactional
-    public void updatePleaReceivedDate(final UUID caseId, final LocalDate pleaReceived, final PleaType plea) {
-        repository.findByCaseId(caseId).forEach(searchResult -> {
-            searchResult.setPleaDate(pleaReceived);
-            searchResult.setPleaType(plea);
-        });
-    }
-
-    private void updateCaseAssignment(final UUID caseId, boolean assigned) {
+    private void updateCaseAssignment(final UUID caseId, final boolean assigned) {
         repository.findByCaseId(caseId).forEach(result -> result.setAssigned(assigned));
     }
 }

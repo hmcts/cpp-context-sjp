@@ -10,7 +10,9 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
+import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
+import uk.gov.justice.json.schemas.domains.sjp.queries.Session;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
@@ -18,6 +20,8 @@ import uk.gov.moj.cpp.sjp.event.processor.service.UsersGroupsService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.SjpReferralViewHelper;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -44,7 +48,10 @@ public class SjpReferralDataSourcingServiceTest {
     private static final UUID CASE_ID = randomUUID();
     private static final UUID USER_ID = randomUUID();
     private static final UUID SESSION_ID = randomUUID();
+    private static final UUID DECISION_ID = randomUUID();
     private static final ZonedDateTime REFERRAL_DATE_TIME = now();
+    private static final String COURT_HOUSE_NAME = "Leamington Spa Magistrates' Court";
+    private static final String MAGISTRATE = "magistrate";
 
     @Test
     public void shouldCreateSjpReferralView() {
@@ -52,12 +59,13 @@ public class SjpReferralDataSourcingServiceTest {
 
         final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
                 .withCaseId(CASE_ID)
-                .withSessionId(SESSION_ID)
+                .withDecisionId(DECISION_ID)
                 .withReferredAt(REFERRAL_DATE_TIME)
                 .build();
 
         final CaseDetails caseDetails = CaseDetails.caseDetails()
                 .withId(CASE_ID)
+                .withCaseDecisions(mockCaseDecisions())
                 .build();
 
         final JsonObject sessionDetails = createObjectBuilder()
@@ -83,5 +91,20 @@ public class SjpReferralDataSourcingServiceTest {
         when(usersGroupsService.getUserDetails(
                 USER_ID,
                 emptyEnvelopeWithReferralEventMetadata)).thenReturn(legalAdviserDetails);
+    }
+
+    private List<CaseDecision> mockCaseDecisions() {
+        List<CaseDecision> casedDecisions = new ArrayList<>();
+        casedDecisions.add(new CaseDecision(null, DECISION_ID, null,  REFERRAL_DATE_TIME, mockSessionDetails()));
+        return casedDecisions;
+    }
+
+    private Session mockSessionDetails() {
+        return
+                Session.session()
+                        .withSessionId(SESSION_ID)
+                        .withCourtHouseName(COURT_HOUSE_NAME)
+                        .withMagistrate(MAGISTRATE)
+                        .build();
     }
 }

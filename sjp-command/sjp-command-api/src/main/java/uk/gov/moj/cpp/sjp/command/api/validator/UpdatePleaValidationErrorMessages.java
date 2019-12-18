@@ -12,6 +12,8 @@ public abstract class UpdatePleaValidationErrorMessages {
 
     public static final String SPEAK_WELSH_NOT_SET = "Please choose whether the defendant wishes to speak Welsh";
 
+    public static final String SPEAK_WELSH_NOT_ALLOWED = "Cannot require a welsh hearing when pleading guilty";
+
     private UpdatePleaValidationErrorMessages() {
         // prevent initialization
     }

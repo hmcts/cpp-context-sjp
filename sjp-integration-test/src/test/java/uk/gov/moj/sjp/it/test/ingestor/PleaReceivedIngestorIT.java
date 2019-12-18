@@ -4,6 +4,8 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertThat;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
@@ -18,7 +20,6 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
-import uk.gov.moj.sjp.it.helper.UpdatePleaHelper;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
@@ -26,6 +27,7 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import com.jayway.restassured.path.json.JsonPath;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -83,14 +85,11 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
 
         final JSONObject pleaPayload = getOnlinePleaPayload();
 
-        try (final UpdatePleaHelper updatePleaHelper = new UpdatePleaHelper()) {
-            final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(casePayloadBuilder.getId());
+        final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(casePayloadBuilder.getId());
 
-            pleadOnlineHelper.pleadOnline(pleaPayload.toString());
+        pleadOnlineHelper.pleadOnline(pleaPayload.toString());
 
-            updatePleaHelper.verifyPleaUpdated(casePayloadBuilder.getId(), PleaType.NOT_GUILTY, PleaMethod.ONLINE);
-        }
-
+        verifyPleaUpdated(casePayloadBuilder.getId(), PleaType.NOT_GUILTY, PleaMethod.ONLINE);
         return pleaPayload;
     }
 
@@ -103,5 +102,18 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
                 .put("id", casePayloadBuilder.getOffenceId().toString());
 
         return jsonObject;
+    }
+
+    public JsonPath verifyPleaUpdated(final UUID caseId,
+                                      final PleaType pleaType,
+                                      final PleaMethod pleaMethod) {
+        return pollUntilCaseByIdIsOk(caseId,
+                allOf(
+                        withJsonPath("defendant.offences[0].plea", is(pleaType.name())),
+                        withJsonPath("defendant.offences[0].pleaMethod", is(pleaMethod.name())),
+                        withJsonPath("defendant.offences[0].pleaDate", notNullValue()),
+                        withJsonPath("onlinePleaReceived", is(PleaMethod.ONLINE.equals(pleaMethod)))
+                )
+        );
     }
 }

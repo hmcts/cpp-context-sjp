@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor.activiti.delegates;
 
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+import static uk.gov.moj.cpp.sjp.event.processor.AllOffencesWithdrawalRequestCancelledProcessor.WITHDRAWAL_REQUEST_CANCELLED_PUBLIC_EVENT_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.activiti.CaseStateService.WITHDRAWAL_REQUESTED_VARIABLE;
 
@@ -21,7 +22,6 @@ import org.slf4j.LoggerFactory;
 public class WithdrawalRequestCancelledDelegate extends AbstractCaseDelegate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WithdrawalRequestCancelledDelegate.class);
-    private static final String WITHDRAWAL_REQUEST_CANCELLED_PUBLIC_EVENT_NAME = "public.sjp.all-offences-withdrawal-request-cancelled";
 
     @Override
     public void execute(final UUID caseId, final Metadata metadata, final DelegateExecution execution, boolean processMigration) {

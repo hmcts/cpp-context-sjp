@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/fragments/sjp/withdrawal-requests-status.json",
+  "properties": {
+    "offenceId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "withdrawalRequestReasonId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "offenceId",
+    "withdrawalRequestReasonId"
+  ]
+}

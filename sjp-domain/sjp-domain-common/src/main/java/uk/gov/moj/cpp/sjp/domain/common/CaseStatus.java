@@ -1,78 +1,49 @@
 package uk.gov.moj.cpp.sjp.domain.common;
 
-import static java.time.LocalDate.now;
-import static java.util.Objects.nonNull;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_DATES_TO_AVOID;
-import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
-import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
-import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
+import static com.google.common.collect.Sets.newHashSet;
 
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import java.util.Set;
 
-import java.time.LocalDate;
-
+@SuppressWarnings({"squid:S1067"})
 public enum CaseStatus {
     NO_PLEA_RECEIVED,
-    NO_PLEA_RECEIVED_READY_FOR_DECISION,
-    PLEA_RECEIVED_READY_FOR_DECISION,
+    NO_PLEA_RECEIVED_READY_FOR_DECISION, // PIA
+    PLEA_RECEIVED_READY_FOR_DECISION, // check the plea
     PLEA_RECEIVED_NOT_READY_FOR_DECISION,
-    WITHDRAWAL_REQUEST_READY_FOR_DECISION,
+    WITHDRAWAL_REQUEST_READY_FOR_DECISION, // WITHDRAWAL_REQUESTED
     REFERRED_FOR_COURT_HEARING,
     COMPLETED,
-    REOPENED_IN_LIBRA;
+    REOPENED_IN_LIBRA,
+    UNKNOWN;
 
-    @SuppressWarnings({"squid:S00107", "squid:MethodCyclomaticComplexity"})
-    public static CaseStatus calculateStatus(final LocalDate postingDate,
-                                             final boolean isWithdrawalRequested,
-                                             final PleaInformation pleaInformation,
-                                             final String datesToAvoid,
-                                             final boolean completed,
-                                             final boolean referredToCourt,
-                                             final LocalDate reopenedDate,
-                                             final boolean adjourned) {
-        if (referredToCourt) {
-            return REFERRED_FOR_COURT_HEARING;
-        }
+    private static final Set<CaseStatus> NOT_ALLOWED_FROM_NON_READY = newHashSet(COMPLETED, REOPENED_IN_LIBRA, REFERRED_FOR_COURT_HEARING);
+    private static final Set<CaseStatus> TERMINAL_STATUS = newHashSet(COMPLETED, REFERRED_FOR_COURT_HEARING, REOPENED_IN_LIBRA);
 
-        if (nonNull(reopenedDate)) {
-            return REOPENED_IN_LIBRA;
-        }
+    private static final Set<CaseStatus> READY_STATUSES
+            = newHashSet(NO_PLEA_RECEIVED_READY_FOR_DECISION,
+            PLEA_RECEIVED_READY_FOR_DECISION, WITHDRAWAL_REQUEST_READY_FOR_DECISION, COMPLETED, REOPENED_IN_LIBRA);
 
-        if (completed) {
-            return COMPLETED;
-        }
+    // In single offence times, the default case was NO_PLEA_RECEIVED_READY_FOR_DECISION
+    // Now we throw an exception if a case is not covered
+    public static final CaseStatus DEFAULT_STATUS = UNKNOWN;
 
-        if (isWithdrawalRequested) {
-            return WITHDRAWAL_REQUEST_READY_FOR_DECISION;
-        }
-
-        if (adjourned) {
-            return pleaInformation.getPleaType() == null ? NO_PLEA_RECEIVED : PLEA_RECEIVED_NOT_READY_FOR_DECISION;
-        }
-
-        if (pleaInformation.getPleaType() == GUILTY || pleaInformation.getPleaType() == GUILTY_REQUEST_HEARING) {
-            return PLEA_RECEIVED_READY_FOR_DECISION;
-        }
-
-        if (pleaInformation.getPleaType() == PleaType.NOT_GUILTY) {
-            return checkStatusForNotGuiltyPlea(pleaInformation.getPleaDate(), datesToAvoid);
-        }
-
-        if (now().minusDays(NUMBER_DAYS_WAITING_FOR_PLEA).isBefore(postingDate)) {
-            return NO_PLEA_RECEIVED;
-        }
-
-        return NO_PLEA_RECEIVED_READY_FOR_DECISION;
-
+    public static boolean isAReadyStatus(CaseStatus caseStatus) { // TODO rather should be on enum state ??
+        return READY_STATUSES.contains(caseStatus);
     }
 
-    private static CaseStatus checkStatusForNotGuiltyPlea(final LocalDate pleaDate, final String datesToAvoid) {
-        if (now().minusDays(NUMBER_DAYS_WAITING_FOR_DATES_TO_AVOID).isBefore(pleaDate) && isBlank(datesToAvoid)) {
-            return PLEA_RECEIVED_NOT_READY_FOR_DECISION;
-        } else {
-            return PLEA_RECEIVED_READY_FOR_DECISION;
-        }
+    public static boolean isAllowedStatusFromComplete(final CaseStatus caseStatus) {
+        return caseStatus == REOPENED_IN_LIBRA;
     }
 
+    public static boolean isAllowedStatusFromReopenedToLibra(final CaseStatus caseStatus) {
+        return caseStatus == COMPLETED;
+    }
+
+    public static boolean isNotAllowedFromNonReady(final CaseStatus caseStatus) {
+        return NOT_ALLOWED_FROM_NON_READY.contains(caseStatus);
+    }
+
+    public static boolean isTerminalStatus(final CaseStatus caseStatus) {
+        return TERMINAL_STATUS.contains(caseStatus);
+    }
 }

@@ -52,6 +52,9 @@
     "witnessDetails": {
       "type": "string"
     },
+    "outstandingFines": {
+      "type": "boolean"
+    },
     "interpreterLanguage": {
       "type": "string"
     },

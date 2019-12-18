@@ -3,10 +3,8 @@ package uk.gov.moj.cpp.sjp.domain;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@JsonIgnoreProperties("caseId")
 public class Employer {
 
     private UUID defendantId;

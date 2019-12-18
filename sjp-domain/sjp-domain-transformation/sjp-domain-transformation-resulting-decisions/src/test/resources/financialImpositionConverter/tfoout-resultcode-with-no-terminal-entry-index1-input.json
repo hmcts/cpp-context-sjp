@@ -1,0 +1,21 @@
+{
+  "results": [
+    {
+      "code": "TFOOUT",
+      "terminalEntries": [
+        {
+          "index": -1,
+          "value": "112"
+        },
+        {
+          "index": -2,
+          "value": "102"
+        },
+        {
+          "index": -3,
+          "value": "2365"
+        }
+      ]
+    }
+  ]
+}

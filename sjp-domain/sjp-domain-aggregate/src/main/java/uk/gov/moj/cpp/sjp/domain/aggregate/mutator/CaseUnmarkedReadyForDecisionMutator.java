@@ -12,7 +12,7 @@ final class CaseUnmarkedReadyForDecisionMutator implements AggregateStateMutator
 
     @Override
     public void apply(final CaseUnmarkedReadyForDecision event, final CaseAggregateState state) {
-        state.setReadinessReason(null);
+        state.unmarkReady();
         state.setExpectedDateReady(event.getExpectedDateReady());
     }
 }

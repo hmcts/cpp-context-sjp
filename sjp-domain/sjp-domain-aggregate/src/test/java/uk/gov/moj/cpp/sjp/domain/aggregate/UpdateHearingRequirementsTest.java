@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
+import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceCancelledForDefendant;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
@@ -38,14 +39,14 @@ public class UpdateHearingRequirementsTest extends CaseAggregateBaseTest {
     }
 
     private List<Object> updatedRequirements(final String interpreterLanguage, final Boolean speakWelsh) {
-        return caseAggregate.updateHearingRequirements(userId, defendantId, interpreterLanguage, speakWelsh)
+        return caseAggregate.updateHearingRequirements(userId, defendantId, interpreterLanguage, speakWelsh, PleaMethod.ONLINE, clock.now())
                 .collect(toList());
     }
 
     @Test
     public void shouldRejectCaseWhenDefendantNotFound() {
         final UUID nonExistingDefendantId = randomUUID();
-        final List<Object> events = caseAggregate.updateHearingRequirements(userId, nonExistingDefendantId, INITIAL_INTERPRETER_LANGUAGE, INITIAL_SPEAK_WELSH)
+        final List<Object> events = caseAggregate.updateHearingRequirements(userId, nonExistingDefendantId, INITIAL_INTERPRETER_LANGUAGE, INITIAL_SPEAK_WELSH, PleaMethod.ONLINE, clock.now())
                 .collect(toList());
 
         assertThat(events, contains(instanceOf(DefendantNotFound.class)));

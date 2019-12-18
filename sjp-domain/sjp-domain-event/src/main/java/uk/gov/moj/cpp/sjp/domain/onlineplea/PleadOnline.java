@@ -21,10 +21,12 @@ public class PleadOnline {
     private final Boolean speakWelsh;
     private final String witnessDetails;
     private final String witnessDispute;
+    private final Boolean outstandingFines;
     private final PersonalDetails personalDetails;
     private final FinancialMeans financialMeans;
     private final Employer employer;
     private final List<Outgoing> outgoings;
+    private final Boolean comeToCourt;
 
     @JsonCreator
     public PleadOnline(@JsonProperty("defendantId") final UUID defendantId,
@@ -34,10 +36,12 @@ public class PleadOnline {
                        @JsonProperty("speakWelsh") final Boolean speakWelsh,
                        @JsonProperty("witnessDetails") final String witnessDetails,
                        @JsonProperty("witnessDispute") final String witnessDispute,
+                       @JsonProperty("outstandingFines") final Boolean outstandingFines,
                        @JsonProperty("personalDetails") final PersonalDetails personalDetails,
                        @JsonProperty("financialMeans") final FinancialMeans financialMeans,
                        @JsonProperty("employer") final Employer employer,
-                       @JsonProperty("outgoings") final List<Outgoing> outgoings) {
+                       @JsonProperty("outgoings") final List<Outgoing> outgoings,
+                       @JsonProperty("comeToCourt") final Boolean comeToCourt) {
         this.defendantId = defendantId;
         this.offences = offences;
         this.unavailability = unavailability;
@@ -49,6 +53,8 @@ public class PleadOnline {
         this.financialMeans = financialMeans;
         this.employer = employer;
         this.outgoings = outgoings;
+        this.comeToCourt = comeToCourt;
+        this.outstandingFines = outstandingFines;
     }
 
     public UUID getDefendantId() {
@@ -79,6 +85,10 @@ public class PleadOnline {
         return witnessDispute;
     }
 
+    public Boolean getOutstandingFines() {
+        return outstandingFines;
+    }
+
     public PersonalDetails getPersonalDetails() {
         return personalDetails;
     }
@@ -93,6 +103,10 @@ public class PleadOnline {
 
     public List<Outgoing> getOutgoings() {
         return outgoings;
+    }
+
+    public Boolean getComeToCourt() {
+        return comeToCourt;
     }
 
 }

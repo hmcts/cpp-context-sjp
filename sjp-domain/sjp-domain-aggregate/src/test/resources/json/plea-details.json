@@ -2,9 +2,9 @@
   "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
   "pleadOnline": {
     "defendantId": "50770ba9-37ea-4713-8cab-fe5bf1202716",
+    "comeToCourt": false,
     "offences": [
       {
-        "comeToCourt": false,
         "mitigation": "I was drunk at the time",
         "id": "042c541a-55b5-4f66-98f0-46b9e560f1b5",
         "plea": "GUILTY"
@@ -81,5 +81,6 @@
       }
     ]
   },
-  "createdOn": "2012-02-22T02:06:58.147Z"
+  "createdOn": "2012-02-22T02:06:58.147Z",
+  "userId": "c4ec3a35-76bf-4649-b43a-761e71c3765e"
 }

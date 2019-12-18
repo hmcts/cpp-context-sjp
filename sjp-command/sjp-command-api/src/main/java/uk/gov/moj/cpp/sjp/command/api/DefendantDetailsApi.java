@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.api;
 
+import static org.apache.commons.lang3.StringUtils.isWhitespace;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
 import static uk.gov.moj.cpp.sjp.command.api.service.AddressService.normalizePostcodeInAddress;
@@ -18,6 +19,7 @@ import javax.json.JsonObjectBuilder;
 public class DefendantDetailsApi {
 
     private static final String ADDRESS = "address";
+    private static final String EMAIL = "email";
 
     @Inject
     private Enveloper enveloper;
@@ -32,6 +34,11 @@ public class DefendantDetailsApi {
         if (payload.containsKey(ADDRESS)) {
             final JsonObjectBuilder updateDefendantObjectBuilder = createObjectBuilderWithFilter(payload, field -> !ADDRESS.equals(field));
             updateDefendantObjectBuilder.add(ADDRESS, normalizePostcodeInAddress(payload.getJsonObject(ADDRESS)));
+            payload = updateDefendantObjectBuilder.build();
+        }
+
+        if (payload.containsKey(EMAIL) && isWhitespace(payload.getString(EMAIL))) {
+            final JsonObjectBuilder updateDefendantObjectBuilder = createObjectBuilderWithFilter(payload, field -> !EMAIL.equals(field));
             payload = updateDefendantObjectBuilder.build();
         }
 

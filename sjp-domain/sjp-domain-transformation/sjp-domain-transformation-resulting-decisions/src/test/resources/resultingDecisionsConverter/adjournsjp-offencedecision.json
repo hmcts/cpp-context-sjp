@@ -1,0 +1,10 @@
+{
+  "id": "774b6eb7-09c7-427b-9565-80cd1a5bd4f9",
+  "type": "ADJOURN",
+  "offenceDecisionInformation": {
+    "offenceId": "702ff8df-8035-41f0-8398-492380adcbbf",
+    "verdict": "NO_VERDICT"
+  },
+  "reason": "test ajourn",
+  "adjournTo": "2019-10-04"
+}

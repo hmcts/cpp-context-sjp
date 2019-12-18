@@ -18,7 +18,7 @@ public class InterpreterSerializationTest extends AbstractSerializationTest<Inte
     private static final String EXPECTED_EMPTY_INTERPRETER_SERIALIZATION = "{\"needed\":false}";
 
     @Override
-    Map<Interpreter, Matcher<String>> getParams() {
+    protected Map<Interpreter, Matcher<String>> getParams() {
         return ImmutableMap.of(
                 FULL_INTERPRETER, equalTo(EXPECTED_FULL_INTERPRETER_SERIALIZATION),
                 EMPTY_INTERPRETER, equalTo(EXPECTED_EMPTY_INTERPRETER_SERIALIZATION)

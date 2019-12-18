@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "sessionId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "note": {
+      "type": "string"
+    },
+    "offenceDecisions": {
+      "$ref": "http://cpp.moj.gov.uk/core/sjp/decision/offenceDecisions.json"
+    },
+    "financialImposition": {
+      "$ref": "http://cpp.moj.gov.uk/core/sjp/decision/financial-imposition/financialImposition.json"
+    }
+  },
+  "required": [
+    "sessionId",
+    "offenceDecisions"
+  ],
+  "additionalProperties": false
+}

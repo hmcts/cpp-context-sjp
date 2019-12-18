@@ -60,51 +60,37 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class DefendantUpdatedListenerTest {
 
-    @InjectMocks
-    private DefendantUpdatedListener defendantUpdatedListener;
-
-    @Spy
-    @InjectMocks
-    private CaseSearchResultService caseSearchResultService = new CaseSearchResultService();
-
-    @Spy
-    @InjectMocks
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
-
-    @Spy
-    @InjectMocks
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Spy
-    private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-
-    @Mock
-    private CaseRepository caseRepository;
-
-    @Mock
-    private CaseSearchResultRepository caseSearchResultRepository;
-
-    @Mock
-    private OnlinePleaRepository.PersonDetailsOnlinePleaRepository onlinePleaRepository;
-
-    @Mock(answer = Answers.CALLS_REAL_METHODS)
-    private ContactDetailsToContactDetailsEntity contactDetailsToContactDetailsEntity;
-
-    @Mock(answer = Answers.CALLS_REAL_METHODS)
-    private AddressToAddressEntity addressToAddressEntity;
-
-    @Captor
-    private ArgumentCaptor<OnlinePlea> onlinePleaCaptor;
-
-    private CaseDetail caseDetail = new CaseDetail(UUID.randomUUID());
-
     private final Clock clock = new UtcClock();
     private final ZonedDateTime now = clock.now();
-
     private final String previousTitle = "previously set Title";
     private final Gender previousGender = Gender.FEMALE;
     private final String previousNiNumber = "previously set NI-number";
-
+    @InjectMocks
+    private DefendantUpdatedListener defendantUpdatedListener;
+    @Spy
+    @InjectMocks
+    private final CaseSearchResultService caseSearchResultService = new CaseSearchResultService();
+    @Spy
+    @InjectMocks
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+    @Spy
+    @InjectMocks
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+    @Spy
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    @Mock
+    private CaseRepository caseRepository;
+    @Mock
+    private CaseSearchResultRepository caseSearchResultRepository;
+    @Mock
+    private OnlinePleaRepository.PersonDetailsOnlinePleaRepository onlinePleaRepository;
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private ContactDetailsToContactDetailsEntity contactDetailsToContactDetailsEntity;
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private AddressToAddressEntity addressToAddressEntity;
+    @Captor
+    private ArgumentCaptor<OnlinePlea> onlinePleaCaptor;
+    private final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID());
     private DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder defendantDetailsUpdatedBuilder = defendantDetailsUpdated()
             .withCaseId(caseDetail.getId())
             .withContactDetails(new ContactDetails("123", "456", "789", "test@test.com", "test_email2@test.com"))
@@ -127,7 +113,7 @@ public class DefendantUpdatedListenerTest {
         MockitoAnnotations.initMocks(this);
     }
 
-    private void setupMocks(UUID caseId) {
+    private void setupMocks(final UUID caseId) {
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
 
         caseDetail.getDefendant().setPersonalDetails(
@@ -166,7 +152,7 @@ public class DefendantUpdatedListenerTest {
     }
 
     // FIXME commonAssertions to be refactored
-    private void commonAssertions(DefendantDetailsUpdated defendantDetailsUpdated, boolean updateByOnlinePlea, boolean nationalInsuranceNumberSupplied) {
+    private void commonAssertions(final DefendantDetailsUpdated defendantDetailsUpdated, final boolean updateByOnlinePlea, final boolean nationalInsuranceNumberSupplied) {
         final PersonalDetails expectedPersonalDetails = buildPersonalDetails(defendantDetailsUpdated, updateByOnlinePlea, nationalInsuranceNumberSupplied);
         final List<CaseSearchResult> expectedSearchResults = singletonList(buildCaseSearchResult(defendantDetailsUpdated));
 
@@ -189,14 +175,14 @@ public class DefendantUpdatedListenerTest {
 
         assertThat(actualSearchResultsCaptor.getAllValues(), hasSize(expectedSaveInvocations));
         for (int i = 0; i < expectedSearchResults.size(); i++) {
-            CaseSearchResult actualResult = actualSearchResultsCaptor.getAllValues().get(i);
-            CaseSearchResult expectedResult = expectedSearchResults.get(i);
+            final CaseSearchResult actualResult = actualSearchResultsCaptor.getAllValues().get(i);
+            final CaseSearchResult expectedResult = expectedSearchResults.get(i);
             assertThat(actualResult.getCurrentFirstName(), equalTo(expectedResult.getCurrentFirstName()));
             assertThat(actualResult.getCurrentLastName(), equalTo(expectedResult.getCurrentLastName()));
             assertThat(actualResult.getDateOfBirth(), equalTo(expectedResult.getDateOfBirth()));
             assertTrue(actualResult.isDeprecated());
         }
-        CaseSearchResult actualRecordAdded = actualSearchResultsCaptor.getAllValues().get(expectedSearchResults.size());
+        final CaseSearchResult actualRecordAdded = actualSearchResultsCaptor.getAllValues().get(expectedSearchResults.size());
         assertThat(actualRecordAdded.getFirstName(), equalTo(defendantDetailsUpdated.getFirstName()));
         assertThat(actualRecordAdded.getCurrentFirstName(), equalTo(defendantDetailsUpdated.getFirstName()));
         assertThat(actualRecordAdded.getLastName(), equalTo(defendantDetailsUpdated.getLastName()));
@@ -227,7 +213,7 @@ public class DefendantUpdatedListenerTest {
 
     @Test
     public void shouldUpdateDefendantNationalInsuranceNumberUpdated() {
-        DefendantsNationalInsuranceNumberUpdated event = new DefendantsNationalInsuranceNumberUpdated(
+        final DefendantsNationalInsuranceNumberUpdated event = new DefendantsNationalInsuranceNumberUpdated(
                 caseDetail.getId(),
                 caseDetail.getDefendant().getId(),
                 caseDetail.getDefendant().getPersonalDetails().getNationalInsuranceNumber()
@@ -279,15 +265,15 @@ public class DefendantUpdatedListenerTest {
         commonAssertions(defendantDetailsUpdated, updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
     }
 
-    private JsonEnvelope command(DefendantsNationalInsuranceNumberUpdated defendantsNationalInsuranceNumberUpdated) {
-        return envelopeFrom(
+    private JsonEnvelope command(final DefendantsNationalInsuranceNumberUpdated defendantsNationalInsuranceNumberUpdated) {
+        return JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-national-insurance-number-updated"),
                 objectToJsonObjectConverter.convert(defendantsNationalInsuranceNumberUpdated)
         );
     }
 
-    private JsonEnvelope command(DefendantDetailsUpdated defendantDetailsUpdated) {
-        return envelopeFrom(
+    private JsonEnvelope command(final DefendantDetailsUpdated defendantDetailsUpdated) {
+        return JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-details-updated"),
                 objectToJsonObjectConverter.convert(defendantDetailsUpdated)
         );
@@ -323,6 +309,7 @@ public class DefendantUpdatedListenerTest {
     private CaseSearchResult buildCaseSearchResult(final CaseDetail caseDetail) {
         return new CaseSearchResult(
                 caseDetail.getId(),
+                caseDetail.getDefendant().getId(),
                 caseDetail.getDefendant().getPersonalDetails().getFirstName(),
                 caseDetail.getDefendant().getPersonalDetails().getLastName(),
                 caseDetail.getDefendant().getPersonalDetails().getDateOfBirth(),
@@ -333,6 +320,7 @@ public class DefendantUpdatedListenerTest {
     private CaseSearchResult buildCaseSearchResult(final DefendantDetailsUpdated defendantDetailsUpdated) {
         return new CaseSearchResult(
                 defendantDetailsUpdated.getCaseId(),
+                caseDetail.getDefendant().getId(),
                 defendantDetailsUpdated.getFirstName(),
                 defendantDetailsUpdated.getLastName(),
                 defendantDetailsUpdated.getDateOfBirth(),

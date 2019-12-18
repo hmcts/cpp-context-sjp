@@ -11,8 +11,8 @@
         "WITHDRAWAL_PENDING",
         "CASE_ASSIGNED",
         "CASE_COMPLETED",
-        "PLEA_ALREADY_SUBMITTED"
-      ]
+        "PLEA_ALREADY_SUBMITTED",
+        "PLEA_REJECTED_AS_FINAL_DECISION_TAKEN_FOR_OFFENCE"]
     }
   },
   "required": [

@@ -1,0 +1,85 @@
+{
+  "templateName": "CourtExtract",
+  "conversionFormat": "pdf",
+  "templatePayload": {
+    "generationDate": "${GENERATION_DATE}",
+    "generationTime": "${GENERATION_TIME}",
+    "defendant": {
+      "address": "14 Tottenham Court Road London England UK Greater London , W1T 1JY",
+      "firstName": "David",
+      "lastName": "LLOYD",
+      "dateOfBirth": "15 July 1980",
+      "age": "${AGE}"
+    },
+    "offences": [
+      {
+        "title": "Postal service - convey a letter without a licence",
+        "wording": "Committed some offence",
+        "legislation": "Contrary to section 6(2) of the Postal Services Act 2000.",
+        "offenceDecisions": [
+          {
+            "heading": "Court decision",
+            "lines": [
+              {
+                "label": "Plea",
+                "value": "Guilty"
+              },
+              {
+                "label": "Plea date",
+                "value": "${PLEA_DATE}"
+              },
+              {
+                "label": "Verdict",
+                "value": "Found not guilty"
+              },
+              {
+                "label": "Date of verdict",
+                "value": "${GENERATION_DATE}"
+              },
+              {
+                "label": "Result",
+                "value": "Dismissed"
+              },
+              {
+                "label": "Decision made",
+                "value": "${DECISION_DATE}\n${MAGISTRATE_NAME} (Magistrate)"
+              }
+            ]
+          },
+          {
+            "heading": "Previous court decision",
+            "lines": [
+              {
+                "label": "Plea",
+                "value": "Guilty, court hearing requested"
+              },
+              {
+                "label": "Plea date",
+                "value": "${PLEA_DATE}"
+              },
+              {
+                "label": "Result",
+                "value": "Adjourn to later SJP hearing.\nOn or after ${ADJOURNED_TO}"
+              },
+              {
+                "label": "Decision made",
+                "value": "${DECISION_DATE}\nJohn Smith (Legal Adviser)"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "caseDetails": {
+      "reference": "${URN}",
+      "prosecutor": "TFL",
+      "prosecutorAddress": {
+        "line1": "6th Floor Windsor House",
+        "line2": "42-50 Victoria Street",
+        "line3": "London"
+      },
+      "courtHouseName": "court house name",
+      "courtHouseCode": "2572"
+    }
+  }
+}

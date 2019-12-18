@@ -74,6 +74,7 @@ public class DefendantUpdatedListener {
 
         caseSearchResultService.onDefendantDetailsUpdated(
                 defendantDetailsUpdated.getCaseId(),
+                defendantDetailsUpdated.getDefendantId(),
                 defendantDetailsUpdated.getFirstName(),
                 defendantDetailsUpdated.getLastName(),
                 defendantDetailsUpdated.getDateOfBirth(),

@@ -1,0 +1,108 @@
+{
+  "id": "628c8c5c-fc6d-40bb-ac92-063df244fbfd",
+  "caseId": "5f52c17d-7461-4f18-95b0-4d829e11880c",
+  "sjpSessionId": "64e09001-3b83-4b04-994d-9e69bedaae7c",
+  "created": "2018-12-27T11:14:29.307Z",
+  "offences": [
+    {
+      "id": "e76ab6f5-9156-4ecd-81f4-01fb9241ad5f",
+      "results": [
+        {
+          "code": "AD",
+          "resultTypeId": "789870af-531f-4c94-8fb9-456ea413a3c9",
+          "terminalEntries": []
+        },
+        {
+          "code": "FCOMP",
+          "resultTypeId": "fc0ccba9-3826-430e-8ab5-dbf0c1142876",
+          "terminalEntries": [
+            {
+              "index": 1,
+              "value": "20.01"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "results": [
+        {
+          "code": "FCOST",
+          "resultTypeId": "b6996db3-cafd-473a-9e94-9060478e5ccd",
+          "terminalEntries": [
+            {
+              "index": 1,
+              "value": "11.01"
+            }
+          ]
+        },
+        {
+          "code": "COLLO",
+          "resultTypeId": "bbabf61c-aa80-4b0f-8e93-77c873210217",
+          "terminalEntries": [
+            {
+              "index": 4,
+              "value": "Pay directly to court"
+            },
+            {
+              "index": 9,
+              "value": "No information from the defendant"
+            }
+          ]
+        },
+        {
+          "code": "NOVS",
+          "resultTypeId": "a0b553fb-5071-4457-9d49-185c84af0f8d",
+          "terminalEntries": [
+            {
+              "index": 5,
+              "value": "not imposed"
+            },
+            {
+              "index": 10,
+              "value": "Absolute Discharge"
+            }
+          ]
+        },
+        {
+          "code": "LSUM",
+          "resultTypeId": "8b35952f-2d6e-479d-99aa-25b55611b130",
+          "terminalEntries": [
+            {
+              "index": 5,
+              "value": "31"
+            },
+            {
+              "index": 6,
+              "value": "Lump sum within 14 days"
+            }
+          ]
+        },
+        {
+          "code": "TFOOUT",
+          "resultTypeId": "09c23115-d9bc-40fb-bc39-3da1ad476ec9",
+          "terminalEntries": [
+            {
+              "index": 1,
+              "value": "South Yorkshire Magistrates' Court"
+            },
+            {
+              "index": -1,
+              "value": "124"
+            },
+            {
+              "index": -2,
+              "value": "704"
+            },
+            {
+              "index": -3,
+              "value": "2800"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "accountDivisionCode": 124,
+  "enforcingCourtCode": 704
+}

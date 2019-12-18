@@ -2,23 +2,21 @@ package uk.gov.moj.cpp.sjp.persistence.entity;
 
 import static javax.persistence.ConstraintMode.NO_CONSTRAINT;
 
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -35,14 +33,19 @@ public class CaseSearchResult implements Serializable {
     @JoinColumn(name = "case_id", updatable = false, insertable = false, foreignKey = @ForeignKey(name = "none", value = NO_CONSTRAINT))
     private CaseSummary caseSummary;
 
+    @OneToMany
+    @JoinColumn(name = "defendant_id", referencedColumnName = "defendant_id")
+    private Set<OffenceSummary> offenceSummary;
+
     // because there is no foreign key we can create this entity before the CaseSummary if we want
 
     @Column(name = "case_id", updatable = false)
     private UUID caseId;
 
+    @Column(name = "defendant_id", updatable = false)
+    private UUID defendantId;
+
     //sjp (offence)
-    @Column(name = "plea_date")
-    private LocalDate pleaDate;
     @Column(name = "withdrawal_requested_date")
     private LocalDate withdrawalRequestedDate;
     @Column(name = "first_name")
@@ -62,15 +65,11 @@ public class CaseSearchResult implements Serializable {
     @Column(name = "deprecated")
     private Boolean deprecated = false;
 
-    @Column(name = "plea_type")
-    @Enumerated(value = EnumType.STRING)
-    private PleaType pleaType;
-
     public CaseSearchResult() {
         this.id = UUID.randomUUID();
     }
 
-    public CaseSearchResult(final UUID caseId, final String firstName, final String lastName, final LocalDate dateOfBirth, final ZonedDateTime dateAdded) {
+    public CaseSearchResult(final UUID caseId, final UUID defendantId, final String firstName, final String lastName, final LocalDate dateOfBirth, final ZonedDateTime dateAdded) {
         this();
         this.caseId = caseId;
         this.firstName = firstName;
@@ -79,13 +78,14 @@ public class CaseSearchResult implements Serializable {
         this.currentLastName = lastName;
         this.dateOfBirth = dateOfBirth;
         this.dateAdded = dateAdded;
+        this.defendantId = defendantId;
     }
 
     public CaseSummary getCaseSummary() {
         return caseSummary;
     }
 
-    public void setCaseSummary(CaseSummary caseSummary) {
+    public void setCaseSummary(final CaseSummary caseSummary) {
         this.caseSummary = caseSummary;
     }
 
@@ -93,31 +93,41 @@ public class CaseSearchResult implements Serializable {
         return caseId;
     }
 
-    public void setCaseId(UUID caseId) {
+    public void setCaseId(final UUID caseId) {
         this.caseId = caseId;
+    }
+
+    @SuppressWarnings("squid:S2384")
+    public Set<OffenceSummary> getOffenceSummary() {
+        return offenceSummary;
+    }
+
+    @SuppressWarnings("squid:S2384")
+    public void setOffenceSummary(final Set<OffenceSummary> offenceSummary) {
+        this.offenceSummary = offenceSummary;
+    }
+
+    public UUID getDefendantId() {
+        return defendantId;
+    }
+
+    public void setDefendantId(final UUID defendantId) {
+        this.defendantId = defendantId;
     }
 
     public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(final UUID id) {
         this.id = id;
-    }
-
-    public LocalDate getPleaDate() {
-        return pleaDate;
-    }
-
-    public void setPleaDate(LocalDate pleaDate) {
-        this.pleaDate = pleaDate;
     }
 
     public LocalDate getWithdrawalRequestedDate() {
         return withdrawalRequestedDate;
     }
 
-    public void setWithdrawalRequestedDate(LocalDate withdrawalRequestedDate) {
+    public void setWithdrawalRequestedDate(final LocalDate withdrawalRequestedDate) {
         this.withdrawalRequestedDate = withdrawalRequestedDate;
     }
 
@@ -125,7 +135,7 @@ public class CaseSearchResult implements Serializable {
         return firstName;
     }
 
-    public void setFirstName(String firstName) {
+    public void setFirstName(final String firstName) {
         this.firstName = firstName;
     }
 
@@ -133,7 +143,7 @@ public class CaseSearchResult implements Serializable {
         return lastName;
     }
 
-    public void setLastName(String lastName) {
+    public void setLastName(final String lastName) {
         this.lastName = lastName;
     }
 
@@ -141,15 +151,11 @@ public class CaseSearchResult implements Serializable {
         return assigned != null && assigned;
     }
 
-    public void setAssigned(Boolean assigned) {
-        this.assigned = assigned;
-    }
-
     public String getCurrentFirstName() {
         return currentFirstName;
     }
 
-    public void setCurrentFirstName(String currentFirstName) {
+    public void setCurrentFirstName(final String currentFirstName) {
         this.currentFirstName = currentFirstName;
     }
 
@@ -157,7 +163,7 @@ public class CaseSearchResult implements Serializable {
         return currentLastName;
     }
 
-    public void setCurrentLastName(String currentLastName) {
+    public void setCurrentLastName(final String currentLastName) {
         this.currentLastName = currentLastName;
     }
 
@@ -165,11 +171,15 @@ public class CaseSearchResult implements Serializable {
         return assigned;
     }
 
+    public void setAssigned(final Boolean assigned) {
+        this.assigned = assigned;
+    }
+
     public ZonedDateTime getDateAdded() {
         return dateAdded;
     }
 
-    public void setDateAdded(ZonedDateTime dateAdded) {
+    public void setDateAdded(final ZonedDateTime dateAdded) {
         this.dateAdded = dateAdded;
     }
 
@@ -177,23 +187,15 @@ public class CaseSearchResult implements Serializable {
         return deprecated;
     }
 
-    public void setDeprecated(Boolean deprecated) {
+    public void setDeprecated(final Boolean deprecated) {
         this.deprecated = deprecated;
-    }
-
-    public void setDateOfBirth(LocalDate dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
     }
 
     public LocalDate getDateOfBirth() {
         return dateOfBirth;
     }
 
-    public PleaType getPleaType() {
-        return pleaType;
-    }
-
-    public void setPleaType(final PleaType pleaType) {
-        this.pleaType = pleaType;
+    public void setDateOfBirth(final LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 }

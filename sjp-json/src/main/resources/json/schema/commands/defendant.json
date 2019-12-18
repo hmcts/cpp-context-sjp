@@ -27,6 +27,9 @@
     "driverNumber": {
       "type": "string"
     },
+    "hearingLanguage": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/language.json"
+    },
     "languageNeeds": {
       "type": "string"
     },

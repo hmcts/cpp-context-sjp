@@ -42,14 +42,17 @@ public class CaseEmployerHandler {
                 "Delete employer",
                 defendantId,
                 state)
-                .orElse(
-                        Stream.of(
-                                state.getDefendantEmploymentStatus(defendantId).isPresent()
-                                        ? new EmployerDeleted(defendantId)
-                                        : new DefendantNotEmployed(defendantId)));
+                .orElse(getDeleteEmployerEventStream(defendantId, state));
     }
 
-    private Stream<Object> getEmployerEventStream(final Employer employer,
+    public Stream<Object> getDeleteEmployerEventStream(final UUID defendantId, final CaseAggregateState state) {
+        return Stream.of(
+                state.getDefendantEmploymentStatus(defendantId).isPresent()
+                        ? new EmployerDeleted(defendantId)
+                        : new DefendantNotEmployed(defendantId));
+    }
+
+    public Stream<Object> getEmployerEventStream(final Employer employer,
                                                   final CaseAggregateState state) {
 
         return getEmployerEventStream(employer, false, null, state);

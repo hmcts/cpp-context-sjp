@@ -13,15 +13,20 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.nullValue;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails.caseDetails;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.Defendant.defendant;
+import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
 import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.Interpreter;
 import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
+import uk.gov.justice.json.schemas.domains.sjp.PleaType;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
 import uk.gov.justice.json.schemas.domains.sjp.query.EmployerDetails;
+import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.AddressView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ContactView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.DefendantView;
@@ -33,14 +38,23 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseIdentifi
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.json.JsonObject;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ProsecutionCasesViewHelperTest {
 
     private static final UUID CASE_ID = randomUUID();
@@ -48,12 +62,15 @@ public class ProsecutionCasesViewHelperTest {
     private static final UUID DEFENDANT_ID = randomUUID();
     private static final UUID PROSECUTOR_ID = randomUUID();
     private static final UUID OFFENCE_DEFINITION_ID = randomUUID();
+    private static final UUID OFFENCE_ID1 = randomUUID();
+    private static final UUID OFFENCE_ID2 = randomUUID();
+    private static final ZonedDateTime DECISION_DATE = ZonedDateTime.now();
     private static final String PROSECUTOR_CODE = "TFL";
-    private static final String OFFENCE_CJS_CODE = "offence CJS code";
+    private static final String OFFENCE_CJS_CODE1 = "offence CJS code";
+    private static final String OFFENCE_CJS_CODE2 = "offence CJS code";
     private static final String INTERPRETER_LANGUAGE = "ENGLISH";
     private static final String OFFENCE_MITIGATION = "I was not there";
 
-    private static final LocalDate DECISION_DATE = now();
     private static final int DEFENDANT_NUM_PREVIOUS_CONVICTIONS = 1;
 
     private static final String DEFENDANT_NATIONALITY_CODE = "defendantNationality";
@@ -69,120 +86,198 @@ public class ProsecutionCasesViewHelperTest {
     private static final String DEFENDANT_WORK_PHONE = "defendant work phone";
     private static final String DEFENDANT_SECONDARY_EMAIL = "defendant secondary email";
     private static final LocalDate OFFENCE_END_DATE = LocalDate.now().plusDays(20);
+    private static final ZonedDateTime PLEA_DATE = ZonedDateTime.now();
 
     private ProsecutionCasesViewHelper prosecutionCasesViewHelper = new ProsecutionCasesViewHelper();
 
     @Test
     public void shouldCreateProsecutionCaseViewsWithoutConvictionDateWhenVerdictNotPresent() {
-        final JsonObject decision = createObjectBuilder().build();
-        createProsecutionCaseViewsAndVerifyResultCorrect(decision, null, createCaseFileDefendantDetails(), createEmployer());
+        createProsecutionCaseViewsAndVerifyResultCorrect(null, createCaseFileDefendantDetails(), createEmployer(), VerdictType.NO_VERDICT);
     }
 
     @Test
     public void shouldCreateProsecutionCaseViewsWithoutConvictionDateWhenNoVerdict() {
-        final JsonObject decision = createObjectBuilder()
-                .add("verdict", "NO_VERDICT")
-                .build();
-        createProsecutionCaseViewsAndVerifyResultCorrect(decision, null, createCaseFileDefendantDetails(), createEmployer());
+        createProsecutionCaseViewsAndVerifyResultCorrect(null, createCaseFileDefendantDetails(), createEmployer(), VerdictType.NO_VERDICT);
     }
 
     @Test
-    public void shouldCreateProsecutionCaseViewsWithConvictionDateWhenVerdictPresent() {
-        final JsonObject decision = createObjectBuilder()
-                .add("verdict", "Proved SJP")
-                .build();
-        createProsecutionCaseViewsAndVerifyResultCorrect(decision, DECISION_DATE, createCaseFileDefendantDetails(), createEmployer());
+    public void shouldCreateProsecutionCaseViewsWithConvictionDate() {
+        createProsecutionCaseViewsAndVerifyResultCorrect(DECISION_DATE.toLocalDate(), createCaseFileDefendantDetails(), createEmployer(), VerdictType.PROVED_SJP);
     }
 
     @Test
     public void shouldDefaultToEnglishHearingLanguageWhenCaseFileDetailsNull() {
-        final JsonObject decision = createObjectBuilder()
-                .add("verdict", "Proved SJP")
-                .build();
-        createProsecutionCaseViewsAndVerifyResultCorrect(decision, DECISION_DATE, null, createEmployer());
+        createProsecutionCaseViewsAndVerifyResultCorrect(DECISION_DATE.toLocalDate(), null, createEmployer(), VerdictType.PROVED_SJP);
     }
 
     @Test
     public void shouldNotIncludeEmployerDetailsIfEmployerNameNotPresent() {
-        final JsonObject decision = createObjectBuilder()
-                .add("verdict", "Proved SJP")
-                .build();
-
-        createProsecutionCaseViewsAndVerifyResultCorrect(decision, DECISION_DATE, null, EmployerDetails.employerDetails().build());
+        createProsecutionCaseViewsAndVerifyResultCorrect(DECISION_DATE.toLocalDate(), null, EmployerDetails.employerDetails().build(), VerdictType.PROVED_SJP);
     }
 
     @Test
     public void shouldReplaceEmailAndPhoneNumberWithNullsWhenBlank() {
-        final JsonObject decision = createObjectBuilder()
-                .add("verdict", "Proved SJP")
+        List<Offence> offences = createOffences(OFFENCE_ID1, OFFENCE_ID2);
+
+        createProsecutionCaseViewsAndVerifyResultCorrect(DECISION_DATE.toLocalDate(), null, createEmployer(), createDefendantPersonalDetails()
+                        .withContactDetails(ContactDetails.contactDetails()
+                                .withBusiness(null)
+                                .withHome("")
+                                .withEmail("")
+                                .withEmail2(null)
+                                .withMobile("")
+                                .build()
+                        )
+                , VerdictType.FOUND_NOT_GUILTY, offences);
+    }
+
+    @Test
+    public void shouldCreateMultipleOffenceViewsAndGetProsecutionFactsIfAvailableOnAnyOffence() {
+
+        final List<Offence> offences = new ArrayList<>();
+
+        final Offence referredOffence1 = Offence.offence()
+                .withCjsCode(OFFENCE_CJS_CODE1)
+                .withId(OFFENCE_ID1)
+                .withOffenceCode("offence code")
+                .withPlea(PleaType.GUILTY_REQUEST_HEARING)
+                .withPleaDate(PLEA_DATE)
+                .withWording("wording")
+                .withWordingWelsh("welsh wording")
+                .withStartDate(now().toString())
+                .withChargeDate(now().minusDays(5).toString())
+                .withOffenceSequenceNumber(1)
+                .build();
+        offences.add(referredOffence1);
+
+        final Offence referredOffence2 = Offence.offence()
+                .withCjsCode(OFFENCE_CJS_CODE2)
+                .withId(OFFENCE_ID1)
+                .withOffenceCode("offence code")
+                .withPlea(PleaType.GUILTY_REQUEST_HEARING)
+                .withPleaDate(PLEA_DATE)
+                .withWording("wording")
+                .withWordingWelsh("welsh wording")
+                .withStartDate(now().toString())
+                .withChargeDate(now().minusDays(5).toString())
+                .withOffenceSequenceNumber(2)
+                .build();
+        offences.add(referredOffence2);
+
+        final Offence nonReferredOffence = Offence.offence()
+                .withCjsCode(OFFENCE_CJS_CODE1)
+                .withId(OFFENCE_ID2)
+                .withOffenceCode("offence code")
+                .withPlea(PleaType.GUILTY_REQUEST_HEARING)
+                .withPleaDate(PLEA_DATE)
+                .withWording("wording")
+                .withWordingWelsh("welsh wording")
+                .withStartDate(now().toString())
+                .withChargeDate(now().minusDays(5).toString())
+                .withProsecutionFacts("Prosecution facts")
+                .withOffenceSequenceNumber(3)
+                .build();
+        offences.add(nonReferredOffence);
+
+        final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
+                .withReferredAt(DECISION_DATE)
+                .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
                 .build();
 
-        createProsecutionCaseViewsAndVerifyResultCorrect(decision, DECISION_DATE, null, createEmployer(), createDefendantPersonalDetails()
-                .withContactDetails(ContactDetails.contactDetails()
-                        .withBusiness(null)
-                        .withHome("")
-                        .withEmail("")
-                        .withEmail2(null)
-                        .withMobile("")
-                        .build()
-                )
-        );
-    }
-
-    private void createProsecutionCaseViewsAndVerifyResultCorrect(final JsonObject decision,
-                                                                  final LocalDate expectedConvictionDate,
-                                                                  final JsonObject caseFileDefendantDetails,
-                                                                  final EmployerDetails employer) {
-        createProsecutionCaseViewsAndVerifyResultCorrect(decision, expectedConvictionDate, caseFileDefendantDetails, employer, createDefendantPersonalDetails());
-    }
-
-    private void createProsecutionCaseViewsAndVerifyResultCorrect(final JsonObject decision,
-                                                                  final LocalDate expectedConvictionDate,
-                                                                  final JsonObject caseFileDefendantDetails,
-                                                                  final EmployerDetails employer,
-                                                                  final PersonalDetails.Builder personailDetailsBuilder) {
-        final Offence offence = createOffence();
         final NotifiedPleaView notifiedPleaView = new NotifiedPleaView(
-                offence.getId(),
+                offences.get(0).getId(),
                 now(),
                 "NOTIFIED_GUILTY");
-        final PersonalDetails defendantPersonalDetails = personailDetailsBuilder.build();
-        final CaseDetails caseDetails = createCaseDetails(defendantPersonalDetails, offence);
 
-        final JsonObject referenceDataOffences = createReferenceDataOffences();
+        final PersonalDetails defendantPersonalDetails = createDefendantPersonalDetails().build();
+        final CaseDetails caseDetails = createCaseDetails(defendantPersonalDetails, offences);
+
         final JsonObject prosecutor = createProsecutor();
+        final EmployerDetails employer = createEmployer();
+        final JsonObject caseFileDefendantDetails = createCaseFileDefendantDetails();
 
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
-                referenceDataOffences,
                 prosecutor,
-                decision,
                 caseFileDefendantDetails,
                 employer,
                 nonNull(caseFileDefendantDetails) ? DEFENDANT_NATIONALITY_ID : null,
                 DEFENDANT_ETHNICITY_ID,
-                DECISION_DATE,
-                notifiedPleaView,
-                OFFENCE_MITIGATION);
+                caseReferredForCourtHearing,
+                OFFENCE_MITIGATION,
+                mockCJSOffenceCodeToOffenceDefinitionId(),
+                Arrays.asList(offences.get(0), offences.get(1)));
 
         assertThat(prosecutionCaseViews.size(), is(1));
 
         final ProsecutionCaseView prosecutionCaseView = prosecutionCaseViews.get(0);
-        assertThat(prosecutionCaseView.getId(), is(CASE_ID));
-        assertThat(prosecutionCaseView.getInitiationCode(), is("J"));
-        assertThat(prosecutionCaseView.getStatementOfFacts(), is(offence.getProsecutionFacts()));
-        assertThat(prosecutionCaseView.getProsecutionCaseIdentifier(), is(new ProsecutionCaseIdentifierView(
-                PROSECUTOR_ID,
-                PROSECUTOR_CODE,
-                CASE_URN.toString())));
-        assertThat(prosecutionCaseView.getStatementOfFactsWelsh(), is(nonNull(caseFileDefendantDetails) ? STATEMENT_OF_FACTS_WELSH : null));
-        assertThat(prosecutionCaseView.getDefendants(), iterableWithSize(1));
+        assertProsecutionView(prosecutionCaseView, nonReferredOffence, caseFileDefendantDetails);
 
         final DefendantView defendantView = prosecutionCaseView.getDefendants().get(0);
 
-        assertDefendantDetailsMatch(defendantPersonalDetails, defendantView, employer, caseFileDefendantDetails, employer);
+        assertDefendantDetailsMatch(defendantPersonalDetails, defendantView, employer, caseFileDefendantDetails, employer, 2);
+
+        final OffenceView offenceView1 = defendantView.getOffences().get(0);
+        assetOffenceView(offenceView1, offences.get(0), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
+
+        final OffenceView offenceView2 = defendantView.getOffences().get(1);
+        assetOffenceView(offenceView2, offences.get(1), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
+    }
+
+    private void createProsecutionCaseViewsAndVerifyResultCorrect(final LocalDate expectedConvictionDate,
+                                                                  final JsonObject caseFileDefendantDetails,
+                                                                  final EmployerDetails employer,
+                                                                  final VerdictType verdictType) {
+        List<Offence> offences = createOffences(OFFENCE_ID1, OFFENCE_ID2);
+        createProsecutionCaseViewsAndVerifyResultCorrect(expectedConvictionDate, caseFileDefendantDetails, employer, createDefendantPersonalDetails(), verdictType, offences);
+    }
+
+    private void createProsecutionCaseViewsAndVerifyResultCorrect(final LocalDate expectedConvictionDate,
+                                                                  final JsonObject caseFileDefendantDetails,
+                                                                  final EmployerDetails employer,
+                                                                  final PersonalDetails.Builder personalDetailsBuilder,
+                                                                  final VerdictType verdictType,
+                                                                  List<Offence> offences) {
+        final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
+                .withReferredAt(DECISION_DATE)
+                .withReferredOffences(getReferredOffencesWithVerdict(verdictType))
+                .build();
+        final Offence offence = offences.get(0);
+        final NotifiedPleaView notifiedPleaView = new NotifiedPleaView(
+                offence.getId(),
+                now(),
+                "NOTIFIED_GUILTY");
+        final PersonalDetails defendantPersonalDetails = personalDetailsBuilder.build();
+        final CaseDetails caseDetails = createCaseDetails(defendantPersonalDetails, offences);
+
+        final JsonObject prosecutor = createProsecutor();
+
+        final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
+                caseDetails,
+                prosecutor,
+                caseFileDefendantDetails,
+                employer,
+                nonNull(caseFileDefendantDetails) ? DEFENDANT_NATIONALITY_ID : null,
+                DEFENDANT_ETHNICITY_ID,
+                caseReferredForCourtHearing,
+                OFFENCE_MITIGATION,
+                mockCJSOffenceCodeToOffenceDefinitionId(),
+                singletonList(offence));
+
+        assertThat(prosecutionCaseViews.size(), is(1));
+
+        final ProsecutionCaseView prosecutionCaseView = prosecutionCaseViews.get(0);
+        assertProsecutionView(prosecutionCaseView, offence, caseFileDefendantDetails);
+
+        final DefendantView defendantView = prosecutionCaseView.getDefendants().get(0);
+
+        assertDefendantDetailsMatch(defendantPersonalDetails, defendantView, employer, caseFileDefendantDetails, employer, 1);
 
         final OffenceView offenceView = defendantView.getOffences().get(0);
+        assetOffenceView(offenceView, offence, caseFileDefendantDetails, notifiedPleaView, expectedConvictionDate);
+    }
+
+    private void assetOffenceView(final OffenceView offenceView, final Offence offence, final JsonObject caseFileDefendantDetails, final NotifiedPleaView notifiedPleaView, final LocalDate expectedConvictionDate) {
         assertThat(offenceView.getId(), is(offence.getId()));
         assertThat(offenceView.getChargeDate(), is(LocalDate.parse(offence.getChargeDate())));
         assertThat(offenceView.getOffenceDefinitionId(), is(OFFENCE_DEFINITION_ID));
@@ -199,13 +294,16 @@ public class ProsecutionCasesViewHelperTest {
                                              final DefendantView defendantView,
                                              final EmployerDetails employer,
                                              final JsonObject caseFileDefendantDetails,
-                                             final EmployerDetails employerDetails) {
+                                             final EmployerDetails employerDetails,
+                                             final int offenceViews) {
 
         assertThat(defendantView.getId(), is(DEFENDANT_ID));
         assertThat(defendantView.getProsecutionCaseId(), is(CASE_ID));
         assertThat(defendantView.getNumberOfPreviousConvictionsCited(), is(DEFENDANT_NUM_PREVIOUS_CONVICTIONS));
         assertThat(defendantView.getMitigation(), is(OFFENCE_MITIGATION));
-        assertThat(defendantView.getOffences(), iterableWithSize(1));
+        assertThat(defendantView.getOffences(), iterableWithSize(offenceViews));
+
+        assertThat(defendantView.getPersonDefendant().getSelfDefinedEthnicityId(), is(DEFENDANT_ETHNICITY_ID));
 
         final PersonDetailsView personalDetailsView = defendantView.getPersonDefendant().getPersonDetails();
         assertThat(personalDetailsView.getFirstName(), is(defendantPersonalDetails.getFirstName()));
@@ -217,7 +315,6 @@ public class ProsecutionCasesViewHelperTest {
         assertThat(personalDetailsView.getDocumentationLanguageNeeds(), is(nonNull(caseFileDefendantDetails) ? "WELSH" : "ENGLISH"));
         assertThat(personalDetailsView.getNationalityId(), is(nonNull(caseFileDefendantDetails) ? DEFENDANT_NATIONALITY_ID : null));
         assertThat(personalDetailsView.getNationalInsuranceNumber(), is(NATIONAL_INSURANCE_NUMBER));
-        assertThat(personalDetailsView.getEthnicityId(), is(DEFENDANT_ETHNICITY_ID));
         assertThat(personalDetailsView.getOccupation(), is(nonNull(caseFileDefendantDetails) ? DEFENDANT_OCCUPATION : null));
         assertThat(personalDetailsView.getOccupationCode(), is(nonNull(caseFileDefendantDetails) ? valueOf(DEFENDANT_OCCUPATION_CODE) : null));
         assertThat(personalDetailsView.getSpecificRequirements(), is(nonNull(caseFileDefendantDetails) ? DEFENDANT_SPECIFIC_REQUIREMENTS : null));
@@ -263,6 +360,18 @@ public class ProsecutionCasesViewHelperTest {
         assertThat(actual, is(StringUtils.isBlank(expected) ? null : expected));
     }
 
+    private void assertProsecutionView(final ProsecutionCaseView prosecutionCaseView, Offence offence, final JsonObject caseFileDefendantDetails) {
+        assertThat(prosecutionCaseView.getId(), is(CASE_ID));
+        assertThat(prosecutionCaseView.getInitiationCode(), is("J"));
+        assertThat(prosecutionCaseView.getStatementOfFacts(), is(offence.getProsecutionFacts()));
+        assertThat(prosecutionCaseView.getProsecutionCaseIdentifier(), is(new ProsecutionCaseIdentifierView(
+                PROSECUTOR_ID,
+                PROSECUTOR_CODE,
+                CASE_URN.toString())));
+        assertThat(prosecutionCaseView.getStatementOfFactsWelsh(), is(nonNull(caseFileDefendantDetails) ? STATEMENT_OF_FACTS_WELSH : null));
+        assertThat(prosecutionCaseView.getDefendants(), iterableWithSize(1));
+    }
+
     private JsonObject createProsecutor() {
         return createObjectBuilder()
                 .add("prosecutors", createArrayBuilder()
@@ -272,16 +381,7 @@ public class ProsecutionCasesViewHelperTest {
                 .build();
     }
 
-    private JsonObject createReferenceDataOffences() {
-        return createObjectBuilder()
-                .add("offences", createArrayBuilder()
-                        .add(createObjectBuilder()
-                                .add("cjsOffenceCode", OFFENCE_CJS_CODE)
-                                .add("offenceId", OFFENCE_DEFINITION_ID.toString())))
-                .build();
-    }
-
-    private CaseDetails createCaseDetails(final PersonalDetails defendantPersonalDetails, final Offence offence) {
+    private CaseDetails createCaseDetails(final PersonalDetails defendantPersonalDetails, List<Offence> offences) {
         return caseDetails()
                 .withId(CASE_ID)
                 .withUrn(CASE_URN.toString())
@@ -292,7 +392,7 @@ public class ProsecutionCasesViewHelperTest {
                                 .build())
                         .withNumPreviousConvictions(DEFENDANT_NUM_PREVIOUS_CONVICTIONS)
                         .withPersonalDetails(defendantPersonalDetails)
-                        .withOffences(singletonList(offence))
+                        .withOffences(offences)
                         .build())
                 .build();
     }
@@ -321,20 +421,6 @@ public class ProsecutionCasesViewHelperTest {
                         .build())
                 .withTitle("Mr")
                 .withNationalInsuranceNumber(NATIONAL_INSURANCE_NUMBER);
-    }
-
-    private Offence createOffence() {
-        return Offence.offence()
-                .withCjsCode(OFFENCE_CJS_CODE)
-                .withId(randomUUID())
-                .withOffenceCode("offence code")
-                .withWording("wording")
-                .withWordingWelsh("welsh wording")
-                .withStartDate(now().toString())
-                .withChargeDate(now().minusDays(5).toString())
-                .withOffenceSequenceNumber(11)
-                .withProsecutionFacts("Prosecution facts")
-                .build();
     }
 
     private EmployerDetails createEmployer() {
@@ -376,4 +462,29 @@ public class ProsecutionCasesViewHelperTest {
                 .build();
     }
 
+    private static List<Offence> createOffences(final UUID... ids) {
+        return Arrays.stream(ids)
+                .map(id -> Offence.offence()
+                        .withCjsCode(OFFENCE_CJS_CODE1)
+                        .withId(id)
+                        .withPlea(PleaType.GUILTY_REQUEST_HEARING)
+                        .withPleaDate(PLEA_DATE)
+                        .withOffenceCode("offence code")
+                        .withWording("wording")
+                        .withWordingWelsh("welsh wording")
+                        .withStartDate(now().toString())
+                        .withChargeDate(now().minusDays(5).toString())
+                        .withOffenceSequenceNumber(11)
+                        .withProsecutionFacts("Prosecution facts")
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    private static Map<String, UUID> mockCJSOffenceCodeToOffenceDefinitionId() {
+        return ImmutableMap.of(OFFENCE_CJS_CODE1, OFFENCE_DEFINITION_ID);
+    }
+
+    private static List<OffenceDecisionInformation> getReferredOffencesWithVerdict(VerdictType verdictType) {
+        return singletonList(OffenceDecisionInformation.createOffenceDecisionInformation(OFFENCE_ID1, verdictType));
+    }
 }

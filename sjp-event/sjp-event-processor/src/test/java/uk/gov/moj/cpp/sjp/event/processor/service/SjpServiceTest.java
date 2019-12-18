@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor.service;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -50,6 +51,7 @@ public class SjpServiceTest {
 
     private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
     private static final UUID CASE_ID = randomUUID();
+    private static final UUID DEFENDANT_ID = randomUUID();
 
     @Test
     public void shouldGetCaseDetails() {
@@ -99,13 +101,14 @@ public class SjpServiceTest {
     public void shouldGetDefendantOnlinePleaDetails() {
         final DefendantsOnlinePlea pleaDetails = DefendantsOnlinePlea.defendantsOnlinePlea()
                 .withCaseId(CASE_ID)
+                .withDefendantId(DEFENDANT_ID)
                 .build();
         final Envelope<DefendantsOnlinePlea> responseEnvelope = Envelope.envelopeFrom(
                 metadataWithRandomUUID("sjp.query.defendants-online-plea").build(),
                 pleaDetails);
         when(requestOnlinePleaDetails()).thenReturn(responseEnvelope);
 
-        final DefendantsOnlinePlea result = sjpService.getDefendantPleaDetails(CASE_ID, envelope);
+        final DefendantsOnlinePlea result = sjpService.getDefendantPleaDetails(CASE_ID, DEFENDANT_ID, envelope);
 
         assertThat(result, is(pleaDetails));
     }
@@ -130,7 +133,10 @@ public class SjpServiceTest {
                 argThat(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(envelope).withName("sjp.query.defendants-online-plea"),
-                                payloadIsJson(withJsonPath("$.caseId", equalTo(CASE_ID.toString()))))),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.caseId", equalTo(CASE_ID.toString())),
+                                        withJsonPath("$.defendantId", equalTo(DEFENDANT_ID.toString())))
+                                        ))),
                 eq(DefendantsOnlinePlea.class));
     }
 

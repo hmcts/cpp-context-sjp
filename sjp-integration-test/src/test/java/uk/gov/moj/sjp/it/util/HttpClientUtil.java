@@ -1,8 +1,10 @@
 package uk.gov.moj.sjp.it.util;
 
 import static java.lang.String.format;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.test.utils.core.http.BaseUriProvider.getBaseUri;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
@@ -29,7 +31,8 @@ public class HttpClientUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpClientUtil.class);
 
-    private static final String BASE_URI = System.getProperty("baseUri", "http://localhost:8080");
+
+    private static final String BASE_URI = getBaseUri();
 
     private static final String WRITE_BASE_URL = BASE_URI + "/sjp-command-api/command/api/rest/sjp";
     private static final String READ_BASE_URL = BASE_URI + "/sjp-query-api/query/api/rest/sjp";
@@ -43,7 +46,7 @@ public class HttpClientUtil {
     }
 
     public static UUID makePostCall(final UUID userId, final String url, final String mediaType, final String payload, final Response.Status expectedStatus) {
-        final UUID correlationId = UUID.randomUUID();
+        final UUID correlationId = randomUUID();
 
         final MultivaluedMap<String, Object> map = new MultivaluedHashMap<>();
         map.add(HeaderConstants.USER_ID, userId.toString());
@@ -60,9 +63,25 @@ public class HttpClientUtil {
         return correlationId;
     }
 
+    public static String getPostCallResponse(final String url, final String mediaType, final String payload, final Response.Status expectedStatus) {
+        final MultivaluedMap<String, Object> map = new MultivaluedHashMap<>();
+        map.add(HeaderConstants.USER_ID, USER_ID.toString());
+        map.add(HeaderConstants.CLIENT_CORRELATION_ID, randomUUID());
+
+        final String writeUrl = getWriteUrl(url);
+        final Response response = restClient.postCommand(writeUrl, mediaType, payload, map);
+        LOGGER.info("Post call made: \n\tURL = {} \n\tMedia type = {} \n\tPayload = {}\n\tUser = {}\n",
+                writeUrl, mediaType, payload, USER_ID);
+        final String responseBody = response.readEntity(String.class);
+        assertThat(format("Post returned not expected status code with body: %s", responseBody),
+                response.getStatus(), is(expectedStatus.getStatusCode()));
+
+        return responseBody;
+    }
+
     public static UUID makeMultipartFormPostCall(final UUID userId, final String url, final String fileFieldName, final String fileName) {
         final File file = new File(fileName);
-        final UUID correlationId = UUID.randomUUID();
+        final UUID correlationId = randomUUID();
 
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
         headers.add(HeaderConstants.USER_ID, userId.toString());

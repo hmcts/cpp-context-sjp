@@ -21,6 +21,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.matchers.JsonValueNullMatcher.isJsonValueNull;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.query.api.matcher.Matchers.materialMetadataRequest;
 
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -28,6 +29,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher;
+import uk.gov.moj.cpp.sjp.query.api.service.DocumentMetadataService;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -50,6 +52,10 @@ public class SjpDocumentApiTest {
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
+
+    @InjectMocks
+    @Spy
+    private DocumentMetadataService documentMetadataService = new DocumentMetadataService();
 
     @InjectMocks
     private SjpDocumentApi sjpDocumentApi;
@@ -181,10 +187,6 @@ public class SjpDocumentApiTest {
                 )));
     }
 
-    private static JsonEnvelopeMatcher materialMetadataRequest(final JsonEnvelope sourceEnvelope, final UUID materialId) {
-        return jsonEnvelope(withMetadataEnvelopedFrom(sourceEnvelope).withName("material.query.material-metadata"),
-                payloadIsJson(withJsonPath("$.materialId", equalTo(materialId.toString()))));
-    }
 
     private void verifyMaterialCall(final JsonEnvelope sourceEnvelope, final UUID materialId) {
         verify(requester).requestAsAdmin(argThat(jsonEnvelope(

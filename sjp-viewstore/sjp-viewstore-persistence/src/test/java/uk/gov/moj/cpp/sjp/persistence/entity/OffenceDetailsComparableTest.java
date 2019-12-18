@@ -10,9 +10,9 @@ import org.junit.Test;
 public class OffenceDetailsComparableTest {
 
     @Test
-    public void shouldCompareOffenceDetailsByOrderIndex() {
-        final OffenceDetail firstOffenceDetail = builder().withOrderIndex(1).build();
-        final OffenceDetail secondOffenceDetail = builder().withOrderIndex(2).build();
+    public void shouldCompareOffenceDetailsBySequenceNumber() {
+        final OffenceDetail firstOffenceDetail = builder().setSequenceNumber(1).build();
+        final OffenceDetail secondOffenceDetail = builder().setSequenceNumber(2).build();
 
         assertThat(secondOffenceDetail, greaterThan(firstOffenceDetail));
         assertThat(secondOffenceDetail, greaterThan(null));

@@ -1,0 +1,27 @@
+{
+  "caseId": "fd51dc11-dc3c-40c8-90c6-79bb50b5752a",
+  "sessionId": "b6d37ba4-4aab-4175-ba8a-021573f24939",
+  "decisionId": "6114313a-37ed-4df8-885a-6719724b706a",
+  "savedAt": "2018-12-28T16:58:58.346Z",
+  "offenceDecisions": [
+    {
+      "id": "%s",
+      "type": "REFERRED_TO_OPEN_COURT",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "e76ab6f5-9156-4ecd-81f4-01fb9241ad5f",
+          "verdict": "NO_VERDICT"
+        }
+      ],
+      "referredToCourt": "South West London Magistrates' Court",
+      "referredToRoom": 1,
+      "referredToDateTime": "2019-01-01T11:30:00.000Z",
+      "reason": "For trial",
+      "magistratesCourt": "Lavender Hill Magistrates' Court"
+    }
+  ],
+  "_metadata": {
+    "id": "fd51dc11-dc3c-40c0-90c6-79bb50b5752a",
+    "name": "sjp.events.decision-saved"
+  }
+}

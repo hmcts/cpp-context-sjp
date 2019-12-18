@@ -26,7 +26,7 @@ public class CaseUnassignedTest extends CaseAggregateBaseTest {
         final CaseAssignmentType magistrateDecision = MAGISTRATE_DECISION;
         final Stream<Object> events = caseAggregate.assignCase(caseId, clock.now(), magistrateDecision);
 
-        assertThat(collectSingleEvent(events, CaseAssigned.class).getCaseAssignmentType(), is(magistrateDecision));
+        assertThat(collectFirstEvent(events, CaseAssigned.class).getCaseAssignmentType(), is(magistrateDecision));
     }
 
     @Test

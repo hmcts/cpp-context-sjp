@@ -107,6 +107,7 @@ public class ReadyCaseDelegateTest extends AbstractCaseDelegateTest {
                                 withJsonPath("$.markedAt", equalTo(clock.now().toString())))))));
 
         verifyGetVariableCalls();
+        verify(expectedDateReadyCalculator, never()).calculateExpectedDateReady(any());
         verify(delegateExecution).setVariable("isReady", true);
         verify(expectedDateReadyCalculator, never()).calculateExpectedDateReady(any());
     }

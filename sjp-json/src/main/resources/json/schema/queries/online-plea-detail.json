@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/online-plea-detail.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "offenceId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "caseId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "plea": {
+      "type": "string"
+    },
+    "mitigation": {
+      "type": "string"
+    },
+    "notGuiltyBecause": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "caseId",
+    "offenceId",
+    "defendantId",
+    "plea"
+  ],
+  "additionalProperties": false
+}

@@ -5,11 +5,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.sjp.it.helper.AssignmentHelper;
-import uk.gov.moj.sjp.it.commandclient.AssignCaseClient;
+import uk.gov.moj.sjp.it.commandclient.AssignNextCaseClient;
 import uk.gov.moj.sjp.it.commandclient.CreateCaseClient;
 import uk.gov.moj.sjp.it.commandclient.StartSessionClient;
 import uk.gov.moj.sjp.it.commandclient.UnassignCaseClient;
+import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
@@ -40,13 +40,12 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
     public void setUp() throws SQLException {
         SchedulingStub.stubStartSjpSessionCommand();
         SchedulingStub.stubEndSjpSessionCommand();
-        AssignmentStub.stubAddAssignmentCommand();
-        AssignmentStub.stubRemoveAssignmentCommand();
+        AssignmentStub.stubAssignmentReplicationCommands();
         ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(COURT_HOUSE_OU_CODE, "2572");
         cleaner.cleanAll();
 
         CreateCaseClient createCase = CreateCaseClient.builder().id(CASE_ID).build();
-        createCase.markedReadyForDecisionHandler = envelope -> Log.info("Case is created");
+        createCase.caseReceivedHandler = envelope -> Log.info("Case is created");
         Optional<Response> createCaseResponse = createCase.getExecutor().executeSync();
         assertThat(createCaseResponse.get().getStatus(), equalTo(202));
 
@@ -61,7 +60,7 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
         Optional<Response> sessionStartResponse = startSession.getExecutor().setExecutingUserId(USER_ID).executeSync();
         assertThat(sessionStartResponse.get().getStatus(), equalTo(202));
 
-        AssignCaseClient assignCase = AssignCaseClient.builder().build();
+        AssignNextCaseClient assignCase = AssignNextCaseClient.builder().build();
         assignCase.sessionId = returnedSessionId[0];
         assignCase.assignedPrivateHandler = envelope -> {
             final UUID caseIdActual = UUID.fromString(((JsonEnvelope) envelope).payloadAsJsonObject().getString("caseId"));
@@ -72,6 +71,7 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
     }
 
     @Test
+    @SuppressWarnings("squid:S1607")
     public void unassignCase() {
         UnassignCaseClient unassignCase = new UnassignCaseClient();
         unassignCase.caseId = CASE_ID;

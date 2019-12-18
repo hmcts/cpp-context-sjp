@@ -7,6 +7,11 @@ import java.util.Map;
 
 import com.google.common.base.Strings;
 
+/**
+ * @deprecated SetPleasApi is the new one
+ * @see uk.gov.moj.cpp.sjp.command.api.SetPleasApi
+ */
+@Deprecated
 public class UpdatePleaValidator {
 
     public Map<String, List<String>> validate(final UpdatePleaModel updatePleaModel) {

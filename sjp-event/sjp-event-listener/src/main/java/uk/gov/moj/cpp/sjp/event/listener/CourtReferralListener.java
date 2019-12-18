@@ -42,14 +42,15 @@ public class CourtReferralListener {
     public void handleCaseReferredForCourtHearing(final Envelope<CaseReferredForCourtHearing> envelope) {
         final CaseReferredForCourtHearing caseReferredForCourtHearing = envelope.payload();
 
+        final CaseDetail caseDetail = caseRepository.findBy(caseReferredForCourtHearing.getCaseId());
+
         final CaseCourtReferralStatus caseCourtReferralStatus = new CaseCourtReferralStatus(
-                caseReferredForCourtHearing.getCaseId(),
-                caseReferredForCourtHearing.getUrn(),
+                caseDetail.getId(),
+                caseDetail.getUrn(),
                 caseReferredForCourtHearing.getReferredAt());
 
         caseCourtReferralStatusRepository.save(caseCourtReferralStatus);
 
-        final CaseDetail caseDetail = caseRepository.findBy(caseReferredForCourtHearing.getCaseId());
         caseDetail.setReferredForCourtHearing(true);
     }
 }

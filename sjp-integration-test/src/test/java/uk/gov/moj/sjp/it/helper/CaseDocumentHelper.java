@@ -7,6 +7,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.lang.String.format;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -24,8 +25,10 @@ import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_RE
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED;
+import static uk.gov.moj.sjp.it.stub.MaterialStub.stubMaterialMetadata;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
+import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseByIdWithDocumentMetadata;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseDocumentsByCaseId;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeMultipartFormPostCall;
@@ -35,12 +38,15 @@ import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithTimeParams;
 import static uk.gov.moj.sjp.it.util.TopicUtil.privateEvents;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
 import uk.gov.moj.sjp.it.Constants;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.JsonHelper;
 
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -91,6 +97,8 @@ public class CaseDocumentHelper implements AutoCloseable {
     private MessageConsumer privateEventsConsumer;
 
     private MessageConsumer privateEventsConsumerForRejectedCaseUpload;
+
+    private ZonedDateTime uploadTime;
 
     public CaseDocumentHelper(UUID caseId) {
         this.id = randomUUID().toString();
@@ -192,6 +200,14 @@ public class CaseDocumentHelper implements AutoCloseable {
                 .assertThat("$.materialId", is(materialId));
     }
 
+    public void stubGetMetadata() {
+        if (uploadTime == null) {
+            uploadTime = new UtcClock().now();
+        }
+
+        stubMaterialMetadata(fromString(materialId), FILE_NAME_PLEA, "application/pdf", uploadTime);
+    }
+
     public UUID verifyCaseDocumentUploadedEventRaised() {
         final String caseDocumentUploadedEvent = publicCaseDocumentUploaded.retrieveMessage().orElse(null);
 
@@ -224,6 +240,24 @@ public class CaseDocumentHelper implements AutoCloseable {
                                         withJsonPath("documentType", equalTo(documentType))
                                 ))))));
     }
+
+    public void assertDocumentMetadataAvailable() {
+        final JsonPath jsonRequest = new JsonPath(request);
+
+        pollWithDefaults(getCaseByIdWithDocumentMetadata(caseId, USER_ID))
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.caseDocuments[0].materialId", Matchers.equalTo(jsonRequest.getString(MATERIAL_ID_PROPERTY))),
+                                withJsonPath("$.caseDocuments[0].documentType", Matchers.equalTo(jsonRequest.getString(DOCUMENT_TYPE_PROPERTY))),
+                                withJsonPath("$.caseDocuments[0].metadata.fileName", Matchers.equalTo(FILE_NAME_PLEA)),
+                                withJsonPath("$.caseDocuments[0].metadata.mimeType", Matchers.equalTo("application/pdf")),
+                                withJsonPath("$.caseDocuments[0].metadata.addedAt", Matchers.equalTo(ZonedDateTimes.toString(uploadTime)))
+                        ))
+                );
+
+    }
+
 
     public JsonObject findDocument(final UUID userId, final int index, final String documentType, final int documentNumber) {
         final ResponseData documents = pollWithDefaults(getCaseDocumentsByCaseId(caseId, userId))

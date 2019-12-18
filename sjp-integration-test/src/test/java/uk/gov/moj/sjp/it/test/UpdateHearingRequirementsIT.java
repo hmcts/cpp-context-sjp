@@ -43,7 +43,7 @@ public class UpdateHearingRequirementsIT extends BaseIntegrationTest {
 
         updateHearingRequirementsHelper.updateHearingRequirements(caseId, defendantId, null, null);
         updateHearingRequirementsHelper.pollForEmptyInterpreter(caseId, defendantId);
-        updateHearingRequirementsHelper.pollForEmptySpeakWelsh(caseId, defendantId);
+        updateHearingRequirementsHelper.pollForSpeakWelsh(caseId, defendantId, false);
     }
 
     @Test
@@ -51,7 +51,7 @@ public class UpdateHearingRequirementsIT extends BaseIntegrationTest {
         updateHearingRequirementsHelper.updateHearingRequirements(caseId, defendantId, "french",null);
 
         updateHearingRequirementsHelper.pollForInterpreter(caseId, defendantId, "french");
-        updateHearingRequirementsHelper.pollForEmptySpeakWelsh(caseId, defendantId);
+        updateHearingRequirementsHelper.pollForSpeakWelsh(caseId, defendantId, false);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
+import uk.gov.justice.json.schemas.domains.sjp.Language;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -23,6 +24,8 @@ public class Defendant extends Person {
 
     private final List<Offence> offences;
 
+    private final Language hearingLanguage;
+
     private final String languageNeeds;
 
     @JsonCreator
@@ -38,11 +41,13 @@ public class Defendant extends Person {
                      @JsonProperty("contactDetails") final ContactDetails contactDetails,
                      @JsonProperty("numPreviousConvictions") final int numPreviousConvictions,
                      @JsonProperty("offences") final List<Offence> offences,
+                     @JsonProperty("hearingLanguage") final Language hearingLanguage,
                      @JsonProperty("languageNeeds") final String languageNeeds) {
         super(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber, driverNumber, address, contactDetails);
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
         this.offences = Optional.ofNullable(offences).map(Collections::unmodifiableList).orElseGet(Collections::emptyList);
+        this.hearingLanguage = hearingLanguage;
         this.languageNeeds = languageNeeds;
     }
 
@@ -56,6 +61,10 @@ public class Defendant extends Person {
 
     public List<Offence> getOffences() {
         return offences;
+    }
+
+    public Language getHearingLanguage() {
+        return hearingLanguage;
     }
 
     public String getLanguageNeeds() {
@@ -77,13 +86,14 @@ public class Defendant extends Person {
                 .append(id, defendant.id)
                 .append(numPreviousConvictions, defendant.numPreviousConvictions)
                 .append(offences, defendant.offences)
+                .append(hearingLanguage, defendant.hearingLanguage)
                 .append(languageNeeds, defendant.languageNeeds)
                 .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id, numPreviousConvictions, offences, languageNeeds);
+        return Objects.hash(super.hashCode(), id, numPreviousConvictions, offences, hearingLanguage, languageNeeds);
     }
 
     public static class DefendantBuilder {
@@ -112,6 +122,7 @@ public class Defendant extends Person {
                     defendant.getContactDetails(),
                     defendant.getNumPreviousConvictions(),
                     defendant.getOffences(),
+                    defendant.getHearingLanguage(),
                     defendant.getLanguageNeeds());
         }
 

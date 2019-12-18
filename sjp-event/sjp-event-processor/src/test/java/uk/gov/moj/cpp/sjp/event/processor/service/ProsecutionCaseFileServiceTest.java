@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
 import org.junit.Test;

@@ -1,13 +1,22 @@
 {
+  "onlinePleaDetails": [
+    {
+      "offenceId": "${offenceId}",
+      "offenceTitle": "Postal service - convey a letter without a licence",
+      "caseId": "${caseId}",
+      "id": "${onlinePleaDetailId}",
+      "defendantId": "${defendantId}",
+      "notGuiltyBecause": "I was forced to do it",
+      "plea": "NOT_GUILTY"
+    }
+  ],
   "caseId": "${caseId}",
   "pleaDetails": {
     "comeToCourt": true,
     "speakWelsh": false,
     "witnessDetails": "My mate Dave",
     "interpreterLanguage": "French",
-    "notGuiltyBecause": "I was forced to do it",
     "interpreterRequired": true,
-    "plea": "NOT_GUILTY",
     "witnessDispute": "They are lying",
     "unavailability": "I'm on holiday November 17 to 19"
   },

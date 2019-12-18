@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.sjp.event.processor.activiti;
 
 
-import static java.lang.String.format;
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.event.processor.utils.MetadataHelper.metadataToString;
 
 import uk.gov.justice.services.messaging.Metadata;
@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,6 +24,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+/**
+ * @deprecated REMOVE IT ONCE THE CASES USING THE OLD FLOW ARE RESOLVED (THE ACTIVITY IS NOT USED
+ * ANYMORE FOR THE CASE STATUS DETERMINATION)
+ */
+@Deprecated
 @Component
 public class CaseStateService {
 
@@ -63,6 +69,7 @@ public class CaseStateService {
         this.activitiService = activitiService;
     }
 
+    @Deprecated
     public String caseReceived(final UUID caseId, final LocalDate postingDate, final Metadata metadata) {
         final Map<String, Object> params = getCommonParams(metadata);
         params.put(POSTING_DATE_VARIABLE, postingDate.format(ISO_DATE));
@@ -73,21 +80,24 @@ public class CaseStateService {
         return activitiService.startProcess(PROCESS_NAME, caseId.toString(), params);
     }
 
+    @Deprecated
     public void withdrawalRequested(final UUID caseId, final Metadata metadata) {
         signalProcess(caseId, WITHDRAWAL_REQUESTED_SIGNAL_NAME, getCommonParams(metadata));
     }
 
+    @Deprecated
     public void withdrawalRequestCancelled(final UUID caseId, final Metadata metadata) {
         signalProcess(caseId, WITHDRAWAL_REQUEST_CANCELLED_SIGNAL_NAME, getCommonParams(metadata));
     }
 
+    @Deprecated
     @SuppressWarnings("squid:S4274")
     public void pleaUpdated(final UUID caseId, final UUID offenceId, final PleaType pleaType, final ZonedDateTime updatedDate, final Metadata metadata) {
         final Map<String, Object> params = getCommonParams(metadata);
         params.put(PLEA_TYPE_VARIABLE, pleaType.name());
         params.put(OFFENCE_ID_VARIABLE, offenceId.toString());
 
-        if (PleaType.NOT_GUILTY.equals(pleaType)) {
+        if (NOT_GUILTY.equals(pleaType)) {
             assert updatedDate != null : "Please specify a plea update date when the type is NOT_GUILTY";
             params.put(PLEA_DEADLINE_ADD_DATES_TO_AVOID_VARIABLE, updatedDate.plusDays(PLEA_DATES_TO_AVOID_NOTICE_DAYS).format(ISO_LOCAL_DATE_TIME));
         }
@@ -95,6 +105,7 @@ public class CaseStateService {
         signalProcess(caseId, PLEA_UPDATED_SIGNAL_NAME, params);
     }
 
+    @Deprecated
     public void pleaCancelled(final UUID caseId, final UUID offenceId, final Metadata metadata) {
         final Map<String, Object> params = getCommonParams(metadata);
         params.put(OFFENCE_ID_VARIABLE, offenceId.toString());
@@ -102,6 +113,7 @@ public class CaseStateService {
         signalProcess(caseId, PLEA_CANCELLED_SIGNAL_NAME, params);
     }
 
+    @Deprecated
     public void datesToAvoidAdded(final UUID caseId, final String datesToAvoid, final Metadata metadata) {
         final Map<String, Object> params = getCommonParams(metadata);
         params.put(DATES_TO_AVOID_VARIABLE, datesToAvoid);
@@ -109,10 +121,12 @@ public class CaseStateService {
         signalProcess(caseId, DATES_TO_AVOID_ADDED_SIGNAL_NAME, params);
     }
 
+    @Deprecated
     public void caseCompleted(final UUID caseId, final Metadata metadata) {
         signalProcess(caseId, CASE_COMPLETED_SIGNAL_NAME, getCommonParams(metadata));
     }
 
+    @Deprecated
     public void caseAdjournedForLaterHearing(final UUID caseId, final LocalDateTime adjournedTo, final Metadata metadata) {
         final Map<String, Object> params = getCommonParams(metadata);
         params.put(CASE_ADJOURNED_DATE, adjournedTo.format(ISO_LOCAL_DATE_TIME));
@@ -120,11 +134,17 @@ public class CaseStateService {
         signalProcess(caseId, CASE_ADJOURNED_SIGNAL_NAME, params);
     }
 
+    @Deprecated
     private void signalProcess(final UUID caseId, final String signalName, final Map<String, Object> params) {
+
         final String processInstanceId = Optional.ofNullable(caseId)
                 .flatMap(cId -> activitiService.getProcessInstanceId(PROCESS_NAME, caseId.toString()))
-                .orElseThrow(() -> new IllegalArgumentException(format("%s process instance does not exist for caseId %s", PROCESS_NAME, caseId)));
+                .orElse(null);
 
+        if (Objects.isNull(processInstanceId)) {
+            LOGGER.info("{} process instance does not exist for caseId {}", PROCESS_NAME, caseId);
+            return;
+        }
         activitiService.signalProcess(processInstanceId, signalName, params);
     }
 

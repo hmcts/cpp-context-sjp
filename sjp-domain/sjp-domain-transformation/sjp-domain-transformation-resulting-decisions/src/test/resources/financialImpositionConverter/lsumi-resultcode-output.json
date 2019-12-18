@@ -1,0 +1,15 @@
+{
+  "payment": {
+    "paymentTerms": {
+      "reserveTerms": false,
+      "lumpSum": {
+        "amount": 8
+      },
+      "installments": {
+        "period": "WEEKLY",
+        "startDate": "2019-08-01",
+        "amount": 10
+      }
+    }
+  }
+}

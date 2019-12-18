@@ -172,9 +172,9 @@ public class ResultingToResultsConverterHelper {
         for (final Prompt prompt : prompts) {
             promptsBuilder.add(Json.createObjectBuilder().add("id", prompt.getPromptDefinitionId().toString()).add("value", prompt.getValue()));
         }
-        final uk.gov.moj.cpp.sjp.domain.resulting.Offence offence1 = new uk.gov.moj.cpp.sjp.domain.resulting.Offence(OFFENCE_ID, asList(new Result(resultDefinitionId1, prompts)));
+        final uk.gov.moj.cpp.sjp.domain.resulting.Offence offence1 = new uk.gov.moj.cpp.sjp.domain.resulting.Offence(OFFENCE_ID, null, null, null, asList(new Result(resultDefinitionId1, prompts)));
 
-        final uk.gov.moj.cpp.sjp.domain.resulting.Offence offence2 = new uk.gov.moj.cpp.sjp.domain.resulting.Offence(OFFENCE_ID, asList(new Result(resultDefinitionId2, prompts)));
+        final uk.gov.moj.cpp.sjp.domain.resulting.Offence offence2 = new uk.gov.moj.cpp.sjp.domain.resulting.Offence(OFFENCE_ID, null, null, null, asList(new Result(resultDefinitionId2, prompts)));
 
         final List<uk.gov.moj.cpp.sjp.domain.resulting.Offence> offences = asList(offence1, offence2);
 
@@ -218,7 +218,7 @@ public class ResultingToResultsConverterHelper {
     }
 
     public static Envelope<ReferencedDecisionsSaved> getReferenceDecisionsSavedWithNoResults() {
-        final uk.gov.moj.cpp.sjp.domain.resulting.Offence offence = new uk.gov.moj.cpp.sjp.domain.resulting.Offence(randomUUID(), Collections.EMPTY_LIST);
+        final uk.gov.moj.cpp.sjp.domain.resulting.Offence offence = new uk.gov.moj.cpp.sjp.domain.resulting.Offence(randomUUID(), null, null, null, Collections.EMPTY_LIST);
         return envelop(new ReferencedDecisionsSaved(CASE_ID, SJP_SESSION_ID, RESULTED_ON, null, Collections.singletonList(offence), null, null))
                 .withName("public.resulting.referenced-decisions-saved")
                 .withMetadataFrom(emptyEnvelope);

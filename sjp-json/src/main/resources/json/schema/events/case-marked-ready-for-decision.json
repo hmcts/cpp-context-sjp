@@ -11,12 +11,20 @@
     },
     "markedAt": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    },
+    "sessionType": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/session-type.json"
+    },
+    "priority": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/priority.json"
     }
   },
   "required": [
     "caseId",
     "reason",
-    "markedAt"
+    "markedAt",
+    "sessionType",
+    "priority"
   ],
   "additionalProperties": false
 }

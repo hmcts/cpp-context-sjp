@@ -1,5 +1,6 @@
 package uk.gov.moj.sjp.it.command;
 
+import static uk.gov.moj.sjp.it.util.HttpClientUtil.getPostCallResponse;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
@@ -12,6 +13,7 @@ import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.ws.rs.core.Response;
 
 public class UpdateDefendantDetails {
 
@@ -26,6 +28,10 @@ public class UpdateDefendantDetails {
         new UpdateDefendantDetails(payloadBuilder).updateDefendantDetails(caseId, defendantId);
     }
 
+    public static String updateDefendantDetailsForCaseAndPayload(UUID caseId, UUID defendantId, DefendantDetailsPayloadBuilder payloadBuilder, Response.Status status) {
+        return new UpdateDefendantDetails(payloadBuilder).updateDefendantDetails(caseId, defendantId, status);
+    }
+
     public static void acknowledgeDefendantDetailsUpdates(final UUID caseId, final UUID defendantId) {
         String url = String.format("/cases/%s/defendant/%s", caseId, defendantId);
         makePostCall(url, "application/vnd.sjp.acknowledge-defendant-details-updates+json", null);
@@ -35,6 +41,12 @@ public class UpdateDefendantDetails {
         final JsonObject payload = preparePayload(payloadBuilder);
         String url = String.format("/cases/%s/defendant/%s", caseId, defendantId);
         makePostCall(url, "application/vnd.sjp.update-defendant-details+json", payload.toString());
+    }
+
+    private String updateDefendantDetails(final UUID caseId, final UUID defendantId, final Response.Status status) {
+        final JsonObject payload = preparePayload(payloadBuilder);
+        String url = String.format("/cases/%s/defendant/%s", caseId, defendantId);
+        return getPostCallResponse(url, "application/vnd.sjp.update-defendant-details+json", payload.toString(), status);
     }
 
     private JsonObject preparePayload(DefendantDetailsPayloadBuilder payloadBuilder) {

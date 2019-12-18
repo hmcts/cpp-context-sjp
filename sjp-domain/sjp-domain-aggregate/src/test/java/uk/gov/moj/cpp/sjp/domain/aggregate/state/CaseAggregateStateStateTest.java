@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.state;
 
 import static java.util.Collections.emptySet;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
@@ -9,12 +10,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
+import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
-import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,7 +23,7 @@ import org.junit.Test;
 
 public class CaseAggregateStateStateTest {
 
-    private static final UUID DEFENDANT_ID = UUID.randomUUID();
+    private static final UUID DEFENDANT_ID = randomUUID();
 
     private CaseAggregateState state;
 
@@ -53,7 +51,7 @@ public class CaseAggregateStateStateTest {
         state.getOffenceIdsByDefendantId().put(DEFENDANT_ID, emptySet());
 
         assertThat(state.hasDefendant(DEFENDANT_ID), is(true));
-        assertThat(state.hasDefendant(UUID.randomUUID()), is(false));
+        assertThat(state.hasDefendant(randomUUID()), is(false));
     }
 
     @Test
@@ -61,7 +59,7 @@ public class CaseAggregateStateStateTest {
         state.getDefendantsInterpreterLanguages().put(DEFENDANT_ID, "foo");
 
         assertThat(state.getDefendantInterpreterLanguage(DEFENDANT_ID), is("foo"));
-        assertThat(state.getDefendantInterpreterLanguage(UUID.randomUUID()), nullValue());
+        assertThat(state.getDefendantInterpreterLanguage(randomUUID()), nullValue());
     }
 
     @Test
@@ -69,12 +67,12 @@ public class CaseAggregateStateStateTest {
         state.getDefendantsSpeakWelsh().put(DEFENDANT_ID, true);
 
         assertThat(state.getDefendantsSpeakWelsh().get(DEFENDANT_ID), is(true));
-        assertThat(state.getDefendantsSpeakWelsh().get(UUID.randomUUID()), nullValue());
+        assertThat(state.getDefendantsSpeakWelsh().get(randomUUID()), nullValue());
     }
 
     @Test
     public void shouldAddOffenceWithPlea() {
-        UUID offenceId = UUID.randomUUID();
+        UUID offenceId = randomUUID();
         state.updateOffenceWithPlea(offenceId);
 
         assertThat(state.getOffenceIdsWithPleas(), contains(offenceId));
@@ -82,7 +80,7 @@ public class CaseAggregateStateStateTest {
 
     @Test
     public void shouldRemoveOffenceIdWithPleas() {
-        UUID offenceId = UUID.randomUUID();
+        UUID offenceId = randomUUID();
 
         assertThat(state.getOffenceIdsWithPleas(), Matchers.iterableWithSize(0));
     }
@@ -153,7 +151,7 @@ public class CaseAggregateStateStateTest {
 
     @Test
     public void shouldGetDefendantForOffenceId() {
-        UUID offenceUid = UUID.randomUUID();
+        UUID offenceUid = randomUUID();
         state.getOffenceIdsByDefendantId().put(DEFENDANT_ID, Sets.newHashSet(offenceUid));
 
         assertThat(state.getDefendantForOffence(offenceUid).get(), is(DEFENDANT_ID));
@@ -162,24 +160,24 @@ public class CaseAggregateStateStateTest {
 
     @Test
     public void shouldGetEmptyOptionalIfNoDefendantForOffenceId() {
-        assertThat(state.getDefendantForOffence(UUID.randomUUID()), is(Optional.empty()));
+        assertThat(state.getDefendantForOffence(randomUUID()), is(Optional.empty()));
     }
 
     @Test
     public void shouldReturnFalseIfAssigneeNull() {
-        assertFalse(state.isAssignee(UUID.randomUUID()));
+        assertFalse(state.isAssignee(randomUUID()));
     }
 
     @Test
     public void shouldReturnFalseIfAssigneeDifferent() {
-        state.setAssigneeId(UUID.randomUUID());
+        state.setAssigneeId(randomUUID());
 
-        assertFalse(state.isAssignee(UUID.randomUUID()));
+        assertFalse(state.isAssignee(randomUUID()));
     }
 
     @Test
     public void shouldReturnTrueIfAssigneeCorrect() {
-        UUID assigneeId = UUID.randomUUID();
+        UUID assigneeId = randomUUID();
         state.setAssigneeId(assigneeId);
 
         assertTrue(state.isAssignee(assigneeId));
@@ -187,7 +185,7 @@ public class CaseAggregateStateStateTest {
 
     @Test
     public void shouldFindOffence() {
-        UUID offenceId = UUID.randomUUID();
+        UUID offenceId = randomUUID();
 
         state.getOffenceIdsByDefendantId().put(DEFENDANT_ID, Sets.newHashSet(offenceId));
 
@@ -196,10 +194,48 @@ public class CaseAggregateStateStateTest {
 
     @Test
     public void shouldCheckIfCaseIdEqual() {
-        UUID caseId = UUID.randomUUID();
+        UUID caseId = randomUUID();
 
         state.setCaseId(caseId);
 
         assertTrue(state.isCaseIdEqualTo(caseId));
     }
+
+    @Test
+    public void shouldResolveToTrueWhenWithdrawalIsRequestedOnAllCases() {
+        UUID offenceId1 = randomUUID();
+        UUID offenceId2 = randomUUID();
+
+        final UUID withdrawalRequestReasonId1 = randomUUID();
+        final UUID withdrawalRequestReasonId2 = randomUUID();
+
+        state.getOffenceIdsByDefendantId().put(DEFENDANT_ID, Sets.newHashSet(offenceId1, offenceId2));
+
+        state.addWithdrawnOffences(new WithdrawalRequestsStatus(offenceId1, withdrawalRequestReasonId1));
+        state.addWithdrawnOffences(new WithdrawalRequestsStatus(offenceId2, withdrawalRequestReasonId2));
+
+        assertTrue(state.withdrawalRequestedOnAllOffences());
+    }
+
+
+    @Test
+    public void shouldResolveToFalseWhenWithdrawalIsNotRequestedOnAllCases() {
+        // given
+        UUID offenceId1 = randomUUID();
+        UUID offenceId2 = randomUUID();
+
+        final UUID withdrawalRequestReasonId1 = randomUUID();
+        final UUID withdrawalRequestReasonId2 = randomUUID();
+
+        state.getOffenceIdsByDefendantId().put(DEFENDANT_ID, Sets.newHashSet(offenceId1, offenceId2));
+        state.addWithdrawnOffences(new WithdrawalRequestsStatus(offenceId1, withdrawalRequestReasonId1));
+        state.addWithdrawnOffences(new WithdrawalRequestsStatus(offenceId2, withdrawalRequestReasonId2));
+
+        // when
+        state.cancelWithdrawnOffence(offenceId1);
+
+        // then
+        assertFalse(state.withdrawalRequestedOnAllOffences());
+    }
+
 }

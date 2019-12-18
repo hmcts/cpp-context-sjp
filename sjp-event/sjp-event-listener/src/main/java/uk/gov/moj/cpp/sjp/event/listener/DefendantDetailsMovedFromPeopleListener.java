@@ -38,16 +38,17 @@ public class DefendantDetailsMovedFromPeopleListener {
     @Handles("sjp.events.defendant-details-moved-from-people")
     @Transactional
     public void defendantDetailsUpdated(final JsonEnvelope envelope) {
-        DefendantDetailsMovedFromPeople defendantDetailsMovedFromPeople = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantDetailsMovedFromPeople.class);
+        final DefendantDetailsMovedFromPeople defendantDetailsMovedFromPeople = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantDetailsMovedFromPeople.class);
 
-        CaseDetail caseDetail = caseRepository.findBy(defendantDetailsMovedFromPeople.getCaseId());
+        final CaseDetail caseDetail = caseRepository.findBy(defendantDetailsMovedFromPeople.getCaseId());
 
-        PersonalDetails personalDetails = createPersonalDetails(defendantDetailsMovedFromPeople);
+        final PersonalDetails personalDetails = createPersonalDetails(defendantDetailsMovedFromPeople);
         caseDetail.getDefendant().setPersonalDetails(personalDetails);
         caseRepository.save(caseDetail);
 
         caseSearchResultService.onDefendantDetailsUpdated(
                 caseDetail.getId(),
+                caseDetail.getDefendant().getId(),
                 caseDetail.getDefendant().getPersonalDetails().getFirstName(),
                 caseDetail.getDefendant().getPersonalDetails().getLastName(),
                 caseDetail.getDefendant().getPersonalDetails().getDateOfBirth(),
@@ -56,7 +57,7 @@ public class DefendantDetailsMovedFromPeopleListener {
         );
     }
 
-    private PersonalDetails createPersonalDetails(DefendantDetailsMovedFromPeople event) {
+    private PersonalDetails createPersonalDetails(final DefendantDetailsMovedFromPeople event) {
         final PersonalDetails personalDetails = new PersonalDetails();
         personalDetails.setFirstName(event.getFirstName());
         personalDetails.setLastName(event.getLastName());

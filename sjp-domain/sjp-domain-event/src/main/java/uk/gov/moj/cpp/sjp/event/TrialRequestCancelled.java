@@ -19,4 +19,11 @@ public class TrialRequestCancelled {
     public UUID getCaseId() {
         return caseId;
     }
+
+    @Override
+    public String toString() {
+        return "TrialRequestCancelled{" +
+                "caseId=" + caseId +
+                '}';
+    }
 }

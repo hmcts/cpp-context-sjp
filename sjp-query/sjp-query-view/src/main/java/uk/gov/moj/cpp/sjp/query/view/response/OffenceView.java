@@ -1,8 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
 
-import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
-
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
@@ -11,6 +9,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
+
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 @SuppressWarnings("WeakerAccess")
 public class OffenceView {
@@ -27,9 +27,9 @@ public class OffenceView {
     private final Integer sequenceNumber;
     private final LocalDate startDate;
     private final LocalDate chargeDate;
-    private final Boolean pendingWithdrawal;
     private BigDecimal compensation;
     private String prosecutionFacts;
+    private UUID withdrawalRequestReasonId;
 
     public OffenceView(final OffenceDetail offence) {
 
@@ -48,9 +48,9 @@ public class OffenceView {
         this.wordingWelsh = offence.getWordingWelsh();
         this.startDate = offence.getStartDate();
         this.chargeDate = offence.getChargeDate();
-        this.pendingWithdrawal = offence.getPendingWithdrawal();
         this.compensation = offence.getCompensation();
         this.prosecutionFacts = offence.getProsecutionFacts();
+        this.withdrawalRequestReasonId = offence.getWithdrawalRequestReasonId();
     }
 
     public UUID getId() {
@@ -99,15 +99,15 @@ public class OffenceView {
         return chargeDate;
     }
 
-    public Boolean getPendingWithdrawal() {
-        return pendingWithdrawal;
-    }
-
     public BigDecimal getCompensation() {
         return compensation;
     }
 
     public String getProsecutionFacts() {
         return prosecutionFacts;
+    }
+
+    public UUID getWithdrawalRequestReasonId() {
+        return withdrawalRequestReasonId;
     }
 }

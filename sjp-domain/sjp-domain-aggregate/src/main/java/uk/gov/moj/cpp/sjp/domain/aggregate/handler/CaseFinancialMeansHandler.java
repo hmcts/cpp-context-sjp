@@ -1,11 +1,16 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Stream.of;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
 
+import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
+import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
+import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.event.AllFinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleted;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 
@@ -24,17 +29,25 @@ public class CaseFinancialMeansHandler {
     public Stream<Object> updateFinancialMeans(final UUID userId,
                                                final FinancialMeans financialMeans,
                                                final CaseAggregateState state) {
+
         return createRejectionEvents(
                 userId,
                 "Update financial means",
                 financialMeans.getDefendantId(),
                 state
-        ).orElse(
-                Stream.of(FinancialMeansUpdated.createEvent(
-                        financialMeans.getDefendantId(),
-                        financialMeans.getIncome(),
-                        financialMeans.getBenefits(),
-                        financialMeans.getEmploymentStatus())));
+        ).orElse(getFinancialMeansEventStream(financialMeans));
+    }
+
+    public Stream<Object> getFinancialMeansEventStream(FinancialMeans financialMeans) {
+        return of(FinancialMeansUpdated.createEvent(
+                financialMeans.getDefendantId(),
+                financialMeans.getIncome(),
+                financialMeans.getBenefits(),
+                financialMeans.getEmploymentStatus()));
+    }
+
+    public Stream<Object> getAllFinancialMeansUpdatedEventStream(final UUID defendantId, final Income income, final Benefits benefits, final Employer employer, final String employmentStatus) {
+        return of(new AllFinancialMeansUpdated(defendantId, income, benefits, employmentStatus, employer));
     }
 
     public Stream<Object> deleteFinancialMeans(final UUID defendantId, final CaseAggregateState state) {
@@ -49,6 +62,6 @@ public class CaseFinancialMeansHandler {
                 .map(CaseDocument::getMaterialId)
                 .collect(toList());
 
-        return Stream.of(FinancialMeansDeleted.createEvent(defendantId, materialIds));
+        return of(FinancialMeansDeleted.createEvent(defendantId, materialIds));
     }
 }

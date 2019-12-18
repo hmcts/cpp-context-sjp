@@ -11,6 +11,14 @@ rule "sjp.query.case"
     $outcome.setSuccess(true);
 end
 
+rule "sjp.query.case-with-document-metadata"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-with-document-metadata");
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "sjp.query.case-by-urn"
   when
     $outcome: Outcome();
@@ -159,6 +167,22 @@ rule "sjp.query.transparency-report-metadata"
   when
     $outcome: Outcome();
     $action: Action(name == "sjp.query.transparency-report-metadata");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-court-extract"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-court-extract");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-results"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-results");
   then
     $outcome.setSuccess(true);
 end

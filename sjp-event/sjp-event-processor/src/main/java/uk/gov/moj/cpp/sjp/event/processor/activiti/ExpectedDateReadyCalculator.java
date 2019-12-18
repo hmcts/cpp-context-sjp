@@ -15,6 +15,10 @@ import java.util.Optional;
 
 import org.activiti.engine.delegate.DelegateExecution;
 
+/**
+ * @deprecated the expected ready date is calculated in the aggregate
+ */
+@Deprecated
 public class ExpectedDateReadyCalculator {
 
     public LocalDateTime calculateExpectedDateReady(final DelegateExecution execution) {

@@ -39,7 +39,7 @@ public class DefendantDetail implements Serializable {
     private UUID id;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "defendantDetail", orphanRemoval = true)
-    @OrderBy("orderIndex ASC")
+    @OrderBy("sequenceNumber ASC")
     private Set<OffenceDetail> offences;
 
     @Embedded
@@ -63,7 +63,7 @@ public class DefendantDetail implements Serializable {
     }
 
     public DefendantDetail(final UUID id) {
-        this(id, null, null, 0);
+        this(id, null, null, 0, null);
     }
 
     public DefendantDetail(final UUID id,
@@ -72,6 +72,18 @@ public class DefendantDetail implements Serializable {
                            final Integer numPreviousConvictions) {
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
+        setOffences(offences);
+        setPersonalDetails(personalDetails);
+    }
+
+    public DefendantDetail(final UUID id,
+                           final PersonalDetails personalDetails,
+                           final List<OffenceDetail> offences,
+                           final Integer numPreviousConvictions,
+                           final Boolean speakWelsh) {
+        this.id = id;
+        this.numPreviousConvictions = numPreviousConvictions;
+        this.speakWelsh = speakWelsh;
         setOffences(offences);
         setPersonalDetails(personalDetails);
     }

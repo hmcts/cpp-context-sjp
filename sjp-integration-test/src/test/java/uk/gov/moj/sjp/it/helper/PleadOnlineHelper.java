@@ -1,30 +1,39 @@
 package uk.gov.moj.sjp.it.helper;
 
+import com.jayway.restassured.path.json.JsonPath;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.sjp.it.pollingquery.CasePoller;
+import uk.gov.moj.sjp.it.util.HttpClientUtil;
+import uk.gov.moj.sjp.it.util.TopicUtil;
+
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.ws.rs.core.Response;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.fail;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SET_PLEAS;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
+import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessage;
 
-import uk.gov.moj.sjp.it.pollingquery.CasePoller;
-import uk.gov.moj.sjp.it.util.HttpClientUtil;
-
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import javax.ws.rs.core.Response;
-
-import com.jayway.restassured.path.json.JsonPath;
-import org.hamcrest.Matcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class PleadOnlineHelper {
+public class PleadOnlineHelper implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PleadOnlineHelper.class);
 
@@ -32,20 +41,29 @@ public class PleadOnlineHelper {
 
     private final UUID defendantId;
 
+    private MessageConsumer publicEventsConsumer;
+
+    public PleadOnlineHelper(final UUID caseId, final UUID defendantId) {
+        this.defendantId = defendantId;
+        publicEventsConsumer = TopicUtil.publicEvents.createConsumer(PUBLIC_EVENT_SET_PLEAS);
+        writeUrl = String.format("/cases/%s/defendants/%s/plead-online", caseId, defendantId);
+    }
+
     public PleadOnlineHelper(final UUID caseId) {
+        publicEventsConsumer = TopicUtil.publicEvents.createConsumer(PUBLIC_EVENT_SET_PLEAS);
         defendantId = UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id"));
         writeUrl = String.format("/cases/%s/defendants/%s/plead-online", caseId, defendantId);
     }
 
-    public static Response getOnlinePlea(final String caseId, final UUID userId) {
-        final String resource = format("/cases/%s/defendants-online-plea", caseId);
+    public static Response getOnlinePlea(final String caseId, final String defendantId, final UUID userId) {
+        final String resource = format("/cases/%s/defendants/%s/defendants-online-plea", caseId, defendantId);
         final String contentType = "application/vnd.sjp.query.defendants-online-plea+json";
         return HttpClientUtil.makeGetCall(resource, contentType, userId);
     }
 
-    public static String getOnlinePlea(final String caseId, final Matcher<Object> jsonMatcher, final UUID userId) {
+    public static String getOnlinePlea(final String caseId, final String defendantId, final Matcher<Object> jsonMatcher, final UUID userId) {
         return await().atMost(20, TimeUnit.SECONDS).until(() -> {
-            final Response onlinePlea = getOnlinePlea(caseId, userId);
+            final Response onlinePlea = getOnlinePlea(caseId, defendantId, userId);
             if (onlinePlea.getStatus() != OK.getStatusCode()) {
                 fail("Polling interrupted, please fix the error before continue. Status code: " + onlinePlea.getStatus());
             }
@@ -71,9 +89,9 @@ public class PleadOnlineHelper {
         HttpClientUtil.makePostCall(writeUrl, contentType, payload, httpStatus);
     }
 
-    public void pleadOnline(final String payload, final Response.Status httpStatus) {
+    public String pleadOnline(final String payload, final Response.Status httpStatus) {
         LOGGER.info("Request payload: {}", new JsonPath(payload).prettify());
-        HttpClientUtil.makePostCall(writeUrl, "application/vnd.sjp.plead-online+json", payload, httpStatus);
+        return HttpClientUtil.getPostCallResponse(writeUrl, "application/vnd.sjp.plead-online+json", payload, httpStatus);
     }
 
     public void pleadOnline(final String payload) {
@@ -82,6 +100,46 @@ public class PleadOnlineHelper {
 
     public UUID getCaseDefendantId() {
         return defendantId;
+    }
+
+    public void verifyInPublicTopic(final UUID caseId, final UUID offenceId, final PleaType pleaType, final String denialReason) {
+        assertEventData(caseId, offenceId, pleaType, denialReason);
+    }
+    public JsonPath verifyPleaUpdated(final UUID caseId, final PleaType pleaType, final PleaMethod pleaMethod) {
+        return verifyPleaUpdated(caseId, pleaType, pleaMethod, 0);
+    }
+    public JsonPath verifyPleaUpdated(final UUID caseId, final PleaType pleaType, final PleaMethod pleaMethod, final int index) {
+        return CasePoller.pollUntilCaseByIdIsOk(caseId,
+                allOf(
+                        withJsonPath(format("defendant.offences[%d].plea", index), is(pleaType.name())),
+                        withJsonPath(format("defendant.offences[%d].pleaMethod", index), is(pleaMethod.name())),
+                        withJsonPath(format("defendant.offences[%d].pleaDate", index), notNullValue()),
+                        withJsonPath("onlinePleaReceived", is(PleaMethod.ONLINE.equals(pleaMethod)))
+                )
+        );
+    }
+
+    private void assertEventData(final UUID caseId, final UUID offenceId, final PleaType pleaType, final String denialReason) {
+        final JsonPath message = retrieveMessage(publicEventsConsumer);
+        assertThat(message.get("caseId"), CoreMatchers.equalTo(caseId.toString()));
+        assertThat(message.get("pleas[0].offenceId"), CoreMatchers.equalTo(offenceId.toString()));
+        assertThat(message.get("pleas[0].pleaType"), CoreMatchers.equalTo(pleaType.name()));
+        assertThat(message.get("denialReason"), CoreMatchers.equalTo(denialReason));
+    }
+
+    @Override
+    public void close() {
+        try {
+            publicEventsConsumer.close();
+        } catch (JMSException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        close();
+        super.finalize();
     }
 
 }

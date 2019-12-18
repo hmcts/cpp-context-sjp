@@ -1,0 +1,15 @@
+{
+  "id": "d1f4f315-6645-412c-89bd-f1eb45c663c8",
+  "results": [
+    {
+      "code": "CD",
+      "resultTypeId": "789870af-531f-4c94-8fb9-456ea413a3c9",
+      "terminalEntries": [
+        {
+          "index": 1,
+          "value": "10"
+        }
+      ]
+    }
+  ]
+}

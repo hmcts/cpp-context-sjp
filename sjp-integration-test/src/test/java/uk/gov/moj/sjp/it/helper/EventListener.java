@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
@@ -112,6 +113,10 @@ public class EventListener {
         return ofNullable(this.eventsByName.get(eventName).poll());
     }
 
+    public Optional<JsonEnvelope> peekEvent(final String eventName) {
+        return ofNullable(this.eventsByName.get(eventName).peek());
+    }
+
     public <T> Optional<Envelope<T>> popEvent(final Class<T> eventClass) {
 
         final Event eventAnnotation = eventClass.getAnnotation(Event.class);
@@ -124,9 +129,19 @@ public class EventListener {
                 .map(jsonEnvelope -> envelopeFrom(jsonEnvelope.metadata(), JsonHelper.fromJsonObject(jsonEnvelope.payloadAsJsonObject(), eventClass)));
     }
 
+    public <T> T popEventPayload(final Class<T> eventClass) {
+        return popEvent(eventClass)
+                .map(Envelope::payload)
+                .orElseThrow(() -> new RuntimeException(String.format("Event %s not present", eventClass.getAnnotation(Event.class).value())));
+    }
+
     public EventListener reset() {
         this.eventsByName.clear();
         return this;
+    }
+
+    public Set<String> getSubscribedEvents() {
+        return eventsByName.keySet();
     }
 
     private MessageConsumerClient startConsumer(String eventName) {

@@ -35,13 +35,17 @@ public class SystemDocumentGeneratorStub {
 
     private static final String RESPONSE_FILE_NAME = "scrooge-full.pdf";
 
-    public static void stubDocumentGeneratorEndPoint() {
+    public static void stubDocumentGeneratorEndPoint(final byte[] document) {
         stubPingFor("system-documentgenerator-api");
 
         stubFor(post(urlPathMatching(SYSTEM_DOCUMENT_GENERATOR_QUERY_URL))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader(CONTENT_TYPE, APPLICATION_OCTET_STREAM)
-                        .withBody(getFileInBytesFromName(RESPONSE_FILE_NAME))));
+                        .withBody(document)));
+    }
+
+    public static void stubDocumentGeneratorEndPoint() {
+        stubDocumentGeneratorEndPoint(getFileInBytesFromName(RESPONSE_FILE_NAME));
     }
 
     private static byte[] getFileInBytesFromName(final String fileName) {

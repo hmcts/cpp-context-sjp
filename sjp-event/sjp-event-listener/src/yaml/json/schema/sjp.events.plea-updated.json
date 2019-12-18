@@ -13,10 +13,7 @@
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-type.json"
     },
     "pleaMethod": {
-      "enum": [
-        "ONLINE",
-        "POSTAL"
-      ]
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/plea-method.json"
     },
     "pleaDetails": {
       "type": "object"

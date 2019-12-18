@@ -24,7 +24,8 @@ public class PleadOnlineHandler extends CaseCommandHandler {
         final JsonObject payload = command.payloadAsJsonObject();
         final UUID caseId = getCaseId(payload);
         final PleadOnline pleadOnline = converter.convert(payload, PleadOnline.class);
+        final UUID userId = getUserId(command);
 
-        applyToCaseAggregate(command, aCase -> aCase.pleadOnline(caseId, pleadOnline, clock.now()));
+        applyToCaseAggregate(command, aCase -> aCase.pleadOnline(caseId, pleadOnline, clock.now(), userId));
     }
 }

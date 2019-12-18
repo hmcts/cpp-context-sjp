@@ -43,7 +43,10 @@ public class SjpReadyCasesQueryView {
                 readyCase -> {
                     final JsonObjectBuilder builder = createObjectBuilder();
                     builder.add("caseId", readyCase.getCaseId().toString())
-                            .add("reason", readyCase.getReason().name());
+                            .add("reason", readyCase.getReason().name())
+                            .add("sessionType", readyCase.getSessionType().name())
+                            .add("prosecutingAuthority", readyCase.getProsecutionAuthority().name());
+
                     readyCase.getAssigneeId().ifPresent(assignee -> builder.add("assigneeId", assignee.toString()));
                     return builder.build();
                 });

@@ -13,7 +13,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REOPENED_IN_LIBRA;
 import static uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder.aDefaultSjpCase;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.CASE_ID;
 import static uk.gov.moj.cpp.sjp.domain.util.DefaultTestData.REOPEN_DATE;
@@ -32,6 +33,7 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.sjp.command.handler.builder.CaseReopenDetailsBuilder;
 import uk.gov.moj.cpp.sjp.command.handler.common.EventNamesHolder;
 import uk.gov.moj.cpp.sjp.domain.Case;
@@ -39,6 +41,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.event.CaseReopened;
 import uk.gov.moj.cpp.sjp.event.CaseReopenedUndone;
 import uk.gov.moj.cpp.sjp.event.CaseReopenedUpdated;
+import uk.gov.moj.cpp.sjp.event.CaseStatusChanged;
 
 import java.util.stream.Stream;
 
@@ -79,7 +82,7 @@ public class CaseReopenedHandlerTest {
     private Clock clock = new UtcClock();
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
-            CaseReopened.class, CaseReopenedUpdated.class, CaseReopenedUndone.class);
+            CaseReopened.class, CaseReopenedUpdated.class, CaseReopenedUndone.class, CaseStatusChanged.class);
     @Captor
     private ArgumentCaptor<Stream<JsonEnvelope>> argumentCaptor;
 
@@ -90,7 +93,6 @@ public class CaseReopenedHandlerTest {
 
         caseAggregate.receiveCase(aCase, clock.now());
     }
-
 
     @Test
     public void shouldMarkCaseReopenedInLibra() throws EventStreamException {
@@ -104,7 +106,13 @@ public class CaseReopenedHandlerTest {
                                 withJsonPath("$.caseId", equalTo(CASE_ID.toString())),
                                 withJsonPath("$.reopenedDate", equalTo(REOPEN_DATE.toString())),
                                 withJsonPath("$.libraCaseNumber", equalTo(REOPEN_LIBRA_NUMBER)),
-                                withJsonPath("$.reason", equalTo(REOPEN_REASON)))))));
+                                withJsonPath("$.reason", equalTo(REOPEN_REASON))))),
+                jsonEnvelope(metadata().withName(EventNamesHolder.CASE_STATUS_CHANGED),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.caseId", equalTo(CASE_ID.toString())),
+                                withJsonPath("$.caseStatus", equalTo(REOPENED_IN_LIBRA.toString()))
+                        ))
+                )));
     }
 
     @Test
@@ -131,8 +139,8 @@ public class CaseReopenedHandlerTest {
         caseAggregate.updateCaseReopened(CASE_REOPEN_DETAILS_UPDATED.getCaseReopenDetails());
 
         // when
-        JsonEnvelope jsonEnvelope = envelopeFrom(
-                metadataOf(CASE_ID, EventNamesHolder.CASE_REOPENED_UNDONE).build(),
+        JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataOf(CASE_ID, EventNamesHolder.CASE_REOPENED_UNDONE).build(),
                 Json.createObjectBuilder().add("caseId", CASE_ID.toString()).build());
 
         caseReopenedHandler.undoCaseReopenedInLibra(jsonEnvelope);
@@ -146,6 +154,12 @@ public class CaseReopenedHandlerTest {
                         payloadIsJson(allOf(
                                 withJsonPath("$.caseId", equalTo(CASE_ID.toString())),
                                 withJsonPath("$.oldReopenedDate", equalTo(REOPEN_UPDATE_DATE.toString()))
+                        ))
+                ),
+                jsonEnvelope(metadata().withName(EventNamesHolder.CASE_STATUS_CHANGED),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.caseId", equalTo(CASE_ID.toString())),
+                                withJsonPath("$.caseStatus", equalTo(NO_PLEA_RECEIVED.toString()))
                         ))
                 )
         ));

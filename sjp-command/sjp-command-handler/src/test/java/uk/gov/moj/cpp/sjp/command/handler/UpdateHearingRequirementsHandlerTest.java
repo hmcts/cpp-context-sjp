@@ -1,13 +1,17 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
+import static java.time.ZoneOffset.UTC;
 import static java.util.Arrays.asList;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.mockito.Spy;
+import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,6 +25,8 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.InjectMocks;
 import org.mockito.verification.VerificationMode;
+import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 
 @RunWith(Parameterized.class)
 public class UpdateHearingRequirementsHandlerTest extends CaseCommandHandlerTest {
@@ -28,6 +34,9 @@ public class UpdateHearingRequirementsHandlerTest extends CaseCommandHandlerTest
     private static final String FRENCH = "French";
 
     private UUID defendantId;
+
+    @Spy
+    private Clock clock = new StoppedClock(ZonedDateTime.now(UTC));
 
     @InjectMocks
     private UpdateHearingRequirementsHandler updateHearingRequirementsHandler;

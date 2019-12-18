@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-domain</artifactId>
-        <version>6.4.2-SC-SNAPSHOT</version>
+        <version>6.4.10-SC-SNAPSHOT</version>
     </parent>
 
     <artifactId>sjp-domain-event</artifactId>
@@ -57,21 +57,13 @@
                             <sourceDirectory>CLASSPATH</sourceDirectory>
                             <includes>
                                 <include>json/schema/fragments/gender.json</include>
+                                <include>json/schema/fragments/language.json</include>
                                 <include>json/schema/fragments/listing-details.json</include>
-                                <include>json/schema/events/sjp.events.case-note-added.json
-                                </include>
-                                <include>
-                                    json/schema/events/sjp.events.case-referred-for-court-hearing.json
-                                </include>
-                                <include>
-                                    json/schema/events/sjp.events.case-referral-for-court-hearing-rejection-recorded.json
-                                </include>
-                                <include>
-                                    json/schema/events/sjp.events.case-adjourned-to-later-sjp-hearing-recorded.json
-                                </include>
-                                <include>
-                                    json/schema/events/sjp.events.case-adjournment-to-later-sjp-hearing-elapsed.json
-                                </include>
+                                <include>json/schema/events/sjp.events.case-note-added.json</include>
+                                <include>json/schema/events/sjp.events.case-referral-for-court-hearing-rejection-recorded.json</include>
+                                <include>json/schema/events/sjp.events.case-adjourned-to-later-sjp-hearing-recorded.json</include>
+                                <include>json/schema/events/sjp.events.case-adjournment-to-later-sjp-hearing-elapsed.json</include>
+                                <include>json/schema/events/sjp.events.offences-withdrawal-status-set.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>
@@ -90,6 +82,7 @@
                                     <plugin>
                                         uk.gov.justice.generation.pojo.plugin.classmodifying.AddEventAnnotationToClassPlugin
                                     </plugin>
+                                    <plugin>uk.gov.justice.generation.pojo.plugin.classmodifying.MakeClassSerializablePlugin</plugin>
                                 </plugins>
                                 <typeMappings>
                                     <typeMapping>

@@ -31,7 +31,7 @@ public class DefendantView {
                 Optional.ofNullable(defendant.getInterpreter())
                         .map(InterpreterDetail::getLanguage)
                         .orElse(null));
-        this.speakWelsh = defendant.getSpeakWelsh();
+        this.speakWelsh = defendant.getSpeakWelsh() != null ? defendant.getSpeakWelsh() : false;
         this.numPreviousConvictions = defendant.getNumPreviousConvictions();
     }
 

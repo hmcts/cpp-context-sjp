@@ -34,29 +34,9 @@ version: v1
           schema: !include json/schema/sjp.command.create-sjp-case.json
           example: !include json/sjp.command.create-sjp-case.json
 
-      application/vnd.sjp.command.update-plea+json:
-          schema: !include json/schema/sjp.command.update-plea.json
-          example: !include json/sjp.command.update-plea.json
-
-      application/vnd.sjp.command.cancel-plea+json:
-          schema: !include json/schema/sjp.command.cancel-plea.json
-          example: !include json/sjp.command.cancel-plea.json
-
       application/vnd.sjp.command.plead-online+json:
           schema: !include json/schema/sjp.command.plead-online.json
           example: !include json/sjp.command.plead-online.json
-
-      application/vnd.sjp.command.complete-case+json:
-        schema: !include json/schema/sjp.command.complete-case.json
-        example: !include json/sjp.command.complete-case.json
-
-      application/vnd.sjp.command.request-withdrawal-all-offences+json:
-        schema: !include json/schema/sjp.command.request-withdrawal-all-offences.json
-        example: !include json/sjp.command.request-withdrawal-all-offences.json
-
-      application/vnd.sjp.command.cancel-request-withdrawal-all-offences+json:
-        schema: !include json/schema/sjp.command.cancel-request-withdrawal-all-offences.json
-        example: !include json/sjp.command.cancel-request-withdrawal-all-offences.json
 
       application/vnd.sjp.command.mark-case-reopened-in-libra+json:
         schema: !include json/schema/sjp.command.mark-case-reopened-in-libra.json
@@ -90,6 +70,10 @@ version: v1
         schema: !include json/schema/sjp.command.end-session.json
         example: !include json/sjp.command.end-session.json
 
+      application/vnd.sjp.command.assign-next-case+json:
+        schema: !include json/schema/sjp.command.assign-next-case.json
+        example: !include json/sjp.command.assign-next-case.json
+
       application/vnd.sjp.command.assign-case+json:
         schema: !include json/schema/sjp.command.assign-case.json
         example: !include json/sjp.command.assign-case.json
@@ -118,10 +102,6 @@ version: v1
         schema: !include json/schema/sjp.command.acknowledge-defendant-details-updates.json
         example: !include json/sjp.command.acknowledge-defendant-details-updates.json
 
-      application/vnd.sjp.command.refer-case-for-court-hearing+json:
-        schema: !include json/schema/sjp.command.refer-case-for-court-hearing.json
-        example: !include json/sjp.command.refer-case-for-court-hearing.json
-
       application/vnd.sjp.command.update-case-listed-in-criminal-courts+json:
         schema: !include json/schema/sjp.command.update-case-listed-in-criminal-courts.json
         example: !include json/sjp.command.update-case-listed-in-criminal-courts.json
@@ -147,3 +127,31 @@ version: v1
       application/vnd.sjp.command.add-case-note+json:
         example: !include json/sjp.command.add-case-note.json
         schema:  !include json/schema/sjp.command.add-case-note.json
+
+      application/vnd.sjp.command.set-offences-withdrawal-requests-status+json:
+        example: !include json/sjp.command.set-offences-withdrawal-requests-status.json
+        schema:  !include json/schema/sjp.command.set-offences-withdrawal-requests-status.json
+
+      application/vnd.sjp.command.set-pleas+json:
+        example: !include json/sjp.command.set-pleas.json
+        schema: !include json/schema/sjp.command.set-pleas.json
+
+      application/vnd.sjp.command.update-all-financial-means+json:
+          schema: !include json/schema/sjp.command.update-all-financial-means.json
+          example: !include json/sjp.command.update-all-financial-means.json
+
+      application/vnd.sjp.command.save-decision+json:
+        example: !include json/sjp.command.save-decision.json
+        schema:  !include json/schema/sjp.command.save-decision.json
+
+      application/vnd.sjp.command.expire-defendant-response-timer+json:
+        example: !include json/sjp.command.expire-defendant-response-timer.json
+        schema:  !include json/schema/sjp.command.expire-defendant-response-timer.json
+
+      application/vnd.sjp.command.expire-dates-to-avoid-timer+json:
+        example: !include json/sjp.command.expire-dates-to-avoid-timer.json
+        schema:  !include json/schema/sjp.command.expire-dates-to-avoid-timer.json
+
+      application/vnd.sjp.command.set-dates-to-avoid-required+json: !!null
+
+      application/vnd.sjp.command.resolve-case-status+json: !!null

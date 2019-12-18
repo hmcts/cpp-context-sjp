@@ -34,37 +34,29 @@ public class DefendantDetailsMovedFromPeopleListenerTest {
     private static final UUID CASE_ID = UUID.randomUUID();
 
     private final CaseDetail aCase = new CaseDetail(CASE_ID);
-
-    @InjectMocks
-    private DefendantDetailsMovedFromPeopleListener listener;
-
     @Spy
-    @InjectMocks
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
+    private final ObjectMapper mapper = new ObjectMapperProducer().objectMapper();
     @Spy
-    private ObjectMapper mapper = new ObjectMapperProducer().objectMapper();
-
-    @Mock
-    private CaseRepository caseRepository;
-
-    @Mock
-    private CaseSearchResultService caseSearchResultService;
-
-    @Mock(answer = Answers.CALLS_REAL_METHODS)
-    private ContactDetailsToContactDetailsEntity contactDetailsToContactDetailsEntity;
-
-    @Mock(answer = Answers.CALLS_REAL_METHODS)
-    private AddressToAddressEntity addressToAddressEntity;
-
-    @Spy
-    private JsonEnvelope eventEnvelope = envelopeFrom(
+    private final JsonEnvelope eventEnvelope = JsonEnvelope.envelopeFrom(
             MetadataBuilderFactory.metadataWithRandomUUIDAndName(),
             createObjectBuilder()
                     .add("caseId", CASE_ID.toString())
                     .add("address", createObjectBuilder().build())
                     .add("contactNumber", createObjectBuilder().build())
                     .build());
+    @InjectMocks
+    private DefendantDetailsMovedFromPeopleListener listener;
+    @Spy
+    @InjectMocks
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+    @Mock
+    private CaseRepository caseRepository;
+    @Mock
+    private CaseSearchResultService caseSearchResultService;
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private ContactDetailsToContactDetailsEntity contactDetailsToContactDetailsEntity;
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private AddressToAddressEntity addressToAddressEntity;
 
     @Before
     public void setup() {
@@ -82,6 +74,7 @@ public class DefendantDetailsMovedFromPeopleListenerTest {
         verify(caseRepository).save(aCase);
         verify(caseSearchResultService).onDefendantDetailsUpdated(
                 CASE_ID,
+                aCase.getDefendant().getId(),
                 null,
                 null,
                 null,

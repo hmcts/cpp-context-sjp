@@ -65,6 +65,7 @@ public class CaseCreatedListener {
 
         caseSearchResultService.onDefendantDetailsUpdated(
                 caseDetail.getId(),
+                caseDetail.getDefendant().getId(),
                 caseDetail.getDefendant().getPersonalDetails().getFirstName(),
                 caseDetail.getDefendant().getPersonalDetails().getLastName(),
                 caseDetail.getDefendant().getPersonalDetails().getDateOfBirth(),

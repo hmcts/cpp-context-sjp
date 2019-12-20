@@ -4,14 +4,20 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import uk.gov.moj.cpp.sjp.domain.transformation.connection.ConnectionProvider;
 import uk.gov.moj.cpp.sjp.domain.transformation.exception.TransformationException;
+import uk.gov.moj.cpp.sjp.domain.transformation.singleoffence.migration.casemarkedready.CaseMarkedReadyReadyMetaData;
 
 import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -28,6 +34,7 @@ public class SjpEventStoreService {
     private static final String SJP_EVENT_STORE_DS_NAME = "java:/app/event-tool/DS.eventstore";
     private static final Logger LOGGER = getLogger(SjpEventStoreService.class);
     private static final Map<String, Set<String>> cache = new HashMap<>();
+    private static final Map<String, List<CaseMarkedReadyReadyMetaData>> caseMarkedForDecisionCache = new HashMap<>();
 
     private static final String DECISION_SAVED_COUNT =
             "select stream_id, cast(payload::json ->> 'decisionId'  as text) as decision_id " +
@@ -80,6 +87,14 @@ public class SjpEventStoreService {
                     "and stream_id = CAST(? as uuid) " +
                     "limit 1";
 
+    private final String GET_MARKED_READY_FOR_DECISION_METADATA =
+            "select stream_id, metadata::json ->> 'id' as metadata_id, " +
+                    "payload::json ->> 'markedAt' as marked_at " +
+                    "from event_log  " +
+                    "where name = 'sjp.events.case-marked-ready-for-decision' " +
+                    "order by stream_id, position_in_stream";
+
+
     private final ConnectionProvider connectionProvider;
 
     private static SjpEventStoreService instance;
@@ -87,6 +102,7 @@ public class SjpEventStoreService {
     private SjpEventStoreService() {
         this(new ConnectionProvider(SJP_EVENT_STORE_DS_NAME));
         initMap();
+        loadMarkedDecisionData();
     }
 
     @VisibleForTesting
@@ -123,7 +139,7 @@ public class SjpEventStoreService {
         } catch (final SQLException e) {
             throw new RuntimeException("Error retrieving data using prepared statement", e);
         }
-        LOGGER.debug("Total Number of cases {}", cache.entrySet().size());
+        LOGGER.info("Total Number of cases {}", cache.entrySet().size());
     }
 
 
@@ -168,6 +184,37 @@ public class SjpEventStoreService {
             throw new TransformationException("Error retrieving data using prepared statement", e);
         }
         return null;
+    }
+
+    @SuppressWarnings({"squid:S2139", "squid:S2447"})
+    public List<CaseMarkedReadyReadyMetaData> getMarkedReadyForDecisionMetadata(final String caseId) {
+        return caseMarkedForDecisionCache.get(caseId);
+    }
+
+    @SuppressWarnings({"squid:S134", "squid:S2139"})
+    private void loadMarkedDecisionData() {
+        try (final Connection connection = connectionProvider.getConnection()) {
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(GET_MARKED_READY_FOR_DECISION_METADATA)) {
+                try (final ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        final String streamId = resultSet.getObject("stream_id", UUID.class).toString();
+                        final String metadataId = resultSet.getString("metadata_id");
+                        final String markedAt = resultSet.getString("marked_at");
+
+                        if (!caseMarkedForDecisionCache.containsKey(streamId)) {
+                            caseMarkedForDecisionCache.put(streamId, new ArrayList<>());
+                        }
+                        caseMarkedForDecisionCache.get(streamId)
+                                .add(new CaseMarkedReadyReadyMetaData(metadataId, ZonedDateTime.parse(markedAt).toLocalDate()));
+                    }
+                }
+            }
+        }
+        catch (final SQLException e) {
+            LOGGER.error("Exception while retrieving marked ready for decision metadata", e);
+            throw new TransformationException("Exception while retrieving marked ready for decision metadata", e);
+        }
+        LOGGER.info("Total Number of unique cases marked for decision {}", caseMarkedForDecisionCache.entrySet().size());
     }
 
     private static JsonObject readJson(final String json) {

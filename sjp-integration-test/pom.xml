@@ -239,7 +239,7 @@
 
     <profiles>
         <profile>
-            <id>sjp-integration-test</id>
+            <id>sjp-integration-test-with-standalone-elasticsearch</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
@@ -262,6 +262,82 @@
                                 <id>verify</id>
                                 <goals>
                                     <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>sjp-integration-test</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <skip.integration.tests>false</skip.integration.tests>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <ELASTICSEARCH_URI>http://127.0.0.1:9500</ELASTICSEARCH_URI>
+                            </systemPropertyVariables>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>integration-test</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>verify</id>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Running with embedded elasticsearch by default -->
+                    <plugin>
+                        <groupId>com.github.alexcojocaru</groupId>
+                        <artifactId>elasticsearch-maven-plugin</artifactId>
+                        <version>${elasticsearch-maven-plugin.version}</version>
+                        <configuration>
+                            <skip>false</skip>
+                            <version>${elasticsearch.embedded.version}</version>
+                            <flavour>default</flavour>
+                            <clusterName>test</clusterName>
+                            <httpPort>9500</httpPort>
+                            <transportPort>9600</transportPort>
+                            <!-- How long to wait for ES to start-->
+                            <timeout>60</timeout>
+                            <instanceSettings>
+                                <properties>
+                                    <discovery.type>single-node</discovery.type>
+                                </properties>
+                            </instanceSettings>
+                            <!-- TODO: xpack security not implemented:
+                            https://github.com/alexcojocaru/elasticsearch-maven-plugin/issues/42
+                            -->
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>start-elasticsearch</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>runforked</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>stop-elasticsearch</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>stop</goal>
                                 </goals>
                             </execution>
                         </executions>

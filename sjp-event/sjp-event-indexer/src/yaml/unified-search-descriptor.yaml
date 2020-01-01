@@ -19,4 +19,7 @@ unified_search_descriptor:
       - name: sjp.events.sjp-case-created
         transformer_config: sjp.events.sjp-case-created-spec.json
         index_name: crime_case_index
+      - name: sjp.events.case-status-changed
+        transformer_config: sjp.events.case-status-changed-spec.json
+        index_name: crime_case_index
 ...

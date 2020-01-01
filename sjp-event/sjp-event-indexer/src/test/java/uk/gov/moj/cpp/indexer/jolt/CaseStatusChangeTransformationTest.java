@@ -43,10 +43,9 @@ public class CaseStatusChangeTransformationTest {
     }
 
     private void verifyCase(final DocumentContext inputCase, final JsonObject outputCase) {
-
+        assertThat(outputCase.getString("_case_type"), is("PROSECUTION"));
         assertThat(((JsonString) inputCase.read("$.caseId")).getString(), is(outputCase.getString("caseId")));
         assertThat(outputCase.getString("caseStatus"), is("NO_PLEA_RECEIVED_READY_FOR_DECISION"));
-
     }
 
 }

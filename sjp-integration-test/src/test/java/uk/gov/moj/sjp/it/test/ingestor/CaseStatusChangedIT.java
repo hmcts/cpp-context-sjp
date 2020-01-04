@@ -10,28 +10,24 @@ import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUt
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseReopenedInLibraHelper;
 import uk.gov.moj.sjp.it.helper.CaseReopenedInLibraHelper.MarkCaseReopenedInLibraHelper;
-import uk.gov.moj.sjp.it.helper.CaseReopenedInLibraHelper.UndoCaseReopenedInLibraHelper;
-import uk.gov.moj.sjp.it.helper.CaseReopenedInLibraHelper.UpdateCaseReopenedInLibraHelper;
-import uk.gov.moj.sjp.it.helper.DecisionHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class CaseStatusChangedIT extends BaseIntegrationTest {
 
-    private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
 
     @Before
     public void setUp() throws Exception {
-        databaseCleaner.cleanAll();
+        cleanDb();
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
 
         new EventListener()
@@ -41,21 +37,24 @@ public class CaseStatusChangedIT extends BaseIntegrationTest {
         saveDefaultDecision(createCasePayloadBuilder.getId(), createCasePayloadBuilder.getOffenceIds());
     }
 
+    @After
+    public void cleanDatabase() {
+        cleanDb();
+    }
+
     @Test
     public void shouldChangeCaseStatus() {
         final UUID caseId= createCasePayloadBuilder.getId();
-        JsonObject outputCase = getCaseFromElasticSearch();
+        JsonObject outputCase = getCaseFromElasticSearch("caseStatus", "NO_PLEA_RECEIVED_READY_FOR_DECISION");
         assertThat(caseId.toString(), is(outputCase.getString("caseId")));
-        assertThat(outputCase.getString("caseStatus"), is("NO_PLEA_RECEIVED_READY_FOR_DECISION"));
         assertThat(outputCase.getString("_case_type"), is("PROSECUTION"));
 
         try (final CaseReopenedInLibraHelper mark = new MarkCaseReopenedInLibraHelper(caseId)) {
             test(mark);
         }
 
-        outputCase = getCaseFromElasticSearch();
+        outputCase = getCaseFromElasticSearch("caseStatus", "REOPENED_IN_LIBRA");
         assertThat(caseId.toString(), is(outputCase.getString("caseId")));
-        assertThat(outputCase.getString("caseStatus"), is("REOPENED_IN_LIBRA"));
         assertThat(outputCase.getString("_case_type"), is("PROSECUTION"));
     }
 

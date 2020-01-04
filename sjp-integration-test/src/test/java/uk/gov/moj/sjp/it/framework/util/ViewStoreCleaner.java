@@ -25,12 +25,13 @@ public class ViewStoreCleaner {
     private static final String DELETE_CASE_DETAILS = "delete from case_details where id='%s'";
     private static final String DELETE_READY_CASES = "delete from ready_cases where case_id='%s'";
     private static final String DELETE_PROCESSED_EVENT = "delete from processed_event where component='EVENT_INDEXER'";
+    public static final String CONTEXT_NAME = "sjp";
 
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
     private static final Logger LOGGER = LoggerFactory.getLogger(ViewStoreCleaner.class);
 
     public void cleanViewstoreTables() {
-        databaseCleaner.cleanViewStoreTables("sjp",
+        databaseCleaner.cleanViewStoreTables(CONTEXT_NAME,
                 "offence",
                 "financial_means",
                 "employer",
@@ -59,7 +60,7 @@ public class ViewStoreCleaner {
     }
 
     public static int deleteTable(final String query) {
-        try (final Connection sjpDataViewStoreConnection = new TestJdbcConnectionProvider().getViewStoreConnection("sjp");
+        try (final Connection sjpDataViewStoreConnection = new TestJdbcConnectionProvider().getViewStoreConnection(CONTEXT_NAME);
              final Statement statement = sjpDataViewStoreConnection.createStatement()) {
             return statement.executeUpdate(query);
 
@@ -71,4 +72,7 @@ public class ViewStoreCleaner {
         return 0;
     }
 
+    public void cleanEventStoreTables() {
+        databaseCleaner.cleanEventStoreTables(CONTEXT_NAME);
+    }
 }

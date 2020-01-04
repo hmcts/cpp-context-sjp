@@ -9,11 +9,9 @@ import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
-import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
-import java.util.UUID;
 
 import javax.json.JsonObject;
 
@@ -25,20 +23,20 @@ public class SjpCaseCreatedIngesterIT extends BaseIntegrationTest {
     private static final String EVENT_NAME = "sjp.events.sjp-case-created";
     private static final String PAYLOAD_PATH = "stub-data/sjp.events.sjp-case-created.json";
     private static final String SJP_EVENT = "sjp.event";
+    public static final String CASE_ID = "9f9f843e-d639-40b3-8611-8015f3a18958";
 
     private final MessageProducerClient privateEventsProducer = new MessageProducerClient();
 
-    private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
-
     @Before
     public void setUp() throws IOException {
+        cleanDb();
         privateEventsProducer.startProducer(SJP_EVENT);
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
     }
 
     @After
     public void tearDown() {
-        viewStoreCleaner.cleanDataInViewStore(UUID.fromString("7e2f843e-d639-40b3-8611-8015f3a18958"));
+        cleanDb();
         privateEventsProducer.close();
     }
 
@@ -52,9 +50,9 @@ public class SjpCaseCreatedIngesterIT extends BaseIntegrationTest {
     }
 
     private void verifyCase(final JsonObject actualCase) {
-        assertThat(actualCase.getString("caseId"), is("7e2f843e-d639-40b3-8611-8015f3a18958"));
+        assertThat(actualCase.getString("caseId"), is(CASE_ID));
         assertThat(actualCase.getString("caseReference"), is("22C22222222"));
-        assertThat(actualCase.getString("sjpNoticeServed"), is("2015-12-02"));
+        assertThat(actualCase.getString("sjpNoticeServed"), is("2055-12-02"));
         assertThat(actualCase.getString("prosecutingAuthority"), is("DVLA"));
         assertThat(actualCase.getString("caseStatus"), is("NO_PLEA_RECEIVED"));
         assertThat(actualCase.getString("_case_type"), is("PROSECUTION"));

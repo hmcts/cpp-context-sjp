@@ -17,6 +17,7 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -37,7 +38,7 @@ public class CaseReceivedIngestorIT extends BaseIntegrationTest {
 
     @After
     public void cleanDatabase() {
-        viewStoreCleaner.cleanDataInViewStore(uuid);
+        cleanDb();
     }
 
     @Test
@@ -46,7 +47,8 @@ public class CaseReceivedIngestorIT extends BaseIntegrationTest {
                 .withDefaults()
                 .withId(uuid)
                 .withProsecutingAuthority(TFL)
-                .withDefendantId(randomUUID());
+                .withDefendantId(randomUUID())
+                .withPostingDate(LocalDate.now());//required or status will randomly change to NO_PLEA_RECEIVED_WAITING_FOR_DECISION
 
         new EventListener()
                 .subscribe(EVENT_NAME)

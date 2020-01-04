@@ -59,6 +59,7 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
 
     @Before
     public void setUp() throws IOException {
+        cleanDb();
         final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
         elasticSearchIndexFinderUtil = new ElasticSearchIndexFinderUtil(elasticSearchClient);
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
@@ -66,7 +67,7 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
 
     @After
     public void cleanDatabase() {
-        viewStoreCleaner.cleanDataInViewStore(caseIdOne);
+        cleanDb();
     }
 
     @Test

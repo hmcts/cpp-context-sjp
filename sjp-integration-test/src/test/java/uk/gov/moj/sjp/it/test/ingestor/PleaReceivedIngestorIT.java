@@ -44,17 +44,18 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
 
     @After
     public void cleanDatabase() {
-        viewStoreCleaner.cleanDataInViewStore(caseIdOne);
+        cleanDb();
     }
 
     @Before
     public void setUp() throws IOException {
+        cleanDb();
+        new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
+
         casePayloadBuilder = CreateCasePayloadBuilder.withDefaults().withId(caseIdOne);
         createCaseForPayloadBuilder(this.casePayloadBuilder);
 
         pollUntilCaseByIdIsOk(casePayloadBuilder.getId());
-
-        new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
 
         stubCountryByPostcodeQuery("W1T 1JY", "England");
     }
@@ -63,7 +64,7 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
     public void shouldIngestCaseReceivedEvent() {
         pleadOnline();
 
-        final JsonObject outputCase = getCaseFromElasticSearch();
+        final JsonObject outputCase = getCaseFromElasticSearch("caseId", caseIdOne.toString());
 
         verifyElasticSearchResponse(outputCase);
     }

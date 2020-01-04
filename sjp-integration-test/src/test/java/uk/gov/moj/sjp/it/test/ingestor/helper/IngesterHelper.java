@@ -30,7 +30,7 @@ public class IngesterHelper {
                 .withVersion(1)
                 .withPreviousEventNumber(generatedInteger)
                 .withEventNumber(generatedInteger+1)
-                .withSource("people.event.source");
+                .withSource("sjp.event.source");
         final JsonObject jsonObject = jsonReader.readObject();
         jsonReader.close();
         return envelopeFrom(metadata.build(), jsonObject);

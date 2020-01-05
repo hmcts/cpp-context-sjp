@@ -12,7 +12,6 @@ import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.ge
 
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
@@ -55,7 +54,7 @@ public class CaseReceivedIngestorIT extends BaseIntegrationTest {
                 .run(() -> createCaseForPayloadBuilder(createCase))
                 .popEvent(EVENT_NAME);
 
-        final JsonObject outputCase = getCaseFromElasticSearch();
+        final JsonObject outputCase = getCaseFromElasticSearch(uuid.toString());
 
         //Case
         assertThat(createCase.getId().toString(), is(outputCase.getString("caseId")));

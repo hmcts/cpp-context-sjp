@@ -1,9 +1,7 @@
 package uk.gov.moj.sjp.it.test.ingestor;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.allOf;
@@ -18,11 +16,13 @@ import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
-import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
+import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -38,9 +38,9 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
 
 
     private CreateCasePayloadBuilder casePayloadBuilder;
+    private CreateCase.DefendantBuilder defendantBuilder;
 
     private final UUID caseIdOne = randomUUID();
-    private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
 
     @After
     public void cleanDatabase() {
@@ -52,7 +52,13 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
         cleanDb();
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
 
-        casePayloadBuilder = CreateCasePayloadBuilder.withDefaults().withId(caseIdOne);
+        final AddressBuilder addressBuilder = AddressBuilder.withDefaults().withPostcode("W1T 1JY");
+        defendantBuilder = CreateCase.DefendantBuilder.defaultDefendant().withAddressBuilder(addressBuilder)
+                .withFirstName("Johannes")
+                .withLastName("Diamonds").withAddressBuilder(addressBuilder);
+        casePayloadBuilder = CreateCasePayloadBuilder.withDefaults().withId(caseIdOne).
+                withPostingDate(LocalDate.now())
+                .withDefendantBuilder(defendantBuilder);
         createCaseForPayloadBuilder(this.casePayloadBuilder);
 
         pollUntilCaseByIdIsOk(casePayloadBuilder.getId());
@@ -64,22 +70,26 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
     public void shouldIngestCaseReceivedEvent() {
         pleadOnline();
 
-        final JsonObject outputCase = getCaseFromElasticSearch("caseId", caseIdOne.toString());
+        final JsonObject outputCase = getCaseFromElasticSearch(casePayloadBuilder.getId().toString());
 
         verifyElasticSearchResponse(outputCase);
     }
 
     private void verifyElasticSearchResponse(final JsonObject casePayload) {
-        assertThat(casePayload.toString(),
-                isJson(allOf(
-                        withJsonPath("caseId", equalTo(casePayloadBuilder.getId().toString())),
-                        withJsonPath("parties[0].partyId", equalTo(casePayloadBuilder.getDefendantBuilder().getId().toString())),
-                        withJsonPath("parties[0].firstName", equalTo("Testy")),
-                        withJsonPath("parties[0].lastName", equalTo("Testerson")),
-                        withJsonPath("parties[0].dateOfBirth", equalTo("1990-09-09")),
-                        withJsonPath("parties[0].addressLines", equalTo("15 Harvey Avenue Barking Essex Wales Bhirmingham")),
-                        withJsonPath("parties[0].postCode", equalTo("W1T 1JY"))
-                )));
+
+        assertThat(casePayload.getString("caseId"), is(casePayloadBuilder.getId().toString()));
+        final JsonObject firstParty = casePayload.getJsonArray("parties").getJsonObject(0);
+        assertThat(firstParty.getString("partyId"), is(casePayloadBuilder.getDefendantBuilder().getId().toString()));
+        assertThat(firstParty.getString("firstName"), is(defendantBuilder.getFirstName()));
+        assertThat(firstParty.getString("lastName"), is(defendantBuilder.getLastName()));
+        assertThat(firstParty.getString("dateOfBirth"), is(defendantBuilder.getDateOfBirth().toString()));
+        assertThat(firstParty.getString("postCode"), is(defendantBuilder.getAddressBuilder().getPostcode()));
+        assertThat(firstParty.getString("addressLines"), is(buildAddressLines(defendantBuilder.getAddressBuilder())));
+
+    }
+
+    private String buildAddressLines(final AddressBuilder addressBuilder) {
+        return String.join(" ", addressBuilder.getAddress1(), addressBuilder.getAddress2(), addressBuilder.getAddress3(), addressBuilder.getAddress4(), addressBuilder.getAddress5());
     }
 
     private JSONObject pleadOnline() {

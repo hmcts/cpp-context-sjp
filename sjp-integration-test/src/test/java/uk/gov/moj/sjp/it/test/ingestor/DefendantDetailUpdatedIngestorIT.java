@@ -1,41 +1,33 @@
 package uk.gov.moj.sjp.it.test.ingestor;
 
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.command.UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getPoller;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.jsonFromString;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.CasePredicate.casePayloadContains;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearchWithPredicate;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
-import uk.gov.justice.services.test.utils.core.messaging.Poller;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
-import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonString;
 
 import org.junit.After;
 import org.junit.Before;
@@ -53,9 +45,7 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
     private static final String POST_CODE = "IG6 1JY";
 
     private final UUID caseIdOne = randomUUID();
-    private final Poller poller = getPoller();
     private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
-    private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
 
     @Before
     public void setUp() throws IOException {
@@ -75,9 +65,7 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
 
         pushDefendantDetailsUpdatedEvent(getDefendantPayloadBuilder());
 
-        final Optional<JsonObject> caseCreatedResponseObject = queryElasticSearch(FIRST_NAME);
-
-        final JsonObject outputCase = jsonFromString(getJsonArray(caseCreatedResponseObject.get(), INDEX_LABEL).get().getString(0));
+        final JsonObject outputCase = getCaseFromElasticSearchWithPredicate(casePayloadContains(FIRST_NAME), caseIdOne.toString());
         final JsonObject defendant = (JsonObject) outputCase.getJsonArray("parties").get(0);
         final JsonArray aliases = defendant.getJsonArray("aliases");
 
@@ -103,9 +91,7 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
 
         pushDefendantDetailsUpdatedEvent(builder);
 
-        final Optional<JsonObject> caseCreatedResponseObject = queryElasticSearch("1911-08-16");
-
-        final JsonObject outputCase = jsonFromString(getJsonArray(caseCreatedResponseObject.get(), INDEX_LABEL).get().getString(0));
+        final JsonObject outputCase = getCaseFromElasticSearchWithPredicate(casePayloadContains("1911-08-16"), caseIdOne.toString());
         final JsonObject defendant = (JsonObject) outputCase.getJsonArray("parties").get(0);
         final JsonArray aliases = defendant.getJsonArray("aliases");
 
@@ -119,21 +105,6 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
 
         final UUID defendantId = UUID.fromString(pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id"));
         updateDefendantDetailsForCaseAndPayload(caseIdOne, defendantId, builder);
-    }
-
-    private Optional<JsonObject> queryElasticSearch(final String criteria) {
-
-        return poller.pollUntilFound(() -> {
-            try {
-                final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
-                if (jsonObject.getInt("totalResults") == 1 && checkDefendantUpdated(jsonObject, criteria)) {
-                    return of(jsonObject);
-                }
-            } catch (final IOException e) {
-                fail();
-            }
-            return empty();
-        });
     }
 
     private void assertAliases(final JsonArray aliases) {
@@ -163,9 +134,5 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
                 .withDateOfBirth(LocalDate.of(1981, 8, 16))
                 .withGender(Gender.FEMALE)
                 .withAddress(addressBuilder);
-    }
-
-    private boolean checkDefendantUpdated(final JsonObject jsonObject, final String criteria) {
-        return ((JsonString) jsonObject.getJsonArray(INDEX_LABEL).get(0)).getString().indexOf(criteria) > -1;
     }
 }

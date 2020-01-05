@@ -2,8 +2,11 @@ package uk.gov.moj.sjp.it.test.ingestor;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REOPENED_IN_LIBRA;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.saveDefaultDecision;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.CasePredicate.caseStatusIs;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearchWithPredicate;
 
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
@@ -45,16 +48,18 @@ public class CaseStatusChangedIT extends BaseIntegrationTest {
     @Test
     public void shouldChangeCaseStatus() {
         final UUID caseId= createCasePayloadBuilder.getId();
-        JsonObject outputCase = getCaseFromElasticSearch("caseStatus", "NO_PLEA_RECEIVED_READY_FOR_DECISION");
+        JsonObject outputCase = getCaseFromElasticSearchWithPredicate(caseStatusIs(NO_PLEA_RECEIVED_READY_FOR_DECISION), caseId.toString());
         assertThat(caseId.toString(), is(outputCase.getString("caseId")));
+        assertThat(outputCase.getString("caseStatus"), is(NO_PLEA_RECEIVED_READY_FOR_DECISION.name()));
         assertThat(outputCase.getString("_case_type"), is("PROSECUTION"));
 
         try (final CaseReopenedInLibraHelper mark = new MarkCaseReopenedInLibraHelper(caseId)) {
             test(mark);
         }
 
-        outputCase = getCaseFromElasticSearch("caseStatus", "REOPENED_IN_LIBRA");
+        outputCase = getCaseFromElasticSearchWithPredicate(caseStatusIs(REOPENED_IN_LIBRA), caseId.toString());
         assertThat(caseId.toString(), is(outputCase.getString("caseId")));
+        assertThat(outputCase.getString("caseStatus"), is(REOPENED_IN_LIBRA.name()));
         assertThat(outputCase.getString("_case_type"), is("PROSECUTION"));
     }
 

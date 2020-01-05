@@ -44,7 +44,7 @@ public class SjpCaseCreatedIngesterIT extends BaseIntegrationTest {
     public void shouldIngestSjpCaseCreatedEvent() {
         publishSjpCaseCreatedEvent();
 
-        final JsonObject actualCase = getCaseFromElasticSearch();
+        final JsonObject actualCase = getCaseFromElasticSearch(CASE_ID);
 
         verifyCase(actualCase);
     }

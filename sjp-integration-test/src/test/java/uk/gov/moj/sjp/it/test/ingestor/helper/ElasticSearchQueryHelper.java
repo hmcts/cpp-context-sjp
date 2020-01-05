@@ -13,6 +13,7 @@ import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUti
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import javax.json.JsonObject;
 
@@ -32,19 +33,24 @@ public class ElasticSearchQueryHelper {
         return poller;
     }
 
-    public static Optional<JsonObject> getElasticSearchResponse() {
-        return getElasticSearchResponse(null, null);
+
+    public static JsonObject getCaseFromElasticSearch(final String... caseIds) {
+        return jsonFromString(getJsonArray(getElasticSearchResponseWithPredicate(p -> true, caseIds).get(), "index").get().getString(0));
     }
 
-    public static Optional<JsonObject> getElasticSearchResponse(final String casePropertyName, final String casePropertyValue) {
+    public static JsonObject getCaseFromElasticSearchWithPredicate(Predicate<JsonObject> casePredicate, final String... caseIds) {
+        return jsonFromString(getJsonArray(getElasticSearchResponseWithPredicate(casePredicate, caseIds).get(), "index").get().getString(0));
+    }
+
+    private static Optional<JsonObject> getElasticSearchResponseWithPredicate(final Predicate<JsonObject> predicate, final String... caseIds) {
         final Optional<JsonObject> outcome = poller.pollUntilFound(() -> {
 
-            final JsonObject jsonObject = findAll();
+            final JsonObject jsonObject = findByCaseIds(caseIds);
             if (jsonObject == null) {
                 fail("Failed to load data from ElasticSearch");
             }
 
-            if (jsonObject.getInt("totalResults") == 1 && checkCaseProperty(jsonObject, casePropertyName, casePropertyValue)) {
+            if (jsonObject.getInt("totalResults") == caseIds.length && predicate.test(jsonObject)) {
                 return of(jsonObject);
             }
 
@@ -52,37 +58,20 @@ public class ElasticSearchQueryHelper {
         });
 
         if (!outcome.isPresent()) {
-            log.info("Final ElasticSearch response is : {}", findAll());
+            log.info("Final ElasticSearch response is : {}", findByCaseIds(caseIds));
         }
+
         assertTrue("No data found in crime_case_index data ", outcome.isPresent());
         return outcome;
     }
 
-    private static JsonObject findAll() {
+    private static JsonObject findByCaseIds(final String... caseIds) {
         try {
-            return elasticSearch.findAll("crime_case_index");
+            return elasticSearch.findByCaseIds("crime_case_index", caseIds);
         } catch (IOException e) {
             log.error("Failed to query ElasticSearch", e);
         }
         return null;
-    }
-
-    public static JsonObject getCaseFromElasticSearch() {
-        return jsonFromString(getJsonArray(getElasticSearchResponse().get(), "index").get().getString(0));
-    }
-
-    public static JsonObject getCaseFromElasticSearch(final String casePropertyName, final String casePropertyValue) {
-        return jsonFromString(getJsonArray(getElasticSearchResponse(casePropertyName, casePropertyValue).get(), "index").get().getString(0));
-    }
-
-    private static boolean checkCaseProperty(final JsonObject jsonObject, final String casePropertyName, final String casePropertyValue) {
-
-        if (casePropertyName == null) {
-            return true;
-        }
-
-        final JsonObject casePayload = jsonFromString(getJsonArray(jsonObject, "index").get().getString(0));
-        return casePayload.containsKey(casePropertyName) && (casePayload.getString(casePropertyName).equals(casePropertyValue));
     }
 
 }

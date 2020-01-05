@@ -1,22 +1,19 @@
 package uk.gov.moj.sjp.it.test.ingestor;
 
 import static com.jayway.jsonassert.JsonAssert.with;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.CasePredicate.casePayloadContains;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
+import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearchWithPredicate;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getPoller;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.buildEnvelope;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.jsonFromString;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -31,12 +28,10 @@ import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonString;
 
 import org.junit.After;
 import org.junit.Before;
@@ -82,7 +77,7 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
         publishDefendantDetailsMovedFromPeopleEvent(caseId.toString(), defendantId.toString());
 
         //Retrieve CaseDetails with updated DefendantDetails from people
-        final JsonObject jsonObject = retrieveCaseDetailsWithDefendantDetailsUpdatedFromPeople();
+        final JsonObject jsonObject = getCaseFromElasticSearchWithPredicate(casePayloadContains("SMITH"), caseId.toString());
 
         //Verify CaseDetails returned have party/DefendantDetails updated
         verifyCaseDefendantDetailUpdated(createCase, jsonObject, defendantId.toString());
@@ -94,7 +89,7 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
                 .run(() -> createCaseForPayloadBuilder(createCase))
                 .popEvent(EVENT_NAME);
 
-        final JsonObject outputCase = getCaseFromElasticSearch();
+        final JsonObject outputCase = getCaseFromElasticSearch(createCase.getId().toString());
         assertThat(createCase.getId().toString(), is(outputCase.getString("caseId")));
     }
 
@@ -117,27 +112,6 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
         final JsonEnvelope jsonEnvelopeForDefendantDetailsMovedFromPeople = buildEnvelope(payloadDefendantDetailsMovedFromPeople, SJP_EVENTS_DEFENDANT_DETAILS_MOVED_FROM_PEOPLE);
 
         privateEventsProducer.sendMessage(SJP_EVENTS_DEFENDANT_DETAILS_MOVED_FROM_PEOPLE, jsonEnvelopeForDefendantDetailsMovedFromPeople);
-    }
-
-    private JsonObject retrieveCaseDetailsWithDefendantDetailsUpdatedFromPeople() {
-        final Optional<JsonObject> caseCreatedResponseObject = poller.pollUntilFound(() -> {
-            try {
-                final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
-                if (jsonObject.getInt("totalResults") == 1 && checkDefendantUpdated(jsonObject)) {
-                    return of(jsonObject);
-                }
-            } catch (final IOException e) {
-                fail();
-            }
-            return empty();
-        });
-
-        final JsonObject jsonObject = jsonFromString(getJsonArray(caseCreatedResponseObject.get(), "index").get().getString(0));
-        return jsonObject;
-    }
-
-    private boolean checkDefendantUpdated(final JsonObject jsonObject) {
-        return ((JsonString) jsonObject.getJsonArray("index").get(0)).getString().contains("SMITH");
     }
 
     private void verifyCaseDefendantDetailUpdated(final CreateCase.CreateCasePayloadBuilder createCase, final JsonObject jsonObject, final String defendantId) {

@@ -29,10 +29,10 @@ import org.junit.Test;
 public class CaseReceivedIngestorIT extends BaseIntegrationTest {
 
     private final UUID uuid = randomUUID();
-    private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
 
     @Before
     public void setUp() throws IOException {
+        cleanDb();
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
     }
 

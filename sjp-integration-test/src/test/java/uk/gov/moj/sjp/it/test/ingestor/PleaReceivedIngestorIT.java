@@ -18,6 +18,7 @@ import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
+import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
@@ -41,15 +42,15 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
     private CreateCase.DefendantBuilder defendantBuilder;
 
     private final UUID caseIdOne = randomUUID();
+    private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
 
     @After
     public void cleanDatabase() {
-        cleanDb();
+        viewStoreCleaner.cleanDataInViewStore(caseIdOne);
     }
 
     @Before
     public void setUp() throws IOException {
-        cleanDb();
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
 
         final AddressBuilder addressBuilder = AddressBuilder.withDefaults().withPostcode("W1T 1JY");

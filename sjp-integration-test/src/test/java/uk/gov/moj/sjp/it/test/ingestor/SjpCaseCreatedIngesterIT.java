@@ -9,9 +9,11 @@ import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
+import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import javax.json.JsonObject;
 
@@ -27,16 +29,17 @@ public class SjpCaseCreatedIngesterIT extends BaseIntegrationTest {
 
     private final MessageProducerClient privateEventsProducer = new MessageProducerClient();
 
+    private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
+
     @Before
     public void setUp() throws IOException {
-        cleanDb();
         privateEventsProducer.startProducer(SJP_EVENT);
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
     }
 
     @After
     public void tearDown() {
-        cleanDb();
+        viewStoreCleaner.cleanDataInViewStore(UUID.fromString(CASE_ID));
         privateEventsProducer.close();
     }
 

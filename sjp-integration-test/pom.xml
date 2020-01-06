@@ -218,7 +218,6 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <skipITs>${skip.integration.tests}</skipITs>
-                    <runOrder>alphabetical</runOrder>
                 </configuration>
                 <executions>
                     <execution>
@@ -287,7 +286,6 @@
                             <systemPropertyVariables>
                                 <ELASTICSEARCH_URI>http://127.0.0.1:9500</ELASTICSEARCH_URI>
                             </systemPropertyVariables>
-                            <runOrder>alphabetical</runOrder>
                         </configuration>
                         <executions>
                             <execution>

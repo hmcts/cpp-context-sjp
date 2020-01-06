@@ -12,6 +12,7 @@ import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.ge
 
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
@@ -28,16 +29,16 @@ import org.junit.Test;
 public class CaseReceivedIngestorIT extends BaseIntegrationTest {
 
     private final UUID uuid = randomUUID();
+    private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
 
     @Before
     public void setUp() throws IOException {
-        cleanDb();
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
     }
 
     @After
     public void cleanDatabase() {
-        cleanDb();
+        viewStoreCleaner.cleanDataInViewStore(uuid);
     }
 
     @Test

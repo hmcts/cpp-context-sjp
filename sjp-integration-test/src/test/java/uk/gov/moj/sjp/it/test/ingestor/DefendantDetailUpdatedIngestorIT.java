@@ -19,6 +19,7 @@ import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUt
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
+import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
@@ -46,10 +47,10 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
 
     private final UUID caseIdOne = randomUUID();
     private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
+    private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
 
     @Before
     public void setUp() throws IOException {
-        cleanDb();
         final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
         elasticSearchIndexFinderUtil = new ElasticSearchIndexFinderUtil(elasticSearchClient);
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
@@ -57,7 +58,7 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
 
     @After
     public void cleanDatabase() {
-        cleanDb();
+        viewStoreCleaner.cleanDataInViewStore(caseIdOne);
     }
 
     @Test

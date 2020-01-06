@@ -13,6 +13,9 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * To be deleted in favor of existing @{@link uk.gov.moj.sjp.it.util.SjpDatabaseCleaner}
+ */
 public class ViewStoreCleaner {
 
     private static final String DELETE_OFFENCE = "delete from offence where defendant_id in ( select id from defendant where case_id='%s')";
@@ -72,7 +75,4 @@ public class ViewStoreCleaner {
         return 0;
     }
 
-    public void cleanEventStoreTables() {
-        databaseCleaner.cleanEventStoreTables(CONTEXT_NAME);
-    }
 }

@@ -26,6 +26,7 @@ import static uk.gov.moj.sjp.it.Constants.EVENT_OFFENCES_WITHDRAWAL_STATUS_SET;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_OFFENCES_WITHDRAWAL_STATUS_SET;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SET_PLEAS;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
+import static uk.gov.moj.sjp.it.helper.AssignmentHelper.pollUntilCaseAssignedToUser;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAsync;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
@@ -302,7 +303,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         };
         assignCase.getExecutor().setExecutingUserId(userId).executeSync();
 
-        assertThat(AssignmentHelper.isCaseAssignedToUser(caseId, userId), is(true));
+        pollUntilCaseAssignedToUser(caseId, userId);
     }
 
     private static void verifyCaseNotFound(final String courtHouseOUCode, final SessionType sessionType) {

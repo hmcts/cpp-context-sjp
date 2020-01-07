@@ -111,7 +111,11 @@ public class ReferencedDecisionSavedOffenceConverter {
         final JsonObject payment = financialImposition.getJsonObject(PAYMENT);
         final JsonObject paymentTerms =  payment.getJsonObject(PAYMENT_TERMS);
 
-        resultsArray.add(costsResult(costsAndSurcharge, referenceData));
+        final JsonNumber costs = costsAndSurcharge.getJsonNumber(COSTS);
+        if(costs.doubleValue() > 0) {
+            resultsArray.add(costsResult(costsAndSurcharge, referenceData));
+        }
+
         if (collectionOrderMade(costsAndSurcharge)) {
             resultsArray.add(collectionOrder(payment, referenceData));
         }
@@ -224,7 +228,10 @@ public class ReferencedDecisionSavedOffenceConverter {
 
     private List<JsonObject> convertFinancialOffence(JsonObject offenceDecision, JsonArrayBuilder results, CachedReferenceData referenceData) {
         if (offenceDecision.containsKey(COMPENSATION)) {
-            results.add(compensationResult(offenceDecision, referenceData));
+            final JsonNumber compensation = offenceDecision.getJsonNumber(COMPENSATION);
+            if (compensation.doubleValue() > 0) {
+                results.add(compensationResult(offenceDecision, referenceData));
+            }
         }
 
         if (offenceDecision.containsKey(NO_COMPENSATION_REASON)) {

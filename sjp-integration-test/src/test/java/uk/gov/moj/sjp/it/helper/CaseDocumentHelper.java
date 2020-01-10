@@ -178,7 +178,7 @@ public class CaseDocumentHelper implements AutoCloseable {
     }
 
     public void verifyInActiveMQCaseUploadRejected() {
-        JsonPath jsonResponse = retrieveMessage(privateEventsConsumerForRejectedCaseUpload);
+        JsonPath jsonResponse = retrieveMessage(privateEventsConsumerForRejectedCaseUpload, 40000l).orElse(null);
 
         LOGGER.info("Response: {}", jsonResponse.prettify());
         JsonPath jsonRequest = new JsonPath(request);

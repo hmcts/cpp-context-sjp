@@ -31,6 +31,12 @@
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.sjp</groupId>
+            <artifactId>sjp-event-indexer</artifactId>
+            <version>${project.version}</version>
+            <classifier>classes</classifier>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.sjp</groupId>
             <artifactId>sjp-event-listener</artifactId>
             <version>${project.version}</version>
             <classifier>classes</classifier>

@@ -1,0 +1,25 @@
+unified_search_descriptor:
+  name: example
+  spec_version: 1.0.0
+  service: sjp
+  service_component: EVENT_INDEXER
+  events:
+      - name: sjp.events.case-received
+        transformer_config: sjp.events.case-received-spec.json
+        index_name: crime_case_index
+      - name: sjp.events.defendant-details-moved-from-people
+        transformer_config: sjp.events.defendant-details-moved-from-people-spec.json
+        index_name: crime_case_index
+      - name: sjp.events.defendant-details-updated
+        transformer_config: sjp.events.defendant-details-updated-spec.json
+        index_name: crime_case_index
+      - name: sjp.events.online-plea-received
+        transformer_config: sjp.events.online-plea-received-spec.json
+        index_name: crime_case_index
+      - name: sjp.events.sjp-case-created
+        transformer_config: sjp.events.sjp-case-created-spec.json
+        index_name: crime_case_index
+      - name: sjp.events.case-status-changed
+        transformer_config: sjp.events.case-status-changed-spec.json
+        index_name: crime_case_index
+...

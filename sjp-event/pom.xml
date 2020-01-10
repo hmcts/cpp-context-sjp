@@ -14,6 +14,7 @@
     <modules>
         <module>sjp-event-listener</module>
         <module>sjp-event-processor</module>
+        <module>sjp-event-indexer</module>
     </modules>
 
     <dependencies>

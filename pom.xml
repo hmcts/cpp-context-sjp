@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>9.4.5</version>
+        <version>9.4.15</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.sjp</groupId>
@@ -32,7 +32,7 @@
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
-        <coredomain.version>1.0.54</coredomain.version>
+        <coredomain.version>1.0.57</coredomain.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>
         <lombok.version>1.18.2</lombok.version>
@@ -41,6 +41,8 @@
         <document-generator-client.version>1.0.4</document-generator-client.version>
         <apache.pdfbox.version>2.0.11</apache.pdfbox.version>
         <jvm.options>-Djava.locale.providers=CLDR</jvm.options>
+        <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
+        <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
     </properties>
 
     <modules>

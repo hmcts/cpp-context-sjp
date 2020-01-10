@@ -1,20 +1,21 @@
 package uk.gov.moj.cpp.sjp.domain.transformation;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.tools.eventsourcing.transformation.api.Action;
-
-import javax.json.JsonValue;
-
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.DEACTIVATE;
 import static uk.gov.justice.tools.eventsourcing.transformation.api.Action.NO_ACTION;
+
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.tools.eventsourcing.transformation.api.Action;
+
+import javax.json.JsonValue;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DeactivateOrphanDocumentsTest {

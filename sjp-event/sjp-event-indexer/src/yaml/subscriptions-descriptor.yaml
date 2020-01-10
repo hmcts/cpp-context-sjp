@@ -1,0 +1,20 @@
+subscriptions_descriptor:
+  spec_version: 1.0.0
+  service: progression
+  service_component: EVENT_INDEXER
+  subscriptions:
+    - name: sjp event indexer subscription
+      events:
+        - name: sjp.events.case-received
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/sjp.events.case-received.json
+        - name: sjp.events.defendant-details-moved-from-people
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-details-moved-from-people.json
+        - name: sjp.events.defendant-details-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/defendant-details-updated.json
+        - name: sjp.events.online-plea-received
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/online-plea-received.json
+        - name: sjp.events.sjp-case-created
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp-case-created.json
+        - name: sjp.events.case-status-changed
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-status-changed.json
+      event_source_name: indexer.event.source

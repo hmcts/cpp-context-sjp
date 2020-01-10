@@ -1,0 +1,27 @@
+{
+  "id": "9f9f843e-d639-40b3-8611-8015f3a18958",
+  "urn": "22C22222222",
+  "enterpriseId": "2K2SLYFC743H",
+  "prosecutingAuthority": "DVLA",
+  "personId": "7e2f843e-d639-40b3-8611-8015f3a18999",
+  "defendantId": "4f37f1a1-aa76-4d53-8cc3-b2ef49f0d8a4",
+  "numPreviousConvictions": 2,
+  "costs": 1.23,
+  "postingDate": "2055-12-02",
+  "offences": [
+    {
+      "id": "7e2f843e-d639-40b3-8611-8015f3a18954",
+      "offenceSequenceNo": 1,
+      "libraOffenceCode": "PS00001",
+      "chargeDate": "2016-01-01",
+      "libraOffenceDateCode": 1,
+      "offenceDate": "2016-01-01",
+      "offenceWording": "Committed some offence",
+      "offenceWordingWelsh": "Welsh wording: Committed some offence",
+      "prosecutionFacts": "No ticket at the gates, forgery",
+      "witnessStatement": "Jumped over the barriers",
+      "compensation": 2.34,
+      "offenceCommittedDate": "2010-08-08"
+    }
+  ]
+}

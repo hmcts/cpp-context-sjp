@@ -10,26 +10,27 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
+import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISMISS;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.WITHDRAW;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.ONLINE;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 import static uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder.aCase;
 import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
 import static uk.gov.moj.cpp.sjp.query.view.helper.PleaInfo.plea;
 
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.persistence.entity.AdjournOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DismissOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.FinancialPenaltyOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReferForCourtHearingDecision;
@@ -37,13 +38,11 @@ import uk.gov.moj.cpp.sjp.persistence.entity.Session;
 import uk.gov.moj.cpp.sjp.persistence.entity.WithdrawOffenceDecision;
 import uk.gov.moj.cpp.sjp.query.view.helper.PleaInfo;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -415,6 +414,35 @@ public class CaseCourtExtractViewTest {
                 new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(adjournedCaseDecision2.getSavedAt()))));
     }
 
+    @Test
+    public void shouldNotContainLinesIfFineCompensationOrGuiltyPleaTakenAccountIsNull() {
+        final DefendantDetail defendantDetail = aDefendantDetail().build();
+        defendantDetail.setOffences(asList(
+                buildOffenceDetailEntity(1, offence1Id)));
+
+        final CaseDecision firstDecision = buildCaseDecisionEntity(caseId, false, savedAt);
+        firstDecision.setOffenceDecisions(Collections.singletonList(
+                buildFinancialPenaltyOffenceDecisionEntity(offence1Id, null, null, null, "No compensation reason", null)));
+
+        final CaseDetail aCase = aCase()
+                .addDefendantDetail(defendantDetail)
+                .addCaseDecision(firstDecision)
+                .build();
+
+        final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
+        final List<OffenceDetailsView> offenceDetailsViews = courtExtractView.getOffences();
+        final OffenceDetailsView offenceDetailsView = offenceDetailsViews.get(0);
+        final List<OffenceDecisionView> offenceDecisionViews = offenceDetailsView.getOffenceDecisions();
+        final List<OffenceDecisionLineView> lines =  offenceDecisionViews.get(0).getLines();
+        assertTrue(lines
+                .stream()
+                .map(OffenceDecisionLineView::getLabel)
+                .noneMatch(label -> ("To pay compensation of".equalsIgnoreCase(label)) ||
+                        "To pay a fine of".equalsIgnoreCase(label) ||
+                        "Defendant's guilty plea".equalsIgnoreCase(label)));
+
+    }
+
     private static CaseDetail buildSingleOffenceCaseWithSingleDecision(final UUID caseId,
                                                                        final UUID offenceId,
                                                                        final DecisionType decisionType,
@@ -446,6 +474,27 @@ public class CaseCourtExtractViewTest {
         caseDecision.setSession(session);
 
         return caseDecision;
+    }
+
+    private static OffenceDecision buildFinancialPenaltyOffenceDecisionEntity(
+                                                              final UUID offenceId,
+                                                              final PleaInfo pleaAtDecisionTime,
+                                                              final Boolean guiltyPleaTakenIntoAccount,
+                                                              final BigDecimal compensation,
+                                                              final String noCompensationReason,
+                                                              final BigDecimal fine) {
+        final OffenceDecision offenceDecision = new FinancialPenaltyOffenceDecision(offenceId,
+                randomUUID(),
+                PROVED_SJP,
+                guiltyPleaTakenIntoAccount,
+                compensation,
+                noCompensationReason,
+                fine);
+        if (nonNull(pleaAtDecisionTime)) {
+            offenceDecision.setPleaAtDecisionTime(pleaAtDecisionTime.pleaType);
+            offenceDecision.setPleaDate(pleaAtDecisionTime.pleaDate);
+        }
+        return offenceDecision;
     }
 
     private static OffenceDecision buildOffenceDecisionEntity(final UUID decisionId,

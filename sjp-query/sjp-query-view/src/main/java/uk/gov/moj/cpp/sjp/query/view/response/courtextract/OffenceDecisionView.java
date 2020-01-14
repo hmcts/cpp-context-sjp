@@ -126,7 +126,7 @@ public class OffenceDecisionView {
     private void addFineLine() {
         if (isFinancialPenalty()) {
             final BigDecimal fine = asFinancialPenalty().getFine();
-            if (BigDecimal.ZERO.compareTo(fine) <= 0) {
+            if (nonNull(fine) && BigDecimal.ZERO.compareTo(fine) <= 0) {
                 addLine("To pay a fine of", formatCurrency(fine));
             }
         }
@@ -144,7 +144,7 @@ public class OffenceDecisionView {
 
     private void addCompensationLine() {
         final BigDecimal compensation = isDischarge() ? asDischarge().getCompensation() : asFinancialPenalty().getCompensation();
-        if (compensation.compareTo(BigDecimal.ZERO) > 0) {
+        if (nonNull(compensation) && compensation.compareTo(BigDecimal.ZERO) > 0) {
             addLine("To pay compensation of", formatCurrency(compensation));
         }
     }
@@ -158,7 +158,7 @@ public class OffenceDecisionView {
 
     private void addGuiltyPleaTakenIntoAccountLine() {
         final Boolean guiltyPleaTakenIntoAccount = isDischarge() ? asDischarge().isGuiltyPleaTakenIntoAccount() : asFinancialPenalty().isGuiltyPleaTakenIntoAccount();
-        if (Boolean.TRUE.equals(guiltyPleaTakenIntoAccount)) {
+        if (nonNull(guiltyPleaTakenIntoAccount) && Boolean.TRUE.equals(guiltyPleaTakenIntoAccount)) {
             addLine("Defendant's guilty plea", "Taken into account when imposing sentence");
         }
     }

@@ -1,27 +1,30 @@
 {
-  "_metadata": {
-    "name": "sjp.events.online-plea-received"
-  },
-  "urn": "TFL34652354",
-  "caseId": "c4ec3a35-76bf-4649-b43a-761e71c3765e",
-  "defendantId": "50770ba9-37ea-4713-8cab-fe5bf1202716",
+  "urn": "TVL6662926140",
+  "caseId": "9afc48be-3b06-4168-8650-41531b23153a",
+  "defendantId": "e928e0a7-ee54-4371-aed9-b3db794607ae",
+  "unavailability": "I'm on holiday November 17 to 19",
+  "interpreterLanguage": "French",
+  "speakWelsh": true,
+  "witnessDetails": "My mate Dave",
+  "witnessDispute": "They are lying",
+  "outstandingFines": true,
   "personalDetails": {
-    "firstName": "Testy",
-    "lastName": "Testerson",
+    "firstName": "John",
+    "lastName": "Protractor-6662926140",
     "address": {
-      "address1": "14 Tottenham Court Road",
-      "address2": "London",
-      "address3": "England",
-      "address4": "UK",
+      "address1": "Flat 55",
+      "address2": "1 Oxford Road",
+      "address3": "Croydon",
+      "address4": "Surrey",
       "address5": "Greater London",
-      "postcode": "W1T 1JY"
+      "postcode": "SW99 1AA"
     },
     "contactDetails": {
       "home": "0208000888",
       "mobile": "07890123123",
-      "email": "criminal@gmail.com"
+      "email": "protractor@test.com"
     },
-    "dateOfBirth": "1990-09-09",
+    "dateOfBirth": "1977-10-17",
     "nationalInsuranceNumber": "AB123456A"
   },
   "financialMeans": {
@@ -51,8 +54,7 @@
   },
   "outgoings": [
     {
-      "description": "Accommodation",
-      "amount": 500.3
+      "description": "Accommodation"
     },
     {
       "description": "Council Tax",
@@ -67,12 +69,11 @@
       "amount": 100.1
     },
     {
-      "description": "Child maintenance",
-      "amount": 500.2
+      "description": "Child maintenance"
     },
     {
-      "description": "Other",
-      "amount": 500.4
+      "description": "Other expenses required for live",
+      "amount": 163.6
     }
   ]
 }

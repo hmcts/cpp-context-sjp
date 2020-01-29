@@ -10,8 +10,6 @@ import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 class DecisionBuilder{
@@ -42,11 +40,11 @@ class DecisionBuilder{
         OffenceDecisionInformation offenceDecisionInformation = new OffenceDecisionInformation(offenceId, verdict);
         if(type == FinancialPenalty.class)
         {
-            return (T) new FinancialPenalty(id, offenceDecisionInformation, ZERO, ZERO,"",false);
+            return (T) new FinancialPenalty(id, offenceDecisionInformation, ZERO, ZERO, "", false, null, null);
         }
         if(type == Discharge.class)
         {
-            return (T) new Discharge(id, offenceDecisionInformation, DischargeType.ABSOLUTE, null, ZERO,"",false);
+            return (T) new Discharge(id, offenceDecisionInformation, DischargeType.ABSOLUTE, null, ZERO, "", false, null);
         }
         if(type == Withdraw.class)
         {

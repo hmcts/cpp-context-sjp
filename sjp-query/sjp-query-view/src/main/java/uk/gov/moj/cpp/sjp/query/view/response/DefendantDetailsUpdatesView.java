@@ -110,6 +110,8 @@ public class DefendantDetailsUpdatesView {
          */
         private final String updatedOn;
 
+        private String region;
+
         @SuppressWarnings("squid:S00107")
         public DefendantDetailsUpdate(
                 final String firstName,
@@ -121,7 +123,8 @@ public class DefendantDetailsUpdatesView {
                 final boolean nameUpdated,
                 final boolean dateOfBirthUpdated,
                 final boolean addressUpdated,
-                final String updatedOn) {
+                final String updatedOn,
+                final String region) {
 
             this.firstName = firstName;
             this.lastName = lastName;
@@ -133,6 +136,7 @@ public class DefendantDetailsUpdatesView {
             this.dateOfBirthUpdated = dateOfBirthUpdated;
             this.addressUpdated = addressUpdated;
             this.updatedOn = updatedOn;
+            this.region = region;
         }
 
         public String getLastName() {
@@ -175,6 +179,10 @@ public class DefendantDetailsUpdatesView {
             return caseId;
         }
 
+        public String getRegion() {
+            return region;
+        }
+
         public static DefendantDetailsUpdate of(UpdatedDefendantDetails defendantDetail) {
             return new DefendantDetailsUpdate(
                     defendantDetail.getFirstName(),
@@ -190,7 +198,8 @@ public class DefendantDetailsUpdatesView {
                     nonNull(defendantDetail.getAddressUpdatedAt()),
                     defendantDetail.getMostRecentUpdateDate()
                             .map(DateTimeFormatter.ISO_LOCAL_DATE::format)
-                            .orElse(DateTimeFormatter.ISO_LOCAL_DATE.format(ZonedDateTime.now())));
+                            .orElse(DateTimeFormatter.ISO_LOCAL_DATE.format(ZonedDateTime.now())),
+                    defendantDetail.getRegion());
         }
 
         @Override

@@ -29,6 +29,9 @@
     },
     "nationalInsuranceNumber": {
       "type": "string"
+    },
+    "region": {
+      "type": "string"
     }
   }
 }

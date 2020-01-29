@@ -10,8 +10,6 @@ import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getPostCallResponse;
-import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
-import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.Language;
@@ -103,7 +101,6 @@ public class CreateCase {
 
         final JsonObjectBuilder defendantBuilder = createObjectBuilder()
                 .add("id", payloadBuilder.defendantBuilder.id.toString())
-                .add("title", payloadBuilder.defendantBuilder.title)
                 .add("firstName", payloadBuilder.defendantBuilder.firstName)
                 .add("lastName", payloadBuilder.defendantBuilder.lastName)
                 .add("nationalInsuranceNumber", payloadBuilder.defendantBuilder.nationalInsuranceNumber)
@@ -117,6 +114,9 @@ public class CreateCase {
                         .add("email2", payloadBuilder.defendantBuilder.contactDetailsBuilder.getEmail2())
                 )
                 .add("offences", createOffencesBuilder());
+
+        if(nonNull(payloadBuilder.defendantBuilder.title))
+            defendantBuilder.add("title", payloadBuilder.defendantBuilder.title);
 
         if(nonNull(payloadBuilder.defendantBuilder.hearingLanguage))
             defendantBuilder.add("hearingLanguage", payloadBuilder.defendantBuilder.hearingLanguage.toString());
@@ -143,7 +143,12 @@ public class CreateCase {
                     .add("offenceWording", offenceBuilder.offenceWording)
                     .add("prosecutionFacts", offenceBuilder.prosecutionFacts)
                     .add("witnessStatement", offenceBuilder.witnessStatement)
-                    .add("compensation", offenceBuilder.compensation.doubleValue());
+                    .add("compensation", offenceBuilder.compensation.doubleValue())
+                    .add("vehicleMake", offenceBuilder.vehicleMake)
+                    .add("vehicleRegistrationMark", offenceBuilder.vehicleRegistrationMark)
+                    .add("backDuty", offenceBuilder.backDuty.doubleValue())
+                    .add("backDutyDateFrom", LocalDates.to(offenceBuilder.backDutyDateFrom))
+                    .add("backDutyDateTo", LocalDates.to(offenceBuilder.backDutyDateTo));
 
             ofNullable(offenceBuilder.offenceWordingWelsh)
                     .ifPresent(offenceWordingWelsh -> offence.add("offenceWordingWelsh", offenceWordingWelsh));
@@ -344,6 +349,11 @@ public class CreateCase {
             return this;
         }
 
+        public DefendantBuilder withTitle(final String title) {
+            this.title = title;
+            return this;
+        }
+
         public DefendantBuilder withNationalInsuranceNumber(final String nationalInsuranceNumber) {
             this.nationalInsuranceNumber = nationalInsuranceNumber;
             return this;
@@ -425,6 +435,13 @@ public class CreateCase {
         private String prosecutionFacts;
         private String witnessStatement;
         private BigDecimal compensation;
+        private BigDecimal backDuty;
+        private LocalDate backDutyDateFrom;
+        private LocalDate backDutyDateTo;
+        private String vehicleMake;
+        private String vehicleRegistrationMark;
+        private int fineLevel;
+        private BigDecimal maxFineValue;
 
         private OffenceBuilder() {
 
@@ -445,6 +462,13 @@ public class CreateCase {
             builder.prosecutionFacts = "No ticket at the gates, forgery";
             builder.witnessStatement = "Jumped over the barriers";
             builder.compensation = BigDecimal.valueOf(2.34);
+            builder.backDuty = BigDecimal.valueOf(340.30);
+            builder.backDutyDateFrom = LocalDate.of(2015, 04, 30);
+            builder.backDutyDateTo = LocalDate.of(2015, 05, 30);
+            builder.vehicleMake = "Ford";
+            builder.vehicleRegistrationMark = "FG59 4FD";
+            builder.fineLevel = 3;
+            builder.maxFineValue = BigDecimal.valueOf(1000);
 
             return builder;
         }
@@ -466,6 +490,42 @@ public class CreateCase {
 
         public OffenceBuilder withOffenceChargeDate(final LocalDate offenceChargeDate) {
             this.chargeDate = offenceChargeDate;
+            return this;
+        }
+
+
+        public OffenceBuilder withBackDuty(BigDecimal backDuty){
+            this.backDuty = backDuty;
+            return this;
+        }
+
+        public OffenceBuilder withBackDutyDateFrom(LocalDate backDutyDateFrom){
+            this.backDutyDateFrom = backDutyDateFrom;
+            return this;
+        }
+
+        public OffenceBuilder withBackDutyDateTo(LocalDate backDutyDateTo){
+            this.backDutyDateTo = backDutyDateTo;
+            return this;
+        }
+
+        public OffenceBuilder withVehicleMake(String vehicleMake) {
+            this.vehicleMake = vehicleMake;
+            return this;
+        }
+
+        public OffenceBuilder withVehicleRegistrationMark(String vehicleRegistrationMark) {
+            this.vehicleRegistrationMark = vehicleRegistrationMark;
+            return this;
+        }
+
+        public OffenceBuilder withFineLevel(int fineLevel) {
+            this.fineLevel = fineLevel;
+            return this;
+        }
+
+        public OffenceBuilder withMaxFineValue(BigDecimal maxFineValue) {
+            this.maxFineValue = maxFineValue;
             return this;
         }
 
@@ -512,6 +572,34 @@ public class CreateCase {
 
         public BigDecimal getCompensation() {
             return compensation;
+        }
+
+        public BigDecimal getBackDuty() {
+            return backDuty;
+        }
+
+        public LocalDate getBackDutyDateFrom() {
+            return backDutyDateFrom;
+        }
+
+        public LocalDate getBackDutyDateTo() {
+            return backDutyDateTo;
+        }
+
+        public String getVehicleMake() {
+            return vehicleMake;
+        }
+
+        public String getVehicleRegistrationMark() {
+            return vehicleRegistrationMark;
+        }
+
+        public int getFineLevel() {
+            return fineLevel;
+        }
+
+        public BigDecimal getMaxFineValue() {
+            return maxFineValue;
         }
     }
 }

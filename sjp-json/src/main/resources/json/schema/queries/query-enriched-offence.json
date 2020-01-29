@@ -71,6 +71,30 @@
     },
     "maxFineLevel":{
       "type": "string"
+    },
+    "backDuty": {
+      "type": "number"
+    },
+    "backDutyDateFrom": {
+      "type": "string"
+    },
+    "backDutyDateTo": {
+      "type": "string"
+    },
+    "vehicleMake": {
+      "type": "string"
+    },
+    "vehicleRegistrationMark": {
+      "type": "string"
+    },
+    "penaltyType": {
+      "type": "string"
+    },
+    "sentencing": {
+      "type": "string"
+    },
+    "backDutyOffence": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false

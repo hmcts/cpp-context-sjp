@@ -122,12 +122,6 @@ public class ReferenceDataServiceTest {
         assertThat(referralReasons, containsInAnyOrder(referralReason1, referralReason2));
     }
 
-    private Object requestReferralReasons(final JsonEnvelope sourceEnvelope) {
-        return requester.requestAsAdmin(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(sourceEnvelope).withName("referencedata.query.referral-reasons"),
-                payloadIsJson(notNullValue()))));
-    }
-
     @Test
     public void shouldReturnWithdrawalReasons() {
         final JsonEnvelope sourceEnvelope = envelopeFrom(metadataWithRandomUUID("query"), JsonValue.NULL);
@@ -147,6 +141,39 @@ public class ReferenceDataServiceTest {
         final List<JsonObject> withdrawalReasons = referenceDataService.getWithdrawalReasons(sourceEnvelope);
 
         assertThat(withdrawalReasons, containsInAnyOrder(withdrawalReason1, withdrawalReason2));
+    }
+
+    @Test
+    public void shouldReturnOffenceFineLevels() {
+        final JsonEnvelope sourceEnvelope = envelopeFrom(metadataWithRandomUUID("query"), JsonValue.NULL);
+
+        final JsonObject fineLevel1 = createObjectBuilder().add("fineLevel", 2).add("maxValue", 1000).build();
+        final JsonObject fineLevel2 = createObjectBuilder().add("fineLevel", 3).add("maxValue", 2500).build();
+
+        final JsonEnvelope queryResponse = envelopeFrom(
+                metadataWithRandomUUID("referencedata.query.offence-fine-levels"),
+                createObjectBuilder().add("fineLevels", createArrayBuilder()
+                        .add(fineLevel1)
+                        .add(fineLevel2))
+                        .build());
+
+        when(requestOffenceFineLevels(sourceEnvelope)).thenReturn(queryResponse);
+
+        final List<JsonObject> offenceFineLevels = referenceDataService.getOffenceFineLevels(sourceEnvelope);
+
+        assertThat(offenceFineLevels, containsInAnyOrder(fineLevel1, fineLevel2));
+    }
+
+    private Object requestReferralReasons(final JsonEnvelope sourceEnvelope) {
+        return requester.requestAsAdmin(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(sourceEnvelope).withName("referencedata.query.referral-reasons"),
+                payloadIsJson(notNullValue()))));
+    }
+
+    private Object requestOffenceFineLevels(final JsonEnvelope sourceEnvelope) {
+        return requester.requestAsAdmin(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(sourceEnvelope).withName("referencedata.query.offence-fine-levels"),
+                payloadIsJson(notNullValue()))));
     }
 
     private Object requestWithdrawalReasons(final JsonEnvelope sourceEnvelope) {

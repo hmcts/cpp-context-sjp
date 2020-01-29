@@ -9,6 +9,8 @@ import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCom
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.pollUntilProcessDeleted;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.pollUntilProcessExists;
@@ -16,6 +18,7 @@ import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_USER_ID;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.DecisionHelper;
@@ -37,7 +40,8 @@ public class AssignmentTimeoutIT extends BaseIntegrationTest {
 
     private static CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
             .withPostingDate(now().minusDays(30)).withId(CASE_ID).withOffenceId(OFFENCE_ID);
-    ;
+    private static final String NATIONAL_COURT_CODE = "1080";
+
 
     @Before
     public void setUp() throws Exception {
@@ -47,9 +51,14 @@ public class AssignmentTimeoutIT extends BaseIntegrationTest {
         stubGetEmptyAssignmentsByDomainObjectId(CASE_ID);
         stubAssignmentReplicationCommands();
         stubStartSjpSessionCommand();
+        final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "region");
 
         createCaseAndWaitUntilReady(CASE_ID, OFFENCE_ID);
-        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+
     }
 
     @Test

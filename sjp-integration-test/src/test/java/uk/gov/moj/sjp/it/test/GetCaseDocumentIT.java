@@ -15,6 +15,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.helper.CaseDocumentHelper.getCaseDocumentContent;
 import static uk.gov.moj.sjp.it.helper.CaseDocumentHelper.getCaseDocumentMetadata;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
@@ -46,6 +48,7 @@ public class GetCaseDocumentIT extends BaseIntegrationTest {
     private final String documentType = "OTHER-Test";
     private final String documentContent = "Test document content";
     private final ZonedDateTime addedAt = ZonedDateTime.now();
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     @Before
     public void init() {
@@ -53,7 +56,14 @@ public class GetCaseDocumentIT extends BaseIntegrationTest {
         UsersGroupsStub.stubForUserDetails(tvlUser, ProsecutingAuthority.TVL);
         UsersGroupsStub.stubForUserDetails(legalAdviserUser, "ALL");
 
-        createCase(tflCaseId, TFL);
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
+                .withDefaults().withId(tflCaseId)
+                .withProsecutingAuthority(TFL);
+
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
+
+        createCase(createCasePayloadBuilder);
         addDocument(tflCaseId, documentId, materialId, documentType, legalAdviserUser);
     }
 
@@ -123,11 +133,7 @@ public class GetCaseDocumentIT extends BaseIntegrationTest {
         assertThat(getCaseDocumentContent(tflCaseId, documentId, tflUser).getStatus(), is(SC_FORBIDDEN));
     }
 
-    private static void createCase(final UUID caseId, final ProsecutingAuthority prosecutingAuthority) {
-        final CreateCase.CreateCasePayloadBuilder createTflCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
-                .withDefaults().withId(caseId)
-                .withProsecutingAuthority(prosecutingAuthority);
-
+    private static void createCase(final CreateCase.CreateCasePayloadBuilder createTflCasePayloadBuilder) {
         new EventListener()
                 .subscribe(CaseReceived.EVENT_NAME)
                 .run(() -> CreateCase.createCaseForPayloadBuilder(createTflCasePayloadBuilder));

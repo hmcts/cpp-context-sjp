@@ -11,7 +11,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
@@ -93,6 +92,7 @@ public class DefendantUpdatedListenerTest {
     private final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID());
     private DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder defendantDetailsUpdatedBuilder = defendantDetailsUpdated()
             .withCaseId(caseDetail.getId())
+            .withDefendantId(caseDetail.getDefendant().getId())
             .withContactDetails(new ContactDetails("123", "456", "789", "test@test.com", "test_email2@test.com"))
             .withTitle("Mr")
             .withFirstName("Mark")
@@ -130,7 +130,8 @@ public class DefendantUpdatedListenerTest {
                         new uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails(
                                 "test@test.com",
                                 "0207 886432",
-                                "07563 489883")));
+                                "07563 489883"),
+                        null));
 
         when(caseRepository.findCaseDefendant(caseId)).thenReturn(caseDetail.getDefendant());
         when(caseSearchResultRepository.findByCaseId(caseId)).thenReturn(Lists.newArrayList(buildCaseSearchResult(caseDetail)));
@@ -143,7 +144,7 @@ public class DefendantUpdatedListenerTest {
             defendantDetailsUpdatedBuilder.withUpdatedDate(now);
         }
         if (nationalInsuranceNumberSuppliedInRequest) {
-            defendantDetailsUpdatedBuilder = defendantDetailsUpdatedBuilder.withNationalInsuranceNumber("NH42 1568G");
+            defendantDetailsUpdatedBuilder.withNationalInsuranceNumber("NH42 1568G");
         }
         final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdatedBuilder.build();
         setupMocks(defendantDetailsUpdated.getCaseId());
@@ -198,7 +199,9 @@ public class DefendantUpdatedListenerTest {
             assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getLastName(), equalTo(defendantDetailsUpdated.getLastName()));
             assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getDateOfBirth(), equalTo(defendantDetailsUpdated.getDateOfBirth()));
             assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getEmail(), equalTo(defendantDetailsUpdated.getContactDetails().getEmail()));
-            assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getNationalInsuranceNumber(), equalTo(defendantDetailsUpdated.getNationalInsuranceNumber()));
+            if(nationalInsuranceNumberSupplied) {
+                assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getNationalInsuranceNumber(), equalTo(defendantDetailsUpdated.getNationalInsuranceNumber()));
+            }
             assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getMobile(), equalTo(defendantDetailsUpdated.getContactDetails().getMobile()));
             assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getHomeTelephone(), equalTo(defendantDetailsUpdated.getContactDetails().getHome()));
             assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getAddress().getAddress1(), equalTo(defendantDetailsUpdated.getAddress().getAddress1()));
@@ -256,7 +259,7 @@ public class DefendantUpdatedListenerTest {
         // GIVEN
         final boolean updateByOnlinePlea = true;
         final boolean nationalInsuranceNumberSuppliedInRequest = false;
-        final DefendantDetailsUpdated defendantDetailsUpdated = commonSetup(true, false);
+        final DefendantDetailsUpdated defendantDetailsUpdated = commonSetup(updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
 
         // WHEN
         defendantUpdatedListener.defendantDetailsUpdated(command(defendantDetailsUpdated));
@@ -303,7 +306,8 @@ public class DefendantUpdatedListenerTest {
                 new uk.gov.moj.cpp.sjp.persistence.entity.ContactDetails(
                         defendantDetailsUpdated.getContactDetails().getEmail(),
                         defendantDetailsUpdated.getContactDetails().getHome(),
-                        defendantDetailsUpdated.getContactDetails().getMobile()));
+                        defendantDetailsUpdated.getContactDetails().getMobile()),
+                null);
     }
 
     private CaseSearchResult buildCaseSearchResult(final CaseDetail caseDetail) {

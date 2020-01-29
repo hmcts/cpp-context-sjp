@@ -318,7 +318,7 @@ public class CaseStatusResolverTest {
 
 
                 //8 only not adjourned, only posted less than 28 days, can have dates to avoid or not, withdrawal requested on some + some no pleas (excluding the withdrawal request)
-                //!!! the pleae is not guilty in that lot when dates to avoid the case is actually ready for decision...
+                //!!! the plea is not guilty in that lot when dates to avoid the case is actually ready for decision...
                 {"MO case 8_1", somePleasWithdrawalRequestedOnSome(), NOT_ADJOURNED, DEFENDANTS_RESPONSES_TIMER_NOT_ELAPSED, DATES_TO_AVOID_TIMER_NOT_ELAPSED, DATES_TO_AVOID, PLEA_RECEIVED_READY_FOR_DECISION},
                 {"MO case 8_2", somePleasWithdrawalRequestedOnSome(), NOT_ADJOURNED, DEFENDANTS_RESPONSES_TIMER_NOT_ELAPSED, DATES_TO_AVOID_TIMER_NOT_ELAPSED, NO_DATES_TO_AVOID, PLEA_RECEIVED_NOT_READY_FOR_DECISION},
 
@@ -518,6 +518,12 @@ public class CaseStatusResolverTest {
                 {"MO case 33_2", newArrayList(createOffenceInformation(GUILTY, NOT_RELEVANT, WITHDRAWAL_TRUE), createOffenceInformation(GUILTY, NOT_RELEVANT, WITHDRAWAL_FALSE), createOffenceInformation(null, null, WITHDRAWAL_TRUE)), NOT_ADJOURNED, DEFENDANTS_RESPONSES_TIMER_ELAPSED, DATES_TO_AVOID_TIMER_NOT_ELAPSED, DATES_TO_AVOID, PLEA_RECEIVED_READY_FOR_DECISION},
                 {"MO case 33_3", newArrayList(createOffenceInformation(GUILTY, NOT_RELEVANT, WITHDRAWAL_FALSE), createOffenceInformation(null, null, WITHDRAWAL_TRUE)), NOT_ADJOURNED, DEFENDANTS_RESPONSES_TIMER_NOT_ELAPSED, DATES_TO_AVOID_TIMER_NOT_ELAPSED, NO_DATES_TO_AVOID, PLEA_RECEIVED_READY_FOR_DECISION},
                 {"MO case 33_4", newArrayList(createOffenceInformation(GUILTY, NOT_RELEVANT, WITHDRAWAL_TRUE), createOffenceInformation(GUILTY, NOT_RELEVANT, WITHDRAWAL_FALSE), createOffenceInformation(null, null, WITHDRAWAL_TRUE)), NOT_ADJOURNED, DEFENDANTS_RESPONSES_TIMER_ELAPSED, DATES_TO_AVOID_TIMER_NOT_ELAPSED, NO_DATES_TO_AVOID, PLEA_RECEIVED_READY_FOR_DECISION},
+                {"MO case 33_5", newArrayList(
+                        createOffenceInformation(GUILTY, NOT_RELEVANT, WITHDRAWAL_FALSE),
+                        createOffenceInformation(NOT_GUILTY, NOT_RELEVANT, WITHDRAWAL_TRUE),
+                        createOffenceInformation(NOT_GUILTY, null, WITHDRAWAL_TRUE)),
+                        NOT_ADJOURNED,
+                        DEFENDANTS_RESPONSES_TIMER_NOT_ELAPSED, DATES_TO_AVOID_TIMER_NOT_ELAPSED, NO_DATES_TO_AVOID, PLEA_RECEIVED_READY_FOR_DECISION},
         });
     }
 
@@ -574,8 +580,6 @@ public class CaseStatusResolverTest {
 
     private static List<OffenceInformation> allPleasWithdrawalOnSome() {
         final List<OffenceInformation> list = new ArrayList<>();
-        list.add(createOffenceInformation(GUILTY_REQUEST_HEARING, NOT_RELEVANT, WITHDRAWAL_TRUE));
-        list.add(createOffenceInformation(GUILTY_REQUEST_HEARING, NOT_RELEVANT, WITHDRAWAL_FALSE));
         list.add(createOffenceInformation(NOT_GUILTY, NOT_RELEVANT, WITHDRAWAL_TRUE));
         list.add(createOffenceInformation(NOT_GUILTY, NOT_RELEVANT, WITHDRAWAL_FALSE));
         list.add(createOffenceInformation(GUILTY, NOT_RELEVANT, WITHDRAWAL_TRUE));
@@ -624,8 +628,6 @@ public class CaseStatusResolverTest {
                 createOffenceInformation(GUILTY, NOT_RELEVANT, WITHDRAWAL_FALSE),
                 createOffenceInformation(NOT_GUILTY, NOT_RELEVANT, WITHDRAWAL_TRUE),
                 createOffenceInformation(NOT_GUILTY, NOT_RELEVANT, WITHDRAWAL_FALSE),
-                createOffenceInformation(GUILTY_REQUEST_HEARING, NOT_RELEVANT, WITHDRAWAL_TRUE),
-                createOffenceInformation(GUILTY_REQUEST_HEARING, NOT_RELEVANT, WITHDRAWAL_FALSE),
                 createOffenceInformation(null, null, WITHDRAWAL_FALSE));
     }
 
@@ -634,8 +636,6 @@ public class CaseStatusResolverTest {
                 createOffenceInformation(GUILTY, NOT_RELEVANT, WITHDRAWAL_FALSE),
                 createOffenceInformation(NOT_GUILTY, NOT_RELEVANT, WITHDRAWAL_TRUE),
                 createOffenceInformation(NOT_GUILTY, NOT_RELEVANT, WITHDRAWAL_FALSE),
-                createOffenceInformation(GUILTY_REQUEST_HEARING, NOT_RELEVANT, WITHDRAWAL_TRUE),
-                createOffenceInformation(GUILTY_REQUEST_HEARING, NOT_RELEVANT, WITHDRAWAL_FALSE),
                 createOffenceInformation(null, null, WITHDRAWAL_TRUE),
                 createOffenceInformation(null, null, WITHDRAWAL_FALSE));
     }
@@ -717,9 +717,9 @@ public class CaseStatusResolverTest {
             case REFER_FOR_COURT_HEARING:
                 return new ReferForCourtHearing(randomUUID(), singletonList(createOffenceDecisionInformation(offenceId,NO_VERDICT)), randomUUID(), null, null, null);
             case DISCHARGE:
-                return new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId, FOUND_GUILTY), DischargeType.ABSOLUTE, null,new BigDecimal(10), null, true);
+                return new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId, FOUND_GUILTY), DischargeType.ABSOLUTE, null,new BigDecimal(10), null, true,null);
             case FINANCIAL_PENALTY:
-                return new FinancialPenalty(randomUUID(), createOffenceDecisionInformation(offenceId, FOUND_GUILTY), new BigDecimal(10), new BigDecimal(20), null, true);
+                return new FinancialPenalty(randomUUID(), createOffenceDecisionInformation(offenceId, FOUND_GUILTY), new BigDecimal(10), new BigDecimal(20), null, true, null, null);
             default:
                 throw new IllegalArgumentException("unknown decision type");
         }

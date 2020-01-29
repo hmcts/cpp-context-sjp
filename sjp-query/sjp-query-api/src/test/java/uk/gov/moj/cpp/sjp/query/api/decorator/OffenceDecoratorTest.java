@@ -7,15 +7,18 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.query.api.util.FileUtil.getFileContentAsJson;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.query.service.OffenceFineLevels;
 import uk.gov.moj.cpp.sjp.query.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.query.service.WithdrawalReasons;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -43,6 +46,9 @@ public class OffenceDecoratorTest {
 
     @Mock
     private WithdrawalReasons withdrawalReasons;
+
+    @Mock
+    private OffenceFineLevels offenceFineLevels;
 
     @InjectMocks
     private OffenceDecorator offenceDecorator;
@@ -91,9 +97,9 @@ public class OffenceDecoratorTest {
 
         final JsonObject originalCase = buildCaseWithOffences(offence1, offence2, offence3);
 
-        final JsonObject offenceDefinition1 =  getFileContentAsJson(format("offence-reference-data/%s.json",offence1Code));
-        final JsonObject offenceDefinition2 =  getFileContentAsJson(format("offence-reference-data/%s.json",offence2Code));
-        final JsonObject offenceDefinition3 =  getFileContentAsJson(format("offence-reference-data/%s.json",offence3Code));
+        final JsonObject offenceDefinition1 =  getFileContentAsJson(format("offence-reference-data/%s.json", offence1Code));
+        final JsonObject offenceDefinition2 =  getFileContentAsJson(format("offence-reference-data/%s.json", offence2Code));
+        final JsonObject offenceDefinition3 =  getFileContentAsJson(format("offence-reference-data/%s.json", offence3Code));
 
         when(referenceDataService.getOffenceDefinition(offence1Code, offence1CommittedDate.toString(), jsonEnvelope)).thenReturn(offenceDefinition1);
         when(referenceDataService.getOffenceDefinition(offence2Code, offence2CommittedDate.toString(), jsonEnvelope)).thenReturn(offenceDefinition2);
@@ -135,6 +141,10 @@ public class OffenceDecoratorTest {
         when(offenceHelper.getWithdrawalRequestReason(offence2, withdrawalReasons)).thenReturn(of(NOT_IN_PUBLIC_INTEREST_TO_PROCEED));
         when(offenceHelper.getWithdrawalRequestReason(offence3, withdrawalReasons)).thenReturn(empty());
 
+        when(offenceHelper.getMaxFineValue(offenceDefinition1, offenceFineLevels)).thenReturn(of(BigDecimal.valueOf(1000)));
+        when(offenceHelper.getMaxFineValue(offenceDefinition2, offenceFineLevels)).thenReturn(empty());
+        when(offenceHelper.getMaxFineValue(offenceDefinition3, offenceFineLevels)).thenReturn(of(BigDecimal.valueOf(2500)));
+
         final JsonObject expectedDecoratedOffence1 = createObjectBuilder()
                 .add("offenceCode", offence1Code)
                 .add("startDate", offence1CommittedDate.toString())
@@ -149,6 +159,10 @@ public class OffenceDecoratorTest {
                 .add("maxFineLevel", "3")
                 .add("hasFinalDecision", true)
                 .add("pendingWithdrawal", false)
+                .add("backDutyOffence", false)
+                .add("penaltyType", EMPTY)
+                .add("sentencing", EMPTY)
+                .add("maxFineValue", BigDecimal.valueOf(1000))
 
                 .build();
 
@@ -165,6 +179,9 @@ public class OffenceDecoratorTest {
                 .add("maxFineLevel", "")
                 .add("hasFinalDecision", true)
                 .add("pendingWithdrawal", false)
+                .add("backDutyOffence", true)
+                .add("penaltyType", "Excise penalty")
+                .add("sentencing", "Yes")
 
                 .build();
 
@@ -181,17 +198,31 @@ public class OffenceDecoratorTest {
                 .add("maxFineLevel", "3")
                 .add("hasFinalDecision", false)
                 .add("pendingWithdrawal", false)
+                .add("backDutyOffence", false)
+                .add("penaltyType", "Excise penalty")
+                .add("sentencing", "Yes")
+                .add("maxFineValue", BigDecimal.valueOf(2500))
                 .build();
-
 
         when(offenceHelper.hasFinalDecision(offence1, caseDecisions)).thenReturn(true);
         when(offenceHelper.hasFinalDecision(offence2, caseDecisions)).thenReturn(true);
         when(offenceHelper.hasFinalDecision(offence3, caseDecisions)).thenReturn(false);
 
+        when(offenceHelper.isBackDuty(offenceDefinition1)).thenReturn(false);
+        when(offenceHelper.isBackDuty(offenceDefinition2)).thenReturn(true);
+        when(offenceHelper.isBackDuty(offenceDefinition3)).thenReturn(false);
+
+        when(offenceHelper.getPenaltyType(offenceDefinition1)).thenReturn(EMPTY);
+        when(offenceHelper.getPenaltyType(offenceDefinition2)).thenReturn("Excise penalty");
+        when(offenceHelper.getPenaltyType(offenceDefinition3)).thenReturn("Excise penalty");
+
+        when(offenceHelper.getSentencing(offenceDefinition1)).thenReturn(EMPTY);
+        when(offenceHelper.getSentencing(offenceDefinition2)).thenReturn("Yes");
+        when(offenceHelper.getSentencing(offenceDefinition3)).thenReturn("Yes");
 
         final JsonObject expectedDecoratedCase = buildCaseWithOffences(expectedDecoratedOffence1, expectedDecoratedOffence2, expectedDecoratedOffence3);
 
-        final JsonObject actualDecoratedCase = offenceDecorator.decorateAllOffences(originalCase, jsonEnvelope, withdrawalReasons);
+        final JsonObject actualDecoratedCase = offenceDecorator.decorateAllOffences(originalCase, jsonEnvelope, withdrawalReasons, offenceFineLevels);
 
         assertThat(actualDecoratedCase, equalTo(expectedDecoratedCase));
     }
@@ -205,7 +236,8 @@ public class OffenceDecoratorTest {
     }
 
     private static JsonArray getCaseDecisions() {
-        JsonArray offenceDecisions = createArrayBuilder().add(createObjectBuilder()
+
+        return createArrayBuilder().add(createObjectBuilder()
                 .add("offenceDecisions", createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add("offenceId", offenceId_1)
@@ -221,9 +253,5 @@ public class OffenceDecoratorTest {
                 .add(createObjectBuilder().add("offenceId", offenceId_3)
                         .add("decisionType", "ADJOURN")
                         .add("verdict", "NO_VERDICT")))).build();
-
-    return offenceDecisions;
     }
-
-
 }

@@ -141,7 +141,6 @@ public class DeleteFinancialMeansMatcherHelper {
 
     private static List<Matcher> getOnlinePleaMatchers(final JSONObject onlinePleaPayload, final String caseId, final String defendantId) {
         final JSONObject person = onlinePleaPayload.getJSONObject("personalDetails");
-        final JSONObject personAddress = person.getJSONObject("address");
         final JSONObject personContactDetails = person.getJSONObject("contactDetails");
 
         final List<Matcher> matchers = new ArrayList<>(asList(
@@ -155,13 +154,7 @@ public class DeleteFinancialMeansMatcherHelper {
                 withJsonPath("$.personalDetails.mobile", equalTo(personContactDetails.getString("mobile"))),
                 withJsonPath("$.personalDetails.email", equalTo(personContactDetails.getString("email"))),
                 withJsonPath("$.personalDetails.dateOfBirth", equalTo(person.getString("dateOfBirth"))),
-                withJsonPath("$.personalDetails.nationalInsuranceNumber", equalTo(person.getString("nationalInsuranceNumber"))),
-                withJsonPath("$.personalDetails.address.address1", equalTo(personAddress.getString("address1"))),
-                withJsonPath("$.personalDetails.address.address2", equalTo(personAddress.getString("address2"))),
-                withJsonPath("$.personalDetails.address.address3", equalTo(personAddress.getString("address3"))),
-                withJsonPath("$.personalDetails.address.address4", equalTo(personAddress.getString("address4"))),
-                withJsonPath("$.personalDetails.address.address5", equalTo(personAddress.getString("address5"))),
-                withJsonPath("$.personalDetails.address.postcode", equalTo(personAddress.getString("postcode")))
+                withJsonPath("$.personalDetails.nationalInsuranceNumber", equalTo(person.getString("nationalInsuranceNumber")))
         ));
 
 

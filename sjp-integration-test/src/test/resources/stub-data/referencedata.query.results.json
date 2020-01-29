@@ -27,6 +27,22 @@
     {
       "id": "35b0c1fe-afe6-4652-822f-6842d79eada9",
       "code": "LSUMI"
+    },
+    {
+      "id": "b318f084-f40e-438c-98ba-99b7ce5f3ebf",
+      "code": "FO"
+    },
+    {
+      "id": "b318f084-f40e-438c-98ba-99b7ce5f3eb1",
+      "code": "NCR"
+    },
+    {
+      "id": "b318f084-f40e-438c-98ba-99b7ce5f3eb2",
+      "code": "COLLO"
+    },
+    {
+      "id": "b318f084-f40e-438c-98ba-99b7ce5f3eb3",
+      "code": "INSTL"
     }
   ]
 }

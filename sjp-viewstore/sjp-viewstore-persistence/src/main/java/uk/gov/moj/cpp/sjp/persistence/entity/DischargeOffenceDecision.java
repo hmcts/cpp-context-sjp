@@ -29,6 +29,9 @@ public class DischargeOffenceDecision extends OffenceDecision {
     @Column(name="compensation")
     private BigDecimal compensation;
 
+    @Column(name="back_duty")
+    private BigDecimal backDuty;
+
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "unit", column = @Column(name = "discharge_period_unit")),
@@ -47,7 +50,8 @@ public class DischargeOffenceDecision extends OffenceDecision {
                                     final Boolean guiltyPleaTakenIntoAccount,
                                     final BigDecimal compensation,
                                     final String noCompensationReason,
-                                    final DischargeType dischargeType) {
+                                    final DischargeType dischargeType,
+                                    final BigDecimal backDuty) {
 
         super(offenceId, caseDecisionId, DecisionType.DISCHARGE,verdict);
         this.dischargePeriod = dischargePeriod;
@@ -55,6 +59,7 @@ public class DischargeOffenceDecision extends OffenceDecision {
         this.compensation = compensation;
         this.noCompensationReason = noCompensationReason;
         this.dischargeType = dischargeType;
+        this.backDuty = backDuty;
     }
 
     public DischargeOffenceDecision() {
@@ -99,5 +104,13 @@ public class DischargeOffenceDecision extends OffenceDecision {
 
     public void setNoCompensationReason(String noCompensationReason) {
         this.noCompensationReason = noCompensationReason;
+    }
+
+    public BigDecimal getBackDuty() {
+        return backDuty;
+    }
+
+    public void setBackDuty(BigDecimal backDuty) {
+        this.backDuty = backDuty;
     }
 }

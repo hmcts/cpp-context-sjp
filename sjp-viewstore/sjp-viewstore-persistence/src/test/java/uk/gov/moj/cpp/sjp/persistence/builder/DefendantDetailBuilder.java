@@ -36,7 +36,8 @@ public class DefendantDetailBuilder {
                         Gender.FEMALE,
                         null,
                         new Address("10 Downing St", "Westminster", "London", "Greater London", "England", DEFAULT_POSTCODE),
-                        new ContactDetails()
+                        new ContactDetails(),
+                        null
                 )
         );
         offenceBuilder = prepareOffenceBuilder();

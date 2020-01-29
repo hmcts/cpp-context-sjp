@@ -29,8 +29,9 @@ public class PersonalDetails extends Person {
             @JsonProperty("address") final Address address,
             @JsonProperty("contactDetails") final ContactDetails contactDetails,
             @JsonProperty("dateOfBirth") final LocalDate dateOfBirth,
-            @JsonProperty("nationalInsuranceNumber") final String nationalInsuranceNumber) {
-        super(null, firstName, lastName, dateOfBirth, null, nationalInsuranceNumber, address, contactDetails);
+            @JsonProperty("nationalInsuranceNumber") final String nationalInsuranceNumber,
+            @JsonProperty("region") final String region) {
+        super(null, firstName, lastName, dateOfBirth, null, nationalInsuranceNumber, address, contactDetails, region);
     }
 
 }

@@ -9,18 +9,16 @@ import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.CasePredicate.casePayloadContains;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearchWithPredicate;
-import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getPoller;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.IngesterHelper.buildEnvelope;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MessageProducerClient;
-import uk.gov.justice.services.test.utils.core.messaging.Poller;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
@@ -46,17 +44,13 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
 
     private final MessageProducerClient privateEventsProducer = new MessageProducerClient();
 
-    private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
-    private final Poller poller = getPoller();
     private final UUID caseId = randomUUID();
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
-
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     @Before
     public void setUp() throws IOException {
         privateEventsProducer.startProducer(SJP_EVENT);
-        final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
-        elasticSearchIndexFinderUtil = new ElasticSearchIndexFinderUtil(elasticSearchClient);
         new ElasticSearchIndexRemoverUtil().deleteAndCreateCaseIndex();
     }
 
@@ -71,6 +65,8 @@ public class DefendantDetailsMovedFromPeopleIngestorIT extends BaseIntegrationTe
         final UUID defendantId = randomUUID();
 
         final CreateCase.CreateCasePayloadBuilder createCase = getCreateCasePayloadBuilder(caseId, defendantId);
+        stubEnforcementAreaByPostcode(createCase.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
 
         //Create case in index
         setUpCaseAndDefendants(createCase);

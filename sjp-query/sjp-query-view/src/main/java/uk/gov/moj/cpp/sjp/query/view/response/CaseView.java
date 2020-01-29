@@ -23,6 +23,7 @@ public class CaseView {
     private final ZonedDateTime dateTimeCreated;
     private final Set<CaseDocumentView> caseDocuments;
     private final ProsecutingAuthority prosecutingAuthority;
+    private final String prosecutingAuthorityName;
     private final Boolean completed;
     private final Boolean assigned;
     private final String reopenedInLibraReason;
@@ -39,11 +40,12 @@ public class CaseView {
     private final ZonedDateTime hearingTime;
     private final LocalDate adjournedTo;
 
-    public CaseView(final CaseDetail caseDetail) {
+    public CaseView(final CaseDetail caseDetail, final String prosecutingAuthorityName) {
 
         this.id = caseDetail.getId().toString();
         this.urn = caseDetail.getUrn();
         this.prosecutingAuthority = caseDetail.getProsecutingAuthority();
+        this.prosecutingAuthorityName = prosecutingAuthorityName;
 
         this.defendant = new DefendantView(caseDetail.getDefendant());
         this.caseDecisions = new ArrayList<>();
@@ -96,6 +98,10 @@ public class CaseView {
 
     public ProsecutingAuthority getProsecutingAuthority() {
         return prosecutingAuthority;
+    }
+
+    public String getProsecutingAuthorityName() {
+        return prosecutingAuthorityName;
     }
 
     public Boolean getCompleted() {

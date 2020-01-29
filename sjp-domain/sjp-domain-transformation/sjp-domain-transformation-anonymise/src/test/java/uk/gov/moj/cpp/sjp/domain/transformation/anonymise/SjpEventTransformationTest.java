@@ -1,22 +1,24 @@
 package uk.gov.moj.cpp.sjp.domain.transformation.anonymise;
 
-import com.jayway.restassured.path.json.JsonPath;
-import org.junit.Test;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
-import uk.gov.justice.tools.eventsourcing.anonymization.util.FileUtil;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import java.io.StringReader;
-import java.util.stream.Stream;
-
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
+
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
+import uk.gov.justice.tools.eventsourcing.anonymization.util.FileUtil;
+
+import java.io.StringReader;
+import java.util.stream.Stream;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+import com.jayway.restassured.path.json.JsonPath;
+import org.junit.Test;
 
 public class SjpEventTransformationTest {
 

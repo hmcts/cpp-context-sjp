@@ -25,9 +25,13 @@ import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SET_PLEAS;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.requestSetPleas;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseHelper;
@@ -61,6 +65,8 @@ public class ReadyCaseIT extends BaseIntegrationTest {
     private final ReadyCaseHelper readyCaseHelper = new ReadyCaseHelper();
 
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
+
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     @Test
     public void shouldChangeCaseReadinessWhenCaseAfterNoticeEndDate() throws Exception {
@@ -258,6 +264,11 @@ public class ReadyCaseIT extends BaseIntegrationTest {
                         CreateCase.OffenceBuilder.withDefaults().withId(offence2Id),
                         CreateCase.OffenceBuilder.withDefaults().withId(offence3Id))
                 .withPostingDate(postingDate);
+
+        final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
 
         CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
     }

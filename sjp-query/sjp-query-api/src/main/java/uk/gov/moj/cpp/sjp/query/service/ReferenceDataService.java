@@ -23,6 +23,8 @@ public class ReferenceDataService {
     @ServiceComponent(QUERY_API)
     private Requester requester;
 
+    private static final String FINE_LEVELS = "fineLevels";
+
     public JsonObject getOffenceDefinition(final String offenceCode, final String date, final JsonEnvelope envelope) {
         final JsonEnvelope request = enveloper
                 .withMetadataFrom(envelope, "referencedataoffences.query.offences-list")
@@ -48,6 +50,16 @@ public class ReferenceDataService {
                 .payloadAsJsonObject()
                 .getJsonArray("referralReasons")
                 .getValuesAs(JsonObject.class);
+    }
+
+    public List<JsonObject> getOffenceFineLevels(final JsonEnvelope jsonEnvelope) {
+        final JsonEnvelope request = enveloper
+                .withMetadataFrom(jsonEnvelope, "referencedata.query.offence-fine-levels")
+                .apply(createObjectBuilder().build());
+
+        final JsonEnvelope response = requester.requestAsAdmin(request);
+
+        return response.payloadAsJsonObject().getJsonArray(FINE_LEVELS).getValuesAs(JsonObject.class);
     }
 
     public List<JsonObject> getWithdrawalReasons(final JsonEnvelope jsonEnvelope) {

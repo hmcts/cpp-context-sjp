@@ -39,11 +39,9 @@ public class CreateCaseApi {
         ofNullable(defendantObject.getJsonObject(CONTACT_DETAILS))
                 .ifPresent(contactDetails -> defendantObjectBuilder.add(CONTACT_DETAILS, convertBlankEmailsToNull(contactDetails)));
 
-
         final JsonObjectBuilder createCaseObjectBuilder = createObjectBuilderWithFilter(payload, field -> !DEFENDANT.equals(field));
         createCaseObjectBuilder.add(DEFENDANT, defendantObjectBuilder);
 
         sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.create-sjp-case").apply(createCaseObjectBuilder.build()));
     }
-
 }

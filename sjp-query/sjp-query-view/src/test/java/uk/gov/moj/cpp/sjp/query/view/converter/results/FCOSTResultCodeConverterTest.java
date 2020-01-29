@@ -40,7 +40,7 @@ public class FCOSTResultCodeConverterTest extends ResultCodeConverterTest {
                         .add("value", "22")
                 )
                 .add(createObjectBuilder()
-                        .add("promptDefinitionId", "2b0ca749-7ede-4446-ae59-5beec3a72143")
+                        .add("promptDefinitionId", "22ebf965-8a1c-4229-9894-0df7f8117753")
                         .add("value", "Transport for London")
                 )
                 .build();

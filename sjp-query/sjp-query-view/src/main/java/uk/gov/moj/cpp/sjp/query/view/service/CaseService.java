@@ -58,6 +58,7 @@ import org.slf4j.LoggerFactory;
 public class CaseService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseService.class);
+
     @Inject
     private CaseRepository caseRepository;
 
@@ -72,6 +73,9 @@ public class CaseService {
 
     @Inject
     private ProsecutingAuthorityAccessFilterConverter prosecutingAuthorityAccessFilterConverter;
+
+    @Inject
+    private ReferenceDataService referenceDataService;
 
     /**
      * Find case by id.
@@ -201,9 +205,24 @@ public class CaseService {
 
     private CaseView getCaseView(CaseDetail caseDetail) {
         if (null != caseDetail) {
-            return new CaseView(caseDetail);
+            final String prosecutingAuthority = caseDetail.getProsecutingAuthority().name();
+            return getProsecutorDetails(prosecutingAuthority)
+                    .map(prosecutor -> new CaseView(caseDetail, prosecutor.getString("fullName")))
+                    .orElse(new CaseView(caseDetail, null));
         }
         return null;
+    }
+
+    private Optional<JsonObject> getProsecutorDetails(final String prosecutingAuthority) {
+        return referenceDataService.getProsecutorsByProsecutorCode(prosecutingAuthority)
+                .map(prosecutors -> prosecutors.getValuesAs(JsonObject.class))
+                .map(prosecutorObjectList -> {
+                    if (!prosecutorObjectList.isEmpty()) {
+                        return prosecutorObjectList.get(0);
+                    } else {
+                        return null;
+                    }
+                });
     }
 
     public CaseSearchResultsView searchCases(final JsonEnvelope envelope, final String query) {

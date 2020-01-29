@@ -25,7 +25,8 @@ public class UpdatedDefendantDetailsTest {
                 null,
                 null,
                 "caseUrn",
-                UUID.randomUUID());
+                UUID.randomUUID(),
+                "region");
 
         final Optional<ZonedDateTime> mostRecentUpdateDataOptional = updatedDefendantDetails.getMostRecentUpdateDate();
 
@@ -48,7 +49,8 @@ public class UpdatedDefendantDetailsTest {
                 dobUpdatedAt,
                 nameUpdatedAt,
                 "caseUrn",
-                UUID.randomUUID());
+                UUID.randomUUID(),
+                "region");
 
         final Optional<ZonedDateTime> mostRecentUpdateDataOptional = updatedDefendantDetails.getMostRecentUpdateDate();
 

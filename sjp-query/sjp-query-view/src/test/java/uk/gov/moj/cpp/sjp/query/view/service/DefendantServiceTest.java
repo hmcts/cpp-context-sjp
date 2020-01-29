@@ -121,6 +121,7 @@ public class DefendantServiceTest {
                 null,
                 null,
                 "caseUrn",
-                UUID.randomUUID());
+                UUID.randomUUID(),
+                "region");
     }
 }

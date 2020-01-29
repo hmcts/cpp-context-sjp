@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.ofNullable;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.CASE_ID;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.COME_TO_COURT;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_ADDRESS_1;
@@ -47,6 +48,7 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.WITNESS_DETAILS;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.WITNESS_DISPUTE;
 
+import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 
 import java.util.List;
@@ -150,12 +152,12 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         PERSON_EMAIL(o -> o.getPersonalDetails().getEmail(), "personalDetails", "email"),
         PERSON_DOB(o -> o.getPersonalDetails().getDateOfBirth(), "personalDetails", "dateOfBirth"),
         PERSON_NI_NUMBER(o -> o.getPersonalDetails().getNationalInsuranceNumber(), "personalDetails", "nationalInsuranceNumber"),
-        PERSON_ADDRESS_1(o -> o.getPersonalDetails().getAddress().getAddress1(), "personalDetails", "address", "address1"),
-        PERSON_ADDRESS_2(o -> o.getPersonalDetails().getAddress().getAddress2(), "personalDetails", "address", "address2"),
-        PERSON_ADDRESS_3(o -> o.getPersonalDetails().getAddress().getAddress3(), "personalDetails", "address", "address3"),
-        PERSON_ADDRESS_4(o -> o.getPersonalDetails().getAddress().getAddress4(), "personalDetails", "address", "address4"),
-        PERSON_ADDRESS_5(o -> o.getPersonalDetails().getAddress().getAddress5(), "personalDetails", "address", "address5"),
-        PERSON_POSTCODE(o -> o.getPersonalDetails().getAddress().getPostcode(), "personalDetails", "address", "postcode"),
+        PERSON_ADDRESS_1(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress1).orElse(null), "personalDetails", "address", "address1"),
+        PERSON_ADDRESS_2(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress2).orElse(null), "personalDetails", "address", "address2"),
+        PERSON_ADDRESS_3(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress3).orElse(null), "personalDetails", "address", "address3"),
+        PERSON_ADDRESS_4(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress4).orElse(null), "personalDetails", "address", "address4"),
+        PERSON_ADDRESS_5(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress5).orElse(null), "personalDetails", "address", "address5"),
+        PERSON_POSTCODE(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getPostcode).orElse(null), "personalDetails", "address", "postcode"),
 
         COME_TO_COURT(o -> o.getPleaDetails().getComeToCourt(), "pleaDetails", "comeToCourt"),
 

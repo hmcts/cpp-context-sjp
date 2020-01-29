@@ -1,10 +1,10 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
+import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_VIEW;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
@@ -27,6 +27,8 @@ import javax.json.JsonValue;
 
 public class ReferenceDataService {
 
+    private static final String RESULTS = "results";
+
     @Inject
     private Enveloper enveloper;
 
@@ -34,6 +36,7 @@ public class ReferenceDataService {
     @ServiceComponent(QUERY_VIEW)
     private Requester requester;
 
+    private static final String QUERY_DATE = LocalDate.now().toString();
     private static final String FIELD_ON = "on";
 
     public Optional<JsonArray> getProsecutorsByProsecutorCode(String prosecutorCode) {
@@ -96,10 +99,14 @@ public class ReferenceDataService {
                 .withMetadataFrom(envelope, "referencedata.query.results")
                 .apply(createObjectBuilder().build());
 
-        return requester.requestAsAdmin(query)
-                .payloadAsJsonObject().getJsonArray("results")
-                .getValuesAs(JsonObject.class).stream()
-                .collect(toList());
+        final JsonObject resultsResponse = requester.requestAsAdmin(query)
+                .payloadAsJsonObject();
+
+        if(resultsResponse.containsKey(RESULTS) && !resultsResponse.isNull(RESULTS)){
+            return resultsResponse.getJsonArray(RESULTS).getValuesAs(JsonObject.class);
+        } else {
+            return emptyList();
+        }
     }
 
     public Optional<JsonObject> getEnforcementAreaByPostcode(final String postcode, final JsonEnvelope sourceEvent) {
@@ -121,9 +128,8 @@ public class ReferenceDataService {
     }
 
     public Optional<JsonObject> getAllFixedList(final JsonEnvelope sourceEvent) {
-        final String queryDate = LocalDate.now().toString();
 
-        final JsonObject queryParams = createObjectBuilder().add(FIELD_ON, queryDate).build();
+        final JsonObject queryParams = createObjectBuilder().add(FIELD_ON, QUERY_DATE).build();
 
         final JsonEnvelope requestEnvelope = envelopeFrom(metadataFrom(sourceEvent.metadata()).withName("referencedata.get-all-fixed-list"), queryParams);
 

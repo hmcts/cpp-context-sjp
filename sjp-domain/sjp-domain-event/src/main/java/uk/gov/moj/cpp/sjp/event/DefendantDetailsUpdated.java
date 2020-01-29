@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.event;
 
+import static java.util.Optional.ofNullable;
+
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.domain.Address;
@@ -7,6 +9,7 @@ import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -29,6 +32,7 @@ public class DefendantDetailsUpdated {
     private final ContactDetails contactDetails;
     private final boolean updateByOnlinePlea;
     private final ZonedDateTime updatedDate;
+    private final String region;
 
     @JsonCreator
     private DefendantDetailsUpdated(@JsonProperty("caseId") UUID caseId, @JsonProperty("defendantId") UUID defendantId,
@@ -38,7 +42,8 @@ public class DefendantDetailsUpdated {
                                     @JsonProperty("nationalInsuranceNumber") String nationalInsuranceNumber,
                                     @JsonProperty("contactDetails") ContactDetails contactDetails, @JsonProperty("address") Address address,
                                     @JsonProperty("updateByOnlinePlea") boolean updateByOnlinePlea,
-                                    @JsonProperty("updatedDate") ZonedDateTime updatedDate) {
+                                    @JsonProperty("updatedDate") ZonedDateTime updatedDate,
+                                    @JsonProperty("region") String region) {
         this.caseId = caseId;
         this.defendantId = defendantId;
         this.title = title;
@@ -51,6 +56,7 @@ public class DefendantDetailsUpdated {
         this.address = address;
         this.updateByOnlinePlea = updateByOnlinePlea;
         this.updatedDate = updatedDate;
+        this.region = region;
     }
 
     public static class DefendantDetailsUpdatedBuilder {
@@ -66,6 +72,8 @@ public class DefendantDetailsUpdated {
         private ContactDetails contactDetails;
         private boolean updateByOnlinePlea;
         private ZonedDateTime updatedDate;
+        private boolean containsUpdate = false;
+        private String region;
 
         public static DefendantDetailsUpdatedBuilder defendantDetailsUpdated() {
             return new DefendantDetailsUpdatedBuilder();
@@ -83,41 +91,49 @@ public class DefendantDetailsUpdated {
 
         public DefendantDetailsUpdatedBuilder withTitle(final String title) {
             this.title = title;
+            this.containsUpdate = true;
             return this;
         }
 
         public DefendantDetailsUpdatedBuilder withFirstName(final String firstName) {
             this.firstName = firstName;
+            this.containsUpdate = true;
             return this;
         }
 
         public DefendantDetailsUpdatedBuilder withLastName(final String lastName) {
             this.lastName = lastName;
+            this.containsUpdate = true;
             return this;
         }
 
         public DefendantDetailsUpdatedBuilder withDateOfBirth(final LocalDate dateOfBirth) {
             this.dateOfBirth = dateOfBirth;
+            this.containsUpdate = true;
             return this;
         }
 
         public DefendantDetailsUpdatedBuilder withGender(final Gender gender) {
             this.gender = gender;
+            this.containsUpdate = true;
             return this;
         }
 
         public DefendantDetailsUpdatedBuilder withNationalInsuranceNumber(final String nationalInsuranceNumber) {
             this.nationalInsuranceNumber = nationalInsuranceNumber;
+            this.containsUpdate = true;
             return this;
         }
 
         public DefendantDetailsUpdatedBuilder withAddress(final Address address) {
             this.address = address;
+            this.containsUpdate = true;
             return this;
         }
 
         public DefendantDetailsUpdatedBuilder withContactDetails(final ContactDetails contactDetails) {
             this.contactDetails = contactDetails;
+            this.containsUpdate = true;
             return this;
         }
 
@@ -131,10 +147,19 @@ public class DefendantDetailsUpdated {
             return this;
         }
 
+        public boolean containsUpdate() {
+            return containsUpdate;
+        }
+
+        public DefendantDetailsUpdatedBuilder withRegion(final String region){
+            this.region = region;
+            return this;
+        }
+
         public DefendantDetailsUpdated build() {
             return new DefendantDetailsUpdated(caseId, defendantId, title, firstName,
                     lastName, dateOfBirth, gender, nationalInsuranceNumber, contactDetails,
-                    address, updateByOnlinePlea, updatedDate);
+                    address, updateByOnlinePlea, updatedDate, region);
         }
     }
 
@@ -184,5 +209,9 @@ public class DefendantDetailsUpdated {
 
     public ZonedDateTime getUpdatedDate() {
         return updatedDate;
+    }
+
+    public String getRegion() {
+        return region;
     }
 }

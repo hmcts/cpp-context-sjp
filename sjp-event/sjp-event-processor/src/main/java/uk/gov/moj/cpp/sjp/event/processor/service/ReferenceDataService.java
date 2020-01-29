@@ -4,7 +4,6 @@ package uk.gov.moj.cpp.sjp.event.processor.service;
 import static java.util.Objects.nonNull;
 import static javax.json.Json.createObjectBuilder;
 
-import uk.gov.justice.json.schemas.domains.sjp.ProsecutingAuthority;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -61,15 +60,15 @@ public class ReferenceDataService {
                 .findFirst();
     }
 
-    public JsonObject getProsecutor(final ProsecutingAuthority prosecutingAuthority, final JsonEnvelope envelope) {
-        final JsonObject payload = createObjectBuilder().add("prosecutorCode", prosecutingAuthority.name()).build();
+    public JsonObject getProsecutor(final String prosecutingAuthority, final JsonEnvelope envelope) {
+        final JsonObject payload = createObjectBuilder().add("prosecutorCode", prosecutingAuthority).build();
         final JsonEnvelope request = enveloper.withMetadataFrom(envelope, "referencedata.query.prosecutors").apply(payload);
         final JsonEnvelope response = requester.requestAsAdmin(request);
         return response.payloadAsJsonObject();
     }
 
     public String getProsecutor(final String prosecutingAuthority, final Boolean isWelsh, final JsonEnvelope envelope) {
-        final JsonObject prosecutor = this.getProsecutor(ProsecutingAuthority.valueOf(prosecutingAuthority), envelope)
+        final JsonObject prosecutor = this.getProsecutor(prosecutingAuthority, envelope)
                 .getJsonArray("prosecutors")
                 .getValuesAs(JsonObject.class)
                 .stream()

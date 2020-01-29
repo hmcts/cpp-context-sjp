@@ -196,7 +196,7 @@ public class SjpQueryViewTest {
                 .withCompleted(false).withProsecutingAuthority(TFL)
                 .withCaseId(UUID.randomUUID()).withUrn(urn).build();
 
-        final CaseView caseView = new CaseView(caseDetail);
+        final CaseView caseView = new CaseView(caseDetail, "Transport for London");
 
         when(caseService.findCaseByUrnPostcode(urn, postcode)).thenReturn(caseView);
 
@@ -538,7 +538,8 @@ public class SjpQueryViewTest {
                 true,
                 true,
                 true,
-                updatedOn);
+                updatedOn,
+                "region");
 
         when(defendantService.findDefendantDetailUpdates(queryEnvelope)).thenReturn(new DefendantDetailsUpdatesView(
                 1,

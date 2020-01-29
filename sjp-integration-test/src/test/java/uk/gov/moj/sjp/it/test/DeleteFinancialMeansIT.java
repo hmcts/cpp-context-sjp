@@ -3,7 +3,6 @@ package uk.gov.moj.sjp.it.test;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singleton;
-import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -14,8 +13,8 @@ import static uk.gov.moj.sjp.it.helper.DeleteFinancialMeansMatcherHelper.getSave
 import static uk.gov.moj.sjp.it.helper.FinancialMeansHelper.getOnlinePleaData;
 import static uk.gov.moj.sjp.it.stub.MaterialStub.stubAddCaseMaterial;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.stubNotifications;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.*;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostcodeQuery;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffenceById;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
@@ -55,6 +54,7 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
     private static final String PROSECUTING_AUTHORITY_ACCESS_ALL = "ALL";
     //To Query OnlinePlea
     private static final Set<UUID> DEFAULT_STUBBED_USER_ID = singleton(USER_ID);
+    private static final String NATIONAL_COURT_CODE = "1080";
 
 
     @Before
@@ -65,9 +65,12 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
         stubNotifications();
         stubQueryOffencesByCode("PS00001");
         stubResultDefinitions();
+        stubAllProsecutorsQuery();
 
         financialMeansHelper = new FinancialMeansHelper();
         this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
         CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
 
         employerHelper = new EmployerHelper();

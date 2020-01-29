@@ -19,20 +19,20 @@
         <sonar.scm.provider>git</sonar.scm.provider>
         <assignment.version>6.0.0</assignment.version>
         <material.version>6.0.1</material.version>
-        <notification.notify.version>0.0.26</notification.notify.version>
+        <notification.notify.version>0.0.38</notification.notify.version>
         <referencedata.version>2.0.275</referencedata.version>
-        <referencedata.offences.version>1.0.26</referencedata.offences.version>
+        <referencedata.offences.version>1.0.27</referencedata.offences.version>
         <resulting.version>2.0.259</resulting.version>
         <scheduling.version>6.0.0</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>6.0.0</usersgroups.version>
-        <progression.version>2.0.163</progression.version>
-        <prosecutioncasefile.version>1.0.42</prosecutioncasefile.version>
+        <progression.version>6.4.5</progression.version>
+        <prosecutioncasefile.version>1.0.58-DVLA</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
-        <coredomain.version>1.0.57</coredomain.version>
+        <coredomain.version>1.0.59</coredomain.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>
         <lombok.version>1.18.2</lombok.version>

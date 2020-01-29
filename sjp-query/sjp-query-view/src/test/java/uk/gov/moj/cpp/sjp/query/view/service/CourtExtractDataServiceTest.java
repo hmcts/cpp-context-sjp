@@ -417,7 +417,7 @@ public class CourtExtractDataServiceTest {
                         true,
                         TEN,
                         null,
-                        CONDITIONAL);
+                        CONDITIONAL, null);
                 break;
         }
 
@@ -478,7 +478,7 @@ public class CourtExtractDataServiceTest {
                         true,
                         ZERO,
                         null,
-                        ABSOLUTE)));
+                        ABSOLUTE, null)));
 
         caseDetail.setCaseDecisions(asList(dischargeDecision1));
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
@@ -515,7 +515,7 @@ public class CourtExtractDataServiceTest {
                         true,
                         BigDecimal.valueOf(2000.236),
                         "Limited means of defendant",
-                        CONDITIONAL)));
+                        CONDITIONAL, null)));
 
         caseDetail.setCaseDecisions(asList(dischargeDecision));
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
@@ -553,7 +553,7 @@ public class CourtExtractDataServiceTest {
                         true,
                         BigDecimal.valueOf(1000.987),
                         "Limited means of defendant",
-                        BigDecimal.valueOf(2000.236))));
+                        BigDecimal.valueOf(2000.236), null, null)));
 
         caseDetail.setCaseDecisions(asList(financialDecision));
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
@@ -572,6 +572,43 @@ public class CourtExtractDataServiceTest {
                 new OffenceDecisionLineView("To pay a fine of", "£2,000.24"),
                 new OffenceDecisionLineView("To pay compensation of", "£1,000.99"),
                 new OffenceDecisionLineView("No compensation ordered\nbecause", "Limited means of defendant"),
+                new OffenceDecisionLineView("Defendant's guilty plea", "Taken into account when imposing sentence"),
+                new OffenceDecisionLineView("Decision made", expectedDecisionMade(decisionSavedAt, false))
+                )
+        );
+    }
+
+    @Test
+    public void shouldVerifyForExcisePenaltyAndBackDutyOffenceDecisionsConditionallyCharged() {
+        final CaseDetail caseDetail = buildCaseDetailWithOneOffence();
+
+        final CaseDecision financialDecision = buildCaseDecisionEntity(caseDetail.getId(), false, now());
+        financialDecision.setOffenceDecisions(asList(
+                new FinancialPenaltyOffenceDecision(offence1Id,
+                        financialDecision.getId(),
+                        FOUND_GUILTY,
+                        true,
+                        BigDecimal.valueOf(1000.987),
+                        null,
+                        null, BigDecimal.valueOf(123.45), BigDecimal.valueOf(234.56))));
+
+        caseDetail.setCaseDecisions(asList(financialDecision));
+        when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
+        final Optional<CaseCourtExtractView> caseCourtExtractView = this.courtExtractDataService
+                .getCourtExtractData(caseDetail.getId());
+
+        assertTrue(caseCourtExtractView.isPresent());
+
+        final OffenceDecisionView dischargeDecisionViewNoPlea = caseCourtExtractView.get().getOffences().get(0).getOffenceDecisions().get(0);
+
+        assertEquals("Court decision", dischargeDecisionViewNoPlea.getHeading());
+        assertThat(dischargeDecisionViewNoPlea.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "No plea received"),
+                new OffenceDecisionLineView("Verdict", "Guilty plea accepted"),
+                new OffenceDecisionLineView("Date of verdict", formattedSavedAt),
+                new OffenceDecisionLineView("To pay an excise penalty of", "£234.56"),
+                new OffenceDecisionLineView("To pay back duty of", "£123.45"),
+                new OffenceDecisionLineView("To pay compensation of", "£1,000.99"),
                 new OffenceDecisionLineView("Defendant's guilty plea", "Taken into account when imposing sentence"),
                 new OffenceDecisionLineView("Decision made", expectedDecisionMade(decisionSavedAt, false))
                 )

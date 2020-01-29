@@ -5,18 +5,24 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
+import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
 
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
+import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -30,6 +36,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Defines the case aggregate state.
@@ -50,7 +58,11 @@ public class CaseAggregateState implements AggregateState {
     private String defendantTitle;
     private String defendantFirstName;
     private String defendantLastName;
+
+    private String defendantNationalInsuranceNumber;
     private LocalDate defendantDateOfBirth;
+    private Gender defendantGender;
+    private ContactDetails defendantContactDetails;
     private Address defendantAddress;
     private CaseReadinessReason readinessReason;
     private LocalDate expectedDateReady;
@@ -92,6 +104,7 @@ public class CaseAggregateState implements AggregateState {
     private boolean datesToAvoidPreviouslyRequested;
     private LocalDate datesToAvoidExpirationDate;
     private LocalDate adjournedTo;
+    private String defendantRegion;
 
     public UUID getCaseId() {
         return caseId;
@@ -221,6 +234,30 @@ public class CaseAggregateState implements AggregateState {
         this.datesToAvoid = datesToAvoid;
     }
 
+    public String getDefendantNationalInsuranceNumber() {
+        return defendantNationalInsuranceNumber;
+    }
+
+    public void setDefendantNationalInsuranceNumber(final String defendantNationalInsuranceNumber) {
+        this.defendantNationalInsuranceNumber = defendantNationalInsuranceNumber;
+    }
+
+    public ContactDetails getDefendantContactDetails() {
+        return defendantContactDetails;
+    }
+
+    public void setDefendantContactDetails(final ContactDetails defendantContactDetails) {
+        this.defendantContactDetails = defendantContactDetails;
+    }
+
+    public Gender getDefendantGender() {
+        return defendantGender;
+    }
+
+    public void setDefendantGender(final Gender defendantGender) {
+        this.defendantGender = defendantGender;
+    }
+
     public void addOffenceIdsForDefendant(UUID defendantId, Set<UUID> offenceIds) {
         offenceIdsByDefendantId.putIfAbsent(defendantId, offenceIds);
     }
@@ -307,6 +344,14 @@ public class CaseAggregateState implements AggregateState {
         this.employerDetailsUpdated = employerDetailsUpdated;
     }
 
+    public String getDefendantRegion() {
+        return defendantRegion;
+    }
+
+    public void setDefendantRegion(String region) {
+        this.defendantRegion = region;
+    }
+
     public boolean hasDefendant(final UUID defendantId) {
         return offenceIdsByDefendantId.containsKey(defendantId);
     }
@@ -334,7 +379,7 @@ public class CaseAggregateState implements AggregateState {
     public void updateDefendantInterpreterLanguage(final UUID defendantId, final Interpreter interpreter) {
         defendantsInterpreterLanguages.compute(
                 defendantId,
-                (defendant, previousValue) -> Optional.ofNullable(interpreter)
+                (defendant, previousValue) -> ofNullable(interpreter)
                         .map(Interpreter::getLanguage)
                         .orElse(null));
     }
@@ -360,7 +405,7 @@ public class CaseAggregateState implements AggregateState {
     }
 
     public Optional<String> getDefendantEmploymentStatus(final UUID defendantId) {
-        return Optional.ofNullable(employmentStatusByDefendantId.get(defendantId));
+        return ofNullable(employmentStatusByDefendantId.get(defendantId));
     }
 
     public Optional<UUID> getDefendantForOffence(final UUID offenceId) {
@@ -574,5 +619,79 @@ public class CaseAggregateState implements AggregateState {
                 .map(CaseDocument::getId)
                 .collect(toList());
         uuids.stream().forEach(this.caseDocuments::remove);
+    }
+
+    public boolean isDefendantDetailsUpdatedBy(final PersonalDetails personalDetails) {
+        return ofNullable(getDefendantDetailsUpdateSummary(personalDetails, false, null)).isPresent();
+    }
+
+
+    /**
+     * Generates a DefendantDetailsUpdated containing a summary of the fields of the defendant which have been updated
+     * by the provided personal details.
+     * @param personalDetails personal details containing the new defendant details (if any)
+     * @param updatedByOnlinePlea wether the update comes from online plea
+     * @param updatedOn time when the update happened
+     * @return DefendantDetailsUpdate cotaining values for the updated of fields or null if no fields were updated.
+     */
+    public DefendantDetailsUpdated getDefendantDetailsUpdateSummary(final PersonalDetails personalDetails,
+                                                                    final boolean updatedByOnlinePlea,
+                                                                    final ZonedDateTime updatedOn) {
+
+        final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder = defendantDetailsUpdated()
+                .withCaseId(getCaseId())
+                .withDefendantId(getDefendantId());
+
+        getNameAndTitleDetailsUpdateSummary(personalDetails, updatedByOnlinePlea, builder);
+        getAddressAndContactDetailsUpdateSummary(personalDetails, builder);
+
+        if(!Objects.equals(personalDetails.getDateOfBirth(), getDefendantDateOfBirth())){
+            builder.withDateOfBirth(personalDetails.getDateOfBirth());
+        }
+
+        if(!StringUtils.equals(personalDetails.getNationalInsuranceNumber(), getDefendantNationalInsuranceNumber())){
+            builder.withNationalInsuranceNumber(personalDetails.getNationalInsuranceNumber());
+        }
+
+        if(!StringUtils.equals(personalDetails.getRegion(), getDefendantRegion())){
+            builder.withRegion(personalDetails.getRegion());
+        }
+
+        if(builder.containsUpdate()){
+            return builder
+                    .withUpdateByOnlinePlea(updatedByOnlinePlea)
+                    .withUpdatedDate(updatedOn)
+                    .build();
+        } else {
+            return null;
+        }
+    }
+
+    private void getAddressAndContactDetailsUpdateSummary(final PersonalDetails personalDetails, final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder) {
+        if(!Objects.equals(personalDetails.getContactDetails(), getDefendantContactDetails())){
+            builder.withContactDetails(personalDetails.getContactDetails());
+        }
+
+        if(!Objects.equals(personalDetails.getAddress(), getDefendantAddress())){
+            builder.withAddress(personalDetails.getAddress());
+        }
+    }
+
+    private void getNameAndTitleDetailsUpdateSummary(final PersonalDetails personalDetails, final boolean updatedByOnlinePlea, final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder) {
+        if(!StringUtils.equals(personalDetails.getFirstName(), getDefendantFirstName())){
+            builder.withFirstName(personalDetails.getFirstName());
+        }
+
+        if(!StringUtils.equals(personalDetails.getLastName(), getDefendantLastName())){
+            builder.withLastName(personalDetails.getLastName());
+        }
+
+        if(!updatedByOnlinePlea && !StringUtils.equals(personalDetails.getTitle(), getDefendantTitle())){
+            builder.withTitle(personalDetails.getTitle());
+        }
+
+        if(personalDetails.getGender()!=null && !Objects.equals(personalDetails.getGender(), getDefendantGender())){
+            builder.withGender(personalDetails.getGender());
+        }
     }
 }

@@ -92,7 +92,6 @@ public class CaseDefendantHandler {
         final boolean updatedByOnlinePlea = false;
 
         try {
-            validateDefendantTitle(person.getTitle(), state.getDefendantTitle());
             validateDefendantAddress(person.getAddress(), state.getDefendantAddress());
         } catch (IllegalArgumentException | IllegalStateException e) {
             LOGGER.error("Defendant details update failed for ID: {} with message {} ", defendantId, e);
@@ -115,16 +114,11 @@ public class CaseDefendantHandler {
                 .withAddress(person.getAddress())
                 .withUpdateByOnlinePlea(updatedByOnlinePlea)
                 .withUpdatedDate(updatedDate)
+                .withRegion(person.getRegion())
                 .build();
         events.add(defendantDetailsUpdated);
 
         return events.build();
-    }
-
-    private void validateDefendantTitle(final String title, final String defendantTitle) {
-        if (StringUtils.isBlank(title) && StringUtils.isNotBlank(defendantTitle)) {
-            throw new IllegalArgumentException(String.format("title parameter can not be null as previous value is : %s", defendantTitle));
-        }
     }
 
     private void validateDefendantAddress(final Address address, final Address defendantAddress) {

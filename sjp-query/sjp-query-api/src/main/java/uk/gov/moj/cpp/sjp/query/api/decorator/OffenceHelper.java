@@ -6,8 +6,10 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
+import uk.gov.moj.cpp.sjp.query.service.OffenceFineLevels;
 import uk.gov.moj.cpp.sjp.query.service.WithdrawalReasons;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -16,9 +18,12 @@ import java.util.UUID;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class OffenceHelper {
 
     private static final List<String> nonImprisonableModeOfTrials = asList("STRAFF", "SNONIMP");
+    private static final List<String> unLimitedFineLevels = asList("U", "S");
 
     public String getEnglishTitle(final JsonObject offenceDefinition) {
         return offenceDefinition.getString("title");
@@ -67,8 +72,29 @@ public class OffenceHelper {
         return JsonObjects.getString(offenceDefinition,"details","document","libra","maxfinetypemagct","code").orElse(EMPTY);
     }
 
-    public boolean hasFinalDecision(final JsonObject offenceInstance, final JsonArray caseDecisions) {
+    public Optional<BigDecimal> getMaxFineValue(final JsonObject offenceDefinition, final OffenceFineLevels fineLevels) {
+        final String maxFineLevel = getMaxFineLevel(offenceDefinition);
+        if(StringUtils.isNotEmpty(maxFineLevel) && !unLimitedFineLevels.contains(maxFineLevel)) {
+            return fineLevels.getOffenceMaxFineValue(Integer.valueOf(maxFineLevel));
+        }
 
+        return Optional.empty();
+    }
+
+    public String getPenaltyType(JsonObject offenceDefinition) {
+        return JsonObjects.getString(offenceDefinition, "penaltyType").orElse(EMPTY);
+    }
+
+    public String getSentencing(JsonObject offenceDefinition) {
+        return JsonObjects.getString(offenceDefinition, "sentencing").orElse(EMPTY);
+    }
+
+    public boolean isBackDuty(JsonObject offenceDefinition) {
+        return JsonObjects.getBoolean(offenceDefinition, "backDuty")
+                .orElse(false);
+    }
+
+    public boolean hasFinalDecision(final JsonObject offenceInstance, final JsonArray caseDecisions) {
         return caseDecisions.getValuesAs(JsonObject.class)
                 .stream()
                 .anyMatch(caseDecision ->

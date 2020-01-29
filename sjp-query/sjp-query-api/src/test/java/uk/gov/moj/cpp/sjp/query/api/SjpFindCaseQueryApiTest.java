@@ -24,6 +24,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.query.api.decorator.DecisionDecorator;
 import uk.gov.moj.cpp.sjp.query.api.decorator.OffenceDecorator;
+import uk.gov.moj.cpp.sjp.query.service.OffenceFineLevels;
 import uk.gov.moj.cpp.sjp.query.service.WithdrawalReasons;
 
 import java.util.UUID;
@@ -44,7 +45,7 @@ public class SjpFindCaseQueryApiTest {
 
     private final UUID caseId = randomUUID();
 
-    private JsonEnvelope originalQueryEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.query.case"),
+    private final JsonEnvelope originalQueryEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.query.case"),
             createObjectBuilder().add("caseId", caseId.toString()).build());
 
     @Mock
@@ -80,7 +81,7 @@ public class SjpFindCaseQueryApiTest {
         final JsonEnvelope originalCaseResponse = envelopeFrom(metadataWithRandomUUIDAndName(), originalCaseDetails);
 
         when(requester.request(originalQueryEnvelope)).thenReturn(originalCaseResponse);
-        when(offenceDecorator.decorateAllOffences(eq(originalCaseDetails), eq(originalQueryEnvelope), any(WithdrawalReasons.class))).thenReturn(caseDetailsDecoratedWithOffences);
+        when(offenceDecorator.decorateAllOffences(eq(originalCaseDetails), eq(originalQueryEnvelope), any(WithdrawalReasons.class), any(OffenceFineLevels.class))).thenReturn(caseDetailsDecoratedWithOffences);
         when(decisionDecorator.decorate(eq(caseDetailsDecoratedWithOffences), eq(originalQueryEnvelope), any(WithdrawalReasons.class))).thenReturn(caseDetailsDecoratedWithLegalAdviserName);
 
         final JsonEnvelope actualCaseResponse = sjpQueryApi.findCase(originalQueryEnvelope);
@@ -90,7 +91,7 @@ public class SjpFindCaseQueryApiTest {
                 withJsonPath("$.newProperty", equalTo("newProperty")),
                 withJsonPath("$.legalAdviserName", equalTo("name"))))));
 
-        verify(offenceDecorator).decorateAllOffences(eq(originalCaseDetails), eq(originalQueryEnvelope), any(WithdrawalReasons.class));
+        verify(offenceDecorator).decorateAllOffences(eq(originalCaseDetails), eq(originalQueryEnvelope), any(WithdrawalReasons.class), any(OffenceFineLevels.class));
     }
 
     @Test
@@ -104,7 +105,7 @@ public class SjpFindCaseQueryApiTest {
 
         assertThat(actualCaseResponse, is(originalCaseResponse));
 
-        verify(offenceDecorator, never()).decorateAllOffences(any(), any(), any());
+        verify(offenceDecorator, never()).decorateAllOffences(any(), any(), any(), any());
         verify(decisionDecorator, never()).decorate(any(), any(), any());
     }
 

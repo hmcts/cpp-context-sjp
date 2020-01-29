@@ -22,10 +22,14 @@ import static uk.gov.moj.sjp.it.helper.CaseNoteHelper.addCaseNote;
 import static uk.gov.moj.sjp.it.helper.CaseNoteHelper.getCaseNotes;
 import static uk.gov.moj.sjp.it.helper.CaseNoteHelper.pollForCaseNotes;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 
 import java.util.UUID;
@@ -154,9 +158,15 @@ public class CaseNotesIT extends BaseIntegrationTest {
     }
 
     private static void createCase(final UUID caseId) {
-        CreateCase.createCaseForPayloadBuilder(CreateCase.CreateCasePayloadBuilder
+        final CreateCase.CreateCasePayloadBuilder casePayloadBuilder = CreateCase.CreateCasePayloadBuilder
                 .withDefaults()
-                .withId(caseId));
+                .withId(caseId);
+
+        stubEnforcementAreaByPostcode(casePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode("1080", "DEFENDANT_REGION");
+        CreateCase.createCaseForPayloadBuilder(casePayloadBuilder);
+        final ProsecutingAuthority prosecutingAuthority = casePayloadBuilder.getProsecutingAuthority();
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
 
         pollUntilCaseByIdIsOk(caseId);
     }

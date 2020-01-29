@@ -39,6 +39,8 @@ public class OffenceDecisionView {
     private String referredToCourt;
     private Integer referredToRoom;
     private ZonedDateTime referredToDateTime;
+    private BigDecimal backDuty;
+    private BigDecimal excisePenalty;
 
     public OffenceDecisionView(final OffenceDecision offenceDecision) {
         this.offenceId = offenceDecision.getOffenceId();
@@ -86,6 +88,8 @@ public class OffenceDecisionView {
         this.noCompensationReason = financialPenalty.getNoCompensationReason();
         this.guiltyPleaTakenIntoAccount = financialPenalty.isGuiltyPleaTakenIntoAccount();
         this.fine = financialPenalty.getFine();
+        this.backDuty = financialPenalty.getBackDuty();
+        this.excisePenalty = financialPenalty.getExcisePenalty();
     }
 
     private void setDischarge(final DischargeOffenceDecision discharge) {
@@ -96,6 +100,7 @@ public class OffenceDecisionView {
         this.compensation = discharge.getCompensation();
         this.noCompensationReason = discharge.getNoCompensationReason();
         this.guiltyPleaTakenIntoAccount = discharge.isGuiltyPleaTakenIntoAccount();
+        this.backDuty = discharge.getBackDuty();
     }
 
     public UUID getOffenceId() {
@@ -168,5 +173,13 @@ public class OffenceDecisionView {
 
     public Integer getReferredToRoom() {
         return referredToRoom;
+    }
+
+    public BigDecimal getBackDuty() {
+        return backDuty;
+    }
+
+    public BigDecimal getExcisePenalty() {
+        return excisePenalty;
     }
 }

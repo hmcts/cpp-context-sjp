@@ -35,7 +35,8 @@ public abstract class DefendantRepository implements EntityRepository<DefendantD
             "dd.personalDetails.dateOfBirthUpdatedAt, " +
             "dd.personalDetails.nameUpdatedAt, " +
             "cd.urn, " +
-            "cd.id" +
+            "cd.id, " +
+            "dd.personalDetails.region" +
             ") FROM DefendantDetail dd " +
             "INNER JOIN dd.caseDetail cd " +
             "WHERE cd.prosecutingAuthority LIKE :prosecutingAuthority " +

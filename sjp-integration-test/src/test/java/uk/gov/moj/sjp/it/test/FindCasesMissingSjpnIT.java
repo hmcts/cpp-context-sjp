@@ -10,6 +10,8 @@ import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.sjp.it.helper.CasesMissingSjpnHelper.getCasesMissingSjpn;
 import static uk.gov.moj.sjp.it.helper.CasesMissingSjpnHelper.getCasesMissingSjpnPostedDaysAgo;
 import static uk.gov.moj.sjp.it.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
@@ -35,7 +37,7 @@ public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
 
     private List<CreateCase.CreateCasePayloadBuilder> sjpCasesYoungerThan3Days;
     private List<CreateCase.CreateCasePayloadBuilder> sjpCasesOlderThan3Days;
-
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     // TODO: close Helpers
 
@@ -43,8 +45,10 @@ public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
     public void init() {
         stubEnableAllCapabilities();
         final LocalDate now = LocalDate.now();
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
+                .withDefaults();
         sjpCasesYoungerThan3Days = Arrays.asList(
-                CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(1)),
+                createCasePayloadBuilder.withPostingDate(now.minusDays(1)),
                 CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(2)),
                 CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(3))
         );
@@ -53,6 +57,9 @@ public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
                 CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(5)),
                 CreateCase.CreateCasePayloadBuilder.withDefaults().withPostingDate(now.minusDays(6))
         );
+
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
 
         sjpCases = Stream.concat(sjpCasesYoungerThan3Days.stream(), sjpCasesOlderThan3Days.stream()).collect(toList());
 

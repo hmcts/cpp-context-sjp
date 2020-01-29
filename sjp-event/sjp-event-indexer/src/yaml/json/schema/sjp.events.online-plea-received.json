@@ -35,6 +35,9 @@
         },
         "nationalInsuranceNumber": {
           "type": "string"
+        },
+        "region": {
+          "type": "string"
         }
       },
       "required": [
@@ -125,6 +128,7 @@
         "phone": {
           "type": "string"
         },
+
         "address": {
           "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
         }

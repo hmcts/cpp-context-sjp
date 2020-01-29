@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -18,12 +19,15 @@ import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
 import uk.gov.moj.cpp.sjp.domain.decision.Decision;
+import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
+import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
@@ -47,6 +51,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
+import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.*;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DecisionHandlerTest {
@@ -74,6 +80,14 @@ public class DecisionHandlerTest {
 
     @InjectMocks
     private DecisionHandler decisionHandler;
+
+    private void mockCalls(final UUID caseId, final UUID sessionId) {
+        when(eventSource.getStreamById(sessionId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, Session.class)).thenReturn(session);
+        when(session.getSessionType()).thenReturn(SessionType.MAGISTRATE);
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+    }
 
     @Test
     public void shouldSaveDecision() throws EventStreamException {
@@ -185,6 +199,61 @@ public class DecisionHandlerTest {
                                 withJsonPath("$.offenceDecisions[0].type", equalTo("DISMISS")),
                                 withJsonPath("$.offenceDecisions[1].offenceDecisionInformation.offenceId", equalTo(offenceId2.toString())),
                                 withJsonPath("$.offenceDecisions[1].type", equalTo("DISMISS"))
+                        ))))));
+    }
+
+    @Test
+    public void shouldSaveOffencesDecisionWithBackDutyFields() throws EventStreamException {
+
+        final UUID decisionId = randomUUID();
+        final UUID sessionId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID userId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+
+        final ZonedDateTime savedAt = ZonedDateTime.now();
+        final User savedBy = new User("Ruve", "Vem", userId);
+
+        final List<OffenceDecision> offenceDecisions = new ArrayList<>();
+
+        final OffenceDecision offenceDecision1 = new FinancialPenalty(offenceId1, createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), new BigDecimal(10),
+                new BigDecimal(20), null, true, new BigDecimal(3), new BigDecimal(4));
+        final OffenceDecision offenceDecision2 = new Discharge(offenceId2, createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE,
+                null, new BigDecimal(10), null, true, new BigDecimal(3));
+        offenceDecisions.add(offenceDecision1);
+        offenceDecisions.add(offenceDecision2);
+
+        final Decision decision = new Decision(decisionId, sessionId, caseId, "duplicate conviction", savedAt, savedBy, offenceDecisions, null);
+
+        final DecisionSaved decisionSaved = new DecisionSaved(decisionId, sessionId, caseId, decision.getSavedAt(), offenceDecisions);
+
+        mockCalls(caseId, sessionId);
+        when(caseAggregate.saveDecision(decision, session)).thenReturn(Stream.of(decisionSaved));
+        final Envelope<Decision> decisionEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.command.save-decision"), decision);
+
+        decisionHandler.saveDecision(decisionEnvelope);
+
+        verify(eventStream).append(argumentCaptor.capture());
+        assertThat(argumentCaptor.getValue(), CoreMatchers.is(streamContaining(
+                jsonEnvelope(
+                        withMetadataEnvelopedFrom(JsonEnvelope.envelopeFrom(decisionEnvelope.metadata(), NULL))
+                                .withName("sjp.events.decision-saved"),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                withJsonPath("$.decisionId", equalTo(decisionId.toString())),
+                                withJsonPath("$.sessionId", equalTo(sessionId.toString())),
+                                withJsonPath("$.savedAt", equalTo(decision.getSavedAt().format(new DateTimeFormatterBuilder()
+                                        .appendPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+                                        .toFormatter()) + "Z")),
+                                withJsonPath("$.offenceDecisions", hasSize(2)),
+                                withJsonPath("$.offenceDecisions[0].offenceDecisionInformation.offenceId", equalTo(offenceId1.toString())),
+                                withJsonPath("$.offenceDecisions[0].type", equalTo("FINANCIAL_PENALTY")),
+                                withJsonPath("$.offenceDecisions[0].excisePenalty", equalTo(4)),
+                                withJsonPath("$.offenceDecisions[1].offenceDecisionInformation.offenceId", equalTo(offenceId2.toString())),
+                                withJsonPath("$.offenceDecisions[1].type", equalTo("DISCHARGE")),
+                                withJsonPath("$.offenceDecisions[1].backDuty", equalTo(3)
+                                )
                         ))))));
     }
 }

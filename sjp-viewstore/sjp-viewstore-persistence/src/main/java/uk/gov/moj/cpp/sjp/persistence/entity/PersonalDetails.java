@@ -55,6 +55,9 @@ public class PersonalDetails implements Serializable {
     @Column(name = "updates_acknowledged_at")
     private ZonedDateTime updatesAcknowledgedAt;
 
+    @Column(name = "region")
+    private String region;
+
     public PersonalDetails() {
         this.address = new Address();
         this.contactDetails = new ContactDetails();
@@ -67,7 +70,8 @@ public class PersonalDetails implements Serializable {
                            final Gender gender,
                            final String nationalInsuranceNumber,
                            final Address address,
-                           final ContactDetails contactDetails) {
+                           final ContactDetails contactDetails,
+                           final String region) {
 
         this.title = title;
         this.firstName = firstName;
@@ -77,6 +81,7 @@ public class PersonalDetails implements Serializable {
         this.nationalInsuranceNumber = nationalInsuranceNumber;
         this.address = address;
         this.contactDetails = contactDetails;
+        this.region = region;
     }
 
     public String getTitle() {
@@ -171,6 +176,14 @@ public class PersonalDetails implements Serializable {
         this.updatesAcknowledgedAt = acknowledgementTime;
     }
 
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
     @Override
     @SuppressWarnings("squid:S1067")
     public boolean equals(final Object o) {
@@ -192,12 +205,13 @@ public class PersonalDetails implements Serializable {
                 Objects.equals(contactDetails, that.contactDetails) &&
                 Objects.equals(addressUpdatedAt, that.addressUpdatedAt) &&
                 Objects.equals(dateOfBirthUpdatedAt, that.dateOfBirthUpdatedAt) &&
-                Objects.equals(nameUpdatedAt, that.nameUpdatedAt);
+                Objects.equals(nameUpdatedAt, that.nameUpdatedAt) &&
+                Objects.equals(region, that.region);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber,
-                address, contactDetails, addressUpdatedAt, dateOfBirthUpdatedAt, nameUpdatedAt);
+                address, contactDetails, addressUpdatedAt, dateOfBirthUpdatedAt, nameUpdatedAt, region);
     }
 }

@@ -126,6 +126,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
+        caseId = randomUUID();
         stubStartSjpSessionCommand();
         stubEndSjpSessionCommand();
         stubAssignmentReplicationCommands();
@@ -291,9 +292,9 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         stubEnforcementAreaByPostcode(aCase.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
         startSessionAndRequestAssignment(sessionId, MAGISTRATE);
 
-        final Discharge discharge1 = new Discharge(null, createOffenceDecisionInformation(offence1Id, FOUND_GUILTY), CONDITIONAL, new DischargePeriod(2, MONTH), new BigDecimal(230), null, false);
-        final Discharge discharge2 = new Discharge(null, createOffenceDecisionInformation(offence2Id, FOUND_GUILTY), ABSOLUTE, null, null, "No compensation reason", false);
-        final Discharge discharge3 = new Discharge(null, createOffenceDecisionInformation(offence3Id, PROVED_SJP), ABSOLUTE, null, BigDecimal.TEN, null, false);
+        final Discharge discharge1 = Discharge.createDischarge(null, createOffenceDecisionInformation(offence1Id, FOUND_GUILTY), CONDITIONAL, new DischargePeriod(2, MONTH), new BigDecimal(230), null, false);
+        final Discharge discharge2 = Discharge.createDischarge(null, createOffenceDecisionInformation(offence2Id, FOUND_GUILTY), ABSOLUTE, null, null, "No compensation reason", false);
+        final Discharge discharge3 = Discharge.createDischarge(null, createOffenceDecisionInformation(offence3Id, PROVED_SJP), ABSOLUTE, null, BigDecimal.TEN, null, false);
 
         final List<Discharge> offencesDecisions = asList(discharge1, discharge2, discharge3);
 
@@ -486,7 +487,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
         verifyCaseQueryWithReferForCourtHearingDecision(decisionCommand, decisionSaved, session, referralReason, referForCourtHearingDecision);
         verifyCaseQueryWithWithdrawnDecision(decisionCommand, decisionSaved, session, asList(withdrawDecision), withdrawalReason);
-        verifyCaseQueryWithDismissDecision(decisionCommand, decisionSaved, session, (Dismiss) dismissDecision);
+        verifyCaseQueryWithDismissDecision(decisionCommand, decisionSaved, session, dismissDecision);
     }
 
     @Test
@@ -525,9 +526,9 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         stubEnforcementAreaByPostcode(aCase.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
         startSessionAndRequestAssignment(sessionId, MAGISTRATE);
 
-        final FinancialPenalty fp1 = new FinancialPenalty(null, createOffenceDecisionInformation(offence1Id, FOUND_GUILTY), BigDecimal.ZERO, BigDecimal.TEN, null,true);
-        final FinancialPenalty fp2 = new FinancialPenalty(null, createOffenceDecisionInformation(offence2Id, FOUND_GUILTY), BigDecimal.TEN, BigDecimal.ZERO,"some reason",true);
-        final FinancialPenalty fp3 = new FinancialPenalty(null, createOffenceDecisionInformation(offence3Id, PROVED_SJP), BigDecimal.TEN, BigDecimal.TEN,null,true);
+        final FinancialPenalty fp1 = FinancialPenalty.createFinancialPenalty(null, createOffenceDecisionInformation(offence1Id, FOUND_GUILTY), BigDecimal.ZERO, BigDecimal.TEN, null, true);
+        final FinancialPenalty fp2 = FinancialPenalty.createFinancialPenalty(null, createOffenceDecisionInformation(offence2Id, FOUND_GUILTY), BigDecimal.TEN, BigDecimal.ZERO, "some reason", true);
+        final FinancialPenalty fp3 = FinancialPenalty.createFinancialPenalty(null, createOffenceDecisionInformation(offence3Id, PROVED_SJP), BigDecimal.TEN, BigDecimal.TEN, null, true);
 
         final List<FinancialPenalty> offencesDecisions = asList(fp1, fp2, fp3);
 
@@ -555,9 +556,9 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         stubEnforcementAreaByPostcode(aCase.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
         startSessionAndRequestAssignment(sessionId, MAGISTRATE);
 
-        final FinancialPenalty fp1 = new FinancialPenalty(null, createOffenceDecisionInformation(offence1Id, FOUND_GUILTY), BigDecimal.ZERO, BigDecimal.TEN, null,true);
-        final FinancialPenalty fp2 = new FinancialPenalty(null, createOffenceDecisionInformation(offence2Id, FOUND_GUILTY), BigDecimal.TEN, BigDecimal.ZERO,"some reason",true);
-        final FinancialPenalty fp3 = new FinancialPenalty(null, createOffenceDecisionInformation(offence3Id, PROVED_SJP), BigDecimal.TEN, BigDecimal.TEN,null,true);
+        final FinancialPenalty fp1 = FinancialPenalty.createFinancialPenalty(null, createOffenceDecisionInformation(offence1Id, FOUND_GUILTY), BigDecimal.ZERO, BigDecimal.TEN, null, true);
+        final FinancialPenalty fp2 = FinancialPenalty.createFinancialPenalty(null, createOffenceDecisionInformation(offence2Id, FOUND_GUILTY), BigDecimal.TEN, BigDecimal.ZERO, "some reason", true);
+        final FinancialPenalty fp3 = FinancialPenalty.createFinancialPenalty(null, createOffenceDecisionInformation(offence3Id, PROVED_SJP), BigDecimal.TEN, BigDecimal.TEN, null, true);
 
         final List<FinancialPenalty> offencesDecisions = asList(fp1, fp2, fp3);
 
@@ -581,6 +582,69 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         verifyCaseNotReadyInViewStore(caseId, USER_ID);
 
         verifyFinancialImposition(decisionSaved,financialImposition);
+    }
+
+    @Test
+    public void shouldSaveOffenceDecisionWithBackDutyAndExcisePenalty() {
+        stubEnforcementAreaByPostcode(aCase.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        startSessionAndRequestAssignment(sessionId, MAGISTRATE);
+
+        final OffenceDecision financialPenalty = new FinancialPenalty(null, createOffenceDecisionInformation(offence1Id, PROVED_SJP), BigDecimal.ONE, null, null,
+                true, BigDecimal.ONE, BigDecimal.ONE);
+        final Discharge discharge = new Discharge(null, createOffenceDecisionInformation(offence2Id, PROVED_SJP), ABSOLUTE, null, BigDecimal.TEN,
+                null, false, new BigDecimal(25));
+        final Dismiss dismissDecision = new Dismiss(null, createOffenceDecisionInformation(offence3Id, FOUND_NOT_GUILTY));
+
+        final List<OffenceDecision> offencesDecisions = asList(financialPenalty, discharge, dismissDecision);
+
+        final FinancialImposition financialImposition = buildFinancialImposition();
+        final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, offencesDecisions, financialImposition);
+
+        eventListener
+                .subscribe(DecisionSaved.EVENT_NAME)
+                .subscribe(CaseUnassigned.EVENT_NAME)
+                .run(() -> DecisionHelper.saveDecision(decision));
+
+        final DecisionSaved decisionSaved = eventListener.popEventPayload(DecisionSaved.class);
+        final CaseUnassigned caseUnassigned = eventListener.popEventPayload(CaseUnassigned.class);
+
+        //after saving the decision the transfer of fine element is attached
+        financialImposition.getPayment().setFineTransferredTo(new CourtDetails("1080","Bedfordshire Magistrates' Court"));
+
+        verifyDecisionSaved(decision, decisionSaved);
+        verifyCaseUnassigned(caseId, caseUnassigned);
+        verifyCaseNotReadyInViewStore(caseId, USER_ID);
+    }
+
+    @Test
+    public void shouldSaveOffenceDecisionWithBackDutyAndExcisePenaltyWithValidFine() {
+        stubEnforcementAreaByPostcode(aCase.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        startSessionAndRequestAssignment(sessionId, MAGISTRATE);
+
+        final OffenceDecision fp = new FinancialPenalty(null, createOffenceDecisionInformation(offence1Id, FOUND_GUILTY), BigDecimal.valueOf(1001), BigDecimal.ONE, null, true, new BigDecimal(10), new BigDecimal(20));
+        final Discharge discharge = new Discharge(null, createOffenceDecisionInformation(offence2Id, PROVED_SJP), ABSOLUTE, null, BigDecimal.TEN,
+                null, false, new BigDecimal(25));
+        final Dismiss dismissDecision = new Dismiss(null, createOffenceDecisionInformation(offence3Id, FOUND_NOT_GUILTY));
+
+        final List<OffenceDecision> offencesDecisions = asList(fp, discharge, dismissDecision);
+
+        final FinancialImposition financialImposition = buildFinancialImposition();
+        final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, offencesDecisions, financialImposition);
+
+        eventListener
+                .subscribe(DecisionSaved.EVENT_NAME)
+                .subscribe(CaseUnassigned.EVENT_NAME)
+                .run(() -> DecisionHelper.saveDecision(decision));
+
+        final DecisionSaved decisionSaved = eventListener.popEventPayload(DecisionSaved.class);
+        final CaseUnassigned caseUnassigned = eventListener.popEventPayload(CaseUnassigned.class);
+
+        //after saving the decision the transfer of fine element is attached
+        financialImposition.getPayment().setFineTransferredTo(new CourtDetails("1080","Bedfordshire Magistrates' Court"));
+
+        verifyDecisionSaved(decision, decisionSaved);
+        verifyCaseUnassigned(caseId, caseUnassigned);
+        verifyCaseNotReadyInViewStore(caseId, USER_ID);
     }
 
 }

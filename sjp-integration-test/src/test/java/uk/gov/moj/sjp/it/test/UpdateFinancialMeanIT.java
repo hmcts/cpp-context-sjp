@@ -11,9 +11,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.IncomeFrequency.MONTHLY;
 import static uk.gov.moj.cpp.sjp.domain.IncomeFrequency.WEEKLY;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.Income;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
@@ -38,7 +42,12 @@ public class UpdateFinancialMeanIT extends BaseIntegrationTest {
     public void setUp() {
         financialMeansHelper = new FinancialMeansHelper();
         this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "NATIONAL_COURT_CODE", "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode("NATIONAL_COURT_CODE", "TestRegion");
         CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
+
+        final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
     }
 
     @After

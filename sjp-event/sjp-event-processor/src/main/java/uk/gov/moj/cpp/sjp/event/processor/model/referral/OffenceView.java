@@ -17,6 +17,7 @@ public class OffenceView {
     private final LocalDate endDate;
     private final Integer orderIndex;
     private final NotifiedPleaView notifiedPlea;
+    private final OffenceFactsView offenceFacts;
 
     @SuppressWarnings("squid:S00107")
     public OffenceView(final UUID id,
@@ -28,7 +29,8 @@ public class OffenceView {
                        final LocalDate convictionDate,
                        final LocalDate endDate,
                        final Integer orderIndex,
-                       final NotifiedPleaView notifiedPlea) {
+                       final NotifiedPleaView notifiedPlea,
+                       final OffenceFactsView offenceFacts) {
 
         this.id = id;
         this.offenceDefinitionId = offenceDefinitionId;
@@ -40,6 +42,7 @@ public class OffenceView {
         this.endDate = endDate;
         this.orderIndex = orderIndex;
         this.notifiedPlea = notifiedPlea;
+        this.offenceFacts = offenceFacts;
     }
 
 
@@ -87,6 +90,9 @@ public class OffenceView {
         return convictionDate;
     }
 
+    public OffenceFactsView getOffenceFacts() {
+        return offenceFacts;
+    }
 
     public static Builder builder() {
         return new Builder();
@@ -103,6 +109,7 @@ public class OffenceView {
         private LocalDate endDate;
         private Integer orderIndex;
         private NotifiedPleaView notifiedPlea;
+        private OffenceFactsView offenceFacts;
 
         public Builder withId(final UUID id) {
             this.id = id;
@@ -154,6 +161,12 @@ public class OffenceView {
             return this;
         }
 
+        public Builder withOffenceFacts(final OffenceFactsView offenceFacts) {
+            this.offenceFacts = offenceFacts;
+            return this;
+        }
+
+
         public OffenceView build() {
             return new OffenceView(
                     id,
@@ -165,7 +178,8 @@ public class OffenceView {
                     convictionDate,
                     endDate,
                     orderIndex,
-                    notifiedPlea);
+                    notifiedPlea,
+                    offenceFacts);
         }
     }
 }

@@ -88,7 +88,8 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
                         person.getAddress().getAddress5(),
                         person.getAddress().getPostcode()
                 ),
-                person.getContactDetails());
+                person.getContactDetails(),
+                person.getRegion());
 
         events = caseAggregate.updateDefendantDetails(userId, caseId, defendantId, updatedPerson, clock.now())
                 .collect(toList());
@@ -116,7 +117,7 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
     }
 
     @Test
-    public void shouldFailValidation() {
+    public void shouldAllowValidationForEmptyTitle() {
         final Person personWithoutTitle = new Person(
                 null,
                 person.getFirstName(),
@@ -125,12 +126,17 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
                 person.getGender(),
                 person.getNationalInsuranceNumber(),
                 person.getAddress(),
-                person.getContactDetails());
+                person.getContactDetails(),
+                person.getRegion());
 
         final List<Object> events = caseAggregate.updateDefendantDetails(userId, caseId, defendantId, personWithoutTitle, clock.now())
                 .collect(toList());
 
-        assertThat("has defendant details Updated Failed event", events,
-                hasItem(isA(DefendantDetailsUpdateFailed.class)));
+        assertThat("has defendant details updated event", events,
+                contains(
+                        instanceOf(DefendantPersonalNameUpdated.class),
+                        instanceOf(DefendantDetailsUpdated.class)
+                )
+        );
     }
 }

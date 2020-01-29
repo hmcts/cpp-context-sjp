@@ -6,7 +6,10 @@ import static java.time.LocalDate.now;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
 import static junit.framework.TestCase.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -16,6 +19,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.fail;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -65,6 +69,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
@@ -92,6 +99,22 @@ public class CaseServiceTest {
     private static final String POSTCODE = "AB1 2CD";
     private final LocalDate DATE_OF_BIRTH = now(UTC).minusYears(30);
     private final Clock clock = new StoppedClock(new UtcClock().now());
+    private final JsonArray PROSECUTORS = createArrayBuilder().add(
+            createObjectBuilder()
+                    .add("id", "31af405e-7b60-4dd8-a244-c24c2d3fa595")
+                    .add("sequenceNumber", 1)
+                    .add("majorCreditorCode", "TFL2")
+                    .add("shortName", "TFL")
+                    .add("fullName", "Transport for London")
+                    .add("oucode", "GAFTL00")
+                    .add("nameWelsh", "Transport for London")
+                    .add("address", createObjectBuilder()
+                            .add("address1", "6th Floor Windsor House")
+                            .add("address2", "42-50 Victoria Street")
+                            .add("postcode", "SW1H 0TL")
+                    )
+    ).build();
+
     @Mock
     private CaseRepository caseRepository;
 
@@ -106,6 +129,9 @@ public class CaseServiceTest {
 
     @Mock
     private ProsecutingAuthorityAccessFilterConverter prosecutingAuthorityAccessFilterConverter;
+
+    @Mock
+    private ReferenceDataService referenceDataService;
 
     @Mock
     private JsonEnvelope envelope;
@@ -127,6 +153,7 @@ public class CaseServiceTest {
         final CaseDetail caseDetail = createCaseDetailWithDocumentTypes(onlinePleaReceived, "FINANCIAL_MEANS", "OTHER", "Travelcard");
 
         given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
+        given(referenceDataService.getProsecutorsByProsecutorCode(anyString())).willReturn(of(PROSECUTORS));
         final CaseView caseView = service.findCase(CASE_ID);
         assertThat(caseView, notNullValue());
         assertThat(caseView.getId(), is(CASE_ID.toString()));
@@ -141,6 +168,7 @@ public class CaseServiceTest {
         final CaseDetail caseDetail = createCaseDetailWithDocumentTypes("FINANCIAL_MEANS", "OTHER", "OTHER-Travelcard");
 
         given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
+        given(referenceDataService.getProsecutorsByProsecutorCode(anyString())).willReturn(of(PROSECUTORS));
 
         final CaseView caseView = service.findCaseAndFilterOtherAndFinancialMeansDocuments(CASE_ID.toString());
         assertThat(caseView.getCaseDocuments().size(), is(0));
@@ -151,7 +179,7 @@ public class CaseServiceTest {
         final CaseDetail caseDetail = createCaseDetailWithDocumentTypes("PLEA", "CITN", "SJPN");
 
         given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
-
+        given(referenceDataService.getProsecutorsByProsecutorCode(anyString())).willReturn(of(PROSECUTORS));
         final CaseView caseView = service.findCaseAndFilterOtherAndFinancialMeansDocuments(CASE_ID.toString());
         assertThat(caseView.getCaseDocuments().size(), is(3));
     }
@@ -161,6 +189,7 @@ public class CaseServiceTest {
         final CaseDetail caseDetail = createCaseDetailWithDocumentTypes("PLEA", "OTHER", "FINANCIAL_MEANS");
 
         given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
+        given(referenceDataService.getProsecutorsByProsecutorCode(anyString())).willReturn(of(PROSECUTORS));
 
         final CaseView caseView = service.findCaseAndFilterOtherAndFinancialMeansDocuments(CASE_ID.toString());
         assertThat(caseView.getCaseDocuments().size(), is(1));
@@ -171,6 +200,7 @@ public class CaseServiceTest {
         final CaseDetail caseDetail = createCaseDetail(true);
 
         given(caseRepository.findByUrn(URN)).willReturn(caseDetail);
+        given(referenceDataService.getProsecutorsByProsecutorCode(anyString())).willReturn(of(PROSECUTORS));
         final CaseView caseView = service.findCaseByUrn(URN);
 
         assertThat(caseView, notNullValue());
@@ -191,7 +221,7 @@ public class CaseServiceTest {
         caseDetail.setReopenedInLibraReason(reason);
 
         given(caseRepository.findByUrn(URN)).willReturn(caseDetail);
-
+        given(referenceDataService.getProsecutorsByProsecutorCode(anyString())).willReturn(of(PROSECUTORS));
         final CaseView caseView = service.findCaseByUrn(URN);
 
         assertThat(caseView, notNullValue());
@@ -211,6 +241,7 @@ public class CaseServiceTest {
         caseDetail.getDefendant().setSpeakWelsh(Boolean.TRUE);
 
         given(caseRepository.findByUrn(URN)).willReturn(caseDetail);
+        given(referenceDataService.getProsecutorsByProsecutorCode(anyString())).willReturn(of(PROSECUTORS));
         final CaseView caseView = service.findCaseByUrn(URN);
 
         assertThat(caseView, notNullValue());
@@ -225,6 +256,7 @@ public class CaseServiceTest {
         assertThat(caseDetail.getDefendant().getSpeakWelsh(), nullValue());
 
         given(caseRepository.findByUrn(URN)).willReturn(caseDetail);
+        given(referenceDataService.getProsecutorsByProsecutorCode(anyString())).willReturn(of(PROSECUTORS));
         final CaseView caseView = service.findCaseByUrn(URN);
 
         assertThat(caseView, notNullValue());
@@ -238,6 +270,7 @@ public class CaseServiceTest {
         caseDetail.getDefendant().setSpeakWelsh(false);
 
         given(caseRepository.findByUrn(URN)).willReturn(caseDetail);
+        given(referenceDataService.getProsecutorsByProsecutorCode(anyString())).willReturn(of(PROSECUTORS));
         final CaseView caseView = service.findCaseByUrn(URN);
 
         assertThat(caseView, notNullValue());
@@ -256,6 +289,7 @@ public class CaseServiceTest {
         final CaseDetail caseDetail = createCaseDetail();
 
         given(caseRepository.findByUrnPostcode(URN, POSTCODE)).willReturn(caseDetail);
+        given(referenceDataService.getProsecutorsByProsecutorCode(anyString())).willReturn(of(PROSECUTORS));
         final CaseView caseView = service.findCaseByUrnPostcode(URN, POSTCODE);
 
         assertThat(caseView.getId(), is(CASE_ID.toString()));

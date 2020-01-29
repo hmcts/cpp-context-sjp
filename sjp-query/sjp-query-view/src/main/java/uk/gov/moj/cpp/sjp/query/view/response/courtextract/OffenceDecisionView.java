@@ -115,6 +115,8 @@ public class OffenceDecisionView {
 
         if (isDischarge() || isFinancialPenalty()) {
             addFineLine();
+            addExcisePenaltyLine();
+            addBackDutyLine();
             addCompensationLine();
             addNoCompensationReasonLine();
             addGuiltyPleaTakenIntoAccountLine();
@@ -129,6 +131,28 @@ public class OffenceDecisionView {
             if (nonNull(fine) && BigDecimal.ZERO.compareTo(fine) <= 0) {
                 addLine("To pay a fine of", formatCurrency(fine));
             }
+        }
+    }
+
+    private void addExcisePenaltyLine() {
+            if (isFinancialPenalty()) {
+                final BigDecimal excisePenalty = asFinancialPenalty().getExcisePenalty();
+                if (nonNull(excisePenalty) && BigDecimal.ZERO.compareTo(excisePenalty) < 0) {
+                    addLine("To pay an excise penalty of", formatCurrency(excisePenalty));
+                }
+            }
+    }
+
+    private void addBackDutyLine() {
+        BigDecimal backDuty = null;
+        if (isFinancialPenalty()) {
+            backDuty = asFinancialPenalty().getBackDuty();
+        } else if (isDischarge()) {
+            backDuty = asDischarge().getBackDuty();
+        }
+
+        if (nonNull(backDuty) && BigDecimal.ZERO.compareTo(backDuty) < 0) {
+            addLine("To pay back duty of", formatCurrency(backDuty));
         }
     }
 

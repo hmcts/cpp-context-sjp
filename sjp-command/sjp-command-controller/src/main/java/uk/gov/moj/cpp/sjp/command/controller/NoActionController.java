@@ -13,7 +13,7 @@ import java.lang.annotation.Repeatable;
 import javax.inject.Inject;
 
 /**
- * Controller what directly florwards the payload from the API to the Handler TODO: refactor once
+ * Controller what directly forwards the payload from the API to the Handler TODO: refactor once
  * {@link Handles} becomes {@link Repeatable}
  */
 @ServiceComponent(COMMAND_CONTROLLER)
@@ -42,11 +42,6 @@ public class NoActionController {
         send(envelope);
     }
 
-    @Handles("sjp.command.create-sjp-case")
-    public void createSjpCase(final JsonEnvelope envelope) {
-        send(envelope);
-    }
-
     @Handles("sjp.command.add-dates-to-avoid")
     public void addDatesToAvoid(final JsonEnvelope envelope) {
         send(envelope);
@@ -59,11 +54,6 @@ public class NoActionController {
 
     @Handles("sjp.command.delete-employer")
     public void deleteEmployer(final JsonEnvelope envelope) {
-        send(envelope);
-    }
-
-    @Handles("sjp.command.plead-online")
-    public void pleadOnline(final JsonEnvelope envelope) {
         send(envelope);
     }
 
@@ -84,11 +74,6 @@ public class NoActionController {
 
     @Handles("sjp.command.unassign-case")
     public void unassignCase(final JsonEnvelope envelope) {
-        send(envelope);
-    }
-
-    @Handles("sjp.command.update-defendant-details")
-    public void updateDefendantDetails(final JsonEnvelope envelope) {
         send(envelope);
     }
 

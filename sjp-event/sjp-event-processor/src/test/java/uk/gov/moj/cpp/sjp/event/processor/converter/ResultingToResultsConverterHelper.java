@@ -18,12 +18,12 @@ import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
 import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
 import uk.gov.justice.json.schemas.domains.sjp.PleaMethod;
 import uk.gov.justice.json.schemas.domains.sjp.PleaType;
-import uk.gov.justice.json.schemas.domains.sjp.ProsecutingAuthority;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.resulting.Prompt;
 import uk.gov.moj.cpp.sjp.domain.resulting.ReferencedDecisionsSaved;
@@ -124,7 +124,7 @@ public class ResultingToResultsConverterHelper {
         final CaseDetails caseDetails = CaseDetails.caseDetails()
                 .withId(CASE_ID)
                 .withUrn(URN)
-                .withProsecutingAuthority(ProsecutingAuthority.TFL)
+                .withProsecutingAuthority(ProsecutingAuthority.TFL.name())
                 .withDefendant(buildDefendant())
                 .build();
         return caseDetails;

@@ -26,10 +26,14 @@ import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
 import static uk.gov.moj.sjp.it.helper.TransparencyReportDBHelper.checkIfFileExists;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllProsecutorsQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAnyQueryOffences;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.SystemDocumentGeneratorStub.pollDocumentGenerationRequests;
 import static uk.gov.moj.sjp.it.stub.SystemDocumentGeneratorStub.stubDocumentGeneratorEndPoint;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 import uk.gov.moj.sjp.it.helper.EventListener;
@@ -82,6 +86,9 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         final CreateCase.DefendantBuilder defendant2 = defaultDefendant()
                 .withRandomLastName()
                 .withDefaultShortAddress();
+
+        stubEnforcementAreaByPostcode(defendant1.getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode("1080", "TestRegion");
 
         final CreateCasePayloadBuilder case1 = createCase(caseId1, offenceId1, defendant1);
         final CreateCasePayloadBuilder case2 = createCase(caseId2, offenceId2, defendant2);
@@ -190,7 +197,7 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         final String expectedCounty = getCounty(address);
         final String expectedTown = getTown(address);
         final String expectedPostcode = getPostcode(address);
-        final String expectedProsecutorName = casePayloadBuilder.getProsecutingAuthority().name();
+        final String expectedProsecutorName = casePayloadBuilder.getProsecutingAuthority().getFullName();
         final String expectedOffenceTitle = DEFAULT_OFFENCE_TITLE;
 
         assertThat(readyCase.optString("county", null), is(expectedCounty));
@@ -224,6 +231,10 @@ public class TransparencyReportIT extends BaseIntegrationTest {
                 .withDefendantBuilder(defendantBuilder);
 
         createCaseForPayloadBuilder(createCasePayloadBuilder);
+
+        final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
         pollUntilCaseReady(createCasePayloadBuilder.getId());
         return createCasePayloadBuilder;
     }

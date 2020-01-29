@@ -24,9 +24,10 @@ public class OffenceToOffenceDetailTest {
                 LocalDate.of(2016, 1, 3),
                 "Committed some offence",
                 "Prosecution facts", "Witness statement", BigDecimal.ONE,
-                "Witness statement Welsh", 123,
+                "Witness statement Welsh", BigDecimal.valueOf(123),
                 LocalDate.of(2016, 1, 4),
-                LocalDate.of(2016, 1, 5));
+                LocalDate.of(2016, 1, 5),
+                "Ford", "FG59 4FD");
 
         OffenceDetail outputOffence = offenceToOffenceDetail.convert(inputOffence);
 
@@ -42,6 +43,11 @@ public class OffenceToOffenceDetailTest {
                 .withProsecutionFacts(inputOffence.getProsecutionFacts())
                 .withWitnessStatement(inputOffence.getWitnessStatement())
                 .withCompensation(inputOffence.getCompensation())
+                .withVehicleRegistrationMark(inputOffence.getVehicleRegistrationMark())
+                .withVehicleMake(inputOffence.getVehicleMake())
+                .withBackDutyDateTo(inputOffence.getBackDutyDateTo())
+                .withBackDutyDateFrom(inputOffence.getBackDutyDateFrom())
+                .withBackDuty(inputOffence.getBackDuty())
                 .build();
 
         assertTrue(reflectionEquals(outputOffence, expectedOffence));

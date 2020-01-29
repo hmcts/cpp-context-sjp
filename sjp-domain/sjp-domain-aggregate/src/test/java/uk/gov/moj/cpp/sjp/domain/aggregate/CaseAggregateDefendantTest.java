@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.emptyCollectionOf;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.StringContains.containsString;
 
@@ -99,14 +100,14 @@ public class CaseAggregateDefendantTest {
     }
 
     @Test
-    public void rejectsNullTitleIfPreviouslySet() {
+    public void allowsNullTitleIfPreviouslySet() {
         givenCaseWasReceivedWithDefaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
                 new DefendantData().withNewTitle(null)
         );
-
-        doRejectAssertions(events, "title parameter can not be null as previous value is : Mr");
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(events.size() - 1);
+        assertThat(defendantDetailsUpdated.getTitle(), isEmptyOrNullString());
     }
 
     @Test
@@ -117,11 +118,12 @@ public class CaseAggregateDefendantTest {
                 new DefendantData().withNewTitle(" ")
         );
 
-        doRejectAssertions(events, "title parameter can not be null as previous value is : Mr");
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(events.size() - 1);
+        assertThat(defendantDetailsUpdated.getTitle(), is(" "));
     }
 
     @Test
-    public void acceptsEmptyTitleIfPreviouslyNotSet() {
+    public void allowsEmptyTitleIfPreviouslyNotSet() {
         givenCaseWasReceivedWithDefendant(new DefendantData().withNewTitle(" "));
 
         final List<Object> events = whenTheDefendantIsUpdated(
@@ -344,7 +346,8 @@ public class CaseAggregateDefendantTest {
                                 defendantData.numPreviousConvictions,
                                 defendantData.offences,
                                 defendantData.hearingLanguage,
-                                defendantData.languageNeeds
+                                defendantData.languageNeeds,
+                                defendantData.region
                         )).build(),
                 clock.now()
         ).findFirst().get();
@@ -360,7 +363,8 @@ public class CaseAggregateDefendantTest {
                 updatedDefendantData.nationalInsuranceNumber,
                 updatedDefendantData.driverNumber,
                 updatedDefendantData.address,
-                updatedDefendantData.contactDetails);
+                updatedDefendantData.contactDetails,
+                updatedDefendantData.region);
 
         final Stream<Object> eventStream = caseAggregate.updateDefendantDetails(
                 userId,
@@ -388,6 +392,7 @@ public class CaseAggregateDefendantTest {
         private String lastName = CaseAggregateDefendantTest.this.lastName;
         private LocalDate dateOfBirth = CaseAggregateDefendantTest.this.dateOfBirth;
         private Address address = CaseAggregateDefendantTest.this.address;
+        private final String region = "testregion";
 
         private DefendantData withNewTitle(final String newTitle) {
             this.title = newTitle;

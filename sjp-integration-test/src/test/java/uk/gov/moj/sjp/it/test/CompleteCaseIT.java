@@ -27,6 +27,7 @@ import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCom
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
@@ -85,6 +86,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
 
     private final EventListener eventListener = new EventListener();
     private final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     @Before
     public void setUp() throws SQLException {
@@ -96,7 +98,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubResultDefinitions();
         stubResultIds();
-        stubProsecutorQuery(prosecutingAuthority.name(), randomUUID());
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
         stubForUserDetails(user);
 
         final CreateCase.CreateCasePayloadBuilder caseBuilder = CreateCase
@@ -110,7 +112,8 @@ public class CompleteCaseIT extends BaseIntegrationTest {
                 .withOffenceCode(DEFAULT_OFFENCE_CODE)
                 .withUrn(urn);
 
-        stubEnforcementAreaByPostcode(caseBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        stubEnforcementAreaByPostcode(caseBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "DEFENDANT_REGION");
         createCaseAndWaitUntilReady(caseBuilder);
     }
 
@@ -159,7 +162,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
         assignCaseInMagistrateSession(magistrateSessionId, user.getUserId());
 
         final FinancialImposition financialImposition = buildFinancialImposition();
-        final OffenceDecision offenceDecision = new Discharge(null, createOffenceDecisionInformation(offenceId, FOUND_GUILTY), CONDITIONAL, new DischargePeriod(2, MONTH), new BigDecimal(230), null, false);
+        final OffenceDecision offenceDecision = Discharge.createDischarge(null, createOffenceDecisionInformation(offenceId, FOUND_GUILTY), CONDITIONAL, new DischargePeriod(2, MONTH), new BigDecimal(230), null, false);
         final DecisionCommand decision = new DecisionCommand(magistrateSessionId, caseId, "Test note", user, asList(offenceDecision), financialImposition);
 
         eventListener

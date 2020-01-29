@@ -8,7 +8,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
-import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.PLEA_RECEIVED_NOT_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
@@ -29,13 +28,15 @@ import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyUpdatedOffencesWithP
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
@@ -78,7 +79,7 @@ public class SetPleasIT extends BaseIntegrationTest {
     private final UUID offence1Id = randomUUID();
     private final UUID offence2Id = randomUUID();
     private final UUID offence3Id = randomUUID();
-    private final UUID defendantId = randomUUID();
+    private UUID defendantId;
 
     private static final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
 
@@ -96,8 +97,14 @@ public class SetPleasIT extends BaseIntegrationTest {
         stubDefaultCourtByCourtHouseOUCodeQuery();
 
         databaseCleaner.cleanAll();
+        final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder.withDefaults();
+        defendantId = defendantBuilder.getId();
+        stubEnforcementAreaByPostcode(defendantBuilder.getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode("1080", "TestRegion");
 
-        aCase = createCase(caseId, defendantId, offence1Id, offence2Id, offence3Id, postingDate);
+        aCase = createCase(caseId, defendantBuilder, offence1Id, offence2Id, offence3Id, postingDate);
+        final ProsecutingAuthority prosecutingAuthority = aCase.getProsecutingAuthority();
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
 
         startSession(sessionId, USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
 
@@ -135,7 +142,7 @@ public class SetPleasIT extends BaseIntegrationTest {
         verifyUpdatedOffencesWithPleas(caseId, pleaTypesByOffence);
 
         // verify case readiness state
-        verifyCaseStatus(caseId, PLEA_RECEIVED_NOT_READY_FOR_DECISION);
+        verifyCaseStatus(caseId, PLEA_RECEIVED_READY_FOR_DECISION);
     }
 
     @Test

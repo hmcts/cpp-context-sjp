@@ -29,19 +29,21 @@ import java.util.Objects;
 import java.util.function.Predicate;
 
 public class PaymentView {
-    private final String totalFine;
-    private final String totalToPay;
-    private final String paymentTerms;
-    private final String reserveTerms;
-    private final String prosecutionCosts;
-    private final String victimSurcharge;
-    private final String noVictimSurchargeReason;
+    private String totalFine;
+    private String totalToPay;
+    private String paymentTerms;
+    private String reserveTerms;
+    private String prosecutionCosts;
+    private String victimSurcharge;
+    private String noVictimSurchargeReason;
     private final String reasonForNoCosts;
     private final boolean collectionOrderMade;
     private final String paymentMethod;
-    private final String paymentMethodReason;
+    private String paymentMethodReason;
     private final String reasonForReducedVictimSurcharge;
-    private final String totalCompensation;
+    private String totalCompensation;
+    private String totalBackDuty;
+    private String totalExcisePenalty;
 
     private final CaseDetail caseDetail;
 
@@ -61,26 +63,54 @@ public class PaymentView {
 
     private PaymentView(final CaseDetail caseDetail) {
         this.caseDetail = caseDetail;
-        final BigDecimal nTotalFine = calcTotalFine();
-        final BigDecimal nVictimSurcharge = calcVictimSurcharge();
-
-        totalToPay = formatCurrency(calcTotalToPay());
-        totalFine = nTotalFine.compareTo(ZERO) > 0 ? formatCurrency(nTotalFine) : null;
-        victimSurcharge = isGreaterThanZero.test(nVictimSurcharge) ? formatCurrency(nVictimSurcharge) : null;
+        setTotalFine();
+        setTotalCompensation();
+        setTotalBackDuty();
+        setTotalExcisePenalty();
+        setTotalToPay();
 
         final FinancialImposition financialImposition = extractFinancialImposition();
-
         final CostsAndSurcharge costsAndSurcharge = financialImposition.getCostsAndSurcharge();
-        noVictimSurchargeReason = nVictimSurcharge == null || ZERO.equals(nVictimSurcharge) ? getNoVictimSurchargeReason(costsAndSurcharge) : null;
+        setVictimSurcharge(costsAndSurcharge);
+        setProsecutionCosts(costsAndSurcharge);
         reasonForNoCosts = costsAndSurcharge.getReasonForNoCosts();
-        prosecutionCosts = isGreaterThanZero.test(costsAndSurcharge.getCosts()) ? formatCurrency(costsAndSurcharge.getCosts()) : null;
         collectionOrderMade = costsAndSurcharge.isCollectionOrderMade();
         reasonForReducedVictimSurcharge = costsAndSurcharge.getReasonForReducedVictimSurcharge();
 
         final Payment payment = financialImposition.getPayment();
         paymentMethod = PAYMENT_NAMES.get(payment.getPaymentType());
+        setPaymentMethodReason(payment);
+        setTerms(payment);
+    }
+
+    private void setTotalToPay() {
+        final BigDecimal nTotalToPay = calcTotalToPay();
+        if (isGreaterThanZero.test(nTotalToPay)) {
+            this.totalToPay = formatCurrency(nTotalToPay);
+        }
+    }
+
+    private void setProsecutionCosts(CostsAndSurcharge costsAndSurcharge) {
+        if (isGreaterThanZero.test(costsAndSurcharge.getCosts())) {
+            prosecutionCosts = formatCurrency(costsAndSurcharge.getCosts());
+        }
+    }
+
+    private void setVictimSurcharge(final CostsAndSurcharge costsAndSurcharge) {
+        final BigDecimal nVictimSurcharge = calcVictimSurcharge();
+        if (isGreaterThanZero.test(nVictimSurcharge)) {
+            victimSurcharge = formatCurrency(nVictimSurcharge);
+        } else {
+            noVictimSurchargeReason = getNoVictimSurchargeReason(costsAndSurcharge);
+        }
+    }
+
+    private void setPaymentMethodReason(Payment payment) {
         paymentMethodReason = payment.getPaymentType() == PAY_TO_COURT ? payment.getReasonWhyNotAttachedOrDeducted() :
                 REASON_FOR_DEDUCTING_FROM_BENEFITS_NAMES.get(payment.getReasonForDeductingFromBenefits());
+    }
+
+    private void setTerms(Payment payment) {
         if (payment.getPaymentType() == PAY_TO_COURT) {
             paymentTerms = buildPaymentTerms(payment);
             reserveTerms = null;
@@ -88,9 +118,34 @@ public class PaymentView {
             paymentTerms = null;
             reserveTerms = buildPaymentTerms(payment);
         }
+    }
 
+    private void setTotalExcisePenalty() {
+        final BigDecimal nTotalExcisePenalty = calcTotalExcisePenalty();
+        if (isGreaterThanZero.test(nTotalExcisePenalty)) {
+            totalExcisePenalty = formatCurrency(nTotalExcisePenalty);
+        }
+    }
+
+    private void setTotalBackDuty() {
+        final BigDecimal nTotalBackDuty = calcTotalBackDuty();
+        if (isGreaterThanZero.test(nTotalBackDuty)) {
+            totalBackDuty = formatCurrency(nTotalBackDuty);
+        }
+    }
+
+    private void setTotalCompensation() {
         final BigDecimal nTotalCompensation = calcTotalCompensation();
-        totalCompensation = nTotalCompensation.compareTo(ZERO) > 0 ? formatCurrency(nTotalCompensation) : null;
+        if (isGreaterThanZero.test(nTotalCompensation)) {
+            totalCompensation = formatCurrency(nTotalCompensation);
+        }
+    }
+
+    private void setTotalFine() {
+        final BigDecimal nTotalFine = calcTotalFine();
+        if (isGreaterThanZero.test(nTotalFine)) {
+            totalFine = formatCurrency(nTotalFine);
+        }
     }
 
     private String getNoVictimSurchargeReason(final CostsAndSurcharge costsAndSurcharge) {
@@ -151,7 +206,12 @@ public class PaymentView {
                 .map(this::getCompensation)
                 .reduce(ZERO, BigDecimal::add);
 
-        return calcTotalFine().add(compensationSum).add(costs).add(calcVictimSurcharge());
+        return calcTotalFine()
+                .add(calcTotalBackDuty())
+                .add(calcTotalExcisePenalty())
+                .add(compensationSum)
+                .add(costs)
+                .add(calcVictimSurcharge());
     }
 
     private BigDecimal getCompensation(OffenceDecision a) {
@@ -171,7 +231,44 @@ public class PaymentView {
                 .flatMap(a -> a.getOffenceDecisions().stream())
                 .filter(a -> a instanceof FinancialPenaltyOffenceDecision)
                 .map(a -> (FinancialPenaltyOffenceDecision) a)
+                .filter(decision -> nonNull(decision.getFine()))
                 .map(FinancialPenaltyOffenceDecision::getFine)
+                .reduce(ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal calcTotalExcisePenalty() {
+        return caseDetail
+                .getCaseDecisions()
+                .stream()
+                .flatMap(a -> a.getOffenceDecisions().stream())
+                .filter(a -> a instanceof FinancialPenaltyOffenceDecision)
+                .map(a -> (FinancialPenaltyOffenceDecision) a)
+                .filter(decision -> nonNull(decision.getExcisePenalty()))
+                .map(FinancialPenaltyOffenceDecision::getExcisePenalty)
+                .reduce(ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal calcTotalBackDutyForFinancialPenalty() {
+        return caseDetail
+                .getCaseDecisions()
+                .stream()
+                .flatMap(a -> a.getOffenceDecisions().stream())
+                .filter(a -> a instanceof FinancialPenaltyOffenceDecision)
+                .map(a -> (FinancialPenaltyOffenceDecision) a)
+                .filter(decision -> nonNull(decision.getBackDuty()))
+                .map(FinancialPenaltyOffenceDecision::getBackDuty)
+                .reduce(ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal calcTotalBackDutyForDischarge() {
+        return caseDetail
+                .getCaseDecisions()
+                .stream()
+                .flatMap(a -> a.getOffenceDecisions().stream())
+                .filter(a -> a instanceof DischargeOffenceDecision)
+                .map(a -> (DischargeOffenceDecision) a)
+                .filter(decision -> nonNull(decision.getBackDuty()))
+                .map(DischargeOffenceDecision::getBackDuty)
                 .reduce(ZERO, BigDecimal::add);
     }
 
@@ -180,8 +277,13 @@ public class PaymentView {
                 .getCaseDecisions()
                 .stream()
                 .filter(a -> nonNull(a.getFinancialImposition()))
+                .filter(a -> nonNull(a.getFinancialImposition().getCostsAndSurcharge().getVictimSurcharge()))
                 .map(a -> a.getFinancialImposition().getCostsAndSurcharge().getVictimSurcharge())
                 .reduce(ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal calcTotalBackDuty() {
+        return calcTotalBackDutyForFinancialPenalty().add(calcTotalBackDutyForDischarge());
     }
 
     private BigDecimal calcTotalCompensation() {
@@ -239,7 +341,7 @@ public class PaymentView {
                 .anyMatch(a -> a instanceof FinancialPenaltyOffenceDecision);
     }
 
-    private String formatCurrency(BigDecimal value) {
+    private String formatCurrency(final BigDecimal value) {
         return getCurrencyInstance(Locale.UK).format(value).replace(".00", "");
     }
 
@@ -293,6 +395,14 @@ public class PaymentView {
 
     public String getTotalCompensation() {
         return totalCompensation;
+    }
+
+    public String getTotalBackDuty() {
+        return totalBackDuty;
+    }
+
+    public String getTotalExcisePenalty() {
+        return totalExcisePenalty;
     }
 
     public static Map<PaymentType, String> getPaymentNames() {

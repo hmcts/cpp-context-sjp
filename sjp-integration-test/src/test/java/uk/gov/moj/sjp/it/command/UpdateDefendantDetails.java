@@ -1,5 +1,7 @@
 package uk.gov.moj.sjp.it.command;
 
+import static java.util.Optional.ofNullable;
+import static javax.json.Json.createObjectBuilder;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getPostCallResponse;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
@@ -11,8 +13,8 @@ import uk.gov.moj.sjp.it.command.builder.ContactDetailsBuilder;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.core.Response;
 
 public class UpdateDefendantDetails {
@@ -50,27 +52,49 @@ public class UpdateDefendantDetails {
     }
 
     private JsonObject preparePayload(DefendantDetailsPayloadBuilder payloadBuilder) {
-        return Json.createObjectBuilder()
-                .add("title", payloadBuilder.getTitle())
-                .add("firstName", payloadBuilder.getFirstName())
-                .add("lastName", payloadBuilder.getLastName())
-                .add("dateOfBirth", LocalDates.to(payloadBuilder.getDateOfBirth()))
-                .add("gender", payloadBuilder.getGender().toString())
-                .add("email", payloadBuilder.getContactDetailsBuilder().getEmail())
-                .add("address", Json.createObjectBuilder()
-                        .add("address1", payloadBuilder.getAddressBuilder().getAddress1())
-                        .add("address2", payloadBuilder.getAddressBuilder().getAddress2())
-                        .add("address3", payloadBuilder.getAddressBuilder().getAddress3())
-                        .add("address4", payloadBuilder.getAddressBuilder().getAddress4())
-                        .add("address5", payloadBuilder.getAddressBuilder().getAddress5())
-                        .add("postcode", payloadBuilder.getAddressBuilder().getPostcode())
-                )
-                .add("contactNumber", Json.createObjectBuilder()
-                        .add("home", payloadBuilder.getContactDetailsBuilder().getHome())
-                        .add("mobile", payloadBuilder.getContactDetailsBuilder().getMobile())
-                )
-                .add("nationalInsuranceNumber", payloadBuilder.getNationalInsuranceNumber())
-                .build();
+
+        final JsonObjectBuilder defendantDetailsUpdateBuilder = createObjectBuilder();
+
+        ofNullable(payloadBuilder.getTitle())
+                .ifPresent(title -> defendantDetailsUpdateBuilder.add("title", title));
+        ofNullable(payloadBuilder.getFirstName())
+                .ifPresent(firstName -> defendantDetailsUpdateBuilder.add("firstName", payloadBuilder.getFirstName()));
+
+        ofNullable(payloadBuilder.getLastName())
+                .ifPresent(lastName -> defendantDetailsUpdateBuilder.add("lastName", payloadBuilder.getLastName()));
+
+        ofNullable(payloadBuilder.getDateOfBirth())
+                .map(dateOfBirth -> LocalDates.to(payloadBuilder.getDateOfBirth()))
+                .ifPresent(dateOfBirth -> defendantDetailsUpdateBuilder.add("dateOfBirth", dateOfBirth));
+
+        ofNullable(payloadBuilder.getGender())
+                .ifPresent(gender -> defendantDetailsUpdateBuilder.add("gender", gender.toString()));
+
+        ofNullable(payloadBuilder.getContactDetailsBuilder())
+                .map(ContactDetailsBuilder::getEmail)
+                .ifPresent(email -> defendantDetailsUpdateBuilder.add("email", email));
+
+        ofNullable(payloadBuilder.getAddressBuilder())
+                .ifPresent(address -> defendantDetailsUpdateBuilder.add("address", createObjectBuilder()
+                        .add("address1", address.getAddress1())
+                        .add("address2", address.getAddress2())
+                        .add("address3", address.getAddress3())
+                        .add("address4", address.getAddress4())
+                        .add("address5", address.getAddress5())
+                        .add("postcode", address.getPostcode())
+                ));
+
+        ofNullable(payloadBuilder.getContactDetailsBuilder())
+                .ifPresent(contactDetails -> defendantDetailsUpdateBuilder.add("contactNumber", createObjectBuilder()
+                        .add("home", contactDetails.getHome())
+                        .add("mobile", contactDetails.getMobile())
+                ));
+
+        ofNullable(payloadBuilder.getNationalInsuranceNumber())
+                .ifPresent(nationalInsuranceNumber -> defendantDetailsUpdateBuilder.add("nationalInsuranceNumber", payloadBuilder.getNationalInsuranceNumber()));
+
+
+        return defendantDetailsUpdateBuilder.build();
     }
 
     public static class DefendantDetailsPayloadBuilder {
@@ -106,11 +130,6 @@ public class UpdateDefendantDetails {
             return new DefendantDetailsPayloadBuilder();
         }
 
-        public DefendantDetailsPayloadBuilder withTitle(final String title) {
-            this.title = title;
-            return this;
-        }
-
         public DefendantDetailsPayloadBuilder withFirstName(final String firstName) {
             this.firstName = firstName;
             return this;
@@ -121,7 +140,12 @@ public class UpdateDefendantDetails {
             return this;
         }
 
-        public DefendantDetailsPayloadBuilder withDateOfBirth(final LocalDate dateOfBirth) {
+        public DefendantDetailsPayloadBuilder withTitle(final String title) {
+            this.title = title;
+            return this;
+        }
+
+        public DefendantDetailsPayloadBuilder withDateOfBirth(LocalDate dateOfBirth) {
             this.dateOfBirth = dateOfBirth;
             return this;
         }
@@ -167,5 +191,6 @@ public class UpdateDefendantDetails {
         public String getNationalInsuranceNumber() {
             return nationalInsuranceNumber;
         }
+
     }
 }

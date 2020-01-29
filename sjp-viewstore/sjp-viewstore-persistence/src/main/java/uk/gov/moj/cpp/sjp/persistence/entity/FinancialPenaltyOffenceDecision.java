@@ -26,6 +26,12 @@ public class FinancialPenaltyOffenceDecision extends OffenceDecision {
     @Column(name="fine")
     private BigDecimal fine;
 
+    @Column(name="back_duty")
+    private BigDecimal backDuty;
+
+    @Column(name="excise_penalty")
+    private BigDecimal excisePenalty;
+
     public FinancialPenaltyOffenceDecision() {
         super();
     }
@@ -36,13 +42,17 @@ public class FinancialPenaltyOffenceDecision extends OffenceDecision {
                                            final Boolean guiltyPleaTakenIntoAccount,
                                            final BigDecimal compensation,
                                            final String noCompensationReason,
-                                           final BigDecimal fine) {
+                                           final BigDecimal fine,
+                                           final BigDecimal backDuty,
+                                           final BigDecimal excisePenalty) {
 
-        super(offenceId, caseDecisionId, DecisionType.FINANCIAL_PENALTY,verdict);
+        super(offenceId, caseDecisionId, DecisionType.FINANCIAL_PENALTY, verdict);
         this.guiltyPleaTakenIntoAccount = guiltyPleaTakenIntoAccount;
         this.compensation = compensation;
         this.noCompensationReason = noCompensationReason;
         this.fine = fine;
+        this.backDuty = backDuty;
+        this.excisePenalty = excisePenalty;
     }
 
     public String getNoCompensationReason() {
@@ -75,5 +85,21 @@ public class FinancialPenaltyOffenceDecision extends OffenceDecision {
 
     public void setFine(BigDecimal fine) {
         this.fine = fine;
+    }
+
+    public BigDecimal getBackDuty() {
+        return backDuty;
+    }
+
+    public void setBackDuty(BigDecimal backDuty) {
+        this.backDuty = backDuty;
+    }
+
+    public BigDecimal getExcisePenalty() {
+        return excisePenalty;
+    }
+
+    public void setExcisePenalty(BigDecimal excisePenalty) {
+        this.excisePenalty = excisePenalty;
     }
 }

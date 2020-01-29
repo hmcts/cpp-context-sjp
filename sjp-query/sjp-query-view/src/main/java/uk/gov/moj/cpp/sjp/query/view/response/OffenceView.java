@@ -1,6 +1,8 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
@@ -9,8 +11,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
-
-import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 @SuppressWarnings("WeakerAccess")
 public class OffenceView {
@@ -27,6 +27,11 @@ public class OffenceView {
     private final Integer sequenceNumber;
     private final LocalDate startDate;
     private final LocalDate chargeDate;
+    private final BigDecimal backDuty;
+    private final LocalDate backDutyDateFrom;
+    private final LocalDate backDutyDateTo;
+    private final String vehicleMake;
+    private final String vehicleRegistrationMark;
     private BigDecimal compensation;
     private String prosecutionFacts;
     private UUID withdrawalRequestReasonId;
@@ -51,6 +56,11 @@ public class OffenceView {
         this.compensation = offence.getCompensation();
         this.prosecutionFacts = offence.getProsecutionFacts();
         this.withdrawalRequestReasonId = offence.getWithdrawalRequestReasonId();
+        this.backDuty = offence.getBackDuty();
+        this.backDutyDateFrom = offence.getBackDutyDateFrom();
+        this.backDutyDateTo = offence.getBackDutyDateTo();
+        this.vehicleMake = offence.getVehicleMake();
+        this.vehicleRegistrationMark = offence.getVehicleRegistrationMark();
     }
 
     public UUID getId() {
@@ -109,5 +119,25 @@ public class OffenceView {
 
     public UUID getWithdrawalRequestReasonId() {
         return withdrawalRequestReasonId;
+    }
+
+    public BigDecimal getBackDuty() {
+        return backDuty;
+    }
+
+    public LocalDate getBackDutyDateFrom() {
+        return backDutyDateFrom;
+    }
+
+    public LocalDate getBackDutyDateTo() {
+        return backDutyDateTo;
+    }
+
+    public String getVehicleMake() {
+        return vehicleMake;
+    }
+
+    public String getVehicleRegistrationMark() {
+        return vehicleRegistrationMark;
     }
 }

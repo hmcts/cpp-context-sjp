@@ -9,15 +9,21 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_PLEA;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.defaultCaseBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.OffenceBuilder.defaultOffenceBuilder;
 import static uk.gov.moj.sjp.it.helper.CaseProsecutingAuthorityHelper.getProsecutingAuthority;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubOffenceFineLevelsQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
@@ -29,6 +35,8 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 
 import java.io.StringReader;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,10 +55,15 @@ import org.junit.Test;
  */
 public class CreateCaseIT extends BaseIntegrationTest {
 
+    private static final String DEFENDANT_REGION = "croydon";
+    private static final String NATIONAL_COURT_CODE = "1080";
+
     @Test
     public void shouldMultiOffenceCaseBeCreatedWithEnterpriseId() {
         final UUID caseId = randomUUID();
         final ProsecutingAuthority prosecutingAuthority = TFL;
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
         final String offenceCode1 = "CA03010";
         final String offenceCode2 = "CA03011";
 
@@ -62,6 +75,8 @@ public class CreateCaseIT extends BaseIntegrationTest {
 
         final CreateCase.DefendantBuilder defendant = createCase.getDefendantBuilder();
         final CreateCase.OffenceBuilder offence = createCase.getOffenceBuilder();
+        stubEnforcementAreaByPostcode(defendant.getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
 
         final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
                 .subscribe(CaseReceived.EVENT_NAME)
@@ -74,6 +89,7 @@ public class CreateCaseIT extends BaseIntegrationTest {
         final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
+        assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
         assertThat(jsonResponse.get("enterpriseId"), equalTo(createCase.getEnterpriseId()));
         assertThat(jsonResponse.get("status"), equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name()));
         assertThat(jsonResponse.get("defendant.id"), equalTo(defendant.getId().toString()));
@@ -119,6 +135,77 @@ public class CreateCaseIT extends BaseIntegrationTest {
         Assert.assertThat(validationTrace, containsString(format("#/defendant/contactDetails/email: string [%s] does not match pattern", email)));
     }
 
+    @Test
+    public void shouldMultiOffenceCaseBeCreatedWithDvlaAttributes() {
+        final UUID caseId = randomUUID();
+        final ProsecutingAuthority prosecutingAuthority = DVLA;
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
+        final String offenceCode1 = "CA03010";
+        final String offenceCode2 = "CA03011";
+
+        final LocalDate backDutyFromDate = now().minusMonths(6);
+        final LocalDate backDutyToDate = now().minusMonths(3);
+
+        final CreateCase.CreateCasePayloadBuilder createCase = createMultiOffenceCaseWithDvlaAttributes(caseId, prosecutingAuthority,
+                backDutyFromDate, backDutyToDate,
+                newArrayList(offenceCode1, offenceCode2));
+
+        stubEnforcementAreaByPostcode(createCase.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
+
+        final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
+                .subscribe(CaseReceived.EVENT_NAME)
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
+                .popEvent(CaseReceived.EVENT_NAME);
+
+        assertTrue(caseReceivedEvent.isPresent());
+
+        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
+        assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
+
+        assertOffenceDvlaData(jsonResponse, backDutyFromDate, backDutyToDate, 0);
+    }
+
+    @Test
+    public void shouldCaseBeCreatedWithoutDefendantTitle(){
+        final UUID caseId = randomUUID();
+        final ProsecutingAuthority prosecutingAuthority = TFL;
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
+        final String offenceCode1 = "CA03010";
+        final String offenceCode2 = "CA03011";
+
+        stubQueryOffencesByCode(offenceCode1);
+        stubQueryOffencesByCode(offenceCode2);
+
+        final int fineLevel = 3;
+        final BigDecimal maxValue = BigDecimal.valueOf(1000);
+
+        stubOffenceFineLevelsQuery(fineLevel, maxValue);
+
+        final CreateCase.CreateCasePayloadBuilder createCase = createMultiOffenceCase(caseId, prosecutingAuthority,
+                newArrayList(offenceCode1, offenceCode2));
+
+        final CreateCase.DefendantBuilder defendant = createCase.getDefendantBuilder();
+        defendant.withTitle(null);
+        stubEnforcementAreaByPostcode(defendant.getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
+
+        final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
+                .subscribe(CaseReceived.EVENT_NAME)
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
+                .popEvent(CaseReceived.EVENT_NAME);
+
+        assertTrue(caseReceivedEvent.isPresent());
+
+        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
+        assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
+        assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
+        assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
+        assertThat(jsonResponse.get("defendant.personalDetails.title") , isEmptyOrNullString());
+    }
+
     private void assertOffenceData(final JsonPath jsonResponse, final CreateCase.OffenceBuilder offence, final String offenceCode, final JsonObject offenceDefinition, boolean outOfTime, boolean notInEffect, final int index) {
         assertThat(jsonResponse.get(format("defendant.offences[%d].offenceSequenceNumber", index)), equalTo(index + 1));
         assertThat(jsonResponse.get(format("defendant.offences[%d].wording", index)), equalTo(offence.getOffenceWording()));
@@ -131,6 +218,16 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get(format("defendant.offences[%d].legislationWelsh", index)), equalTo(JsonObjects.getString(offenceDefinition, "details", "document", "welsh", "welshlegislation").orElse(null)));
         assertThat(jsonResponse.get(format("defendant.offences[%d].outOfTime", index)), equalTo(outOfTime));
         assertThat(jsonResponse.get(format("defendant.offences[%d].notInEffect", index)), equalTo(notInEffect));
+    }
+
+    private void assertOffenceDvlaData(final JsonPath jsonResponse, final LocalDate backDutyFrom, LocalDate backDutyTo, final int index) {
+        assertThat(jsonResponse.get(format("defendant.offences[%d].offenceSequenceNumber", index)), equalTo(index + 1));
+
+        assertThat(jsonResponse.get(format("defendant.offences[%d].backDuty", index)), equalTo(340.30F));
+        assertThat(jsonResponse.get(format("defendant.offences[%d].backDutyDateFrom", index)), equalTo(backDutyFrom.toString()));
+        assertThat(jsonResponse.get(format("defendant.offences[%d].backDutyDateTo", index)), equalTo(backDutyTo.toString()));
+        assertThat(jsonResponse.get(format("defendant.offences[%d].vehicleMake", index)), equalTo("FORD"));
+        assertThat(jsonResponse.get(format("defendant.offences[%d].vehicleRegistrationMark", index)), equalTo("FG59 4FD"));
     }
 
     private CreateCase.CreateCasePayloadBuilder createMultiOffenceCase(final UUID caseId, final ProsecutingAuthority prosecutingAuthority,
@@ -148,6 +245,25 @@ public class CreateCaseIT extends BaseIntegrationTest {
                 .withDefendantId(randomUUID());
     }
 
+    private CreateCase.CreateCasePayloadBuilder createMultiOffenceCaseWithDvlaAttributes(final UUID caseId, final ProsecutingAuthority prosecutingAuthority,
+                                                                                         LocalDate backDutyFromDate, LocalDate backDutyToDate, final List<String> offenceCodes) {
+        return defaultCaseBuilder()
+                .withId(caseId)
+                .withProsecutingAuthority(prosecutingAuthority)
+                .withOffenceBuilders(offenceCodes.stream()
+                        .map(offenceCode -> defaultOffenceBuilder()
+                                .withId(randomUUID())
+                                .withLibraOffenceCode(offenceCode)
+                                .withOffenceCommittedDate(now().minusMonths(4))
+                                .withOffenceChargeDate(now())
+                                .withBackDuty(BigDecimal.valueOf(340.30))
+                                .withBackDutyDateFrom(backDutyFromDate)
+                                .withBackDutyDateTo(backDutyToDate)
+                                .withVehicleMake("FORD")
+                                .withVehicleRegistrationMark("FG59 4FD")
+                        ).collect(toList()))
+                .withDefendantId(randomUUID());
+    }
     private JsonObject responseToJsonObject(String response) {
         return Json.createReader(new StringReader(response)).readObject();
     }

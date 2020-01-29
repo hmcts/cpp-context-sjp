@@ -63,7 +63,8 @@ public class CaseDocumentsRestrictionTests {
                         DefendantDetailBuilder
                                 .aDefendantDetail()
                                 .build())
-                .build());
+                .build(),
+                "Transport for London");
         when(caseService.findCaseAndFilterOtherAndFinancialMeansDocuments(caseId.toString()))
                 .thenReturn(caseView);
 

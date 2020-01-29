@@ -9,6 +9,7 @@ import static javax.json.Json.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DecisionName.ADJOURN;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.*;
 
+import org.apache.commons.lang3.StringUtils;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.query.view.service.CachedReferenceData;
@@ -98,8 +99,6 @@ public class ReferencedDecisionSavedOffenceConverter {
                 return convertReferredToOpenCourtDecision(offenceDecision, referenceData);
             case REFERRED_FOR_FUTURE_SJP_SESSION:
                 return convertReferredForFutureSjpDecision(offenceDecision, referenceData);
-            case REFER_FOR_COURT_HEARING:
-                return convertReferredForCourtHearing(offenceDecision, referenceData);
             default:
                 return emptyList();
         }
@@ -116,15 +115,22 @@ public class ReferencedDecisionSavedOffenceConverter {
             resultsArray.add(costsResult(costsAndSurcharge, referenceData));
         }
 
+        if (hasReasonForNoCosts(costsAndSurcharge)) {
+            resultsArray.add(reasonForNoCosts(costsAndSurcharge, referenceData));
+        }
+
         if (collectionOrderMade(costsAndSurcharge)) {
             resultsArray.add(collectionOrder(payment, referenceData));
         }
 
-        final JsonNumber victimSurchargeValue = costsAndSurcharge.getJsonNumber(VICTIM_SURCHARGE);
-        if(victimSurchargeValue.doubleValue() > 0){
-            resultsArray.add(victimSurcharge(victimSurchargeValue, referenceData));
-        } else {
-            resultsArray.add(noVictimSurcharge(referenceData));
+        if (costsAndSurcharge.containsKey(VICTIM_SURCHARGE)) {
+            // Victim Surcharge is optional for DVLA and required for others
+            final JsonNumber victimSurchargeValue = costsAndSurcharge.getJsonNumber(VICTIM_SURCHARGE);
+            if (victimSurchargeValue.doubleValue() > 0) {
+                resultsArray.add(victimSurcharge(victimSurchargeValue, referenceData));
+            } else {
+                resultsArray.add(noVictimSurcharge(referenceData));
+            }
         }
 
         final String paymentType = payment.getString(PAYMENT_TYPE);
@@ -197,12 +203,6 @@ public class ReferencedDecisionSavedOffenceConverter {
                 .collect(toList());
     }
 
-    private List<JsonObject> convertReferredForCourtHearing(JsonObject offenceDecision, CachedReferenceData referenceData) {
-        final JsonObject offenceDecisionInformation = offenceDecision.getJsonArray(OFFENCE_DECISION_INFORMATION).getJsonObject(0);
-        return asList(convertDecision(
-                offenceDecisionInformation, REFER_FOR_COURT_HEARING_RESULT_CODE, null, referenceData));
-    }
-
     private JsonObject convertDecision(JsonObject offenceDecisionInformation, final String decisionType, final JsonObject terminalEntry, final CachedReferenceData referenceData) {
         final JsonObjectBuilder result = createObjectBuilder()
                 .add(CODE, decisionType)
@@ -223,6 +223,11 @@ public class ReferencedDecisionSavedOffenceConverter {
 
     private List<JsonObject> convertDischargeDecision(final JsonObject offenceDecision, CachedReferenceData referenceData) {
         final JsonArrayBuilder results = createArrayBuilder().add(dischargeResult(offenceDecision, referenceData));
+
+        if (offenceDecision.containsKey(BACK_DUTY)) {
+            results.add(backDutyResult(offenceDecision, referenceData));
+        }
+
         return convertFinancialOffence(offenceDecision, results, referenceData);
     }
 
@@ -244,7 +249,20 @@ public class ReferencedDecisionSavedOffenceConverter {
     }
 
     private List<JsonObject> convertFinancialPenaltyDecision(final JsonObject offenceDecision, CachedReferenceData referenceData) {
-        final JsonArrayBuilder results = createArrayBuilder().add(fineResult(offenceDecision, referenceData));
+        final JsonArrayBuilder results = createArrayBuilder();
+
+        if (offenceDecision.containsKey(FINE)) {
+            results.add(fineResult(offenceDecision, referenceData));
+        }
+
+        if (offenceDecision.containsKey(BACK_DUTY)) {
+            results.add(backDutyResult(offenceDecision, referenceData));
+        }
+
+        if (offenceDecision.containsKey(EXCISE_PENALTY)) {
+            results.add(excisePenaltyResult(offenceDecision, referenceData));
+        }
+
         return convertFinancialOffence(offenceDecision, results, referenceData);
     }
 
@@ -254,6 +272,20 @@ public class ReferencedDecisionSavedOffenceConverter {
                 .add(RESULT_TYPE_ID, referenceData.getResultId(FINANCIAL_COSTS_CODE).toString())
                 .add(TERMINAL_ENTRIES, createArrayBuilder()
                         .add(terminalEntry(1, sjpCostsAndSurcharge.getJsonNumber(COSTS).toString()))
+                )
+                .build();
+    }
+
+    private boolean hasReasonForNoCosts(JsonObject costsAndSurcharge) {
+        return StringUtils.isNotBlank(costsAndSurcharge.getString(REASON_FOR_NO_COSTS, null));
+    }
+
+    private JsonObject reasonForNoCosts(JsonObject costsAndSurcharge, CachedReferenceData referenceData) {
+        return createObjectBuilder()
+                .add(CODE, NO_COSTS_CODE)
+                .add(RESULT_TYPE_ID, referenceData.getResultId(NO_COSTS_CODE).toString())
+                .add(TERMINAL_ENTRIES, createArrayBuilder()
+                        .add(terminalEntry(5, costsAndSurcharge.getString(REASON_FOR_NO_COSTS)))
                 )
                 .build();
     }
@@ -318,6 +350,32 @@ public class ReferencedDecisionSavedOffenceConverter {
                 .add(CODE, code)
                 .add(RESULT_TYPE_ID, referenceData.getResultId(code).toString())
                 .add(TERMINAL_ENTRIES, dischargeEntryTerminalEntries);
+    }
+
+    private JsonObjectBuilder backDutyResult(final JsonObject offenceDecision, final CachedReferenceData referenceData) {
+        final JsonArrayBuilder terminalEntries = createArrayBuilder();
+
+        if (offenceDecision.containsKey(BACK_DUTY)) {
+            terminalEntries.add(terminalEntry(1, offenceDecision.getJsonNumber(BACK_DUTY).toString()));
+        }
+
+        return createObjectBuilder()
+                .add(CODE, BACK_DUTY_CODE)
+                .add(RESULT_TYPE_ID, referenceData.getResultId(BACK_DUTY_CODE).toString())
+                .add(TERMINAL_ENTRIES, terminalEntries);
+    }
+
+    private JsonObjectBuilder excisePenaltyResult(final JsonObject offenceDecision, final CachedReferenceData referenceData) {
+        final JsonArrayBuilder terminalEntries = createArrayBuilder();
+
+        if (offenceDecision.containsKey(EXCISE_PENALTY)) {
+            terminalEntries.add(terminalEntry(1, offenceDecision.getJsonNumber(EXCISE_PENALTY).toString()));
+        }
+
+        return createObjectBuilder()
+                .add(CODE, EXCISE_PENALTY_CODE)
+                .add(RESULT_TYPE_ID, referenceData.getResultId(EXCISE_PENALTY_CODE).toString())
+                .add(TERMINAL_ENTRIES, terminalEntries);
     }
 
     private JsonObjectBuilder fineResult(JsonObject offenceDecision, CachedReferenceData referenceData) {
@@ -418,7 +476,7 @@ public class ReferencedDecisionSavedOffenceConverter {
                 .add(RESULT_TYPE_ID, referenceData.getResultId(code).toString())
                 .add(TERMINAL_ENTRIES, createArrayBuilder()
                         .add(terminalEntry(5, sjpLumpSum.getJsonNumber(AMOUNT).toString()))
-                        .add(terminalEntry(6, String.format("Lump sum within %d days", sjpLumpSum.getInt(WITHIN_DAYS))))
+                        .add(terminalEntry(6, String.format("lump sum within %d days", sjpLumpSum.getInt(WITHIN_DAYS))))
                 ).build();
     }
 

@@ -1,5 +1,33 @@
 package uk.gov.moj.sjp.it.test;
 
+import com.google.common.collect.ImmutableMap;
+import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.Test;
+import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
+import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
+import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
+import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
+import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.DecisionHelper;
+import uk.gov.moj.sjp.it.helper.EventListener;
+import uk.gov.moj.sjp.it.model.DecisionCommand;
+import uk.gov.moj.sjp.it.util.JsonHelper;
+import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
+
+import javax.json.JsonObject;
+import javax.ws.rs.core.Response;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.LocalDate.now;
 import static java.time.Month.JULY;
@@ -13,7 +41,6 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.hasLength;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
@@ -36,6 +63,7 @@ import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCom
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SystemDocumentGeneratorStub.pollDocumentGenerationRequests;
@@ -48,38 +76,6 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
 import static uk.gov.moj.sjp.it.util.QueueUtil.sendToQueue;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
-
-import uk.gov.justice.json.schemas.domains.sjp.User;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
-import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
-import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
-import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
-import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
-import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.helper.DecisionHelper;
-import uk.gov.moj.sjp.it.helper.EventListener;
-import uk.gov.moj.sjp.it.model.DecisionCommand;
-import uk.gov.moj.sjp.it.util.DefaultRequests;
-import uk.gov.moj.sjp.it.util.JsonHelper;
-import uk.gov.moj.sjp.it.util.RestPollerWithDefaults;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
-
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
-
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
-
-import com.google.common.collect.ImmutableMap;
-import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
 
 public class CaseCourtExtractIT extends BaseIntegrationTest {
 
@@ -98,6 +94,8 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
     private final String urn = generate(prosecutingAuthority);
     private final LocalDate defendantDateOfBirth = LocalDate.of(1980, JULY, 15);
     private final int adjournmentPeriod = 1;
+    private static final String DEFENDANT_REGION = "croydon";
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     @Before
     public void setUp() throws SQLException {
@@ -108,7 +106,7 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
         stubAssignmentReplicationCommands();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubDocumentGeneratorEndPoint(courtExtract.getBytes());
-        stubProsecutorQuery(prosecutingAuthority.name(), randomUUID());
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
         stubForUserDetails(user);
 
         final CreateCase.CreateCasePayloadBuilder caseBuilder = CreateCase
@@ -122,7 +120,8 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
                 .withOffenceCode(DEFAULT_OFFENCE_CODE)
                 .withUrn(urn);
 
-        stubEnforcementAreaByPostcode(caseBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        stubEnforcementAreaByPostcode(caseBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
         createCaseAndWaitUntilReady(caseBuilder);
     }
 

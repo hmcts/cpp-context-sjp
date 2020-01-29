@@ -48,7 +48,7 @@ public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
                 defendantId, emptyList(), "unavailability", "French", TRUE, "witnessDetails", "witnessDispute", outstandingFines,
                 new PersonalDetails("firstName", "lastName", address,
                         new ContactDetails("homeTelephone", "mobile", "business", "email1@aaa.bbb", "email2@aaa.bbb"),
-                        null, "nationalInsuranceNumber"),
+                        null, "nationalInsuranceNumber", "region"),
                 new FinancialMeans(
                         defendantId,
                         new Income(IncomeFrequency.WEEKLY, BigDecimal.valueOf(2000.22)),

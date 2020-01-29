@@ -4,35 +4,7 @@ import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import uk.gov.moj.cpp.sjp.query.view.converter.results.ABDCResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.ADJOURNSJPResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.ADResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.AEOCResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.CDResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.COLLOResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.DResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.FCOMPResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.FCOSTResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.FOResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.FVSResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.GPTACResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.INSTLResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.LSUMIResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.LSUMResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.NCOLLOResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.NCOSTSResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.NCRResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.NOVSResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.NSPResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.RINSTLResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.RLSUMIResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.RLSUMResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.RSJPResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.ResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.SUMRCCResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.SUMRTOResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.TFOOUTResultCodeConverter;
-import uk.gov.moj.cpp.sjp.query.view.converter.results.WDRNNOTResultCodeConverter;
+import uk.gov.moj.cpp.sjp.query.view.converter.results.*;
 import uk.gov.moj.cpp.sjp.query.view.service.OffenceDataSupplier;
 
 import java.util.Optional;
@@ -46,6 +18,8 @@ import org.slf4j.Logger;
 
 public enum ResultCode {
 
+    FVEBD(fromString("5edd3a3a-8dc7-43e4-96c4-10fed16278ac"), FVEBDResultConverter::new),
+    EXPEN(fromString("fcb26a5f-28cc-483e-b430-d823fac808df"), EXPENConverter::new),
     FO(fromString("969f150c-cd05-46b0-9dd9-30891efcc766"), FOResultCodeConverter::new),
     FCOMP(fromString("ae89b99c-e0e3-47b5-b218-24d4fca3ca53"), FCOMPResultCodeConverter::new),
     FCOST(fromString("76d43772-0660-4a33-b5c6-8f8ccaf6b4e3"), FCOSTResultCodeConverter::new),
@@ -75,6 +49,7 @@ public enum ResultCode {
     RSJP(fromString("60ac9c98-eeec-4e48-823e-cd3f9fadd854"), RSJPResultCodeConverter::new),
     SUMRTO(fromString("3d2c05b3-fcd6-49c2-b5a9-52855be7f90a"), SUMRTOResultCodeConverter::new),
     SJPR(fromString("0149ab92-5466-11e8-9c2d-fa7ae01bbebc"), RSJPResultCodeConverter::new);
+
 
     private static final Logger LOGGER = getLogger(ResultCode.class);
     private UUID resultDefinitionId;

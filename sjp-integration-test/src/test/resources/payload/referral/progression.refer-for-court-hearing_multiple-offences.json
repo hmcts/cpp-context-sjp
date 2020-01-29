@@ -21,6 +21,10 @@
                   "offenceId": "${OFFENCE_ID1}",
                   "notifiedPleaValue": "NO_NOTIFICATION",
                   "notifiedPleaDate": "${PLEA_DATE}"
+                },
+                "offenceFacts" : {
+                  "vehicleRegistration" : "FG59 4FD",
+                  "vehicleMake" : "Ford"
                 }
               },
               {
@@ -37,6 +41,10 @@
                   "offenceId": "${OFFENCE_ID2}",
                   "notifiedPleaValue": "NO_NOTIFICATION",
                   "notifiedPleaDate": "${PLEA_DATE}"
+                },
+                "offenceFacts" : {
+                  "vehicleRegistration" : "FG59 4FD",
+                  "vehicleMake" : "Ford"
                 }
               }
             ],

@@ -37,6 +37,8 @@ import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubWithdrawalReasonsQuery;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
@@ -47,6 +49,7 @@ import static uk.gov.moj.sjp.it.util.EventUtil.eventsByName;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
@@ -92,6 +95,7 @@ public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
 
     private static final String ADJOURN_REASON = "Not enough documents present for decision, waiting for document";
     private CreateCase.CreateCasePayloadBuilder aCase;
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     @Before
     public void setUp() throws Exception {
@@ -100,6 +104,12 @@ public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
                 .withOffenceBuilders(
                         defaultOffenceBuilder().withId(offenceId1),
                         defaultOffenceBuilder().withId(offenceId2));
+        stubEnforcementAreaByPostcode(aCase.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
+
+        final ProsecutingAuthority prosecutingAuthority = aCase.getProsecutingAuthority();
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
         new EventListener()
                 .subscribe(CaseReceived.EVENT_NAME)
                 .run(() -> createCaseForPayloadBuilder(aCase))

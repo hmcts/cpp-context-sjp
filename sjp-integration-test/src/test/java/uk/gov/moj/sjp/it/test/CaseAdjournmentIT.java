@@ -28,11 +28,16 @@ import static uk.gov.moj.sjp.it.helper.SetPleasHelper.requestSetPleas;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubWithdrawalReasonsQuery;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
@@ -45,9 +50,7 @@ import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.ReadyCaseHelper;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
-import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
-import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
 import uk.gov.moj.sjp.it.util.ActivitiHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
@@ -77,6 +80,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private EventListener eventListener = new EventListener();
     private User user = new User("John", "Smith", randomUUID());
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     @Before
     public void setUp() throws SQLException {
@@ -89,8 +93,8 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
         SchedulingStub.stubStartSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();
 
-        ReferenceDataServiceStub.stubWithdrawalReasonsQuery(withdrawalRequestReasonId, "Insufficient Evidence");
-        UsersGroupsStub.stubForUserDetails(user, "ALL");
+        stubWithdrawalReasonsQuery(withdrawalRequestReasonId, "Insufficient Evidence");
+        stubForUserDetails(user, "ALL");
 
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
                 .withDefaults()
@@ -98,7 +102,10 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
                 .withOffenceId(offenceId)
                 .withPostingDate(postingDate);
 
-        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "DEFENDANT_REGION");
 
         CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
         pollUntilCaseReady(caseId);

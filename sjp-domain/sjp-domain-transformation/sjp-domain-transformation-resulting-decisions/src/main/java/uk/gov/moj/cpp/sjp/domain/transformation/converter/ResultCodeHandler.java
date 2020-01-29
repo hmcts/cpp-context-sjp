@@ -47,7 +47,7 @@ public class ResultCodeHandler {
     }
 
     // not required
-    public static void handleResultCodeFVEDB(final JsonObject resultJsonObject,
+    public static void handleResultCodeFVEBD(final JsonObject resultJsonObject,
                                              final JsonObjectBuilder jsonObjectBuilder) {
         throw new UnsupportedOperationException();
     }
@@ -230,7 +230,7 @@ public class ResultCodeHandler {
                         if (e.getInt(INDEX) == 5) {
                             jsonObjectBuilder.add(LUMP_SUM_AMOUNT, new BigDecimal(e.getString(VALUE)));
                         } else if (e.getInt(INDEX) == 6) {
-                            jsonObjectBuilder.add(WITHIN_DAYS, lumpSumWithInDaysMap.get(e.getString(VALUE).toLowerCase()));
+                            jsonObjectBuilder.add(WITHIN_DAYS, lumpSumWithInDaysMap.get(e.getString(VALUE)));
                         }
                     }
                 });

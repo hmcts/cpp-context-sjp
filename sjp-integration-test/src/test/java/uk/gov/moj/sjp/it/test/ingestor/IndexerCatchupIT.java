@@ -9,6 +9,8 @@ import static uk.gov.justice.services.test.utils.common.host.TestHostProvider.ge
 import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
 
 import uk.gov.justice.services.jmx.system.command.client.SystemCommanderClient;
@@ -38,6 +40,7 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
     private final MessageProducerClient privateEventsProducer = new MessageProducerClient();
     private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     private static final String HOST = getHost();
     private static final int PORT = 9990;
@@ -77,7 +80,7 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
         checkThatCaseIsinElasticSearch();
     }
 
-    private void runIndexerCatchup() throws Exception {
+    private void runIndexerCatchup() {
         final JmxParameters jmxParameters = jmxParameters()
                 .withContextName(CONTEXT)
                 .withHost(HOST)
@@ -102,7 +105,8 @@ public class IndexerCatchupIT extends BaseIntegrationTest {
                 .withId(UUID.fromString(CASE_ID))
                 .withProsecutingAuthority(TFL)
                 .withDefendantId(randomUUID());
-
+        stubEnforcementAreaByPostcode(createCase.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
         new EventListener()
                 .subscribe(EVENT_NAME)
                 .run(() -> createCaseForPayloadBuilder(createCase))

@@ -67,6 +67,7 @@ public class StoreOnlinePleaBuilder {
 
     public static final LocalDate PERSON_DOB = LocalDate.of(1981, 10, 1);
     public static final String PERSON_NI_NUMBER = "QQ123456C";
+    public static final String PERSON_REGION = "Blah";
 
     private static final String OUTGOING_DESCRIPTION = "Accommodation";
     private static final BigDecimal OUTGOING_AMOUNT = BigDecimal.valueOf(400.50);
@@ -113,7 +114,7 @@ public class StoreOnlinePleaBuilder {
 
         final PersonalDetails person = new PersonalDetails(firstName, PERSON_LAST_NAME,
                 new Address(address1, PERSON_ADDRESS_2, PERSON_ADDRESS_3, PERSON_ADDRESS_4, PERSON_ADDRESS_5, PERSON_POSTCODE),
-                PERSON_CONTACT_DETAILS, dob, PERSON_NI_NUMBER);
+                PERSON_CONTACT_DETAILS, dob, PERSON_NI_NUMBER, PERSON_REGION);
 
 
         final FinancialMeans financialMeans = new FinancialMeans(null, new Income(IncomeFrequency.MONTHLY, INCOME_AMOUNT),
@@ -148,7 +149,7 @@ public class StoreOnlinePleaBuilder {
                 .collect(toList());
 
         final PersonalDetails person = new PersonalDetails(PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_ADDRESS,
-                PERSON_CONTACT_DETAILS, PERSON_DOB, PERSON_NI_NUMBER);
+                PERSON_CONTACT_DETAILS, PERSON_DOB, PERSON_NI_NUMBER, PERSON_REGION);
         final FinancialMeans financialMeans = new FinancialMeans(null, new Income(IncomeFrequency.MONTHLY, INCOME_AMOUNT),
                 new Benefits(BENEFITS_CLAIMED, BENEFITS_TYPE, BENEFITS_DEDUCT), EMPLOYMENT_STATUS);
         final Employer employer = new Employer(null, EMPLOYER_NAME, EMPLOYER_REFERENCE, EMPLOYER_PHONE, EMPLOYER_ADDRESS);

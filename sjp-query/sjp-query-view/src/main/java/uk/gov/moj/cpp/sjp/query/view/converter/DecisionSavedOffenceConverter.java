@@ -3,40 +3,7 @@ package uk.gov.moj.cpp.sjp.query.view.converter;
 import static java.util.Objects.nonNull;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ADJOURN_TO;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.AMOUNT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COLLECTION_ORDER_MADE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COMPENSATION;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COSTS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COSTS_AND_SURCHARGE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISCHARGE_FOR;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISCHARGE_TYPE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.FINE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.FINE_TRANSFERRED_TO;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.INSTALLMENTS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.INSTALLMENT_PERIOD;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.LUMP_SUM;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.NATIONAL_COURT_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.NATIONAL_COURT_NAME;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.NO_COMPENSATION_REASON;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.OFFENCE_DECISION_INFORMATION;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.OFFENCE_ID;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PAYMENT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PAYMENT_TERMS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PAYMENT_TYPE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PAY_BY_DATE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REASON_FOR_DEDUCTING_FROM_BENEFITS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REASON_FOR_NO_COSTS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REASON_FOR_NO_VICTIM_SURCHARGE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REASON_WHY_NOT_ATTACHED_OR_DEDUCTED;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.RESERVE_TERMS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.START_DATE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.TOTAL_SUM;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.TYPE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.VERDICT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.VICTIM_SURCHARGE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.WITHDRAW_REASON_ID;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.WITHIN_DAYS;
+import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.*;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.CostsAndSurcharge;
 import uk.gov.moj.cpp.sjp.persistence.entity.CourtDetails;
@@ -73,18 +40,31 @@ public class DecisionSavedOffenceConverter {
         if(nonNull(offenceDecisionView.getCompensation())) {
             offenceDecisionBuilder.add(COMPENSATION, offenceDecisionView.getCompensation());
         }
+        checkForFineAndCompensation(offenceDecisionView, offenceDecisionBuilder);
+        checkForBackDutyAndExcisePenalty(offenceDecisionView, offenceDecisionBuilder);
+        if(nonNull(offenceDecisionView.getOffenceId()) || nonNull(offenceDecisionView.getVerdict())) {
+            offenceDecisionBuilder.add(OFFENCE_DECISION_INFORMATION, createArrayBuilder()
+                    .add(covertOffenceDecisionInformation(offenceDecisionView)));
+        }
+        return offenceDecisionBuilder.build();
+    }
+
+    private void checkForBackDutyAndExcisePenalty(OffenceDecisionView offenceDecisionView, JsonObjectBuilder offenceDecisionBuilder) {
+        if(nonNull(offenceDecisionView.getBackDuty())) {
+            offenceDecisionBuilder.add(BACK_DUTY, offenceDecisionView.getBackDuty());
+        }
+        if(nonNull(offenceDecisionView.getExcisePenalty())) {
+            offenceDecisionBuilder.add(EXCISE_PENALTY, offenceDecisionView.getExcisePenalty());
+        }
+    }
+
+    private void checkForFineAndCompensation(OffenceDecisionView offenceDecisionView, JsonObjectBuilder offenceDecisionBuilder) {
         if(nonNull( offenceDecisionView.getNoCompensationReason())) {
             offenceDecisionBuilder.add(NO_COMPENSATION_REASON, offenceDecisionView.getNoCompensationReason());
         }
         if(nonNull(offenceDecisionView.getFine())) {
             offenceDecisionBuilder.add(FINE, offenceDecisionView.getFine());
         }
-
-        if(nonNull(offenceDecisionView.getOffenceId()) || nonNull(offenceDecisionView.getVerdict())) {
-            offenceDecisionBuilder.add(OFFENCE_DECISION_INFORMATION, createArrayBuilder()
-                    .add(covertOffenceDecisionInformation(offenceDecisionView)));
-        }
-        return offenceDecisionBuilder.build();
     }
 
     public JsonObject convertFinancialImposition(FinancialImpositionView financialImpositionView) {
@@ -190,7 +170,7 @@ public class DecisionSavedOffenceConverter {
             installmentsBuilder.add(AMOUNT, installments.getAmount());
         }
         if(nonNull(installments.getPeriod())) {
-            installmentsBuilder.add(INSTALLMENT_PERIOD, installments.getPeriod().toString());
+            installmentsBuilder.add(PERIOD, installments.getPeriod().toString());
         }
         if(nonNull(installments.getStartDate())) {
             installmentsBuilder.add(START_DATE, installments.getStartDate().toString());

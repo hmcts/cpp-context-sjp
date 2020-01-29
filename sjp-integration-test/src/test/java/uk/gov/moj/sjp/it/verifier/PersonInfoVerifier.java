@@ -58,7 +58,8 @@ public class PersonInfoVerifier {
                         defendantBuilder.getContactDetailsBuilder().getEmail(),
                         defendantBuilder.getContactDetailsBuilder().getHome(),
                         defendantBuilder.getContactDetailsBuilder().getMobile()
-                )
+                ),
+                null
         );
 
         return new PersonInfoVerifier(createCasePayloadBuilder.getId(), personalDetails);
@@ -84,7 +85,8 @@ public class PersonInfoVerifier {
                         payloadBuilder.getContactDetailsBuilder().getEmail(),
                         payloadBuilder.getContactDetailsBuilder().getHome(),
                         payloadBuilder.getContactDetailsBuilder().getMobile()
-                )
+                ),
+                null
         );
 
         return new PersonInfoVerifier(caseId, personalDetails);

@@ -489,7 +489,9 @@ public class CaseCourtExtractViewTest {
                 guiltyPleaTakenIntoAccount,
                 compensation,
                 noCompensationReason,
-                fine);
+                fine,
+                null,
+                null);
         if (nonNull(pleaAtDecisionTime)) {
             offenceDecision.setPleaAtDecisionTime(pleaAtDecisionTime.pleaType);
             offenceDecision.setPleaDate(pleaAtDecisionTime.pleaDate);

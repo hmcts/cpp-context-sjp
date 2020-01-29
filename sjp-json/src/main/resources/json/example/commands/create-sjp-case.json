@@ -32,7 +32,12 @@
         "offenceWordingWelsh": "Welsh wording: Committed some offence",
         "prosecutionFacts": "No ticket at the gates, forgery",
         "witnessStatement": "Jumped over the barriers",
-        "compensation": 2.34
+        "compensation": 2.34,
+        "backDuty": 340.30,
+        "backDutyDateFrom": "2018-04-30",
+        "backDutyDateTo": "2018-05-30",
+        "vehicleMake": "Ford",
+        "vehicleRegistrationMark": "FG59 4FD"
       }
     ]
   }

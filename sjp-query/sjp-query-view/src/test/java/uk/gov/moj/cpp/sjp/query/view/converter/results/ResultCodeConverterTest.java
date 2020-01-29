@@ -84,7 +84,7 @@ public abstract class ResultCodeConverterTest {
 
         final ResultCode resultCode = code.get();
 
-        final CaseView caseView = new CaseView(caseDetail);
+        final CaseView caseView = new CaseView(caseDetail, "DVLA");
 
         Employer employer = new Employer(defendantId, "McDonald's", "12345", "020 7998 9300",
                 new Address("14 Tottenham Court Road", "London", "England", "UK", "Greater London", "W1T 1JY"));

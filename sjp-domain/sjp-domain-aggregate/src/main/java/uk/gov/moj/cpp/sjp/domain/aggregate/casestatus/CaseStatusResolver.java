@@ -218,11 +218,11 @@ public class CaseStatusResolver {
                 , PLEA_RECEIVED_READY_FOR_DECISION)
         );
 
-        cases.add(new Scenario("At least one not guilty plea, waiting for dates to avoid",
-                null,
+        cases.add(new Scenario("All offences covered by guilty pleas or withdrawals",
+                PLEADED_GUILTY,
                 factory.getCaseStatusChecker()
-                        .atLeastOnePleaNotGuilty()
-                , PLEA_RECEIVED_NOT_READY_FOR_DECISION)
+                        .allPleasGuiltyOrRequestedToBeWithdrawn()
+                , PLEA_RECEIVED_READY_FOR_DECISION)
         );
 
         cases.add(new Scenario("At least one plea guilty go to court",
@@ -239,12 +239,13 @@ public class CaseStatusResolver {
                 , PLEA_RECEIVED_READY_FOR_DECISION)
         );
 
-        cases.add(new Scenario("All offences covered by guilty pleas or withdrawals",
-                PLEADED_GUILTY,
+        cases.add(new Scenario("At least one not guilty plea, waiting for dates to avoid",
+                null,
                 factory.getCaseStatusChecker()
-                        .allPleasGuiltyOrRequestedToBeWithdrawn()
-                , PLEA_RECEIVED_READY_FOR_DECISION)
+                        .atLeastOnePleaNotGuilty()
+                , PLEA_RECEIVED_NOT_READY_FOR_DECISION)
         );
+
 
         cases.add(new Scenario("At least one guilty and posting day was before 28 days",
                 null,

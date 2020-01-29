@@ -66,7 +66,7 @@ public class FindCasesMissingSjpnTest {
                 new DefendantDetail(UUID.randomUUID(),
                         new PersonalDetails("Mr", "Defen", "Dant",
                                 LocalDate.of(1970, 3,1), Gender.MALE,
-                                "54321", null,null),
+                                "54321", null, null, null),
                         null, 2),
                 new BigDecimal(100), LocalDate.now())));
         cases.add(new CaseSummaryView(new CaseDetail(
@@ -75,7 +75,7 @@ public class FindCasesMissingSjpnTest {
                 new DefendantDetail(UUID.randomUUID(),
                         new PersonalDetails("Mr", "Defen", "Dant",
                                 LocalDate.of(1970, 2,1), Gender.MALE,
-                                "12345", null,null),
+                                "12345", null, null, null),
                         null, 2),
                 new BigDecimal(100), LocalDate.now())));
         return new CasesMissingSjpnView(Arrays.asList("1", "2"), cases, COUNT);

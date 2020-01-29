@@ -48,11 +48,11 @@ public class SUMRTOResultCodeConverterTest extends ResultCodeConverterTest {
     protected JsonArray getExpectedPrompts() {
         return  createArrayBuilder()
                 .add(createObjectBuilder()
-                        .add("promptDefinitionId", "b9e995a4-5c77-4d60-bbb4-9aefabdcc8df")
+                        .add("promptDefinitionId", "a528bbfd-54b8-45d6-bad0-26a3a95eb274")
                         .add("value", "2018-01-01")
                 )
                 .add(createObjectBuilder()
-                        .add("promptDefinitionId", "73cb4625-30dc-4bea-b8d4-380727094aa9")
+                        .add("promptDefinitionId", "bf63b0b7-9d4b-45af-a16d-4aa520e6be35")
                         .add("value", "11:20")
                 )
                 .add(createObjectBuilder()

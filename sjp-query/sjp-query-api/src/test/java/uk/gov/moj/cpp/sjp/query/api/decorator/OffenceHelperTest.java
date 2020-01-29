@@ -4,7 +4,10 @@ import static java.lang.String.format;
 import static java.time.LocalDate.now;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.query.api.util.FileUtil.getFileContentAsJson;
 
 import java.time.LocalDate;
@@ -12,7 +15,9 @@ import java.util.UUID;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
@@ -39,6 +44,30 @@ public class OffenceHelperTest {
         final JsonObject offenceDefinition2 =  getFileContentAsJson(format("offence-reference-data/%s.json",offence2Code));
         assertThat("", Matchers.equalTo(offenceHelper.getMaxFineLevel(offenceDefinition2)));
 
+    }
+
+    @Test
+    public void shouldCalculateIsBackDuty() {
+        final JsonObjectBuilder offenceDefinition = createObjectBuilder();
+        assertThat(offenceHelper.isBackDuty(offenceDefinition.build()), equalTo(false));
+        offenceDefinition.add("backDuty", true);
+        assertThat(offenceHelper.isBackDuty(offenceDefinition.build()), equalTo(true));
+    }
+
+    @Test
+    public void shouldCalculatePenaltyType() {
+        final JsonObjectBuilder offenceDefinition = createObjectBuilder();
+        assertThat(offenceHelper.getPenaltyType(offenceDefinition.build()), equalTo(StringUtils.EMPTY));
+        offenceDefinition.add("penaltyType", "Excise penalty");
+        assertThat(offenceHelper.getPenaltyType(offenceDefinition.build()), equalTo("Excise penalty"));
+    }
+
+    @Test
+    public void shouldCalculateSentencing() {
+        final JsonObjectBuilder offenceDefinition = createObjectBuilder();
+        assertThat(offenceHelper.getSentencing(offenceDefinition.build()), equalTo(StringUtils.EMPTY));
+        offenceDefinition.add("sentencing", "Yes");
+        assertThat(offenceHelper.getSentencing(offenceDefinition.build()), equalTo("Yes"));
     }
 
     @Test

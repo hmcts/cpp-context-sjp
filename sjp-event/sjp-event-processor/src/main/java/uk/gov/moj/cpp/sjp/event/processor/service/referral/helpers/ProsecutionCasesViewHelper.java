@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.NotifiedPleaViewHelper.createNotifiedPleaView;
 
@@ -22,6 +23,7 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.ContactView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.DefendantView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.EmployerOrganisationView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.NotifiedPleaView;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.OffenceFactsView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.OffenceView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.PersonDefendantView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.PersonDetailsView;
@@ -212,8 +214,20 @@ public class ProsecutionCasesViewHelper {
                 .withEndDate(caseFileOffenceDetailsOptional.map(caseFileOffenceDetails -> caseFileOffenceDetails.getString("offenceCommittedEndDate", null))
                         .map(LocalDate::parse)
                         .orElse(null))
+                .withOffenceFacts(createOffenceFactsView(offenceDetails))
                 .build();
 
+    }
+
+    private static OffenceFactsView createOffenceFactsView(final Offence offence) {
+        if(isNotEmpty(offence.getVehicleRegistrationMark()) ||  isNotEmpty(offence.getVehicleMake())) {
+            return OffenceFactsView.builder()
+                    .withVehicleMake(offence.getVehicleMake())
+                    .withVehicleRegistration(offence.getVehicleRegistrationMark())
+                    .build();
+        } else {
+            return null;
+        }
     }
 
     private static AddressView createAddressView(final Address nullableAddress) {

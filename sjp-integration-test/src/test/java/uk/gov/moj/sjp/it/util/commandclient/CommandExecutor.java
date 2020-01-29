@@ -1,6 +1,7 @@
 package uk.gov.moj.sjp.it.util.commandclient;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static uk.gov.moj.sjp.it.Constants.PRIVATE_ACTIVE_MQ_TOPIC;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_ACTIVE_MQ_TOPIC;
 
@@ -44,7 +45,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.PropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-import joptsimple.internal.Strings;
 import lombok.Getter;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 
@@ -338,7 +338,7 @@ public class CommandExecutor {
     }
 
     private static String determineTopic(String eventName) {
-        if (Strings.isNullOrEmpty(eventName)) {
+        if (isEmpty(eventName)) {
             throw new RuntimeException(format("Event topic for %s could not be determined", eventName));
         } else if (eventName.startsWith("public")) {
             return PUBLIC_ACTIVE_MQ_TOPIC;

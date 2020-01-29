@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.sjp.domain.transformation.service;
 import static java.util.Objects.nonNull;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
 import uk.gov.moj.cpp.sjp.domain.transformation.connection.ConnectionProvider;
 import uk.gov.moj.cpp.sjp.domain.transformation.exception.TransformationException;
 

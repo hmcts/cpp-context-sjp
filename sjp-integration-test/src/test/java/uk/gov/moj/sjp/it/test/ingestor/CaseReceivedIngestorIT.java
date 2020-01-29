@@ -7,6 +7,8 @@ import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.AddressVerificationHelper.addressLinesFrom;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
 
@@ -30,6 +32,8 @@ public class CaseReceivedIngestorIT extends BaseIntegrationTest {
 
     private final UUID uuid = randomUUID();
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
+    private static final String NATIONAL_COURT_CODE = "1080";
+
 
     @Before
     public void setUp() throws IOException {
@@ -49,6 +53,9 @@ public class CaseReceivedIngestorIT extends BaseIntegrationTest {
                 .withProsecutingAuthority(TFL)
                 .withDefendantId(randomUUID())
                 .withPostingDate(LocalDate.now());//required or status will randomly change to NO_PLEA_RECEIVED_WAITING_FOR_DECISION
+
+        stubEnforcementAreaByPostcode(createCase.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
 
         new EventListener()
                 .subscribe(EVENT_NAME)

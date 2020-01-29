@@ -19,6 +19,7 @@ public class Person {
     private final String driverNumber;
     private final Address address;
     private final ContactDetails contactDetails;
+    private final String region;
 
     @SuppressWarnings("squid:S00107")
     public Person(
@@ -29,9 +30,10 @@ public class Person {
             final Gender gender,
             final String nationalInsuranceNumber,
             final Address address,
-            final ContactDetails contactDetails) {
+            final ContactDetails contactDetails,
+            final String region) {
         this(title, firstName, lastName, dateOfBirth, gender,
-                nationalInsuranceNumber, null, address, contactDetails);
+                nationalInsuranceNumber, null, address, contactDetails, region);
     }
 
     @JsonCreator
@@ -44,7 +46,8 @@ public class Person {
             @JsonProperty("nationalInsuranceNumber") final String nationalInsuranceNumber,
             @JsonProperty("driverNumber") final String driverNumber,
             @JsonProperty("address") final Address address,
-            @JsonProperty("contactDetails") final ContactDetails contactDetails
+            @JsonProperty("contactDetails") final ContactDetails contactDetails,
+            @JsonProperty("region") final String region
     ) {
         this.title = title;
         this.firstName = firstName;
@@ -55,6 +58,7 @@ public class Person {
         this.driverNumber = driverNumber;
         this.address = address;
         this.contactDetails = contactDetails;
+        this.region = region;
     }
 
     public String getTitle() {
@@ -93,6 +97,10 @@ public class Person {
         return contactDetails;
     }
 
+    public String getRegion() {
+        return region;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -110,13 +118,14 @@ public class Person {
                 DomainUtils.equals(nationalInsuranceNumber, that.nationalInsuranceNumber) &&
                 Objects.equals(driverNumber, that.driverNumber) &&
                 Objects.equals(address, that.address) &&
-                Objects.equals(contactDetails, that.contactDetails);
+                Objects.equals(contactDetails, that.contactDetails) &&
+                DomainUtils.equals(region, that.region);
     }
 
     @Override
     public int hashCode() {
         return DomainUtils.hash(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber,
-                driverNumber, address, contactDetails);
+                driverNumber, address, contactDetails, region);
     }
 
 }

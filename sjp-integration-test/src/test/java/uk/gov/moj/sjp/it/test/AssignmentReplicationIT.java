@@ -7,8 +7,11 @@ import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCom
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 
 import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.DecisionHelper;
@@ -26,6 +29,7 @@ public class AssignmentReplicationIT extends BaseIntegrationTest {
 
     private static final UUID CASE_ID = randomUUID();
     private static final UUID OFFENCE_ID = randomUUID();
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     private static CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
             .withPostingDate(now().minusDays(30)).withId(CASE_ID).withOffenceId(OFFENCE_ID);
@@ -35,9 +39,13 @@ public class AssignmentReplicationIT extends BaseIntegrationTest {
         databaseCleaner.cleanAll();
 
         stubDefaultCourtByCourtHouseOUCodeQuery();
-        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubGetEmptyAssignmentsByDomainObjectId(CASE_ID);
         stubAssignmentReplicationCommands();
+        final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "DEFENDANT_REGION");
 
         createCaseAndWaitUntilReady(CASE_ID, OFFENCE_ID);
     }

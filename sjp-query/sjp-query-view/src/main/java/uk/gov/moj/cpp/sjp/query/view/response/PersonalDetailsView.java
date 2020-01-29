@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
@@ -39,7 +40,7 @@ public class PersonalDetailsView {
             this.dateOfBirth = personalDetails.getDateOfBirth();
             this.gender = personalDetails.getGender();
             this.nationalInsuranceNumber = personalDetails.getNationalInsuranceNumber();
-            this.address = new PersonalAddressView(personalDetails.getAddress());
+            this.address = ofNullable(personalDetails.getAddress()).map(PersonalAddressView::new).orElse(null);
             this.contactDetails = new ContactDetailsView(personalDetails.getContactDetails());
             this.addressChanged = nonNull(personalDetails.getAddressUpdatedAt());
             this.dobChanged = nonNull(personalDetails.getDateOfBirthUpdatedAt());

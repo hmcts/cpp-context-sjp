@@ -3,16 +3,23 @@ package uk.gov.moj.sjp.it.test;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
+import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.commandclient.AssignNextCaseClient;
 import uk.gov.moj.sjp.it.commandclient.CreateCaseClient;
 import uk.gov.moj.sjp.it.commandclient.StartSessionClient;
 import uk.gov.moj.sjp.it.commandclient.UnassignCaseClient;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
+import uk.gov.moj.sjp.it.model.Defendant;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
-import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
-import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.sql.SQLException;
@@ -38,13 +45,19 @@ public class CaseUnassignmentIT extends BaseIntegrationTest {
 
     @Before
     public void setUp() throws SQLException {
-        SchedulingStub.stubStartSjpSessionCommand();
-        SchedulingStub.stubEndSjpSessionCommand();
-        AssignmentStub.stubAssignmentReplicationCommands();
-        ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery(COURT_HOUSE_OU_CODE, "2572");
+        stubStartSjpSessionCommand();
+        stubEndSjpSessionCommand();
+        stubAssignmentReplicationCommands();
+        stubCourtByCourtHouseOUCodeQuery(COURT_HOUSE_OU_CODE, "2572");
         cleaner.cleanAll();
 
-        CreateCaseClient createCase = CreateCaseClient.builder().id(CASE_ID).build();
+        final Defendant defendant = Defendant.builder().build();
+        CreateCaseClient createCase = CreateCaseClient.builder().id(CASE_ID).defendant(defendant).build();
+        final ProsecutingAuthority prosecutingAuthority = createCase.prosecutingAuthority;
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+        stubEnforcementAreaByPostcode(defendant.address.postcode, "1080", "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode("1080", "DEFENDANT_REGION");
+
         createCase.caseReceivedHandler = envelope -> Log.info("Case is created");
         Optional<Response> createCaseResponse = createCase.getExecutor().executeSync();
         assertThat(createCaseResponse.get().getStatus(), equalTo(202));

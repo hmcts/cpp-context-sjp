@@ -24,7 +24,8 @@ public class PersonToPersonalDetailsEntity<P extends Person> implements Converte
                 person.getGender(),
                 person.getNationalInsuranceNumber(),
                 addressToAddressEntityConverter.convert(person.getAddress()),
-                contactDetailsToContactDetailsEntity.convert(person.getContactDetails()));
+                contactDetailsToContactDetailsEntity.convert(person.getContactDetails()),
+                person.getRegion());
     }
 
 }

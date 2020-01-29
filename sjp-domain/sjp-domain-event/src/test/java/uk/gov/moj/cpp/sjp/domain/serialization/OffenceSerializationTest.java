@@ -22,10 +22,12 @@ public class OffenceSerializationTest extends AbstractSerializationTest<Offence>
             LocalDate.of(2009, 2, 2),
             "offence_wording", "prosecution_facts",
             "witness_statement", BigDecimal.TEN,
-            "offence_wording_welsh", 789,
+            "offence_wording_welsh", BigDecimal.valueOf(789),
             LocalDate.of(2010, 3, 3),
-            LocalDate.of(2011, 4, 4));
+            LocalDate.of(2011, 4, 4),
+            "Ford", "FG59 4FD");
 
+    private static final String EXPECTED_FULL_OFFENCE_SERIALIZATION = "{\"id\":\"2159f6e6-aa4e-49e4-b983-6a3673de67f1\",\"offenceSequenceNo\":123,\"libraOffenceCode\":\"libra_offence_code\",\"chargeDate\":\"2010-01-01\",\"libraOffenceDateCode\":456,\"offenceCommittedDate\":\"2009-02-02\",\"offenceWording\":\"offence_wording\",\"prosecutionFacts\":\"prosecution_facts\",\"witnessStatement\":\"witness_statement\",\"compensation\":10,\"offenceWordingWelsh\":\"offence_wording_welsh\",\"backDuty\":789,\"backDutyDateFrom\":\"2010-03-03\",\"backDutyDateTo\":\"2011-04-04\",\"vehicleMake\":\"Ford\",\"vehicleRegistrationMark\":\"FG59 4FD\"}";
 
     private static final Offence FULL_OFFENCE_WITH_LEGACY_OFFENCE_DATE = new Offence(
             UUID.fromString("7884634a-8b25-4650-be3b-7ca39330935f"), 123,
@@ -36,12 +38,12 @@ public class OffenceSerializationTest extends AbstractSerializationTest<Offence>
             "offence_wording", "prosecution_facts",
             "witness_statement", BigDecimal.TEN,
             "offence_wording_welsh",
-            789,
+            BigDecimal.valueOf(789),
             LocalDate.of(2010, 3, 3),
-            LocalDate.of(2011, 4, 4));
+            LocalDate.of(2011, 4, 4),
+            "Ford", "FG59 4FD");
 
-    private static final String EXPECTED_FULL_OFFENCE_SERIALIZATION = "{\"id\":\"2159f6e6-aa4e-49e4-b983-6a3673de67f1\",\"offenceSequenceNo\":123,\"libraOffenceCode\":\"libra_offence_code\",\"chargeDate\":\"2010-01-01\",\"libraOffenceDateCode\":456,\"offenceCommittedDate\":\"2009-02-02\",\"offenceWording\":\"offence_wording\",\"prosecutionFacts\":\"prosecution_facts\",\"witnessStatement\":\"witness_statement\",\"compensation\":10,\"offenceWordingWelsh\":\"offence_wording_welsh\",\"backDuty\":789,\"backDutyDateFrom\":\"2010-03-03\",\"backDutyDateTo\":\"2011-04-04\"}";
-    private static final String EXPECTED_FULL_OFFENCE_WITH_LEGACY_OFFENCE_DATE_SERIALIZATION = "{\"id\":\"7884634a-8b25-4650-be3b-7ca39330935f\",\"offenceSequenceNo\":123,\"libraOffenceCode\":\"libra_offence_code\",\"chargeDate\":\"2010-01-01\",\"libraOffenceDateCode\":456,\"offenceCommittedDate\":\"2009-02-02\",\"offenceWording\":\"offence_wording\",\"prosecutionFacts\":\"prosecution_facts\",\"witnessStatement\":\"witness_statement\",\"compensation\":10,\"offenceWordingWelsh\":\"offence_wording_welsh\",\"backDuty\":789,\"backDutyDateFrom\":\"2010-03-03\",\"backDutyDateTo\":\"2011-04-04\"}";
+    private static final String EXPECTED_FULL_OFFENCE_WITH_LEGACY_OFFENCE_DATE_SERIALIZATION = "{\"id\":\"7884634a-8b25-4650-be3b-7ca39330935f\",\"offenceSequenceNo\":123,\"libraOffenceCode\":\"libra_offence_code\",\"chargeDate\":\"2010-01-01\",\"libraOffenceDateCode\":456,\"offenceCommittedDate\":\"2009-02-02\",\"offenceWording\":\"offence_wording\",\"prosecutionFacts\":\"prosecution_facts\",\"witnessStatement\":\"witness_statement\",\"compensation\":10,\"offenceWordingWelsh\":\"offence_wording_welsh\",\"backDuty\":789,\"backDutyDateFrom\":\"2010-03-03\",\"backDutyDateTo\":\"2011-04-04\",\"vehicleMake\":\"Ford\",\"vehicleRegistrationMark\":\"FG59 4FD\"}";
 
     private static final Offence OFFENCE_WITHOUT_OPTIONAL_FIELDS = new Offence(
             UUID.fromString("2159f6e6-aa4e-49e4-b983-6a3673de67f1"), 123, "libra_offence_code", LocalDate.of(2010, 1, 1), 456,

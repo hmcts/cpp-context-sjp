@@ -80,7 +80,7 @@ public class SetPleasHelper {
 
     public static CreateCase.CreateCasePayloadBuilder createCase(
             final UUID caseId,
-            final UUID defendantId,
+            final CreateCase.DefendantBuilder defendantBuilder,
             final UUID offence1Id,
             final UUID offence2Id,
             final UUID offence3Id,
@@ -88,7 +88,7 @@ public class SetPleasHelper {
         CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
                 .withDefaults()
                 .withId(caseId)
-                .withDefendantId(defendantId)
+                .withDefendantBuilder(defendantBuilder)
                 .withOffenceBuilders(CreateCase.OffenceBuilder.withDefaults().withId(offence1Id),
                         CreateCase.OffenceBuilder.withDefaults().withId(offence2Id),
                         CreateCase.OffenceBuilder.withDefaults().withId(offence3Id))

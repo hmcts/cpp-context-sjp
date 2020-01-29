@@ -35,6 +35,8 @@ public class CaseResultsConstants {
     public static final String ABSOLUTE_DISCHARGE_CODE = "AD";
     public static final String CONDITIONAL_DISCHARGE_CODE = "CD";
     public static final String FINE_CODE = "FO";
+    public static final String BACK_DUTY_CODE = "FVEBD";
+    public static final String EXCISE_PENALTY_CODE = "EXPEN";
 
     public static final String CODE = "code";
     public static final String RESULT_TYPE_ID = "resultTypeId";
@@ -89,6 +91,9 @@ public class CaseResultsConstants {
     public static final String ADJOURN_TO = "adjournTo";
     public static final String DISCHARGE_TYPE = "dischargeType";
 
+    public static final String BACK_DUTY = "backDuty";
+    public static final String EXCISE_PENALTY = "excisePenalty";
+
     public static final String DISCHARGE_FOR = "dischargedFor";
     public static final String COMPENSATION = "compensation";
     public static final String NO_COMPENSATION_REASON = "noCompensationReason";
@@ -114,6 +119,7 @@ public class CaseResultsConstants {
     public static final String PAY_BY_DATE = "payByDate";
     
     public static final String FINANCIAL_COSTS_CODE = "FCOST";
+    public static final String NO_COSTS_CODE = "NCOSTS";
     public static final String COLLECTION_ORDER_CODE = "COLLO";
     public static final String VICTIM_SURCHARGE_CODE = "FVS";
     public static final String NO_VICTIM_SURCHARGE_CODE = "NOVS";

@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import static java.util.Optional.ofNullable;
+
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -7,6 +9,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class CaseSearchResultList {
 
@@ -22,19 +26,25 @@ public class CaseSearchResultList {
 
     public void setName(final UUID caseId, final UUID defendantId, final String newFirstName, final String newLastName,
                         final LocalDate newDateOfBirth, final ZonedDateTime dateAdded) {
-        final Optional<CaseSearchResult> latest = getCurrent();
-
+        final CaseSearchResult newEntry = getNewEntry(caseId, defendantId, newFirstName, newLastName, newDateOfBirth, dateAdded);
         caseSearchResults.forEach(entry -> {
             entry.setDeprecated(true);
-            entry.setCurrentFirstName(newFirstName);
-            entry.setCurrentLastName(newLastName);
+            ofNullable(newFirstName).ifPresent(entry::setCurrentFirstName);
+            ofNullable(newLastName).ifPresent(entry::setCurrentLastName);
         });
-
-        final CaseSearchResult newEntry = new CaseSearchResult(caseId, defendantId, newFirstName, newLastName, newDateOfBirth, dateAdded);
-
-        latest.ifPresent(r -> newEntry.setWithdrawalRequestedDate(r.getWithdrawalRequestedDate()));
-
         caseSearchResults.add(newEntry);
+    }
+
+    private CaseSearchResult getNewEntry(final UUID caseId, final UUID defendantId, final String newFirstName, final String newLastName,
+                                         final LocalDate newDateOfBirth, final ZonedDateTime dateAdded) {
+        final Optional<CaseSearchResult> latest = getCurrent();
+        final CaseSearchResult newEntry = new CaseSearchResult(caseId, defendantId, newFirstName, newLastName, newDateOfBirth, dateAdded);
+        latest.ifPresent(r -> {
+            newEntry.setWithdrawalRequestedDate(r.getWithdrawalRequestedDate());
+            newEntry.setFirstName(ofNullable(newFirstName).orElse(r.getFirstName()));
+            newEntry.setLastName(ofNullable(newLastName).orElse(r.getLastName()));
+        });
+        return newEntry;
     }
 
     public void setDateOfBirth(final LocalDate dateOfBirth) {
@@ -55,8 +65,8 @@ public class CaseSearchResultList {
     public boolean hasNameChanged(final String newFirstName, final String newLastName) {
         return getCurrent()
                 .map(old ->
-                        !newLastName.equalsIgnoreCase(old.getLastName()) ||
-                                !newFirstName.equalsIgnoreCase(old.getFirstName()))
+                        !StringUtils.equalsIgnoreCase(newFirstName, old.getFirstName()) ||
+                                !StringUtils.equalsIgnoreCase(newLastName, old.getLastName()))
                 .orElse(true);
     }
 }

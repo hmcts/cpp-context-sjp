@@ -1,6 +1,8 @@
 package uk.gov.moj.sjp.it.test;
 
 import static java.util.UUID.randomUUID;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
@@ -47,6 +49,10 @@ public class SearchCasesAccessControlIT extends BaseIntegrationTest {
                 .withDefaults()
                 .withProsecutingAuthority(prosecutingAuthority)
                 .withDefendantBuilder(defendantBuilder);
+
+        stubEnforcementAreaByPostcode(prosecutorCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode("1080", "TestRegion");
+
         CreateCase.createCaseForPayloadBuilder(prosecutorCasePayloadBuilder);
 
         return prosecutorCasePayloadBuilder;

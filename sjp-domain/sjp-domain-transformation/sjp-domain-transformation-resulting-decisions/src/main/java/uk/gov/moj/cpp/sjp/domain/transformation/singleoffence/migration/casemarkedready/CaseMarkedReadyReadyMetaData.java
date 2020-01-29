@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.domain.transformation.singleoffence.migration.casemar
 
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 
 public class CaseMarkedReadyReadyMetaData {
 

@@ -30,6 +30,7 @@ public class DefendantBuilder {
     private String driverNumber = RandomStringUtils.random(10);
     private Address address = new Address("street", "suburb", "town", "county", "address5", "AA1 2BB");
     private ContactDetails contactDetails = new ContactDetails("020734777", "020734888", "020734999", "email1@bbb.ccc", "email2@bbb.ccc");
+    private String region = "test region";
 
     private int numPreviousConvictions = 3;
 
@@ -48,7 +49,7 @@ public class DefendantBuilder {
         return new Defendant(id, title, firstName,
                 lastName, dateOfBirth, gender, nationalInsuranceNumber,
                 driverNumber, address, contactDetails, numPreviousConvictions,
-                offences, hearingLanguage, languageNeeds);
+                offences, hearingLanguage, languageNeeds, region);
     }
 
 }

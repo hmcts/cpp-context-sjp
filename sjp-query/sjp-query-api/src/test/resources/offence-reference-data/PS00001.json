@@ -161,5 +161,8 @@
   "title": "Postal service - convey a letter without a licence",
   "legislation": "Contrary to section 6(2) of the Postal Services Act 2000.",
   "offenceStartDate": "2001-03-26",
-  "offenceEndDate": "2011-10-01"
+  "offenceEndDate": "2011-10-01",
+  "backDuty": true,
+  "penaltyType": "Excise penalty",
+  "sentencing": "Yes"
 }

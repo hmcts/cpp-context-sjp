@@ -72,7 +72,7 @@
     ],
     "caseDetails": {
       "reference": "${URN}",
-      "prosecutor": "TFL",
+      "prosecutor": "Transport for London",
       "prosecutorAddress": {
         "line1": "6th Floor Windsor House",
         "line2": "42-50 Victoria Street",

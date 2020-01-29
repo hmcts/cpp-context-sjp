@@ -21,6 +21,10 @@
                   "offenceId": "${OFFENCE_ID1}",
                   "notifiedPleaValue": "NOTIFIED_GUILTY",
                   "notifiedPleaDate": "${PLEA_DATE}"
+                },
+                "offenceFacts" : {
+                  "vehicleRegistration" : "FG59 4FD",
+                  "vehicleMake" : "Ford"
                 }
               }
             ],

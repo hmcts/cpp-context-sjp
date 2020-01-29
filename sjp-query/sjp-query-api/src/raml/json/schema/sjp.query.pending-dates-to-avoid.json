@@ -3,13 +3,46 @@
   "id": "http://justice.gov.uk/json/schemas/domains/sjp/query/pending-dates-to-avoid.json",
   "type": "object",
   "properties": {
-    "caseId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+          },
+          "pleaEntry": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
+          },
+          "referenceNumber": {
+            "type": "string"
+          },
+          "dateOfBirth": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+          },
+          "region": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "caseId"
+        ]
+      }
     },
-    "pleaDate": {
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    "count": {
+      "type": "integer"
     }
   },
-  "required": [ "caseId" ],
-  "additionalProperties": false
+  "required": [
+    "cases"
+  ]
 }

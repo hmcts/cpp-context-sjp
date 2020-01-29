@@ -1,8 +1,11 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import static java.util.Optional.ofNullable;
+
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
@@ -42,13 +45,32 @@ public class OnlinePleaPersonalDetails {
     public OnlinePleaPersonalDetails(final DefendantDetailsUpdated defendantDetailsUpdated) {
         this.firstName = defendantDetailsUpdated.getFirstName();
         this.lastName = defendantDetailsUpdated.getLastName();
-        this.address = new Address(defendantDetailsUpdated.getAddress().getAddress1(), defendantDetailsUpdated.getAddress().getAddress2(), defendantDetailsUpdated.getAddress().getAddress3(),
-                defendantDetailsUpdated.getAddress().getAddress4(), defendantDetailsUpdated.getAddress().getAddress5(), defendantDetailsUpdated.getAddress().getPostcode());
-        this.homeTelephone = defendantDetailsUpdated.getContactDetails().getHome();
-        this.mobile = defendantDetailsUpdated.getContactDetails().getMobile();
-        this.email = defendantDetailsUpdated.getContactDetails().getEmail();
+        if(defendantDetailsUpdated.getAddress()!=null){
+            this.address = new Address(defendantDetailsUpdated.getAddress().getAddress1(), defendantDetailsUpdated.getAddress().getAddress2(), defendantDetailsUpdated.getAddress().getAddress3(),
+                    defendantDetailsUpdated.getAddress().getAddress4(), defendantDetailsUpdated.getAddress().getAddress5(), defendantDetailsUpdated.getAddress().getPostcode());
+        }
+        if (defendantDetailsUpdated.getContactDetails()!=null) {
+            this.homeTelephone = defendantDetailsUpdated.getContactDetails().getHome();
+            this.mobile = defendantDetailsUpdated.getContactDetails().getMobile();
+            this.email = defendantDetailsUpdated.getContactDetails().getEmail();
+        }
         this.dateOfBirth = defendantDetailsUpdated.getDateOfBirth();
         this.nationalInsuranceNumber = defendantDetailsUpdated.getNationalInsuranceNumber();
+    }
+
+    public OnlinePleaPersonalDetails(final DefendantDetail defendantDetail) {
+        ofNullable(defendantDetail.getPersonalDetails()).ifPresent( personalDetails ->  {
+            this.firstName = personalDetails.getFirstName();
+            this.lastName = personalDetails.getLastName();
+            this.address = personalDetails.getAddress();
+            ofNullable(personalDetails.getContactDetails()).ifPresent(contactDetails -> {
+                this.homeTelephone = contactDetails.getHome();
+                this.mobile = contactDetails.getMobile();
+                this.email = contactDetails.getMobile();
+            });
+            this.dateOfBirth = personalDetails.getDateOfBirth();
+            this.nationalInsuranceNumber = personalDetails.getNationalInsuranceNumber();
+        });
     }
 
     public String getFirstName() {

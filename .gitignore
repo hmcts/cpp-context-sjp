@@ -57,3 +57,6 @@ buildContexts.sh
 
 lightning-jenkins.properties
 
+# Mac
+.DS_Store
+

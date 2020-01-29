@@ -4,7 +4,8 @@
   "type": "object",
   "properties": {
     "title": {
-      "enum":["Mr", "Mrs", "Ms", "Miss", "Co"]
+      "type": "string",
+      "maxLength": 35
     },
     "firstName": {
       "type": "string",

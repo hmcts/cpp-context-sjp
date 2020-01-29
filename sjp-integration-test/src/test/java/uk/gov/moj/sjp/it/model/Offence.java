@@ -60,4 +60,9 @@ public class Offence {
     @Builder.Default
     public String backDutyDateTo = "2018-05-01";
 
+    @Builder.Default
+    public String vehicleMake = "Ford";
+
+    @Builder.Default
+    public String vehicleRegistrationMark = "FG59 4FD";
 }

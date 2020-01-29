@@ -20,6 +20,11 @@ public class OffenceToOffenceDetail implements Converter<Offence, OffenceDetail>
                 .withProsecutionFacts(offence.getProsecutionFacts())
                 .withWitnessStatement(offence.getWitnessStatement())
                 .withCompensation(offence.getCompensation())
+                .withBackDuty(offence.getBackDuty())
+                .withBackDutyDateFrom(offence.getBackDutyDateFrom())
+                .withBackDutyDateTo(offence.getBackDutyDateTo())
+                .withVehicleMake(offence.getVehicleMake())
+                .withVehicleRegistrationMark(offence.getVehicleRegistrationMark())
                 .build();
     }
 

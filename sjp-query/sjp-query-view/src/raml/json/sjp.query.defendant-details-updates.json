@@ -9,7 +9,8 @@
       "nameUpdated": true,
       "dateOfBirthUpdated": false,
       "addressUpdated": false,
-      "updatedOn": "2018-12-01"
+      "updatedOn": "2018-12-01",
+      "region": "Cambridge"
     }, {
       "firstName": "Camilla",
       "lastName": "SMITH",
@@ -18,7 +19,8 @@
       "nameUpdated": true,
       "dateOfBirthUpdated": true,
       "addressUpdated": true,
-      "updatedOn": "2018-11-01"
+      "updatedOn": "2018-11-01",
+      "region": "Kent"
     }, {
       "firstName": "Steven",
       "lastName": "GERARD",
@@ -27,7 +29,8 @@
       "nameUpdated": false,
       "dateOfBirthUpdated": false,
       "addressUpdated": true,
-      "updatedOn": "2018-11-11"
+      "updatedOn": "2018-11-11",
+      "region": "sussex"
     }
   ]
 }

@@ -1,29 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea;
 
-import com.google.common.annotations.VisibleForTesting;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.gov.moj.cpp.sjp.domain.*;
-import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseDefendantHandler;
-import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseEmployerHandler;
-import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseLanguageHandler;
-import uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils;
-import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
-import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
-import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
-import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
-import uk.gov.moj.cpp.sjp.domain.plea.Plea;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.sjp.domain.plea.SetPleas;
-import uk.gov.moj.cpp.sjp.event.*;
-
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Stream;
-
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.of;
@@ -36,7 +14,39 @@ import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.event.CaseUpdateRejected.RejectReason.PLEA_ALREADY_SUBMITTED;
-import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
+
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
+import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
+import uk.gov.moj.cpp.sjp.domain.Interpreter;
+import uk.gov.moj.cpp.sjp.domain.Outgoing;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseDefendantHandler;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseEmployerHandler;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseLanguageHandler;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.Offence;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
+import uk.gov.moj.cpp.sjp.domain.plea.Plea;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.domain.plea.SetPleas;
+import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
+import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
+import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
+import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
+import uk.gov.moj.cpp.sjp.event.OutstandingFinesUpdated;
+import uk.gov.moj.cpp.sjp.event.TrialRequested;
+
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+import com.google.common.annotations.VisibleForTesting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -137,23 +147,11 @@ public class OnlinePleaHandler {
                     pleadOnline.getWitnessDetails(), pleadOnline.getWitnessDispute(), createdOn));
         }
 
-        //TODO: we need to query the defendant to see if any of the incoming defendant data is different from the pre-existing defendant data. If no changes, no event
         final PersonalDetails personalDetails = pleadOnline.getPersonalDetails();
         final UUID defendantId = pleadOnline.getDefendantId();
         final boolean updatedByOnlinePlea = true;
-
-        streamBuilder.add(defendantDetailsUpdated()
-                .withCaseId(state.getCaseId())
-                .withDefendantId(defendantId)
-                .withFirstName(personalDetails.getFirstName())
-                .withLastName(personalDetails.getLastName())
-                .withDateOfBirth(personalDetails.getDateOfBirth())
-                .withNationalInsuranceNumber(personalDetails.getNationalInsuranceNumber())
-                .withContactDetails(personalDetails.getContactDetails())
-                .withAddress(personalDetails.getAddress())
-                .withUpdateByOnlinePlea(updatedByOnlinePlea)
-                .withUpdatedDate(createdOn)
-                .build());
+        ofNullable(state.getDefendantDetailsUpdateSummary(personalDetails, updatedByOnlinePlea, createdOn))
+                .ifPresent(streamBuilder::add);
 
         caseDefendantHandler.getDefendantWarningEvents(personalDetails, createdOn, updatedByOnlinePlea, state)
                 .forEach(streamBuilder::add);

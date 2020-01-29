@@ -1,6 +1,12 @@
 package uk.gov.moj.sjp.it.test;
 
 
+import static java.util.UUID.randomUUID;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.UpdateHearingRequirementsHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
@@ -25,6 +31,13 @@ public class UpdateHearingRequirementsIT extends BaseIntegrationTest {
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
         CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
         caseId = createCasePayloadBuilder.getId();
+        final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
+
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "NATIONAL_COURT_CODE", "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode("NATIONAL_COURT_CODE", "TestRegion");
+
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
         defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
     }
 

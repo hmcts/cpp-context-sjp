@@ -49,7 +49,8 @@ public class PersonToPersonalDetailsEntityTest {
                 inputPerson.getGender(),
                 inputPerson.getNationalInsuranceNumber(),
                 mockedAddress,
-                mockedContactDetails);
+                mockedContactDetails,
+                inputPerson.getRegion());
 
         assertTrue(reflectionEquals(outputPersonalDetails, expectedPerson));
     }

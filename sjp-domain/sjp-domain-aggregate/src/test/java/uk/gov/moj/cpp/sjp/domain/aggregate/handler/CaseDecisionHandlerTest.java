@@ -45,11 +45,9 @@ import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.CostsAndSurcharge;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
-import uk.gov.moj.cpp.sjp.domain.decision.imposition.Installments;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.LumpSum;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.Payment;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentTerms;
-import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
@@ -238,8 +236,8 @@ public class CaseDecisionHandlerTest {
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
-                new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true),
-                new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, null, "Insufficient means", false));
+                new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null),
+                new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, null, "Insufficient means", false, null));
 
         final Defendant defendant = new Defendant(new CourtDetails("1080", "Bedfordshire Magistrates' Court"));
         final FinancialImposition financialImposition = new FinancialImposition(
@@ -348,9 +346,9 @@ public class CaseDecisionHandlerTest {
     public void shouldRaiseDecisionRejectedEventWhenDecisionWithPaymentTypeOfAttachedToEarningsDoesNotHaveUpdatedEmployerDetails() {
 
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
-        final List<OffenceDecision> offenceDecisions = newArrayList(
-                new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(10),null, true),
-                new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20),null, true));
+        final Discharge discharge1 = new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(10), null, true, null);
+        final Discharge discharge2 = new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null);
+        final List<OffenceDecision> offenceDecisions = newArrayList(discharge1, discharge2);
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser,
                 offenceDecisions, new FinancialImposition(
@@ -446,7 +444,7 @@ public class CaseDecisionHandlerTest {
                         false);
 
         final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(randomUUID(), createOffenceDecisionInformationList(offenceId1, NO_VERDICT), referralReasonId, "note", 0, courtOptions);
-        final Discharge discharge = new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20),null, true);
+        final Discharge discharge = new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null);
 
         final List<OffenceDecision> offenceDecisions = newArrayList(referForCourtHearing, discharge);
 
@@ -474,7 +472,7 @@ public class CaseDecisionHandlerTest {
                         false);
 
         final Adjourn adjourn = new Adjourn(randomUUID(), createOffenceDecisionInformationList(offenceId1, NO_VERDICT), adjournmentReason, LocalDate.now().plusDays(14));
-        final FinancialPenalty financialPenalty = new FinancialPenalty(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), new BigDecimal(200), new BigDecimal(40), null,true);
+        final FinancialPenalty financialPenalty = new FinancialPenalty(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), new BigDecimal(200), new BigDecimal(40), null, true, null, null);
 
         final List<OffenceDecision> offenceDecisions = newArrayList(adjourn, financialPenalty);
 

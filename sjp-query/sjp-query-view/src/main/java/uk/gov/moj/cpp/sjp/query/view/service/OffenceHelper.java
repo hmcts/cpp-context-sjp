@@ -43,8 +43,12 @@ public class OffenceHelper {
         final JsonObject decision = sourceEnvelope.payloadAsJsonObject();
         if(decision.containsKey(OFFENCES)){
             final OffenceDataSupplier offenceDataSupplier = OffenceDataSupplier.create(sourceEnvelope, caseView, employer, referenceDataService);
-
-            decision.getJsonArray(OFFENCES).getValuesAs(JsonObject.class).forEach(jsonOffence -> createOffence(offencesPayloadBuilder, jsonOffence, offenceDataSupplier));
+            decision.getJsonArray(OFFENCES)
+                    .getValuesAs(JsonObject.class)
+                    .forEach(jsonOffence -> createOffence(
+                            offencesPayloadBuilder,
+                            jsonOffence,
+                            offenceDataSupplier));
         }
         return offencesPayloadBuilder.build();
     }

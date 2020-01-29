@@ -36,6 +36,7 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuer
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralDocumentMetadataQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReasonsQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
@@ -125,6 +126,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
     private UUID offenceId1;
     private UUID offenceId2;
     private UUID offenceId3;
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     @Before
     public void setUp() throws Exception {
@@ -155,7 +157,6 @@ public class CourtReferralIT extends BaseIntegrationTest {
     public void shouldRecordCaseReferralRejection() {
         stubCaseDetails(caseId, "stub-data/prosecutioncasefile.query.case-details-welsh.json");
         createCaseWithSingleOffence(W);
-        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
         addCaseDocumentAndUpdateEmployer();
 
         final String referralRejectionReason = "Test referral rejection reason";
@@ -192,7 +193,6 @@ public class CourtReferralIT extends BaseIntegrationTest {
     public void shouldSendReferToCourtHearingCommandToProgressionContext_NoPlea() {
         stubCaseDetails(caseId, "stub-data/prosecutioncasefile.query.case-details-welsh.json");
         createCaseWithSingleOffence(W);
-        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
         addCaseDocumentAndUpdateEmployer();
 
         startSessionAndRequestAssignment(sessionId, MAGISTRATE, DEFAULT_LONDON_COURT_HOUSE_OU_CODE);
@@ -203,7 +203,6 @@ public class CourtReferralIT extends BaseIntegrationTest {
     public void shouldSendReferToCourtHearingCommandToProgressionContext_WithPlea() {
         stubCaseDetails(caseId, "stub-data/prosecutioncasefile.query.case-details.json");
         createCaseWithSingleOffence(E);
-        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
         addCaseDocumentAndUpdateEmployer();
 
         final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId);
@@ -221,7 +220,6 @@ public class CourtReferralIT extends BaseIntegrationTest {
     public void shouldReferMultipleOffencesForCourtHearing() {
         stubCaseDetails(caseId, "stub-data/prosecutioncasefile.query.case-details-welsh.json");
         createCaseWithMultipleOffences(W);
-        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
         addCaseDocumentAndUpdateEmployer();
 
         final ReferForCourtHearing referForCourtHearingDecision = buildReferForCourtHearingDecision(W, offenceId1, offenceId2);
@@ -304,7 +302,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
     private void createCaseWithSingleOffence(Language language) {
         prosecutingAuthority = ProsecutingAuthority.TFL;
         caseUrn = generate(prosecutingAuthority);
-        stubProsecutorQuery(prosecutingAuthority.name(), PROSECUTOR_ID);
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), PROSECUTOR_ID);
         stubForUserDetails(user, prosecutingAuthority.name());
 
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
@@ -319,6 +317,9 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 .withId(caseId)
                 .withUrn(caseUrn);
 
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "DEFENDANT_REGION");
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+
         new EventListener()
                 .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
                 .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder))
@@ -328,7 +329,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
     private void createCaseWithMultipleOffences(Language language) {
         prosecutingAuthority = ProsecutingAuthority.TVL;
         caseUrn = generate(prosecutingAuthority);
-        stubProsecutorQuery(prosecutingAuthority.name(), PROSECUTOR_ID);
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), PROSECUTOR_ID);
         stubForUserDetails(user, prosecutingAuthority.name());
 
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
@@ -346,6 +347,9 @@ public class CourtReferralIT extends BaseIntegrationTest {
                         .withHearingLanguage(language))
                 .withId(caseId)
                 .withUrn(caseUrn);
+
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "DEFENDANT_REGION");
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
 
         new EventListener()
                 .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)

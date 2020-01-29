@@ -22,6 +22,8 @@ public class CasePendingDatesToAvoidView {
 
     private final LocalDate dateOfBirth;
 
+    private final String region;
+
     public CasePendingDatesToAvoidView(final PendingDatesToAvoid pendingDatesToAvoid) {
         this.caseId = pendingDatesToAvoid.getCaseId();
         this.pleaEntry = pendingDatesToAvoid.getPleaDate();
@@ -30,6 +32,7 @@ public class CasePendingDatesToAvoidView {
         this.address = new PersonalAddressView(pendingDatesToAvoid.getCaseDetail().getDefendant().getPersonalDetails().getAddress());
         this.referenceNumber = pendingDatesToAvoid.getCaseDetail().getUrn();
         this.dateOfBirth = pendingDatesToAvoid.getCaseDetail().getDefendant().getPersonalDetails().getDateOfBirth();
+        this.region = pendingDatesToAvoid.getCaseDetail().getDefendant().getPersonalDetails().getRegion();
     }
 
     public UUID getCaseId() {
@@ -58,5 +61,9 @@ public class CasePendingDatesToAvoidView {
 
     public LocalDate getDateOfBirth() {
         return dateOfBirth;
+    }
+
+    public String getRegion() {
+        return region;
     }
 }

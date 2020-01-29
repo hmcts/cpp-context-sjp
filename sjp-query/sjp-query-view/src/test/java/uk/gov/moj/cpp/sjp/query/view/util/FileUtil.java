@@ -4,9 +4,11 @@ import static org.junit.Assert.fail;
 
 import java.io.StringReader;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -41,5 +43,15 @@ public class FileUtil {
         try (final JsonReader reader = Json.createReader(new StringReader(getFileContent(path, namedPlaceholders)))) {
             return reader.readObject();
         }
+    }
+
+    public static JsonArray getFileContentAsJsonArray(final String path, final Map<String, Object> namedPlaceholders) {
+        try (final JsonReader reader = Json.createReader(new StringReader(getFileContent(path, namedPlaceholders)))) {
+            return reader.readArray();
+        }
+    }
+
+    public static JsonArray getFileContentAsJsonArray(final String path) {
+        return getFileContentAsJsonArray(path, new HashMap<>());
     }
 }

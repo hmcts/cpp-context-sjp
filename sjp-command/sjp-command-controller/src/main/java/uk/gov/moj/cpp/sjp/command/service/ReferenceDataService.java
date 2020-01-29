@@ -26,4 +26,10 @@ public class ReferenceDataService {
         return requester.requestAsAdmin(query).payloadAsJsonObject();
     }
 
+    public JsonObject getLocalJusticeAreas(final String nationalCourtCode){
+        final JsonObject queryParams = createObjectBuilder().add("nationalCourtCode", nationalCourtCode).build();
+        final JsonEnvelope query = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("referencedata.query.local-justice-areas"), queryParams);
+
+        return requester.requestAsAdmin(query).payloadAsJsonObject();
+    }
 }

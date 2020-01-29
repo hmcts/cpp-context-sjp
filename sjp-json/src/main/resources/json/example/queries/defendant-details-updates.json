@@ -11,7 +11,8 @@
       "nameUpdated": true,
       "dateOfBirthUpdated": false,
       "addressUpdated": false,
-      "updatedOn": "2018-08-26T16:39:15.417Z"
+      "updatedOn": "2018-08-26T16:39:15.417Z",
+      "region" : "london"
     }, {
       "firstName": "Camilla",
       "lastName": "SMITH",
@@ -22,7 +23,8 @@
       "nameUpdated": true,
       "dateOfBirthUpdated": true,
       "addressUpdated": true,
-      "updatedOn": "2018-08-26T16:39:15.417Z"
+      "updatedOn": "2018-08-26T16:39:15.417Z",
+      "region" : "sussex"
     }, {
       "firstName": "Steven",
       "lastName": "GERARD",
@@ -33,7 +35,8 @@
       "nameUpdated": false,
       "dateOfBirthUpdated": false,
       "addressUpdated": true,
-      "updatedOn": "2018-08-26T16:39:15.417Z"
+      "updatedOn": "2018-08-26T16:39:15.417Z",
+      "region" : "midlands"
     }
   ]
 }

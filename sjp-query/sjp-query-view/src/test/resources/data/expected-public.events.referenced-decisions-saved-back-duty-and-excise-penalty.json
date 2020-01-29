@@ -1,0 +1,602 @@
+
+{
+  "caseId": "7a5cd9d5-3ea9-40f7-b5ca-04e3ae69db17",
+  "offences": [
+    {
+      "id": "7d566f6c-f7ac-484c-bfb6-38fde2d687da",
+      "results": [
+        {
+          "resultDefinitionId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+          "prompts": [
+            {
+              "promptDefinitionId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+              "value": "40.00"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "5edd3a3a-8dc7-43e4-96c4-10fed16278ac",
+          "prompts": [
+            {
+              "promptDefinitionId": "f7c7c088-f88e-4c28-917c-78571517aca1",
+              "value": "1.0"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "fcb26a5f-28cc-483e-b430-d823fac808df",
+          "prompts": [
+            {
+              "promptDefinitionId": "b3dfed9a-efba-4126-a08d-cf37d18b4563",
+              "value": "2.0"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "615313b5-0647-4d61-b7b8-6b36265d8929",
+          "prompts": [
+            {
+              "promptDefinitionId": "de27ffb3-b7ef-4308-b8c7-ca51ab0c1136",
+              "value": "impracticable or inappropriate"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "ae89b99c-e0e3-47b5-b218-24d4fca3ca53",
+          "prompts": [
+            {
+              "promptDefinitionId": "26985e5b-fe1f-4d7d-a21a-57207c5966e7",
+              "value": "1.50"
+            },
+            {
+              "promptDefinitionId": "af921cf4-06e7-4f6b-a4ea-dcb58aab0dbe",
+              "value": "Driver and Vehicle Licensing Agency"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "76d43772-0660-4a33-b5c6-8f8ccaf6b4e3",
+          "prompts": [
+            {
+              "promptDefinitionId": "db261fd9-c6bb-4e10-b93f-9fd98418f7b0",
+              "value": "100.00"
+            },
+            {
+              "promptDefinitionId": "22ebf965-8a1c-4229-9894-0df7f8117753",
+              "value": "Driver and Vehicle Licensing Agency"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "72dbbb13-011c-49e8-b48e-83e08da7a266",
+      "results": [
+        {
+          "resultDefinitionId": "e866cd11-6073-4fdf-a229-51c9d694e1d0",
+          "prompts": [
+            {
+              "promptDefinitionId": "629a971e-9d7a-4526-838d-0a4cb922b5cb",
+              "value": "20.00"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+          "prompts": [
+            {
+              "promptDefinitionId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+              "value": "30.00"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "9161f3cb-e821-44e5-a9ee-4680b358a037",
+          "prompts": []
+        },
+        {
+          "resultDefinitionId": "76d43772-0660-4a33-b5c6-8f8ccaf6b4e3",
+          "prompts": [
+            {
+              "promptDefinitionId": "db261fd9-c6bb-4e10-b93f-9fd98418f7b0",
+              "value": "80.00"
+            },
+            {
+              "promptDefinitionId": "22ebf965-8a1c-4229-9894-0df7f8117753",
+              "value": "Driver and Vehicle Licensing Agency"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+          "prompts": [
+            {
+              "promptDefinitionId": "ee7d253a-c629-11e8-a355-529269fb1459",
+              "value": "2016-06-15"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "bdb32555-8d55-4dc1-b4b6-580db5132496",
+          "prompts": [
+            {
+              "promptDefinitionId": "a289b1bd-06c8-4da3-b117-0bae6017857c",
+              "value": "Reason"
+            },
+            {
+              "promptDefinitionId": "485f7d22-718c-4f47-bbd5-f8d934417a03",
+              "value": "McDonald's"
+            },
+            {
+              "promptDefinitionId": "eb1d0fdc-2e51-4e98-9f6e-ee0daa14c157",
+              "value": "12345"
+            },
+            {
+              "promptDefinitionId": "86854563-b404-4cd4-9c05-50f1e61a0bfe",
+              "value": "14 Tottenham Court Road"
+            },
+            {
+              "promptDefinitionId": "ef87b9fe-1d9d-46a2-b094-ce5ba24a9835",
+              "value": "London"
+            },
+            {
+              "promptDefinitionId": "df1d55f8-29dd-42d2-8f99-cb4d369cb38b",
+              "value": "England"
+            },
+            {
+              "promptDefinitionId": "d3d8e5dc-4ced-4d57-bcbb-5de8f91a580a",
+              "value": "UK"
+            },
+            {
+              "promptDefinitionId": "a812f1c7-96df-4d8d-9684-25e4e227b2e2",
+              "value": "Greater London"
+            },
+            {
+              "promptDefinitionId": "4ff32fe8-5508-4b7e-8e6f-b3e79763a9fe",
+              "value": "W1T 1JY"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+          "prompts": [
+            {
+              "promptDefinitionId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+              "value": "2 Years"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+          "prompts": [
+            {
+              "promptDefinitionId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+              "value": "3 Months"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+          "prompts": [
+            {
+              "promptDefinitionId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+              "value": "4 Weeks"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "6feb0f2e-8d1e-40c7-af2c-05b28c69e5fc",
+          "prompts": [
+            {
+              "promptDefinitionId": "1d20aad5-9dc2-42a2-9498-5687f3e5ce33",
+              "value": "Reasons"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "a09bbfa0-5dd5-11e8-9c2d-fa7ae01bbebc",
+          "prompts": [
+            {
+              "promptDefinitionId": "c131cab0-5dd6-11e8-9c2d-fa7ae01bbebc",
+              "value": "lump sum 14 days"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "a09bbfa0-5dd5-11e8-9c2d-fa7ae01bbebc",
+          "prompts": [
+            {
+              "promptDefinitionId": "c131cab0-5dd6-11e8-9c2d-fa7ae01bbebc",
+              "value": "lump sum 28 days"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "d6e93aae-5dd7-11e8-9c2d-fa7ae01bbebc",
+          "prompts": [
+            {
+              "promptDefinitionId": "8e235a65-5ea2-4fff-ba3b-6cdb74195436",
+              "value": "10"
+            },
+            {
+              "promptDefinitionId": "1393acda-7a35-4d65-859d-6298e1470cf1",
+              "value": "2"
+            },
+            {
+              "promptDefinitionId": "b487696e-dfc9-4c89-80d3-337a4319e925",
+              "value": "2016-06-15"
+            },
+            {
+              "promptDefinitionId": "f2a61e80-c13e-4f44-8e91-8ce23e85596b",
+              "value": "monthly"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "9ba8f03a-5dda-11e8-9c2d-fa7ae01bbebc",
+          "prompts": [
+            {
+              "promptDefinitionId": "1393acda-7a35-4d65-859d-6298e1470cf1",
+              "value": "8"
+            },
+            {
+              "promptDefinitionId": "f2a61e80-c13e-4f44-8e91-8ce23e85596b",
+              "value": "weekly"
+            },
+            {
+              "promptDefinitionId": "e091af2e-43d0-495d-b3b0-432010358a45",
+              "value": "2016-06-15"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+          "prompts": [
+            {
+              "promptDefinitionId": "ee7d253a-c629-11e8-a355-529269fb1459",
+              "value": "2016-06-15"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a066eec4-88fa-412b-a398-006ac91495ac",
+      "results": [
+        {
+          "resultDefinitionId": "272d1ec2-634b-11e8-adc0-fa7ae01bbebc",
+          "prompts": [
+            {
+              "promptDefinitionId": "1393acda-7a35-4d65-859d-6298e1470cf1",
+              "value": "40.00"
+            },
+            {
+              "promptDefinitionId": "fb4f761c-29d0-4a8e-a947-3debf281dab0",
+              "value": "fortnightly"
+            },
+            {
+              "promptDefinitionId": "e091af2e-43d0-495d-b3b0-432010358a45",
+              "value": "2016-06-15"
+            },
+            {
+              "promptDefinitionId": "11ba492a-e2ad-11e8-9f32-f2801f1b9fd1",
+              "value": "20.00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "504e8db5-ff94-4554-a950-2774ec9ffc1b",
+      "results": [
+        {
+          "resultDefinitionId": "6d76b10c-64c4-11e8-adc0-fa7ae01bbebc",
+          "prompts": [
+            {
+              "promptDefinitionId": "1393acda-7a35-4d65-859d-6298e1470cf1",
+              "value": "100"
+            },
+            {
+              "promptDefinitionId": "f2a61e80-c13e-4f44-8e91-8ce23e85596b",
+              "value": "weekly"
+            },
+            {
+              "promptDefinitionId": "e091af2e-43d0-495d-b3b0-432010358a45",
+              "value": "2016-06-15"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "79760de9-7da4-4849-868c-04ed3c10e339",
+      "results": [
+        {
+          "resultDefinitionId": "f7dfefd2-64c6-11e8-adc0-fa7ae01bbebc",
+          "prompts": [
+            {
+              "promptDefinitionId": "8273d5ba-680e-11e8-adc0-fa7ae01bbebc",
+              "value": "Reason"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "59e1ed70-e2c6-4210-9e95-825b6a123f74",
+      "results": [
+        {
+          "resultDefinitionId": "204fc6b8-d6c9-4fb8-acd0-47d23c087625",
+          "prompts": [
+            {
+              "promptDefinitionId": "042742a1-8d47-4558-9b3e-9f34b358e034",
+              "value": "Reason for not imposing or reducing victim surcharge"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "498460a3-e22a-45a1-b09c-01eb7579a264",
+      "results": [
+        {
+          "resultDefinitionId": "29e02fa1-42ce-4eec-914e-e62508397a16",
+          "prompts": [
+            {
+              "promptDefinitionId": "e263de82-47ca-433a-bb41-cad2e1c5bb72",
+              "value": "Reason for no compensation"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "d7819021-45c9-498f-98f5-834b8db57dc5",
+      "results": [
+        {
+          "resultDefinitionId": "baf94928-04ae-4609-8e96-efc9f081b2be",
+          "prompts": [
+            {
+              "promptDefinitionId": "be2a46db-709d-4e0d-9b63-aeb831564c1d",
+              "value": "Reason"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "1a2f5a59-ab4d-4b73-915a-46a95e151b69",
+      "results": [
+        {
+          "resultDefinitionId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+          "prompts": []
+        }
+      ]
+    },
+    {
+      "id": "b01a8b1d-bf7a-4fc8-9ed2-fe76e7cc7c4b",
+      "results": [
+        {
+          "resultDefinitionId": "9ea0d845-5096-44f6-9ce0-8ae801141eac",
+          "prompts": [
+            {
+              "promptDefinitionId": "6b36e5ff-e116-4dc3-b438-8c02d493959e",
+              "value": "Make payments as ordered"
+            },
+            {
+              "promptDefinitionId": "369b6e22-4678-4b04-9fe9-5bb53bed5067",
+              "value": "Reason"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "9ea0d845-5096-44f6-9ce0-8ae801141eac",
+          "prompts": [
+            {
+              "promptDefinitionId": "6b36e5ff-e116-4dc3-b438-8c02d493959e",
+              "value": "Deductions from benefit"
+            },
+            {
+              "promptDefinitionId": "369b6e22-4678-4b04-9fe9-5bb53bed5067",
+              "value": "Reason"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "9ea0d845-5096-44f6-9ce0-8ae801141eac",
+          "prompts": [
+            {
+              "promptDefinitionId": "6b36e5ff-e116-4dc3-b438-8c02d493959e",
+              "value": "Attachment of earnings"
+            },
+            {
+              "promptDefinitionId": "369b6e22-4678-4b04-9fe9-5bb53bed5067",
+              "value": "Reason"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "f5d0947a-58c9-4ecd-8d92-1cd31bb77965",
+      "results": [
+        {
+          "resultDefinitionId": "615313b5-0647-4d61-b7b8-6b36265d8929",
+          "prompts": [
+            {
+              "promptDefinitionId": "de27ffb3-b7ef-4308-b8c7-ca51ab0c1136",
+              "value": "impracticable or inappropriate"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cafc018a-508c-4181-b7b0-5adac2ea0e0b",
+      "results": [
+        {
+          "resultDefinitionId": "14d66587-8fbe-424f-a369-b1144f1684e3",
+          "prompts": []
+        }
+      ]
+    },
+    {
+      "id": "1331f58c-4a71-46b2-80ac-2008b2b68925",
+      "results": [
+        {
+          "resultDefinitionId": "49939c7c-750f-403e-9ce1-f82e3e568065",
+          "prompts": []
+        }
+      ]
+    },
+    {
+      "id": "75ca9330-2c08-431a-9b13-325ce6eadd6c",
+      "results": [
+        {
+          "resultDefinitionId": "1e96d1a9-9618-4ddd-a925-ca6a0ef86018",
+          "prompts": [
+            {
+              "promptDefinitionId": "5f589095-2986-4d2b-98fa-30ab00f675d4",
+              "value": "Reasons for referring to court"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ca84de08-5168-4fa3-9376-d99366b59a02",
+      "results": [
+        {
+          "resultDefinitionId": "600edfc3-a584-4f9f-a52e-5bb8a99646c1",
+          "prompts": [
+            {
+              "promptDefinitionId": "bca4e07c-17e0-48f1-84f4-7b6ff8bab5e2",
+              "value": "Equivocal plea - Defendant to attend to clarify plea"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "600edfc3-a584-4f9f-a52e-5bb8a99646c1",
+          "prompts": [
+            {
+              "promptDefinitionId": "bca4e07c-17e0-48f1-84f4-7b6ff8bab5e2",
+              "value": "Equivocal plea - For trial"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "600edfc3-a584-4f9f-a52e-5bb8a99646c1",
+          "prompts": [
+            {
+              "promptDefinitionId": "bca4e07c-17e0-48f1-84f4-7b6ff8bab5e2",
+              "value": "Defence request"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "600edfc3-a584-4f9f-a52e-5bb8a99646c1",
+          "prompts": [
+            {
+              "promptDefinitionId": "bca4e07c-17e0-48f1-84f4-7b6ff8bab5e2",
+              "value": "For trial"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "600edfc3-a584-4f9f-a52e-5bb8a99646c1",
+          "prompts": [
+            {
+              "promptDefinitionId": "bca4e07c-17e0-48f1-84f4-7b6ff8bab5e2",
+              "value": "For a case management hearing - Defendant to attend"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "600edfc3-a584-4f9f-a52e-5bb8a99646c1",
+          "prompts": [
+            {
+              "promptDefinitionId": "bca4e07c-17e0-48f1-84f4-7b6ff8bab5e2",
+              "value": "For a case management hearing - No need for defendant to attend"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "600edfc3-a584-4f9f-a52e-5bb8a99646c1",
+          "prompts": [
+            {
+              "promptDefinitionId": "bca4e07c-17e0-48f1-84f4-7b6ff8bab5e2",
+              "value": "For sentencing hearing - defendant to attend"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "600edfc3-a584-4f9f-a52e-5bb8a99646c1",
+          "prompts": [
+            {
+              "promptDefinitionId": "bca4e07c-17e0-48f1-84f4-7b6ff8bab5e2",
+              "value": "For disqualification - defendant to attend"
+            }
+          ]
+        },
+        {
+          "resultDefinitionId": "600edfc3-a584-4f9f-a52e-5bb8a99646c1",
+          "prompts": [
+            {
+              "promptDefinitionId": "bca4e07c-17e0-48f1-84f4-7b6ff8bab5e2",
+              "value": "Case unsuitable for SJP"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5fbc0859-ab18-4d88-b297-8f20e6b8f19e",
+      "results": [
+        {
+          "resultDefinitionId": "f7784e82-20b5-4d2c-b174-6fd57ebf8d7c",
+          "prompts": [
+            {
+              "promptDefinitionId": "185e6a04-8b44-430d-8073-d8d12f69733a",
+              "value": "2016-06-15"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "0d7641e8-8285-483f-a65d-1c5aaeb42560",
+      "results": [
+        {
+          "resultDefinitionId": "0149ab92-5466-11e8-9c2d-fa7ae01bbebc",
+          "prompts": []
+        }
+      ]
+    },
+    {
+      "id": "0fe9c7dd-80f9-4aa7-b568-9a531f590704",
+      "results": [
+        {
+          "resultDefinitionId": "3d2c05b3-fcd6-49c2-b5a9-52855be7f90a",
+          "prompts": [
+            {
+              "promptDefinitionId": "dbbb47c9-2202-4913-9a0d-db0a048bfd5f",
+              "value": "Reasons for referring"
+            },
+            {
+              "promptDefinitionId": "a528bbfd-54b8-45d6-bad0-26a3a95eb274",
+              "value": "2016-06-15"
+            },
+            {
+              "promptDefinitionId": "bf63b0b7-9d4b-45af-a16d-4aa520e6be35",
+              "value": "10AM"
+            },
+            {
+              "promptDefinitionId": "f5699b34-f32f-466e-b7d8-40b4173df154",
+              "value": "LONDON"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

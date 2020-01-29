@@ -159,7 +159,7 @@ public class DecisionSavedToCaseDecisionTest {
                     offenceDecisions.add(new Dismiss(randomUUID(), createOffenceDecisionInformation(randomUUID(), FOUND_NOT_GUILTY)));
                     break;
                 case DISCHARGE:
-                    offenceDecisions.add(new Discharge(randomUUID(),
+                    offenceDecisions.add(Discharge.createDischarge(randomUUID(),
                             createOffenceDecisionInformation(randomUUID(), FOUND_GUILTY),
                             DischargeType.CONDITIONAL,
                             new DischargePeriod(10, WEEK),
@@ -167,7 +167,7 @@ public class DecisionSavedToCaseDecisionTest {
                     ));
                     break;
                 case FINANCIAL_PENALTY:
-                    offenceDecisions.add(new FinancialPenalty(randomUUID(),
+                    offenceDecisions.add(FinancialPenalty.createFinancialPenalty(randomUUID(),
                             createOffenceDecisionInformation(randomUUID(), FOUND_GUILTY),
                             BigDecimal.valueOf(20.3),
                             BigDecimal.valueOf(20.4),
@@ -230,7 +230,8 @@ public class DecisionSavedToCaseDecisionTest {
                         new uk.gov.moj.cpp.sjp.persistence.entity.DischargePeriod(WEEK, 10),
                         true, BigDecimal.valueOf(20.3),
                         null,
-                        DischargeType.CONDITIONAL
+                        DischargeType.CONDITIONAL,
+                        null
                 ));
             case FINANCIAL_PENALTY:
                 final FinancialPenalty financialPenalty = (FinancialPenalty) offenceDecision;
@@ -240,7 +241,8 @@ public class DecisionSavedToCaseDecisionTest {
                         true,
                         BigDecimal.valueOf(20.4),
                         null,
-                        BigDecimal.valueOf(20.3)
+                        BigDecimal.valueOf(20.3),
+                        null, null
                 ));
             default:
                 throw new UnsupportedOperationException();

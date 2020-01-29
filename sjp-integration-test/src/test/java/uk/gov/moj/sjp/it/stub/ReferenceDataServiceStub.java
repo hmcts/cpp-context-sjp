@@ -9,7 +9,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.lang.String.format;
 import static java.net.URLEncoder.encode;
-import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -29,15 +28,14 @@ import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -47,7 +45,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ValueMatchingStrategy;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.IOUtils;
@@ -78,11 +75,10 @@ public class ReferenceDataServiceStub {
 
     public static void stubAllProsecutorsQuery() {
         Arrays.stream(ProsecutingAuthority.values()).forEach(
-                prosecutingAuthority -> stubProsecutorQuery(prosecutingAuthority.name(), randomUUID()));
+                prosecutingAuthority -> stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID()));
     }
 
-
-    public static void stubProsecutorQuery(final String prosecutingAuthorityCode, final UUID prosecutorId) {
+    public static void stubProsecutorQuery(final String prosecutingAuthorityCode, final String prosecutingAuthorityFullName, final UUID prosecutorId) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
 
         final String urlPath = "/referencedata-service/query/api/rest/referencedata/prosecutors";
@@ -96,7 +92,7 @@ public class ReferenceDataServiceStub {
                                         .add(createObjectBuilder()
                                                 .add("id", prosecutorId.toString())
                                                 .add("shortName", prosecutingAuthorityCode)
-                                                .add("fullName", prosecutingAuthorityCode)
+                                                .add("fullName", prosecutingAuthorityFullName)
                                                 .add("address", createObjectBuilder()
                                                         .add("address1", "6th Floor Windsor House")
                                                         .add("address2", "42-50 Victoria Street")
@@ -174,6 +170,25 @@ public class ReferenceDataServiceStub {
                         .withBody(response.toString())));
     }
 
+    public static void stubOffenceFineLevelsQuery(final int fineLevel, final BigDecimal maxValue) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+
+        final JsonObject response = createObjectBuilder().add("fineLevels", createArrayBuilder()
+                .add(createObjectBuilder()
+                        .add("fineLevel", fineLevel)
+                        .add("maxValue", maxValue)))
+                .build();
+
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/offence-fine-levels";
+        final String mediaType = "application/vnd.reference-data.offence-fine-levels+json";
+
+        stubFor(get(urlPathEqualTo(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(ACCEPT, mediaType)
+                        .withBody(response.toString())));
+    }
+
     public static void stubWithdrawalReasonsQuery(final UUID withdrawalReasonId, final String withdrawalReason) {
         stubWithdrawalReasonsQuery(ImmutableMap.of(withdrawalReasonId, withdrawalReason));
     }
@@ -230,6 +245,35 @@ public class ReferenceDataServiceStub {
                             .withBody(stubbedResponse.toString())));
         } catch (UnsupportedEncodingException e) {
             throw new IllegalArgumentException(format("Not able to URL encode postcode: %s", postCode), e);
+        }
+    }
+
+    public static void stubRegionByPostcode(final String nationalCourtCode, final String region) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/local-justice-areas";
+
+        final JsonObject localJusticeArea = createObjectBuilder()
+                .add("nationalCourtCode", nationalCourtCode)
+                .add("region", region)
+                .build();
+
+        final JsonArray localJusticeAreaArray = createArrayBuilder()
+                .add(localJusticeArea)
+                .build();
+
+        final JsonObject stubbedResponse = createObjectBuilder()
+                .add("localJusticeAreas", localJusticeAreaArray)
+                .build();
+
+        try {
+            stubFor(get(urlPathEqualTo(urlPath))
+                    .withQueryParam("nationalCourtCode", equalTo(encode(nationalCourtCode, UTF_8.name())))
+                    .willReturn(aResponse().withStatus(SC_OK)
+                            .withHeader(ID, randomUUID().toString())
+                            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                            .withBody(stubbedResponse.toString())));
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException(format("Not able to URL encode nationalCourtCode: %s", nationalCourtCode), e);
         }
     }
 

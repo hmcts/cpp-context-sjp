@@ -13,7 +13,6 @@ import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferredForFutureSJPSession;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferredToOpenCourt;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
-import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.persistence.entity.AdjournOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.DischargeOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.DischargePeriod;
@@ -84,7 +83,8 @@ public class OffenceDecisionConverter implements OffenceDecisionVisitor {
                 discharge.getGuiltyPleaTakenIntoAccount(),
                 discharge.getCompensation(),
                 discharge.getNoCompensationReason(),
-                discharge.getDischargeType());
+                discharge.getDischargeType(),
+                discharge.getBackDuty());
 
         entities = singletonList(dischargeOffenceDecision);
     }
@@ -118,7 +118,9 @@ public class OffenceDecisionConverter implements OffenceDecisionVisitor {
                 financialPenalty.getGuiltyPleaTakenIntoAccount(),
                 financialPenalty.getCompensation(),
                 financialPenalty.getNoCompensationReason(),
-                financialPenalty.getFine());
+                financialPenalty.getFine(),
+                financialPenalty.getBackDuty(),
+                financialPenalty.getExcisePenalty());
 
         entities = singletonList(financialPenaltyOffenceDecision);
     }
@@ -149,4 +151,5 @@ public class OffenceDecisionConverter implements OffenceDecisionVisitor {
                         offenceDecisionInformation.getVerdict()))
                 .collect(toList());
     }
+
 }

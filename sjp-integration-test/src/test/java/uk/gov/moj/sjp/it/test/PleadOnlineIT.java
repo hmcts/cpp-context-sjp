@@ -10,6 +10,7 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static javax.json.Json.*;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
@@ -47,7 +48,9 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostc
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubHearingTypesQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReasonsQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.COURT_ADMINISTRATORS_GROUP;
@@ -62,6 +65,7 @@ import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
@@ -82,6 +86,8 @@ import uk.gov.moj.sjp.it.helper.SetPleasHelper;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
+import uk.gov.moj.sjp.it.util.Defaults;
+import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 
@@ -95,7 +101,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
@@ -105,6 +110,7 @@ import com.jayway.jsonpath.ReadContext;
 import com.jayway.restassured.path.json.JsonPath;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -121,7 +127,10 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_finances_response.json";
     private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_AND_OUTGOINGS_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_finances_and_outgoings_response.json";
     private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_OUTGOINGS_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_outgoings_response.json";
+    private static final String TEMPLATE_PLEA_NOT_GUILTY_WITH_CHANGED_DETAILS_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_with_changed_details.json";
     private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_finances_case_response.json";
+    private static final String TEMPLATE_PLEA_NOT_GUILTY_WITH_CHANGED_DETAILS_CASE_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_with_changed_details_case_response.json";
+    private static final String DEFENDANT_DETAIL_UPDATES_CONTENT_TYPE = "application/vnd.sjp.query.defendant-details-updates+json";
     private static final String ENGLISH_TEMPLATE_ID = "07d1f043-6052-4d18-adce-58678d0e7018";
     private static final Set<UUID> DEFAULT_STUBBED_USER_ID = singleton(USER_ID);
     private EmployerHelper employerHelper;
@@ -137,6 +146,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     private static final UUID HEARING_TYPE_ID = fromString("06b0c2bf-3f98-46ed-ab7e-56efaf9ecced");
     private static final String HEARING_DESCRIPTION = "Plea & Trial Preparation";
+    private static final String DEFENDANT_REGION = "croydon";
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     @Before
     public void setUp() throws Exception {
@@ -146,7 +157,14 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                 CreateCase.CreateCasePayloadBuilder
                         .withDefaults()
                         .withOffenceId(offenceId);
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
+
         CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
+
+        final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
         pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId());
 
         employerHelper = new EmployerHelper();
@@ -189,7 +207,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
         return new PersonalDetails(title, firstName, lastName, LocalDate.parse(dateOfBirth), gender, nationalInsuranceNumber,
                 new Address(address1, address2, address3, address4, address5, postcode),
-                new ContactDetails(email, homeNumber, mobileNumber)
+                new ContactDetails(email, homeNumber, mobileNumber),
+                null
         );
     }
 
@@ -250,12 +269,12 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final PleaType pleaType2 = NOT_GUILTY;
         final PleaType pleaType3 = GUILTY;
         final UUID caseId = randomUUID();
-        final UUID defendantId = randomUUID();
+        final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder.withDefaults();
         final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
 
-        this.createCasePayloadBuilder = SetPleasHelper.createCase(caseId, defendantId, offenceId1, offenceId2, offenceId3, postingDate);
+        this.createCasePayloadBuilder = SetPleasHelper.createCase(caseId, defendantBuilder, offenceId1, offenceId2, offenceId3, postingDate);
 
-        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId, defendantId)) {
+        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId, defendantBuilder.getId())) {
             final Map<String, String> values = new HashMap<>();
             values.put("offenceId1", offenceId1.toString());
             values.put("offenceId2", offenceId2.toString());
@@ -286,7 +305,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
             caseSearchResultHelper.verifyPleaReceivedDate();
 
             //verify online-plea
-            final Response response = getOnlinePlea(caseId.toString(), defendantId.toString(), USER_ID);
+            final Response response = getOnlinePlea(caseId.toString(), defendantBuilder.getId().toString(), USER_ID);
             if (response.getStatus() != OK.getStatusCode()) {
                 fail("Polling interrupted, please fix the error before continue. Status code: " + response.getStatus());
             }
@@ -304,6 +323,14 @@ public class PleadOnlineIT extends BaseIntegrationTest {
             assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("plea"), equalTo(pleaType3.name()));
             assertFalse(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).has("mitigation"));
             assertTrue(defendantsPlea.getJSONObject("pleaDetails").getBoolean("outstandingFines"));
+
+            final JsonObject updatedDefendantDetails = getUpdatedDefendantDetails();
+            final boolean resultsContainUpdatedFirstNameValue = updatedDefendantDetails
+                    .getJsonArray("defendantDetailsUpdates")
+                    .getValuesAs(JsonObject.class)
+                    .stream()
+                    .anyMatch(e -> e.getString("firstName").equalsIgnoreCase("Testy"));
+            assertThat(resultsContainUpdatedFirstNameValue, is(true));
         }
     }
 
@@ -352,7 +379,6 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         stubForUserDetails(legalAdviser);
         stubReferralReasonsQuery(REFERRAL_REASON_ID, HEARING_CODE, REFERRAL_REASON);
         stubHearingTypesQuery(HEARING_TYPE_ID.toString(), HEARING_CODE, HEARING_DESCRIPTION);
-        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
         startSession(sjpSessionId, legalAdviser.getUserId(), DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
         requestCaseAssignment(sjpSessionId, legalAdviser.getUserId());
 
@@ -416,6 +442,23 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
         verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_CASE_RESPONSE);
         verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_OUTGOINGS_RESPONSE, notGuilty);
+    }
+
+    @Test
+    public void shouldPleaNotGuiltyAndUpdateDefendantDetails() {
+        final PleaType notGuilty = NOT_GUILTY;
+        final JSONObject pleaPayload = getOnlinePleaPayload(notGuilty);
+        pleaPayload.remove("outgoings");
+        pleaPayload.getJSONObject("personalDetails").put("firstName", "Changy");
+        pleaPayload.getJSONObject("personalDetails").put("nationalInsuranceNumber", "SR569876FD");
+
+        assertThat(pleaPayload.has("financialMeans"), is(true));
+        assertThat(pleaPayload.has("outgoings"), is(false));
+
+        final JsonPath response = pleadOnline(pleaPayload);
+
+        verifyResponseCase(response, TEMPLATE_PLEA_NOT_GUILTY_WITH_CHANGED_DETAILS_CASE_RESPONSE);
+        verifyResponseOnlinePlea(TEMPLATE_PLEA_NOT_GUILTY_WITH_CHANGED_DETAILS_RESPONSE, notGuilty);
     }
 
     @Test
@@ -685,13 +728,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                 withJsonPath("$.personalDetails.mobile", equalTo(personContactDetails.getString("mobile"))),
                 withJsonPath("$.personalDetails.email", equalTo(personContactDetails.getString("email"))),
                 withJsonPath("$.personalDetails.dateOfBirth", equalTo(person.getString("dateOfBirth"))),
-                withJsonPath("$.personalDetails.nationalInsuranceNumber", equalTo(person.getString("nationalInsuranceNumber"))),
-                withJsonPath("$.personalDetails.address.address1", equalTo(personAddress.getString("address1"))),
-                withJsonPath("$.personalDetails.address.address2", equalTo(personAddress.getString("address2"))),
-                withJsonPath("$.personalDetails.address.address3", equalTo(personAddress.getString("address3"))),
-                withJsonPath("$.personalDetails.address.address4", equalTo(personAddress.getString("address4"))),
-                withJsonPath("$.personalDetails.address.address5", equalTo(personAddress.getString("address5"))),
-                withJsonPath("$.personalDetails.address.postcode", equalTo(personAddress.getString("postcode")))
+                withJsonPath("$.personalDetails.nationalInsuranceNumber", equalTo(person.getString("nationalInsuranceNumber")))
         ));
 
         if (expectToHaveFinances) {
@@ -790,7 +827,17 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     private JsonObject toJsonObject(String response) {
-        return Json.createReader(new StringReader(response)).readObject();
+        return createReader(new StringReader(response)).readObject();
+    }
+
+    private JsonObject getUpdatedDefendantDetails() {
+        final Response response = HttpClientUtil.makeGetCall(
+                "/defendant-details-updates?limit=" + Integer.MAX_VALUE,
+                DEFENDANT_DETAIL_UPDATES_CONTENT_TYPE,
+                Defaults.DEFAULT_USER_ID);
+        assertThat(response.getStatus(), Matchers.equalTo(Response.Status.OK.getStatusCode()));
+
+        return createReader(new StringReader(response.readEntity(String.class))).readObject();
     }
 
 }

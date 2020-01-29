@@ -1,6 +1,7 @@
 package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.text.MessageFormat.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -17,18 +18,24 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
+import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
@@ -62,18 +69,25 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
     private final UUID caseIdOne = randomUUID();
     private final UUID caseIdTwo = randomUUID();
     private final UUID tvlUserUid = randomUUID();
+    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
 
     @Before
     public void setUp() {
+
+        createCasePayloadBuilder = withDefaults();
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode("1080", "TestRegion");
+
         new EventListener()
                 .subscribe(CaseReceived.EVENT_NAME)
-                .run(() -> createCaseForPayloadBuilder(withDefaults().withId(caseIdOne)));
+                .run(() -> createCaseForPayloadBuilder(createCasePayloadBuilder.withId(caseIdOne)));
 
         new EventListener()
                 .subscribe(CaseReceived.EVENT_NAME)
                 .run(() -> createCaseForPayloadBuilder(withDefaults().withId(caseIdTwo)));
 
         stubForUserDetails(tvlUserUid, ProsecutingAuthority.TVL);
+        stubProsecutorQuery(TFL.name(), TFL.getFullName(), randomUUID());
     }
 
     @Test
@@ -86,6 +100,53 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
                 withJsonPath("$.defendant.personalDetails.nameChanged", is(true)),
                 withJsonPath("$.defendant.personalDetails.dobChanged", is(true)),
                 withJsonPath("$.defendant.personalDetails.addressChanged", is(true))));
+    }
+
+    @Test
+    public void shouldAllowNonStandardTitle() {
+        UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults().withTitle("Mister");
+
+        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder);
+
+        CasePoller.pollUntilCaseByIdIsOk(caseIdOne, allOf(
+                withJsonPath("$.defendant.personalDetails.nameChanged", is(true)),
+                withJsonPath("$.defendant.personalDetails.dobChanged", is(true)),
+                withJsonPath("$.defendant.personalDetails.addressChanged", is(true)),
+                withJsonPath("$.defendant.personalDetails.title", is("Mister"))
+        ));
+    }
+
+    @Test
+    public void shouldAllowEmptyTitle() {
+        UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults().withTitle(null);
+
+        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder);
+
+        CasePoller.pollUntilCaseByIdIsOk(caseIdOne, allOf(
+                withJsonPath("$.defendant.personalDetails.nameChanged", is(true)),
+                withJsonPath("$.defendant.personalDetails.dobChanged", is(true)),
+                withJsonPath("$.defendant.personalDetails.addressChanged", is(true)),
+                withoutJsonPath("$.defendant.personalDetails.title")
+        ));
+    }
+
+    @Test
+    public void shouldNotChangeNameOrDobIfThereAreNoUpdates() {
+        UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder
+                .withDefaults()
+                .withLastName("LLOYD")
+                .withDateOfBirth(LocalDates.from("1980-07-15"));
+
+        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder);
+
+        CasePoller.pollUntilCaseByIdIsOk(caseIdOne, allOf(
+                withJsonPath("$.defendant.personalDetails.nameChanged", is(false)),
+                withJsonPath("$.defendant.personalDetails.dobChanged", is(false)),
+                withJsonPath("$.defendant.personalDetails.addressChanged", is(true)),
+                withJsonPath("$.defendant.personalDetails.firstName", is(this.createCasePayloadBuilder.getDefendantBuilder().getFirstName())),
+                withJsonPath("$.defendant.personalDetails.lastName", is(this.createCasePayloadBuilder.getDefendantBuilder().getLastName())),
+                withJsonPath("$.defendant.personalDetails.dateOfBirth", is(LocalDates.to(this.createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth())))
+        ));
     }
 
     @Test

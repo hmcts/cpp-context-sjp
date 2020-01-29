@@ -72,15 +72,15 @@ public class INSTLResultCodeConverterTest extends ResultCodeConverterTest {
     protected JsonArray getExpectedPrompts() {
         return  createArrayBuilder()
                 .add(createObjectBuilder()
-                        .add("promptDefinitionId", "be5a912b-f198-46bb-bae6-ffd0f722c689")
+                        .add("promptDefinitionId", "1393acda-7a35-4d65-859d-6298e1470cf1")
                         .add("value", instalmentAmountTerminalEntry)
                 )
                 .add(createObjectBuilder()
-                        .add("promptDefinitionId", "61c189f1-84b8-4d0e-a6d8-f0c2711d8139")
+                        .add("promptDefinitionId", "f2a61e80-c13e-4f44-8e91-8ce23e85596b")
                         .add("value", frequencyTerminalEntry)
                 )
                 .add(createObjectBuilder()
-                        .add("promptDefinitionId", "3dd7663e-64c5-11e8-adc0-fa7ae01bbebc")
+                        .add("promptDefinitionId", "e091af2e-43d0-495d-b3b0-432010358a45")
                         .add("value", startDateTerminalEntry)
                 )
                 .build();

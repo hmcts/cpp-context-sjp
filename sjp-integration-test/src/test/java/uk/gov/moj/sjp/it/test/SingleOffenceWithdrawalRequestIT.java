@@ -17,14 +17,19 @@ import static uk.gov.moj.sjp.it.command.CreateCase.OffenceBuilder.defaultOffence
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper.assertCaseQueryDoesNotReturnWithdrawalReasons;
 import static uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper.assertCaseQueryReturnsWithdrawalReasons;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.util.EventUtil.eventsByName;
 
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequestReasonChanged;
 import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequested;
+import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
@@ -47,12 +52,22 @@ public class SingleOffenceWithdrawalRequestIT extends BaseIntegrationTest {
     private final UUID userId = randomUUID();
     private final UUID caseId = randomUUID();
     private final UUID offenceId = randomUUID();
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     @Before
     public void setUp() {
+        final CreateCase.CreateCasePayloadBuilder casePayloadBuilder = defaultCaseBuilder().withId(caseId).withOffenceBuilder(defaultOffenceBuilder().withId(offenceId));
+        final ProsecutingAuthority prosecutingAuthority = casePayloadBuilder.getProsecutingAuthority();
+
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+        stubEnforcementAreaByPostcode(casePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
+
         new EventListener()
                 .subscribe(CaseReceived.EVENT_NAME)
-                .run(() -> createCaseForPayloadBuilder(defaultCaseBuilder().withId(caseId).withOffenceBuilder(defaultOffenceBuilder().withId(offenceId))))
+                .run(() -> {
+                    createCaseForPayloadBuilder(casePayloadBuilder);
+                })
                 .popEvent(CaseReceived.EVENT_NAME);
         ReferenceDataServiceStub.stubWithdrawalReasonsQuery(withdrawalReasons);
     }

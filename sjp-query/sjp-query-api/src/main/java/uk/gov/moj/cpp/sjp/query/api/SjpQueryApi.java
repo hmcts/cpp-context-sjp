@@ -16,6 +16,7 @@ import uk.gov.moj.cpp.sjp.query.api.decorator.DocumentMetadataDecorator;
 import uk.gov.moj.cpp.sjp.query.api.decorator.OffenceDecorator;
 import uk.gov.moj.cpp.sjp.query.api.helper.SjpQueryHelper;
 import uk.gov.moj.cpp.sjp.query.api.service.SjpVerdictService;
+import uk.gov.moj.cpp.sjp.query.service.OffenceFineLevels;
 import uk.gov.moj.cpp.sjp.query.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.query.service.WithdrawalReasons;
 
@@ -56,9 +57,11 @@ public class SjpQueryApi {
             return caseResponse;
         } else {
             final WithdrawalReasons withdrawalReasons = new WithdrawalReasons(referenceDataService, query);
+            final OffenceFineLevels offenceFineLevels = new OffenceFineLevels(referenceDataService, query);
+
             return enveloper.withMetadataFrom(caseResponse, caseResponse.metadata().name())
                     .apply(decisionDecorator.decorate(
-                            offenceDecorator.decorateAllOffences(caseResponse.payloadAsJsonObject(), query, withdrawalReasons), query, withdrawalReasons));
+                            offenceDecorator.decorateAllOffences(caseResponse.payloadAsJsonObject(), query, withdrawalReasons, offenceFineLevels), query, withdrawalReasons));
         }
     }
 

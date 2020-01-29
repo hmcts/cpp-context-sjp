@@ -5,14 +5,18 @@ import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static uk.gov.moj.cpp.sjp.event.CaseReceived.EVENT_NAME;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.command.UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.CasePredicate.casePayloadContains;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearchWithPredicate;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
@@ -39,11 +43,11 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
     private static final String LABEL_TITLE = "title";
     private static final String LABEL_FIRST_NAME = "firstName";
     private static final String _LABEL_LAST_NAME = "lastName";
-    private static final String INDEX_LABEL = "index";
     private static final String TITLE = "Mr";
     private static final String FIRST_NAME = "Jonathan";
     private static final String LAST_NAME = "Alpanso";
     private static final String POST_CODE = "IG6 1JY";
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     private final UUID caseIdOne = randomUUID();
     private ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
@@ -100,9 +104,14 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
     }
 
     private void pushDefendantDetailsUpdatedEvent(final UpdateDefendantDetails.DefendantDetailsPayloadBuilder builder) {
+        CreateCase.CreateCasePayloadBuilder createCase = CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseIdOne);
+        final ProsecutingAuthority prosecutingAuthority = createCase.getProsecutingAuthority();
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+        stubEnforcementAreaByPostcode(createCase.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
         new EventListener()
-                .subscribe(EVENT_NAME)
-                .run(() -> createCaseForPayloadBuilder(CreateCase.CreateCasePayloadBuilder.withDefaults().withId(caseIdOne)));
+                .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
+                .run(() -> createCaseForPayloadBuilder(createCase));
 
         final UUID defendantId = UUID.fromString(pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id"));
         updateDefendantDetailsForCaseAndPayload(caseIdOne, defendantId, builder);
@@ -127,6 +136,8 @@ public class DefendantDetailUpdatedIngestorIT extends BaseIntegrationTest {
                 .withAddress4("US")
                 .withAddress5("New London")
                 .withPostcode(POST_CODE);
+        stubEnforcementAreaByPostcode(POST_CODE, NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+
 
         return UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults()
                 .withTitle(TITLE)

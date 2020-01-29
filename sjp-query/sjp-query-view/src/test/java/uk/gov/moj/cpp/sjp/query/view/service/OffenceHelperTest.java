@@ -123,7 +123,7 @@ public class OffenceHelperTest {
         caseDetail.setDefendant(defendantDetail);
 
         //final CaseDetail caseDetail1 = readJsonFromFile("data/sjp.query.case.json", CaseDetail.class);
-        caseView = new CaseView(caseDetail);//readJsonFromFile("data/sjp.query.case.json", CaseView.class);
+        caseView = new CaseView(caseDetail, "DVLA");//readJsonFromFile("data/sjp.query.case.json", CaseView.class);
         employer = new Employer(defendantId, "McDonald's", "12345", "020 7998 9300",
                 new Address("14 Tottenham Court Road", "London", "England", "UK", "Greater London", "W1T 1JY"));
 //readJsonFromFile("data/sjp.query.employer.json", Employer.class);
@@ -138,12 +138,8 @@ public class OffenceHelperTest {
 
     @Test
     public void shouldNotPopulateOffencesForincorrectResultCode(){
-
         final JsonObjectBuilder eventPayloadBuilder = createObjectBuilder().add(CASE_ID, caseId.toString());
-
-
         final JsonObject decision = readJsonFromFile("data/resulting.events.referenced-decisions-saved-incorrect-result-code.json");
-
 
         final JsonObjectBuilder metadataBuilder = createObjectBuilder()
                 .add("id", randomUUID().toString())
@@ -169,18 +165,14 @@ public class OffenceHelperTest {
 
     @Test
     public void shouldPopulateOffencesCorrectly(){
-
         final JsonObjectBuilder eventPayloadBuilder = createObjectBuilder().add(CASE_ID, caseId.toString());
-
-
         final JsonObject decision = readJsonFromFile("data/resulting.events.referenced-decisions-saved.json");
-
 
         final JsonObjectBuilder metadataBuilder = createObjectBuilder()
                 .add("id", randomUUID().toString())
                 .add("name", "resulting.events.referenced-decisions-saved");
 
-         final JsonEnvelope envelope = envelopeFrom(metadataFrom(metadataBuilder.build()), decision);
+        final JsonEnvelope envelope = envelopeFrom(metadataFrom(metadataBuilder.build()), decision);
 
         final JsonArray offences = offenceHelper.populateOffences(caseView, employer, envelope);
         eventPayloadBuilder.add("offences", offences);
@@ -193,6 +185,32 @@ public class OffenceHelperTest {
         );
 
         final JsonObject expectedPayload = readJsonFromFile("data/expected-public.events.referenced-decisions-saved.json");
+
+        assertOffencesEquals(expectedPayload, actualPayload);
+    }
+
+    @Test
+    public void shouldPopulateOffencesCorrectlyWithBackDutyAndExcisePenalty(){
+        final JsonObjectBuilder eventPayloadBuilder = createObjectBuilder().add(CASE_ID, caseId.toString());
+        final JsonObject decision = readJsonFromFile("data/resulting.events.referenced-decisions-saved-back-duty-and-excise-penalty.json");
+
+        final JsonObjectBuilder metadataBuilder = createObjectBuilder()
+                .add("id", randomUUID().toString())
+                .add("name", "resulting.events.referenced-decisions-saved");
+
+        final JsonEnvelope envelope = envelopeFrom(metadataFrom(metadataBuilder.build()), decision);
+
+        final JsonArray offences = offenceHelper.populateOffences(caseView, employer, envelope);
+        eventPayloadBuilder.add("offences", offences);
+        final JsonObject actualPayload = eventPayloadBuilder.build();
+
+        assertThat(actualPayload,
+                payloadIsJson(allOf(
+                        withJsonPath("$.caseId", is(caseId.toString()))
+                ))
+        );
+
+        final JsonObject expectedPayload = readJsonFromFile("data/expected-public.events.referenced-decisions-saved-back-duty-and-excise-penalty.json");
 
         assertOffencesEquals(expectedPayload, actualPayload);
     }

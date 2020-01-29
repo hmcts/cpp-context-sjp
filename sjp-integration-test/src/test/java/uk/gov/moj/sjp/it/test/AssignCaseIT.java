@@ -8,10 +8,13 @@ import static uk.gov.moj.sjp.it.helper.AssignmentHelper.assignCaseToUser;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.pollUntilCaseAssignedToUser;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.pollUntilCaseNotAssignedToUser;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
 import uk.gov.moj.sjp.it.helper.EventListener;
 
 import java.util.UUID;
@@ -28,6 +31,8 @@ public class AssignCaseIT extends BaseIntegrationTest {
     private UUID legalAdviserId = randomUUID();
     private UUID courtAdminId = randomUUID();
     private UUID prosecutorId = randomUUID();
+    private static final String DEFENDANT_REGION = "london";
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     @Before
     public void setUp() {
@@ -37,8 +42,12 @@ public class AssignCaseIT extends BaseIntegrationTest {
         stubGroupForUser(courtAdminId, "Court Administrators");
         stubGroupForUser(prosecutorId, "SJP Prosecutors");
 
-        createCaseAndWaitUntilReady(caseId1);
-        createCaseAndWaitUntilReady(caseId2);
+        final CreateCasePayloadBuilder createCasePayloadBuilder = defaultCaseBuilder();
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
+
+        createCaseAndWaitUntilReady(defaultCaseBuilder().withId(caseId1));
+        createCaseAndWaitUntilReady(defaultCaseBuilder().withId(caseId2));
     }
 
     @Test
@@ -64,10 +73,10 @@ public class AssignCaseIT extends BaseIntegrationTest {
         assignCaseToUser(caseId1, legalAdviserId, prosecutorId, FORBIDDEN);
     }
 
-    private static void createCaseAndWaitUntilReady(final UUID caseId) {
+    private static void createCaseAndWaitUntilReady(final CreateCasePayloadBuilder createCasePayloadBuilder) {
         new EventListener()
                 .subscribe(CaseMarkedReadyForDecision.EVENT_NAME)
-                .run(() -> CreateCase.createCaseForPayloadBuilder(defaultCaseBuilder().withId(caseId)))
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder))
                 .popEvent(CaseMarkedReadyForDecision.EVENT_NAME);
     }
 

@@ -82,7 +82,7 @@ public class LSUMIResultCodeConverterTest extends ResultCodeConverterTest {
                         .add("value", lumpSumAmountTerminalEntry)
                 )
                 .add(createObjectBuilder()
-                        .add("promptDefinitionId", "37909b32-aff3-469e-9ed2-9c5fc0aae4e7")
+                        .add("promptDefinitionId", "1393acda-7a35-4d65-859d-6298e1470cf1")
                         .add("value", instalmentAmountTerminalEntry)
                 )
                 .add(createObjectBuilder()
@@ -90,7 +90,7 @@ public class LSUMIResultCodeConverterTest extends ResultCodeConverterTest {
                         .add("value", frequencyTerminalEntry)
                 )
                 .add(createObjectBuilder()
-                        .add("promptDefinitionId", "b76870fe-634b-11e8-adc0-fa7ae01bbebc")
+                        .add("promptDefinitionId", "e091af2e-43d0-495d-b3b0-432010358a45")
                         .add("value", startDateTerminalEntry)
                 )
                 .build();

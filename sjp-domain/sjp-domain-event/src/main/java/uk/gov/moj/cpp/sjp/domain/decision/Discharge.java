@@ -23,19 +23,33 @@ public class Discharge extends SingleOffenceDecision {
 
     private Boolean guiltyPleaTakenIntoAccount;
 
+    private BigDecimal backDuty;
+
     public Discharge(@JsonProperty("id") final UUID id,
                      @JsonProperty("offenceDecisionInformation") OffenceDecisionInformation offenceDecisionInformation,
                      @JsonProperty("dischargeType") final DischargeType dischargeType,
                      @JsonProperty("dischargedFor") final DischargePeriod dischargedFor,
                      @JsonProperty("compensation") final BigDecimal compensation,
                      @JsonProperty("noCompensationReason") final String noCompensationReason,
-                     @JsonProperty("guiltyPleaTakenIntoAccount") final Boolean guiltyPleaTakenIntoAccount) {
+                     @JsonProperty("guiltyPleaTakenIntoAccount") final Boolean guiltyPleaTakenIntoAccount,
+                     @JsonProperty("backDuty") final BigDecimal backDuty) {
         super(id, DISCHARGE, offenceDecisionInformation);
         this.dischargeType = dischargeType;
         this.dischargedFor = dischargedFor;
         this.compensation = compensation;
         this.noCompensationReason = noCompensationReason;
         this.guiltyPleaTakenIntoAccount = guiltyPleaTakenIntoAccount;
+        this.backDuty = backDuty;
+    }
+
+    public static Discharge createDischarge(final UUID id,
+                                            OffenceDecisionInformation offenceDecisionInformation,
+                                            final DischargeType dischargeType,
+                                            final DischargePeriod dischargedFor,
+                                            final BigDecimal compensation,
+                                            final String noCompensationReason,
+                                            final Boolean guiltyPleaTakenIntoAccount) {
+        return new Discharge(id, offenceDecisionInformation, dischargeType, dischargedFor, compensation, noCompensationReason, guiltyPleaTakenIntoAccount, null);
     }
 
     public DischargeType getDischargeType() {
@@ -56,6 +70,10 @@ public class Discharge extends SingleOffenceDecision {
 
     public Boolean getGuiltyPleaTakenIntoAccount() {
         return guiltyPleaTakenIntoAccount;
+    }
+
+    public BigDecimal getBackDuty() {
+        return backDuty;
     }
 
     @Override

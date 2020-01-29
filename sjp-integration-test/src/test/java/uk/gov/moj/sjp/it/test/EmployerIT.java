@@ -6,10 +6,14 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerDeletedPublicEventMatcher;
 import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerPayload;
 import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerUpdatedPayloadMatcher;
 import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerUpdatedPublicEventMatcher;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EmployerHelper;
@@ -30,12 +34,15 @@ public class EmployerIT extends BaseIntegrationTest {
 
     private EmployerHelper employerHelper;
     private FinancialMeansHelper financialMeansHelper;
-
+    private static final String NATIONAL_COURT_CODE = "1080";
+    private final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
 
     @Before
     public void setUp() {
         employerHelper = new EmployerHelper();
         financialMeansHelper = new FinancialMeansHelper();
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
     }
 
     @After
@@ -46,8 +53,8 @@ public class EmployerIT extends BaseIntegrationTest {
 
     @Test
     public void shouldCreateUpdateAndDeleteEmployer() {
-        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
         CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
+        stubProsecutorQuery(TFL.name(), TFL.getFullName(), randomUUID());
 
         final UUID caseId = createCasePayloadBuilder.getId();
         final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");

@@ -25,12 +25,12 @@
     "firstName": "Testy",
     "lastName": "Testerson",
     "address": {
-      "address1": "14 Tottenham Court Road",
-      "address2": "London",
       "address3": "England",
-      "address4": "UK",
+      "address2": "London",
+      "address1": "14 Tottenham Court Road",
+      "postcode": "W1T 1JY",
       "address5": "Greater London",
-      "postcode": "W1T 1JY"
+      "address4": "UK"
     },
     "nationalInsuranceNumber": "AB123456A",
     "mobile": "07890123123",

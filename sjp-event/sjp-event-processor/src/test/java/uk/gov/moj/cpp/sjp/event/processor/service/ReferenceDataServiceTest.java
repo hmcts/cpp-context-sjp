@@ -19,7 +19,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 
-import uk.gov.justice.json.schemas.domains.sjp.ProsecutingAuthority;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -43,6 +42,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ReferenceDataServiceTest {
+
+    private final static String TFL = "TFL";
 
     private static final String FIELD_ID = "id";
     private static final String FIELD_VERSION = "version";
@@ -146,26 +147,26 @@ public class ReferenceDataServiceTest {
     @Test
     public void shouldReturnProsecutor() {
         final JsonEnvelope response = responseProsecutor();
-        when(requestProsecutor(ProsecutingAuthority.TFL)).thenReturn(response);
+        when(requestProsecutor(TFL)).thenReturn(response);
 
 
-        final JsonObject prosecutor = referenceDataService.getProsecutor(ProsecutingAuthority.TFL, envelope);
+        final JsonObject prosecutor = referenceDataService.getProsecutor(TFL, envelope);
         assertThat(prosecutor, is(response.payloadAsJsonObject()));
     }
 
     @Test
     public void shouldReturnProsecutorInEnglish() {
-        when(requestProsecutor(ProsecutingAuthority.TFL)).thenReturn(responseProsecutor());
+        when(requestProsecutor(TFL)).thenReturn(responseProsecutor());
 
-        final String prosecutor = referenceDataService.getProsecutor(ProsecutingAuthority.TFL.toString(), false, envelope);
+        final String prosecutor = referenceDataService.getProsecutor(TFL, false, envelope);
         assertThat(prosecutor, is("Transport For London"));
     }
 
     @Test
     public void shouldReturnProsecutorInWelsh() {
-        when(requestProsecutor(ProsecutingAuthority.TFL)).thenReturn(responseProsecutor());
+        when(requestProsecutor(TFL)).thenReturn(responseProsecutor());
 
-        final String prosecutor = referenceDataService.getProsecutor(ProsecutingAuthority.TFL.toString(), true, envelope);
+        final String prosecutor = referenceDataService.getProsecutor(TFL, true, envelope);
         assertThat(prosecutor, is("Transport For London - Welsh"));
     }
 
@@ -247,10 +248,10 @@ public class ReferenceDataServiceTest {
                 payloadIsJson(notNullValue()))));
     }
 
-    private Object requestProsecutor(final ProsecutingAuthority prosecutingAuthority) {
+    private Object requestProsecutor(final String prosecutingAuthority) {
         return requester.requestAsAdmin(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("referencedata.query.prosecutors"),
-                payloadIsJson(withJsonPath("$.prosecutorCode", equalTo(prosecutingAuthority.name()))))));
+                payloadIsJson(withJsonPath("$.prosecutorCode", equalTo(prosecutingAuthority))))));
     }
 
     private Object requestCountryNationalities() {

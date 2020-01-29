@@ -13,7 +13,7 @@
       "type": "string"
     },
     "prosecutingAuthority": {
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/prosecuting-authority.json"
+      "type": "string"
     },
     "costs": {
       "type": "number"

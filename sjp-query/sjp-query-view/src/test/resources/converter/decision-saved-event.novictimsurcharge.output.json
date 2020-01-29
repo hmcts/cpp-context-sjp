@@ -1,0 +1,88 @@
+[
+  {
+    "id": "e524b2bc-5317-48de-a682-5cf67697e549",
+    "verdict": "FOUND_NOT_GUILTY",
+    "results": [
+      {
+        "code": "D",
+        "resultTypeId": "06fd8e99-83af-422a-b0a9-db37188bfa74",
+        "terminalEntries": []
+      }
+    ]
+  },
+  {
+    "id": "ba20d211-a4ca-4afe-9e41-5d110d21db5b",
+    "provedSJP": false,
+    "verdict": "FOUND_GUILTY",
+    "results": [
+      {
+        "code": "FO",
+        "resultTypeId": "c054d9fa-8595-4b0b-81fc-5bfdc1d7266b",
+        "terminalEntries": [
+          {
+            "index": 1,
+            "value": "40"
+          }
+        ]
+      },
+      {
+        "code": "FVEBD",
+        "resultTypeId": "ff640415-e485-4490-bfba-2b2b3c567248",
+        "terminalEntries": [
+          {
+            "index": 1,
+            "value": "1.0"
+          }
+        ]
+      },
+      {
+        "code": "EXPEN",
+        "resultTypeId": "ce276903-632c-4796-921b-23035fa934cb",
+        "terminalEntries": [
+          {
+            "index": 1,
+            "value": "2.0"
+          }
+        ]
+      },
+      {
+        "code": "FCOMP",
+        "resultTypeId": "9383d0ff-15a7-47ac-a471-97fce0135e94",
+        "terminalEntries": [
+          {
+            "index": 1,
+            "value": "15.3"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "results": [
+      {
+        "code": "FCOST",
+        "resultTypeId": "80673cfd-f40b-4088-9aa0-d192fb877e16",
+        "terminalEntries": [
+          {
+            "index": 1,
+            "value": "20.1"
+          }
+        ]
+      },
+      {
+        "code": "LSUM",
+        "resultTypeId": "49a84ca7-d5af-4292-b39e-777a478ca182",
+        "terminalEntries": [
+          {
+            "index": 5,
+            "value": "107.4"
+          },
+          {
+            "index": 6,
+            "value": "lump sum within 14 days"
+          }
+        ]
+      }
+    ]
+  }
+]

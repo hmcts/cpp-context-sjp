@@ -2,8 +2,13 @@ package uk.gov.moj.sjp.it.test;
 
 import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertEquals;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.DVLA;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.helper.CasesMissingSjpnHelper.getCasesMissingSjpn;
 import static uk.gov.moj.sjp.it.helper.CasesMissingSjpnHelper.getCasesMissingSjpnPostedDaysAgo;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
@@ -24,6 +29,7 @@ public class FindCasesMissingSjpnAccessControlIT extends BaseIntegrationTest {
     private final static UUID TFL_USER_ID = randomUUID();
 
     private static CasesMissingSjpnMetrics beforeTflMetrics, beforeCourtAdminMetrics;
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     @BeforeClass
     public static void setupCasesAndUsers() {
@@ -48,10 +54,10 @@ public class FindCasesMissingSjpnAccessControlIT extends BaseIntegrationTest {
     private static void createCases() {
 
         final LocalDate now = LocalDate.now();
-
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
+                .withDefaults();
         final List<CreateCase.CreateCasePayloadBuilder> allNewCases = Arrays.asList(
-                CreateCase.CreateCasePayloadBuilder
-                        .withDefaults()
+                createCasePayloadBuilder
                         .withProsecutingAuthority(ProsecutingAuthority.TFL)
                         .withPostingDate(now),
                 CreateCase.CreateCasePayloadBuilder
@@ -68,8 +74,13 @@ public class FindCasesMissingSjpnAccessControlIT extends BaseIntegrationTest {
                         .withPostingDate(now.minusDays(4))
         );
 
-        allNewCases.forEach(CreateCase::createCaseForPayloadBuilder);
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
+        stubProsecutorQuery(TFL.name(), TFL.getFullName(), randomUUID());
+        stubProsecutorQuery(DVLA.name(), DVLA.getFullName(), randomUUID());
 
+
+        allNewCases.forEach(CreateCase::createCaseForPayloadBuilder);
         allNewCases.forEach(c -> CasePoller.pollUntilCaseByIdIsOk(c.getId()));
     }
 

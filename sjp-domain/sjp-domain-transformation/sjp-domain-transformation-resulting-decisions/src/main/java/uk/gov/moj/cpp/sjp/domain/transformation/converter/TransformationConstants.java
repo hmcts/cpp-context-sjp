@@ -31,7 +31,6 @@ public class TransformationConstants {
 
     public static final Map<String, String> paymentTypeMap = ImmutableMap.of(
             "Pay directly to court", "PAY_TO_COURT",
-            "xxxxxx", "PAY_TO_COURT",
             "Deduct from benefits", "DEDUCT_FROM_BENEFITS",
             "Attach to earnings", "ATTACH_TO_EARNINGS"
     );
@@ -45,9 +44,8 @@ public class TransformationConstants {
     );
 
     public static final Map<String, Integer> lumpSumWithInDaysMap = ImmutableMap.of(
-            "lump sum within 14 days", 14,
-            "lump sum within 28 days", 28,
-            "xxxxxx", 28
+            "Lump sum within 14 days", 14,
+            "Lump sum within 28 days", 28
     );
 
 

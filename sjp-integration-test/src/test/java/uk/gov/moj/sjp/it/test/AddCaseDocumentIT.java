@@ -12,6 +12,7 @@ import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.stub.MaterialStub.stubAddCaseMaterial;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAnyQueryOffences;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 
 import uk.gov.justice.domain.annotation.Event;
@@ -53,6 +54,8 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
     private final UUID offenceId = randomUUID();
 
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
+    private static final String DEFENDANT_REGION = "croydon";
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     @Before
     public void setUp() {
@@ -61,10 +64,14 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
                 .withDefaults()
                 .withId(caseId)
                 .withOffenceId(offenceId);
+
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
     }
 
     private void createCase() {
         createCaseForPayloadBuilder(createCasePayloadBuilder);
+
     }
 
     private void createCaseAndWaitUntilReady() {
@@ -167,7 +174,8 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
         ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery();
         ReferenceDataServiceStub.stubReferralReasonsQuery(referralReasonId, hearingCode, "");
         ReferenceDataServiceStub.stubHearingTypesQuery(hearingTypeId.toString(), hearingCode, "");
-        ReferenceDataServiceStub.stubProsecutorQuery(createCasePayloadBuilder.getProsecutingAuthority().name(), prosecutorId);
+        final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
+        ReferenceDataServiceStub.stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), prosecutorId);
         ReferenceDataServiceStub.stubQueryOffencesByCode(createCasePayloadBuilder.getOffenceBuilder().getLibraOffenceCode());
         ReferenceDataServiceStub.stubReferralDocumentMetadataQuery(randomUUID().toString(), "SJPN");
         SchedulingStub.stubStartSjpSessionCommand();

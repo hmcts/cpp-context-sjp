@@ -10,15 +10,22 @@ import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostcodeQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
+import uk.gov.moj.cpp.sjp.event.PleasSet;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
+import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
@@ -37,12 +44,16 @@ import org.junit.Test;
 public class PleaReceivedIngestorIT extends BaseIntegrationTest {
     private static final String ONLINE_PLEA_PAYLOAD = "raml/json/sjp.command.plead-online__not-guilty_for_ingester.json";
 
+    private EventListener eventListener = new EventListener();
+
 
     private CreateCasePayloadBuilder casePayloadBuilder;
     private CreateCase.DefendantBuilder defendantBuilder;
 
     private final UUID caseIdOne = randomUUID();
     private final ViewStoreCleaner viewStoreCleaner = new ViewStoreCleaner();
+    private static final String NATIONAL_COURT_CODE = "1080";
+
 
     @After
     public void cleanDatabase() {
@@ -60,6 +71,11 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
         casePayloadBuilder = CreateCasePayloadBuilder.withDefaults().withId(caseIdOne).
                 withPostingDate(LocalDate.now())
                 .withDefendantBuilder(defendantBuilder);
+        final ProsecutingAuthority prosecutingAuthority = casePayloadBuilder.getProsecutingAuthority();
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+        stubEnforcementAreaByPostcode(addressBuilder.getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
+
         createCaseForPayloadBuilder(this.casePayloadBuilder);
 
         pollUntilCaseByIdIsOk(casePayloadBuilder.getId());
@@ -99,9 +115,10 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
 
         final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(casePayloadBuilder.getId());
 
-        pleadOnlineHelper.pleadOnline(pleaPayload.toString());
+        eventListener
+                .subscribe(PleasSet.EVENT_NAME)
+                .run(() -> pleadOnlineHelper.pleadOnline(pleaPayload.toString()));
 
-        verifyPleaUpdated(casePayloadBuilder.getId(), PleaType.NOT_GUILTY, PleaMethod.ONLINE);
         return pleaPayload;
     }
 
@@ -114,18 +131,5 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
                 .put("id", casePayloadBuilder.getOffenceId().toString());
 
         return jsonObject;
-    }
-
-    public JsonPath verifyPleaUpdated(final UUID caseId,
-                                      final PleaType pleaType,
-                                      final PleaMethod pleaMethod) {
-        return pollUntilCaseByIdIsOk(caseId,
-                allOf(
-                        withJsonPath("defendant.offences[0].plea", is(pleaType.name())),
-                        withJsonPath("defendant.offences[0].pleaMethod", is(pleaMethod.name())),
-                        withJsonPath("defendant.offences[0].pleaDate", notNullValue()),
-                        withJsonPath("onlinePleaReceived", is(PleaMethod.ONLINE.equals(pleaMethod)))
-                )
-        );
     }
 }

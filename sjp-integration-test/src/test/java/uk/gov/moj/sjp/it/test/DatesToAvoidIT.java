@@ -33,6 +33,9 @@ import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyPleadedNotGuiltyEven
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifySetPleasEventEmitted;
 import static uk.gov.moj.sjp.it.pollingquery.PendingDatesToAvoidPoller.pollUntilPendingDatesToAvoidIsOk;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
@@ -85,6 +88,8 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     private EventListener eventListener;
 
     private final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
+    private static final String DEFENDANT_REGION = "croydon";
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     @Before
     public void setUp() throws Exception {
@@ -95,10 +100,18 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         stubAssignmentReplicationCommands();
         stubGroupForUser(tflUserId, SJP_PROSECUTORS_GROUP);
         stubForUserDetails(tflUserId, TFL);
-        this.tflCaseBuilder = createCase(TFL, 1);
+        this.tflCaseBuilder = createCaseBuilder(TFL, 1);
+
+        stubEnforcementAreaByPostcode(tflCaseBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
+        CreateCase.createCaseForPayloadBuilder(this.tflCaseBuilder);
         this.tflInitialPendingDatesToAvoidCount = pollForCountOfCasesPendingDatesToAvoid(tflUserId);
 
-        this.tvlCaseBuilder = createCase(TVL, 2);
+        stubProsecutorQuery(TFL.name(), TFL.getFullName(), randomUUID());
+        stubProsecutorQuery(TVL.name(), TVL.getFullName(), randomUUID());
+
+        this.tvlCaseBuilder = createCaseBuilder(TVL, 2);
+        CreateCase.createCaseForPayloadBuilder(this.tvlCaseBuilder);
         stubGroupForUser(tvlUserId, SJP_PROSECUTORS_GROUP);
         stubForUserDetails(tvlUserId, TVL);
         this.tvlInitialPendingDatesToAvoidCount = pollForCountOfCasesPendingDatesToAvoid(tvlUserId);
@@ -107,13 +120,11 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         eventListener = new EventListener();
     }
 
-    private static CreateCase.CreateCasePayloadBuilder createCase(final ProsecutingAuthority prosecutingAuthority, final int dayOfMonth) {
+    private static CreateCase.CreateCasePayloadBuilder createCaseBuilder(final ProsecutingAuthority prosecutingAuthority, final int dayOfMonth) {
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
         createCasePayloadBuilder.withProsecutingAuthority(prosecutingAuthority);
         //will make it first on the list for assignment (as earlier than default posting date)
         createCasePayloadBuilder.withPostingDate(LocalDate.of(2000, 12, dayOfMonth));
-
-        CreateCase.createCaseForPayloadBuilder(createCasePayloadBuilder);
 
         return createCasePayloadBuilder;
     }

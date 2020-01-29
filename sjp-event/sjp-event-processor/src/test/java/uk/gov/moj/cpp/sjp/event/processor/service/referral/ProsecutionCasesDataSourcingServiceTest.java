@@ -14,7 +14,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
-import uk.gov.justice.json.schemas.domains.sjp.ProsecutingAuthority;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
 import uk.gov.justice.json.schemas.domains.sjp.query.DefendantsOnlinePlea;
@@ -57,6 +56,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
     private static final UUID OFFENCE_ID1 = randomUUID();
     private static final UUID OFFENCE_ID2 = randomUUID();
     private static final UUID OFFENCE_ID3 = randomUUID();
+    private static final String TFL = "TFL";
     private static final String PLEA_MITIGATION = "mitigation";
     private static final ZonedDateTime DECISION_DATE = ZonedDateTime.now();
     private static final JsonEnvelope EMPTY_ENVELOPE = envelopeFrom(metadataWithRandomUUIDAndName(), JsonValue.NULL);
@@ -64,7 +64,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
     private static final List<Offence> offences = createOffences(OFFENCE_ID1, OFFENCE_ID2, OFFENCE_ID3);
     private static final CaseDetails CASE_DETAILS = CaseDetails.caseDetails()
             .withId(CASE_ID)
-            .withProsecutingAuthority(ProsecutingAuthority.TFL)
+            .withProsecutingAuthority(TFL)
             .withDefendant(defendant()
                     .withOffences(offences)
                     .build())
@@ -97,7 +97,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
 
     @Before
     public void setUp() {
-        when(referenceDataService.getProsecutor(ProsecutingAuthority.TFL, EMPTY_ENVELOPE)).thenReturn(PROSECUTOR);
+        when(referenceDataService.getProsecutor(TFL, EMPTY_ENVELOPE)).thenReturn(PROSECUTOR);
         when(referenceDataOffencesService.getOffenceDefinitionIdByOffenceCode(mockOffenceCodes(), DECISION_DATE.toLocalDate(), EMPTY_ENVELOPE)).thenReturn(mockCJSOffenceCodeToOffenceDefinitionId());
         when(sjpService.getEmployerDetails(CASE_DETAILS.getDefendant().getId(), EMPTY_ENVELOPE)).thenReturn(EMPLOYER);
         when(referenceDataService.getEthnicity(DEFENDANT_ETHNICITY_CODE, EMPTY_ENVELOPE)).thenReturn(ofNullable(ETHNICITY));

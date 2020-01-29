@@ -3,6 +3,7 @@ package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -13,9 +14,13 @@ import static uk.gov.moj.sjp.it.helper.EmployerHelper.*;
 import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerDeletedPublicEventMatcher;
 import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerPayload;
 import static uk.gov.moj.sjp.it.helper.EmployerHelper.getEmployerUpdatedPublicEventMatcher;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.Income;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.EmployerHelper;
 import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
@@ -37,11 +42,17 @@ public class UpdateAllFinancialMeanIT extends BaseIntegrationTest {
     final private FinancialMeansHelper allFinancialMeansHelper = new FinancialMeansHelper("public.sjp.all-financial-means-updated");
     final private EmployerHelper employerHelper = new EmployerHelper();
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
+    private static final String NATIONAL_COURT_CODE = "1080";
 
     @Before
     public void setUp() {
         this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();
+
+        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
         CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
+        final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
     }
 
     @After

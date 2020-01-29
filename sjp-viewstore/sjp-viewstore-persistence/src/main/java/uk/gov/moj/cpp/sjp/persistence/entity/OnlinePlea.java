@@ -119,6 +119,11 @@ public class OnlinePlea {
         this(outstandingFinesUpdated.getCaseId(), new PleaDetails(outstandingFinesUpdated), outstandingFinesUpdated.getUpdatedDate());
     }
 
+    public OnlinePlea(final DefendantDetail defendantDetail, final ZonedDateTime updatedDate) {
+        this(defendantDetail.getCaseDetail().getId(), defendantDetail.getId(), updatedDate);
+        this.personalDetails = new OnlinePleaPersonalDetails(defendantDetail);
+    }
+
     /**
      * Used in {@link OnlinePleaRepository#findOnlinePleaWithoutFinances} to filter finances It must
      * include every field apart finances (employment, employer, outgoings)

@@ -50,6 +50,31 @@
     },
     "prosecutionFacts": {
       "type": "string"
+    },
+    "backDuty": {
+      "type": "number"
+    },
+    "backDutyDateFrom": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
+    "backDutyDateTo": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
+    "vehicleMake": {
+      "type": "string",
+      "maxLength": 30
+    },
+    "vehicleRegistrationMark": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/vehicleRegistrationMark"
+    },
+    "penaltyType": {
+      "type": "string"
+    },
+    "sentencing": {
+      "type": "string"
+    },
+    "backDutyOffence": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false

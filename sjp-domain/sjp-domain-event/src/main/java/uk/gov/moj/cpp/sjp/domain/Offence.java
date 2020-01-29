@@ -10,7 +10,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Offence {
@@ -27,8 +27,12 @@ public class Offence {
     private final BigDecimal compensation;
     private final String offenceWordingWelsh;
 
-    @JsonUnwrapped
-    private final BackDuty backDuty;
+    private final BigDecimal backDuty;
+    private final LocalDate backDutyDateFrom;
+    private final LocalDate backDutyDateTo;
+
+    private final String vehicleMake;
+    private final String vehicleRegistrationMark;
 
     @SuppressWarnings("squid:S00107")
     public Offence(UUID id, int offenceSequenceNo, String libraOffenceCode, LocalDate chargeDate,
@@ -36,7 +40,7 @@ public class Offence {
                    String prosecutionFacts, String witnessStatement, BigDecimal compensation) {
         this(id, offenceSequenceNo, libraOffenceCode, chargeDate, libraOffenceDateCode, null, offenceCommittedDate,
                 offenceWording, prosecutionFacts, witnessStatement, compensation,
-                null, null, null, null);
+                null, null, null, null, null, null);
     }
 
     @JsonCreator
@@ -52,9 +56,11 @@ public class Offence {
                    @JsonProperty("witnessStatement") String witnessStatement,
                    @JsonProperty("compensation") BigDecimal compensation,
                    @JsonProperty("offenceWordingWelsh") String offenceWordingWelsh,
-                   @JsonProperty("backDuty") Integer backDuty,
+                   @JsonProperty("backDuty") BigDecimal backDuty,
                    @JsonProperty("backDutyDateFrom") LocalDate backDutyDateFrom,
-                   @JsonProperty("backDutyDateTo") LocalDate backDutyDateTo) {
+                   @JsonProperty("backDutyDateTo") LocalDate backDutyDateTo,
+                   @JsonProperty("vehicleMake") String vehicleMake,
+                   @JsonProperty("vehicleRegistrationMark") String vehicleRegistrationMark) {
         this.id = id;
         this.offenceSequenceNo = offenceSequenceNo;
         this.libraOffenceCode = libraOffenceCode;
@@ -66,7 +72,11 @@ public class Offence {
         this.witnessStatement = witnessStatement;
         this.compensation = compensation;
         this.offenceWordingWelsh = offenceWordingWelsh;
-        this.backDuty = new BackDuty(backDuty, backDutyDateFrom, backDutyDateTo);
+        this.backDuty = backDuty;
+        this.backDutyDateFrom = backDutyDateFrom;
+        this.backDutyDateTo = backDutyDateTo;
+        this.vehicleMake = vehicleMake;
+        this.vehicleRegistrationMark = vehicleRegistrationMark;
     }
 
     public UUID getId() {
@@ -113,8 +123,24 @@ public class Offence {
         return offenceWordingWelsh;
     }
 
-    public BackDuty getBackDuty() {
+    public BigDecimal getBackDuty() {
         return backDuty;
+    }
+
+    public LocalDate getBackDutyDateFrom() {
+        return backDutyDateFrom;
+    }
+
+    public LocalDate getBackDutyDateTo() {
+        return backDutyDateTo;
+    }
+
+    public String getVehicleMake() {
+        return vehicleMake;
+    }
+
+    public String getVehicleRegistrationMark() {
+        return vehicleRegistrationMark;
     }
 
     @Override
@@ -139,13 +165,22 @@ public class Offence {
                 Objects.equals(witnessStatement, that.witnessStatement) &&
                 Objects.equals(compensation, that.compensation) &&
                 Objects.equals(offenceWordingWelsh, that.offenceWordingWelsh) &&
-                Objects.equals(backDuty, that.backDuty);
+                Objects.equals(backDuty, that.backDuty) &&
+                Objects.equals(backDutyDateFrom, that.backDutyDateFrom) &&
+                Objects.equals(backDutyDateTo, that.backDutyDateTo) &&
+                Objects.equals(vehicleMake, that.vehicleMake) &&
+                Objects.equals(vehicleRegistrationMark, that.vehicleRegistrationMark);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, offenceSequenceNo, libraOffenceCode, chargeDate,
                 libraOffenceDateCode, offenceCommittedDate, offenceWording, prosecutionFacts,
-                witnessStatement, compensation, offenceWordingWelsh, backDuty);
+                witnessStatement, compensation, offenceWordingWelsh, backDuty, backDutyDateFrom, backDutyDateTo, vehicleMake, vehicleRegistrationMark);
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
     }
 }

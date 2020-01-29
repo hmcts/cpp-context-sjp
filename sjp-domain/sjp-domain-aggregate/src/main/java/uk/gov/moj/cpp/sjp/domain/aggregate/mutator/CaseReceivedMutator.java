@@ -29,8 +29,11 @@ final class CaseReceivedMutator implements AggregateStateMutator<CaseReceived, C
         state.setDefendantTitle(event.getDefendant().getTitle());
         state.setDefendantFirstName(event.getDefendant().getFirstName());
         state.setDefendantLastName(event.getDefendant().getLastName());
+        state.setDefendantGender(event.getDefendant().getGender());
+        state.setDefendantContactDetails(event.getDefendant().getContactDetails());
         state.setDefendantDateOfBirth(event.getDefendant().getDateOfBirth());
         state.setDefendantAddress(event.getDefendant().getAddress());
+        state.setDefendantNationalInsuranceNumber(event.getDefendant().getNationalInsuranceNumber());
         final Language hearingLanguage = event.getDefendant().getHearingLanguage();
         if (hearingLanguage != null){
             state.updateDefendantSpeakWelsh(event.getDefendant().getId(), hearingLanguage.equals(Language.W));
@@ -38,5 +41,6 @@ final class CaseReceivedMutator implements AggregateStateMutator<CaseReceived, C
         state.setExpectedDateReady(event.getExpectedDateReady());
         state.setCaseReceived(true);
         state.setPostingDate(event.getPostingDate());
+        state.setDefendantRegion(event.getDefendant().getRegion());
     }
 }

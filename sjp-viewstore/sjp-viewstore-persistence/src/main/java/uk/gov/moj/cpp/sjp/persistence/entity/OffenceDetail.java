@@ -1,8 +1,18 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import static java.util.Objects.isNull;
+
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -13,15 +23,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-
-import static java.util.Objects.isNull;
 
 @Entity
 @Table(name = "offence")
@@ -85,6 +86,23 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
     @Column(name = "withdrawal_request_reason_id")
     private UUID withdrawalRequestReasonId;
 
+    @Column(name = "vehicle_make")
+    private String vehicleMake;
+
+    @Column(name = "vehicle_registration_mark")
+    private String vehicleRegistrationMark;
+
+    @Column(name = "back_duty")
+    private BigDecimal backDuty;
+
+    @Convert(converter = LocalDatePersistenceConverter.class)
+    @Column(name = "back_duty_date_from")
+    private LocalDate backDutyDateFrom;
+
+    @Convert(converter = LocalDatePersistenceConverter.class)
+    @Column(name = "back_duty_date_to")
+    private LocalDate backDutyDateTo;
+
     public OffenceDetail() {
         super();
     }
@@ -106,6 +124,11 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         this.compensation = builder.compensation;
         this.orderIndex = builder.orderIndex;
         this.withdrawalRequestReasonId = builder.withdrawalRequestReasonId;
+        this.backDuty = builder.backDuty;
+        this.backDutyDateFrom = builder.backDutyDateFrom;
+        this.backDutyDateTo = builder.backDutyDateTo;
+        this.vehicleMake = builder.vehicleMake;
+        this.vehicleRegistrationMark = builder.vehicleRegistrationMark;
     }
 
     public static OffenceDetailBuilder builder() {
@@ -250,6 +273,46 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         this.withdrawalRequestReasonId = withdrawalRequestReasonId;
     }
 
+    public String getVehicleMake() {
+        return vehicleMake;
+    }
+
+    public void setVehicleMake(String vehicleMake) {
+        this.vehicleMake = vehicleMake;
+    }
+
+    public String getVehicleRegistrationMark() {
+        return vehicleRegistrationMark;
+    }
+
+    public void setVehicleRegistrationMark(String vehicleRegistrationMark) {
+        this.vehicleRegistrationMark = vehicleRegistrationMark;
+    }
+
+    public BigDecimal getBackDuty() {
+        return backDuty;
+    }
+
+    public void setBackDuty(BigDecimal backDuty) {
+        this.backDuty = backDuty;
+    }
+
+    public LocalDate getBackDutyDateFrom() {
+        return backDutyDateFrom;
+    }
+
+    public void setBackDutyDateFrom(LocalDate backDutyDateFrom) {
+        this.backDutyDateFrom = backDutyDateFrom;
+    }
+
+    public LocalDate getBackDutyDateTo() {
+        return backDutyDateTo;
+    }
+
+    public void setBackDutyDateTo(LocalDate backDutyDateTo) {
+        this.backDutyDateTo = backDutyDateTo;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -291,6 +354,11 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         private BigDecimal compensation;
         private int orderIndex;
         private UUID withdrawalRequestReasonId;
+        private BigDecimal backDuty;
+        private LocalDate backDutyDateFrom;
+        private LocalDate backDutyDateTo;
+        private String vehicleMake;
+        private String vehicleRegistrationMark;
 
         public OffenceDetail build() {
             return new OffenceDetail(this);
@@ -371,6 +439,31 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
 
         public OffenceDetailBuilder withWithdrawalRequestReason(UUID withdrawalRequestReasonId){
             this.withdrawalRequestReasonId = withdrawalRequestReasonId;
+            return this;
+        }
+
+        public OffenceDetailBuilder withBackDuty(BigDecimal backDuty){
+            this.backDuty = backDuty;
+            return this;
+        }
+
+        public OffenceDetailBuilder withBackDutyDateFrom(LocalDate backDutyDateFrom){
+            this.backDutyDateFrom = backDutyDateFrom;
+            return this;
+        }
+
+        public OffenceDetailBuilder withBackDutyDateTo(LocalDate backDutyDateTo){
+            this.backDutyDateTo = backDutyDateTo;
+            return this;
+        }
+
+        public OffenceDetailBuilder withVehicleMake(String vehicleMake) {
+            this.vehicleMake = vehicleMake;
+            return this;
+        }
+
+        public OffenceDetailBuilder withVehicleRegistrationMark(String vehicleRegistrationMark) {
+            this.vehicleRegistrationMark = vehicleRegistrationMark;
             return this;
         }
     }

@@ -207,6 +207,7 @@ public class ResultsServiceTest {
                 Gender.MALE,
                 "NINO",
                 address,
+                null,
                 null);
 
         DefendantDetail defendantDetail = new DefendantDetail(defendantId);
@@ -242,6 +243,6 @@ public class ResultsServiceTest {
 
         caseDetail.setCaseDecisions(asList(caseDecision));
 
-        caseView = new CaseView(caseDetail);
+        caseView = new CaseView(caseDetail, "DVLA");
     }
 }

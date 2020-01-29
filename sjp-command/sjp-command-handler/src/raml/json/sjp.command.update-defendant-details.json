@@ -20,5 +20,6 @@
     "mobile": "07123456789",
     "fax": "02011111111"
   },
-  "nationalInsuranceNumber": "QQ 12 34 56 C"
+  "nationalInsuranceNumber": "QQ 12 34 56 C",
+  "region": "sussex"
 }

@@ -2,17 +2,18 @@ package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.AllOf.allOf;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.*;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
@@ -33,15 +34,21 @@ import org.junit.Test;
 public class SearchCasesIT extends BaseIntegrationTest {
 
     private SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
+    private CreateCase.DefendantBuilder defendantBuilder;
 
     @Before
     public void setUp() {
+        defendantBuilder = CreateCase.DefendantBuilder.withDefaults();
         stubResultDefinitions();
+        stubProsecutorQuery(TFL.name(), TFL.getFullName(), randomUUID());
+        stubEnforcementAreaByPostcode(defendantBuilder.getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode("1080", "TestRegion");
     }
 
     @Test
     public void verifyInitialSearchDetailsAndUpdateToDefendantDetails() {
-        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = withDefaults();
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = withDefaults().withDefendantBuilder(defendantBuilder);
+
         createCaseForPayloadBuilder(createCasePayloadBuilder);
         final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
                 createCasePayloadBuilder.getUrn(),
@@ -65,7 +72,7 @@ public class SearchCasesIT extends BaseIntegrationTest {
     public void findsDefendantByHistoricalLastName() {
 
         // Given a case is created, which defendant record's name will be updated
-        final CreateCase.CreateCasePayloadBuilder historicalCaseToBeUpdated = CreateCase.CreateCasePayloadBuilder.withDefaults();
+        final CreateCase.CreateCasePayloadBuilder historicalCaseToBeUpdated = CreateCase.CreateCasePayloadBuilder.withDefaults().withDefendantBuilder(defendantBuilder);
         historicalCaseToBeUpdated
                 .getDefendantBuilder()
                 .withLastName("deHistorical");
@@ -120,8 +127,7 @@ public class SearchCasesIT extends BaseIntegrationTest {
         stubAssignmentReplicationCommands();
 
         //given case is created
-        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = withDefaults();
-        stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = withDefaults().withDefendantBuilder(defendantBuilder);
         createCaseForPayloadBuilder(createCasePayloadBuilder);
 
         final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(

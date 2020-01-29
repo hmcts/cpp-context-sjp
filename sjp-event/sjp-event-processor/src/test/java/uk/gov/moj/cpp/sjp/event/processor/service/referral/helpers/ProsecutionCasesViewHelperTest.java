@@ -4,6 +4,7 @@ import static java.lang.String.valueOf;
 import static java.time.LocalDate.now;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -32,6 +33,7 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.ContactView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.DefendantView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.EmployerOrganisationView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.NotifiedPleaView;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.OffenceFactsView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.OffenceView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.PersonDetailsView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseIdentifierView;
@@ -120,6 +122,38 @@ public class ProsecutionCasesViewHelperTest {
         List<Offence> offences = createOffences(OFFENCE_ID1, OFFENCE_ID2);
 
         createProsecutionCaseViewsAndVerifyResultCorrect(DECISION_DATE.toLocalDate(), null, createEmployer(), createDefendantPersonalDetails()
+                        .withContactDetails(ContactDetails.contactDetails()
+                                .withBusiness(null)
+                                .withHome("")
+                                .withEmail("")
+                                .withEmail2(null)
+                                .withMobile("")
+                                .build()
+                        )
+                , VerdictType.FOUND_NOT_GUILTY, offences);
+    }
+
+    @Test
+    public void shouldCreateProsecutionViewWhenDefendantTitleIsNull() {
+        List<Offence> offences = createOffences(OFFENCE_ID1, OFFENCE_ID2);
+
+        createProsecutionCaseViewsAndVerifyResultCorrect(DECISION_DATE.toLocalDate(), null, createEmployer(), createDefendantPersonalDetails().withTitle(null)
+                        .withContactDetails(ContactDetails.contactDetails()
+                                .withBusiness(null)
+                                .withHome("")
+                                .withEmail("")
+                                .withEmail2(null)
+                                .withMobile("")
+                                .build()
+                        )
+                , VerdictType.FOUND_NOT_GUILTY, offences);
+    }
+
+    @Test
+    public void shouldCreateProsecutionViewWhenDefendantTitleIsNotStandard() {
+        List<Offence> offences = createOffences(OFFENCE_ID1, OFFENCE_ID2);
+
+        createProsecutionCaseViewsAndVerifyResultCorrect(DECISION_DATE.toLocalDate(), null, createEmployer(), createDefendantPersonalDetails().withTitle("Doctor")
                         .withContactDetails(ContactDetails.contactDetails()
                                 .withBusiness(null)
                                 .withHome("")
@@ -224,6 +258,85 @@ public class ProsecutionCasesViewHelperTest {
         assetOffenceView(offenceView2, offences.get(1), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
     }
 
+    @Test
+    public void shouldCreateMultipleOffenceViewsAndGetOffenceFactsWithVehicleMakeAndRegistration() {
+
+        final List<Offence> offences = new ArrayList<>();
+
+        final Offence referredOffence1 = Offence.offence()
+                .withCjsCode(OFFENCE_CJS_CODE1)
+                .withId(OFFENCE_ID1)
+                .withOffenceCode("offence code")
+                .withPlea(PleaType.GUILTY_REQUEST_HEARING)
+                .withPleaDate(PLEA_DATE)
+                .withWording("wording")
+                .withWordingWelsh("welsh wording")
+                .withStartDate(now().toString())
+                .withChargeDate(now().minusDays(5).toString())
+                .withOffenceSequenceNumber(1)
+                .withVehicleMake("TESTMAKE")
+                .withVehicleRegistrationMark("TES61 TTT")
+                .build();
+        offences.add(referredOffence1);
+
+        final Offence nonReferredOffence = Offence.offence()
+                .withCjsCode(OFFENCE_CJS_CODE1)
+                .withId(OFFENCE_ID2)
+                .withOffenceCode("offence code")
+                .withPlea(PleaType.GUILTY_REQUEST_HEARING)
+                .withPleaDate(PLEA_DATE)
+                .withWording("wording")
+                .withWordingWelsh("welsh wording")
+                .withStartDate(now().toString())
+                .withChargeDate(now().minusDays(5).toString())
+                .withProsecutionFacts("Prosecution facts")
+                .withOffenceSequenceNumber(3)
+                .build();
+        offences.add(nonReferredOffence);
+
+        final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
+                .withReferredAt(DECISION_DATE)
+                .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
+                .build();
+
+        final NotifiedPleaView notifiedPleaView = new NotifiedPleaView(
+                offences.get(0).getId(),
+                now(),
+                "NOTIFIED_GUILTY");
+
+        final PersonalDetails defendantPersonalDetails = createDefendantPersonalDetails().build();
+        final CaseDetails caseDetails = createCaseDetails(defendantPersonalDetails, offences);
+
+        final JsonObject prosecutor = createProsecutor();
+        final EmployerDetails employer = createEmployer();
+        final JsonObject caseFileDefendantDetails = createCaseFileDefendantDetails();
+
+        final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
+                caseDetails,
+                prosecutor,
+                caseFileDefendantDetails,
+                employer,
+                nonNull(caseFileDefendantDetails) ? DEFENDANT_NATIONALITY_ID : null,
+                DEFENDANT_ETHNICITY_ID,
+                caseReferredForCourtHearing,
+                OFFENCE_MITIGATION,
+                mockCJSOffenceCodeToOffenceDefinitionId(),
+                Arrays.asList(offences.get(0), offences.get(1)));
+
+        assertThat(prosecutionCaseViews.size(), is(1));
+
+        final ProsecutionCaseView prosecutionCaseView = prosecutionCaseViews.get(0);
+        assertProsecutionView(prosecutionCaseView, nonReferredOffence, caseFileDefendantDetails);
+
+        final DefendantView defendantView = prosecutionCaseView.getDefendants().get(0);
+
+        assertDefendantDetailsMatch(defendantPersonalDetails, defendantView, employer, caseFileDefendantDetails, employer, 2);
+
+        final OffenceView offenceView1 = defendantView.getOffences().get(0);
+        assetOffenceView(offenceView1, offences.get(0), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
+
+    }
+
     private void createProsecutionCaseViewsAndVerifyResultCorrect(final LocalDate expectedConvictionDate,
                                                                   final JsonObject caseFileDefendantDetails,
                                                                   final EmployerDetails employer,
@@ -288,6 +401,8 @@ public class ProsecutionCasesViewHelperTest {
         assertThat(offenceView.getNotifiedPlea(), is(notifiedPleaView));
         assertThat(offenceView.getConvictionDate(), is(expectedConvictionDate));
         assertThat(offenceView.getCount(), is(1));
+        assertThat(ofNullable(offenceView.getOffenceFacts()).map(OffenceFactsView::getVehicleMake).orElse(null), is(offence.getVehicleMake()));
+        assertThat(ofNullable(offenceView.getOffenceFacts()).map(OffenceFactsView::getVehicleRegistration).orElse(null), is(offence.getVehicleRegistrationMark()));
     }
 
     private void assertDefendantDetailsMatch(final PersonalDetails defendantPersonalDetails,
@@ -308,7 +423,7 @@ public class ProsecutionCasesViewHelperTest {
         final PersonDetailsView personalDetailsView = defendantView.getPersonDefendant().getPersonDetails();
         assertThat(personalDetailsView.getFirstName(), is(defendantPersonalDetails.getFirstName()));
         assertThat(personalDetailsView.getLastName(), is(defendantPersonalDetails.getLastName()));
-        assertThat(personalDetailsView.getTitle(), is(defendantPersonalDetails.getTitle().toUpperCase()));
+        assertThat(personalDetailsView.getTitle(), is(nonNull(defendantPersonalDetails.getTitle()) ? defendantPersonalDetails.getTitle().toUpperCase() : null));
         assertThat(personalDetailsView.getDateOfBirth(), is(defendantPersonalDetails.getDateOfBirth()));
         assertThat(personalDetailsView.getGender(), is(defendantPersonalDetails.getGender().name()));
 

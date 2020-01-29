@@ -72,11 +72,11 @@ public class RINSTLResultCodeConverterTest extends ResultCodeConverterTest {
     protected JsonArray getExpectedPrompts() {
         return  createArrayBuilder()
                 .add(createObjectBuilder()
-                        .add("promptDefinitionId", "a507cdea-336e-465a-9bf2-0c7bb5a3d9c7")
+                        .add("promptDefinitionId", "1393acda-7a35-4d65-859d-6298e1470cf1")
                         .add("value", instalmentAmountTerminalEntry)
                 )
                 .add(createObjectBuilder()
-                        .add("promptDefinitionId", "0ed44d89-51b7-451d-8b80-49678c40b1b9")
+                        .add("promptDefinitionId", "f2a61e80-c13e-4f44-8e91-8ce23e85596b")
                         .add("value", frequencyTerminalEntry)
                 )
                 .add(createObjectBuilder()

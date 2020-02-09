@@ -31,7 +31,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getUpdateDefendantNationalInsuranceNumberGroups() {
-        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getUploadCaseDocumentActionGroups() {
@@ -43,7 +43,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getUpdateFinancialMeansGroups() {
-        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getUpdateEmployerGroups() {
@@ -75,7 +75,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getUpdateDefendantDetails() {
-        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getUpdateHearingRequirementsGroups() {
@@ -119,7 +119,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getSetPleasGroups(){
-        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getSaveDecisionActionGroups() {

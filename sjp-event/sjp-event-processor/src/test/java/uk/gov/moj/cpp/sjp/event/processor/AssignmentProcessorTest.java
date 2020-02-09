@@ -205,6 +205,10 @@ public class AssignmentProcessorTest {
                 withMetadataEnvelopedFrom(caseAssignedEvent).withName("assignment.command.remove-assignment"),
                 payloadIsJson(withJsonPath("domainObjectId", equalTo(caseId.toString())))
         )));
+
+        verify(sender).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(caseAssignedEvent).withName(AssignmentProcessor.PUBLIC_SJP_CASE_UNASSIGNED),
+                payloadIsJson(withJsonPath(CASE_ID, equalTo(caseId.toString()))))));
     }
 
     @Test

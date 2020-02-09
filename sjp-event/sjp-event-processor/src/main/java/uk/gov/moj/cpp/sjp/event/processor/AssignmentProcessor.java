@@ -40,7 +40,7 @@ public class AssignmentProcessor {
     public static final String PUBLIC_SJP_CASE_ASSIGNED = "public.sjp.case-assigned";
     public static final String PUBLIC_SJP_CASE_NOT_ASSIGNED = "public.sjp.case-not-assigned";
     public static final String PUBLIC_SJP_CASE_ASSIGNMENT_REJECTED = "public.sjp.case-assignment-rejected";
-
+    public static final String PUBLIC_SJP_CASE_UNASSIGNED = "public.sjp.case-unassigned";
     private static final Duration CASE_TIMEOUT_DURATION = Duration.ofMinutes(60);
 
     @Inject
@@ -128,6 +128,8 @@ public class AssignmentProcessor {
 
         caseAssignmentTimeoutProcess.cancelTimer(caseId);
 
+        emitCaseUnAssignedPublicEvent(caseId, caseUnassignedEvent);
+
         //TODO remove (ATCM-3097)
         sender.send(enveloper.withMetadataFrom(caseUnassignedEvent, "assignment.command.remove-assignment")
                 .apply(assignmentReplicationPayload));
@@ -159,5 +161,14 @@ public class AssignmentProcessor {
                 .build();
 
         sender.send(enveloper.withMetadataFrom(envelope, "sjp.command.assign-case-from-candidates-list").apply(payload));
+    }
+
+    private void emitCaseUnAssignedPublicEvent(final UUID caseId, final JsonEnvelope event) {
+        final JsonObject publicEventPayload = createObjectBuilder()
+                .add(CASE_ID, caseId.toString())
+                .build();
+
+        sender.send(enveloper.withMetadataFrom(event, PUBLIC_SJP_CASE_UNASSIGNED)
+                .apply(publicEventPayload));
     }
 }

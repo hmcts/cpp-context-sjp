@@ -93,10 +93,10 @@ public class ReferenceDataService {
         return response.payloadAsJsonObject();
     }
 
-    public JsonObject getDocumentMetadata(final LocalDate date, final JsonEnvelope envelope) {
+    public JsonObject getDocumentTypeAccess(final LocalDate date, final JsonEnvelope envelope) {
         final JsonObject payload = createObjectBuilder().add("date", date.toString()).build();
         final JsonEnvelope request = enveloper.withMetadataFrom(
-                envelope, "referencedata.get-all-document-metadata").apply(payload);
+                envelope, "referencedata.get-all-document-type-access").apply(payload);
         final JsonEnvelope response = requester.requestAsAdmin(request);
         return response.payloadAsJsonObject();
     }

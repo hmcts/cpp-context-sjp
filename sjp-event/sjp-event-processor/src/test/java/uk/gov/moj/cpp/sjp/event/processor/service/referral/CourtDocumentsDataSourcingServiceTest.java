@@ -91,7 +91,7 @@ public class CourtDocumentsDataSourcingServiceTest {
         final Map<UUID, UUID> expectedDocumentMetaDataMap = createDocumentIdToDocumentTypeId();
 
         when(materialService.getMaterialMetadata(MATERIAL_ID, emptyEnvelopeWithReferralEventMetadata)).thenReturn(materialDataMock);
-        when(referenceDataService.getDocumentMetadata(MATERIAL_ADDED_DATE.toLocalDate(), emptyEnvelopeWithReferralEventMetadata)).thenReturn(documentsMetadataMock);
+        when(referenceDataService.getDocumentTypeAccess(MATERIAL_ADDED_DATE.toLocalDate(), emptyEnvelopeWithReferralEventMetadata)).thenReturn(documentsMetadataMock);
         when(caseDocumentTypeHelper.getDocumentType(SJP_DOCUMENT_TYPE)).thenReturn(CC_DOCUMENT_TYPE);
 
         courtDocumentsDataSourcingService.createCourtDocumentViews(caseReferredForCourtHearing, caseDetails, emptyEnvelopeWithReferralEventMetadata);
@@ -101,9 +101,9 @@ public class CourtDocumentsDataSourcingServiceTest {
 
     private JsonObject createDocumentsMetadata() {
         return createObjectBuilder()
-                .add("documentsMetadata", createArrayBuilder()
+                .add("documentsTypeAccess", createArrayBuilder()
                         .add(createObjectBuilder()
-                                .add("documentType", CC_DOCUMENT_TYPE)
+                                .add("section", CC_DOCUMENT_TYPE)
                                 .add("id", DOCUMENT_TYPE_ID.toString())))
                 .build();
     }

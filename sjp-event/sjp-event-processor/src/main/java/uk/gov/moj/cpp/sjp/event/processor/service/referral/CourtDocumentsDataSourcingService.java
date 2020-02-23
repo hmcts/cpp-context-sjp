@@ -78,13 +78,13 @@ public class CourtDocumentsDataSourcingService {
             final LocalDate date,
             final JsonEnvelope emptyEnvelopeWithCourtDocumentsMetadata) {
 
-        return referenceDataService.getDocumentMetadata(date,
+        return referenceDataService.getDocumentTypeAccess(date,
                 emptyEnvelopeWithCourtDocumentsMetadata)
-                .getJsonArray("documentsMetadata")
+                .getJsonArray("documentsTypeAccess")
                 .getValuesAs(JsonObject.class)
                 .stream()
                 .collect(toMap(
-                        metadata -> normalizedDocumentType(metadata.getString("documentType")),
+                        metadata -> normalizedDocumentType(metadata.getString("section")),
                         metadata -> fromString(metadata.getString("id"))
                 ));
     }

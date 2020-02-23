@@ -184,17 +184,17 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
-    public void shouldReturnDocumentsMetaData() {
+    public void shouldReturnDocumentsTypeAccess() {
         final JsonObject responsePayload = createObjectBuilder().add("date", Json.createArrayBuilder()).build();
         final JsonEnvelope queryResponse = envelopeFrom(
-                metadataWithRandomUUID("referencedata.get-all-document-metadata"),
+                metadataWithRandomUUID("referencedata.get-all-document-type-access"),
                 responsePayload);
 
         final LocalDate date = LocalDate.now();
-        when(requestDocumentMetadata()).thenReturn(queryResponse);
+        when(requestDocumentTypeAccess()).thenReturn(queryResponse);
 
-        final JsonObject documentsMetadata = referenceDataService.getDocumentMetadata(date, envelope);
-        assertThat(documentsMetadata, is(responsePayload));
+        final JsonObject documentTypeAccess = referenceDataService.getDocumentTypeAccess(date, envelope);
+        assertThat(documentTypeAccess, is(responsePayload));
     }
 
     @Test
@@ -236,9 +236,9 @@ public class ReferenceDataServiceTest {
                 payloadIsJson(withJsonPath("$.code", equalTo(ethnicityCode))))));
     }
 
-    private Object requestDocumentMetadata() {
+    private Object requestDocumentTypeAccess() {
         return requester.requestAsAdmin(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope).withName("referencedata.get-all-document-metadata"),
+                withMetadataEnvelopedFrom(envelope).withName("referencedata.get-all-document-type-access"),
                 payloadIsJson(notNullValue()))));
     }
 

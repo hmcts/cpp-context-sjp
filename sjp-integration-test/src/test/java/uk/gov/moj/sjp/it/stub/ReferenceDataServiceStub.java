@@ -122,16 +122,16 @@ public class ReferenceDataServiceStub {
     public static void stubReferralDocumentMetadataQuery(final String id, final String documentType) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
 
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/documents-metadata/.*";
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/documents-type-access/.*";
 
         stubFor(get(urlPathMatching(urlPath))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader(ID, randomUUID().toString())
-                        .withHeader(CONTENT_TYPE, "application/vnd.referencedata.get-all-document-metadata+json")
+                        .withHeader(CONTENT_TYPE, "application/vnd.referencedata.get-all-document-type-access+json")
                         .withBody(createObjectBuilder()
-                                .add("documentsMetadata", createArrayBuilder()
+                                .add("documentsTypeAccess", createArrayBuilder()
                                         .add(createObjectBuilder()
-                                                .add("documentType", documentType)
+                                                .add("section", documentType)
                                                 .add("id", id)))
                                 .build()
                                 .toString())));

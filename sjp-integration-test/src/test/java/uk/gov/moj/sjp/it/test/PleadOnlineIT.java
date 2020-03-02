@@ -10,13 +10,14 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.*;
 import static javax.json.Json.createObjectBuilder;
+import static javax.json.Json.createReader;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -122,6 +123,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     private static final String TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__not-guilty.json";
     private static final String TEMPLATE_PLEA_MULTI_OFFENCE_PAYLOAD = "raml/json/sjp.command.plead-online__multi_offence.json";
+    private static final String TEMPLATE_PLEA_MULTI_OFFENCE_CUSTOM_V2 = "raml/json/sjp.command.plead-online__multi_offence_v2.json";
     private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__guilty.json";
     private static final String TEMPLATE_PLEA_GUILTY_REQUEST_HEARING_PAYLOAD = "raml/json/sjp.command.plead-online__guilty_request_hearing.json";
     private static final String TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_RESPONSE = "raml/json/sjp.command.plead-online__guilty_with_finances_response.json";
@@ -135,21 +137,20 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private static final String DEFENDANT_DETAIL_UPDATES_CONTENT_TYPE = "application/vnd.sjp.query.defendant-details-updates+json";
     private static final String ENGLISH_TEMPLATE_ID = "07d1f043-6052-4d18-adce-58678d0e7018";
     private static final Set<UUID> DEFAULT_STUBBED_USER_ID = singleton(USER_ID);
-    private EmployerHelper employerHelper;
-    private FinancialMeansHelper financialMeansHelper;
-    private PersonInfoVerifier personInfoVerifier;
-    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private static final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
-    private final EventListener eventListener = new EventListener();
-    private UUID offenceId;
     private static final UUID REFERRAL_REASON_ID = randomUUID();
     private static final String HEARING_CODE = "PLE";
     private static final String REFERRAL_REASON = "referral reason";
-
     private static final UUID HEARING_TYPE_ID = fromString("06b0c2bf-3f98-46ed-ab7e-56efaf9ecced");
     private static final String HEARING_DESCRIPTION = "Plea & Trial Preparation";
     private static final String DEFENDANT_REGION = "croydon";
     private static final String NATIONAL_COURT_CODE = "1080";
+    private final EventListener eventListener = new EventListener();
+    private EmployerHelper employerHelper;
+    private FinancialMeansHelper financialMeansHelper;
+    private PersonInfoVerifier personInfoVerifier;
+    private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
+    private UUID offenceId;
 
     @Before
     public void setUp() throws Exception {
@@ -333,6 +334,50 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                     .stream()
                     .anyMatch(e -> e.getString("firstName").equalsIgnoreCase("Testy"));
             assertThat(resultsContainUpdatedFirstNameValue, is(true));
+        }
+    }
+
+    @Test
+    public void shouldUpdateDefendantsCurrentFirstName() {
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+        final UUID caseId = randomUUID();
+        final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder.withDefaults();
+        final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
+
+        this.createCasePayloadBuilder = SetPleasHelper.createCase(caseId, defendantBuilder, offenceId1, offenceId2, offenceId3, postingDate);
+
+        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId, defendantBuilder.getId())) {
+            final Map<String, String> values = new HashMap<>();
+            values.put("offenceId1", offenceId1.toString());
+            values.put("offenceId2", offenceId2.toString());
+            values.put("offenceId3", offenceId3.toString());
+            values.put("plea1", GUILTY.name());
+            values.put("plea2", NOT_GUILTY.name());
+            values.put("plea3", GUILTY.name());
+            values.put("mitigation", "I was drunk at the time");
+            values.put("notGuiltyBecause", "I was forced to do it");
+            values.put("firstName", "Anewname");
+            values.put("email", "anotheremail@test.com");
+
+            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
+
+            final JsonPath pleadOnlinePayload = JsonPath.from(new StrSubstitutor(values).replace(getPayload(TEMPLATE_PLEA_MULTI_OFFENCE_CUSTOM_V2)));
+
+            pleadOnlineHelper.pleadOnline(pleadOnlinePayload.prettify());
+
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
+                    createCasePayloadBuilder.getUrn(),
+                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
+            caseSearchResultHelper.verifyPleaReceivedDate();
+
+            caseSearchResultHelper.verify(createCasePayloadBuilder.getUrn(), allOf(
+                    withJsonPath("$.results[*]", hasItem(isJson(allOf(
+                            withJsonPath("defendant.firstName", equalTo("Anewname")),
+                            withJsonPath("defendant.lastName", equalTo(defendantBuilder.getLastName()))
+                    ))))));
         }
     }
 

@@ -8,7 +8,6 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
-import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ACCOUNT_DIVISION_CODE;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.CREATED;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ENFORCING_COURT_CODE;
@@ -19,11 +18,6 @@ import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.OFFENCES;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.OFFENCE_DECISIONS;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.TYPE;
 
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.core.annotation.Component;
-import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
@@ -45,38 +39,37 @@ import javax.json.JsonObjectBuilder;
 
 public class ResultsService {
 
-    @Inject
-    private Enveloper enveloper;
-
-    @Inject
-    private JsonObjectToObjectConverter converter;
-
-    @Inject
-    @ServiceComponent(Component.EVENT_PROCESSOR)
-    private Requester requester;
-
-    @Inject
-    private CaseService caseService;
-
-    @Inject
-    private ReferenceDataService referenceDataService;
-
-    @Inject
-    private DecisionSavedOffenceConverter decisionSavedOffenceConverter;
-
-    @Inject
-    private ReferencedDecisionSavedOffenceConverter referencedDecisionSavedOffenceConverter;
-
-    @Inject
-    private OffenceHelper offenceHelper;
-
-    @Inject
-    private EmployerService employerService;
-
     private static final String CASE_ID = "caseId";
     private static final String SJP_SESSION_ID = "sjpSessionId";
     private static final String DECISION_ID = "decisionId";
     private static final String RESULTED_ON = "resultedOn";
+
+    private CaseService caseService;
+
+    private ReferenceDataService referenceDataService;
+
+    private DecisionSavedOffenceConverter decisionSavedOffenceConverter;
+
+    private ReferencedDecisionSavedOffenceConverter referencedDecisionSavedOffenceConverter;
+
+    private OffenceHelper offenceHelper;
+
+    private EmployerService employerService;
+
+    @Inject
+    public ResultsService(final CaseService caseService,
+                          final ReferenceDataService referenceDataService,
+                          final DecisionSavedOffenceConverter decisionSavedOffenceConverter,
+                          final ReferencedDecisionSavedOffenceConverter referencedDecisionSavedOffenceConverter,
+                          final OffenceHelper offenceHelper,
+                          final EmployerService employerService){
+        this.caseService = caseService;
+        this.referenceDataService = referenceDataService;
+        this.decisionSavedOffenceConverter = decisionSavedOffenceConverter;
+        this.referencedDecisionSavedOffenceConverter = referencedDecisionSavedOffenceConverter;
+        this.offenceHelper = offenceHelper;
+        this.employerService  = employerService;
+    }
 
     public JsonObject findCaseResults(JsonEnvelope envelope) {
 
@@ -89,15 +82,18 @@ public class ResultsService {
 
         final JsonArrayBuilder decisions = createArrayBuilder();
         aCase.getCaseDecisions().forEach(caseDecision -> {
+            // query the view and covert to the event payload structure
             final JsonEnvelope decisionSavedEvent = convertToDecisionSavedEvent(envelope, caseDecision);
 
             final JsonObject enforcementArea = getEnforcementArea(decisionSavedEvent, caseDecision.getSession(), aCase);
 
+            // convert to the RESULTING structure
             final JsonEnvelope referencedDecisionSavedEvent = convertToReferencedDecisionSaved(decisionSavedEvent, enforcementArea);
 
             caseResultsPayload.add("accountDivisionCode", referencedDecisionSavedEvent.payloadAsJsonObject().getInt("accountDivisionCode"));
             caseResultsPayload.add("enforcingCourtCode", referencedDecisionSavedEvent.payloadAsJsonObject().getInt("enforcingCourtCode"));
 
+            // // convert to the generic/common RESULTS structure
             final JsonObject publicReferencedDecisionSaved = convertToPublicReferencedDecisionSavedEvent(referencedDecisionSavedEvent, aCase);
 
             decisions.add(publicReferencedDecisionSaved);
@@ -156,8 +152,10 @@ public class ResultsService {
         final JsonArrayBuilder offenceDecisions = createArrayBuilder();
 
         caseDecisionView.getOffenceDecisions().stream()
-                .filter(offenceDecisionView -> offenceDecisionView.getDecisionType().compareTo(ADJOURN) != 0)
-                .forEach(offenceDecisionView -> offenceDecisions.add(decisionSavedOffenceConverter.convertOffenceDecision(offenceDecisionView)));
+                .forEach(offenceDecisionView -> {
+                    final JsonObject jsonObject = decisionSavedOffenceConverter.convertOffenceDecision(offenceDecisionView);
+                    offenceDecisions.add(jsonObject);
+                });
 
         decisionSavedPayload.add(OFFENCE_DECISIONS, offenceDecisions);
 

@@ -88,6 +88,7 @@ public class CaseResultsConstants {
 
     public static final String TYPE = "type";
     public static final String WITHDRAW_REASON_ID = "withdrawalReasonId";
+    public static final String REFERRAL_REASON_ID = "referralReasonId";
     public static final String ADJOURN_TO = "adjournTo";
     public static final String DISCHARGE_TYPE = "dischargeType";
 
@@ -113,7 +114,6 @@ public class CaseResultsConstants {
     public static final String INSTALLMENTS = "installments";
 
     public static final String AMOUNT = "amount";
-    public static final String INSTALLMENT_PERIOD = "installmentPeriod";
     public static final String START_DATE = "startDate";
     public static final String WITHIN_DAYS = "withinDays";
     public static final String PAY_BY_DATE = "payByDate";

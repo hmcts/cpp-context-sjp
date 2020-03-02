@@ -61,11 +61,10 @@
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
     },
     "vehicleMake": {
-      "type": "string",
-      "maxLength": 30
+      "type": "string"
     },
     "vehicleRegistrationMark": {
-      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/vehicleRegistrationMark"
+      "type": "string"
     },
     "penaltyType": {
       "type": "string"

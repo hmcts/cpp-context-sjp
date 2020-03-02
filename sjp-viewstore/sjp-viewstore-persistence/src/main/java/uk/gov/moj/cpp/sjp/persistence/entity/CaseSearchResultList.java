@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
 import java.time.LocalDate;
@@ -20,31 +21,29 @@ public class CaseSearchResultList {
         this.caseSearchResults = caseSearchResults;
     }
 
-    private Optional<CaseSearchResult> getCurrent() {
-        return caseSearchResults.stream().filter(r -> !r.isDeprecated()).findFirst();
-    }
-
     public void setName(final UUID caseId, final UUID defendantId, final String newFirstName, final String newLastName,
                         final LocalDate newDateOfBirth, final ZonedDateTime dateAdded) {
-        final CaseSearchResult newEntry = getNewEntry(caseId, defendantId, newFirstName, newLastName, newDateOfBirth, dateAdded);
-        caseSearchResults.forEach(entry -> {
-            entry.setDeprecated(true);
-            ofNullable(newFirstName).ifPresent(entry::setCurrentFirstName);
-            ofNullable(newLastName).ifPresent(entry::setCurrentLastName);
-        });
-        caseSearchResults.add(newEntry);
-    }
 
-    private CaseSearchResult getNewEntry(final UUID caseId, final UUID defendantId, final String newFirstName, final String newLastName,
-                                         final LocalDate newDateOfBirth, final ZonedDateTime dateAdded) {
         final Optional<CaseSearchResult> latest = getCurrent();
+
         final CaseSearchResult newEntry = new CaseSearchResult(caseId, defendantId, newFirstName, newLastName, newDateOfBirth, dateAdded);
         latest.ifPresent(r -> {
+            final String firstName = ofNullable(newFirstName).orElse(r.getFirstName());
+            final String lastName = ofNullable(newLastName).orElse(r.getLastName());
+            newEntry.setFirstName(firstName);
+            newEntry.setLastName(lastName);
+            newEntry.setCurrentFirstName(firstName);
+            newEntry.setCurrentLastName(lastName);
             newEntry.setWithdrawalRequestedDate(r.getWithdrawalRequestedDate());
-            newEntry.setFirstName(ofNullable(newFirstName).orElse(r.getFirstName()));
-            newEntry.setLastName(ofNullable(newLastName).orElse(r.getLastName()));
         });
-        return newEntry;
+
+        caseSearchResults.forEach(entry -> {
+            entry.setDeprecated(true);
+            entry.setCurrentFirstName(newEntry.getCurrentFirstName());
+            entry.setCurrentLastName(newEntry.getCurrentLastName());
+        });
+
+        caseSearchResults.add(newEntry);
     }
 
     public void setDateOfBirth(final LocalDate dateOfBirth) {
@@ -64,9 +63,16 @@ public class CaseSearchResultList {
 
     public boolean hasNameChanged(final String newFirstName, final String newLastName) {
         return getCurrent()
-                .map(old ->
-                        !StringUtils.equalsIgnoreCase(newFirstName, old.getFirstName()) ||
-                                !StringUtils.equalsIgnoreCase(newLastName, old.getLastName()))
+                .map(old -> equalsIgnoreCaseAndNull(newFirstName, old.getFirstName()) ||
+                        equalsIgnoreCaseAndNull(newLastName, old.getLastName()))
                 .orElse(true);
+    }
+
+    private Optional<CaseSearchResult> getCurrent() {
+        return caseSearchResults.stream().filter(r -> !r.isDeprecated()).findFirst();
+    }
+
+    private boolean equalsIgnoreCaseAndNull(final String newName, final String oldName) {
+        return nonNull(newName) && !StringUtils.equalsIgnoreCase(newName, oldName);
     }
 }

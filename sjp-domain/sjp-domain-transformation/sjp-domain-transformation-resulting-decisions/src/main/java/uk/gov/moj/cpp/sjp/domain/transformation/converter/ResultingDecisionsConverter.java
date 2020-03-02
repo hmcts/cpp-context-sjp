@@ -27,7 +27,6 @@ import static uk.gov.moj.cpp.sjp.event.CaseCompleted.EVENT_NAME;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.transformation.exception.TransformationException;
 import uk.gov.moj.cpp.sjp.domain.transformation.service.SjpViewStoreService;
-import uk.gov.moj.cpp.sjp.domain.transformation.util.UUIDGenerator;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 
 import java.util.*;
@@ -50,7 +49,7 @@ public class ResultingDecisionsConverter {
 
     private static final String RSJP = "RSJP";
 
-    private UUIDGenerator uuidGenerator = new UUIDGenerator();
+    private static final String DEFAULT_SESSION_ID = "5a068cbe-9067-49a1-abee-9938c4c2af5c";
 
     static {
         INSTANCE_MAP.put("DISCHARGE", DischargeConverter.INSTANCE);
@@ -106,7 +105,7 @@ public class ResultingDecisionsConverter {
         final JsonObjectBuilder payloadJsonObjectBuilder;
         String sessionId;
         if (!decisionPayload.containsKey(SJP_SESSION_ID) && hasRSJP(decisionPayload)) {
-            sessionId = generateRandomUUID();
+            sessionId = DEFAULT_SESSION_ID;
         } else {
             sessionId = decisionPayload.getString(SJP_SESSION_ID);
         }
@@ -239,14 +238,4 @@ public class ResultingDecisionsConverter {
 
         return false;
     }
-
-    public String generateRandomUUID() {
-        return uuidGenerator.generateRandomUUID();
-    }
-
-    public void setUUIDGenerator(UUIDGenerator uuidGenerator) {
-        this.uuidGenerator = uuidGenerator;
-    }
-
-
 }

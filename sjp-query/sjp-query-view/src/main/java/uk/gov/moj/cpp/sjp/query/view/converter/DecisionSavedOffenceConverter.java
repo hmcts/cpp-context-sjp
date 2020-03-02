@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.converter;
 
 import static java.util.Objects.nonNull;
+import static java.util.Optional.*;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.*;
@@ -22,6 +23,9 @@ public class DecisionSavedOffenceConverter {
     public JsonObject convertOffenceDecision(OffenceDecisionView offenceDecisionView) {
         final JsonObjectBuilder offenceDecisionBuilder = createObjectBuilder()
                 .add(TYPE, offenceDecisionView.getDecisionType().toString());
+
+        ofNullable(offenceDecisionView.getReferralReasonId())
+                .ifPresent(referralReasonId -> offenceDecisionBuilder.add(REFERRAL_REASON_ID, referralReasonId.toString()));
 
         if(nonNull(offenceDecisionView.getWithdrawalReasonId())) {
             offenceDecisionBuilder.add(WITHDRAW_REASON_ID, offenceDecisionView.getWithdrawalReasonId().toString());

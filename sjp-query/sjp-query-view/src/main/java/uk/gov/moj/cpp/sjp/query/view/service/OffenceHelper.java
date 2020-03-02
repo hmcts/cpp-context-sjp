@@ -35,8 +35,12 @@ public class OffenceHelper {
     private static final String PROMPTS = "prompts";
     private static final String ID = "id";
 
-    @Inject
     private ReferenceDataService referenceDataService;
+
+    @Inject
+    public OffenceHelper(final ReferenceDataService referenceDataService) {
+        this.referenceDataService = referenceDataService;
+    }
 
     public JsonArray populateOffences(final CaseView caseView, final Employer employer, final JsonEnvelope sourceEnvelope){
         final JsonArrayBuilder offencesPayloadBuilder = createArrayBuilder();
@@ -97,6 +101,6 @@ public class OffenceHelper {
 
     private Optional<ResultCode> parseCode(final JsonObject result){
         final String code = result.getString(CODE, null);
-        return ResultCode.parse(code);
+        return ResultCode.parse("ADJOURN".equalsIgnoreCase(code) ? "ADJOURNSJP" : code);
     }
 }

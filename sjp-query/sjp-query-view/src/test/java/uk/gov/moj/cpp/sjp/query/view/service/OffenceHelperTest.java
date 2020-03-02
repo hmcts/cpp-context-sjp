@@ -53,15 +53,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class OffenceHelperTest {
 
-    /*@Mock
-    private SjpService sjpService;*/
 
     @Mock
     private ReferenceDataService referenceDataService;
 
-    @Spy
-    @InjectMocks
-    private OffenceHelper offenceHelper = new OffenceHelper();
+    private OffenceHelper offenceHelper;
 
     private static final UUID caseId = randomUUID();
     private static final UUID defendantId = randomUUID();
@@ -73,6 +69,7 @@ public class OffenceHelperTest {
 
     @Before
     public void init(){
+        offenceHelper = new OffenceHelper(referenceDataService);
         final OffenceDetail offenceDetail1 = OffenceDetail.builder()
                 .setId(offenceId1)
                 .setCode("PS90010")

@@ -29,6 +29,8 @@ import java.time.LocalDate;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import org.hamcrest.Matcher;
+
 public class CaseSearchResultHelper {
 
     public static final String CASE_SEARCH_RESULTS_MEDIA_TYPE = "application/vnd.sjp.query.case-search-results+json";
@@ -130,6 +132,11 @@ public class CaseSearchResultHelper {
 
         startMagistrateSession(sessionId, DEFAULT_USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, "Alan Smith");
         requestCaseAssignment(sessionId, DEFAULT_USER_ID);
+    }
+
+    public void verify(final String query, Matcher matcher) {
+        pollWithDefaults(searchCases(query, searchUserId))
+                .until(status().is(OK), payload().isJson(matcher));
     }
 
     private void verifyPersonInfo(final String query, final String lastName, final LocalDate dateOfBirth) {

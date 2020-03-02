@@ -13,7 +13,9 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.query.view.util.FileUtil.getFileContentAsJson;
+import static uk.gov.moj.cpp.sjp.query.view.util.FileUtil.getFileContentAsJsonArray;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -21,23 +23,28 @@ import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
+import uk.gov.moj.cpp.sjp.persistence.entity.AdjournOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.DismissOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
+import uk.gov.moj.cpp.sjp.persistence.entity.ReferForCourtHearingDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.ReferredToOpenCourtDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.Session;
+import uk.gov.moj.cpp.sjp.persistence.entity.WithdrawOffenceDecision;
 import uk.gov.moj.cpp.sjp.query.view.converter.DecisionSavedOffenceConverter;
 import uk.gov.moj.cpp.sjp.query.view.converter.ReferencedDecisionSavedOffenceConverter;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
-import uk.gov.moj.cpp.sjp.query.view.response.OffenceDecisionView;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -48,7 +55,7 @@ import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -59,30 +66,27 @@ public class ResultsServiceTest {
     private CaseService caseService;
 
     @Mock
-    private DecisionSavedOffenceConverter decisionSavedOffenceConverter;
-
-    @Mock
-    private ReferencedDecisionSavedOffenceConverter referencedDecisionSavedOffenceConverter;
-
-    @Mock
     private EmployerService employerService;
 
-    @Mock
     private OffenceHelper offenceHelper;
 
-    @InjectMocks
     private ResultsService resultsService;
 
     private static final UUID CASE_ID = randomUUID();
-    private static final UUID SESSION_ID = randomUUID();
-    private static final UUID RESULT_TYPE_ID = randomUUID();
-    private static final UUID RESULT_DEFINITION_ID = randomUUID();
-    private static final ZonedDateTime DECISION_SAVED_AT = ZonedDateTime.now();
+    private static final UUID SESSION_ID1 = randomUUID();
+    private static final UUID SESSION_ID2 = randomUUID();
+
+    private static final ZonedDateTime DECISION_SAVED_AT1 = ZonedDateTime.now();
+    private static final ZonedDateTime DECISION_SAVED_AT2 = ZonedDateTime.now();
+
     private final UUID OFFENCE_ID = randomUUID();
-    private final UUID DECISION_ID = randomUUID();
-    private JsonEnvelope decisionSavedEventForDismiss;
-    private JsonEnvelope referencedDecisionSavedEventForDismiss;
-    private JsonEnvelope resultedCaseEventForDismiss;
+
+    private final UUID DECISION_ID1 = randomUUID();
+    private final UUID DECISION_ID2 = randomUUID();
+
+    private JsonEnvelope resultedCaseEventForAdjourn;
+    private JsonEnvelope resultedCaseEventForWithdraw;
+    private JsonEnvelope resultedCaseEventForReferForCourtHearing;
 
     private static final UUID defendantId = randomUUID();
 
@@ -99,92 +103,119 @@ public class ResultsServiceTest {
 
     @Before
     public void setup() {
-        createCaseView();
+
+        final DecisionSavedOffenceConverter decisionSavedOffenceConverter = new DecisionSavedOffenceConverter();
+
+        final ReferencedDecisionSavedOffenceConverter referencedDecisionSavedOffenceConverter
+                = new ReferencedDecisionSavedOffenceConverter(referenceDataService);
+        offenceHelper = new OffenceHelper(referenceDataService);
+
+        resultsService = new ResultsService(
+                caseService,
+                referenceDataService,
+                decisionSavedOffenceConverter,
+                referencedDecisionSavedOffenceConverter,
+                offenceHelper,
+                employerService);
+
         createEmployer();
 
         metadataBuilder = metadataWithRandomUUID("sjp.events.case-completed");
 
-        decisionSavedEventForDismiss = createDecisionSavedEventForDismiss(metadataBuilder);
+        resultedCaseEventForAdjourn = createResultedCaseEventForAdjourn(metadataBuilder);
+        resultedCaseEventForWithdraw = createResultedCaseEventForWithdraw(metadataBuilder);
+        resultedCaseEventForReferForCourtHearing = createResultedCaseEventForReferForCourtHearing(metadataBuilder);
 
-        referencedDecisionSavedEventForDismiss = createReferencedDecisionSavedEventForDismiss(metadataBuilder);
+        final JsonArray jsonArray =  getFileContentAsJsonArray("case-results-tests/referencedata.query.results.json", new HashMap<>());
+        when(referenceDataService.getResultIds(Matchers.isA(JsonEnvelope.class))).thenReturn(jsonArray.getValuesAs(JsonObject.class));
 
-        resultedCaseEventForDismiss = createResultedCaseEventForDismiss(metadataBuilder);
+        final JsonArray withdrawalRequestReasons =  getFileContentAsJsonArray("case-results-tests/referencedata.offence-withdraw-request-reasons.json", new HashMap<>());
+        when(referenceDataService.getWithdrawalReasons(Matchers.isA(JsonEnvelope.class))).thenReturn(withdrawalRequestReasons.getValuesAs(JsonObject.class));
     }
 
     @Test
-    public void shouldConvertDismissToCaseResulted() {
+    public void shouldConvertWithdrawToCaseResulted() {
+
+        createCaseView(asList(getAdjournOffenceDecision(), getWithDrawCaseDecision()));
 
         when(caseService.findCase(CASE_ID)).thenReturn(caseView);
         when(employerService.getEmployer(defendantId)).thenReturn(ofNullable(employer));
 
-        final OffenceDecisionView offenceDecisionView = caseView.getCaseDecisions().get(0).getOffenceDecisions().get(0);
-
-        final JsonEnvelope envelope = envelopeFrom(metadataFrom(metadataBuilder.build()), createObjectBuilder()
-                .add("caseId", CASE_ID.toString()));
-
-        when(decisionSavedOffenceConverter.convertOffenceDecision(offenceDecisionView))
-                .thenReturn(decisionSavedEventForDismiss.payloadAsJsonObject().getJsonArray("offenceDecisions").getJsonObject(0));
-
-        final JsonArray offences = referencedDecisionSavedEventForDismiss.payloadAsJsonObject().getJsonArray("offences");
-
-        when(referencedDecisionSavedOffenceConverter.convertOffenceDecisions(any()))
-                .thenReturn(offences);
 
         final JsonObject enforcementArea = createObjectBuilder().add("accountDivisionCode", 77).add("enforcingCourtCode", 828).build();
-
         when(referenceDataService.getEnforcementAreaByPostcode(any(), any())).thenReturn(Optional.of(enforcementArea));
         when(referenceDataService.getEnforcementAreaByLocalJusticeAreaNationalCourtCode(any(), any())).thenReturn(Optional.of(enforcementArea));
 
-        when(offenceHelper.populateOffences(any(), any(), any())).thenReturn(resultedCaseEventForDismiss.payloadAsJsonObject().getJsonArray("offences"));
-
+        // find case results
+        final JsonEnvelope envelope = envelopeFrom(metadataFrom(metadataBuilder.build()), createObjectBuilder()
+                .add("caseId", CASE_ID.toString()));
         final JsonObject caseResults = resultsService.findCaseResults(envelope);
 
-        assertThat(caseResults.getJsonArray("caseDecisions").getJsonObject(0).getJsonArray("offences").toString(), is(resultedCaseEventForDismiss.payloadAsJsonObject().getJsonArray("offences").toString()));
+        assertThat(caseResults.getJsonArray("caseDecisions").getJsonObject(0).getJsonArray("offences").toString(),
+                is(resultedCaseEventForAdjourn.payloadAsJsonObject().getJsonArray("offences").toString()));
+
+        assertThat(caseResults.getJsonArray("caseDecisions").getJsonObject(1).getJsonArray("offences").toString(),
+                is(resultedCaseEventForWithdraw.payloadAsJsonObject().getJsonArray("offences").toString()));
+
     }
 
-    private JsonEnvelope createResultedCaseEventForDismiss(MetadataBuilder metadataBuilder) {
+    @Test
+    public void shouldConvertReferForCourtHearingToCaseResults() {
+
+        createCaseView(asList(getReferForCourtHearingDecision()));
+
+        when(caseService.findCase(CASE_ID)).thenReturn(caseView);
+        when(employerService.getEmployer(defendantId)).thenReturn(ofNullable(employer));
+
+
+        final JsonObject enforcementArea = createObjectBuilder().add("accountDivisionCode", 77).add("enforcingCourtCode", 828).build();
+        when(referenceDataService.getEnforcementAreaByPostcode(any(), any())).thenReturn(Optional.of(enforcementArea));
+        when(referenceDataService.getEnforcementAreaByLocalJusticeAreaNationalCourtCode(any(), any())).thenReturn(Optional.of(enforcementArea));
+
+        // find case results
+        final JsonEnvelope envelope = envelopeFrom(metadataFrom(metadataBuilder.build()), createObjectBuilder()
+                .add("caseId", CASE_ID.toString()));
+        final JsonObject caseResults = resultsService.findCaseResults(envelope);
+
+        assertThat(caseResults.getJsonArray("caseDecisions").getJsonObject(0).getJsonArray("offences").toString(),
+                is(resultedCaseEventForReferForCourtHearing.payloadAsJsonObject().getJsonArray("offences").toString()));
+
+    }
+
+    private JsonEnvelope createResultedCaseEventForWithdraw(MetadataBuilder metadataBuilder) {
         return envelopeFrom(metadataBuilder,
-                getFileContentAsJson("case-results-tests/case-resulted-event-for-dismiss.json",
+                getFileContentAsJson("case-results-tests/case-resulted-event-for-withdraw.json",
                         ImmutableMap.<String, Object>builder()
-                                .put("resultedOn", DECISION_SAVED_AT)
+                                .put("resultedOn", DECISION_SAVED_AT2)
                                 .put("offenceId", OFFENCE_ID)
-                                .put("resultDefinitionId", RESULT_DEFINITION_ID)
                                 .build()));
     }
 
-    private JsonEnvelope createReferencedDecisionSavedEventForDismiss(MetadataBuilder metadataBuilder) {
+    private JsonEnvelope createResultedCaseEventForAdjourn(MetadataBuilder metadataBuilder) {
         return envelopeFrom(metadataBuilder,
-                getFileContentAsJson("case-results-tests/referenced-decision-saved-event-for-dismiss.json",
+                getFileContentAsJson("case-results-tests/case-resulted-event-for-adjourn.json",
                         ImmutableMap.<String, Object>builder()
-                                .put("caseId", CASE_ID)
-                                .put("sessionId", SESSION_ID)
-                                .put("decisionId", DECISION_ID)
-                                .put("resultedOn", DECISION_SAVED_AT)
+                                .put("resultedOn", DECISION_SAVED_AT1)
                                 .put("offenceId", OFFENCE_ID)
-                                .put("accountDivisionCode", 77)
-                                .put("enforcingCourtCode", 828)
-                                .put("resultTypeId", RESULT_TYPE_ID)
                                 .build()));
     }
 
-    private JsonEnvelope createDecisionSavedEventForDismiss(MetadataBuilder metadataBuilder) {
+    private JsonEnvelope createResultedCaseEventForReferForCourtHearing(MetadataBuilder metadataBuilder) {
         return envelopeFrom(metadataBuilder,
-                getFileContentAsJson("case-results-tests/decision-saved-event-for-dismiss.json",
+                getFileContentAsJson("case-results-tests/case-resulted-event-for-refer-for-court-hearing.json",
                         ImmutableMap.<String, Object>builder()
-                                .put("caseId", CASE_ID)
-                                .put("sessionId", SESSION_ID)
-                                .put("decisionId", DECISION_ID)
-                                .put("resultedOn", DECISION_SAVED_AT)
+                                .put("resultedOn", DECISION_SAVED_AT1)
                                 .put("offenceId", OFFENCE_ID)
                                 .build()));
     }
+
 
     private void createEmployer() {
         uk.gov.moj.cpp.sjp.domain.Address address = new uk.gov.moj.cpp.sjp.domain.Address("14 Tottenham Court Road", "London", "England", "UK", "Greater London", postcode);
         employer = new Employer(defendantId, "McDonald's", "12345", "020 7998 9300", address);
     }
 
-    private void createCaseView() {
+    private void createCaseView(final List<CaseDecision> caseDecisionList) {
 
         final OffenceDetail offenceDetail1 = OffenceDetail.builder()
                 .setId(OFFENCE_ID)
@@ -230,19 +261,49 @@ public class ResultsServiceTest {
         caseDetail.setProsecutingAuthority(ProsecutingAuthority.DVLA);
         caseDetail.setDefendant(defendantDetail);
 
-        CaseDecision caseDecision = new CaseDecision();
-        caseDecision.setId(DECISION_ID);
-        caseDecision.setSavedAt(DECISION_SAVED_AT);
-
-        caseDecision.setSession(new Session(SESSION_ID, null, null, null, ljaNationalCourtCode, null, null));
-        caseDecision.setFinancialImposition(null);
-        caseDecision.setCaseId(CASE_ID);
-
-        OffenceDecision dismissOffenceDecision = new DismissOffenceDecision(OFFENCE_ID, DECISION_ID, FOUND_NOT_GUILTY);
-        caseDecision.setOffenceDecisions(asList(dismissOffenceDecision));
-
-        caseDetail.setCaseDecisions(asList(caseDecision));
+        caseDetail.setCaseDecisions(caseDecisionList);
 
         caseView = new CaseView(caseDetail, "DVLA");
+    }
+
+    private CaseDecision getAdjournOffenceDecision() {
+        final CaseDecision caseDecision = new CaseDecision();
+        caseDecision.setId(DECISION_ID1);
+        caseDecision.setSavedAt(DECISION_SAVED_AT1);
+        caseDecision.setSession(new Session(SESSION_ID1, null, null, null, ljaNationalCourtCode, null, null));
+        caseDecision.setCaseId(CASE_ID);
+        OffenceDecision adjournOffenceDecision = new AdjournOffenceDecision(OFFENCE_ID, DECISION_ID1, "No sufficient information yet", LocalDate.of(2020,02,18 ) ,FOUND_NOT_GUILTY);
+        caseDecision.setOffenceDecisions(asList(adjournOffenceDecision));
+        return caseDecision;
+    }
+
+    private CaseDecision getReferForCourtHearingDecision() {
+        final CaseDecision caseDecision = new CaseDecision();
+        caseDecision.setId(DECISION_ID1);
+        caseDecision.setSavedAt(DECISION_SAVED_AT1);
+        caseDecision.setSession(new Session(SESSION_ID1, null, null, null, ljaNationalCourtCode, null, null));
+        caseDecision.setCaseId(CASE_ID);
+
+
+        final OffenceDecision referredToOpenCourt = new ReferForCourtHearingDecision(
+                OFFENCE_ID,
+                DECISION_ID1,
+                UUID.fromString("809f7aac-d285-43a5-9fb1-3a894db71530"),
+                10,
+                "",
+                NO_VERDICT);
+        caseDecision.setOffenceDecisions(asList(referredToOpenCourt));
+        return caseDecision;
+    }
+
+    private CaseDecision getWithDrawCaseDecision() {
+        final CaseDecision caseDecision = new CaseDecision();
+        caseDecision.setId(DECISION_ID2);
+        caseDecision.setSavedAt(DECISION_SAVED_AT2);
+        caseDecision.setSession(new Session(SESSION_ID2, null, null, null, ljaNationalCourtCode, null, null));
+        caseDecision.setCaseId(CASE_ID);
+        final WithdrawOffenceDecision withdrawOffenceDecision = new WithdrawOffenceDecision(OFFENCE_ID, DECISION_ID2, UUID.fromString("030d4335-f9fe-39e0-ad7e-d01a0791ff87"), FOUND_NOT_GUILTY);
+        caseDecision.setOffenceDecisions(asList(withdrawOffenceDecision));
+        return caseDecision;
     }
 }

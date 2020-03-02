@@ -46,6 +46,7 @@ public class ReferencedDecisionSavedOffenceConverterTest {
     private static final String BACK_DUTY_RESULT_CODE = "FVEBD";
     private static final String EXCISE_PENALTY_RESULT_CODE = "EXPEN";
     private static final String ABSOLUTE_DISCHARGE_RESULT_CODE = "AD";
+    private static final String REFERRED_RESULT_CODE = "SUMRCC";
     private static final UUID LSUM_RESULT_TYPE_ID = UUID.fromString("49a84ca7-d5af-4292-b39e-777a478ca182");
     private static final UUID FVS_RESULT_TYPE_ID = UUID.fromString("3f464288-fb5b-4e6e-adb0-7133bc562cda");
     private static final UUID FCOST_RESULT_TYPE_ID = UUID.fromString("80673cfd-f40b-4088-9aa0-d192fb877e16");
@@ -56,9 +57,11 @@ public class ReferencedDecisionSavedOffenceConverterTest {
     private static final UUID BACK_DUTY_RESULT_TYPE_ID = UUID.fromString("ff640415-e485-4490-bfba-2b2b3c567248");
     private static final UUID EXCISE_PENALTY_RESULT_TYPE_ID = UUID.fromString("ce276903-632c-4796-921b-23035fa934cb");
     private static final UUID ABSOLUTE_DISCHARGE_RESULT_TYPE_ID = UUID.fromString("ba276903-632c-4796-921b-23035fa934cb");
+    private static final UUID REFERRED_RESULT_TYPE_ID = UUID.fromString("aa276903-632c-4796-921b-23035fa934ca");
     private static final DateTimeFormatter DATE_FORMAT = ofPattern("yyyy-MM-dd");
     private final UUID OFFENCE1_ID = randomUUID();
     private final UUID OFFENCE2_ID = randomUUID();
+    private final UUID OFFENCE3_ID = randomUUID();
     private final UUID DECISION1_ID = randomUUID();
     @InjectMocks
     private ReferencedDecisionSavedOffenceConverter referencedDecisionSavedOffenceConverter;
@@ -100,7 +103,10 @@ public class ReferencedDecisionSavedOffenceConverterTest {
                         .add("code", EXCISE_PENALTY_RESULT_CODE).build(),
                 createObjectBuilder()
                         .add("id", ABSOLUTE_DISCHARGE_RESULT_TYPE_ID.toString())
-                        .add("code", ABSOLUTE_DISCHARGE_RESULT_CODE).build()
+                        .add("code", ABSOLUTE_DISCHARGE_RESULT_CODE).build(),
+                createObjectBuilder()
+                        .add("id", REFERRED_RESULT_TYPE_ID.toString())
+                        .add("code", REFERRED_RESULT_CODE).build()
         );
     }
 
@@ -191,6 +197,29 @@ public class ReferencedDecisionSavedOffenceConverterTest {
         final JsonArray actualPayload = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
 
         final JsonArray expectedOffenceDecisions = getFileContentAsJsonArray("converter/decision-saved-event.withreasonfornocosts.output.json");
+        assertEquals(expectedOffenceDecisions.toString(), actualPayload.toString(), getCustomComparator());
+    }
+
+    @Test
+    public void shouldConvertReferForCourtHearing() {
+
+        final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
+                getFileContentAsJson("converter/decision-saved-event.referforcourthearing.input.json",
+                        ImmutableMap.<String, Object>builder()
+                                .put("caseId", CASE_ID)
+                                .put("sessionId", SESSION_ID)
+                                .put("decisionId", DECISION1_ID)
+                                .put("resultedOn", DATE_FORMAT.format(ZonedDateTime.now()))
+                                .put("offence1Id", OFFENCE1_ID)
+                                .put("offence2Id", OFFENCE2_ID)
+                                .build()));
+
+        when(referenceDataService.getResultIds(decisionSavedEvent)).thenReturn(resultIds);
+
+        final JsonArray actualPayload = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
+
+        final JsonArray expectedOffenceDecisions = getFileContentAsJsonArray("converter/decision-saved-event.referforcourthearing.output.json");
+
         assertEquals(expectedOffenceDecisions.toString(), actualPayload.toString(), getCustomComparator());
     }
 

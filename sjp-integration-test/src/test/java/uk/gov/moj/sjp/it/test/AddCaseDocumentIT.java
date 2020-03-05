@@ -42,10 +42,6 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
-
-/**
- * Integration test for Add case document.
- */
 public class AddCaseDocumentIT extends BaseIntegrationTest {
 
     private static final String PROSECUTING_AUTHORITY_ACCESS_ALL = "ALL";

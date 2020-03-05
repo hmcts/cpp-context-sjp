@@ -9,5 +9,12 @@
   "referralReasonId": "8cda35cc-8073-41d7-a160-609bfe362f47",
   "referredAt": "2018-06-01T09:00:00.000Z",
   "sessionId": "2630237f-9e36-4f0e-9e3e-cf51e0900e30",
-  "urn": "TFL34652354"
+  "urn": "TFL34652354",
+  "defendantCourtOptions": {
+    "interpreter": {
+      "language": "French",
+      "needed": true
+    },
+    "welshHearing": false
+  }
 }

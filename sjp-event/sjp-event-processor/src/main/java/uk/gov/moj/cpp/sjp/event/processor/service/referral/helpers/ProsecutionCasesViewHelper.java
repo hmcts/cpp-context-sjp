@@ -15,6 +15,7 @@ import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
 import uk.gov.justice.json.schemas.domains.sjp.query.EmployerDetails;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
@@ -72,7 +73,8 @@ public class ProsecutionCasesViewHelper {
                 nationalityId,
                 ethnicityId,
                 pleaMitigation,
-                offenceDefinitionIdByOffenceCode);
+                offenceDefinitionIdByOffenceCode,
+                caseReferredForCourtHearing.getDefendantCourtOptions());
 
         final JsonObject prosecutor = prosecutors.getJsonArray("prosecutors").getJsonObject(0);
         final ProsecutionCaseIdentifierView prosecutionCaseIdentifier = new ProsecutionCaseIdentifierView(
@@ -107,15 +109,18 @@ public class ProsecutionCasesViewHelper {
             final String nationalityId,
             final String ethnicityId,
             final String pleaMitigation,
-            final Map<String, UUID> offenceDefinitionIdByOffenceCode) {
+            final Map<String, UUID> offenceDefinitionIdByOffenceCode,
+            final DefendantCourtOptions defendantCourtOptions) {
 
         final Defendant defendantDetails = caseDetails.getDefendant();
+
         final PersonDefendantView personDefendantView = createPersonDefendantView(
                 defendantDetails,
                 caseFileDefendantDetails,
                 employer,
                 nationalityId,
-                ethnicityId);
+                ethnicityId,
+                defendantCourtOptions);
 
         final List<OffenceView> offenceViews = referredOffences
                 .stream().map(offence -> createOffenceView(offenceDecisionInformationList,
@@ -139,11 +144,17 @@ public class ProsecutionCasesViewHelper {
                                                                  final JsonObject caseFileDefendantDetails,
                                                                  final EmployerDetails employer,
                                                                  final String nationalityId,
-                                                                 final String ethnicityId) {
+                                                                 final String ethnicityId,
+                                                                 final DefendantCourtOptions defendantCourtOptions) {
 
         final PersonalDetails defendantPersonalDetails = defendant.getPersonalDetails();
         final Optional<JsonObject> defendantPersonalInformationOptional = ofNullable(caseFileDefendantDetails)
                 .map(defendantDetails -> (JsonObject) defendantDetails.getOrDefault("personalInformation", createObjectBuilder().build()));
+
+        String interpreter = ofNullable(defendant.getInterpreter()).map(Interpreter::getLanguage).orElse(null);
+        if(defendantCourtOptions != null && defendantCourtOptions.getInterpreter() != null) {
+            interpreter = defendantCourtOptions.getInterpreter().getLanguage();
+        }
 
         return new PersonDefendantView(
                 PersonDetailsView.builder()
@@ -152,10 +163,7 @@ public class ProsecutionCasesViewHelper {
                         .withLastName(defendantPersonalDetails.getLastName())
                         .withDateOfBirth(defendantPersonalDetails.getDateOfBirth())
                         .withGender(defendantPersonalDetails.getGender().name())
-                        .withInterpreterLanguageNeeds(
-                                ofNullable(defendant.getInterpreter())
-                                        .map(Interpreter::getLanguage)
-                                        .orElse(null))
+                        .withInterpreterLanguageNeeds(interpreter)
                         .withNationalityId(nationalityId)
                         .withDocumentationLanguageNeeds(ofNullable(caseFileDefendantDetails)
                                 .map(defendantDetails -> defendantDetails.getString("documentationLanguage", null))

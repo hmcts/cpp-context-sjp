@@ -12,6 +12,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 public class ReferenceDataService {
 
@@ -23,13 +24,23 @@ public class ReferenceDataService {
         final JsonObject queryParams = createObjectBuilder().add("postcode", postCode).build();
         final JsonEnvelope query = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("referencedata.query.enforcement-area"), queryParams);
 
-        return requester.requestAsAdmin(query).payloadAsJsonObject();
+        final JsonEnvelope responseEnvelope = requester.requestAsAdmin(query);
+        if(responseEnvelope.payload().getValueType().equals(JsonValue.ValueType.OBJECT)){
+            return responseEnvelope.payloadAsJsonObject();
+        } else {
+            return null;
+        }
     }
 
     public JsonObject getLocalJusticeAreas(final String nationalCourtCode){
         final JsonObject queryParams = createObjectBuilder().add("nationalCourtCode", nationalCourtCode).build();
         final JsonEnvelope query = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("referencedata.query.local-justice-areas"), queryParams);
 
-        return requester.requestAsAdmin(query).payloadAsJsonObject();
+        final JsonEnvelope responseEnvelope = requester.requestAsAdmin(query);
+        if(responseEnvelope.payload().getValueType().equals(JsonValue.ValueType.OBJECT)){
+            return responseEnvelope.payloadAsJsonObject();
+        } else {
+            return null;
+        }
     }
 }

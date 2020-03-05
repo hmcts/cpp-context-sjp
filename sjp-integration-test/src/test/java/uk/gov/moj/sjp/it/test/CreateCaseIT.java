@@ -117,6 +117,68 @@ public class CreateCaseIT extends BaseIntegrationTest {
     }
 
     @Test
+    public void shouldMultiOffenceCaseBeCreatedWithUnknownEnforcementArea() {
+        final UUID caseId = randomUUID();
+        final ProsecutingAuthority prosecutingAuthority = TFL;
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+        final int fineLevel = 3;
+        final BigDecimal maxValue = BigDecimal.valueOf(1000);
+
+        stubOffenceFineLevelsQuery(fineLevel, maxValue);
+
+        final String offenceCode1 = "CA03010";
+        final String offenceCode2 = "CA03011";
+
+        final JsonObject offence1Definition = stubQueryOffencesByCode(offenceCode1);
+        final JsonObject offence2Definition = stubQueryOffencesByCode(offenceCode2);
+
+        final CreateCase.CreateCasePayloadBuilder createCase = createMultiOffenceCase(caseId, prosecutingAuthority,
+                newArrayList(offenceCode1, offenceCode2));
+
+        final CreateCase.DefendantBuilder defendant = createCase.getDefendantBuilder();
+        defendant.getAddressBuilder().withPostcode("ML9 1NQ");
+        final CreateCase.OffenceBuilder offence = createCase.getOffenceBuilder();
+
+
+        final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
+                .subscribe(CaseReceived.EVENT_NAME)
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
+                .popEvent(CaseReceived.EVENT_NAME);
+
+        assertTrue(caseReceivedEvent.isPresent());
+        assertThat(caseReceivedEvent.get().payloadAsJsonObject().getString("expectedDateReady"), is(createCase.getPostingDate().plusDays(NUMBER_DAYS_WAITING_FOR_PLEA).toString()));
+
+        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
+        assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
+        assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
+        assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
+        assertThat(jsonResponse.get("enterpriseId"), equalTo(createCase.getEnterpriseId()));
+        assertThat(jsonResponse.get("status"), equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name()));
+        assertThat(jsonResponse.get("defendant.id"), equalTo(defendant.getId().toString()));
+        assertThat(jsonResponse.get("defendant.personalDetails.title"), equalTo(defendant.getTitle()));
+        assertThat(jsonResponse.get("defendant.personalDetails.firstName"), equalTo(defendant.getFirstName()));
+        assertThat(jsonResponse.get("defendant.personalDetails.lastName"), equalTo(defendant.getLastName()));
+        assertThat(jsonResponse.get("defendant.personalDetails.dateOfBirth"), equalTo(defendant.getDateOfBirth().toString()));
+        assertThat(jsonResponse.get("defendant.personalDetails.gender"), equalTo(defendant.getGender().toString()));
+        assertThat(jsonResponse.get("defendant.numPreviousConvictions"), equalTo(defendant.getNumPreviousConvictions()));
+        assertThat(jsonResponse.get("defendant.personalDetails.address.address1"), equalTo(defendant.getAddressBuilder().getAddress1()));
+        assertThat(jsonResponse.get("defendant.personalDetails.address.address2"), equalTo(defendant.getAddressBuilder().getAddress2()));
+        assertThat(jsonResponse.get("defendant.personalDetails.address.address3"), equalTo(defendant.getAddressBuilder().getAddress3()));
+        assertThat(jsonResponse.get("defendant.personalDetails.address.address4"), equalTo(defendant.getAddressBuilder().getAddress4()));
+        assertThat(jsonResponse.get("defendant.personalDetails.address.address5"), equalTo(defendant.getAddressBuilder().getAddress5()));
+        assertThat(jsonResponse.get("defendant.personalDetails.address.postcode"), equalTo(defendant.getAddressBuilder().getPostcode()));
+        assertThat(jsonResponse.get("defendant.personalDetails.contactDetails.home"), equalTo(defendant.getContactDetailsBuilder().getHome()));
+        assertThat(jsonResponse.get("defendant.personalDetails.contactDetails.mobile"), equalTo(defendant.getContactDetailsBuilder().getMobile()));
+        assertThat(jsonResponse.get("defendant.personalDetails.contactDetails.email"), equalTo(defendant.getContactDetailsBuilder().getEmail()));
+        assertThat(jsonResponse.get("defendant.personalDetails.nationalInsuranceNumber"), equalTo(defendant.getNationalInsuranceNumber()));
+
+        assertOffenceData(jsonResponse, offence, offenceCode1, offence1Definition, true, false, 0);
+        assertOffenceData(jsonResponse, offence, offenceCode2, offence2Definition, false, true, 1);
+
+        assertThat(getProsecutingAuthority(caseId), is(prosecutingAuthority.name()));
+    }
+
+    @Test
     public void shouldSchemaValidationFailWhenEmailIsInvalid() {
         final CreateCase.CreateCasePayloadBuilder createCase = createMultiOffenceCase(randomUUID(), TFL, newArrayList("CA03010"));
         final String email = "   ";

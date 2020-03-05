@@ -8,5 +8,12 @@
   "hearingTypeId": "1b5fbb45-fe56-4405-ac53-d13802394150",
   "estimatedHearingDuration": 30,
   "referredAt": "2018-06-01T09:00:00.000Z",
-  "urn":"TFL34652354"
+  "urn": "TFL34652354",
+  "defendantCourtOptions": {
+    "interpreter": {
+      "language": "French",
+      "needed": true
+    },
+    "welshHearing": false
+  }
 }

@@ -150,6 +150,7 @@ public class CaseDecisionHandler {
                     .withEstimatedHearingDuration(referForCourtHearing.getEstimatedHearingDuration())
                     .withListingNotes(referForCourtHearing.getListingNotes())
                     .withReferredOffences(offenceDecisionInformationList)
+                    .withDefendantCourtOptions(referForCourtHearing.getDefendantCourtOptions())
                     .build());
 
             if (isNotEmpty(referForCourtHearing.getListingNotes())) {

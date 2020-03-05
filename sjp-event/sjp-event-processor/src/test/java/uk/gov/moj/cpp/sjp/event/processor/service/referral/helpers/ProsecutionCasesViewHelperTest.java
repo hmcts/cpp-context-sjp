@@ -25,6 +25,8 @@ import uk.gov.justice.json.schemas.domains.sjp.PleaType;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
 import uk.gov.justice.json.schemas.domains.sjp.query.EmployerDetails;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
@@ -70,7 +72,9 @@ public class ProsecutionCasesViewHelperTest {
     private static final String PROSECUTOR_CODE = "TFL";
     private static final String OFFENCE_CJS_CODE1 = "offence CJS code";
     private static final String OFFENCE_CJS_CODE2 = "offence CJS code";
-    private static final String INTERPRETER_LANGUAGE = "ENGLISH";
+    private static final String LANGUAGE_E = "ENGLISH";
+    private static final String LANGUAGE_W = "WELSH";
+    private static final String LANGUAGE_X = "Japanese";
     private static final String OFFENCE_MITIGATION = "I was not there";
 
     private static final int DEFENDANT_NUM_PREVIOUS_CONVICTIONS = 1;
@@ -166,51 +170,55 @@ public class ProsecutionCasesViewHelperTest {
     }
 
     @Test
+    public void shouldApplyInterpreterSpecifiedByCourtReferrer() {
+
+        final List<Offence> offences = new ArrayList<>();
+        offences.add(createOffence(OFFENCE_CJS_CODE1, OFFENCE_ID1, null, 1));
+
+        final PersonalDetails defendantPersonalDetails = createDefendantPersonalDetails().build();
+        final CaseDetails caseDetails = createCaseDetails(defendantPersonalDetails, offences);
+
+        final JsonObject prosecutor = createProsecutor();
+        final EmployerDetails employer = createEmployer();
+        final JsonObject caseFileDefendantDetails = createCaseFileDefendantDetails();
+
+        final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
+                .withReferredAt(DECISION_DATE)
+                .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
+                .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true),null))
+                .build();
+
+        final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
+                caseDetails,
+                prosecutor,
+                caseFileDefendantDetails,
+                employer,
+                DEFENDANT_NATIONALITY_ID,
+                DEFENDANT_ETHNICITY_ID,
+                caseReferredForCourtHearing,
+                OFFENCE_MITIGATION,
+                mockCJSOffenceCodeToOffenceDefinitionId(),
+                singletonList(offences.get(0)));
+
+        assertThat(prosecutionCaseViews.size(), is(1));
+
+        final ProsecutionCaseView prosecutionCaseView = prosecutionCaseViews.get(0);
+
+        final DefendantView defendantView = prosecutionCaseView.getDefendants().get(0);
+
+        assertThat(defendantView.getPersonDefendant().getPersonDetails().getDocumentationLanguageNeeds(), is(LANGUAGE_W));
+        assertThat(defendantView.getPersonDefendant().getPersonDetails().getInterpreterLanguageNeeds(), is(LANGUAGE_X));
+    }
+
+    @Test
     public void shouldCreateMultipleOffenceViewsAndGetProsecutionFactsIfAvailableOnAnyOffence() {
 
         final List<Offence> offences = new ArrayList<>();
 
-        final Offence referredOffence1 = Offence.offence()
-                .withCjsCode(OFFENCE_CJS_CODE1)
-                .withId(OFFENCE_ID1)
-                .withOffenceCode("offence code")
-                .withPlea(PleaType.GUILTY_REQUEST_HEARING)
-                .withPleaDate(PLEA_DATE)
-                .withWording("wording")
-                .withWordingWelsh("welsh wording")
-                .withStartDate(now().toString())
-                .withChargeDate(now().minusDays(5).toString())
-                .withOffenceSequenceNumber(1)
-                .build();
-        offences.add(referredOffence1);
+        offences.add(createOffence(OFFENCE_CJS_CODE1, OFFENCE_ID1, null, 1));
+        offences.add(createOffence(OFFENCE_CJS_CODE2, OFFENCE_ID1, null, 2));
 
-        final Offence referredOffence2 = Offence.offence()
-                .withCjsCode(OFFENCE_CJS_CODE2)
-                .withId(OFFENCE_ID1)
-                .withOffenceCode("offence code")
-                .withPlea(PleaType.GUILTY_REQUEST_HEARING)
-                .withPleaDate(PLEA_DATE)
-                .withWording("wording")
-                .withWordingWelsh("welsh wording")
-                .withStartDate(now().toString())
-                .withChargeDate(now().minusDays(5).toString())
-                .withOffenceSequenceNumber(2)
-                .build();
-        offences.add(referredOffence2);
-
-        final Offence nonReferredOffence = Offence.offence()
-                .withCjsCode(OFFENCE_CJS_CODE1)
-                .withId(OFFENCE_ID2)
-                .withOffenceCode("offence code")
-                .withPlea(PleaType.GUILTY_REQUEST_HEARING)
-                .withPleaDate(PLEA_DATE)
-                .withWording("wording")
-                .withWordingWelsh("welsh wording")
-                .withStartDate(now().toString())
-                .withChargeDate(now().minusDays(5).toString())
-                .withProsecutionFacts("Prosecution facts")
-                .withOffenceSequenceNumber(3)
-                .build();
+        Offence nonReferredOffence = createOffence(OFFENCE_CJS_CODE1, OFFENCE_ID2, "Prosecution facts", 3);
         offences.add(nonReferredOffence);
 
         final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
@@ -503,7 +511,7 @@ public class ProsecutionCasesViewHelperTest {
                 .withDefendant(defendant()
                         .withId(DEFENDANT_ID)
                         .withInterpreter(Interpreter.interpreter()
-                                .withLanguage(INTERPRETER_LANGUAGE)
+                                .withLanguage(LANGUAGE_E)
                                 .build())
                         .withNumPreviousConvictions(DEFENDANT_NUM_PREVIOUS_CONVICTIONS)
                         .withPersonalDetails(defendantPersonalDetails)
@@ -577,21 +585,25 @@ public class ProsecutionCasesViewHelperTest {
                 .build();
     }
 
+    private static Offence createOffence(String code, UUID id, String facts, int sequenceNumber) {
+        return Offence.offence()
+                .withCjsCode(code)
+                .withId(id)
+                .withOffenceCode("offence code")
+                .withPlea(PleaType.GUILTY_REQUEST_HEARING)
+                .withPleaDate(PLEA_DATE)
+                .withWording("wording")
+                .withWordingWelsh("welsh wording")
+                .withStartDate(now().toString())
+                .withChargeDate(now().minusDays(5).toString())
+                .withProsecutionFacts(facts)
+                .withOffenceSequenceNumber(sequenceNumber)
+                .build();
+    }
     private static List<Offence> createOffences(final UUID... ids) {
         return Arrays.stream(ids)
-                .map(id -> Offence.offence()
-                        .withCjsCode(OFFENCE_CJS_CODE1)
-                        .withId(id)
-                        .withPlea(PleaType.GUILTY_REQUEST_HEARING)
-                        .withPleaDate(PLEA_DATE)
-                        .withOffenceCode("offence code")
-                        .withWording("wording")
-                        .withWordingWelsh("welsh wording")
-                        .withStartDate(now().toString())
-                        .withChargeDate(now().minusDays(5).toString())
-                        .withOffenceSequenceNumber(11)
-                        .withProsecutionFacts("Prosecution facts")
-                        .build())
+                .map(id ->
+                        createOffence(OFFENCE_CJS_CODE1, id, "Prosecution facts", 11))
                 .collect(Collectors.toList());
     }
 

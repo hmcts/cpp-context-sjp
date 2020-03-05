@@ -74,7 +74,6 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.producer.ReferToCourtHearingProducer;
-import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
 import uk.gov.moj.sjp.it.util.FileUtil;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 

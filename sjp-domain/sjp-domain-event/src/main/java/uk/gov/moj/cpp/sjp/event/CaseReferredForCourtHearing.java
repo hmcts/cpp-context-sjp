@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 
 import java.time.ZonedDateTime;
@@ -10,7 +11,6 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-//TODO ATCM-4473 Event transformation
 @Event(CaseReferredForCourtHearing.EVENT_NAME)
 public class CaseReferredForCourtHearing {
 
@@ -29,9 +29,13 @@ public class CaseReferredForCourtHearing {
 
     private final UUID decisionId;
 
+    private final DefendantCourtOptions defendantCourtOptions;
+
     @JsonIgnoreProperties(ignoreUnknown = true)
-    //Not needed if event transformation added - urn removed
-    public CaseReferredForCourtHearing(final UUID caseId, final List<OffenceDecisionInformation> referredOffences, final UUID referralReasonId, final Integer estimatedHearingDuration, final String listingNotes, final ZonedDateTime referredAt, final UUID decisionId) {
+    public CaseReferredForCourtHearing(final UUID caseId, final List<OffenceDecisionInformation> referredOffences,
+                                       final UUID referralReasonId, final Integer estimatedHearingDuration,
+                                       final String listingNotes, final ZonedDateTime referredAt, final UUID decisionId,
+                                       final DefendantCourtOptions defendantCourtOptions) {
         this.caseId = caseId;
         this.estimatedHearingDuration = estimatedHearingDuration;
         this.listingNotes = listingNotes;
@@ -39,6 +43,7 @@ public class CaseReferredForCourtHearing {
         this.referredAt = referredAt;
         this.decisionId = decisionId;
         this.referredOffences = referredOffences;
+        this.defendantCourtOptions = defendantCourtOptions;
     }
 
     public UUID getCaseId() {
@@ -69,6 +74,10 @@ public class CaseReferredForCourtHearing {
         return decisionId;
     }
 
+    public DefendantCourtOptions getDefendantCourtOptions() {
+        return defendantCourtOptions;
+    }
+
     public static Builder caseReferredForCourtHearing() {
         return new CaseReferredForCourtHearing.Builder();
     }
@@ -81,6 +90,7 @@ public class CaseReferredForCourtHearing {
         private Integer estimatedHearingDuration;
         private String listingNotes;
         private ZonedDateTime referredAt;
+        private DefendantCourtOptions defendantCourtOptions;
 
         public Builder withCaseId(final UUID caseId) {
             this.caseId = caseId;
@@ -117,8 +127,15 @@ public class CaseReferredForCourtHearing {
             return this;
         }
 
-        public CaseReferredForCourtHearing build() {
-            return new CaseReferredForCourtHearing(caseId, referredOffences, referralReasonId, estimatedHearingDuration, listingNotes, referredAt, decisionId);
+        public Builder withDefendantCourtOptions(final DefendantCourtOptions defendantCourtOptions) {
+            this.defendantCourtOptions = defendantCourtOptions;
+            return this;
         }
+
+        public CaseReferredForCourtHearing build() {
+            return new CaseReferredForCourtHearing(caseId, referredOffences, referralReasonId, estimatedHearingDuration,
+                    listingNotes, referredAt, decisionId, defendantCourtOptions);
+        }
+
     }
 }

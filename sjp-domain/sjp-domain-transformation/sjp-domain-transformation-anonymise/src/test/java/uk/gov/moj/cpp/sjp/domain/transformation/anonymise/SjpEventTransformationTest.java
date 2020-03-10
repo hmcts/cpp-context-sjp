@@ -50,7 +50,8 @@ public class SjpEventTransformationTest {
                         withJsonPath("$.prosecutingAuthority", is(inputJsonPath.getString("prosecutingAuthority"))),
                         withJsonPath("$.defendant.offences[*].libraOffenceCode", is(inputJsonPath.getList("defendant.offences.libraOffenceCode"))),
                         withJsonPath("$.defendant.gender", is(inputJsonPath.getString("defendant.gender"))),
-                        withJsonPath("$.defendant.title", is(inputJsonPath.getString("defendant.title")))
+                        withJsonPath("$.defendant.title", is(inputJsonPath.getString("defendant.title"))),
+                        withJsonPath("$.defendant.hearingLanguage", is(inputJsonPath.getString("defendant.hearingLanguage")))
                         )
                 ));
     }

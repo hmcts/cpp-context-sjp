@@ -70,7 +70,8 @@
         "$.prosecutingAuthority",
         "$.defendant.offences[*].libraOffenceCode",
         "$.defendant.gender",
-        "$.defendant.title"
+        "$.defendant.title",
+        "$.defendant.hearingLanguage"
       ]
     },
     {

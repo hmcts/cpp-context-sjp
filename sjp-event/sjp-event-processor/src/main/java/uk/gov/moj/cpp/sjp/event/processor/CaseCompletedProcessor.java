@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 
+import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.UUID.fromString;
@@ -14,6 +15,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.DEFENDANT_ID;
 
+import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
+import uk.gov.justice.json.schemas.domains.sjp.results.PublicSjpResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -28,6 +31,7 @@ import uk.gov.moj.cpp.sjp.domain.resulting.CaseResults;
 import uk.gov.moj.cpp.sjp.domain.resulting.Offence;
 import uk.gov.moj.cpp.sjp.domain.resulting.Result;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
+import uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
@@ -36,12 +40,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +75,9 @@ public class CaseCompletedProcessor {
     @ServiceComponent(Component.EVENT_PROCESSOR)
     private Requester requester;
 
+    @Inject
+    private ResultingToResultsConverter converter;
+
     private static final String CASE_RESULTS = "sjp.query.case-results";
 
     private static final String[] WITHDRAWN_OR_DISMISSED_SHORTCODES = {"DISM", "WDRNNOT"};
@@ -79,7 +88,9 @@ public class CaseCompletedProcessor {
     @Handles(CaseCompleted.EVENT_NAME)
     public void handleCaseCompleted(final JsonEnvelope caseCompletedEnvelope) {
 
-        final JsonEnvelope requestEnvelope = envelopeFrom(metadataFrom(caseCompletedEnvelope.metadata()).withName(CASE_RESULTS), caseCompletedEnvelope.payloadAsJsonObject());
+        final JsonObject payloadAsJsonObject = caseCompletedEnvelope.payloadAsJsonObject();
+        final JsonEnvelope requestEnvelope = envelopeFrom(metadataFrom(caseCompletedEnvelope.metadata()).withName(CASE_RESULTS), payloadAsJsonObject);
+        final CaseCompleted caseCompleted = jsonObjectToObjectConverter.convert(payloadAsJsonObject, CaseCompleted.class);
 
         final Envelope<?> caseResultsResponse = requester.request(requestEnvelope);
 
@@ -87,9 +98,9 @@ public class CaseCompletedProcessor {
         final CaseResults caseResults = jsonObjectToObjectConverter.convert((JsonObject) caseResultsResponse.payload(), CaseResults.class);
 
         final UUID caseId = caseResults.getCaseId();
-        final UUID defendantId = sjpService.getCaseDetails(caseId, envelopeFrom(
-                metadataFrom(caseCompletedEnvelope.metadata()), NULL))
-                .getDefendant().getId();
+        final CaseDetails caseDetails = sjpService.getCaseDetails(caseId, envelopeFrom(
+                metadataFrom(caseCompletedEnvelope.metadata()), NULL));
+        final UUID defendantId = caseDetails.getDefendant().getId();
 
         final boolean allOffencesWithDrawnOrDismissed =
                 caseResults
@@ -111,6 +122,25 @@ public class CaseCompletedProcessor {
                     .withMetadataFrom(caseCompletedEnvelope));
         }
 
+        final Set<UUID> sjpSessionIds = CollectionUtils.isNotEmpty(caseCompleted.getSessionIds()) ? caseCompleted.getSessionIds() : newHashSet();
+
+        for (final UUID sjpSessionId : sjpSessionIds) {
+            final JsonEnvelope emptyEnvelope = envelopeFrom(metadataFrom(caseCompletedEnvelope.metadata()), NULL);
+            final JsonObject sjpSessionPayload = sjpService.getSessionDetails(sjpSessionId, emptyEnvelope);
+
+            final PublicSjpResulted jsonEnvelopeForResults = buildJsonEnvelopeForCCResults(caseId, caseResultsResponse, caseDetails, sjpSessionPayload);
+
+            final Envelope<PublicSjpResulted> envelope = envelop(
+                    jsonEnvelopeForResults)
+                    .withName("public.sjp.case-resulted")
+                    .withMetadataFrom(caseCompletedEnvelope);
+            sender.send(envelope);
+        }
+
+    }
+
+    private PublicSjpResulted buildJsonEnvelopeForCCResults(final UUID caseId, final Envelope envelope, final CaseDetails caseDetails, final JsonObject sjpSessionPayload) {
+        return converter.convert(caseId, envelope, caseDetails, sjpSessionPayload);
     }
 
     /* Assume all offences are withdrawn or dismissed and then check each result for each offence*/

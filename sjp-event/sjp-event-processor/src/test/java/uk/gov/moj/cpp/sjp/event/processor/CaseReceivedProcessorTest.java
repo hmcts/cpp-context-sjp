@@ -15,9 +15,9 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatc
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.cpp.sjp.event.processor.CaseReceivedProcessor.CASE_STARTED_PUBLIC_EVENT_NAME;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
-import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.URN;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.EXPECTED_DATE_READY;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.POSTING_DATE;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.URN;
 
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;

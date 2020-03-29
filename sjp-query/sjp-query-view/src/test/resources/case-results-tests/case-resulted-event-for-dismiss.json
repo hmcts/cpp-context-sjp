@@ -1,0 +1,15 @@
+{
+  "resultedOn": "${resultedOn}",
+  "verdict": "FOUND_NOT_GUILTY",
+  "offences": [
+    {
+      "id": "${offenceId}",
+      "results": [
+        {
+          "resultDefinitionId": "${resultDefinitionId}",
+          "prompts": []
+        }
+      ]
+    }
+  ]
+}

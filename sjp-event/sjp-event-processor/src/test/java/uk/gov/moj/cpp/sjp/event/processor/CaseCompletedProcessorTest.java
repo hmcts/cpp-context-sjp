@@ -22,20 +22,21 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.buildCaseDetails;
 
+import uk.gov.justice.json.schemas.domains.sjp.results.PublicSjpResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
+import uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
@@ -46,10 +47,10 @@ import java.util.UUID;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -83,8 +84,13 @@ public class CaseCompletedProcessorTest {
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     @Captor
-    private ArgumentCaptor<JsonEnvelope> jsonEnvelopeCaptor;
+    private ArgumentCaptor<Envelope<JsonValue>> jsonEnvelopeCaptor;
 
+    @Mock
+    private ResultingToResultsConverter resultingToResultsConverter;
+
+    @Mock
+    private PublicSjpResulted publicSjpResulted;
 
     private static final DefaultJsonEnvelopeProvider defaultJsonEnvelopeProvider = new DefaultJsonEnvelopeProvider();
     private static final ObjectMapperProducer objectMapperProducer = new ObjectMapperProducer();
@@ -122,6 +128,7 @@ public class CaseCompletedProcessorTest {
         final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter();
         setField(jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(caseCompletedProcessor, "jsonObjectToObjectConverter", jsonObjectToObjectConverter);
+        when(resultingToResultsConverter.convert(any(), any(), any(), any())).thenReturn(publicSjpResulted);
     }
 
     @Test
@@ -132,7 +139,8 @@ public class CaseCompletedProcessorTest {
 
     @Test
     public void shouldInvokeQueryService() {
-        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(CASE_COMPLETED), createObjectBuilder().add("caseId", CASE_ID.toString()).build());
+        final JsonObject payload = createObjectBuilder().add("caseId", CASE_ID.toString()).add("sessionIds", createArrayBuilder().add(randomUUID().toString())).build();
+        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(CASE_COMPLETED), payload);
         final JsonObject responsePayload = createResponsePayload();
         final JsonEnvelope responseEnvelope = envelopeFrom(metadataFrom(envelope.metadata()).withName(CASE_RESULTS), responsePayload);
 
@@ -188,7 +196,8 @@ public class CaseCompletedProcessorTest {
 
     @Test
     public void shouldGenerateAllOffencesWithdrawnOrDismissedEvent() {
-        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(CASE_COMPLETED), createObjectBuilder().add("caseId", CASE_ID.toString()).build());
+        final JsonObject payload = createObjectBuilder().add("caseId", CASE_ID.toString()).add("sessionIds", createArrayBuilder().add(randomUUID().toString())).build();
+        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(CASE_COMPLETED), payload);
         final JsonObject responsePayload = createResponsePayloadForDismiss();
         final JsonEnvelope responseEnvelope = envelopeFrom(metadataFrom(envelope.metadata()).withName(CASE_RESULTS), responsePayload);
 
@@ -198,23 +207,21 @@ public class CaseCompletedProcessorTest {
 
         caseCompletedProcessor.handleCaseCompleted(envelope);
 
-        verify(sender, times(1)).send(jsonEnvelopeCaptor.capture());
+        verify(sender, times(2)).send(jsonEnvelopeCaptor.capture());
 
-        final List<JsonEnvelope> allValues = standardizeJsonEnvelopes((List) jsonEnvelopeCaptor.getAllValues());
+        final List<Envelope<JsonValue>> allValues = jsonEnvelopeCaptor.getAllValues();
 
-        MatcherAssert.assertThat(allValues, hasSize(1));
-        MatcherAssert.assertThat(allValues.get(0), is(
-                jsonEnvelope(
-                        metadata().withName("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn"),
-                        payloadIsJson(Matchers.allOf(
-                                withJsonPath("$.caseId", Matchers.equalTo(CASE_ID.toString()))
-                        )))
-        ));
+        MatcherAssert.assertThat(allValues, hasSize(2));
+        assertThat((allValues.get(0).metadata().name()), is("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn"));
+        assertThat(allValues.get(0).payload(), payloadIsJson(allOf(withJsonPath("caseId", is(CASE_ID.toString())))));
+        assertThat((allValues.get(1).metadata().name()), is("public.sjp.case-resulted"));
+        assertThat(allValues.get(1).payload(), is(publicSjpResulted));
     }
 
     @Test
     public void shouldNotGenerateAllOffencesWithdrawnOrDismissedEventWhenOneOffenceIsWithdrawnButAnotherIsNotWithdrawnOrDismissed() {
-        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(CASE_COMPLETED), createObjectBuilder().add("caseId", CASE_ID.toString()).build());
+        final JsonObject payload = createObjectBuilder().add("caseId", CASE_ID.toString()).add("sessionIds", createArrayBuilder().add(randomUUID().toString())).build();
+        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(CASE_COMPLETED), payload);
         final JsonObject responsePayload = createResponsePayloadForOneWithdrawAndOtherNotWithDrawOrDismiss();
         final JsonEnvelope responseEnvelope = envelopeFrom(metadataFrom(envelope.metadata()).withName(CASE_RESULTS), responsePayload);
 
@@ -223,12 +230,17 @@ public class CaseCompletedProcessorTest {
         when(requester.request(any())).thenReturn(responseEnvelope);
 
         caseCompletedProcessor.handleCaseCompleted(envelope);
-        verify(sender, times(0)).send(jsonEnvelopeCaptor.capture());
+        verify(sender, times(1)).send(jsonEnvelopeCaptor.capture());
+        final List<Envelope<JsonValue>> allValues = jsonEnvelopeCaptor.getAllValues();
+        assertThat(allValues, hasSize(1));
+        assertThat((allValues.get(0).metadata().name()), is("public.sjp.case-resulted"));
+        assertThat(allValues.get(0).payload(), is(publicSjpResulted));
     }
 
     @Test
     public void shouldNotGenerateAllOffencesWithdrawnOrDismissedEventWhenOneOffenceIsDismissButAnotherIsNotWithdrawnOrDismissed() {
-        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(CASE_COMPLETED), createObjectBuilder().add("caseId", CASE_ID.toString()).build());
+        final JsonObject payload = createObjectBuilder().add("caseId", CASE_ID.toString()).add("sessionIds", createArrayBuilder().add(randomUUID().toString())).build();
+        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(CASE_COMPLETED), payload);
         final JsonObject responsePayload = createResponsePayloadForOneDismissAndOtherNotWithDrawOrDismiss();
         final JsonEnvelope responseEnvelope = envelopeFrom(metadataFrom(envelope.metadata()).withName(CASE_RESULTS), responsePayload);
 
@@ -237,7 +249,11 @@ public class CaseCompletedProcessorTest {
         when(requester.request(any())).thenReturn(responseEnvelope);
 
         caseCompletedProcessor.handleCaseCompleted(envelope);
-        verify(sender, times(0)).send(jsonEnvelopeCaptor.capture());
+        verify(sender, times(1)).send(jsonEnvelopeCaptor.capture());
+        final List<Envelope<JsonValue>> allValues = jsonEnvelopeCaptor.getAllValues();
+        assertThat(allValues, hasSize(1));
+        assertThat((allValues.get(0).metadata().name()), is("public.sjp.case-resulted"));
+        assertThat(allValues.get(0).payload(), is(publicSjpResulted));
     }
 
     private JsonObject createResponsePayload() {

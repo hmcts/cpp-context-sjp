@@ -1,14 +1,15 @@
 package uk.gov.moj.cpp.sjp.event.processor.helper;
 
+import uk.gov.justice.services.common.http.HeaderConstants;
+
+import java.io.IOException;
+import java.util.UUID;
+
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import uk.gov.justice.services.common.http.HeaderConstants;
-
-import java.io.IOException;
-import java.util.UUID;
 
 public class HttpConnectionHelper {
 

@@ -1,34 +1,5 @@
 package uk.gov.moj.sjp.it.test;
 
-import com.google.common.collect.ImmutableMap;
-import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import uk.gov.justice.json.schemas.domains.sjp.User;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
-import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
-import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
-import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
-import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
-import uk.gov.moj.sjp.it.command.CreateCase;
-import uk.gov.moj.sjp.it.helper.DecisionHelper;
-import uk.gov.moj.sjp.it.helper.EventListener;
-import uk.gov.moj.sjp.it.model.DecisionCommand;
-import uk.gov.moj.sjp.it.util.JsonHelper;
-import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
-
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
-
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.LocalDate.now;
 import static java.time.Month.JULY;
@@ -77,6 +48,37 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
 import static uk.gov.moj.sjp.it.util.QueueUtil.sendToQueue;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
+
+import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
+import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
+import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
+import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
+import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.helper.DecisionHelper;
+import uk.gov.moj.sjp.it.helper.EventListener;
+import uk.gov.moj.sjp.it.model.DecisionCommand;
+import uk.gov.moj.sjp.it.util.JsonHelper;
+import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
+
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+import javax.ws.rs.core.Response;
+
+import com.google.common.collect.ImmutableMap;
+import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 @Ignore("This IT test always fails in the pipeline. Need to check with ATCM team")
 public class CaseCourtExtractIT extends BaseIntegrationTest {

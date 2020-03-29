@@ -138,6 +138,9 @@ public class CreateCaseIT extends BaseIntegrationTest {
         final CreateCase.DefendantBuilder defendant = createCase.getDefendantBuilder();
         defendant.getAddressBuilder().withPostcode("ML9 1NQ");
         final CreateCase.OffenceBuilder offence = createCase.getOffenceBuilder();
+        stubEnforcementAreaByPostcode(defendant.getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode(NATIONAL_COURT_CODE, DEFENDANT_REGION);
+
 
 
         final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()

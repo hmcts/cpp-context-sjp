@@ -39,7 +39,8 @@
           "offenceDateCode": 1,
           "offenceSequenceNumber": 1,
           "offenceWording": "TV Licence not paid",
-          "statementOfFactsWelsh": "some facts in welsh"
+          "statementOfFactsWelsh": "some facts in welsh",
+          "offenceLocation": "offenceLocation"
         }
       ]
     }

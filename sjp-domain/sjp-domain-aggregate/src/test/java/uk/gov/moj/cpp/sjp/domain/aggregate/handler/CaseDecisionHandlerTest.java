@@ -163,7 +163,7 @@ public class CaseDecisionHandlerTest {
         final LocalDate adjournedTo = LocalDate.now().plusDays(10);
         final List<OffenceDecision> previousOffenceDecisions = newArrayList(new Adjourn(randomUUID(), newArrayList(createOffenceDecisionInformationList(offenceId1, NO_VERDICT)), adjournmentReason, adjournedTo),
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId2, NO_VERDICT), withdrawalReasonId1));
-        caseAggregateState.updateOffenceDecisions(previousOffenceDecisions);
+        caseAggregateState.updateOffenceDecisions(previousOffenceDecisions, sessionId);
 
         final ArrayList<OffenceDecision> currentOffenceDecisions = newArrayList(new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1));
         final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, currentOffenceDecisions, null);
@@ -285,7 +285,7 @@ public class CaseDecisionHandlerTest {
         final List<OffenceDecision> previousOffenceDecisions = newArrayList(
                 new Adjourn(randomUUID(), newArrayList(createOffenceDecisionInformation(offenceId1, NO_VERDICT), createOffenceDecisionInformation(offenceId3, NO_VERDICT)), adjournmentReason, adjournedTo),
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId2, NO_VERDICT), withdrawalReasonId1));
-        caseAggregateState.updateOffenceDecisions(previousOffenceDecisions);
+        caseAggregateState.updateOffenceDecisions(previousOffenceDecisions, sessionId);
 
         final ArrayList<OffenceDecision> currentOffenceDecisions = newArrayList(new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1));
         final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, currentOffenceDecisions, null);
@@ -301,7 +301,7 @@ public class CaseDecisionHandlerTest {
         final List<OffenceDecision> previousOffenceDecisions = newArrayList(
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1),
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId2, NO_VERDICT), withdrawalReasonId1));
-        caseAggregateState.updateOffenceDecisions(previousOffenceDecisions);
+        caseAggregateState.updateOffenceDecisions(previousOffenceDecisions, sessionId);
 
         final ArrayList<OffenceDecision> currentOffenceDecisions = newArrayList(new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId3, NO_VERDICT), withdrawalReasonId1));
         final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, currentOffenceDecisions, null);
@@ -398,7 +398,7 @@ public class CaseDecisionHandlerTest {
 
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1), legalAdviserId);
         final List<OffenceDecision> offenceDecisions = newArrayList(new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1));
-        caseAggregateState.updateOffenceDecisions(offenceDecisions);
+        caseAggregateState.updateOffenceDecisions(offenceDecisions, sessionId);
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
         final List<String> rejectionReason = newArrayList(format("Offence %s already has a final decision", offenceId1));

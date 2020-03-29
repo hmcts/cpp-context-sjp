@@ -134,6 +134,18 @@ public class CompleteCaseIT extends BaseIntegrationTest {
                                 withJsonPath("$.caseId", CoreMatchers.equalTo(caseId.toString())),
                                 withJsonPath("$.defendantId", CoreMatchers.equalTo(defendantId.toString()))
                         ))));
+
+        final Optional<JsonEnvelope> jsonEnvelope2 = eventListener.popEvent("public.sjp.case-resulted");
+
+        assertTrue(jsonEnvelope2.isPresent());
+        final JsonEnvelope envelope2 = jsonEnvelope2.get();
+        assertThat(envelope2,
+                jsonEnvelope(
+                        metadata().withName("public.sjp.case-resulted"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.cases[0].caseId", CoreMatchers.equalTo(caseId.toString())),
+                                withJsonPath("$.session.sessionId", CoreMatchers.equalTo(magistrateSessionId.toString()))
+                        ))));
     }
 
     @Test
@@ -143,6 +155,18 @@ public class CompleteCaseIT extends BaseIntegrationTest {
         final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn");
 
         assertFalse(jsonEnvelope.isPresent());
+
+        final Optional<JsonEnvelope> jsonEnvelope2 = eventListener.popEvent("public.sjp.case-resulted");
+
+        assertTrue(jsonEnvelope2.isPresent());
+        final JsonEnvelope envelope = jsonEnvelope2.get();
+        assertThat(envelope,
+                jsonEnvelope(
+                        metadata().withName("public.sjp.case-resulted"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.cases[0].caseId", CoreMatchers.equalTo(caseId.toString())),
+                                withJsonPath("$.session.sessionId", CoreMatchers.equalTo(magistrateSessionId.toString()))
+                        ))));
     }
 
     private void dismissCase() {
@@ -155,6 +179,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
                 .subscribe("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn")
+                .subscribe("public.sjp.case-resulted")
                 .run(() -> DecisionHelper.saveDecision(decision));
     }
 
@@ -169,14 +194,14 @@ public class CompleteCaseIT extends BaseIntegrationTest {
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
                 .subscribe("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn")
-                .withMaxWaitTime(15)
+                .subscribe("public.sjp.case-resulted")
                 .run(() -> DecisionHelper.saveDecision(decision));
     }
 
     private FinancialImposition buildFinancialImposition() {
         return new FinancialImposition(
-                new CostsAndSurcharge(new BigDecimal(40), null, new BigDecimal(100), null, "reason for reduced victim surcharge" ,false),
-                new Payment(new BigDecimal(370), PAY_TO_COURT, "Reason for not attached",null,
+                new CostsAndSurcharge(new BigDecimal(40), null, new BigDecimal(100), null, "reason for reduced victim surcharge", false),
+                new Payment(new BigDecimal(370), PAY_TO_COURT, "Reason for not attached", null,
                         new PaymentTerms(false,
                                 new LumpSum(new BigDecimal(370), 5, LocalDate.of(2019, 7, 24)),
                                 new Installments(new BigDecimal(30), InstallmentPeriod.WEEKLY, LocalDate.of(2019, 7, 23))

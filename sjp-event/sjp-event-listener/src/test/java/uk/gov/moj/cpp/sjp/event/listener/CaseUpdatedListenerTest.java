@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Boolean.TRUE;
 import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
@@ -36,6 +37,7 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -91,7 +93,7 @@ public class CaseUpdatedListenerTest {
         final JsonEnvelope envelopeIn = envelopeFrom(metadataWithRandomUUID(CaseCompleted.EVENT_NAME), caseCompletedEventPayload);
         final ReadyCase readyCase = new ReadyCase(caseId, PIA, null, MAGISTRATE, 3, TFL, now());
 
-        when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId));
+        when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId, newHashSet(randomUUID())));
         when(readyCaseRepository.findBy(caseId)).thenReturn(readyCase);
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
         listener.caseCompleted(envelopeIn);
@@ -105,7 +107,7 @@ public class CaseUpdatedListenerTest {
         final JsonObject caseCompletedEventPayload = createObjectBuilder().build();
         final JsonEnvelope envelopeIn = envelopeFrom(metadataWithRandomUUID(CaseCompleted.EVENT_NAME), caseCompletedEventPayload);
 
-        when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId));
+        when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId, newHashSet(randomUUID())));
         when(readyCaseRepository.findBy(caseId)).thenReturn(null);
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
 

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/json/schema/event/public-sjp.case-resulted.json",
+  "type": "object",
+  "properties": {
+    "session": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/results/baseSessionStructure.json"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/results/caseDetails.json"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "session",
+    "cases"
+  ]
+}

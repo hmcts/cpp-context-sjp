@@ -12,21 +12,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>sjp-domain-transformation-court-code</module>
-        <module>sjp-domain-transformation-postcode</module>
-        <module>sjp-domain-transformation-plea-updated</module>
-        <module>sjp-domain-transformation-defendant-updated-date</module>
-        <module>sjp-domain-transformation-date-created</module>
-        <module>sjp-domain-transformation-notes-to-case-notes</module>
-        <module>sjp-domain-transformation-offence-date</module>
-        <module>sjp-domain-transformation-case-assignment-deleted-to-case-unassigned</module>
-        <module>sjp-domain-transformation-orphan-tfl-docs</module>
-        <module>sjp-domain-transformation-orphan-case-listed-events</module>
-        <module>sjp-domain-transformation-add-defendantId-to-defendant-details-moved-from-people</module>
-        <module>sjp-domain-transformation-singleoffence-migration</module>
-        <module>sjp-domain-transformation-resulting-decisions</module>
         <module>sjp-domain-transformation-anonymise</module>
-        <module>sjp-domain-transformation-remove-unlinked-defendant-update-failed</module>
     </modules>
 
 </project>

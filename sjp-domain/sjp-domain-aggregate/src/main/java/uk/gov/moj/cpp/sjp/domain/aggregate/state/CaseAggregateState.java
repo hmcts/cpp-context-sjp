@@ -100,6 +100,8 @@ public class CaseAggregateState implements AggregateState {
 
     private final Map<UUID, OffenceDecision> offenceDecisionsByOffenceId = new HashMap<>();
 
+    private Set<UUID> sessionIds = new HashSet<>();
+
     private boolean defendantsResponseTimerExpired;
     private boolean datesToAvoidPreviouslyRequested;
     private LocalDate datesToAvoidExpirationDate;
@@ -338,7 +340,9 @@ public class CaseAggregateState implements AggregateState {
         return employmentStatusByDefendantId;
     }
 
-    public boolean hasEmployerDetailsUpdated() { return employerDetailsUpdated; }
+    public boolean hasEmployerDetailsUpdated() {
+        return employerDetailsUpdated;
+    }
 
     public void setEmployerDetailsUpdated(final boolean employerDetailsUpdated) {
         this.employerDetailsUpdated = employerDetailsUpdated;
@@ -466,12 +470,14 @@ public class CaseAggregateState implements AggregateState {
         return offenceDecisionsByOffenceId.get(offenceId);
     }
 
-    public void updateOffenceDecisions(final List<OffenceDecision> offenceDecisions) {
+    public void updateOffenceDecisions(final List<OffenceDecision> offenceDecisions, final UUID sessionId) {
         offenceDecisions.forEach(
                 offencesDecision -> offencesDecision.getOffenceIds().forEach(
                         offenceId -> this.offenceDecisionsByOffenceId.put(offenceId, offencesDecision)
                 )
         );
+
+        this.sessionIds.add(sessionId);
     }
 
     public UUID getDefendantId() {
@@ -627,12 +633,14 @@ public class CaseAggregateState implements AggregateState {
 
 
     /**
-     * Generates a DefendantDetailsUpdated containing a summary of the fields of the defendant which have been updated
-     * by the provided personal details.
-     * @param personalDetails personal details containing the new defendant details (if any)
+     * Generates a DefendantDetailsUpdated containing a summary of the fields of the defendant which
+     * have been updated by the provided personal details.
+     *
+     * @param personalDetails     personal details containing the new defendant details (if any)
      * @param updatedByOnlinePlea wether the update comes from online plea
-     * @param updatedOn time when the update happened
-     * @return DefendantDetailsUpdate cotaining values for the updated of fields or null if no fields were updated.
+     * @param updatedOn           time when the update happened
+     * @return DefendantDetailsUpdate cotaining values for the updated of fields or null if no
+     * fields were updated.
      */
     public DefendantDetailsUpdated getDefendantDetailsUpdateSummary(final PersonalDetails personalDetails,
                                                                     final boolean updatedByOnlinePlea,
@@ -645,19 +653,19 @@ public class CaseAggregateState implements AggregateState {
         getNameAndTitleDetailsUpdateSummary(personalDetails, updatedByOnlinePlea, builder);
         getAddressAndContactDetailsUpdateSummary(personalDetails, builder);
 
-        if(!Objects.equals(personalDetails.getDateOfBirth(), getDefendantDateOfBirth())){
+        if (!Objects.equals(personalDetails.getDateOfBirth(), getDefendantDateOfBirth())) {
             builder.withDateOfBirth(personalDetails.getDateOfBirth());
         }
 
-        if(!StringUtils.equals(personalDetails.getNationalInsuranceNumber(), getDefendantNationalInsuranceNumber())){
+        if (!StringUtils.equals(personalDetails.getNationalInsuranceNumber(), getDefendantNationalInsuranceNumber())) {
             builder.withNationalInsuranceNumber(personalDetails.getNationalInsuranceNumber());
         }
 
-        if(!StringUtils.equals(personalDetails.getRegion(), getDefendantRegion())){
+        if (!StringUtils.equals(personalDetails.getRegion(), getDefendantRegion())) {
             builder.withRegion(personalDetails.getRegion());
         }
 
-        if(builder.containsUpdate()){
+        if (builder.containsUpdate()) {
             return builder
                     .withUpdateByOnlinePlea(updatedByOnlinePlea)
                     .withUpdatedDate(updatedOn)
@@ -668,30 +676,34 @@ public class CaseAggregateState implements AggregateState {
     }
 
     private void getAddressAndContactDetailsUpdateSummary(final PersonalDetails personalDetails, final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder) {
-        if(!Objects.equals(personalDetails.getContactDetails(), getDefendantContactDetails())){
+        if (!Objects.equals(personalDetails.getContactDetails(), getDefendantContactDetails())) {
             builder.withContactDetails(personalDetails.getContactDetails());
         }
 
-        if(!Objects.equals(personalDetails.getAddress(), getDefendantAddress())){
+        if (!Objects.equals(personalDetails.getAddress(), getDefendantAddress())) {
             builder.withAddress(personalDetails.getAddress());
         }
     }
 
     private void getNameAndTitleDetailsUpdateSummary(final PersonalDetails personalDetails, final boolean updatedByOnlinePlea, final DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder builder) {
-        if(!StringUtils.equals(personalDetails.getFirstName(), getDefendantFirstName())){
+        if (!StringUtils.equals(personalDetails.getFirstName(), getDefendantFirstName())) {
             builder.withFirstName(personalDetails.getFirstName());
         }
 
-        if(!StringUtils.equals(personalDetails.getLastName(), getDefendantLastName())){
+        if (!StringUtils.equals(personalDetails.getLastName(), getDefendantLastName())) {
             builder.withLastName(personalDetails.getLastName());
         }
 
-        if(!updatedByOnlinePlea && !StringUtils.equals(personalDetails.getTitle(), getDefendantTitle())){
+        if (!updatedByOnlinePlea && !StringUtils.equals(personalDetails.getTitle(), getDefendantTitle())) {
             builder.withTitle(personalDetails.getTitle());
         }
 
-        if(personalDetails.getGender()!=null && !Objects.equals(personalDetails.getGender(), getDefendantGender())){
+        if (personalDetails.getGender() != null && !Objects.equals(personalDetails.getGender(), getDefendantGender())) {
             builder.withGender(personalDetails.getGender());
         }
+    }
+
+    public Set<UUID> getSessionIds() {
+        return unmodifiableSet(sessionIds);
     }
 }

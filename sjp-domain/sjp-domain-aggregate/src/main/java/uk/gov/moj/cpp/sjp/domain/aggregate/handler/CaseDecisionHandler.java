@@ -121,8 +121,9 @@ public class CaseDecisionHandler {
         offencesWithFinalDecision.addAll(incomingOffencesWithFinalDecision);
 
         if (offencesWithFinalDecision.equals(state.getOffences())) {
-            streamBuilder.add(new CaseCompleted(decision.getCaseId()));
+            streamBuilder.add(new CaseCompleted(decision.getCaseId(), state.getSessionIds()));
         }
+
     }
 
     private static void handleAdjournDecision(final Decision decision, final Stream.Builder<Object> streamBuilder) {

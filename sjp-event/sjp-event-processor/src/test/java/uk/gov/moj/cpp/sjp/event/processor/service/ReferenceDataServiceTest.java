@@ -62,8 +62,7 @@ public class ReferenceDataServiceTest {
     private static final String DISMISSED_SHORT_CODE = "DISM";
     private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
     @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloper();
-
+    private final Enveloper enveloper = EnveloperFactory.createEnveloper();
     @Mock
     private Requester requester;
 
@@ -218,7 +217,7 @@ public class ReferenceDataServiceTest {
 
         when(requester.request(any())).thenReturn(queryResponse);
 
-        final JsonArray allResultDefinitions = referenceDataService.getAllResultDefinitions(envelope, LocalDate.now());
+        final JsonArray allResultDefinitions = referenceDataService.getAllResultDefinitions(envelope);
 
         assertThat(allResultDefinitions.getJsonObject(0).getString(FIELD_SHORT_CODE), is(WITHDRAWN_SHORT_CODE));
         assertThat(allResultDefinitions.getJsonObject(0).getString(FIELD_ID), is(WITHDRAWN_RESULT_ID));
@@ -320,6 +319,5 @@ public class ReferenceDataServiceTest {
                         .build())
                 .build();
     }
-
 
 }

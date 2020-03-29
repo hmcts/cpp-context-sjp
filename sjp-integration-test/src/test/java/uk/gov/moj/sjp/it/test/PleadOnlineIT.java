@@ -152,6 +152,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private UUID offenceId;
 
+
     @Before
     public void setUp() throws Exception {
         offenceId = randomUUID();
@@ -180,8 +181,13 @@ public class PleadOnlineIT extends BaseIntegrationTest {
 
     @After
     public void tearDown() throws Exception {
-        employerHelper.close();
-        financialMeansHelper.close();
+        if (null != employerHelper) {
+            employerHelper.close();
+        }
+
+        if (null != financialMeansHelper) {
+            financialMeansHelper.close();
+        }
     }
 
     private PersonalDetails generateExpectedPersonDetails(final JSONObject payload) {

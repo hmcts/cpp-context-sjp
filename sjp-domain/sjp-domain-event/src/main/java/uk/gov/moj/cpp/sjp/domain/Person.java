@@ -101,6 +101,7 @@ public class Person {
         return region;
     }
 
+    @SuppressWarnings("squid:S1067")
     @Override
     public boolean equals(Object o) {
         if (this == o) {

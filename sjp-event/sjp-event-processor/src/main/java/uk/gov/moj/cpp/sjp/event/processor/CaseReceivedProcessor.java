@@ -1,15 +1,13 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
-import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.URN;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.EXPECTED_DATE_READY;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.POSTING_DATE;
+import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.URN;
 
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -29,6 +27,9 @@ import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class CaseReceivedProcessor {

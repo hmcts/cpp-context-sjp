@@ -24,9 +24,9 @@ public class HearingRequestsViewHelper {
     public List<HearingRequestView> createHearingRequestViews(final CaseDetails caseDetails,
                                                               final JsonObject referralReasons,
                                                               final DefendantsOnlinePlea defendantPleaDetails,
-                                                              final CaseReferredForCourtHearing caseReferredForCourtHearingEvent,
-                                                              final JsonObject hearingTypes,
-                                                              final List<UUID> referredOffenceIds) {
+            final CaseReferredForCourtHearing caseReferredForCourtHearingEvent,
+            final JsonObject hearingTypes,
+            final List<UUID> referredOffenceIds) {
 
         final Optional<PleaDetails> defendantPleaDetailsOptional = Optional.ofNullable(defendantPleaDetails).map(DefendantsOnlinePlea::getPleaDetails);
 

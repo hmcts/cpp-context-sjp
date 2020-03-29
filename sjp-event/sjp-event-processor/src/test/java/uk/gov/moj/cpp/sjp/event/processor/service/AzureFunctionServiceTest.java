@@ -1,5 +1,9 @@
 package uk.gov.moj.cpp.sjp.event.processor.service;
 
+import uk.gov.moj.cpp.sjp.event.processor.helper.HttpConnectionHelper;
+
+import java.io.IOException;
+
 import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
@@ -7,9 +11,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.moj.cpp.sjp.event.processor.helper.HttpConnectionHelper;
-
-import java.io.IOException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AzureFunctionServiceTest {

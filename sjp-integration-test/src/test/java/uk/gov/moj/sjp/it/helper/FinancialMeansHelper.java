@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
@@ -99,7 +100,13 @@ public class FinancialMeansHelper implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        messageConsumer.close();
+        if(null != messageConsumer) {
+            try {
+                messageConsumer.close();
+            } catch (JMSException e) {
+                // do nothing
+            }
+        }
     }
 
     public List<String> associateCaseWithFinancialMeansDocuments(UUID userId, UUID caseId, CaseDocumentHelper caseDocumentHelper) {

@@ -20,6 +20,7 @@ import uk.gov.moj.sjp.it.util.TopicUtil;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
@@ -127,6 +128,12 @@ public class EmployerHelper implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        messageConsumer.close();
+        if (null != messageConsumer) {
+            try {
+                messageConsumer.close();
+            } catch (JMSException e) {
+                // do nothing
+            }
+        }
     }
 }

@@ -125,4 +125,30 @@ public class ReferenceDataService {
                 .payloadAsJsonObject()
                 .getJsonArray("resultDefinitions");
     }
+
+    public Optional<JsonObject> getCourtByCourtHouseOUCode(final String courtHouseOUCode, final JsonEnvelope envelope) {
+        final JsonObject queryParams = createObjectBuilder().add("oucode", courtHouseOUCode).build();
+        final JsonEnvelope query = enveloper.withMetadataFrom(envelope, "referencedata.query.organisationunits")
+                .apply(queryParams);
+
+        final JsonEnvelope organisationUnitsResponse = requester.requestAsAdmin(query);
+
+        return organisationUnitsResponse.payloadAsJsonObject()
+                .getJsonArray("organisationunits")
+                .getValuesAs(JsonObject.class)
+                .stream()
+                .findFirst();
+    }
+
+    public JsonArray getAllResultDefinitions(final JsonEnvelope envelope) {
+
+        final Envelope<JsonObject> request = Enveloper
+                .envelop(createObjectBuilder().build())
+                .withName("referencedata.get-all-result-definitions")
+                .withMetadataFrom(envelope);
+
+        return requester.request(request)
+                .payloadAsJsonObject()
+                .getJsonArray("resultDefinitions");
+    }
 }

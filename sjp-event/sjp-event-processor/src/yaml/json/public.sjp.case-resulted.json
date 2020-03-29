@@ -1,0 +1,124 @@
+{
+  "session": {
+    "sessionId": "aa746921-d839-4867-bcf9-b41db8ebc852",
+    "sessionLocation": {
+      "courtId": "ab746921-d839-4867-bcf9-b41db8ebc112",
+      "courtHouseCode": "DC",
+      "name": "Cardiff Magistrates' Court",
+      "roomId": "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a",
+      "roomName": "HorseFerry",
+      "address": {
+        "address1": "Fitzalan Place",
+        "address2": "Cardiff",
+        "addressline3": "addressline3",
+        "address4": "address4",
+        "address5": "address5",
+        "postcode": "CF24 0RZ"
+      }
+    },
+    "dateAndTimeOfSession": "2018-02-03T15:14:29.894Z",
+    "ouCode": "ABC"
+  },
+  "cases": [
+    {
+      "caseId": "2baf417c-9173-4223-b543-d060148d98b8",
+      "urn": "1234567",
+      "defendants": [
+        {
+          "defendantId": "7e2f843e-d639-40b3-8611-8015f3a18954",
+          "prosecutorReference": "DVLA",
+          "individualDefendant": {
+            "basePersonDetails": {
+              "personTitle": "Mr",
+              "firstName": "Joe",
+              "lastName": "Bloggs",
+              "telephoneNumberBusiness": "99999999999",
+              "telephoneNumberHome": "88888888888",
+              "telephoneNumberMobile": "77777777777",
+              "emailAddress1": "somerandomemail1@random.random",
+              "emailAddress2": "somerandomemail2@random.random",
+              "address": {
+                "address1": "102 Petty France",
+                "address2": "London",
+                "address3": "address3",
+                "address4": "address4",
+                "address5": "address5",
+                "postcode": "SW1H 9AJ"
+              },
+              "birthDate": "1960-05-04",
+              "gender": "Male"
+            },
+            "pncIdentifier": "PNC123",
+            "personStatedNationality": "GBR",
+            "bailConditions": "Must observe curfew",
+            "bailStatus": "IN_CUSTODY",
+            "reasonForBailConditionsOrCustody": "Persistent offender",
+            "presentAtHearing": true
+          },
+          "parentGuardianDetails": {
+            "personTitle": "Mr",
+            "firstName": "ParentGuardianFirstName",
+            "lastName": "ParentGuardianLastName",
+            "telephoneNumberBusiness": "99999999999",
+            "telephoneNumberHome": "88888888888",
+            "telephoneNumberMobile": "77777777777",
+            "emailAddress1": "parentguardianmemail1@random.random",
+            "emailAddress2": "parentguardianemail2@random.random",
+            "address": {
+              "address1": "102 Little France",
+              "address2": "Westminster",
+              "address3": "address3",
+              "address4": "address4",
+              "address5": "address5",
+              "postcode": "SW1H 9AJ"
+            },
+            "birthDate": "1960-05-04",
+            "gender": "Male"
+          },
+          "offences": [
+            {
+              "baseOffenceDetails": {
+                "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "offenceSequenceNumber": 1,
+                "offenceCode": "61131",
+                "offenceWording": "Drink Driving",
+                "offenceDateCode": 8,
+                "offenceStartDateTime": "2018-03-01T25:14:29.894Z",
+                "offenceEndDateTime": "2018-03-02T25:14:29.894Z",
+                "chargeDate": "2018-03-02T30:14:29.894Z",
+                "arrestDate": "2018-03-02T20:14:29.894Z",
+                "locationOfOffence": "Gypsy Corner",
+                "alcoholLevelAmount": 300,
+                "alcoholLevelMethod": "Breath Test",
+                "vehicleCode": "X1AB",
+                "vehicleRegistrationMark": "OF01ENC"
+              },
+              "initiatedDate": "2018-03-05T25:14:29.894Z",
+              "plea": {
+                "pleaType": "GUILTY",
+                "pleaDate": "2018-02-05T15:14:29.894Z",
+                "pleaMethod": "POSTAL"
+              },
+              "modeOfTrial": 6,
+              "finalDisposalIndicator": 9,
+              "convictionDate": "2018-03-05T15:14:29.894Z",
+              "convictingCourt": 4,
+              "finding": "some interesting findings",
+              "results": [
+                {
+                  "id": "3570eae9-6ce8-4208-99f3-ff02b118c372",
+                  "prompts": [
+                    {
+                      "id": "3570eae9-6ce8-4208-99f3-ff02b119d572",
+                      "value": "99"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

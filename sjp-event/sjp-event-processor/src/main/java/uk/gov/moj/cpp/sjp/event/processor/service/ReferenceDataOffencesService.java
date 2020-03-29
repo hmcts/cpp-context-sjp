@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor.service;
 import static java.util.UUID.fromString;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
+import static javax.json.Json.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -17,7 +18,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 public class ReferenceDataOffencesService {
@@ -37,7 +37,7 @@ public class ReferenceDataOffencesService {
     public Optional<JsonObject> getOffenceReferenceData(final JsonEnvelope envelope, final String offenceCode, final String date) {
         final JsonEnvelope request = enveloper
                 .withMetadataFrom(envelope, "referencedataoffences.query.offences-list")
-                .apply(Json.createObjectBuilder()
+                .apply(createObjectBuilder()
                         .add("cjsoffencecode", offenceCode)
                         .add("date", date)
                         .build());

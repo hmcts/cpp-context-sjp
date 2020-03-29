@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
+import com.google.common.collect.Sets;
 import org.junit.Test;
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.*;
@@ -164,7 +165,8 @@ public class CompositeCaseAggregateStateMutatorTest {
 
     @Test
     public void shouldMutateStateOnCaseCompletedEvent() {
-        final CaseCompleted caseCompleted = new CaseCompleted(caseId);
+        final UUID sessionId = randomUUID();
+        final CaseCompleted caseCompleted = new CaseCompleted(caseId, Sets.newHashSet(sessionId));
 
         compositeCaseAggregateStateMutator.apply(caseCompleted, caseAggregateState);
 
@@ -379,10 +381,14 @@ public class CompositeCaseAggregateStateMutatorTest {
         final Withdraw offence1Decision = new Withdraw(randomUUID(), createOffenceDecisionInformation(randomUUID(), VerdictType.NO_VERDICT), randomUUID());
         final Withdraw offence2Decision = new Withdraw(randomUUID(), createOffenceDecisionInformation(randomUUID(), VerdictType.NO_VERDICT), randomUUID());
         final List<OffenceDecision> offenceDecisions = newArrayList(offence1Decision, offence2Decision);
-        final DecisionSaved decisionSaved = new DecisionSaved(randomUUID(), randomUUID(), caseId, now(), offenceDecisions);
+        final UUID sessionId = randomUUID();
+        final DecisionSaved decisionSaved = new DecisionSaved(randomUUID(), sessionId, caseId, now(), offenceDecisions);
 
         compositeCaseAggregateStateMutator.apply(decisionSaved, caseAggregateState);
 
         assertThat(caseAggregateState.getOffenceDecisions(), containsInAnyOrder(offence1Decision, offence2Decision));
+
+        assertThat(caseAggregateState.getSessionIds(), hasSize(1));
+        assertThat(caseAggregateState.getSessionIds(), hasItem(sessionId));
     }
 }

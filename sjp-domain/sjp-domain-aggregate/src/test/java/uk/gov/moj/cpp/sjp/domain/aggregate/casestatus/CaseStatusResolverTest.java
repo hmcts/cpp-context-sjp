@@ -749,7 +749,7 @@ public class CaseStatusResolverTest {
                             .ifPresent((pleaType) -> caseAggregateState.getPleas().add((new Plea(defendantId, offenceId, pleaType))));
 
                     ofNullable(e.getDecision())
-                            .ifPresent((decisionType) -> caseAggregateState.updateOffenceDecisions(singletonList(offenceDecision(offenceId, decisionType))));
+                            .ifPresent((decisionType) -> caseAggregateState.updateOffenceDecisions(singletonList(offenceDecision(offenceId, decisionType)), randomUUID()));
                 });
 
         caseAggregateState.addOffenceIdsForDefendant(caseAggregateState.getDefendantId(), offenceIDs);

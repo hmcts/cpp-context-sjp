@@ -148,7 +148,7 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 state.putOffencePleaDate(event.getOffenceId(), LocalDate.of(event.getPleadDate().getYear(), event.getPleadDate().getMonth(), event.getPleadDate().getDayOfMonth()));
             });
     private static final AggregateStateMutator<DecisionSaved, CaseAggregateState> DECISION_MUTATOR =
-            ((event, state) -> state.updateOffenceDecisions(event.getOffenceDecisions()));
+            ((event, state) -> state.updateOffenceDecisions(event.getOffenceDecisions(), event.getSessionId()));
     private static final AggregateStateMutator<PleasSet, CaseAggregateState> PLEAS_SET_MUTATOR =
             ((event, state) -> state.setPleas(event.getPleas()));
 

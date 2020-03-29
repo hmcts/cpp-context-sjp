@@ -19,7 +19,7 @@ import java.util.UUID;
 /**
  * Repository for {@link CaseDetail}
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings("ALL")
 @Repository
 public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail, UUID> implements CriteriaSupport<CaseDetail> {
 

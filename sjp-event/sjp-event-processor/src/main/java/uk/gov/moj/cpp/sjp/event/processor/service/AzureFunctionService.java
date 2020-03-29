@@ -2,8 +2,9 @@ package uk.gov.moj.cpp.sjp.event.processor.service;
 
 import uk.gov.moj.cpp.sjp.event.processor.helper.HttpConnectionHelper;
 
-import javax.inject.Inject;
 import java.io.IOException;
+
+import javax.inject.Inject;
 
 public class AzureFunctionService {
 

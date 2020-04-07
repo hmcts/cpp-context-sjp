@@ -5,14 +5,7 @@
   "description": "Personal Detail",
   "properties": {
     "personTitle": {
-      "type": "string",
-      "description": "A person is the base type of a defendant.  Defendants title must be constrained to remain compliant with the GOB interface",
-      "enum": [
-        "MR",
-        "MS",
-        "MISS",
-        "MRS"
-      ]
+      "type": "string"
     },
     "firstName": {
       "type": "string"
@@ -42,13 +35,7 @@
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
     },
     "gender": {
-      "type": "string",
-      "enum": [
-        "MALE",
-        "FEMALE",
-        "NOT SPECIFIED",
-        "NOT_KNOWN"
-      ]
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/gender.json"
     }
   },
   "additionalProperties": false,

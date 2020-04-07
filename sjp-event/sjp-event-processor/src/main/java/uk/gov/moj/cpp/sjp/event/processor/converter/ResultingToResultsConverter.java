@@ -6,7 +6,6 @@ import static java.util.UUID.fromString;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static javax.json.JsonValue.NULL;
-import static uk.gov.justice.json.schemas.domains.sjp.results.Gender.valueOf;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
@@ -23,7 +22,6 @@ import uk.gov.justice.json.schemas.domains.sjp.results.BaseSessionStructure;
 import uk.gov.justice.json.schemas.domains.sjp.results.CaseDefendant;
 import uk.gov.justice.json.schemas.domains.sjp.results.CaseOffence;
 import uk.gov.justice.json.schemas.domains.sjp.results.IndividualDefendant;
-import uk.gov.justice.json.schemas.domains.sjp.results.PersonTitle;
 import uk.gov.justice.json.schemas.domains.sjp.results.Plea;
 import uk.gov.justice.json.schemas.domains.sjp.results.Prompts;
 import uk.gov.justice.json.schemas.domains.sjp.results.PublicSjpResulted;
@@ -186,7 +184,7 @@ public class ResultingToResultsConverter {
     protected BasePersonDetail buildPerson(final PersonalDetails personalDetails) {
         final BasePersonDetail.Builder person = BasePersonDetail.basePersonDetail();
 
-        person.withPersonTitle(null != personalDetails.getTitle() ? PersonTitle.valueOf(personalDetails.getTitle().toUpperCase()) : null)
+        person.withPersonTitle(personalDetails.getTitle())
                 .withFirstName(personalDetails.getFirstName())
                 .withLastName(personalDetails.getLastName())
                 .withAddress(personalDetails.getAddress());
@@ -205,7 +203,7 @@ public class ResultingToResultsConverter {
         }
 
         if (null != personalDetails.getGender()) {
-            person.withGender(valueOf(personalDetails.getGender().toString().toUpperCase()));
+            person.withGender(personalDetails.getGender());
         }
 
         return person.build();

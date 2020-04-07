@@ -10,17 +10,11 @@ import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static org.junit.Assert.assertEquals;
-import static uk.gov.justice.json.schemas.domains.sjp.Gender.MALE;
-import static uk.gov.justice.json.schemas.domains.sjp.results.Gender.valueOf;
-import static uk.gov.justice.json.schemas.domains.sjp.results.PersonTitle.MR;
+import static uk.gov.justice.json.schemas.domains.sjp.Gender.NOT_SPECIFIED;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 
-import uk.gov.justice.json.schemas.domains.sjp.Address;
-import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
-import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
-import uk.gov.justice.json.schemas.domains.sjp.PleaMethod;
-import uk.gov.justice.json.schemas.domains.sjp.PleaType;
+import uk.gov.justice.json.schemas.domains.sjp.*;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
@@ -77,7 +71,7 @@ public class ResultingToResultsConverterHelper {
 
     private static final Integer COURT_HOUSE_CODE = 1022;
     private static final String COURT_HOUSE_NAME = "Cardiff Magistrates' Court";
-    private static final String TITLE = "Mr";
+    private static final String TITLE = "HRH";
     private static final String BUSINESS_NUMBER = "99999999999";
     private static final String EMAIL = "somerandomemail1@random.random";
     private static final String EMAIL_2 = "somerandomemail2@random.random";
@@ -91,6 +85,7 @@ public class ResultingToResultsConverterHelper {
     private static final String ADDRESS3 = "addressline3";
     private static final String ADDRESS4 = "addressline4";
     private static final String ADDRESS5 = "addressline5";
+    private static final Gender GENDER = NOT_SPECIFIED;
     private static final UUID OFFENCE_ID_1 = randomUUID();
     private static final UUID OFFENCE_ID_2 = randomUUID();
     private static final UUID SJP_SESSION_ID = randomUUID();
@@ -213,11 +208,11 @@ public class ResultingToResultsConverterHelper {
     }
 
     public static void verifyPerson(final BasePersonDetail person) {
-        assertEquals(MR, person.getPersonTitle());
+        assertEquals(TITLE, person.getPersonTitle());
         assertEquals(FIRST_NAME, person.getFirstName());
         assertEquals(LAST_NAME, person.getLastName());
         assertEquals(DATE_OF_BIRTH.toLocalDate(), person.getBirthDate().toLocalDate());
-        assertEquals(valueOf(MALE.toString().toUpperCase()), person.getGender());
+        assertEquals(GENDER.toString(), person.getGender().toString());
         assertEquals(BUSINESS_NUMBER, person.getTelephoneNumberBusiness());
         assertEquals(HOME_NUMBER, person.getTelephoneNumberHome());
         assertEquals(MOBILE, person.getTelephoneNumberMobile());
@@ -231,7 +226,7 @@ public class ResultingToResultsConverterHelper {
                 .withTitle(TITLE)
                 .withAddress(Address.address().withAddress1(ADDRESS1).withAddress2(ADDRESS2).withAddress3(ADDRESS3).withAddress4(ADDRESS4).withAddress5(ADDRESS5).withPostcode(POSTCODE).build())
                 .withContactDetails(ContactDetails.contactDetails().withBusiness(BUSINESS_NUMBER).withEmail(EMAIL).withEmail2(EMAIL_2).withHome(HOME_NUMBER).withMobile(MOBILE).build())
-                .withDateOfBirth(DATE_OF_BIRTH.toLocalDate()).withFirstName(FIRST_NAME).withGender(MALE).withLastName(LAST_NAME)
+                .withDateOfBirth(DATE_OF_BIRTH.toLocalDate()).withFirstName(FIRST_NAME).withGender(GENDER).withLastName(LAST_NAME)
                 .build();
     }
 
@@ -397,7 +392,8 @@ public class ResultingToResultsConverterHelper {
         return Optional.of(createObjectBuilder()
                 .add("id", DEFENDANT_ID.toString())
                 .add("selfDefinedInformation", createObjectBuilder()
-                        .add("nationality", "GBR"))
+                        .add("nationality", "GBR")
+                        .add("gender", "Not Specified"))
                 .add("offences", createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add("offenceId", OFFENCE_ID_1.toString())

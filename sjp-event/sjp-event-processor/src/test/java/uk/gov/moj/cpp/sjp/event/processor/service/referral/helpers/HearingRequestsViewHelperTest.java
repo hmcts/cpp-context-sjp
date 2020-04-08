@@ -1,13 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers;
 
-import static java.util.Collections.singletonList;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
-
+import org.junit.Test;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
@@ -20,12 +13,17 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingRequestView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingTypeView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReferralReasonView;
 
+import javax.json.JsonObject;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.JsonObject;
-
-import org.junit.Test;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
 public class HearingRequestsViewHelperTest {
 

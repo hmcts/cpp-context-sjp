@@ -1,9 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
 
-import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -17,11 +15,8 @@ import uk.gov.moj.cpp.sjp.event.listener.converter.ContactDetailsToContactDetail
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
-import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaPersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
-import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
 import java.time.LocalDate;
 
@@ -33,9 +28,6 @@ public class DefendantUpdatedListener {
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Inject
-    private OnlinePleaRepository.PersonDetailsOnlinePleaRepository onlinePleaRepository;
 
     @Inject
     private CaseRepository caseRepository;
@@ -80,15 +72,6 @@ public class DefendantUpdatedListener {
 
         LocalDate dateOfBirth = defendantDetailsUpdated.getDateOfBirth();
 
-        //this listener updates two tables for the case where the event is fired via plead-online command
-        if (defendantDetailsUpdated.isUpdateByOnlinePlea()) {
-            final OnlinePlea onlinePlea = buildOnlinePlea(caseDetail.getDefendant(), defendantDetailsUpdated);
-            onlinePleaRepository.saveOnlinePlea(onlinePlea);
-            if (isNull(dateOfBirth)) { // not changed by online plea
-                dateOfBirth = caseDetail.getDefendant().getPersonalDetails().getDateOfBirth();
-            }
-        }
-
         caseSearchResultService.onDefendantDetailsUpdated(
                 defendantDetailsUpdated.getCaseId(),
                 defendantDetailsUpdated.getDefendantId(),
@@ -99,22 +82,6 @@ public class DefendantUpdatedListener {
         );
 
 
-    }
-
-    private OnlinePlea buildOnlinePlea(final DefendantDetail defendantDetail, final DefendantDetailsUpdated newData) {
-        final OnlinePlea newOnlinePlea = new OnlinePlea(defendantDetail, newData.getUpdatedDate());
-        final OnlinePleaPersonalDetails personalDetails = newOnlinePlea.getPersonalDetails();
-        ofNullable(newData.getFirstName()).ifPresent(personalDetails::setFirstName);
-        ofNullable(newData.getLastName()).ifPresent(personalDetails::setLastName);
-        ofNullable(newData.getNationalInsuranceNumber()).ifPresent(personalDetails::setNationalInsuranceNumber);
-        ofNullable(newData.getDateOfBirth()).ifPresent(personalDetails::setDateOfBirth);
-        ofNullable(newData.getAddress()).map(addressToAddressEntity::convert).ifPresent(personalDetails::setAddress);
-        ofNullable(newData.getContactDetails()).ifPresent(contactDetails -> {
-            personalDetails.setHomeTelephone(contactDetails.getHome());
-            personalDetails.setMobile(contactDetails.getMobile());
-            personalDetails.setEmail(contactDetails.getEmail());
-        });
-        return newOnlinePlea;
     }
 
     private void updateDefendant(final DefendantDetail defendantDetailEntity, final DefendantDetailsUpdated newData) {

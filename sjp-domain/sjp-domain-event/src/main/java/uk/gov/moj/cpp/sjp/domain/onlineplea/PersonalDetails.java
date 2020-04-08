@@ -33,5 +33,4 @@ public class PersonalDetails extends Person {
             @JsonProperty("region") final String region) {
         super(null, firstName, lastName, dateOfBirth, null, nationalInsuranceNumber, address, contactDetails, region);
     }
-
 }

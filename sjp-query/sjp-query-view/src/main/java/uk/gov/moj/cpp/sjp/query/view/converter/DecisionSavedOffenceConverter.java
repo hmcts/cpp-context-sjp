@@ -51,6 +51,8 @@ import uk.gov.moj.cpp.sjp.persistence.entity.PaymentTerms;
 import uk.gov.moj.cpp.sjp.query.view.response.FinancialImpositionView;
 import uk.gov.moj.cpp.sjp.query.view.response.OffenceDecisionView;
 
+import java.util.Optional;
+
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 

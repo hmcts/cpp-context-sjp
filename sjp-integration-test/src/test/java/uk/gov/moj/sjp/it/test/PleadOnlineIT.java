@@ -42,6 +42,7 @@ import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.getOnlinePlea;
 import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
+import static uk.gov.moj.sjp.it.helper.SetPleasHelper.createCase;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.stubNotifications;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.verifyNotification;
@@ -83,7 +84,6 @@ import uk.gov.moj.sjp.it.helper.EmployerHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
-import uk.gov.moj.sjp.it.helper.SetPleasHelper;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
@@ -126,6 +126,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private static final String TEMPLATE_PLEA_MULTI_OFFENCE_CUSTOM_V2 = "raml/json/sjp.command.plead-online__multi_offence_v2.json";
     private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__guilty.json";
     private static final String TEMPLATE_PLEA_GUILTY_REQUEST_HEARING_PAYLOAD = "raml/json/sjp.command.plead-online__guilty_request_hearing.json";
+    private static final String TEMPLATE_PLEA_MULTI_OFFENCE_NO_CHANGE_PERSONAL_DETAILS_PAYLOAD = "raml/json/sjp.command.plead-online__david-lloyd.json";
     private static final String TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_RESPONSE = "raml/json/sjp.command.plead-online__guilty_with_finances_response.json";
     private static final String TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_CASE_RESPONSE = "raml/json/sjp.command.plead-online__guilty_with_finances_case_response.json";
     private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_finances_response.json";
@@ -281,7 +282,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder.withDefaults();
         final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
 
-        this.createCasePayloadBuilder = SetPleasHelper.createCase(caseId, defendantBuilder, offenceId1, offenceId2, offenceId3, postingDate);
+        this.createCasePayloadBuilder = createCase(caseId, defendantBuilder, offenceId1, offenceId2, offenceId3, postingDate);
 
         try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId, defendantBuilder.getId())) {
             final Map<String, String> values = new HashMap<>();
@@ -344,6 +345,88 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     }
 
     @Test
+    public void shouldPleadOnlineWithUnchangedPersonalDetails() {
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+        final PleaType pleaType1 = GUILTY;
+        final PleaType pleaType2 = NOT_GUILTY;
+        final PleaType pleaType3 = GUILTY;
+        final UUID caseId = randomUUID();
+        final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder.withDefaults();
+        final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
+
+        this.createCasePayloadBuilder = createCase(caseId, defendantBuilder, offenceId1, offenceId2, offenceId3, postingDate);
+
+        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId, defendantBuilder.getId())) {
+            final Map<String, String> values = new HashMap<>();
+            values.put("offenceId1", offenceId1.toString());
+            values.put("offenceId2", offenceId2.toString());
+            values.put("offenceId3", offenceId3.toString());
+            values.put("plea1", pleaType1.name());
+            values.put("plea2", pleaType2.name());
+            values.put("plea3", pleaType3.name());
+            values.put("mitigation", "I was drunk at the time");
+            values.put("notGuiltyBecause", "I was forced to do it");
+
+            //runs plea-online
+            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
+
+            final JsonPath pleadOnlinePayload = JsonPath.from(new StrSubstitutor(values).replace(getPayload(TEMPLATE_PLEA_MULTI_OFFENCE_NO_CHANGE_PERSONAL_DETAILS_PAYLOAD)));
+            pleadOnlineHelper.pleadOnline(pleadOnlinePayload.prettify());
+
+            //verify plea
+            pleadOnlineHelper.verifyInPublicTopic(createCasePayloadBuilder.getId(), offenceId1, pleaType1, null);
+
+            pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaType1, PleaMethod.ONLINE, 0);
+            pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaType2, PleaMethod.ONLINE, 1);
+            pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaType3, PleaMethod.ONLINE, 2);
+
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
+                    createCasePayloadBuilder.getUrn(),
+                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
+            caseSearchResultHelper.verifyPleaReceivedDate();
+
+            //verify online-plea
+            final Response response = getOnlinePlea(caseId.toString(), defendantBuilder.getId().toString(), USER_ID);
+            if (response.getStatus() != OK.getStatusCode()) {
+                fail("Polling interrupted, please fix the error before continue. Status code: " + response.getStatus());
+            }
+
+            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
+
+            final JSONObject defendantsPlea = new JSONObject(response.readEntity(String.class));
+            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("offenceId"), equalTo(offenceId1.toString()));
+            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("plea"), equalTo(pleaType1.name()));
+            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(0).get("mitigation"), equalTo("I was drunk at the time"));
+            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("offenceId"), equalTo(offenceId2.toString()));
+            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("plea"), equalTo(pleaType2.name()));
+            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(1).get("notGuiltyBecause"), equalTo("I was forced to do it"));
+            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("offenceId"), equalTo(offenceId3.toString()));
+            assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("plea"), equalTo(pleaType3.name()));
+            assertFalse(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).has("mitigation"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").get("firstName"), equalTo("David"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").get("lastName"), equalTo("LLOYD"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address1"), equalTo("14 Tottenham Court Road"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address2"), equalTo("London"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address3"), equalTo("England"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address4"), equalTo("UK"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address5"), equalTo("Greater London"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("postcode"), equalTo("W1T 1JY"));
+            assertTrue(defendantsPlea.getJSONObject("pleaDetails").getBoolean("outstandingFines"));
+
+            final JsonObject updatedDefendantDetails = getUpdatedDefendantDetails();
+            final boolean resultsContainUpdatedFirstNameValue = updatedDefendantDetails
+                    .getJsonArray("defendantDetailsUpdates")
+                    .getValuesAs(JsonObject.class)
+                    .stream()
+                    .anyMatch(e -> e.getString("firstName").equalsIgnoreCase("Testy"));
+            assertThat(resultsContainUpdatedFirstNameValue, is(false));
+        }
+    }
+
+    @Test
     public void shouldUpdateDefendantsCurrentFirstName() {
         final UUID offenceId1 = randomUUID();
         final UUID offenceId2 = randomUUID();
@@ -352,7 +435,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder.withDefaults();
         final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
 
-        this.createCasePayloadBuilder = SetPleasHelper.createCase(caseId, defendantBuilder, offenceId1, offenceId2, offenceId3, postingDate);
+        this.createCasePayloadBuilder = createCase(caseId, defendantBuilder, offenceId1, offenceId2, offenceId3, postingDate);
 
         try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId, defendantBuilder.getId())) {
             final Map<String, String> values = new HashMap<>();

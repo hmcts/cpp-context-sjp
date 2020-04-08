@@ -7,11 +7,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -23,6 +21,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
+import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantsNationalInsuranceNumberUpdated;
 import uk.gov.moj.cpp.sjp.event.listener.converter.AddressToAddressEntity;
@@ -31,7 +30,6 @@ import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
@@ -66,31 +64,37 @@ public class DefendantUpdatedListenerTest {
     private final String previousNiNumber = "previously set NI-number";
     @InjectMocks
     private DefendantUpdatedListener defendantUpdatedListener;
+
     @Spy
     @InjectMocks
     private final CaseSearchResultService caseSearchResultService = new CaseSearchResultService();
+
     @Spy
     @InjectMocks
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
     @Spy
     @InjectMocks
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
     @Mock
     private CaseRepository caseRepository;
+
     @Mock
     private CaseSearchResultRepository caseSearchResultRepository;
-    @Mock
-    private OnlinePleaRepository.PersonDetailsOnlinePleaRepository onlinePleaRepository;
+
     @Mock(answer = Answers.CALLS_REAL_METHODS)
     private ContactDetailsToContactDetailsEntity contactDetailsToContactDetailsEntity;
+
     @Mock(answer = Answers.CALLS_REAL_METHODS)
     private AddressToAddressEntity addressToAddressEntity;
-    @Captor
-    private ArgumentCaptor<OnlinePlea> onlinePleaCaptor;
+
     private final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID());
-    private DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder defendantDetailsUpdatedBuilder = defendantDetailsUpdated()
+
+    private DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder defendantDetailsUpdatedBuilder = DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated()
             .withCaseId(caseDetail.getId())
             .withDefendantId(caseDetail.getDefendant().getId())
             .withContactDetails(new ContactDetails("123", "456", "789", "test@test.com", "test_email2@test.com"))
@@ -137,7 +141,7 @@ public class DefendantUpdatedListenerTest {
         when(caseSearchResultRepository.findByCaseId(caseId)).thenReturn(Lists.newArrayList(buildCaseSearchResult(caseDetail)));
     }
 
-    private DefendantDetailsUpdated commonSetup(final boolean updateByOnlinePlea, final boolean nationalInsuranceNumberSuppliedInRequest) {
+    private DefendantDetailsUpdated defendantDetailsUpdated(final boolean updateByOnlinePlea, final boolean nationalInsuranceNumberSuppliedInRequest) {
         //WHEN
         defendantDetailsUpdatedBuilder = defendantDetailsUpdatedBuilder.withUpdateByOnlinePlea(updateByOnlinePlea);
         if (updateByOnlinePlea) {
@@ -162,12 +166,6 @@ public class DefendantUpdatedListenerTest {
 
         verify(caseSearchResultRepository, times(expectedSaveInvocations)).save(actualSearchResultsCaptor.capture());
 
-        if (updateByOnlinePlea) {
-            verify(onlinePleaRepository).saveOnlinePlea(onlinePleaCaptor.capture());
-        } else {
-            verify(onlinePleaRepository, never()).saveOnlinePlea(onlinePleaCaptor.capture());
-        }
-
         final DefendantDetail defendant = actualPersonalDetailsCaptor.getValue().getDefendant();
         assertTrue(reflectionEquals(expectedPersonalDetails, defendant.getPersonalDetails(),
                 "contactDetails", "address"));
@@ -191,27 +189,6 @@ public class DefendantUpdatedListenerTest {
         assertThat(actualRecordAdded.getDateOfBirth(), equalTo(defendantDetailsUpdated.getDateOfBirth()));
         assertThat(actualRecordAdded.getCaseId(), equalTo(defendantDetailsUpdated.getCaseId()));
         assertFalse(actualRecordAdded.isDeprecated());
-
-        if (updateByOnlinePlea) {
-            assertThat(onlinePleaCaptor.getValue().getCaseId(), equalTo(defendantDetailsUpdated.getCaseId()));
-            assertThat(onlinePleaCaptor.getValue().getDefendantId(), equalTo(defendantDetailsUpdated.getDefendantId()));
-            assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getFirstName(), equalTo(defendantDetailsUpdated.getFirstName()));
-            assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getLastName(), equalTo(defendantDetailsUpdated.getLastName()));
-            assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getDateOfBirth(), equalTo(defendantDetailsUpdated.getDateOfBirth()));
-            assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getEmail(), equalTo(defendantDetailsUpdated.getContactDetails().getEmail()));
-            if(nationalInsuranceNumberSupplied) {
-                assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getNationalInsuranceNumber(), equalTo(defendantDetailsUpdated.getNationalInsuranceNumber()));
-            }
-            assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getMobile(), equalTo(defendantDetailsUpdated.getContactDetails().getMobile()));
-            assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getHomeTelephone(), equalTo(defendantDetailsUpdated.getContactDetails().getHome()));
-            assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getAddress().getAddress1(), equalTo(defendantDetailsUpdated.getAddress().getAddress1()));
-            assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getAddress().getAddress2(), equalTo(defendantDetailsUpdated.getAddress().getAddress2()));
-            assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getAddress().getAddress3(), equalTo(defendantDetailsUpdated.getAddress().getAddress3()));
-            assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getAddress().getAddress4(), equalTo(defendantDetailsUpdated.getAddress().getAddress4()));
-            assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getAddress().getAddress5(), equalTo(defendantDetailsUpdated.getAddress().getAddress5()));
-            assertThat(onlinePleaCaptor.getValue().getPersonalDetails().getAddress().getPostcode(), equalTo(defendantDetailsUpdated.getAddress().getPostcode()));
-            assertThat(onlinePleaCaptor.getValue().getSubmittedOn().toEpochSecond(), equalTo(defendantDetailsUpdated.getUpdatedDate().toEpochSecond()));
-        }
     }
 
     @Test
@@ -231,7 +208,7 @@ public class DefendantUpdatedListenerTest {
         // GIVEN
         final boolean updateByOnlinePlea = false;
         final boolean nationalInsuranceNumberSuppliedInRequest = true;
-        final DefendantDetailsUpdated defendantDetailsUpdated = commonSetup(updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
+        final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdated(updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
 
         // WHEN
         defendantUpdatedListener.defendantDetailsUpdated(command(defendantDetailsUpdated));
@@ -245,7 +222,7 @@ public class DefendantUpdatedListenerTest {
         // GIVEN
         final boolean updateByOnlinePlea = true;
         final boolean nationalInsuranceNumberSuppliedInRequest = true;
-        final DefendantDetailsUpdated defendantDetailsUpdated = commonSetup(true, true);
+        final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdated(true, true);
 
         // WHEN
         defendantUpdatedListener.defendantDetailsUpdated(command(defendantDetailsUpdated));
@@ -259,8 +236,7 @@ public class DefendantUpdatedListenerTest {
         // GIVEN
         final boolean updateByOnlinePlea = true;
         final boolean nationalInsuranceNumberSuppliedInRequest = false;
-        final DefendantDetailsUpdated defendantDetailsUpdated = commonSetup(updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
-
+        final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdated(updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
         // WHEN
         defendantUpdatedListener.defendantDetailsUpdated(command(defendantDetailsUpdated));
 
@@ -279,6 +255,13 @@ public class DefendantUpdatedListenerTest {
         return JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.defendant-details-updated"),
                 objectToJsonObjectConverter.convert(defendantDetailsUpdated)
+        );
+    }
+
+    private JsonEnvelope command(final PleadOnline pleadOnline) {
+        return JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("sjp.events.online-plea-received"),
+                objectToJsonObjectConverter.convert(pleadOnline)
         );
     }
 

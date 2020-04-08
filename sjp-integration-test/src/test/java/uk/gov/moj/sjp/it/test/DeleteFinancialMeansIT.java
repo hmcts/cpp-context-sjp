@@ -42,8 +42,10 @@ import org.hamcrest.Matcher;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("Enable this when merging to master")
 public class DeleteFinancialMeansIT extends BaseIntegrationTest {
 
     private FinancialMeansHelper financialMeansHelper;

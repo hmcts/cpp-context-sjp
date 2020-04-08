@@ -42,8 +42,10 @@ import java.util.UUID;
 import com.google.common.collect.ImmutableMap;
 import org.hamcrest.Matcher;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("Enable this when merging to master")
 public class SingleOffenceWithdrawalRequestIT extends BaseIntegrationTest {
 
     private final UUID withdrawalRequestReasonId1 = randomUUID();

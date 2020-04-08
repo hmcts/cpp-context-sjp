@@ -66,9 +66,11 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mortbay.log.Log;
 
+@Ignore("Enable this when merging to master")
 public class AssignmentRulesIT extends BaseIntegrationTest {
 
     private static final String DATE_TO_AVOID = "a-date-to-avoid";

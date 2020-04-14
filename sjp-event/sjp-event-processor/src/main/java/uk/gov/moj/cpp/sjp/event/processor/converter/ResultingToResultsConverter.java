@@ -12,6 +12,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
 import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
+import uk.gov.justice.json.schemas.domains.sjp.CourtsGender;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.json.schemas.domains.sjp.results.BaseCaseDetails;
@@ -203,7 +204,9 @@ public class ResultingToResultsConverter {
         }
 
         if (null != personalDetails.getGender()) {
-            person.withGender(personalDetails.getGender());
+            person.withGender(CourtsGender.valueOf(personalDetails.getGender().toString()
+                    .toUpperCase()
+                    .replace(' ','_')));
         }
 
         return person.build();

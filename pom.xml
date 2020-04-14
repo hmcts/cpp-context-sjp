@@ -20,7 +20,7 @@
         <assignment.version>6.0.0</assignment.version>
         <material.version>6.4.3</material.version>
         <notification.notify.version>0.0.38</notification.notify.version>
-        <referencedata.version>6.4.11</referencedata.version>
+        <referencedata.version>6.4.12</referencedata.version>
         <referencedata.offences.version>6.4.0</referencedata.offences.version>
         <scheduling.version>6.0.0</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>

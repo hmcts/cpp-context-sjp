@@ -43,7 +43,6 @@ import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import java.util.List;
 import java.util.Optional;
 
-import javax.inject.Inject;
 import javax.json.JsonObject;
 
 import org.junit.Test;

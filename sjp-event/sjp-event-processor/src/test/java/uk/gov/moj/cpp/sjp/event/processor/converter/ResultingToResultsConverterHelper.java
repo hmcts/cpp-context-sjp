@@ -85,7 +85,8 @@ public class ResultingToResultsConverterHelper {
     private static final String ADDRESS3 = "addressline3";
     private static final String ADDRESS4 = "addressline4";
     private static final String ADDRESS5 = "addressline5";
-    private static final Gender GENDER = NOT_SPECIFIED;
+    private static final Gender SOURCE_GENDER = NOT_SPECIFIED;
+    private static final CourtsGender TARGET_GENDER = CourtsGender.NOT_SPECIFIED;
     private static final UUID OFFENCE_ID_1 = randomUUID();
     private static final UUID OFFENCE_ID_2 = randomUUID();
     private static final UUID SJP_SESSION_ID = randomUUID();
@@ -212,7 +213,7 @@ public class ResultingToResultsConverterHelper {
         assertEquals(FIRST_NAME, person.getFirstName());
         assertEquals(LAST_NAME, person.getLastName());
         assertEquals(DATE_OF_BIRTH.toLocalDate(), person.getBirthDate().toLocalDate());
-        assertEquals(GENDER.toString(), person.getGender().toString());
+        assertEquals(TARGET_GENDER.toString(), person.getGender().toString());
         assertEquals(BUSINESS_NUMBER, person.getTelephoneNumberBusiness());
         assertEquals(HOME_NUMBER, person.getTelephoneNumberHome());
         assertEquals(MOBILE, person.getTelephoneNumberMobile());
@@ -226,7 +227,7 @@ public class ResultingToResultsConverterHelper {
                 .withTitle(TITLE)
                 .withAddress(Address.address().withAddress1(ADDRESS1).withAddress2(ADDRESS2).withAddress3(ADDRESS3).withAddress4(ADDRESS4).withAddress5(ADDRESS5).withPostcode(POSTCODE).build())
                 .withContactDetails(ContactDetails.contactDetails().withBusiness(BUSINESS_NUMBER).withEmail(EMAIL).withEmail2(EMAIL_2).withHome(HOME_NUMBER).withMobile(MOBILE).build())
-                .withDateOfBirth(DATE_OF_BIRTH.toLocalDate()).withFirstName(FIRST_NAME).withGender(GENDER).withLastName(LAST_NAME)
+                .withDateOfBirth(DATE_OF_BIRTH.toLocalDate()).withFirstName(FIRST_NAME).withGender(SOURCE_GENDER).withLastName(LAST_NAME)
                 .build();
     }
 
@@ -393,7 +394,7 @@ public class ResultingToResultsConverterHelper {
                 .add("id", DEFENDANT_ID.toString())
                 .add("selfDefinedInformation", createObjectBuilder()
                         .add("nationality", "GBR")
-                        .add("gender", "Not Specified"))
+                        .add("gender", SOURCE_GENDER.toString()))
                 .add("offences", createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add("offenceId", OFFENCE_ID_1.toString())

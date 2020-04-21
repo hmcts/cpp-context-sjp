@@ -2,15 +2,21 @@ package uk.gov.moj.cpp.sjp.query.view.response;
 
 import org.junit.Test;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.persistence.entity.DischargeOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.FinancialPenaltyOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.NoSeparatePenaltyOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.UUID;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class OffenceDecisionViewTest {
 
@@ -39,6 +45,47 @@ public class OffenceDecisionViewTest {
 
         assertThat("getBackDuty should return a BigDecimal value", underTest.getBackDuty(), is(backDuty));
         assertThat("getExcisePenalty should return a BigDecimal value", underTest.getExcisePenalty(), is(excisePenalty));
-
     }
+
+    @Test
+    public void shouldConvertNoSeparatePenaltyDecisions() {
+        final UUID offenceId = UUID.randomUUID();
+        final UUID caseDecisionId = UUID.randomUUID();
+        final VerdictType verdict = VerdictType.PROVED_SJP;
+        final LocalDate convictionDate = LocalDate.now();
+        final boolean guiltyPleaTakenIntoAccount = true;
+        final boolean licenceEndorsement = true;
+        final OffenceDecision offenceDecision = new NoSeparatePenaltyOffenceDecision(
+                offenceId,
+                caseDecisionId,
+                verdict,
+                convictionDate,
+                guiltyPleaTakenIntoAccount,
+                licenceEndorsement
+        );
+
+        final OffenceDecisionView result = new OffenceDecisionView(offenceDecision);
+
+        assertThat(result.getOffenceId(), equalTo(offenceId));
+        assertThat(result.getDecisionType(), equalTo(DecisionType.NO_SEPARATE_PENALTY));
+        assertThat(result.getVerdict(), equalTo(verdict));
+        assertThat(result.getConvictionDate(), equalTo(convictionDate));
+        assertThat(result.getGuiltyPleaTakenIntoAccount(), equalTo(guiltyPleaTakenIntoAccount));
+        assertThat(result.getLicenceEndorsement(), equalTo(licenceEndorsement));
+    }
+    @Test
+    public void shouldHaveLicenceEndorsedAndPenalityPointForFinancialPenalty() {
+        FinancialPenaltyOffenceDecision financialPenaltyOffenceDecision = mock(FinancialPenaltyOffenceDecision.class);
+        Boolean  licenceEndorsed = true ;
+        Integer penaltyPoint = 2;
+        when(financialPenaltyOffenceDecision.getLicenceEndorsement()).thenReturn(licenceEndorsed);
+        when(financialPenaltyOffenceDecision.getPenaltyPointsImposed()).thenReturn(penaltyPoint);
+        when(financialPenaltyOffenceDecision.getDecisionType()).thenReturn(DecisionType.FINANCIAL_PENALTY);
+
+        OffenceDecisionView underTest = new OffenceDecisionView(financialPenaltyOffenceDecision);
+
+        assertThat("getLicenceEndorsed should return a Boolean value", underTest.getLicenceEndorsement(), is(licenceEndorsed));
+        assertThat("getPenaltyPoint should return a Integer value", underTest.getPenaltyPointsImposed(), is(penaltyPoint));
+    }
+
 }

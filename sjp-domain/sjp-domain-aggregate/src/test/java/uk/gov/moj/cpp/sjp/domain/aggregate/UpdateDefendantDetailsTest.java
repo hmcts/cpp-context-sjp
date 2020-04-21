@@ -3,9 +3,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
@@ -15,7 +13,6 @@ import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.event.DefendantAddressUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantDateOfBirthUpdated;
-import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdateFailed;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
 
@@ -68,6 +65,7 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
         assertThat(defendantDetailsUpdated.getDateOfBirth(), equalTo(person.getDateOfBirth()));
         assertThat(defendantDetailsUpdated.getGender(), equalTo(person.getGender()));
         assertThat(defendantDetailsUpdated.getNationalInsuranceNumber(), equalTo(person.getNationalInsuranceNumber()));
+        assertThat(defendantDetailsUpdated.getDriverNumber(), equalTo(person.getDriverNumber()));
         assertThat(defendantDetailsUpdated.getAddress(), equalTo(person.getAddress()));
         assertThat(defendantDetailsUpdated.getContactDetails(), equalTo(person.getContactDetails()));
         assertThat(defendantDetailsUpdated.isUpdateByOnlinePlea(), equalTo(false));
@@ -80,6 +78,8 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
                 DATE_OF_BIRTH_UPDATED,
                 person.getGender(),
                 person.getNationalInsuranceNumber(),
+                person.getDriverNumber(),
+                person.getDriverLicenceDetails(),
                 new Address(
                         ADDRESS_1_UPDATED,
                         person.getAddress().getAddress2(),
@@ -125,6 +125,8 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
                 person.getDateOfBirth(),
                 person.getGender(),
                 person.getNationalInsuranceNumber(),
+                person.getDriverNumber(),
+                person.getDriverLicenceDetails(),
                 person.getAddress(),
                 person.getContactDetails(),
                 person.getRegion());

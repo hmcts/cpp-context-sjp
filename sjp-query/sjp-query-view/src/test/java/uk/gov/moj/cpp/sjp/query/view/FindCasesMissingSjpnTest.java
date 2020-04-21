@@ -18,7 +18,6 @@ import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
@@ -46,6 +45,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class FindCasesMissingSjpnTest {
 
     private static final String QUERY_NAME = "sjp.query.cases-missing-sjpn";
+    private static final String PROSECUTOR_TFL = "TFL";
+
     private static final int COUNT = 1234;
     private final CasesMissingSjpnView resultView = newResultView();
 
@@ -62,20 +63,20 @@ public class FindCasesMissingSjpnTest {
         final List<CaseSummaryView> cases = new ArrayList<>();
         cases.add(new CaseSummaryView(new CaseDetail(
                 UUID.randomUUID(), "AAA", "1",
-                ProsecutingAuthority.TFL, false, null, ZonedDateTime.now(),
+                PROSECUTOR_TFL, false, null, ZonedDateTime.now(),
                 new DefendantDetail(UUID.randomUUID(),
                         new PersonalDetails("Mr", "Defen", "Dant",
                                 LocalDate.of(1970, 3,1), Gender.MALE,
-                                "54321", null, null, null),
+                                "54321","MORGA753116SM9IJ", null, null, null, null),
                         null, 2),
                 new BigDecimal(100), LocalDate.now())));
         cases.add(new CaseSummaryView(new CaseDetail(
                 UUID.randomUUID(), "BBB", "1",
-                ProsecutingAuthority.TFL, false, null, ZonedDateTime.now(),
+                PROSECUTOR_TFL, false, null, ZonedDateTime.now(),
                 new DefendantDetail(UUID.randomUUID(),
                         new PersonalDetails("Mr", "Defen", "Dant",
                                 LocalDate.of(1970, 2,1), Gender.MALE,
-                                "12345", null, null, null),
+                                "12345","TESTY708166G99KZ", null, null, null, null),
                         null, 2),
                 new BigDecimal(100), LocalDate.now())));
         return new CasesMissingSjpnView(Arrays.asList("1", "2"), cases, COUNT);

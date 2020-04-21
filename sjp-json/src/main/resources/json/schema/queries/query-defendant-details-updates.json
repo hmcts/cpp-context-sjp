@@ -44,6 +44,12 @@
           },
           "region": {
             "type": "string"
+          },
+          "driverNumber": {
+            "type": "string"
+          },
+          "driverLicenceDetails" : {
+            "type" : "string"
           }
         },
         "required": [

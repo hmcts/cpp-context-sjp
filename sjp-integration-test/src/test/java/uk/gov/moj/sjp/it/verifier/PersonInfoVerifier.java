@@ -46,6 +46,8 @@ public class PersonInfoVerifier {
                 defendantBuilder.getDateOfBirth(),
                 defendantBuilder.getGender(),
                 defendantBuilder.getNationalInsuranceNumber(),
+                defendantBuilder.getDriverNumber(),
+                defendantBuilder.getDriverLicenceDetails(),
                 new Address(
                         defendantBuilder.getAddressBuilder().getAddress1(),
                         defendantBuilder.getAddressBuilder().getAddress2(),
@@ -73,6 +75,8 @@ public class PersonInfoVerifier {
                 payloadBuilder.getDateOfBirth(),
                 payloadBuilder.getGender(),
                 payloadBuilder.getNationalInsuranceNumber(),
+                payloadBuilder.getDriverNumber(),
+                payloadBuilder.getDriverLicenceDetails(),
                 new Address(
                         payloadBuilder.getAddressBuilder().getAddress1(),
                         payloadBuilder.getAddressBuilder().getAddress2(),

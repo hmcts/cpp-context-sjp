@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.Offence;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,7 +25,7 @@ public class SjpCaseCreated {
 
     private final UUID id;
     private final String urn;
-    private final ProsecutingAuthority prosecutingAuthority;
+    private final String prosecutingAuthority;
     private final UUID defendantId;
     private final BigDecimal costs;
     private final int numPreviousConvictions;
@@ -39,7 +38,7 @@ public class SjpCaseCreated {
     public SjpCaseCreated(
             @JsonProperty("id") final UUID id,
             @JsonProperty("urn") final String urn,
-            @JsonProperty("prosecutingAuthority") final ProsecutingAuthority prosecutingAuthority,
+            @JsonProperty("prosecutingAuthority") final String prosecutingAuthority,
             @JsonProperty("defendantId") final UUID defendantId,
             @JsonProperty("numPreviousConvictions") final int numPreviousConvictions,
             @JsonProperty("costs") final BigDecimal costs,
@@ -65,7 +64,7 @@ public class SjpCaseCreated {
         return urn;
     }
 
-    public ProsecutingAuthority getProsecutingAuthority() {
+    public String getProsecutingAuthority() {
         return prosecutingAuthority;
     }
 

@@ -14,7 +14,7 @@ public class Case {
     private final UUID id;
     private final String urn;
     private final String enterpriseId;
-    private final ProsecutingAuthority prosecutingAuthority;
+    private final String prosecutingAuthority;
     private final BigDecimal costs;
     private final LocalDate postingDate;
     private final Defendant defendant;
@@ -23,7 +23,7 @@ public class Case {
     public Case(@JsonProperty("id") final UUID id,
                 @JsonProperty("urn") final String urn,
                 @JsonProperty("enterpriseId") final String enterpriseId,
-                @JsonProperty("prosecutingAuthority") final ProsecutingAuthority prosecutingAuthority,
+                @JsonProperty("prosecutingAuthority") final String prosecutingAuthority,
                 @JsonProperty("costs") final BigDecimal costs,
                 @JsonProperty("postingDate") final LocalDate postingDate,
                 @JsonProperty("defendant") final Defendant defendant) {
@@ -48,7 +48,7 @@ public class Case {
         return enterpriseId;
     }
 
-    public ProsecutingAuthority getProsecutingAuthority() {
+    public String getProsecutingAuthority() {
         return prosecutingAuthority;
     }
 
@@ -63,5 +63,4 @@ public class Case {
     public Defendant getDefendant() {
         return defendant;
     }
-
 }

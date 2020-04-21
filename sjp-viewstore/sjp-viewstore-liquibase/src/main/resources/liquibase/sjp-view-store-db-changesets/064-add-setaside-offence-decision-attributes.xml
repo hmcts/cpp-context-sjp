@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="64" author="ATCM/Mojo/sivarama.penmetsa"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+
+        <addColumn tableName="case_details">
+            <column name="set_aside" type="boolean"/>
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="case_details">
+                <column name="set_aside"/>
+            </dropColumn>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

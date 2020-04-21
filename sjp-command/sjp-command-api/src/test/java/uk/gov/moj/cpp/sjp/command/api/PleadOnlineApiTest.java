@@ -63,6 +63,7 @@ public class PleadOnlineApiTest {
     private static final String CONTROLLER_PLEAD_ONLINE_COMMAND_NAME = "sjp.command.plead-online";
     private static final String CASE_HAS_BEEN_REVIEWED_EXCEPTION_MESSAGE = "{\"CaseAlreadyReviewed\":[\"Your case has already been reviewed - Contact the Contact Centre if you need to discuss it\"]}";
     private static final String PLEA_ALREADY_SUBMITTED_EXCEPTION_MESSAGE = "{\"PleaAlreadySubmitted\":[\"Plea already submitted - Contact the Contact Centre if you need to change or discuss it\"]}";
+    private static final String PLEA_IS_ADJOURNED_POST_CONVENTION_EXCEPTION_MESSAGE = "{\"CaseAdjournedPostConviction\":[\"Your case has already been reviewed - Contact the Contact Centre if you need to discuss it\"]}";
 
     @Mock
     private Sender sender;
@@ -190,6 +191,19 @@ public class PleadOnlineApiTest {
 
         pleadOnlineWith(pleadOnline, getCaseDetail(GUILTY, JsonValue.TRUE));
     }
+    @Test
+    public void shouldNotPleadOnlineWhenCasePostAdjourned() {
+        final PleadOnline pleadOnline = buildPleadOnline(
+                NOT_GUILTY,
+                caseId,
+                financialMeans().build());
+
+        exception.expect(BadRequestException.class);
+        exception.expectMessage(PLEA_IS_ADJOURNED_POST_CONVENTION_EXCEPTION_MESSAGE);
+
+        pleadOnlineWith(pleadOnline, getCaseDetailPostConvention(  "2019-08-11","FOUND_GUILTY", "2019-08-11"));
+    }
+
 
     private void shouldPleadOnlineGuilty(final FinancialMeans financialMeans) {
         final PleadOnline pleadOnline = buildPleadOnline(
@@ -259,6 +273,29 @@ public class PleadOnlineApiTest {
 
         Optional.ofNullable(plea)
                 .ifPresent(value -> offenceObjectBuilder.add("plea", plea.name()));
+
+        final JsonArray offences = Json.createArrayBuilder().add(offenceObjectBuilder.build()).build();
+
+        final JsonObject defendant = Json.createObjectBuilder()
+                .add("offences", offences)
+                .build();
+
+        caseDetailBuilder.add("defendant", defendant);
+
+        return caseDetailBuilder.build();
+    }
+    private JsonObject getCaseDetailPostConvention( final String adjournedTo, final String convention,final String conventionDate) {
+        final JsonObjectBuilder caseDetailBuilder = Json.createObjectBuilder()
+                .add("id", caseId.toString())
+                .add("adjournedTo", adjournedTo);
+
+        final JsonObjectBuilder offenceObjectBuilder = Json.createObjectBuilder();
+        Optional.ofNullable(convention)
+                .ifPresent(value ->  offenceObjectBuilder.add("convention", convention));
+
+        Optional.ofNullable(conventionDate)
+                .ifPresent(value ->  offenceObjectBuilder.add("conventionDate", conventionDate));
+
 
         final JsonArray offences = Json.createArrayBuilder().add(offenceObjectBuilder.build()).build();
 

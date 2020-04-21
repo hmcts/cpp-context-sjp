@@ -8,8 +8,11 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.core.AllOf.allOf;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
@@ -26,6 +29,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseNote;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseNoteRepository;
+import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
 
 import java.util.List;
 import java.util.Optional;
@@ -48,6 +52,9 @@ public class CaseNotesQueryViewTest {
 
     @Mock
     private CaseNoteRepository caseNotesRepository;
+
+    @Mock
+    private UserAndGroupsService userAndGroupsService;
 
     @InjectMocks
     private CaseNotesQueryView caseNotesQueryView;
@@ -74,6 +81,7 @@ public class CaseNotesQueryViewTest {
         final List<CaseNote> allCaseNotes = asList(caseNote1, caseNote2);
 
         when(caseNotesRepository.findByCaseIdOrderByAddedAtDesc(caseId)).thenReturn(allCaseNotes);
+        when(userAndGroupsService.isUserProsecutor(queryEnvelope)).thenReturn(false);
 
         final JsonEnvelope caseNotes = caseNotesQueryView.getCaseNotes(queryEnvelope);
 
@@ -81,6 +89,31 @@ public class CaseNotesQueryViewTest {
                 payload().isJson(allOf(
                         withJsonPath("$.caseId", is(caseId.toString())),
                         withJsonPath("$.notes.length()", is(allCaseNotes.size())),
+                        withJsonPath("$.notes[0]", getCaseNoteMatcher(caseNote1)),
+                        withJsonPath("$.notes[1]", getCaseNoteMatcher(caseNote2))
+                ))
+        ));
+    }
+
+    @Test
+    public void shouldReturnCaseManagementNotesForProsecutors() {
+        final UUID decisionId = randomUUID();
+
+        final CaseNote caseNote1 = createCaseNote(caseId, decisionId);
+        final CaseNote caseNote2 = createCaseNote(caseId, null);
+        final List<CaseNote> returnedCaseNotes = asList(caseNote1, caseNote2);
+
+        when(caseNotesRepository.findByCaseIdAndNoteTypeOrderByAddedAtDesc(caseId, NoteType.CASE_MANAGEMENT))
+                .thenReturn(returnedCaseNotes);
+        when(userAndGroupsService.isUserProsecutor(queryEnvelope)).thenReturn(true);
+
+        final JsonEnvelope caseNotes = caseNotesQueryView.getCaseNotes(queryEnvelope);
+
+        verify(caseNotesRepository).findByCaseIdAndNoteTypeOrderByAddedAtDesc(caseId, NoteType.CASE_MANAGEMENT);
+        assertThat(caseNotes, jsonEnvelope(metadata().withName("sjp.query.case-notes"),
+                payload().isJson(allOf(
+                        withJsonPath("$.caseId", is(caseId.toString())),
+                        withJsonPath("$.notes.length()", is(returnedCaseNotes.size())),
                         withJsonPath("$.notes[0]", getCaseNoteMatcher(caseNote1)),
                         withJsonPath("$.notes[1]", getCaseNoteMatcher(caseNote2))
                 ))

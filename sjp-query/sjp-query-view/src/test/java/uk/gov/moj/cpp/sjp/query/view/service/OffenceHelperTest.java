@@ -6,6 +6,9 @@ import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -16,13 +19,25 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.ONLINE;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
+import static uk.gov.moj.cpp.sjp.query.view.converter.Prompt.DDD_DISQUALIFICATION_PERIOD;
+import static uk.gov.moj.cpp.sjp.query.view.converter.Prompt.DDO_DISQUALIFICATION_PERIOD;
+import static uk.gov.moj.cpp.sjp.query.view.converter.Prompt.DDP_DISQUALIFICATION_PERIOD;
+import static uk.gov.moj.cpp.sjp.query.view.converter.Prompt.DDP_NOTIONAL_PENALTY_POINTS;
+import static uk.gov.moj.cpp.sjp.query.view.converter.Prompt.LEA_REASON_FOR_PENALTY_POINTS;
+import static uk.gov.moj.cpp.sjp.query.view.converter.Prompt.LEP_PENALTY_POINTS;
+import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.DDD;
+import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.DDO;
+import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.DDP;
+import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.LEA;
+import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.LEN;
+import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.LEP;
+import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.NSP;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.query.view.util.JsonHelper.readJsonFromFile;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Employer;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -45,28 +60,27 @@ import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OffenceHelperTest {
-
-
-    @Mock
-    private ReferenceDataService referenceDataService;
-
-    private OffenceHelper offenceHelper;
 
     private static final UUID caseId = randomUUID();
     private static final UUID defendantId = randomUUID();
     private static final UUID offenceId1 = randomUUID();
     private static final UUID offenceId2 = randomUUID();
     private static final UUID offenceId3 = randomUUID();
+    @Mock
+    private ReferenceDataService referenceDataService;
+    private OffenceHelper offenceHelper;
     private CaseView caseView;
     private Employer employer;
 
     @Before
-    public void init(){
+    public void init() {
         offenceHelper = new OffenceHelper(referenceDataService);
         final OffenceDetail offenceDetail1 = OffenceDetail.builder()
                 .setId(offenceId1)
@@ -105,7 +119,7 @@ public class OffenceHelperTest {
         CaseDetail caseDetail = new CaseDetail(caseId);
         caseDetail.setUrn("TFL75947ZQ8UE");
         caseDetail.setDateTimeCreated(ZonedDateTime.now());
-        caseDetail.setProsecutingAuthority(ProsecutingAuthority.DVLA);
+        caseDetail.setProsecutingAuthority("DVLA");
         caseDetail.setCompleted(false);
         caseDetail.setAssigneeId(null);
         caseDetail.setCosts(BigDecimal.valueOf(20));
@@ -114,25 +128,22 @@ public class OffenceHelperTest {
         caseDetail.setCaseStatus(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION);
         caseDetail.setListedInCriminalCourts(true);
 
-        caseDetail.setProsecutingAuthority(ProsecutingAuthority.DVLA);
+        caseDetail.setProsecutingAuthority("DVLA");
         caseDetail.setDefendant(defendantDetail);
 
-        //final CaseDetail caseDetail1 = readJsonFromFile("data/sjp.query.case.json", CaseDetail.class);
-        caseView = new CaseView(caseDetail, "DVLA");//readJsonFromFile("data/sjp.query.case.json", CaseView.class);
+        JsonObject prosecutorPayload = createObjectBuilder()
+                .add("fullName", "DVLA")
+                .add("policeFlag", false)
+                .build();
+        caseView = new CaseView(caseDetail, prosecutorPayload);//readJsonFromFile("data/sjp.query.case.json", CaseView.class);
         employer = new Employer(defendantId, "McDonald's", "12345", "020 7998 9300",
                 new Address("14 Tottenham Court Road", "London", "England", "UK", "Greater London", "W1T 1JY"));
-//readJsonFromFile("data/sjp.query.employer.json", Employer.class);
-        //when(sjpService.getCaseView(any(), any())).thenReturn(caseView);
-        /*final JsonEnvelope employerEnvelope = createEnvelope(
-                "dummy",
-                readJsonFromFile("data/sjp.query.employer.json")
-        );*/
-        //when(sjpService.getDefendantEmployer(any(), any())).thenReturn(employerEnvelope);
+
         when(referenceDataService.getAllFixedList(any())).thenReturn(Optional.of(readJsonFromFile("data/referencedata.get-all-fixed-list.json")));
     }
 
     @Test
-    public void shouldNotPopulateOffencesForincorrectResultCode(){
+    public void shouldNotPopulateOffencesForIncorrectResultCode() {
         final JsonObjectBuilder eventPayloadBuilder = createObjectBuilder().add(CASE_ID, caseId.toString());
         final JsonObject decision = readJsonFromFile("data/resulting.events.referenced-decisions-saved-incorrect-result-code.json");
 
@@ -159,7 +170,7 @@ public class OffenceHelperTest {
     }
 
     @Test
-    public void shouldPopulateOffencesCorrectly(){
+    public void shouldPopulateOffencesCorrectly() {
         final JsonObjectBuilder eventPayloadBuilder = createObjectBuilder().add(CASE_ID, caseId.toString());
         final JsonObject decision = readJsonFromFile("data/resulting.events.referenced-decisions-saved.json");
 
@@ -185,7 +196,7 @@ public class OffenceHelperTest {
     }
 
     @Test
-    public void shouldPopulateOffencesCorrectlyWithBackDutyAndExcisePenalty(){
+    public void shouldPopulateOffencesCorrectlyWithBackDutyAndExcisePenalty() {
         final JsonObjectBuilder eventPayloadBuilder = createObjectBuilder().add(CASE_ID, caseId.toString());
         final JsonObject decision = readJsonFromFile("data/resulting.events.referenced-decisions-saved-back-duty-and-excise-penalty.json");
 
@@ -210,7 +221,122 @@ public class OffenceHelperTest {
         assertOffencesEquals(expectedPayload, actualPayload);
     }
 
-    private void assertOffencesEquals(final JsonObject expectedPayload, final JsonObject actualPayload){
+    @Test
+    public void shouldCreateResultsForNoSeparatePenalty() {
+        final JsonObject decision = readJsonFromFile("data/resulting.events.referenced-decisions-saved-results-no-separate-penalty.json");
+        final JsonEnvelope envelope = createEnvelope(decision);
+
+        final JsonArray offences = offenceHelper.populateOffences(caseView, employer, envelope);
+
+        final JsonObject result = getSingleResult(offences);
+        assertThat(result.getString("resultDefinitionId"), equalTo(NSP.getResultDefinitionId().toString()));
+        assertThat(result.getJsonArray("prompts"), empty());
+    }
+
+    @Test
+    public void shouldCreateResultsForLEN() {
+        final JsonObject decision = readJsonFromFile("data/resulting.events.referenced-decisions-saved-results-LEN.json");
+        final JsonEnvelope envelope = createEnvelope(decision);
+
+        final JsonArray offences = offenceHelper.populateOffences(caseView, employer, envelope);
+
+        final JsonObject result = getSingleResult(offences);
+        assertThat(result.getString("resultDefinitionId"), equalTo(LEN.getResultDefinitionId().toString()));
+        assertThat(result.getJsonArray("prompts"), empty());
+    }
+
+    @Test
+    public void shouldCreateResultsForLEA() {
+        final JsonObject decision = readJsonFromFile("data/resulting.events.referenced-decisions-saved-results-LEA.json");
+        final JsonEnvelope envelope = createEnvelope(decision);
+
+        final JsonArray offences = offenceHelper.populateOffences(caseView, employer, envelope);
+
+        final JsonObject result = getSingleResult(offences);
+        final JsonObject prompt = getSinglePrompt(result);
+        assertThat(result.getString("resultDefinitionId"), equalTo(LEA.getResultDefinitionId().toString()));
+        assertThat(prompt.getString("promptDefinitionId"), equalTo(LEA_REASON_FOR_PENALTY_POINTS.getId().toString()));
+        assertThat(prompt.getString("value"), equalTo("10"));
+    }
+
+    @Test
+    public void shouldCreateResultsForLEP() {
+        final JsonObject decision = readJsonFromFile("data/resulting.events.referenced-decisions-saved-results-LEP.json");
+        final JsonEnvelope envelope = createEnvelope(decision);
+
+        final JsonArray offences = offenceHelper.populateOffences(caseView, employer, envelope);
+
+        final JsonObject result = getSingleResult(offences);
+        final JsonObject prompt = getSinglePrompt(result);
+        assertThat(result.getString("resultDefinitionId"), equalTo(LEP.getResultDefinitionId().toString()));
+        assertThat(prompt.getString("promptDefinitionId"), equalTo(LEP_PENALTY_POINTS.getId().toString()));
+        assertThat(prompt.getString("value"), equalTo("9"));
+    }
+
+    @Test
+    public void shouldCreateResultsForDDD() {
+        final JsonObject decision = readJsonFromFile("data/resulting.events.referenced-decisions-saved-results-DDD.json");
+        final JsonEnvelope envelope = createEnvelope(decision);
+
+        final JsonArray offences = offenceHelper.populateOffences(caseView, employer, envelope);
+
+        final JsonObject result = getSingleResult(offences);
+        final JsonObject prompt = getSinglePrompt(result);
+        assertThat(result.getString("resultDefinitionId"), equalTo(DDD.getResultDefinitionId().toString()));
+        assertThat(prompt.getString("promptDefinitionId"), equalTo(DDD_DISQUALIFICATION_PERIOD.getId().toString()));
+        assertThat(prompt.getString("value"), equalTo("1 day"));
+    }
+
+    @Test
+    public void shouldCreateResultsForDDP() {
+        final JsonObject decision = readJsonFromFile("data/resulting.events.referenced-decisions-saved-results-DDP.json");
+        final JsonEnvelope envelope = createEnvelope(decision);
+
+        final JsonArray offences = offenceHelper.populateOffences(caseView, employer, envelope);
+
+        final JsonObject result = getSingleResult(offences);
+        final JsonArray prompts = result.getJsonArray("prompts");
+        assertThat(prompts, hasSize(2));
+        assertThat(result.getString("resultDefinitionId"), equalTo(DDP.getResultDefinitionId().toString()));
+        assertThat(prompts.getJsonObject(0).getString("promptDefinitionId"), equalTo(DDP_DISQUALIFICATION_PERIOD.getId().toString()));
+        assertThat(prompts.getJsonObject(0).getString("value"), equalTo("1 year"));
+        assertThat(prompts.getJsonObject(1).getString("promptDefinitionId"), equalTo(DDP_NOTIONAL_PENALTY_POINTS.getId().toString()));
+        assertThat(prompts.getJsonObject(1).getString("value"), equalTo("11"));
+    }
+
+    @Test
+    public void shouldCreateResultsForDDO() {
+        final JsonObject decision = readJsonFromFile("data/resulting.events.referenced-decisions-saved-results-DDO.json");
+        final JsonEnvelope envelope = createEnvelope(decision);
+
+        final JsonArray offences = offenceHelper.populateOffences(caseView, employer, envelope);
+
+        final JsonObject result = getSingleResult(offences);
+        final JsonObject prompt = getSinglePrompt(result);
+        assertThat(result.getString("resultDefinitionId"), equalTo(DDO.getResultDefinitionId().toString()));
+        assertThat(prompt.getString("promptDefinitionId"), equalTo(DDO_DISQUALIFICATION_PERIOD.getId().toString()));
+        assertThat(prompt.getString("value"), equalTo("1 month"));
+    }
+
+    private JsonEnvelope createEnvelope(final JsonObject decision) {
+        final JsonObjectBuilder metadataBuilder = createObjectBuilder()
+                .add("id", randomUUID().toString())
+                .add("name", "resulting.events.referenced-decisions-saved");
+        return envelopeFrom(metadataFrom(metadataBuilder.build()), decision);
+    }
+
+    private JsonObject getSingleResult(final JsonArray offences) {
+        assertThat(offences, hasSize(1));
+        assertThat(offences.getJsonObject(0).getJsonArray("results"), hasSize(1));
+        return offences.getJsonObject(0).getJsonArray("results").getJsonObject(0);
+    }
+
+    private JsonObject getSinglePrompt(final JsonObject result) {
+        assertThat(result.getJsonArray("prompts"), hasSize(1));
+        return result.getJsonArray("prompts").getJsonObject(0);
+    }
+
+    private void assertOffencesEquals(final JsonObject expectedPayload, final JsonObject actualPayload) {
         Map<String, Map<String, Map<String, String>>> expectedOffenceMap = mapOffence(expectedPayload.getJsonArray("offences"));
         Map<String, Map<String, Map<String, String>>> actualOffenceMap = mapOffence(actualPayload.getJsonArray("offences"));
 
@@ -226,12 +352,12 @@ public class OffenceHelperTest {
                                 Map<String, String> actualPromptMap = actualResultsMap.get(expectedResultId);
                                 Map<String, String> expectedPromptMap = expectedResultsMap.get(expectedResultId);
 
-                                assertThat(format("Missing prompts for resultId : %s ",  expectedResultId)  , actualPromptMap, is(Matchers.notNullValue()));
+                                assertThat(format("Missing prompts for resultId : %s ", expectedResultId), actualPromptMap, is(Matchers.notNullValue()));
 
                                 expectedPromptMap.keySet().forEach(
                                         expectedPromptId -> {
 
-                                            if(actualPromptMap.containsKey(expectedPromptId.trim())) {
+                                            if (actualPromptMap.containsKey(expectedPromptId.trim())) {
 
                                                 String actualValue = actualPromptMap.get(expectedPromptId.trim());
                                                 String expectedValue = expectedPromptMap.get(expectedPromptId.trim());
@@ -254,19 +380,16 @@ public class OffenceHelperTest {
         );
     }
 
-    private Map<String, Map<String, Map<String, String>>> mapOffence(final JsonArray offences){
-        //offence, results, prompts
-
+    private Map<String, Map<String, Map<String, String>>> mapOffence(final JsonArray offences) {
         Map<String, Map<String, Map<String, String>>> offenceMap = new HashMap<>();
-        //first check size
         offences.getValuesAs(JsonObject.class).forEach(offence -> {
             String offenceId = offence.getString("id");
             Map<String, Map<String, String>> resultsMap = new HashMap<>();
             offenceMap.put(offenceId.trim(), resultsMap);
-            if(offence.containsKey("results")) {
+            if (offence.containsKey("results")) {
                 offence.getJsonArray("results").getValuesAs(JsonObject.class).forEach(result -> {
                     Optional<String> resultDefinitionIdOptional = Optional.ofNullable(result.getString("resultDefinitionId", null));
-                    if(resultDefinitionIdOptional.isPresent()){
+                    if (resultDefinitionIdOptional.isPresent()) {
                         Map<String, String> promptsMap = new HashMap<>();
                         resultsMap.put(resultDefinitionIdOptional.get().trim(), promptsMap);
                         result.getJsonArray("prompts").getValuesAs(JsonObject.class).forEach(prompt -> {

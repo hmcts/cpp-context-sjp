@@ -49,6 +49,14 @@ public class ReferencedDecisionSavedOffenceConverterTest {
     private static final String EXCISE_PENALTY_RESULT_CODE = "EXPEN";
     private static final String ABSOLUTE_DISCHARGE_RESULT_CODE = "AD";
     private static final String REFERRED_RESULT_CODE = "SUMRCC";
+    private static final String ENDORSEMENT_NO_POINTS_CODE = "LEN";
+    private static final String ENDORSEMENT_WITH_PENALTY_POINTS_CODE = "LEP";
+    private static final String ENDORSEMENT_WITH_ADDITIONAL_POINTS_CODE = "LEA";
+    private static final String DISQUALIFICATION_ORDINARY_CODE = "DDD";
+    private static final String POINTS_DISQUALIFICATION_CODE = "DDP";
+    private static final String OBLIGATORY_DISQUALIFICATION_CODE = "DDO";
+    private static final String NO_SEPARATE_PENALTY_CODE = "NSP";
+
     private static final UUID LSUM_RESULT_TYPE_ID = UUID.fromString("49a84ca7-d5af-4292-b39e-777a478ca182");
     private static final UUID FVS_RESULT_TYPE_ID = UUID.fromString("3f464288-fb5b-4e6e-adb0-7133bc562cda");
     private static final UUID FCOST_RESULT_TYPE_ID = UUID.fromString("80673cfd-f40b-4088-9aa0-d192fb877e16");
@@ -60,11 +68,19 @@ public class ReferencedDecisionSavedOffenceConverterTest {
     private static final UUID EXCISE_PENALTY_RESULT_TYPE_ID = UUID.fromString("ce276903-632c-4796-921b-23035fa934cb");
     private static final UUID ABSOLUTE_DISCHARGE_RESULT_TYPE_ID = UUID.fromString("ba276903-632c-4796-921b-23035fa934cb");
     private static final UUID REFERRED_RESULT_TYPE_ID = UUID.fromString("aa276903-632c-4796-921b-23035fa934ca");
+    private static final UUID ENDORSEMENT_NO_POINTS_RESULT_TYPE_ID = UUID.fromString("0bd4ce39-2055-4fae-9087-dfd7e5ddd449");
+    private static final UUID ENDORSEMENT_WITH_PENALTY_POINTS_RESULT_TYPE_ID = UUID.fromString("2391bb68-579f-4c3b-bc12-9d6ff681668d");
+    private static final UUID ENDORSEMENT_WITH_ADDITIONAL_POINTS_RESULT_TYPE_ID = UUID.fromString("ad511d29-af34-4db1-841e-77b174f16bc7");
+    private static final UUID DISQUALIFICATION_ORDINARY_RESULT_TYPE_ID = UUID.fromString("b8c354b4-be3d-4f73-b313-65e0b92f0d86");
+    private static final UUID POINTS_DISQUALIFICATION_RESULT_TYPE_ID = UUID.fromString("dd016c2e-7745-4c4c-a02d-cb899bc10aee");
+    private static final UUID OBLIGATORY_DISQUALIFICATION_RESULT_TYPE_ID = UUID.fromString("b96f6aae-ed91-4e39-a85d-cfd440288a0e");
+    private static final UUID NO_SEPARATE_PENALTY_RESULT_TYPE_ID = UUID.fromString("49939c7c-750f-403e-9ce1-f82e3e568065");
     private static final DateTimeFormatter DATE_FORMAT = ofPattern("yyyy-MM-dd");
     private final UUID OFFENCE1_ID = randomUUID();
     private final UUID OFFENCE2_ID = randomUUID();
     private final UUID OFFENCE3_ID = randomUUID();
     private final UUID DECISION1_ID = randomUUID();
+
     @InjectMocks
     private ReferencedDecisionSavedOffenceConverter referencedDecisionSavedOffenceConverter;
 
@@ -107,6 +123,27 @@ public class ReferencedDecisionSavedOffenceConverterTest {
                         .add("id", ABSOLUTE_DISCHARGE_RESULT_TYPE_ID.toString())
                         .add("code", ABSOLUTE_DISCHARGE_RESULT_CODE).build(),
                 createObjectBuilder()
+                        .add("id", ENDORSEMENT_NO_POINTS_RESULT_TYPE_ID.toString())
+                        .add("code", ENDORSEMENT_NO_POINTS_CODE).build(),
+                createObjectBuilder()
+                        .add("id", ENDORSEMENT_WITH_PENALTY_POINTS_RESULT_TYPE_ID.toString())
+                        .add("code", ENDORSEMENT_WITH_PENALTY_POINTS_CODE).build(),
+                createObjectBuilder()
+                        .add("id", ENDORSEMENT_WITH_ADDITIONAL_POINTS_RESULT_TYPE_ID.toString())
+                        .add("code", ENDORSEMENT_WITH_ADDITIONAL_POINTS_CODE).build(),
+                createObjectBuilder()
+                        .add("id", DISQUALIFICATION_ORDINARY_RESULT_TYPE_ID.toString())
+                        .add("code", DISQUALIFICATION_ORDINARY_CODE).build(),
+                createObjectBuilder()
+                        .add("id", POINTS_DISQUALIFICATION_RESULT_TYPE_ID.toString())
+                        .add("code", POINTS_DISQUALIFICATION_CODE).build(),
+                createObjectBuilder()
+                        .add("id", OBLIGATORY_DISQUALIFICATION_RESULT_TYPE_ID.toString())
+                        .add("code", OBLIGATORY_DISQUALIFICATION_CODE).build(),
+                createObjectBuilder()
+                        .add("id", NO_SEPARATE_PENALTY_RESULT_TYPE_ID.toString())
+                        .add("code", NO_SEPARATE_PENALTY_CODE).build(),
+                createObjectBuilder()
                         .add("id", REFERRED_RESULT_TYPE_ID.toString())
                         .add("code", REFERRED_RESULT_CODE).build()
         );
@@ -131,6 +168,52 @@ public class ReferencedDecisionSavedOffenceConverterTest {
         final JsonArray actualPayload = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
 
         final JsonArray expectedOffenceDecisions = getFileContentAsJsonArray("converter/decision-saved-event.fine.output.json");
+
+        assertEquals(expectedOffenceDecisions.toString(), actualPayload.toString(), getCustomComparator());
+    }
+
+    @Test
+    public void shouldConvertFinancialPenaltyWithEndorsement() {
+
+        final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
+                getFileContentAsJson("converter/decision-saved-event.fine.endorsement.input.json",
+                        ImmutableMap.<String, Object>builder()
+                                .put("caseId", CASE_ID)
+                                .put("sessionId", SESSION_ID)
+                                .put("decisionId", DECISION1_ID)
+                                .put("resultedOn", DATE_FORMAT.format(ZonedDateTime.now()))
+                                .put("offence1Id", OFFENCE1_ID)
+                                .put("offence2Id", OFFENCE2_ID)
+                                .build()));
+
+        when(referenceDataService.getResultIds(decisionSavedEvent)).thenReturn(resultIds);
+
+        final JsonArray actualPayload = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
+
+        final JsonArray expectedOffenceDecisions = getFileContentAsJsonArray("converter/decision-saved-event.fine.endorsement.output.json");
+
+        assertEquals(expectedOffenceDecisions.toString(), actualPayload.toString(), getCustomComparator());
+    }
+
+    @Test
+    public void shouldConvertFinancialPenaltyWithDisqualification() {
+
+        final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
+                getFileContentAsJson("converter/decision-saved-event.fine.disqualification.input.json",
+                        ImmutableMap.<String, Object>builder()
+                                .put("caseId", CASE_ID)
+                                .put("sessionId", SESSION_ID)
+                                .put("decisionId", DECISION1_ID)
+                                .put("resultedOn", DATE_FORMAT.format(ZonedDateTime.now()))
+                                .put("offence1Id", OFFENCE1_ID)
+                                .put("offence2Id", OFFENCE2_ID)
+                                .build()));
+
+        when(referenceDataService.getResultIds(decisionSavedEvent)).thenReturn(resultIds);
+
+        final JsonArray actualPayload = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
+
+        final JsonArray expectedOffenceDecisions = getFileContentAsJsonArray("converter/decision-saved-event.fine.disqualification.output.json");
 
         assertEquals(expectedOffenceDecisions.toString(), actualPayload.toString(), getCustomComparator());
     }
@@ -223,6 +306,44 @@ public class ReferencedDecisionSavedOffenceConverterTest {
         final JsonArray expectedOffenceDecisions = getFileContentAsJsonArray("converter/decision-saved-event.referforcourthearing.output.json");
 
         assertEquals(expectedOffenceDecisions.toString(), actualPayload.toString(), getCustomComparator());
+    }
+
+    @Test
+    public void shouldConvertNoSeparatePenalty() {
+        final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
+                getFileContentAsJson("converter/decision-saved-event.no-separate-penalty.input.json",
+                        ImmutableMap.<String, Object>builder()
+                                .put("caseId", CASE_ID)
+                                .put("sessionId", SESSION_ID)
+                                .put("decisionId", DECISION1_ID)
+                                .put("resultedOn", DATE_FORMAT.format(ZonedDateTime.now()))
+                                .put("offence1Id", OFFENCE1_ID)
+                                .build()));
+        when(referenceDataService.getResultIds(decisionSavedEvent)).thenReturn(resultIds);
+
+        final JsonArray result = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
+
+        final JsonArray expected = getFileContentAsJsonArray("converter/decision-saved-event.no-separate-penalty.output.json");
+        assertEquals(expected.toString(), result.toString(), getCustomComparator());
+    }
+
+    @Test
+    public void shouldConvertNoSeparatePenaltyWithLicenceEndorsementTrue() {
+        final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
+                getFileContentAsJson("converter/decision-saved-event.no-separate-penalty-LEN.input.json",
+                        ImmutableMap.<String, Object>builder()
+                                .put("caseId", CASE_ID)
+                                .put("sessionId", SESSION_ID)
+                                .put("decisionId", DECISION1_ID)
+                                .put("resultedOn", DATE_FORMAT.format(ZonedDateTime.now()))
+                                .put("offence1Id", OFFENCE1_ID)
+                                .build()));
+        when(referenceDataService.getResultIds(decisionSavedEvent)).thenReturn(resultIds);
+
+        final JsonArray result = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
+
+        final JsonArray expected = getFileContentAsJsonArray("converter/decision-saved-event.no-separate-penalty-LEN.output.json");
+        assertEquals(expected.toString(), result.toString(), getCustomComparator());
     }
 
     private CustomComparator getCustomComparator() {

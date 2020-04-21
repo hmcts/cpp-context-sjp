@@ -16,6 +16,7 @@ import static uk.gov.justice.json.schemas.domains.sjp.NoteType.DECISION;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.LISTING;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
@@ -23,6 +24,7 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 
 import uk.gov.justice.json.schemas.domains.sjp.Note;
 import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
@@ -36,7 +38,6 @@ import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
-import uk.gov.moj.cpp.sjp.event.CaseNoteAdded;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
@@ -97,7 +98,15 @@ public class CaseDecisionHandlerValidVerdictPleaCasesTest {
                 { MAGISTRATE, null, REFER_FOR_COURT_HEARING, NO_VERDICT},
                 { MAGISTRATE, null, REFER_FOR_COURT_HEARING, PROVED_SJP},
                 { MAGISTRATE, PleaType.GUILTY, REFER_FOR_COURT_HEARING, NO_VERDICT},
-                { MAGISTRATE, PleaType.GUILTY, REFER_FOR_COURT_HEARING, FOUND_GUILTY}
+                { MAGISTRATE, PleaType.GUILTY, REFER_FOR_COURT_HEARING, FOUND_GUILTY},
+                { DELEGATED_POWERS, null, ADJOURN, NO_VERDICT},
+                { DELEGATED_POWERS, PleaType.GUILTY, ADJOURN, NO_VERDICT},
+                { DELEGATED_POWERS, PleaType.GUILTY_REQUEST_HEARING, ADJOURN, NO_VERDICT},
+                { DELEGATED_POWERS, PleaType.NOT_GUILTY, ADJOURN, NO_VERDICT},
+                { MAGISTRATE, null, ADJOURN, NO_VERDICT},
+                { MAGISTRATE, null, ADJOURN, PROVED_SJP},
+                { MAGISTRATE, PleaType.GUILTY, ADJOURN, NO_VERDICT},
+                { MAGISTRATE, PleaType.GUILTY, ADJOURN, FOUND_GUILTY}
         });
     }
 

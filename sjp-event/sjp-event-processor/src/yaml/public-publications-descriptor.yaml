@@ -107,4 +107,10 @@ subscriptions_descriptor:
         - name: public.sjp.case-resulted
           schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public-sjp.case-resulted.json
 
+        - name: public.sjp.case-note-added
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/public-case-note-added.json
+
+        - name: public.sjp.cases-management-status-updated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/public-cases-management-status-updated.json
+
       event_source_name: public.event.source

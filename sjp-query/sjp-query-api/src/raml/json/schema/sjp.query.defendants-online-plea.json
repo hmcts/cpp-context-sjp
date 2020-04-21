@@ -70,6 +70,12 @@
         },
         "nationalInsuranceNumber": {
           "type": "string"
+        },
+        "driverNumber": {
+          "type": "string"
+        },
+        "driverLicenceDetails" : {
+          "type" : "string"
         }
       }
     },

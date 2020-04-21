@@ -5,7 +5,7 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAre
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.CaseReopenedInLibraHelper;
@@ -26,7 +26,8 @@ public class CaseReopenedInLibraIT extends BaseIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        databaseCleaner.cleanAll();
+        databaseCleaner.cleanViewStore();
+
         stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
         stubRegionByPostcode("1080", "DEFENDANT_REGION");
 

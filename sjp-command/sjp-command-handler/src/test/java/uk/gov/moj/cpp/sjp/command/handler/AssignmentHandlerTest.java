@@ -216,7 +216,7 @@ public class AssignmentHandlerTest {
                 createObjectBuilder().add("sessionId", sessionId.toString()).build()
         );
 
-        final CaseAssignmentRequested caseAssignmentRequested = new CaseAssignmentRequested(new uk.gov.moj.cpp.sjp.domain.Session(sessionId, userId, DELEGATED_POWERS, "B01LY"));
+        final CaseAssignmentRequested caseAssignmentRequested = new CaseAssignmentRequested(new uk.gov.moj.cpp.sjp.domain.Session(sessionId, userId, DELEGATED_POWERS, "B01LY", null));
 
         when(eventSource.getStreamById(sessionId)).thenReturn(sessionEventStream);
         when(aggregateService.get(sessionEventStream, Session.class)).thenReturn(session);

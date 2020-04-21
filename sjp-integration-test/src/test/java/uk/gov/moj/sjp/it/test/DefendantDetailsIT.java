@@ -18,9 +18,9 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
@@ -33,11 +33,11 @@ import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
 import uk.gov.moj.sjp.it.helper.EventListener;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 
@@ -99,7 +99,8 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
         CasePoller.pollUntilCaseByIdIsOk(caseIdOne, allOf(
                 withJsonPath("$.defendant.personalDetails.nameChanged", is(true)),
                 withJsonPath("$.defendant.personalDetails.dobChanged", is(true)),
-                withJsonPath("$.defendant.personalDetails.addressChanged", is(true))));
+                withJsonPath("$.defendant.personalDetails.addressChanged", is(true)),
+                withJsonPath("$.defendant.personalDetails.driverNumber", is("MORGA753116SM9IJ"))));
     }
 
     @Test
@@ -157,6 +158,25 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
     @Test
     public void shouldSchemaValidationFailWhenDefendantEmailInvalid() {
         shouldSchemaValidationFailWhenDefendantEmailInvalid("@b.co");
+    }
+
+    @Test
+    public void shouldSchemaValidationFailWhenDefendantDriverNumberInvalid() {
+        shouldSchemaValidationFailWhenDefendantDriverNumberInvalid("MORGA753116SM999");
+    }
+
+    private void shouldSchemaValidationFailWhenDefendantDriverNumberInvalid(final String driverNumber) {
+        UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults();
+        payloadBuilder.withDriverNumber(driverNumber);
+
+        final String response = UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseIdOne, UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id")), payloadBuilder, BAD_REQUEST);
+
+        JsonObject responseJson = responseToJsonObject(response);
+        JsonValue validationErrors = responseJson.get("validationErrors");
+        String validationTrace = validationErrors.toString();
+
+        assertThat(validationTrace, containsString(String.format("#/driverNumber: string [%s] does not match pattern", driverNumber)));
+
     }
 
     private void shouldSchemaValidationFailWhenDefendantEmailInvalid(final String email) {

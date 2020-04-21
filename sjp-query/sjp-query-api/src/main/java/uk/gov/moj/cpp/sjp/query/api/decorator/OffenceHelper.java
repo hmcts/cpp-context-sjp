@@ -11,14 +11,17 @@ import uk.gov.moj.cpp.sjp.query.service.WithdrawalReasons;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class OffenceHelper {
 
@@ -95,15 +98,24 @@ public class OffenceHelper {
     }
 
     public boolean hasFinalDecision(final JsonObject offenceInstance, final JsonArray caseDecisions) {
-        return caseDecisions.getValuesAs(JsonObject.class)
+        final Optional<JsonObject> offenceDecision = caseDecisions.getValuesAs(JsonObject.class)
                 .stream()
-                .anyMatch(caseDecision ->
-                     caseDecision
-                            .getJsonArray("offenceDecisions")
-                            .getValuesAs(JsonObject.class)
-                            .stream()
-                            .filter(decision -> decision.getString("offenceId").equals(offenceInstance.getString("id")) && DecisionType.valueOf(decision.getString("decisionType")).isFinal())
-                            .count() == 1
-                );
+                .map(e -> Pair.of(e, ZonedDateTime.parse(e.getString("savedAt"))))
+                .sorted((e1, e2) -> e2.getRight().compareTo(e1.getRight()))
+                .map(e -> e.getLeft())
+                .collect(Collectors.toList())
+                .stream()
+                .flatMap(caseDecision ->
+                        caseDecision
+                                .getJsonArray("offenceDecisions")
+                                .getValuesAs(JsonObject.class)
+                                .stream())
+                .filter(e -> e.getString("offenceId").equals(offenceInstance.getString("id")))
+                .findFirst();
+
+        if (offenceDecision.isPresent()) {
+            return DecisionType.valueOf(offenceDecision.get().getString("decisionType")).isFinal();
+        }
+        return false;
     }
 }

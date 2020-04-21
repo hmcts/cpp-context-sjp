@@ -7,7 +7,7 @@
       "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
     "reason": {
-      "enum": ["WITHDRAWAL_PENDING", "CASE_ASSIGNED", "CASE_COMPLETED", "PLEA_ALREADY_SUBMITTED"]
+      "enum": ["OFFENCE_HAS_CONVICTION" ,"WITHDRAWAL_PENDING", "CASE_ASSIGNED", "CASE_COMPLETED", "PLEA_ALREADY_SUBMITTED"]
     }
   },
   "required": [

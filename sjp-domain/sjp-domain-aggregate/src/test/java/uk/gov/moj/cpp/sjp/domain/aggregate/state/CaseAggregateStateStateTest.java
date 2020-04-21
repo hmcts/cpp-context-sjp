@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.state;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.contains;
@@ -9,10 +11,18 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
+import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
+import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
+import uk.gov.moj.cpp.sjp.domain.decision.SetAside;
 
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -236,6 +246,35 @@ public class CaseAggregateStateStateTest {
 
         // then
         assertFalse(state.withdrawalRequestedOnAllOffences());
+    }
+
+    @Test
+    public void shouldClearOffenceConvictionDatesWhenTheDecisionIsSetAside() {
+        // given
+        ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+
+        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
+        List<OffenceDecision> offenceDecisions = newArrayList(
+                new Adjourn(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, FOUND_GUILTY),
+                        createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
+                        "adjourn reason ", adjournedTo));
+
+        state.updateOffenceConvictionDates(zonedDateTime, offenceDecisions);
+
+        assertTrue(state.offenceHasPreviousConviction(offenceId1));
+        zonedDateTime = ZonedDateTime.now();
+        offenceDecisions = newArrayList(
+                new SetAside(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, null),
+                        createOffenceDecisionInformation(offenceId2, null))));
+        // when
+        state.updateOffenceConvictionDates(zonedDateTime, offenceDecisions);
+
+        // then
+        assertFalse(state.offenceHasPreviousConviction(offenceId1));
     }
 
 }

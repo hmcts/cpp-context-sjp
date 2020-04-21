@@ -7,7 +7,6 @@ import static org.apache.commons.lang.math.RandomUtils.nextInt;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.ABSOLUTE;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.CONDITIONAL;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.WEEK;
@@ -66,28 +65,28 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1000),
                         "Limited means of defendant",
-                        CONDITIONAL, BigDecimal.valueOf(1000)),
+                        CONDITIONAL, BigDecimal.valueOf(1000), null),
                 new FinancialPenaltyOffenceDecision(offence1Id,
                         caseDecision.getId(),
                         FOUND_GUILTY,
                         true,
                         BigDecimal.valueOf(1500),
                         null,
-                        BigDecimal.valueOf(2000.600), null, null),
+                        BigDecimal.valueOf(2000.600), null, null, null),
                 new FinancialPenaltyOffenceDecision(offence1Id,
                         caseDecision.getId(),
                         FOUND_GUILTY,
                         true,
                         BigDecimal.valueOf(1000),
                         null,
-                        null, BigDecimal.valueOf(523), BigDecimal.valueOf(321)),
+                        null, BigDecimal.valueOf(523), BigDecimal.valueOf(321), null),
                 new FinancialPenaltyOffenceDecision(offence1Id,
                         caseDecision.getId(),
                         FOUND_GUILTY,
                         true,
                         BigDecimal.valueOf(1000),
                         null,
-                        null, null, BigDecimal.valueOf(319.31))));
+                        null, null, BigDecimal.valueOf(319.31), null)));
 
         caseDecision.setFinancialImposition(buildFinancialImposition(PAY_TO_COURT));
         caseDetail.setCaseDecisions(asList(caseDecision));
@@ -121,7 +120,7 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1000),
                         null,
-                        ABSOLUTE, BigDecimal.valueOf(500)),
+                        ABSOLUTE, BigDecimal.valueOf(500), null),
                 new DischargeOffenceDecision(offence1Id,
                         caseDecision.getId(),
                         FOUND_GUILTY,
@@ -129,7 +128,7 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1000),
                         null,
-                        ABSOLUTE,BigDecimal.valueOf(700))));
+                        ABSOLUTE,BigDecimal.valueOf(700), null)));
 
         caseDecision.setFinancialImposition(buildFinancialImposition(PAY_TO_COURT));
         caseDetail.setCaseDecisions(asList(caseDecision));
@@ -150,14 +149,14 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1000),
                         "Limited means of defendant",
-                        CONDITIONAL,null),
+                        CONDITIONAL,null,null),
                 new FinancialPenaltyOffenceDecision(offence1Id,
                         caseDecision.getId(),
                         FOUND_GUILTY,
                         true,
                         BigDecimal.valueOf(1500),
                         null,
-                        BigDecimal.valueOf(2000.600), null, null)));
+                        BigDecimal.valueOf(2000.600), null, null, null)));
 
         caseDecision.setFinancialImposition(buildFinancialImposition(ATTACH_TO_EARNINGS));
         caseDetail.setCaseDecisions(asList(caseDecision));
@@ -189,14 +188,14 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1000),
                         "Limited means of defendant",
-                        CONDITIONAL, null),
+                        CONDITIONAL, null,null),
                 new FinancialPenaltyOffenceDecision(offence1Id,
                         caseDecision.getId(),
                         FOUND_GUILTY,
                         true,
                         BigDecimal.valueOf(1500),
                         null,
-                        BigDecimal.valueOf(2000.600), null, null)));
+                        BigDecimal.valueOf(2000.600), null, null, null)));
 
         caseDecision.setFinancialImposition(buildFinancialImposition(ATTACH_TO_EARNINGS, new LumpSum(BigDecimal.valueOf(30.34), 0, LocalDate.now())));
         caseDetail.setCaseDecisions(asList(caseDecision));
@@ -229,7 +228,7 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1000),
                         null,
-                        ABSOLUTE, BigDecimal.valueOf(500)),
+                        ABSOLUTE, BigDecimal.valueOf(500), null),
                 new DischargeOffenceDecision(offence1Id,
                         caseDecision.getId(),
                         FOUND_GUILTY,
@@ -237,7 +236,7 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1000),
                         null,
-                        ABSOLUTE, BigDecimal.valueOf(700)),
+                        ABSOLUTE, BigDecimal.valueOf(700), null),
                 new WithdrawOffenceDecision(),
                 new DismissOffenceDecision()));
 
@@ -260,7 +259,7 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1000),
                         "Limited means of defendant",
-                        ABSOLUTE, null),
+                        ABSOLUTE, null,null),
                 new DischargeOffenceDecision(offence1Id,
                         caseDecision.getId(),
                         FOUND_GUILTY,
@@ -268,14 +267,14 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1000),
                         "Limited means of defendant",
-                        ABSOLUTE, null),
+                        ABSOLUTE, null, null),
                 new FinancialPenaltyOffenceDecision(offence1Id,
                         caseDecision.getId(),
                         FOUND_GUILTY,
                         true,
                         BigDecimal.valueOf(1500),
                         null,
-                        BigDecimal.valueOf(2000.600), null, null),
+                        BigDecimal.valueOf(2000.600), null, null, null),
                 new WithdrawOffenceDecision(),
                 new DismissOffenceDecision()));
 
@@ -309,7 +308,7 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.ZERO,
                         "Some reason for no compensation",
-                        null, BigDecimal.ZERO, BigDecimal.ZERO)));
+                        null, BigDecimal.ZERO, BigDecimal.ZERO, null)));
 
         caseDecision.setFinancialImposition(new FinancialImposition(
                 new CostsAndSurcharge(BigDecimal.ZERO, null,
@@ -346,7 +345,7 @@ public class PaymentViewTest {
     private CaseDetail buildCaseDetailWithOneOffence() {
         final CaseDetail caseDetail = aCase()
                 .withCaseId(caseId)
-                .withProsecutingAuthority(TFL)
+                .withProsecutingAuthority("TFL")
                 .build();
 
         final DefendantDetail defendantDetail = aDefendantDetail().build();

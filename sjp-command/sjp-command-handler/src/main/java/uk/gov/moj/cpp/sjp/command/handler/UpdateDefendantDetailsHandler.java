@@ -53,6 +53,7 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
         final String firstName = getStringOrNull(payload, "firstName");
         final String lastName = getStringOrNull(payload, "lastName");
         final String driverNumber = getStringOrNull(payload, "driverNumber");
+        final String driverLicenceDetails = getStringOrNull(payload, "driverLicenceDetails");
         final Gender gender = Gender.valueFor(getStringOrNull(payload, "gender")).orElse(null);
         final String nationalInsuranceNumber = getStringOrNull(payload, "nationalInsuranceNumber");
         final String dateOfBirth = getStringOrNull(payload, "dateOfBirth");
@@ -72,7 +73,7 @@ public class UpdateDefendantDetailsHandler extends BasePersonInfoHandler {
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
 
         final ContactDetails contactDetails = new ContactDetails(homeNumber, mobileNumber, businessNumber, email, email2);
-        final Person person = new Person(title, firstName, lastName, birthDate, gender, nationalInsuranceNumber, driverNumber, address, contactDetails, region);
+        final Person person = new Person(title, firstName, lastName, birthDate, gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails, address, contactDetails, region);
 
         final Stream<Object> events = caseAggregate.updateDefendantDetails(getUserId(command), caseId, defendantId, person, createdAt);
 

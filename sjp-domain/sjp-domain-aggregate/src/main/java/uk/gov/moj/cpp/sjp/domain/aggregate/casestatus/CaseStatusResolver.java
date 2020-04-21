@@ -9,6 +9,7 @@ import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY_REQUEST_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_NOT_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.SET_ASIDE;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.WITHDRAWAL_REQUESTED;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.casestatus.OffenceInformation.createOffenceInformation;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseState.INVALID_CASE_STATE;
@@ -19,6 +20,7 @@ import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.PLEA_RECEIVED_NOT_READ
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REFERRED_FOR_COURT_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REOPENED_IN_LIBRA;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.SET_ASIDE_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.UNKNOWN;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.WITHDRAWAL_REQUEST_READY_FOR_DECISION;
 
@@ -43,7 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CaseStatusResolver {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CaseStatus.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CaseStatusResolver.class);
 
     private CaseStatusResolver() {
         // contains only static methods
@@ -67,7 +69,9 @@ public class CaseStatusResolver {
                         caseAggregateState.isDefendantsResponseTimerExpired(),
                         caseAggregateState.getDatesToAvoid(),
                         caseAggregateState.isAdjourned(),
-                        caseAggregateState.isDatesToAvoidTimerExpired());
+                        caseAggregateState.isDatesToAvoidTimerExpired(),
+                        caseAggregateState.isPostConviction(),
+                        caseAggregateState.isSetAside());
 
         if (resultState.getCaseStatus() == UNKNOWN) {
             LOGGER.warn("Case status is not covered! offenceInformation={}, referredToCourt={}, reopenedDate={}, completed={}, defendantsResponseTimerElapsed={}, datesToAvoid={}, adjourned={}",
@@ -96,9 +100,7 @@ public class CaseStatusResolver {
                                         f.getMiddle(),
                                         f.getRight(),
                                         caseAggregateState.getWithdrawalRequests()
-                                                .stream()
-                                                .filter(g -> g.getOffenceId().equals(f.getLeft()))
-                                                .count() > 0,
+                                                .stream().anyMatch(g -> g.getOffenceId().equals(f.getLeft())),
                                         ofNullable(caseAggregateState.getOffenceDecision(f.getLeft())).map(OffenceDecision::getType).orElse(null)
                                         ))
                                 .filter(offenceInformation -> !offenceInformation.hasFinalDecision())
@@ -112,7 +114,7 @@ public class CaseStatusResolver {
             return false;
         }
 
-        if (!offenceInformation.stream().noneMatch(Objects::isNull)) {
+        if (offenceInformation.stream().anyMatch(Objects::isNull)) {
             LOGGER.info("None of the offenceInformation elements may be null");
             return false;
         }
@@ -168,19 +170,28 @@ public class CaseStatusResolver {
         private final List<OffenceInformation> offenceInformation;
         private final String datesToAvoid;
         private final boolean datesToAvoidTimerElapsed;
+        private final boolean adjourned;
+        private final boolean postConviction;
+        private final boolean setAside;
 
         public CaseStateCheckerBuilderFactory(final List<OffenceInformation> offenceInformation,
                                               final boolean defendantsResponseTimerElapsed,
                                               final String datesToAvoid,
-                                              final boolean datesToAvoidTimerElapsed) {
+                                              final boolean datesToAvoidTimerElapsed,
+                                              final boolean adjourned,
+                                              final boolean postConviction,
+                                              final boolean setAside) {
             this.offenceInformation = offenceInformation;
             this.defendantsResponseTimerElapsed = defendantsResponseTimerElapsed;
             this.datesToAvoid = datesToAvoid;
             this.datesToAvoidTimerElapsed = datesToAvoidTimerElapsed;
+            this.adjourned = adjourned;
+            this.postConviction = postConviction;
+            this.setAside = setAside;
         }
 
         public CaseStateChecker.CaseStateCheckerBuilder getCaseStatusChecker() {
-            return CaseStateChecker.CaseStateCheckerBuilder.caseStateCheckerFor(offenceInformation, defendantsResponseTimerElapsed, datesToAvoid, datesToAvoidTimerElapsed);
+            return CaseStateChecker.CaseStateCheckerBuilder.caseStateCheckerFor(offenceInformation, defendantsResponseTimerElapsed, datesToAvoid, datesToAvoidTimerElapsed, adjourned, postConviction, setAside);
         }
     }
 
@@ -189,14 +200,61 @@ public class CaseStatusResolver {
                                                      final boolean defendantResponseTimerExpired,
                                                      final String datesToAvoid,
                                                      final boolean adjourned,
-                                                     final boolean datesToAvoidTimerExpired) {
+                                                     final boolean datesToAvoidTimerExpired,
+                                                     final boolean postConviction,
+                                                     final boolean setAside) {
         final Set<Scenario> cases = new LinkedHashSet<>();
 
         final CaseStateCheckerBuilderFactory factory =
-                new CaseStateCheckerBuilderFactory(offenceInformation, defendantResponseTimerExpired, datesToAvoid, datesToAvoidTimerExpired);
+                new CaseStateCheckerBuilderFactory(offenceInformation, defendantResponseTimerExpired, datesToAvoid, datesToAvoidTimerExpired, adjourned, postConviction, setAside);
 
         // The rules below have to be in importance order, so that's why it's implemented on Linked hash set implementation (could be list as well)
         // The first rule which is found will be returned to the outside and treated as the status so this is why they are not exclusive
+        cases.add(new Scenario("Case is set aside currently",
+                SET_ASIDE,
+                factory.getCaseStatusChecker()
+                        .setAside()
+                , SET_ASIDE_READY_FOR_DECISION)
+        );
+
+        cases.add(new Scenario("All withdrawn all no pleas adjourned post conviction",
+                null,
+                factory.getCaseStatusChecker()
+                        .hasWithdrawalRequestedOnAllOffences()
+                        .allNoPlea()
+                        .adjourned()
+                        .postConviction()
+                , NO_PLEA_RECEIVED)
+        );
+
+        cases.add(new Scenario("All withdrawn some pleas adjourned post conviction",
+                null,
+                factory.getCaseStatusChecker()
+                        .hasWithdrawalRequestedOnAllOffences()
+                        .somePleas()
+                        .adjourned()
+                        .postConviction()
+                , PLEA_RECEIVED_NOT_READY_FOR_DECISION)
+        );
+
+        cases.add(new Scenario("All withdrawn all no pleas adjourned post conviction",
+                WITHDRAWAL_REQUESTED,
+                factory.getCaseStatusChecker()
+                        .hasWithdrawalRequestedOnAllOffences()
+                        .allNoPlea()
+                        .postConviction()
+                , NO_PLEA_RECEIVED_READY_FOR_DECISION)
+        );
+
+        cases.add(new Scenario("All withdrawn some pleas adjourned post conviction",
+                WITHDRAWAL_REQUESTED,
+                factory.getCaseStatusChecker()
+                        .hasWithdrawalRequestedOnAllOffences()
+                        .somePleas()
+                        .postConviction()
+                , PLEA_RECEIVED_READY_FOR_DECISION)
+        );
+
         cases.add(new Scenario("All offences requested to be withdrawn",
                 WITHDRAWAL_REQUESTED,
                 factory.getCaseStatusChecker()
@@ -229,13 +287,6 @@ public class CaseStatusResolver {
                 PLEADED_GUILTY_REQUEST_HEARING,
                 factory.getCaseStatusChecker()
                         .atLeastOnePleaGuiltyRequestHearing()
-                , PLEA_RECEIVED_READY_FOR_DECISION)
-        );
-
-        cases.add(new Scenario("All guilty pleas I don't want to go to court",
-                PLEADED_GUILTY,
-                factory.getCaseStatusChecker()
-                        .allPleasGuilty()
                 , PLEA_RECEIVED_READY_FOR_DECISION)
         );
 
@@ -278,7 +329,7 @@ public class CaseStatusResolver {
         final Pair<CaseStatus, CaseReadinessReason> caseState = cases.stream()
                 .filter(scenario -> scenario.getCaseStatusChecker().build().allRulesValid())
                 .findFirst()
-                .map((e) -> Pair.of(e.getCaseStatus(), e.getReadinessReason()))
+                .map(e -> Pair.of(e.getCaseStatus(), e.getReadinessReason()))
                 .orElse(Pair.of(UNKNOWN, CaseReadinessReason.DEFAULT_STATUS));
 
         return new CaseState(modifyCaseStatusBasedOnAdjournmentInformation(adjourned, caseState.getLeft()), caseState.getRight());

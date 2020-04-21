@@ -17,6 +17,8 @@ import static uk.gov.justice.json.schemas.domains.sjp.NoteType.ADJOURNMENT;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.DECISION;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.LISTING;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.DecisionBuilder.decisionBuilder;
+import static uk.gov.moj.cpp.sjp.domain.decision.Discharge.createDischarge;
+import static uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty.createFinancialPenalty;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.ABSOLUTE;
 import static uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType.ATTACH_TO_EARNINGS;
@@ -27,6 +29,7 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
@@ -41,6 +44,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
+import uk.gov.moj.cpp.sjp.domain.decision.SetAside;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.CostsAndSurcharge;
@@ -48,12 +52,15 @@ import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.LumpSum;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.Payment;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentTerms;
+import uk.gov.moj.cpp.sjp.domain.plea.Plea;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
-import uk.gov.moj.cpp.sjp.event.CaseNoteAdded;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionRejected;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionSetAside;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionSetAsideReset;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
 import java.math.BigDecimal;
@@ -63,6 +70,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matchers;
@@ -76,7 +84,9 @@ public class CaseDecisionHandlerTest {
 
     private final UUID referralReasonId = randomUUID();
     private final UUID decisionId = randomUUID();
+    private final UUID decisionId2 = randomUUID();
     private final UUID sessionId = randomUUID();
+    private final UUID sessionId2 = randomUUID();
     private final UUID caseId = randomUUID();
     private final UUID legalAdviserId = randomUUID();
     private final UUID defendantId = randomUUID();
@@ -124,7 +134,63 @@ public class CaseDecisionHandlerTest {
     }
 
     @Test
-    public void shouldAcceptDecisionWithAllOffencesAdjourned() {
+    public void shouldAcceptDecisionWithAllOffencesAdjournedPostConvictionOfFoundGuiltyVerdict() {
+
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
+        final List<OffenceDecision> offenceDecisions = newArrayList(
+                new Adjourn(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, FOUND_GUILTY),
+                        createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
+                        adjournmentReason, adjournedTo));
+
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        final List<Object> eventList = eventStream.collect(toList());
+        thenTheDecisionIsAcceptedAlongWithCaseAdjournedRecordedEvent(offenceDecisions, eventList, adjournedTo);
+    }
+
+    @Test
+    public void shouldAcceptDecisionWithAllOffencesAdjournedPostConvictionOfProvedSjpVerdict() {
+
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
+        final List<OffenceDecision> offenceDecisions = newArrayList(
+                new Adjourn(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, PROVED_SJP),
+                        createOffenceDecisionInformation(offenceId2, PROVED_SJP)),
+                        adjournmentReason, adjournedTo));
+
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        final List<Object> eventList = eventStream.collect(toList());
+        thenTheDecisionIsAcceptedAlongWithCaseAdjournedRecordedEvent(offenceDecisions, eventList, adjournedTo);
+    }
+
+    @Test
+    public void shouldAcceptDecisionAdjournedWithPostConvictionOfBothVerdictsProvedSjpAndFoundGuiltyCombined() {
+
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
+        final List<OffenceDecision> offenceDecisions = newArrayList(
+                new Adjourn(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, FOUND_GUILTY),
+                        createOffenceDecisionInformation(offenceId2, PROVED_SJP)),
+                        adjournmentReason, adjournedTo));
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        final List<Object> eventList = eventStream.collect(toList());
+        thenTheDecisionIsAcceptedAlongWithCaseAdjournedRecordedEvent(offenceDecisions, eventList, adjournedTo);
+    }
+
+    @Test
+    public void shouldAcceptDecisionWithAllOffencesAdjournedPreConviction() {
 
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
         final LocalDate adjournedTo = LocalDate.now().plusDays(10);
@@ -139,6 +205,150 @@ public class CaseDecisionHandlerTest {
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
         final List<Object> eventList = eventStream.collect(toList());
         thenTheDecisionIsAcceptedAlongWithCaseAdjournedRecordedEvent(offenceDecisions, eventList, adjournedTo);
+    }
+
+    @Test
+    public void shouldAcceptDecisionWithAllOffencesAdjournedWithConviction() {
+
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
+        final List<OffenceDecision> offenceDecisions = newArrayList(
+                new Adjourn(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, FOUND_GUILTY),
+                        createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
+                        adjournmentReason, adjournedTo));
+
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+        final List<Object> eventList = eventStream.collect(toList());
+        thenTheDecisionIsAcceptedAlongWithCaseAdjournedRecordedEvent(offenceDecisions, eventList, adjournedTo);
+    }
+
+    @Test
+    public void shouldAcceptAdjournPostConviction() {
+
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
+        final List<OffenceDecision> offenceDecisions = newArrayList(
+                new Adjourn(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, FOUND_GUILTY),
+                        createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
+                        adjournmentReason, adjournedTo));
+
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        caseAggregateState.updateOffenceDecisions(offenceDecisions, sessionId);
+        caseAggregateState.updateOffenceConvictionDates(savedAt, offenceDecisions);
+
+        final List<OffenceDecision> offenceDecisions2 = newArrayList(
+                new Adjourn(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, null),
+                        createOffenceDecisionInformation(offenceId2, null)),
+                        adjournmentReason, adjournedTo));
+
+        final Decision decision2 = new Decision(decisionId2, sessionId2, caseId, note, savedAt, legalAdviser, offenceDecisions2, null);
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision2, caseAggregateState, session);
+        final List<Object> eventList = eventStream.collect(toList());
+        thenTheDecisionIsAcceptedAlongWithCaseAdjournedRecordedEvent(decisionId2, sessionId2, offenceDecisions2, eventList, adjournedTo);
+        thenTheOffenceDecisionsReflectTheConvictionDate(offenceDecisions2, Adjourn.class, savedAt.toLocalDate());
+
+    }
+
+    @Test
+    public void shouldAcceptAdjournWithConvictionAndReferToCourt() {
+
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+        caseAggregateState.setPleas(asList(
+                new Plea(defendantId, offenceId1, PleaType.GUILTY),
+                new Plea(defendantId, offenceId2, PleaType.GUILTY)
+        ));
+        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
+        final List<OffenceDecision> offenceDecisions = newArrayList(
+                new Adjourn(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, FOUND_GUILTY),
+                        createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
+                        adjournmentReason, adjournedTo));
+
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        caseAggregateState.updateOffenceDecisions(offenceDecisions, sessionId);
+        caseAggregateState.updateOffenceConvictionDates(savedAt, offenceDecisions);
+
+        final DefendantCourtOptions courtOptions =
+                new DefendantCourtOptions(
+                        new DefendantCourtInterpreter("EN", true),
+                        false);
+
+        final List<OffenceDecision> offenceDecisions2 = newArrayList(
+                new ReferForCourtHearing(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, null),
+                        createOffenceDecisionInformation(offenceId2, null)),
+                        referralReasonId, "note", 0, courtOptions));
+
+        final Decision decision2 = new Decision(decisionId2, sessionId2, caseId, note, savedAt, legalAdviser, offenceDecisions2, null);
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision2, caseAggregateState, session);
+        final List<Object> eventList = eventStream.collect(toList());
+        thenTheDecisionIsAcceptedAlongWithCaseReferForCourtHearingRecordedEvent(decisionId2, sessionId2, offenceDecisions2, eventList);
+        thenTheOffenceDecisionsReflectTheConvictionDate(offenceDecisions2, ReferForCourtHearing.class, savedAt.toLocalDate());
+
+    }
+
+    @Test
+    public void shouldRejectWithdrawDismissDecisionsWithPreviousConviction() {
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
+        final List<OffenceDecision> offenceDecisions = newArrayList(
+                new Adjourn(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, FOUND_GUILTY),
+                        createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
+                        adjournmentReason, adjournedTo));
+
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        caseAggregateState.updateOffenceDecisions(offenceDecisions, sessionId);
+        caseAggregateState.updateOffenceConvictionDates(savedAt, offenceDecisions);
+
+        final List<OffenceDecision> offenceDecisions2 = newArrayList(
+                new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1),
+                new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_NOT_GUILTY))
+        );
+
+        final Decision decision2 = new Decision(decisionId2, sessionId2, caseId, note, savedAt, legalAdviser, offenceDecisions2, null);
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision2, caseAggregateState, session);
+
+        final List<String> expectedRejectionReasons = asList(
+                format("offence %s : WITHDRAW or DISMISS can't be used on an offence decision with a previous conviction", offenceId1.toString()),
+                format("offence %s : WITHDRAW or DISMISS can't be used on an offence decision with a previous conviction", offenceId2.toString())
+        );
+        thenTheDecisionIsRejected(decision2, expectedRejectionReasons, eventStream);
+    }
+
+    @Test
+    public void shouldRejectReferForCourtHearingWithoutVerdictWithoutPreviousConviction() {
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+        final DefendantCourtOptions courtOptions =
+                new DefendantCourtOptions(
+                        new DefendantCourtInterpreter("EN", true),
+                        false);
+
+        final List<OffenceDecision> offenceDecisions = newArrayList(
+                new ReferForCourtHearing(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, null),
+                        createOffenceDecisionInformation(offenceId2, null)),
+                        referralReasonId, "note", 0, courtOptions));
+
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        final List<String> expectedRejectionReasons = asList(
+                format("offence %s : can't have an offence without verdict if it wasn't previously convicted", offenceId1.toString()),
+                format("offence %s : can't have an offence without verdict if it wasn't previously convicted", offenceId2.toString())
+        );
+        thenTheDecisionIsRejected(decision, expectedRejectionReasons, eventStream);
     }
 
     @Test
@@ -236,17 +446,17 @@ public class CaseDecisionHandlerTest {
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
-                new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null),
-                new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, null, "Insufficient means", false, null));
+                createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null),
+                createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, null, "Insufficient means", false, null));
 
         final Defendant defendant = new Defendant(new CourtDetails("1080", "Bedfordshire Magistrates' Court"));
         final FinancialImposition financialImposition = new FinancialImposition(
-            new CostsAndSurcharge(new BigDecimal(150), null, new BigDecimal(30), null, null, true),
-            new Payment(new BigDecimal(680), PAY_TO_COURT, null,null,new PaymentTerms(
-                    true,
-                    new LumpSum(new BigDecimal(680), 25, LocalDate.of(2019,9,1)),
-                    null
-            ), null)
+                new CostsAndSurcharge(new BigDecimal(150), null, new BigDecimal(30), null, null, true),
+                new Payment(new BigDecimal(680), PAY_TO_COURT, null, null, new PaymentTerms(
+                        true,
+                        new LumpSum(new BigDecimal(680), 25, LocalDate.of(2019, 9, 1)),
+                        null
+                ), null)
         );
         final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, financialImposition, defendant);
 
@@ -341,18 +551,17 @@ public class CaseDecisionHandlerTest {
     }
 
 
-
     @Test
     public void shouldRaiseDecisionRejectedEventWhenDecisionWithPaymentTypeOfAttachedToEarningsDoesNotHaveUpdatedEmployerDetails() {
 
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
-        final Discharge discharge1 = new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(10), null, true, null);
-        final Discharge discharge2 = new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null);
+        final Discharge discharge1 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(10), null, true, null);
+        final Discharge discharge2 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null);
         final List<OffenceDecision> offenceDecisions = newArrayList(discharge1, discharge2);
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser,
                 offenceDecisions, new FinancialImposition(
-                new CostsAndSurcharge(new BigDecimal(40), null, new BigDecimal(10), null, null,true),
+                new CostsAndSurcharge(new BigDecimal(40), null, new BigDecimal(10), null, null, true),
                 new Payment(new BigDecimal(70), ATTACH_TO_EARNINGS, null, null, null, null)
         ), null);
 
@@ -361,8 +570,6 @@ public class CaseDecisionHandlerTest {
         final List<String> rejectionReason = newArrayList("Decision with payment type attach to earnings requires employer details");
         thenTheDecisionIsRejected(decision, rejectionReason, eventStream);
     }
-
-
 
 
     @Test
@@ -436,23 +643,21 @@ public class CaseDecisionHandlerTest {
 
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
 
-        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
-
         final DefendantCourtOptions courtOptions =
                 new DefendantCourtOptions(
                         new DefendantCourtInterpreter("EN", true),
                         false);
 
         final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(randomUUID(), createOffenceDecisionInformationList(offenceId1, NO_VERDICT), referralReasonId, "note", 0, courtOptions);
-        final Discharge discharge = new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null);
+        final Discharge discharge = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null);
 
         final List<OffenceDecision> offenceDecisions = newArrayList(referForCourtHearing, discharge);
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser,
                 offenceDecisions, new FinancialImposition(
-                        new CostsAndSurcharge(new BigDecimal(40), null, new BigDecimal(10), null, null,true),
-                        new Payment(new BigDecimal(70), PAY_TO_COURT, null, null, null, null)
-                    ), null);
+                new CostsAndSurcharge(new BigDecimal(40), null, new BigDecimal(10), null, null, true),
+                new Payment(new BigDecimal(70), PAY_TO_COURT, null, null, null, null)
+        ), null);
         final List<String> expectedRejectionReasons = newArrayList("REFER_FOR_COURT_HEARING decision can not be saved with decision(s) DISCHARGE");
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
@@ -464,15 +669,8 @@ public class CaseDecisionHandlerTest {
 
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
 
-        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
-
-        final DefendantCourtOptions courtOptions =
-                new DefendantCourtOptions(
-                        new DefendantCourtInterpreter("EN", true),
-                        false);
-
         final Adjourn adjourn = new Adjourn(randomUUID(), createOffenceDecisionInformationList(offenceId1, NO_VERDICT), adjournmentReason, LocalDate.now().plusDays(14));
-        final FinancialPenalty financialPenalty = new FinancialPenalty(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), new BigDecimal(200), new BigDecimal(40), null, true, null, null);
+        final FinancialPenalty financialPenalty = createFinancialPenalty(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), new BigDecimal(200), new BigDecimal(40), null, true, null, null);
 
         final List<OffenceDecision> offenceDecisions = newArrayList(adjourn, financialPenalty);
 
@@ -484,6 +682,40 @@ public class CaseDecisionHandlerTest {
         final List<String> expectedRejectionReasons = newArrayList("ADJOURN decision can not be saved with decision(s) FINANCIAL_PENALTY");
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+        thenTheDecisionIsRejected(decision, expectedRejectionReasons, eventStream);
+    }
+
+    @Test
+    public void shouldRaiseDecisionRejectedEventWhenInvalidAdjournPreAndPostAreCombined() {
+
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+        final Adjourn adjourn = new Adjourn(randomUUID(), createOffenceDecisionInformationList(offenceId1, NO_VERDICT), adjournmentReason, LocalDate.now().plusDays(14));
+        final FinancialPenalty financialPenalty = createFinancialPenalty(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), new BigDecimal(200), new BigDecimal(40), null, true, null, null);
+        final List<OffenceDecision> offenceDecisions = newArrayList(adjourn, financialPenalty);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        final List<String> expectedRejectionReasons = newArrayList("ADJOURN decision can not be saved with decision(s) FINANCIAL_PENALTY");
+        thenTheDecisionIsRejected(decision, expectedRejectionReasons, eventStream);
+    }
+
+    @Test
+    public void shouldRaiseDecisionRejectedEventWhenAdjournPreAndPostConvictionDecisionsAreCombined() {
+
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2, offenceId3), legalAdviserId);
+        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
+        final List<OffenceDecision> offenceDecisions = newArrayList(
+                new Adjourn(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, NO_VERDICT),
+                        createOffenceDecisionInformation(offenceId2, FOUND_GUILTY),
+                        createOffenceDecisionInformation(offenceId3, PROVED_SJP)),
+                        adjournmentReason, adjournedTo));
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        final List<String> expectedRejectionReasons = newArrayList("ADJOURN decisions with pre and post convictions can not be combined");
         thenTheDecisionIsRejected(decision, expectedRejectionReasons, eventStream);
     }
 
@@ -538,6 +770,223 @@ public class CaseDecisionHandlerTest {
         thenTheDecisionIsRejected(decision, expectedRejectionReasons, eventStream);
     }
 
+    @Test
+    public void shouldNotUnAssignWhenTheCurrentDecisionIsSetAside() {
+        // given
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+
+        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
+        ZonedDateTime zonedDateTime = ZonedDateTime.now();
+
+        List<OffenceDecision> offenceDecisions = newArrayList(
+                new Adjourn(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, FOUND_GUILTY),
+                        createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
+                        "adjourn reason ", adjournedTo));
+
+        caseAggregateState.updateOffenceConvictionDates(zonedDateTime, offenceDecisions);
+
+        offenceDecisions = newArrayList(
+                new SetAside(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, null),
+                        createOffenceDecisionInformation(offenceId2, null))));
+
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+
+        // when
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        // then
+        assertThat(eventStream.allMatch(e -> e instanceof CaseUnassigned == false), is(true));
+    }
+
+    @Test
+    public void shouldRaiseADecisionSetAsideEventWhenTheCurrentDecisionIsSetAside() {
+        // given
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+
+        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
+        ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        List<OffenceDecision> offenceDecisions = newArrayList(
+                new Adjourn(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, FOUND_GUILTY),
+                        createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
+                        "adjourn reason ", adjournedTo));
+        caseAggregateState.updateOffenceConvictionDates(zonedDateTime, offenceDecisions);
+
+
+        offenceDecisions = newArrayList(
+                new SetAside(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, null),
+                        createOffenceDecisionInformation(offenceId2, null))));
+
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+
+        // when
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        // then
+        assertThat(eventStream.anyMatch(e -> e instanceof DecisionSetAside), is(true));
+    }
+
+    @Test
+    public void shouldRaiseADecisionSetAsideResetEventWhenThePreviousIsSetAside() {
+        // given
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+
+        caseAggregateState.setSetAside(true);
+
+        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
+        ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        List<OffenceDecision> offenceDecisions = newArrayList(
+                new Adjourn(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, FOUND_GUILTY),
+                        createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
+                        "adjourn reason ", adjournedTo));
+
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+
+        // when
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        // then
+        assertThat(eventStream.anyMatch(e -> e instanceof DecisionSetAsideReset), is(true));
+    }
+
+    @Test
+    public void shouldNotRaiseADecisionRejectedEventFinalDecisionPresentWhenATerminalDecisionIsSetAside() {
+        // given
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+
+        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
+        ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        final Dismiss dismiss = decisionBuilder(randomUUID()).offenceId(offenceId1).verdict(FOUND_NOT_GUILTY).build(Dismiss.class);
+        List<OffenceDecision> offenceDecisions = newArrayList(
+                new Adjourn(randomUUID(), asList(createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
+                        "adjourn reason ", adjournedTo), dismiss);
+
+        final Decision decision1 = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision1, caseAggregateState, session);
+
+        caseAggregateState.updateOffenceConvictionDates(zonedDateTime, offenceDecisions);
+        caseAggregateState.updateOffenceDecisions(offenceDecisions, sessionId);
+
+        offenceDecisions = newArrayList(
+                new SetAside(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, null),
+                        createOffenceDecisionInformation(offenceId2, null))));
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+
+        caseAggregateState.updateOffenceConvictionDates(zonedDateTime, offenceDecisions);
+        caseAggregateState.updateOffenceDecisions(offenceDecisions, sessionId);
+
+        // when
+        final List eventList =  (List) CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session).collect(Collectors.toList());
+
+        // then
+        assertThat(eventList.stream()
+                .filter(e -> e instanceof DecisionRejected)
+                .anyMatch(e -> ((DecisionRejected) e)
+                        .getRejectionReasons()
+                        .contains(String.format("Offence %s already has a final decision", offenceId1))), is(false));
+
+        assertThat(eventList.stream()
+                .filter(e -> e instanceof DecisionRejected)
+                .anyMatch(e -> ((DecisionRejected) e)
+                        .getRejectionReasons()
+                        .contains(format("offence %s : can't have an offence without verdict if it wasn't previously convicted", offenceId1))), is(false));
+
+
+    }
+
+
+    @Test
+    public void shouldRaiseADecisionRejectedEventWhenAThereIsAnotherDecisionAlongWithSetAside() {
+        // given
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+
+        final ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
+        final Dismiss dismiss = decisionBuilder(randomUUID()).offenceId(offenceId1).verdict(FOUND_NOT_GUILTY).build(Dismiss.class);
+        List<OffenceDecision> offenceDecisions = newArrayList(dismiss,
+                new SetAside(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, null),
+                        createOffenceDecisionInformation(offenceId2, null))));
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+
+        // when
+        final Stream eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        // then
+        assertThat(eventStream
+                .filter(e -> e instanceof DecisionRejected)
+                .anyMatch(e -> ((DecisionRejected) e)
+                        .getRejectionReasons()
+                        .contains(("Along with set-aside not other decisions are allowed"))), is(true));
+    }
+
+    @Test
+    public void shouldRaiseADecisionRejectedEventWhenAThereIsAreMultipleSetAsideDecisions() {
+        // given
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+
+        final ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
+        final Dismiss dismiss = decisionBuilder(randomUUID()).offenceId(offenceId1).verdict(FOUND_NOT_GUILTY).build(Dismiss.class);
+        final List<OffenceDecision> offenceDecisions = newArrayList(new SetAside(randomUUID(), asList(
+                createOffenceDecisionInformation(offenceId1, null))),
+                new SetAside(randomUUID(), asList(createOffenceDecisionInformation(offenceId2, null))));
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+
+        // when
+        final Stream eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        // then
+        assertThat(eventStream
+                .filter(e -> e instanceof DecisionRejected)
+                .anyMatch(e -> ((DecisionRejected) e)
+                        .getRejectionReasons()
+                        .contains("Only one set-aside decision can be made")), is(true));
+    }
+
+    @Test
+    public void shouldRaiseADecisionRejectedEventForVerdictTypeWhenATerminalDecisionIsSetAside() {
+        // given
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+
+        final LocalDate adjournedTo = LocalDate.now().plusDays(10);
+        ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        final Dismiss dismiss = decisionBuilder(randomUUID()).offenceId(offenceId1).verdict(FOUND_NOT_GUILTY).build(Dismiss.class);
+        List<OffenceDecision> offenceDecisions = newArrayList(
+                new Adjourn(randomUUID(), asList(createOffenceDecisionInformation(offenceId2, FOUND_GUILTY)),
+                        "adjourn reason ", adjournedTo), dismiss);
+
+        final Decision decision1 = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+        Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision1, caseAggregateState, session);
+
+        caseAggregateState.updateOffenceConvictionDates(zonedDateTime, offenceDecisions);
+        caseAggregateState.updateOffenceDecisions(offenceDecisions, sessionId);
+
+        offenceDecisions = newArrayList(
+                new SetAside(randomUUID(), asList(
+                        createOffenceDecisionInformation(offenceId1, null),
+                        createOffenceDecisionInformation(offenceId2, FOUND_GUILTY))));
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+
+        caseAggregateState.updateOffenceConvictionDates(zonedDateTime, offenceDecisions);
+        caseAggregateState.updateOffenceDecisions(offenceDecisions, sessionId);
+
+        // when
+        eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        // then
+        assertThat(eventStream
+                .filter(e -> e instanceof DecisionRejected)
+                .anyMatch(e -> ((DecisionRejected) e)
+                        .getRejectionReasons()
+                        .contains(String.format("Decisions of type %s's verdict type can only be %s", "SetAside", null))), is(true));
+    }
+
 
     private void givenCaseExistsWithMultipleOffences(final HashSet<UUID> uuids, final UUID savedByUser) {
         caseAggregateState.addOffenceIdsForDefendant(defendantId, uuids);
@@ -573,6 +1022,12 @@ public class CaseDecisionHandlerTest {
     }
 
     private void thenTheDecisionIsAcceptedAlongWithCaseAdjournedRecordedEvent(final List<OffenceDecision> offenceDecisions, final List<Object> eventList, final LocalDate adjournedTo) {
+        thenTheDecisionIsAcceptedAlongWithCaseAdjournedRecordedEvent(decisionId, sessionId, offenceDecisions, eventList, adjournedTo);
+    }
+
+    private void thenTheDecisionIsAcceptedAlongWithCaseAdjournedRecordedEvent(final UUID decisionId, final UUID sessionId,
+                                                                              final List<OffenceDecision> offenceDecisions,
+                                                                              final List<Object> eventList, final LocalDate adjournedTo) {
         assertThat(eventList, hasItem(new DecisionSaved(decisionId, sessionId, caseId, savedAt, offenceDecisions)));
         assertThat(eventList, hasItem(allOf(
                 Matchers.instanceOf(CaseNoteAdded.class),
@@ -604,6 +1059,10 @@ public class CaseDecisionHandlerTest {
     }
 
     private void thenTheDecisionIsAcceptedAlongWithCaseReferForCourtHearingRecordedEvent(final List<OffenceDecision> offenceDecisions, final List<Object> eventList) {
+        thenTheDecisionIsAcceptedAlongWithCaseReferForCourtHearingRecordedEvent(decisionId, sessionId, offenceDecisions, eventList);
+    }
+
+    private void thenTheDecisionIsAcceptedAlongWithCaseReferForCourtHearingRecordedEvent(final UUID decisionId, final UUID sessionId, final List<OffenceDecision> offenceDecisions, final List<Object> eventList) {
         assertThat(eventList, hasItem(new DecisionSaved(decisionId, sessionId, caseId, savedAt, offenceDecisions)));
         assertThat(eventList, hasItem(allOf(
                 Matchers.instanceOf(CaseNoteAdded.class),
@@ -632,6 +1091,13 @@ public class CaseDecisionHandlerTest {
 
         assertThat(eventList, hasItem(new CaseUnassigned(caseId)));
         assertThat(eventList.size(), is(7));
+    }
+
+    private void thenTheOffenceDecisionsReflectTheConvictionDate(final List<OffenceDecision> offenceDecisions, final Class decisionType, final LocalDate convictionDate) {
+        assertThat(offenceDecisions, hasItem(allOf(
+                Matchers.instanceOf(decisionType),
+                Matchers.<Adjourn>hasProperty("convictionDate", is(convictionDate))
+        )));
     }
 }
 

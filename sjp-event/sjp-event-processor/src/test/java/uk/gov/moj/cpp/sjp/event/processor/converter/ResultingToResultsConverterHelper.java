@@ -31,7 +31,7 @@ import uk.gov.justice.json.schemas.domains.sjp.results.Prompts;
 import uk.gov.justice.json.schemas.domains.sjp.results.SessionLocation;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.resulting.CaseDecision;
 import uk.gov.moj.cpp.sjp.domain.resulting.CaseResults;
@@ -235,7 +235,7 @@ public class ResultingToResultsConverterHelper {
         final CaseDetails caseDetails = CaseDetails.caseDetails()
                 .withId(CASE_ID)
                 .withUrn(URN)
-                .withProsecutingAuthority(ProsecutingAuthority.TFL.name())
+                .withProsecutingAuthority("TFL")
                 .withDefendant(buildDefendant())
                 .build();
         return caseDetails;

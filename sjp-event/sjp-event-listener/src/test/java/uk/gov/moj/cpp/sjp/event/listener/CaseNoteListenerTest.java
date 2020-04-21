@@ -14,8 +14,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatch
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
 import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.moj.cpp.sjp.event.CaseNoteAdded;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseNote;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseNoteRepository;
 

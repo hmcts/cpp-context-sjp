@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.command.controller;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.activemq.artemis.utils.JsonLoader.createArrayBuilder;
@@ -123,7 +124,7 @@ public class DecisionControllerTest {
         final JsonEnvelope saveDecisionCommand = createSaveDecisionCommand();
         when(userService.getCallingUserDetails(saveDecisionCommand)).thenReturn(userDetails);
         when(caseService.getCaseDetails(caseId.toString())).thenReturn(caseDetails);
-        when(referenceDataService.getEnforcementArea(anyString())).thenReturn(enforcementArea);
+        when(referenceDataService.getEnforcementArea(anyString())).thenReturn(of(enforcementArea));
 
         decisionController.saveDecision(saveDecisionCommand);
         verifySaveDecisionCommand(saveDecisionCommand);

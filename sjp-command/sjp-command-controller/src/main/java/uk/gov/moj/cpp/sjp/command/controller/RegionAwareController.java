@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.sjp.command.controller;
 
+import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
 import uk.gov.moj.cpp.sjp.command.service.ReferenceDataService;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -23,17 +23,19 @@ public abstract class RegionAwareController extends BaseController {
     @Inject
     protected ReferenceDataService referenceDataService;
 
-    private String getNationalCourtCode(final String defendentPostcode) {
-        final Optional<JsonObject> jsonObject = ofNullable(referenceDataService.getEnforcementArea(defendentPostcode));
+    private String getNationalCourtCode(final String defendantPostcode) {
+        final Optional<JsonObject> jsonObject = referenceDataService.getEnforcementArea(defendantPostcode);
         return jsonObject.map(e -> e.getJsonObject(LOCAL_JUSTICE_AREA))
                 .map(obj -> obj.getString(NATIONAL_COURT_CODE))
                 .orElse(null);
     }
 
     private String getLocalJusticeAreaRegion(final String nationalCourtCode) {
-        final JsonObject jsonObject = referenceDataService.getLocalJusticeAreas(nationalCourtCode);
-        final List<JsonObject> jsonObjectList = jsonObject.getJsonArray("localJusticeAreas").getValuesAs(JsonObject.class);
-        return jsonObjectList.stream()
+        final Optional<JsonObject> jsonObject = referenceDataService.getLocalJusticeAreas(nationalCourtCode);
+        return jsonObject.map(obj -> jsonObject.get().getJsonArray("localJusticeAreas"))
+                .map(obj -> obj.getValuesAs(JsonObject.class))
+                .orElse(emptyList())
+                .stream()
                 .filter(e -> nationalCourtCode.equals(e.getString(NATIONAL_COURT_CODE)))
                 .map(o -> o.getString(REGION, null))
                 .filter(Objects::nonNull)

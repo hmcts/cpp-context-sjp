@@ -2,11 +2,14 @@ package uk.gov.moj.cpp.sjp.query.view;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.LocalDate.now;
 import static java.util.Collections.emptyList;
+import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -24,7 +27,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus.IN_PROGRESS;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
@@ -84,6 +87,7 @@ import java.util.stream.Stream;
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -193,10 +197,15 @@ public class SjpQueryViewTest {
 
         final CaseDetail caseDetail = CaseDetailBuilder.aCase().addDefendantDetail(
                 aDefendantDetail().withPostcode(postcode).withId(UUID.randomUUID()).build())
-                .withCompleted(false).withProsecutingAuthority(TFL)
+                .withCompleted(false).withProsecutingAuthority("TFL")
                 .withCaseId(UUID.randomUUID()).withUrn(urn).build();
 
-        final CaseView caseView = new CaseView(caseDetail, "Transport for London");
+        JsonObject prosecutorPayload = createObjectBuilder()
+                .add("fullName", "Transport for London")
+                .add("policeFlag", false)
+                .build();
+
+        final CaseView caseView = new CaseView(caseDetail, prosecutorPayload);
 
         when(caseService.findCaseByUrnPostcode(urn, postcode)).thenReturn(caseView);
 
@@ -269,7 +278,7 @@ public class SjpQueryViewTest {
         final Benefits benefit = new Benefits(true, "benefitType", null);
         final FinancialMeans financialMeans = new FinancialMeans(defendantId, income, benefit, "EMPLOYED");
 
-        when(financialMeansService.getFinancialMeans(defendantId)).thenReturn(Optional.of(financialMeans));
+        when(financialMeansService.getFinancialMeans(defendantId)).thenReturn(of(financialMeans));
 
         final JsonEnvelope result = sjpQueryView.findFinancialMeans(queryEnvelope);
 
@@ -318,7 +327,7 @@ public class SjpQueryViewTest {
         final Address address = new Address("address 1", "address 2", "address 3", "address 4", "address 5", "AB3 4CD");
         final Employer employer = new Employer(defendantId, "KFC", "abcdef", "02020202020", address);
 
-        when(employerService.getEmployer(defendantId)).thenReturn(Optional.of(employer));
+        when(employerService.getEmployer(defendantId)).thenReturn(of(employer));
 
         final JsonEnvelope result = sjpQueryView.findEmployer(queryEnvelope);
 
@@ -433,7 +442,7 @@ public class SjpQueryViewTest {
 
         final JsonObject offenceData = Json.createObjectBuilder()
                 .add("title", "Offence title").build();
-        when(referenceDataService.getOffenceData(offenceCode)).thenReturn(Optional.of(offenceData));
+        when(referenceDataService.getOffenceData(offenceCode)).thenReturn(of(offenceData));
 
         final JsonEnvelope response = sjpQueryView.findDefendantsOnlinePlea(queryEnvelope);
 
@@ -476,7 +485,7 @@ public class SjpQueryViewTest {
 
         final JsonObject offenceData = Json.createObjectBuilder()
                 .add("title", "Offence title").build();
-        when(referenceDataService.getOffenceData(offenceCode)).thenReturn(Optional.of(offenceData));
+        when(referenceDataService.getOffenceData(offenceCode)).thenReturn(of(offenceData));
 
         final JsonEnvelope response = sjpQueryView.findDefendantsOnlinePlea(queryEnvelope);
 
@@ -563,6 +572,54 @@ public class SjpQueryViewTest {
                                 withJsonPath("$.defendantDetailsUpdates[0].addressUpdated", equalTo(true)),
                                 withJsonPath("$.defendantDetailsUpdates[0].updatedOn", equalTo(updatedOn))
                         ))));
+    }
+
+    @Test
+    public void shouldGetNotGuiltyPleaCases() {
+        final String prosecutingAuthority = "TFL";
+        ZonedDateTime pleaDate = ZonedDateTime.parse("2018-03-20T18:14:29.894Z");
+
+        final JsonObject casesJson = buildNotGuiltyPleaCases(pleaDate);
+
+        when(caseService.buildNotGuiltyPleaCasesView(prosecutingAuthority, 1, 1)).thenReturn(casesJson);
+
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataWithRandomUUID("sjp.query.not-guilty-plea-cases"))
+                .withPayloadOf(prosecutingAuthority, "prosecutingAuthority")
+                .withPayloadOf(1, "pageSize")
+                .withPayloadOf(1, "pageNumber")
+                .build();
+
+        final JsonEnvelope responseEnvelope = sjpQueryView.getNotGuiltyPleaCases(queryEnvelope);
+
+        assertThat(responseEnvelope.metadata().name(), is("sjp.query.not-guilty-plea-cases"));
+
+        assertThat(responseEnvelope.payloadAsJsonObject().toString(),
+                isJson(Matchers.allOf(
+                        withJsonPath("results", is(1)),
+                        withJsonPath("pageCount", is(1)),
+                        withJsonPath("cases[0].id", is(CASE_ID.toString())),
+                        withJsonPath("cases[0].urn", is(URN)),
+                        withJsonPath("cases[0].firstName", is("Hakan")),
+                        withJsonPath("cases[0].lastName", is("Kurtulus")),
+                        withJsonPath("cases[0].pleaDate", is(pleaDate.toString())),
+                        withJsonPath("cases[0].prosecutingAuthority", is("Transport for London")),
+                        withJsonPath("cases[0].caseManagementStatus", is(IN_PROGRESS.name())))));
+    }
+
+    private JsonObject buildNotGuiltyPleaCases(final ZonedDateTime pleaDate) {
+        return createObjectBuilder()
+                .add("results", 1)
+                .add("pageCount", 1)
+                .add("cases", createArrayBuilder().add(createObjectBuilder()
+                        .add("id", CASE_ID.toString())
+                        .add("urn", URN)
+                        .add("firstName", "Hakan")
+                        .add("lastName", "Kurtulus")
+                        .add("pleaDate", pleaDate.toString())
+                        .add("prosecutingAuthority", "Transport for London")
+                        .add("caseManagementStatus", IN_PROGRESS.name())))
+                .build();
     }
 
     private OnlinePlea stubOnlinePlea(final UUID caseId, final UUID defendantId, final UUID offenceId) {

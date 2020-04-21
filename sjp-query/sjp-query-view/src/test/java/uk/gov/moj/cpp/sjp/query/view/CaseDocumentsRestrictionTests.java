@@ -36,6 +36,8 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import javax.json.JsonObject;
+
 @RunWith(MockitoJUnitRunner.class)
 public class CaseDocumentsRestrictionTests {
 
@@ -56,6 +58,10 @@ public class CaseDocumentsRestrictionTests {
                         .add("caseId", caseId.toString())
                         .build());
 
+        JsonObject prosecutorPayload = createObjectBuilder()
+                .add("fullName", "Transport for London")
+                .add("policeFlag", false)
+                .build();
 
         final CaseView caseView = new CaseView(CaseDetailBuilder.aCase()
                 .withCaseId(caseId)
@@ -64,7 +70,7 @@ public class CaseDocumentsRestrictionTests {
                                 .aDefendantDetail()
                                 .build())
                 .build(),
-                "Transport for London");
+                prosecutorPayload);
         when(caseService.findCaseAndFilterOtherAndFinancialMeansDocuments(caseId.toString()))
                 .thenReturn(caseView);
 

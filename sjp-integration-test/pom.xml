@@ -14,9 +14,7 @@
 
     <properties>
         <jboss-logging.version>3.3.1.Final</jboss-logging.version>
-
         <skip.integration.tests>true</skip.integration.tests>
-
         <jsonpath.version>2.4.0</jsonpath.version>
     </properties>
 
@@ -280,7 +278,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <skip.integration.tests>false</skip.integration.tests>
+                <skip.integration.tests>true</skip.integration.tests>
             </properties>
             <build>
                 <plugins>

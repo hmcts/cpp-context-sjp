@@ -1,19 +1,25 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
 import static com.google.common.collect.Iterables.isEmpty;
+import static java.lang.Math.ceil;
 import static java.util.Arrays.asList;
+import static java.util.Comparator.comparingInt;
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
+import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
@@ -22,6 +28,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
+import uk.gov.moj.cpp.sjp.query.view.response.CaseNotGuiltyPleaView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSummaryView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
@@ -43,6 +50,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -50,6 +58,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 
 import com.google.common.collect.Sets;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.deltaspike.data.api.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +85,9 @@ public class CaseService {
 
     @Inject
     private ReferenceDataService referenceDataService;
+
+    @Inject
+    private ListToJsonArrayConverter<CaseNotGuiltyPleaView> listToJsonArrayConverter;
 
     /**
      * Find case by id.
@@ -162,7 +174,7 @@ public class CaseService {
         try {
             final CaseDetail caseDetail = caseRepository.findByMaterialId(materialId);
             if (caseDetail != null) {
-                final ProsecutingAuthority prosecutingAuthority = caseDetail.getProsecutingAuthority();
+                final String prosecutingAuthority = caseDetail.getProsecutingAuthority();
                 searchCaseByMaterialIdView = new SearchCaseByMaterialIdView(caseDetail.getId(), prosecutingAuthority);
             } else {
                 searchCaseByMaterialIdView = new SearchCaseByMaterialIdView(null, null);
@@ -205,13 +217,13 @@ public class CaseService {
 
     private CaseView getCaseView(CaseDetail caseDetail) {
         if (null != caseDetail) {
-            final String prosecutingAuthority = caseDetail.getProsecutingAuthority().name();
-            return getProsecutorDetails(prosecutingAuthority)
-                    .map(prosecutor -> new CaseView(caseDetail, prosecutor.getString("fullName")))
-                    .orElse(new CaseView(caseDetail, null));
+            return getProsecutorDetails(caseDetail.getProsecutingAuthority())
+                    .map(object -> new CaseView(caseDetail, object))
+                    .orElseGet(() -> new CaseView(caseDetail, null));
         }
         return null;
     }
+
 
     private Optional<JsonObject> getProsecutorDetails(final String prosecutingAuthority) {
         return referenceDataService.getProsecutorsByProsecutorCode(prosecutingAuthority)
@@ -275,7 +287,55 @@ public class CaseService {
     }
 
     public Optional<CaseDetail> getCase(final UUID caseId) {
-        return Optional.ofNullable(caseRepository.findBy(caseId));
+        return ofNullable(caseRepository.findBy(caseId));
+    }
+
+    public JsonObject buildNotGuiltyPleaCasesView(final String prosecutingAuthority, int pageSize, int pageNumber) {
+
+        final Map<String, String> allProsecutors = getAllProsecutorsMap();
+        final List<CaseNotGuiltyPlea> results = StringUtils.isEmpty(prosecutingAuthority)
+                ? caseRepository.findCasesNotGuiltyPlea()
+                : caseRepository.findCasesNotGuiltyPleaByProsecutingAuthority(prosecutingAuthority);
+
+        final int offset = pageSize * (pageNumber - 1);
+        final int totalCount = results.size();
+        final int pageCount = (int) ceil((double) totalCount / pageSize);
+
+        final List<CaseNotGuiltyPleaView> casesNotGuiltyPleaView = results.stream()
+                .skip(offset)
+                .limit(pageSize)
+                .map(caseNotGuiltyPlea -> new CaseNotGuiltyPleaView(caseNotGuiltyPlea.getId(),
+                        caseNotGuiltyPlea.getUrn(),
+                        caseNotGuiltyPlea.getPleaDate(),
+                        caseNotGuiltyPlea.getFirstName(),
+                        caseNotGuiltyPlea.getLastName(),
+                        allProsecutors.get(caseNotGuiltyPlea.getProsecutingAuthority()),
+                        ofNullable(caseNotGuiltyPlea.getCaseManagementStatus()).orElse(CaseManagementStatus.NOT_STARTED)
+                    ))
+                .collect(toList());
+
+        return buildResponsePayload(casesNotGuiltyPleaView, totalCount, pageCount);
+
+    }
+
+    private JsonObject buildResponsePayload(final List<CaseNotGuiltyPleaView> casesNotGuiltyPlea,
+                                            final int totalCount,
+                                            final int pageCount) {
+        final JsonArray convertedCases = listToJsonArrayConverter.convert(casesNotGuiltyPlea);
+        return createObjectBuilder()
+                .add("results", totalCount)
+                .add("pageCount", pageCount)
+                .add("cases", convertedCases)
+                .build();
+    }
+
+    public Map<String, String> getAllProsecutorsMap() {
+        return referenceDataService.getAllProsecutors().map(allProsecutors -> allProsecutors.getValuesAs(JsonObject.class).stream()
+                .sorted(comparingInt(prosecutor -> prosecutor.getInt("sequenceNumber")))
+                .collect(toMap(prosecutorJson -> prosecutorJson.getString("shortName"),
+                        prosecutorJson -> prosecutorJson.getString("fullName"),
+                        (existingValue, newValue) -> newValue))
+        ).orElse(Collections.emptyMap());
     }
 
     private void filterOtherAndFinancialMeansDocuments(Collection<CaseDocumentView> caseDocumentsView) {
@@ -328,12 +388,12 @@ public class CaseService {
 
     private Optional<String> getTown(final PendingCaseToPublishPerOffence pendingCase) {
         final String town = isNotEmpty(pendingCase.getAddressLine5()) ? pendingCase.getAddressLine4() : pendingCase.getAddressLine3();
-        return Optional.ofNullable(town);
+        return ofNullable(town);
     }
 
     private Optional<String> getCounty(final PendingCaseToPublishPerOffence pendingCase) {
         final String county = isNotEmpty(pendingCase.getAddressLine5()) ? pendingCase.getAddressLine5() : pendingCase.getAddressLine4();
-        return Optional.ofNullable(county);
+        return ofNullable(county);
     }
 
     private String getPostcode(final PendingCaseToPublishPerOffence pendingCaseToPublishWithAnyOffence) {

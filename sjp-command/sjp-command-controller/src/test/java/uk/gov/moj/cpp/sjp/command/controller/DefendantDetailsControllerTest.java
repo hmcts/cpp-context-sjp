@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.command.controller;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -63,7 +64,7 @@ public class DefendantDetailsControllerTest {
 
     @Before
     public void before() {
-        when(referenceDataService.getEnforcementArea(POSTCODE)).thenReturn(enforcementAreaPayload);
+        when(referenceDataService.getEnforcementArea(POSTCODE)).thenReturn(of(enforcementAreaPayload));
     }
 
     public void after() {
@@ -77,7 +78,7 @@ public class DefendantDetailsControllerTest {
         final JsonEnvelope jsonEnvelope = envelopeFrom(metadata, defendantDetailsPayload);
         final String REGION = "SUSSEX";
         final JsonObject localJusticeAreasPayload = getLocalJusticeAreasPayload(REGION, NATIONAL_COURTCODE);
-        when(referenceDataService.getLocalJusticeAreas(NATIONAL_COURTCODE)).thenReturn(localJusticeAreasPayload);
+        when(referenceDataService.getLocalJusticeAreas(NATIONAL_COURTCODE)).thenReturn(of(localJusticeAreasPayload));
 
         //when
         defendantDetailsController.updateDefendantDetails(jsonEnvelope);
@@ -99,7 +100,7 @@ public class DefendantDetailsControllerTest {
         final Metadata metadata = metadataWithRandomUUID(COMMAND_NAME).withUserId(userId).build();
         final JsonEnvelope jsonEnvelope = envelopeFrom(metadata, defendantDetailsPayload);
         final JsonObject localJusticeAreasPayload = getLocalJusticeAreasPayload(null, NATIONAL_COURTCODE);
-        when(referenceDataService.getLocalJusticeAreas(NATIONAL_COURTCODE)).thenReturn(localJusticeAreasPayload);
+        when(referenceDataService.getLocalJusticeAreas(NATIONAL_COURTCODE)).thenReturn(of(localJusticeAreasPayload));
 
         //when
         defendantDetailsController.updateDefendantDetails(jsonEnvelope);

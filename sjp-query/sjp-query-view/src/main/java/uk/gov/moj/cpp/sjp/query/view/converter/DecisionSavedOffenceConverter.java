@@ -4,6 +4,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ADDITIONAL_POINTS_REASON;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ADJOURN_TO;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.AMOUNT;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.BACK_DUTY;
@@ -13,13 +14,20 @@ import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COSTS;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COSTS_AND_SURCHARGE;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISCHARGE_FOR;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISCHARGE_TYPE;
+import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISQUALIFICATION;
+import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISQUALIFICATION_PERIOD;
+import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISQUALIFICATION_PERIOD_UNIT;
+import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISQUALIFICATION_PERIOD_VALUE;
+import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISQUALIFICATION_TYPE;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.EXCISE_PENALTY;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.FINE;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.FINE_TRANSFERRED_TO;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.INSTALLMENTS;
+import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.LICENCE_ENDORSEMENT;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.LUMP_SUM;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.NATIONAL_COURT_CODE;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.NATIONAL_COURT_NAME;
+import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.NOTIONAL_PENALTY_POINTS;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.NO_COMPENSATION_REASON;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.OFFENCE_DECISION_INFORMATION;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.OFFENCE_ID;
@@ -27,6 +35,8 @@ import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PAYMENT;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PAYMENT_TERMS;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PAYMENT_TYPE;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PAY_BY_DATE;
+import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PENALTY_POINTS_IMPOSED;
+import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PENALTY_POINTS_REASON;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PERIOD;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REASON_FOR_DEDUCTING_FROM_BENEFITS;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REASON_FOR_NO_COSTS;
@@ -48,6 +58,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.Installments;
 import uk.gov.moj.cpp.sjp.persistence.entity.LumpSum;
 import uk.gov.moj.cpp.sjp.persistence.entity.Payment;
 import uk.gov.moj.cpp.sjp.persistence.entity.PaymentTerms;
+import uk.gov.moj.cpp.sjp.query.view.response.DisqualificationPeriodView;
 import uk.gov.moj.cpp.sjp.query.view.response.FinancialImpositionView;
 import uk.gov.moj.cpp.sjp.query.view.response.OffenceDecisionView;
 
@@ -84,11 +95,50 @@ public class DecisionSavedOffenceConverter {
         }
         checkForFineAndCompensation(offenceDecisionView, offenceDecisionBuilder);
         checkForBackDutyAndExcisePenalty(offenceDecisionView, offenceDecisionBuilder);
+        checkForEndorsementAndDisqualification(offenceDecisionView, offenceDecisionBuilder);
         if(nonNull(offenceDecisionView.getOffenceId()) || nonNull(offenceDecisionView.getVerdict())) {
             offenceDecisionBuilder.add(OFFENCE_DECISION_INFORMATION, createArrayBuilder()
                     .add(covertOffenceDecisionInformation(offenceDecisionView)));
         }
         return offenceDecisionBuilder.build();
+    }
+
+    private void checkForEndorsementAndDisqualification(final OffenceDecisionView offenceDecisionView, final JsonObjectBuilder offenceDecisionBuilder) {
+        if(nonNull(offenceDecisionView.getLicenceEndorsement())){
+            offenceDecisionBuilder.add(LICENCE_ENDORSEMENT, offenceDecisionView.getLicenceEndorsement());
+        }
+
+        if(nonNull(offenceDecisionView.getPenaltyPointsImposed())){
+            offenceDecisionBuilder.add(PENALTY_POINTS_IMPOSED, offenceDecisionView.getPenaltyPointsImposed());
+        }
+
+        if(nonNull(offenceDecisionView.getPenaltyPointsReason())){
+            offenceDecisionBuilder.add(PENALTY_POINTS_REASON, offenceDecisionView.getPenaltyPointsReason().name());
+        }
+
+        if(nonNull(offenceDecisionView.getAdditionalPointsReason())){
+            offenceDecisionBuilder.add(ADDITIONAL_POINTS_REASON, offenceDecisionView.getAdditionalPointsReason());
+        }
+
+        if(nonNull(offenceDecisionView.getDisqualification())){
+            offenceDecisionBuilder.add(DISQUALIFICATION, offenceDecisionView.getDisqualification());
+        }
+
+        if(nonNull(offenceDecisionView.getDisqualificationType())){
+            offenceDecisionBuilder.add(DISQUALIFICATION_TYPE, offenceDecisionView.getDisqualificationType().name());
+        }
+
+        if(nonNull(offenceDecisionView.getDisqualificationPeriod())){
+            final DisqualificationPeriodView disqualificationPeriod = offenceDecisionView.getDisqualificationPeriod();
+            offenceDecisionBuilder.add(DISQUALIFICATION_PERIOD, createObjectBuilder()
+                    .add(DISQUALIFICATION_PERIOD_VALUE, disqualificationPeriod.getValue())
+                    .add(DISQUALIFICATION_PERIOD_UNIT, disqualificationPeriod.getUnit().name())
+            );
+        }
+
+        if(nonNull(offenceDecisionView.getNotionalPenaltyPoints())){
+            offenceDecisionBuilder.add(NOTIONAL_PENALTY_POINTS, offenceDecisionView.getNotionalPenaltyPoints());
+        }
     }
 
     private void checkForBackDutyAndExcisePenalty(OffenceDecisionView offenceDecisionView, JsonObjectBuilder offenceDecisionBuilder) {

@@ -15,6 +15,7 @@ import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 import static uk.gov.moj.sjp.it.Constants.CASE_ADJOURNED_TO_LATER_SJP_EVENT;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SET_PLEAS;
@@ -25,6 +26,7 @@ import static uk.gov.moj.sjp.it.helper.SetPleasHelper.requestSetPleas;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyCaseStatus;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyEventEmittedForSetPleas;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyUpdatedOffencesWithPleas;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.*;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
@@ -34,9 +36,10 @@ import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 
+import com.google.common.collect.Sets;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
@@ -57,6 +60,7 @@ import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.DecisionHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
+import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.time.LocalDate;
@@ -98,7 +102,8 @@ public class SetPleasIT extends BaseIntegrationTest {
         stubAssignmentReplicationCommands();
         stubDefaultCourtByCourtHouseOUCodeQuery();
 
-        databaseCleaner.cleanAll();
+        databaseCleaner.cleanViewStore();
+
         final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder.withDefaults();
         defendantId = defendantBuilder.getId();
         stubEnforcementAreaByPostcode(defendantBuilder.getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
@@ -107,6 +112,8 @@ public class SetPleasIT extends BaseIntegrationTest {
         aCase = createCase(caseId, defendantBuilder, offence1Id, offence2Id, offence3Id, postingDate);
         final ProsecutingAuthority prosecutingAuthority = aCase.getProsecutingAuthority();
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
+        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
         startSession(sessionId, USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
 
@@ -342,6 +349,44 @@ public class SetPleasIT extends BaseIntegrationTest {
         //Then
         final CaseUpdateRejected caseUpdateRejected = eventListener.popEventPayload(CaseUpdateRejected.class);
         assertThat(caseUpdateRejected.getReason(), is(CaseUpdateRejected.RejectReason.PLEA_REJECTED_AS_FINAL_DECISION_TAKEN_FOR_OFFENCE));
+    }
+
+    @Test
+    public void shouldRejectSetPleaOnPostConvictionAdjournment() {
+
+        //Given
+        pleaTypesByOffence.clear();
+        final LocalDate adjournTo = now().plusDays(10);
+        final User user = new User("John", "Smith", USER_ID);
+
+        final Adjourn adjournDecision = new Adjourn(null, singletonList(createOffenceDecisionInformation(offence1Id, PROVED_SJP)), "More info needed", adjournTo);
+        final Dismiss dismiss1 = new Dismiss(null, createOffenceDecisionInformation(offence2Id, FOUND_NOT_GUILTY));
+        final Dismiss dismiss2 = new Dismiss(null, createOffenceDecisionInformation(offence3Id, FOUND_NOT_GUILTY));
+        final List<? extends OffenceDecision> offenceDecisions = asList(adjournDecision, dismiss1, dismiss2);
+
+        final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, offenceDecisions, null);
+        stubEnforcementAreaByPostcode(aCase.getDefendantBuilder().getAddressBuilder().getPostcode(), Integer.toString((new Random()).nextInt(4)), "Any Court");
+
+        eventListener
+                .subscribe(DecisionSaved.EVENT_NAME)
+                .subscribe(CaseUpdateRejected.EVENT_NAME)
+                .run(() -> DecisionHelper.saveDecision(decision));
+
+        //When
+        requestSetPleas(
+                caseId,
+                eventListener,
+                true,
+                false,
+                true,
+                null,
+                false,
+                singletonList(Triple.of(offence1Id, defendantId, GUILTY)),
+                PleasSet.EVENT_NAME, InterpreterUpdatedForDefendant.EVENT_NAME);
+
+        //Then
+        final CaseUpdateRejected caseUpdateRejected = eventListener.popEventPayload(CaseUpdateRejected.class);
+        assertThat(caseUpdateRejected.getReason(), is(CaseUpdateRejected.RejectReason.OFFENCE_HAS_CONVICTION));
     }
 
     @Test

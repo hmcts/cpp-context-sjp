@@ -38,6 +38,12 @@
         },
         "region": {
           "type": "string"
+        },
+        "driverNumber": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/dvlaDriverLicence"
+        },
+        "driverLicenceDetails" : {
+          "type" : "string"
         }
       },
       "required": [
@@ -128,7 +134,6 @@
         "phone": {
           "type": "string"
         },
-
         "address": {
           "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/address.json"
         }

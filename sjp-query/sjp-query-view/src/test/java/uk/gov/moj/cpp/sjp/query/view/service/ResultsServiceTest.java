@@ -21,7 +21,6 @@ import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.moj.cpp.sjp.domain.Employer;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.AdjournOffenceDecision;
@@ -235,6 +234,8 @@ public class ResultsServiceTest {
                 LocalDate.now().minusYears(20),
                 Gender.MALE,
                 "NINO",
+                "DriverLicense",
+                null,
                 address,
                 null,
                 null);
@@ -247,7 +248,7 @@ public class ResultsServiceTest {
         CaseDetail caseDetail = new CaseDetail(CASE_ID);
         caseDetail.setUrn("TFL75947ZQ8UE");
         caseDetail.setDateTimeCreated(ZonedDateTime.now());
-        caseDetail.setProsecutingAuthority(ProsecutingAuthority.DVLA);
+        caseDetail.setProsecutingAuthority("DVLA");
         caseDetail.setCompleted(false);
         caseDetail.setAssigneeId(null);
         caseDetail.setCosts(BigDecimal.valueOf(20));
@@ -256,12 +257,17 @@ public class ResultsServiceTest {
         caseDetail.setCaseStatus(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION);
         caseDetail.setListedInCriminalCourts(true);
 
-        caseDetail.setProsecutingAuthority(ProsecutingAuthority.DVLA);
+        caseDetail.setProsecutingAuthority("DVLA");
         caseDetail.setDefendant(defendantDetail);
 
         caseDetail.setCaseDecisions(caseDecisionList);
 
-        caseView = new CaseView(caseDetail, "DVLA");
+        JsonObject prosecutorPayload = createObjectBuilder()
+                .add("fullName", "DVLA")
+                .add("policeFlag", false)
+                .build();
+
+        caseView = new CaseView(caseDetail, prosecutorPayload);
     }
 
     private CaseDecision getAdjournOffenceDecision() {
@@ -270,7 +276,7 @@ public class ResultsServiceTest {
         caseDecision.setSavedAt(DECISION_SAVED_AT1);
         caseDecision.setSession(new Session(SESSION_ID1, null, null, null, ljaNationalCourtCode, null, null));
         caseDecision.setCaseId(CASE_ID);
-        OffenceDecision adjournOffenceDecision = new AdjournOffenceDecision(OFFENCE_ID, DECISION_ID1, "No sufficient information yet", LocalDate.of(2020,02,18 ) ,FOUND_NOT_GUILTY);
+        OffenceDecision adjournOffenceDecision = new AdjournOffenceDecision(OFFENCE_ID, DECISION_ID1, "No sufficient information yet", LocalDate.of(2020,02,18 ) ,FOUND_NOT_GUILTY, null);
         caseDecision.setOffenceDecisions(asList(adjournOffenceDecision));
         return caseDecision;
     }
@@ -289,7 +295,8 @@ public class ResultsServiceTest {
                 UUID.fromString("809f7aac-d285-43a5-9fb1-3a894db71530"),
                 10,
                 "",
-                NO_VERDICT);
+                NO_VERDICT,
+                null);
         caseDecision.setOffenceDecisions(asList(referredToOpenCourt));
         return caseDecision;
     }

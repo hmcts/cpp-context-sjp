@@ -77,6 +77,15 @@
     },
     "backDutyOffence": {
       "type": "boolean"
+    },
+    "conviction" : {
+      "$ref": "http://cpp.moj.gov.uk/core/sjp/verdict/verdict-type.json"
+    },
+    "convictionDate" : {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
+    "endorsable" : {
+      "type": "boolean"
     }
   },
   "additionalProperties": false

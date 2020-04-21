@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 
 import uk.gov.moj.cpp.sjp.domain.Offence;
 import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
@@ -56,7 +55,7 @@ public class SjpCaseCreatedToCaseTest {
             compensation);
 
     @SuppressWarnings("deprecation")
-    private static final SjpCaseCreated event = new SjpCaseCreated(caseId, urn, TFL, defendantId,
+    private static final SjpCaseCreated event = new SjpCaseCreated(caseId, urn, "TFL", defendantId,
             numPreviousConvictions, costs, postingDate, singletonList(offence), createdOn);
 
     @Spy

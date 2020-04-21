@@ -51,10 +51,10 @@ public class CaseNoteHelper {
         return JsonHelper.getJsonObject(response.readEntity(String.class));
     }
 
-    public static JsonObject pollForCaseNotes(final UUID caseId, final Matcher<? super ReadContext> matcher) {
+    public static JsonObject pollForCaseNotes(final UUID caseId, final Matcher<? super ReadContext> matcher, final UUID userId) {
         final String url = String.format("/cases/%s/notes", caseId);
         final RequestParamsBuilder requestParams = requestParams(getReadUrl(url), "application/vnd.sjp.query.case-notes+json")
-                .withHeader(HeaderConstants.USER_ID, randomUUID());
+                .withHeader(HeaderConstants.USER_ID, userId);
         return pollWithDefaultsUntilResponseIsJson(requestParams.build(), matcher);
     }
 }

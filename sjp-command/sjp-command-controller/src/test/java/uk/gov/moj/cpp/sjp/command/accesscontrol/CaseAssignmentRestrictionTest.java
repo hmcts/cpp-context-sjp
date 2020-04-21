@@ -1,0 +1,36 @@
+package uk.gov.moj.cpp.sjp.command.accesscontrol;
+
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.accesscontrol.test.utils.BaseDroolsAccessControlTest;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.json.JsonObject;
+
+import org.junit.Test;
+
+public class CaseAssignmentRestrictionTest extends BaseDroolsAccessControlTest {
+    @Override
+    protected Map<Class, Object> getProviderMocks() {
+        return new HashMap<>();
+    }
+
+    @Test
+    public void shouldAllowAddCaseAssignmentRestriction() {
+        final JsonObject inputPayload = createObjectBuilder()
+                .add("prosecutingAuthority", "TVL")
+                .add("includeOnly", createArrayBuilder().add("1234"))
+                .add("exclude", createArrayBuilder())
+                .build();
+        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID("sjp.command.controller.add-case-assignment-restriction").build(), inputPayload);
+        final Action action = new Action(envelope);
+        assertSuccessfulOutcome(executeRulesWith(action));
+    }
+}

@@ -16,8 +16,8 @@ import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.ContactDetails;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
+import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
@@ -94,11 +94,12 @@ public class CaseAggregateState implements AggregateState {
     private final Map<UUID, String> employmentStatusByDefendantId = new HashMap<>();
     private boolean employerDetailsUpdated;
 
-    private ProsecutingAuthority prosecutingAuthority;
+    private String prosecutingAuthority;
 
     private final Set<WithdrawalRequestsStatus> withdrawalRequests = new HashSet<>();
 
     private final Map<UUID, OffenceDecision> offenceDecisionsByOffenceId = new HashMap<>();
+    private final Map<UUID, ZonedDateTime> offenceConvictionDates = new HashMap<>();
 
     private Set<UUID> sessionIds = new HashSet<>();
 
@@ -107,6 +108,9 @@ public class CaseAggregateState implements AggregateState {
     private LocalDate datesToAvoidExpirationDate;
     private LocalDate adjournedTo;
     private String defendantRegion;
+    private String defendantDriverNumber;
+    private String defendantDriverLicenceDetails;
+    private boolean setAside;
 
     public UUID getCaseId() {
         return caseId;
@@ -328,11 +332,11 @@ public class CaseAggregateState implements AggregateState {
         return documentCountByDocumentType;
     }
 
-    public ProsecutingAuthority getProsecutingAuthority() {
+    public String getProsecutingAuthority() {
         return prosecutingAuthority;
     }
 
-    public void setProsecutingAuthority(final ProsecutingAuthority prosecutingAuthority) {
+    public void setProsecutingAuthority(final String prosecutingAuthority) {
         this.prosecutingAuthority = prosecutingAuthority;
     }
 
@@ -354,6 +358,22 @@ public class CaseAggregateState implements AggregateState {
 
     public void setDefendantRegion(String region) {
         this.defendantRegion = region;
+    }
+
+    public String getDefendantDriverNumber() {
+        return defendantDriverNumber;
+    }
+
+    public void setDefendantDriverNumber(String driverNumber) {
+        this.defendantDriverNumber = driverNumber;
+    }
+
+    public String getDefendantDriverLicenceDetails() {
+        return defendantDriverLicenceDetails;
+    }
+
+    public void setDefendantDriverLicenceDetails(String driverLicenseDetails) {
+        this.defendantDriverLicenceDetails = driverLicenseDetails;
     }
 
     public boolean hasDefendant(final UUID defendantId) {
@@ -615,6 +635,13 @@ public class CaseAggregateState implements AggregateState {
         return datesToAvoidExpirationDate;
     }
 
+    public boolean isPostConviction() {
+        return !this.offenceConvictionDates.isEmpty() &&
+                this.offenceConvictionDates.values()
+                        .stream()
+                        .anyMatch(Objects::nonNull);
+    }
+
     public void deleteFinancialMeansData() {
 
         final List<UUID> uuids = this.caseDocuments.entrySet().stream()
@@ -627,9 +654,6 @@ public class CaseAggregateState implements AggregateState {
         uuids.stream().forEach(this.caseDocuments::remove);
     }
 
-    public boolean isDefendantDetailsUpdatedBy(final PersonalDetails personalDetails) {
-        return ofNullable(getDefendantDetailsUpdateSummary(personalDetails, false, null)).isPresent();
-    }
 
 
     /**
@@ -663,6 +687,14 @@ public class CaseAggregateState implements AggregateState {
 
         if (!StringUtils.equals(personalDetails.getRegion(), getDefendantRegion())) {
             builder.withRegion(personalDetails.getRegion());
+        }
+
+        if (!StringUtils.equals(personalDetails.getDriverNumber(), getDefendantDriverNumber())) {
+            builder.withDriverNumber(personalDetails.getDriverNumber());
+        }
+
+        if (!StringUtils.equals(personalDetails.getDriverLicenceDetails(), getDefendantDriverLicenceDetails())) {
+            builder.withDriverLicenceDetails(personalDetails.getDriverLicenceDetails());
         }
 
         if (builder.containsUpdate()) {
@@ -705,5 +737,45 @@ public class CaseAggregateState implements AggregateState {
 
     public Set<UUID> getSessionIds() {
         return unmodifiableSet(sessionIds);
+    }
+
+    public void updateOffenceConvictionDates(final ZonedDateTime decisionSavedAt, final List<OffenceDecision> offenceDecisions) {
+        final boolean setAsideDecision = offenceDecisions
+                .stream()
+                .allMatch(e -> e.getType().equals(DecisionType.SET_ASIDE));
+
+        if (setAsideDecision) {
+            this.clearOffenceConvictionDates();
+        } else {
+            offenceDecisions.forEach(
+                    offencesDecision -> offencesDecision.getOffenceIds().forEach(
+                            offenceId -> {
+                                if (offencesDecision.isConviction(offenceId)) {
+                                    this.offenceConvictionDates.put(offenceId, decisionSavedAt);
+                                }
+                            }
+                    )
+            );
+        }
+    }
+
+    public boolean offenceHasPreviousConviction(final UUID offenceId) {
+        return offenceConvictionDates.containsKey(offenceId);
+    }
+
+    public ZonedDateTime getOffencePreviousConvictionDate(final UUID offenceId) {
+        return offenceConvictionDates.get(offenceId);
+    }
+
+    public void clearOffenceConvictionDates() {
+        offenceConvictionDates.clear();
+    }
+
+    public boolean isSetAside() {
+        return setAside;
+    }
+
+    public void setSetAside(final boolean setAside) {
+        this.setAside = setAside;
     }
 }

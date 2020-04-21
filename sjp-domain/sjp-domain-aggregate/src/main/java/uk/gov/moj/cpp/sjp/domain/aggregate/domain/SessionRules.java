@@ -13,7 +13,7 @@ public final class SessionRules {
     private SessionRules(){}
 
     public static Priority getPriority(final CaseAggregateState state) {
-        if (state.withdrawalRequestedOnAllOffences()) { // for multiple offences
+        if (state.isSetAside() || state.withdrawalRequestedOnAllOffences()) { // for multiple offences
             return HIGH;
         }
         if (!state.getOffenceIdsWithPleas().isEmpty()) {
@@ -22,7 +22,12 @@ public final class SessionRules {
         return LOW;
     }
 
-    public static SessionType getSessionType(final CaseReadinessReason readinessReason) {
+    public static SessionType getSessionType(final CaseReadinessReason readinessReason,
+                                             final boolean postConviction,
+                                             final boolean setAside) {
+        if (setAside || postConviction) {
+            return SessionType.MAGISTRATE;
+        }
         final SessionType sessionType;
         switch (readinessReason) {
             case PIA:

@@ -5,6 +5,7 @@
     "ADJOURNMENT",
     "DECISION",
     "LISTING",
-    "CASE"
+    "CASE",
+    "CASE_MANAGEMENT"
   ]
 }

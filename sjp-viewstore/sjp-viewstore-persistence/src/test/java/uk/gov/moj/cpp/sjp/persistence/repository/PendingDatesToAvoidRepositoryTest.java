@@ -3,8 +3,6 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
 
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.builder.DatesToAvoidTestData;
@@ -39,31 +37,31 @@ public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalTest {
     public void set() {
         testData = Arrays.asList(
                 //TFL combinations
-                new DatesToAvoidTestData(TFL, null, false, false,
+                new DatesToAvoidTestData("TFL", null, false, false,
                         ZonedDateTime.now()),
-                new DatesToAvoidTestData(TFL, null, true, false,
+                new DatesToAvoidTestData("TFL", null, true, false,
                         ZonedDateTime.now()),
-                new DatesToAvoidTestData(TFL, null, false, true,
+                new DatesToAvoidTestData("TFL", null, false, true,
                         ZonedDateTime.now()),
-                new DatesToAvoidTestData(TFL, "Witness cannot do Thursdays", false, false,
+                new DatesToAvoidTestData("TFL", "Witness cannot do Thursdays", false, false,
                         ZonedDateTime.now()),
-                new DatesToAvoidTestData(TFL, null, false, false,
+                new DatesToAvoidTestData("TFL", null, false, false,
                         ZonedDateTime.now().minusDays(3)),
-                new DatesToAvoidTestData(TFL, null, false, false,
+                new DatesToAvoidTestData("TFL", null, false, false,
                         ZonedDateTime.now().minusDays(1)),
 
                 //TVL combinations
-                new DatesToAvoidTestData(TVL, null, false, false,
+                new DatesToAvoidTestData("TVL", null, false, false,
                         ZonedDateTime.now()),
-                new DatesToAvoidTestData(TVL, null, true, false,
+                new DatesToAvoidTestData("TVL", null, true, false,
                         ZonedDateTime.now()),
-                new DatesToAvoidTestData(TVL, null, false, true,
+                new DatesToAvoidTestData("TVL", null, false, true,
                         ZonedDateTime.now()),
-                new DatesToAvoidTestData(TVL, "Witness cannot do Thursdays", false, false,
+                new DatesToAvoidTestData("TVL", "Witness cannot do Thursdays", false, false,
                         ZonedDateTime.now()),
-                new DatesToAvoidTestData(TVL, null, false, false,
+                new DatesToAvoidTestData("TVL", null, false, false,
                         ZonedDateTime.now().minusDays(5)),
-                new DatesToAvoidTestData(TVL, null, false, false,
+                new DatesToAvoidTestData("TVL", null, false, false,
                         ZonedDateTime.now().minusDays(8))
         );
         testData.forEach(this::setupAndSaveDatesToAvoidData);
@@ -85,7 +83,7 @@ public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalTest {
     @Test
     public void shouldFindCasesPendingDatesToAvoidForTfl() {
         // WHEN
-        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(TFL);
+        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TFL");
 
         // THEN
         assertThat(results, hasSize(3));
@@ -97,7 +95,7 @@ public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalTest {
     @Test
     public void shouldFindCasesPendingDatesToAvoidForTvl() {
         // WHEN
-        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(TVL);
+        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TVL");
 
         // THEN
         assertThat(results, hasSize(3));
@@ -108,12 +106,12 @@ public class PendingDatesToAvoidRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldRemovePendingDatesToAvoid() {
-        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(TFL);
+        List<PendingDatesToAvoid> results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TFL");
         assertThat(results, hasSize(3));
 
         pendingDatesToAvoidRepository.removeByCaseId(testData.get(0).getCaseId());
 
-        results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid(TFL);
+        results = pendingDatesToAvoidRepository.findCasesPendingDatesToAvoid("TFL");
         assertThat(results, hasSize(2));
         assertThat(results.get(0).getCaseId(), equalTo(testData.get(4).getCaseId()));
         assertThat(results.get(1).getCaseId(), equalTo(testData.get(5).getCaseId()));

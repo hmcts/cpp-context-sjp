@@ -45,7 +45,7 @@ public class SjpReadyCasesQueryView {
                     builder.add("caseId", readyCase.getCaseId().toString())
                             .add("reason", readyCase.getReason().name())
                             .add("sessionType", readyCase.getSessionType().name())
-                            .add("prosecutingAuthority", readyCase.getProsecutionAuthority().name());
+                            .add("prosecutingAuthority", readyCase.getProsecutionAuthority());
 
                     readyCase.getAssigneeId().ifPresent(assignee -> builder.add("assigneeId", assignee.toString()));
                     return builder.build();

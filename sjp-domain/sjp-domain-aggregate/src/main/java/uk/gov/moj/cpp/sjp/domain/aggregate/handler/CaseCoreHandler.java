@@ -181,7 +181,7 @@ public class CaseCoreHandler {
         if (state.isCaseCompleted()) {
             streamBuilder.add(new CaseAssignmentRejected(CASE_COMPLETED));
         } else if (state.getAssigneeId() != null) {
-            checkIfCaseAlreadyAssignedOrAsigneeIdInvalid(assigneeId, state, streamBuilder);
+            checkIfCaseAlreadyAssignedOrAssigneeIdInvalid(assigneeId, state, streamBuilder);
         } else {
             streamBuilder.add(new CaseAssigned(state.getCaseId(), assigneeId, assignedAt, assignmentType));
         }
@@ -197,7 +197,7 @@ public class CaseCoreHandler {
         }
 
         final CaseReadinessReason caseReadinessReason = state.getReadinessReason();
-        final SessionType sessionType = SessionRules.getSessionType(caseReadinessReason);
+        final SessionType sessionType = SessionRules.getSessionType(caseReadinessReason, state.isPostConviction(), state.isSetAside());
         final CaseAssignmentType caseAssignmentType = sessionType == SessionType.MAGISTRATE ? MAGISTRATE_DECISION : DELEGATED_POWERS_DECISION;
 
         if (assigneeId.equals(state.getAssigneeId())) {
@@ -210,9 +210,9 @@ public class CaseCoreHandler {
         return Stream.of(new CaseUnassigned(state.getCaseId()), new CaseAssigned(state.getCaseId(), assigneeId, assignedAt, caseAssignmentType));
     }
 
-    private void checkIfCaseAlreadyAssignedOrAsigneeIdInvalid(final UUID assigneeId,
-                                                              final CaseAggregateState state,
-                                                              final Stream.Builder<Object> streamBuilder) {
+    private void checkIfCaseAlreadyAssignedOrAssigneeIdInvalid(final UUID assigneeId,
+                                                               final CaseAggregateState state,
+                                                               final Stream.Builder<Object> streamBuilder) {
 
         if (!state.getAssigneeId().equals(assigneeId)) {
             streamBuilder.add(new CaseAssignmentRejected(CASE_ASSIGNED_TO_OTHER_USER));
@@ -232,7 +232,7 @@ public class CaseCoreHandler {
                                                    final CaseAggregateState state) {
 
         return state.getReadinessReason() != readinessReason
-                ? Stream.of(new CaseMarkedReadyForDecision(state.getCaseId(), readinessReason, markedAt, getSessionType(readinessReason), getPriority(state)))
+                ? Stream.of(new CaseMarkedReadyForDecision(state.getCaseId(), readinessReason, markedAt, getSessionType(readinessReason, state.isPostConviction(), state.isSetAside()), getPriority(state)))
                 : Stream.of();
     }
 

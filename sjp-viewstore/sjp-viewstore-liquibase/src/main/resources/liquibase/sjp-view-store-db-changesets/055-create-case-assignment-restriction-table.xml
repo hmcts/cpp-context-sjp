@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="55" author="team/ATCM/resul.ceylan"
+               logicalFilePath="liquibase/sjp-view-store-db-changelog.xml">
+        <createTable tableName="case_assignment_restriction">
+            <column name="id" type="UUID">
+                <constraints unique="true" nullable="false" primaryKey="true"/>
+            </column>
+            <column name="prosecutor_oucode" type="TEXT"/>
+            <column name="include_only" type="jsonb">
+                <constraints nullable="false" />
+            </column>
+            <column name="exclude" type="jsonb">
+                <constraints nullable="false" />
+            </column>
+            <column name="date_time_created" type="datetime"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

@@ -27,6 +27,9 @@
     "driverNumber": {
       "type": "string"
     },
+    "driverLicenceDetails" : {
+      "type" : "string"
+    },
     "languageNeeds": {
       "type": "string"
     },

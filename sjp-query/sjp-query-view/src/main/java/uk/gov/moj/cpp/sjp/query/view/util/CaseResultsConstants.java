@@ -117,6 +117,17 @@ public class CaseResultsConstants {
     public static final String START_DATE = "startDate";
     public static final String WITHIN_DAYS = "withinDays";
     public static final String PAY_BY_DATE = "payByDate";
+
+    public static final String LICENCE_ENDORSEMENT = "licenceEndorsed";
+    public static final String PENALTY_POINTS_IMPOSED = "penaltyPointsImposed";
+    public static final String PENALTY_POINTS_REASON = "penaltyPointsReason";
+    public static final String ADDITIONAL_POINTS_REASON = "additionalPointsReason";
+    public static final String DISQUALIFICATION = "disqualification";
+    public static final String DISQUALIFICATION_TYPE = "disqualificationType";
+    public static final String DISQUALIFICATION_PERIOD = "disqualificationPeriod";
+    public static final String DISQUALIFICATION_PERIOD_VALUE = "value";
+    public static final String DISQUALIFICATION_PERIOD_UNIT = "unit";
+    public static final String NOTIONAL_PENALTY_POINTS = "notionalPenaltyPoints";
     
     public static final String FINANCIAL_COSTS_CODE = "FCOST";
     public static final String NO_COSTS_CODE = "NCOSTS";
@@ -131,6 +142,13 @@ public class CaseResultsConstants {
     public static final String RESERVE_TERMS_INSTALLMENTS_CODE = "RINSTL";
     public static final String APPLICATION_MADE_FOR_BENEFIT_DEDUCTIONS = "ABDC";
     public static final String ATTACHMENT_OF_EARNINGS_ORDER = "AEOC";
+
+    public static final String ENDORSEMENT_NO_POINTS = "LEN";
+    public static final String ENDORSEMENT_WITH_PENALTY_POINTS = "LEP";
+    public static final String ENDORSEMENT_WITH_ADDITIONAL_POINTS = "LEA";
+    public static final String DISQUALIFICATION_ORDINARY = "DDD";
+    public static final String POINTS_DISQUALIFICATION = "DDP";
+    public static final String OBLIGATORY_DISQUALIFICATION = "DDO";
 
     public static final String PROVED_SJP = "PROVED_SJP";
     public static final String PROVED_SJP_NAME = "provedSJP";

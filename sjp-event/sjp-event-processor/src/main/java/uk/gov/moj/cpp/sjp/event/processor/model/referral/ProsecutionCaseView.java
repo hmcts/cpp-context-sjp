@@ -12,19 +12,22 @@ public class ProsecutionCaseView {
     private final String statementOfFactsWelsh;
     private final ProsecutionCaseIdentifierView prosecutionCaseIdentifier;
     private final List<DefendantView> defendants;
+    private final String originatingOrganisation;
 
     public ProsecutionCaseView(final UUID id,
                                final String initiationCode,
                                final String statementOfFacts,
                                final String statementOfFactsWelsh,
                                final ProsecutionCaseIdentifierView prosecutionCaseIdentifier,
-                               final List<DefendantView> defendants) {
+                               final List<DefendantView> defendants,
+                               final String originatingOrganisation) {
         this.id = id;
         this.initiationCode = initiationCode;
         this.statementOfFacts = statementOfFacts;
         this.statementOfFactsWelsh = statementOfFactsWelsh;
         this.prosecutionCaseIdentifier = prosecutionCaseIdentifier;
         this.defendants = defendants;
+        this.originatingOrganisation = originatingOrganisation;
     }
 
     public UUID getId() {
@@ -49,6 +52,10 @@ public class ProsecutionCaseView {
 
     public List<DefendantView> getDefendants() {
         return defendants;
+    }
+
+    public String getOriginatingOrganisation() {
+        return originatingOrganisation;
     }
 
     @SuppressWarnings("squid:S1067")

@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.persistence.entity;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -29,9 +30,10 @@ public class ReferForCourtHearingDecision extends OffenceDecision {
     public ReferForCourtHearingDecision(final UUID offenceId, final UUID caseDecisionId,
                                         final UUID referralReasonId, final Integer estimatedHearingDuration,
                                         final String listingNotes,
-                                        final VerdictType verdict) {
+                                        final VerdictType verdict,
+                                        final LocalDate convictionDate) {
 
-        super(offenceId, caseDecisionId, DecisionType.REFER_FOR_COURT_HEARING, verdict);
+        super(offenceId, caseDecisionId, DecisionType.REFER_FOR_COURT_HEARING, verdict, convictionDate);
         this.referralReasonId = referralReasonId;
         this.estimatedHearingDuration = estimatedHearingDuration;
         this.listingNotes = listingNotes;

@@ -16,6 +16,7 @@ import static org.hamcrest.text.MatchesPattern.matchesPattern;
 import static org.junit.Assert.assertThat;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.ADJOURNMENT;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.CASE;
+import static uk.gov.justice.json.schemas.domains.sjp.NoteType.CASE_MANAGEMENT;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.DECISION;
 import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 import static uk.gov.moj.sjp.it.helper.CaseNoteHelper.addCaseNote;
@@ -29,7 +30,7 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.CreateCase;
 
 import java.util.UUID;
@@ -82,7 +83,7 @@ public class CaseNotesIT extends BaseIntegrationTest {
         final String note = "note";
 
         addCaseNote(caseId, prosecutor.getUserId(), note, CASE.toString(), FORBIDDEN);
-        getCaseNotes(caseId, prosecutor.getUserId(), FORBIDDEN);
+        getCaseNotes(caseId, prosecutor.getUserId(), OK);
 
         addCaseNote(caseId, courtAdmin.getUserId(), note, CASE.toString(), ACCEPTED);
         getCaseNotes(caseId, courtAdmin.getUserId(), OK);
@@ -115,7 +116,7 @@ public class CaseNotesIT extends BaseIntegrationTest {
         addCaseNote(caseId, legalAdviser.getUserId(), "note 2", DECISION.toString(), decisionId, ACCEPTED);
         addCaseNote(caseId, courtAdmin.getUserId(), "note 3", CASE.toString(), ACCEPTED);
 
-        final JsonObject notes = pollForCaseNotes(caseId, withJsonPath("$.notes.length()", is(3)));
+        final JsonObject notes = pollForCaseNotes(caseId, withJsonPath("$.notes.length()", is(3)), legalAdviser.getUserId());
 
         assertThat(notes.toString(), isJson(allOf(
                 withJsonPath("$.caseId", is(caseId.toString())),
@@ -155,6 +156,42 @@ public class CaseNotesIT extends BaseIntegrationTest {
                         )
                 ))
         )));
+    }
+
+    @Test
+    public void prosecutorShouldOnlySeeCaseManagementNotes(){
+        createCase(caseId);
+
+        final JsonObject initialNotes = getCaseNotes(caseId, legalAdviser.getUserId(), OK);
+        assertThat(initialNotes.toString(), isJson(allOf(
+                withJsonPath("$.caseId", is(caseId.toString())),
+                withJsonPath("$.notes.length()", is(0)))
+        ));
+
+        addCaseNote(caseId, legalAdviser.getUserId(), "note 1", ADJOURNMENT.toString(), decisionId, ACCEPTED);
+        addCaseNote(caseId, legalAdviser.getUserId(), "note 2", DECISION.toString(), decisionId, ACCEPTED);
+        addCaseNote(caseId, courtAdmin.getUserId(), "note 3", CASE.toString(), ACCEPTED);
+        addCaseNote(caseId, legalAdviser.getUserId(), "note 4", CASE_MANAGEMENT.toString(), ACCEPTED);
+
+        pollForCaseNotes(caseId, withJsonPath("$.notes.length()", is(4)), legalAdviser.getUserId());
+        final JsonObject notesProsecutor = pollForCaseNotes(caseId, withJsonPath("$.notes.length()", is(1)), prosecutor.getUserId());
+
+        assertThat(notesProsecutor.toString(), isJson(allOf(
+                withJsonPath("$.caseId", is(caseId.toString())),
+                withJsonPath("$.notes", allOf(
+                        hasItem(
+                                isJson(allOf(
+                                        withJsonPath("$.noteId", notNullValue()),
+                                        withJsonPath("$.addedAt", matchesPattern(TIMESTAMP_WITHOUT_ZONE_REGEX)),
+                                        withJsonPath("$.noteText", is("note 4")),
+                                        withJsonPath("$.noteType", is(CASE_MANAGEMENT.toString())),
+                                        withJsonPath("$.authorFirstName", is(legalAdviser.getFirstName())),
+                                        withJsonPath("$.authorLastName", is(legalAdviser.getLastName()))
+                                ))
+                        )
+                ))
+        )));
+
     }
 
     private static void createCase(final UUID caseId) {

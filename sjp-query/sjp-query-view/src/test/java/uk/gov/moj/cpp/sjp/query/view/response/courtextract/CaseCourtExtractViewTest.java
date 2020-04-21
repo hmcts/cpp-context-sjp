@@ -1,41 +1,14 @@
 package uk.gov.moj.cpp.sjp.query.view.response.courtextract;
 
-import static java.lang.String.format;
-import static java.time.ZonedDateTime.now;
-import static java.time.format.DateTimeFormatter.ofPattern;
-import static java.util.Arrays.asList;
-import static java.util.Objects.nonNull;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
-import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISMISS;
-import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
-import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.WITHDRAW;
-import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.ONLINE;
-import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
-import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
-import static uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder.aCase;
-import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
-import static uk.gov.moj.cpp.sjp.query.view.helper.PleaInfo.plea;
-
+import org.junit.Test;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
+import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
+import uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit;
+import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPeriodTimeUnit;
+import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
-import uk.gov.moj.cpp.sjp.persistence.entity.AdjournOffenceDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.DismissOffenceDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.FinancialPenaltyOffenceDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.ReferForCourtHearingDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.Session;
-import uk.gov.moj.cpp.sjp.persistence.entity.WithdrawOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.*;
 import uk.gov.moj.cpp.sjp.query.view.helper.PleaInfo;
 
 import java.math.BigDecimal;
@@ -45,7 +18,22 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Test;
+import static java.lang.String.format;
+import static java.time.ZonedDateTime.now;
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.Arrays.asList;
+import static java.util.Objects.nonNull;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.*;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.*;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.ONLINE;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
+import static uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder.aCase;
+import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
+import static uk.gov.moj.cpp.sjp.query.view.helper.PleaInfo.plea;
 
 public class CaseCourtExtractViewTest {
 
@@ -123,23 +111,7 @@ public class CaseCourtExtractViewTest {
                 new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt))));
     }
 
-    @Test
-    public void shouldVerifyDismissGuiltyCaseWithMagistrateSession() {
-        final ZonedDateTime pleaDate = now().minusDays(2);
-        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, DISMISS, savedAt, plea(GUILTY, pleaDate), true);
 
-        final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
-
-        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
-        assertEquals("Court decision", offenceDecisionView.getHeading());
-        assertThat(offenceDecisionView.getLines(), contains(
-                new OffenceDecisionLineView("Plea", "Guilty"),
-                new OffenceDecisionLineView("Plea date", DATE_FORMAT.format(pleaDate)),
-                new OffenceDecisionLineView("Verdict", "Found not guilty"),
-                new OffenceDecisionLineView("Date of verdict", DATE_FORMAT.format(savedAt)),
-                new OffenceDecisionLineView("Result", "Dismissed"),
-                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt))));
-    }
 
     @Test
     public void shouldVerifyWithdrawCaseWithDelegatedPowers() {
@@ -442,6 +414,69 @@ public class CaseCourtExtractViewTest {
                         "Defendant's guilty plea".equalsIgnoreCase(label)));
 
     }
+    @Test
+    public void shouldVerifyCaseWithEndorsmentCaseWithFINANCIAL_PENALTY() {
+        final ZonedDateTime pleaDate = now().minusDays(2);
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, FINANCIAL_PENALTY, savedAt, plea(GUILTY, pleaDate), true);
+
+        final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
+
+        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        assertEquals("Court decision", offenceDecisionView.getHeading());
+        assertThat(offenceDecisionView.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "Guilty"),
+                new OffenceDecisionLineView("Plea date",  DATE_FORMAT.format(pleaDate)),
+                new OffenceDecisionLineView("Verdict", "Found not guilty"),
+                new OffenceDecisionLineView("Date of verdict", DATE_FORMAT.format(savedAt)),
+                new OffenceDecisionLineView("To pay a fine of", "£30"),
+                new OffenceDecisionLineView("To pay compensation of", "£20"),
+                new OffenceDecisionLineView("Defendant's guilty plea", "Taken into account when imposing sentence"),
+                new OffenceDecisionLineView("Driver record endorsed", ""),
+                new OffenceDecisionLineView("Penalty points", "3"),
+                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt))));
+    }
+    @Test
+    public void shouldVerifyCaseWithEndorsementCaseWithDischarge() {
+        final ZonedDateTime pleaDate = now().minusDays(2);
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, DISCHARGE, savedAt, plea(GUILTY, pleaDate), true);
+
+        final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
+
+        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        assertEquals("Court decision", offenceDecisionView.getHeading());
+        assertThat(offenceDecisionView.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "Guilty"),
+                new OffenceDecisionLineView("Plea date", DATE_FORMAT.format(pleaDate)),
+                new OffenceDecisionLineView("Verdict", "Found not guilty"),
+                new OffenceDecisionLineView("Date of verdict", DATE_FORMAT.format(savedAt)),
+                new OffenceDecisionLineView("Result","Discharged conditionally"),
+                new OffenceDecisionLineView("Period","12 days"),
+                new OffenceDecisionLineView("Driver record endorsed", "Section 34(2) Road Traffic Offenders Act 1988"),
+                new OffenceDecisionLineView("Disqualified for", "3 days"),
+                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt))));
+    }
+
+    @Test
+    public void shouldVerifyCaseWithEndorsmentCaseWithNoSeperatePenalty() {
+        final ZonedDateTime pleaDate = now().minusDays(2);
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, NO_SEPARATE_PENALTY, savedAt, plea(GUILTY, pleaDate), true);
+
+        final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
+
+        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        assertEquals("Court decision", offenceDecisionView.getHeading());
+        assertThat(offenceDecisionView.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "Guilty"),
+                new OffenceDecisionLineView("Plea date", DATE_FORMAT.format(pleaDate)),
+                new OffenceDecisionLineView("Verdict", "Found not guilty"),
+                new OffenceDecisionLineView("Date of verdict", DATE_FORMAT.format(savedAt)),
+                new OffenceDecisionLineView("Result","No seperate penalty"),
+                new OffenceDecisionLineView("Driver record endorsed", ""),
+                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt))));
+    }
+
+
+
 
     private static CaseDetail buildSingleOffenceCaseWithSingleDecision(final UUID caseId,
                                                                        final UUID offenceId,
@@ -491,6 +526,7 @@ public class CaseCourtExtractViewTest {
                 noCompensationReason,
                 fine,
                 null,
+                null,
                 null);
         if (nonNull(pleaAtDecisionTime)) {
             offenceDecision.setPleaAtDecisionTime(pleaAtDecisionTime.pleaType);
@@ -515,7 +551,8 @@ public class CaseCourtExtractViewTest {
                         decisionId,
                         "",
                         now().plusDays(7).toLocalDate(),
-                        VerdictType.NO_VERDICT);
+                        VerdictType.NO_VERDICT,
+                        null);
                 break;
             case REFER_FOR_COURT_HEARING:
                 offenceDecision = new ReferForCourtHearingDecision(offenceId,
@@ -523,7 +560,8 @@ public class CaseCourtExtractViewTest {
                         UUID.fromString("7e2f843e-d639-40b3-8611-8015f3a18957"),
                         10,
                         "",
-                        VerdictType.NO_VERDICT);
+                        VerdictType.NO_VERDICT,
+                        null);
                 break;
             case WITHDRAW:
                 offenceDecision = new WithdrawOffenceDecision(offenceId,
@@ -531,6 +569,26 @@ public class CaseCourtExtractViewTest {
                         randomUUID(),
                         VerdictType.NO_VERDICT);
                 break;
+            case  FINANCIAL_PENALTY:
+                FinancialPenaltyOffenceDecision financialPenaltyOffenceDecision     = new FinancialPenaltyOffenceDecision(offenceId, randomUUID(), VerdictType.FOUND_NOT_GUILTY, true, BigDecimal.valueOf(20), null, BigDecimal.valueOf(30), null, null, null);
+                financialPenaltyOffenceDecision.setLicenceEndorsement(true);
+                financialPenaltyOffenceDecision.setPenaltyPointsImposed(3);
+                offenceDecision=financialPenaltyOffenceDecision ;
+                break;
+            case  DISCHARGE:
+                 DischargeOffenceDecision dischargeOffenceDecision     = new DischargeOffenceDecision(offenceId, randomUUID(), VerdictType.FOUND_NOT_GUILTY, new DischargePeriod(PeriodUnit.DAY,12), null, null, null, DischargeType.CONDITIONAL, null, null);
+                dischargeOffenceDecision.setLicenceEndorsement(true);
+                dischargeOffenceDecision.setDisqualification(true);
+                dischargeOffenceDecision.setDisqualificationPeriodUnit(DisqualificationPeriodTimeUnit.DAY);
+                dischargeOffenceDecision.setDisqualificationPeriodValue(3);
+                dischargeOffenceDecision.setDisqualificationType(DisqualificationType.DISCRETIONARY);
+                offenceDecision=dischargeOffenceDecision ;
+                break;
+            case NO_SEPARATE_PENALTY :
+
+                offenceDecision    = new NoSeparatePenaltyOffenceDecision(offenceId, randomUUID(), VerdictType.FOUND_NOT_GUILTY,null, null,true);
+
+
         }
 
         if (nonNull(pleaAtDecisionTime)) {

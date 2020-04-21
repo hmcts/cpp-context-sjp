@@ -60,6 +60,7 @@ public class DecisionSavedOffenceConverterTest {
         final DischargeOffenceDecision dischargeOffenceDecision = mock(DischargeOffenceDecision.class);
         when(dischargeOffenceDecision.getBackDuty()).thenReturn(BACK_DUTY);
         when(dischargeOffenceDecision.getDecisionType()).thenReturn(DecisionType.DISCHARGE);
+        when(dischargeOffenceDecision.getDisqualificationPeriodValue()).thenReturn(null);
 
         final JsonObject decisionSavedPayload = decisionSavedOffenceConverter.convertOffenceDecision(new OffenceDecisionView(dischargeOffenceDecision));
 
@@ -73,6 +74,7 @@ public class DecisionSavedOffenceConverterTest {
         when(financialPenaltyOffenceDecision.getBackDuty()).thenReturn(BACK_DUTY);
         when(financialPenaltyOffenceDecision.getExcisePenalty()).thenReturn(EXCISE_PENALTY);
         when(financialPenaltyOffenceDecision.getDecisionType()).thenReturn(DecisionType.FINANCIAL_PENALTY);
+        when(financialPenaltyOffenceDecision.getDisqualificationPeriodValue()).thenReturn(null);
 
         final JsonObject financialPenaltySavedPayload = decisionSavedOffenceConverter.convertOffenceDecision(new OffenceDecisionView(financialPenaltyOffenceDecision));
 
@@ -82,6 +84,8 @@ public class DecisionSavedOffenceConverterTest {
                         withJsonPath("excisePenalty", is(EXCISE_PENALTY.doubleValue()))
                 )));
     }
+
+    //TODO add tests for licence endorsement and disqualification attributes
 
 
 

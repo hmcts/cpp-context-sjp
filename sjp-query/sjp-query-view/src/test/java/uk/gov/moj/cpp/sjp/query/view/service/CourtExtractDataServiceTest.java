@@ -17,7 +17,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISMISS;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
@@ -255,7 +254,7 @@ public class CourtExtractDataServiceTest {
     public void shouldVerifySingleCaseDecisionWithMultipleOffenceDecisions() {
         final CaseDetail caseDetail = aCase()
                 .withCaseId(caseId)
-                .withProsecutingAuthority(TFL)
+                .withProsecutingAuthority("TFL")
                 .build();
 
         final DefendantDetail defendantDetail = aDefendantDetail().build();
@@ -301,7 +300,7 @@ public class CourtExtractDataServiceTest {
     public void shouldVerifyMultipleCaseDecisionsWithSingleOffenceDecision() {
         final CaseDetail caseDetail = aCase()
                 .withCaseId(caseId)
-                .withProsecutingAuthority(TFL)
+                .withProsecutingAuthority("TFL")
                 .build();
 
         final DefendantDetail defendantDetail = aDefendantDetail().build();
@@ -348,7 +347,7 @@ public class CourtExtractDataServiceTest {
                                                                    boolean magistrate) {
         final CaseDetail entity = aCase()
                 .withCaseId(caseId)
-                .withProsecutingAuthority(TFL)
+                .withProsecutingAuthority("TFL")
                 .build();
 
         final DefendantDetail defendantDetail = aDefendantDetail().build();
@@ -393,7 +392,7 @@ public class CourtExtractDataServiceTest {
                         decisionId,
                         "",
                         now().plusDays(7).toLocalDate(),
-                        NO_VERDICT);
+                        NO_VERDICT, null);
                 break;
             case REFER_FOR_COURT_HEARING:
                 offenceDecision = new ReferForCourtHearingDecision(offenceId,
@@ -401,7 +400,7 @@ public class CourtExtractDataServiceTest {
                         UUID.fromString("7e2f843e-d639-40b3-8611-8015f3a18957"),
                         10,
                         "",
-                        NO_VERDICT);
+                        NO_VERDICT, null);
                 break;
             case WITHDRAW:
                 offenceDecision = new WithdrawOffenceDecision(offenceId,
@@ -417,7 +416,7 @@ public class CourtExtractDataServiceTest {
                         true,
                         TEN,
                         null,
-                        CONDITIONAL, null);
+                        CONDITIONAL, null, null);
                 break;
         }
 
@@ -478,7 +477,7 @@ public class CourtExtractDataServiceTest {
                         true,
                         ZERO,
                         null,
-                        ABSOLUTE, null)));
+                        ABSOLUTE, null, null)));
 
         caseDetail.setCaseDecisions(asList(dischargeDecision1));
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
@@ -515,7 +514,7 @@ public class CourtExtractDataServiceTest {
                         true,
                         BigDecimal.valueOf(2000.236),
                         "Limited means of defendant",
-                        CONDITIONAL, null)));
+                        CONDITIONAL, null, null)));
 
         caseDetail.setCaseDecisions(asList(dischargeDecision));
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
@@ -553,7 +552,7 @@ public class CourtExtractDataServiceTest {
                         true,
                         BigDecimal.valueOf(1000.987),
                         "Limited means of defendant",
-                        BigDecimal.valueOf(2000.236), null, null)));
+                        BigDecimal.valueOf(2000.236), null, null, null)));
 
         caseDetail.setCaseDecisions(asList(financialDecision));
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
@@ -590,7 +589,7 @@ public class CourtExtractDataServiceTest {
                         true,
                         BigDecimal.valueOf(1000.987),
                         null,
-                        null, BigDecimal.valueOf(123.45), BigDecimal.valueOf(234.56))));
+                        null, BigDecimal.valueOf(123.45), BigDecimal.valueOf(234.56), null)));
 
         caseDetail.setCaseDecisions(asList(financialDecision));
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
@@ -618,7 +617,7 @@ public class CourtExtractDataServiceTest {
     private CaseDetail buildCaseDetailWithOneOffence() {
         final CaseDetail caseDetail = aCase()
                 .withCaseId(caseId)
-                .withProsecutingAuthority(TFL)
+                .withProsecutingAuthority("TFL")
                 .build();
 
         final DefendantDetail defendantDetail = aDefendantDetail().build();

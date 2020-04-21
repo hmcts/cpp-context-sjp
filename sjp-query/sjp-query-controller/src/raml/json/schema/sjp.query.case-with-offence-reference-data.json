@@ -130,6 +130,12 @@
     "assigned": {
       "type": "boolean"
     },
+    "policeFlag": {
+      "type": "boolean"
+    },
+    "postConviction": {
+      "type": "boolean"
+    },
     "status": {
       "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/case-status.json"
     },
@@ -143,6 +149,8 @@
     "urn",
     "completed",
     "assigned",
-    "defendant"
+    "defendant",
+    "policeFlag",
+    "postConviction"
   ]
 }

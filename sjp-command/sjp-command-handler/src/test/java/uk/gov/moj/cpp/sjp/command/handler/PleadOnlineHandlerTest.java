@@ -1,10 +1,12 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+import static java.time.ZoneOffset.UTC;
+import static java.util.Collections.emptyList;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
@@ -22,12 +24,11 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
-import static java.time.ZoneOffset.UTC;
-import static java.util.Collections.emptyList;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
@@ -48,7 +49,7 @@ public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
                 defendantId, emptyList(), "unavailability", "French", TRUE, "witnessDetails", "witnessDispute", outstandingFines,
                 new PersonalDetails("firstName", "lastName", address,
                         new ContactDetails("homeTelephone", "mobile", "business", "email1@aaa.bbb", "email2@aaa.bbb"),
-                        null, "nationalInsuranceNumber", "region"),
+                        null, "nationalInsuranceNumber", "region","TESTY708166G99KZ", null),
                 new FinancialMeans(
                         defendantId,
                         new Income(IncomeFrequency.WEEKLY, BigDecimal.valueOf(2000.22)),

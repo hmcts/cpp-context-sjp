@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="58" author="gustavo.almagro" logicalFilePath="liquibase/sjp-view-store-db-changelog/conviction-date.xml">
+        <addColumn tableName="offence_decision">
+            <column name="conviction_date" type="date"/>
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="offence_decision">
+                <column name="conviction_date"/>
+            </dropColumn>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

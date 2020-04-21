@@ -31,6 +31,10 @@ public class OffenceInformation {
         return new OffenceInformation(null, pleaType, pleaDate, pendingWithdrawal, null);
     }
 
+    public static OffenceInformation createOffenceInformation(final PleaType pleaType, final LocalDate pleaDate, final Boolean pendingWithdrawal, final DecisionType decisionType) {
+        return new OffenceInformation(null, pleaType, pleaDate, pendingWithdrawal, decisionType);
+    }
+
     public static OffenceInformation createOffenceInformation(final UUID offenceId,
                                                               final PleaType pleaType,
                                                               final LocalDate pleaDate,

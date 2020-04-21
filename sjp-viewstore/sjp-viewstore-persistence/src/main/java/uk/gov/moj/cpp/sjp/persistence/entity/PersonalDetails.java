@@ -37,6 +37,12 @@ public class PersonalDetails implements Serializable {
     @Column(name = "national_insurance_number")
     private String nationalInsuranceNumber;
 
+    @Column(name = "driver_number")
+    private String driverNumber;
+
+    @Column(name = "driver_licence_details")
+    private String driverLicenceDetails;
+
     @Embedded
     private Address address;
 
@@ -69,6 +75,8 @@ public class PersonalDetails implements Serializable {
                            final LocalDate dateOfBirth,
                            final Gender gender,
                            final String nationalInsuranceNumber,
+                           final String driverNumber,
+                           final String driverLicenceDetails,
                            final Address address,
                            final ContactDetails contactDetails,
                            final String region) {
@@ -79,6 +87,8 @@ public class PersonalDetails implements Serializable {
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
         this.nationalInsuranceNumber = nationalInsuranceNumber;
+        this.driverNumber = driverNumber;
+        this.driverLicenceDetails = driverLicenceDetails;
         this.address = address;
         this.contactDetails = contactDetails;
         this.region = region;
@@ -130,6 +140,22 @@ public class PersonalDetails implements Serializable {
 
     public void setNationalInsuranceNumber(String nationalInsuranceNumber) {
         this.nationalInsuranceNumber = nationalInsuranceNumber;
+    }
+
+    public String getDriverNumber() {
+        return driverNumber;
+    }
+
+    public void setDriverNumber(final String driverNumber) {
+        this.driverNumber = driverNumber;
+    }
+
+    public void setDriverLicenceDetails(final String driverLicenceDetails) {
+        this.driverLicenceDetails = driverLicenceDetails;
+    }
+
+    public String getDriverLicenceDetails() {
+        return driverLicenceDetails;
     }
 
     public Address getAddress() {
@@ -201,6 +227,8 @@ public class PersonalDetails implements Serializable {
                 Objects.equals(dateOfBirth, that.dateOfBirth) &&
                 gender == that.gender &&
                 Objects.equals(nationalInsuranceNumber, that.nationalInsuranceNumber) &&
+                Objects.equals(driverNumber, that.driverNumber) &&
+                Objects.equals(driverLicenceDetails, that.driverLicenceDetails) &&
                 Objects.equals(address, that.address) &&
                 Objects.equals(contactDetails, that.contactDetails) &&
                 Objects.equals(addressUpdatedAt, that.addressUpdatedAt) &&
@@ -212,6 +240,6 @@ public class PersonalDetails implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber,
-                address, contactDetails, addressUpdatedAt, dateOfBirthUpdatedAt, nameUpdatedAt, region);
+                driverNumber, driverLicenceDetails, address, contactDetails, addressUpdatedAt, dateOfBirthUpdatedAt, nameUpdatedAt, region);
     }
 }

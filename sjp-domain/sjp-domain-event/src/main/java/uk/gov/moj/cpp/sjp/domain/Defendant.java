@@ -37,6 +37,7 @@ public class Defendant extends Person {
                      @JsonProperty("gender") final Gender gender,
                      @JsonProperty("nationalInsuranceNumber") final String nationalInsuranceNumber,
                      @JsonProperty("driverNumber") final String driverNumber,
+                     @JsonProperty("driverLicenceDetails") final String driverLicenceDetails,
                      @JsonProperty("address") final Address address,
                      @JsonProperty("contactDetails") final ContactDetails contactDetails,
                      @JsonProperty("numPreviousConvictions") final int numPreviousConvictions,
@@ -44,7 +45,7 @@ public class Defendant extends Person {
                      @JsonProperty("hearingLanguage") final Language hearingLanguage,
                      @JsonProperty("languageNeeds") final String languageNeeds,
                      @JsonProperty("region") final String region) {
-        super(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber, driverNumber, address, contactDetails, region);
+        super(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails, address, contactDetails, region);
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
         this.offences = Optional.ofNullable(offences).map(Collections::unmodifiableList).orElseGet(Collections::emptyList);
@@ -119,6 +120,7 @@ public class Defendant extends Person {
                     defendant.getGender(),
                     defendant.getNationalInsuranceNumber(),
                     defendant.getDriverNumber(),
+                    defendant.getDriverLicenceDetails(),
                     defendant.getAddress(),
                     defendant.getContactDetails(),
                     defendant.getNumPreviousConvictions(),

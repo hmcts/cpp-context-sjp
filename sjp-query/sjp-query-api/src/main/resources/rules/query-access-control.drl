@@ -254,3 +254,21 @@ rule "sjp - Query - API - Get Case Results"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp - Query - API - Get Not Guilty Plea Cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.not-guilty-plea-cases");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAllowedGroupsForNotGuiltyPleaCaseResults()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get Case Assignment Restriction"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-assignment-restriction");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAllowedGroupsForCaseAssignmentRestriction()))
+  then
+    $outcome.setSuccess(true);
+end

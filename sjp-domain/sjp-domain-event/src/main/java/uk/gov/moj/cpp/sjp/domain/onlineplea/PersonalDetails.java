@@ -30,7 +30,10 @@ public class PersonalDetails extends Person {
             @JsonProperty("contactDetails") final ContactDetails contactDetails,
             @JsonProperty("dateOfBirth") final LocalDate dateOfBirth,
             @JsonProperty("nationalInsuranceNumber") final String nationalInsuranceNumber,
-            @JsonProperty("region") final String region) {
-        super(null, firstName, lastName, dateOfBirth, null, nationalInsuranceNumber, address, contactDetails, region);
+            @JsonProperty("region") final String region,
+            @JsonProperty("driverNumber") final String driverNumber,
+            @JsonProperty("driverLicenceDetails") final String driverLicenceDetails
+    ) {
+        super(null, firstName, lastName, dateOfBirth, null, nationalInsuranceNumber, driverNumber, driverLicenceDetails, address, contactDetails, region);
     }
 }

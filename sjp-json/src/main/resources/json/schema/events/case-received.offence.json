@@ -50,6 +50,9 @@
     },
     "compensation": {
       "type": "number"
+    },
+    "endorsable": {
+      "type": "boolean"
     }
   },
   "required": [

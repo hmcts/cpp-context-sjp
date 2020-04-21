@@ -20,18 +20,18 @@
         <assignment.version>6.0.0</assignment.version>
         <material.version>6.4.3</material.version>
         <notification.notify.version>0.0.38</notification.notify.version>
-        <referencedata.version>6.4.12</referencedata.version>
-        <referencedata.offences.version>6.4.0</referencedata.offences.version>
+        <referencedata.version>6.4.15</referencedata.version>
+        <referencedata.offences.version>6.4.1</referencedata.offences.version>
         <scheduling.version>6.0.0</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>6.4.6</usersgroups.version>
-        <progression.version>6.4.28</progression.version>
+        <progression.version>6.4.34</progression.version>
         <prosecutioncasefile.version>1.0.55</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
-        <coredomain.version>1.0.71</coredomain.version>
+        <coredomain.version>1.0.73</coredomain.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>
         <lombok.version>1.18.2</lombok.version>

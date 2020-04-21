@@ -28,6 +28,8 @@ public class DefendantDetailsUpdated {
     private final LocalDate dateOfBirth;
     private final Gender gender;
     private final String nationalInsuranceNumber;
+    private final String driverNumber;
+    private final String driverLicenceDetails;
     private final Address address;
     private final ContactDetails contactDetails;
     private final boolean updateByOnlinePlea;
@@ -40,6 +42,8 @@ public class DefendantDetailsUpdated {
                                     @JsonProperty("firstName") String firstName, @JsonProperty("lastName") String lastName,
                                     @JsonProperty("dateOfBirth") LocalDate dateOfBirth, @JsonProperty("gender") Gender gender,
                                     @JsonProperty("nationalInsuranceNumber") String nationalInsuranceNumber,
+                                    @JsonProperty("driverNumber") String driverNumber,
+                                    @JsonProperty("driverLicenceDetails") String driverLicenceDetails,
                                     @JsonProperty("contactDetails") ContactDetails contactDetails, @JsonProperty("address") Address address,
                                     @JsonProperty("updateByOnlinePlea") boolean updateByOnlinePlea,
                                     @JsonProperty("updatedDate") ZonedDateTime updatedDate,
@@ -52,6 +56,8 @@ public class DefendantDetailsUpdated {
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
         this.nationalInsuranceNumber = nationalInsuranceNumber;
+        this.driverNumber = driverNumber;
+        this.driverLicenceDetails = driverLicenceDetails;
         this.contactDetails = contactDetails;
         this.address = address;
         this.updateByOnlinePlea = updateByOnlinePlea;
@@ -68,6 +74,8 @@ public class DefendantDetailsUpdated {
         private LocalDate dateOfBirth;
         private Gender gender;
         private String nationalInsuranceNumber;
+        private String driverNumber;
+        private String driverLicenceDetails;
         private Address address;
         private ContactDetails contactDetails;
         private boolean updateByOnlinePlea;
@@ -125,6 +133,18 @@ public class DefendantDetailsUpdated {
             return this;
         }
 
+        public DefendantDetailsUpdatedBuilder withDriverNumber(final String driverNumber) {
+            this.driverNumber = driverNumber;
+            this.containsUpdate = true;
+            return this;
+        }
+
+        public DefendantDetailsUpdatedBuilder withDriverLicenceDetails(final String driverLicenceDetails) {
+            this.driverLicenceDetails = driverLicenceDetails;
+            this.containsUpdate = true;
+            return this;
+        }
+
         public DefendantDetailsUpdatedBuilder withAddress(final Address address) {
             this.address = address;
             this.containsUpdate = true;
@@ -158,8 +178,8 @@ public class DefendantDetailsUpdated {
 
         public DefendantDetailsUpdated build() {
             return new DefendantDetailsUpdated(caseId, defendantId, title, firstName,
-                    lastName, dateOfBirth, gender, nationalInsuranceNumber, contactDetails,
-                    address, updateByOnlinePlea, updatedDate, region);
+                    lastName, dateOfBirth, gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails,
+                    contactDetails, address, updateByOnlinePlea, updatedDate, region);
         }
     }
 
@@ -193,6 +213,14 @@ public class DefendantDetailsUpdated {
 
     public String getNationalInsuranceNumber() {
         return nationalInsuranceNumber;
+    }
+
+    public String getDriverNumber() {
+        return driverNumber;
+    }
+
+    public String getDriverLicenceDetails() {
+        return driverLicenceDetails;
     }
 
     public Address getAddress() {

@@ -27,7 +27,8 @@ public class DefendantBuilder {
     private LocalDate dateOfBirth = LocalDate.of(1980, 12, 3);
     private Gender gender = Gender.MALE;
     private String nationalInsuranceNumber = RandomStringUtils.random(10);
-    private String driverNumber = RandomStringUtils.random(10);
+    private String driverNumber = "TESTY708166G99KZ";
+    private String driverLicenceDetails = RandomStringUtils.random(50);
     private Address address = new Address("street", "suburb", "town", "county", "address5", "AA1 2BB");
     private ContactDetails contactDetails = new ContactDetails("020734777", "020734888", "020734999", "email1@bbb.ccc", "email2@bbb.ccc");
     private String region = "test region";
@@ -48,7 +49,7 @@ public class DefendantBuilder {
     public Defendant build() {
         return new Defendant(id, title, firstName,
                 lastName, dateOfBirth, gender, nationalInsuranceNumber,
-                driverNumber, address, contactDetails, numPreviousConvictions,
+                driverNumber, driverLicenceDetails, address, contactDetails, numPreviousConvictions,
                 offences, hearingLanguage, languageNeeds, region);
     }
 

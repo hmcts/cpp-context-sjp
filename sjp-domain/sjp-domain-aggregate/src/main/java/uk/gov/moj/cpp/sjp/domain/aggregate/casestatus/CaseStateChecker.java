@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.casestatus;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 
 import java.util.ArrayList;
@@ -29,21 +32,37 @@ class CaseStateChecker {
         private final boolean defendantsResponseTimerExpired;
         private final String datesToAvoid;
         private final boolean datesToAvoidTimerExpired;
+        private final boolean adjourned;
+        private final boolean postConviction;
+        private final boolean setAside;
 
         private final List<SingleRuleChecker> checkers;
 
-        private CaseStateCheckerBuilder(final List<OffenceInformation> offenceInformations, final boolean defendantsResponseTimerExpired, final String datesToAvoid, final boolean datesToAvoidTimerExpired) {
+        private CaseStateCheckerBuilder(final List<OffenceInformation> offenceInformations,
+                                        final boolean defendantsResponseTimerExpired,
+                                        final String datesToAvoid,
+                                        final boolean datesToAvoidTimerExpired,
+                                        final boolean adjourned,
+                                        final boolean postConviction,
+                                        final boolean setAside) {
             this.offenceInformations = offenceInformations;
             this.defendantsResponseTimerExpired = defendantsResponseTimerExpired;
             this.datesToAvoid = datesToAvoid;
             this.datesToAvoidTimerExpired = datesToAvoidTimerExpired;
+            this.adjourned = adjourned;
+            this.postConviction = postConviction;
+            this.setAside = setAside;
             this.checkers = new ArrayList<>();
         }
 
         static CaseStateCheckerBuilder caseStateCheckerFor(final List<OffenceInformation> offenceInformation,
                                                            final boolean defendantsResponseTimerElapsed,
-                                                           final String datesToAvoid, final boolean datesToAvoidTimerElapsed) {
-            return new CaseStateCheckerBuilder(offenceInformation, defendantsResponseTimerElapsed, datesToAvoid, datesToAvoidTimerElapsed);
+                                                           final String datesToAvoid,
+                                                           final boolean datesToAvoidTimerElapsed,
+                                                           final boolean adjourned,
+                                                           final boolean postConviction,
+                                                           final boolean setAside) {
+            return new CaseStateCheckerBuilder(offenceInformation, defendantsResponseTimerElapsed, datesToAvoid, datesToAvoidTimerElapsed, adjourned, postConviction, setAside);
         }
 
         private static boolean notGuiltyPlea(final OffenceInformation offenceInformation) {
@@ -118,11 +137,34 @@ class CaseStateChecker {
             return this;
         }
 
-        CaseStateCheckerBuilder allPleasGuilty() {
+        CaseStateCheckerBuilder allNoPlea() {
             checkers.add(() -> offenceInformations.stream()
-                    .allMatch(CaseStateCheckerBuilder::guiltyPlea)
+                    .allMatch(offenceInformation -> isNull(offenceInformation.getPleaType()))
             );
 
+            return this;
+        }
+
+        CaseStateCheckerBuilder somePleas() {
+            checkers.add(() -> offenceInformations.stream()
+                    .anyMatch(offenceInformation -> nonNull(offenceInformation.getPleaType()))
+            );
+
+            return this;
+        }
+
+        CaseStateCheckerBuilder adjourned() {
+            checkers.add(() -> adjourned);
+            return this;
+        }
+
+        CaseStateCheckerBuilder postConviction() {
+            checkers.add(() -> postConviction);
+            return this;
+        }
+
+        CaseStateCheckerBuilder setAside() {
+            checkers.add(() -> setAside);
             return this;
         }
 

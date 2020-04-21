@@ -64,6 +64,28 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
+    public void shouldRequestAllProsecutors() {
+        when(requester.requestAsAdmin(any(JsonEnvelope.class))).thenReturn(prosecutorsResponseEnvelope());
+        final Optional<JsonArray> prosecutors = referenceDataService.getAllProsecutors();
+
+        if (!prosecutors.isPresent()) {
+            fail("no prosecutors found");
+        }
+
+        verify(requester).requestAsAdmin(argThat(jsonEnvelope().withMetadataOf(
+                metadata().withName("referencedata.query.prosecutors"))
+        ));
+
+        prosecutors.ifPresent(prosecutorList -> {
+            assertEquals(1, prosecutorList.size());
+            final JsonObject prosecutor = prosecutorList.getJsonObject(0);
+            assertEquals("TFL", prosecutor.getString("shortName"));
+            assertEquals("Transport for London", prosecutor.getString("fullName"));
+        });
+
+    }
+
+    @Test
     public void shouldRequestOffenceDetails() {
         when(requester.requestAsAdmin(any(JsonEnvelope.class))).thenReturn(offenceDataEnvelope());
         final Optional<JsonObject> offenceData = referenceDataService.getOffenceData("CA03013");

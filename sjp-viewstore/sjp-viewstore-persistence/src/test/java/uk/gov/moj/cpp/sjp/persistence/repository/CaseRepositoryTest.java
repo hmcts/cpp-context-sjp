@@ -8,7 +8,6 @@ import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -45,7 +44,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
@@ -54,8 +52,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     private static final Map<UUID, CaseDetail> CASES = new HashMap<>();
 
-    private static final ProsecutingAuthority PROSECUTING_AUTHORITY = TFL;
-    private static final String PROSECUTING_AUTHORITY_PREFIX = PROSECUTING_AUTHORITY.name();
+    private static final String PROSECUTING_AUTHORITY = "TFL";
 
     private static final UUID VALID_CASE_ID_1 = randomUUID();
     private static final UUID VALID_CASE_ID_2 = randomUUID();
@@ -97,7 +94,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
     private CaseDetail case1, case2, case3, case4;
 
     private static String randomUrn() {
-        return PROSECUTING_AUTHORITY_PREFIX + RandomGenerator.integer(100000000, 999999999).next();
+        return PROSECUTING_AUTHORITY + RandomGenerator.integer(100000000, 999999999).next();
     }
 
     @Override
@@ -121,9 +118,9 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
         // test duplicate cases aren't possible
         caseRepository.save(case1);
 
-        READY_CASES.add(new ReadyCase(case1.getId(), CaseReadinessReason.PIA, null, MAGISTRATE, 3, TFL, now().minusDays(30)));
-        READY_CASES.add(new ReadyCase(case2.getId(), CaseReadinessReason.WITHDRAWAL_REQUESTED, null, DELEGATED_POWERS, 1, TFL, now().minusDays(15)));
-        READY_CASES.add(new ReadyCase(case3.getId(), CaseReadinessReason.PLEADED_GUILTY, null, MAGISTRATE, 2, TFL, now().minusDays(30)));
+        READY_CASES.add(new ReadyCase(case1.getId(), CaseReadinessReason.PIA, null, MAGISTRATE, 3, "TFL", now().minusDays(30)));
+        READY_CASES.add(new ReadyCase(case2.getId(), CaseReadinessReason.WITHDRAWAL_REQUESTED, null, DELEGATED_POWERS, 1, "TFL", now().minusDays(15)));
+        READY_CASES.add(new ReadyCase(case3.getId(), CaseReadinessReason.PLEADED_GUILTY, null, MAGISTRATE, 2, "TFL", now().minusDays(30)));
         // leave case 4 as not ready
 
         READY_CASES.forEach(readyCaseRepository::save);
@@ -280,7 +277,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
 
     @Test
     public void shouldFindCaseMatchingUrnWithoutPrefixAndPostcode() {
-        final CaseDetail actualCase = caseRepository.findByUrnPostcode(VALID_URN_1.replace(PROSECUTING_AUTHORITY_PREFIX, ""), POSTCODE);
+        final CaseDetail actualCase = caseRepository.findByUrnPostcode(VALID_URN_1.replace(PROSECUTING_AUTHORITY, ""), POSTCODE);
 
         assertNotNull(actualCase);
         assertEquals("ID should match ID of case 1", VALID_CASE_ID_1, actualCase.getId());

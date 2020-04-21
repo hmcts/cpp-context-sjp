@@ -4,18 +4,23 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.event.CaseNotFound;
 import uk.gov.moj.cpp.sjp.event.CaseUpdateRejected;
 import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
+import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.moj.cpp.sjp.event.OffenceNotFound;
 
 public final class HandlerUtils {
 
@@ -52,10 +57,10 @@ public final class HandlerUtils {
     public static Optional<Stream<Object>> createRejectionEvents(final UUID userId,
                                                                  final CaseAggregateState state,
                                                                  final List<Plea> pleas,
-                                                                 final String action){
+                                                                 final String action) {
         Object event = null;
 
-        if(isNull(state.getCaseId())){
+        if (isNull(state.getCaseId())) {
             LOGGER.warn("Case not found: {}", action);
             event = new CaseNotFound(null, action);
         } else if (state.isCaseCompleted()) {
@@ -67,28 +72,31 @@ public final class HandlerUtils {
         } else if (state.isCaseReferredForCourtHearing()) {
             LOGGER.warn("Update rejected because case is referred to court for hearing: {}", action);
             event = new CaseUpdateRejected(state.getCaseId(), CaseUpdateRejected.RejectReason.CASE_REFERRED_FOR_COURT_HEARING);
-        } else if (existsPleaWithUnknownOffence(pleas, state)){
+        } else if (existsPleaWithUnknownOffence(pleas, state)) {
             LOGGER.warn("Update rejected because of unknown offence: {}", action);
             event = getPleaWithUnknownOffence(pleas, state).map(plea -> new OffenceNotFound(plea.getOffenceId(), action)).
                     orElse(null);
-        } else if(existsPleaWithUnknownDefendant(pleas, state)){
+        } else if (existsPleaWithUnknownDefendant(pleas, state)) {
             LOGGER.warn("Update rejected because of unknown defendant: {}", action);
-            event = getPleaWithUnknownDefendant(pleas,state).map(plea -> new DefendantNotFound(plea.getDefendantId(), action)).
+            event = getPleaWithUnknownDefendant(pleas, state).map(plea -> new DefendantNotFound(plea.getDefendantId(), action)).
                     orElse(null);
         } else if (isPleaSubmittedForAnOffenceWithFinalDecision(pleas, state)) {
             LOGGER.warn("plea rejected because final decision is already taken for the offence {}", action);
             event = new CaseUpdateRejected(state.getCaseId(), CaseUpdateRejected.RejectReason.PLEA_REJECTED_AS_FINAL_DECISION_TAKEN_FOR_OFFENCE);
+        } else if (isPleaSubmittedForAnOffenceWithPreviousAdjournPostConviction(state)) {
+            LOGGER.warn("plea rejected because the offence {} has a conviction", action);
+            event = new CaseUpdateRejected(state.getCaseId(), CaseUpdateRejected.RejectReason.OFFENCE_HAS_CONVICTION);
         }
 
         return Optional.ofNullable(event).map(Stream::of);
     }
 
     private static boolean existsPleaWithUnknownOffence(List<Plea> pleas, CaseAggregateState state) {
-        return pleas!=null && pleas.stream().anyMatch(plea -> unknownOffenceForCase(plea, state));
+        return pleas != null && pleas.stream().anyMatch(plea -> unknownOffenceForCase(plea, state));
     }
 
     private static boolean existsPleaWithUnknownDefendant(List<Plea> pleas, CaseAggregateState state) {
-        return pleas!=null && pleas.stream().anyMatch(plea -> unknownDefendantForCase(plea, state));
+        return pleas != null && pleas.stream().anyMatch(plea -> unknownDefendantForCase(plea, state));
     }
 
     private static Optional<Plea> getPleaWithUnknownOffence(List<Plea> pleas, CaseAggregateState state) {
@@ -132,4 +140,9 @@ public final class HandlerUtils {
                 .orElse(null);
     }
 
+    private static boolean isPleaSubmittedForAnOffenceWithPreviousAdjournPostConviction(final CaseAggregateState state) {
+        return state.getOffenceDecisionsWithOffenceIds().entrySet().stream()
+                .anyMatch(entry -> DecisionType.ADJOURN == entry.getValue().getType() &&
+                        state.offenceHasPreviousConviction(entry.getKey()));
+    }
 }

@@ -109,9 +109,17 @@ version: v1
         schema:  !include json/schema/sjp.command.controller.save-decision.json
 
       application/vnd.sjp.command.controller.assign-case+json:
-              schema: !include json/schema/sjp.command.controller.assign-case.json
-              example: !include json/sjp.command.controller.assign-case.json
+        schema: !include json/schema/sjp.command.controller.assign-case.json
+        example: !include json/sjp.command.controller.assign-case.json
+
+      application/vnd.sjp.command.controller.add-case-assignment-restriction+json:
+              schema: !include json/schema/sjp.command.controller.add-case-assignment-restriction.json
+              example: !include json/sjp.command.controller.add-case-assignment-restriction.json
 
       application/vnd.sjp.command.set-dates-to-avoid-required+json: !!null
 
       application/vnd.sjp.command.resolve-case-status+json: !!null
+
+      application/vnd.sjp.command.update-cases-management-status+json:
+        example: !include json/sjp.command.update-cases-management-status.json
+        schema:  !include json/schema/sjp.command.update-cases-management-status.json

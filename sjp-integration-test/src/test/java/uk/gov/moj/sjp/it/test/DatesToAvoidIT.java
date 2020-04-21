@@ -15,8 +15,6 @@ import static uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.PLEA_RECEIVED_NOT_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
@@ -31,6 +29,7 @@ import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyCaseStatus;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyPleaCancelledEventEmitted;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyPleadedNotGuiltyEventEmitted;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifySetPleasEventEmitted;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.*;
 import static uk.gov.moj.sjp.it.pollingquery.PendingDatesToAvoidPoller.pollUntilPendingDatesToAvoidIsOk;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
@@ -40,11 +39,12 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubGroupForUser;
 
+import com.google.common.collect.Sets;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.DatesToAvoidRequired;
 import uk.gov.moj.cpp.sjp.event.PleaCancelled;
@@ -55,6 +55,7 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
+import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.time.LocalDate;
@@ -95,13 +96,18 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        databaseCleaner.cleanAll();
+        databaseCleaner.cleanViewStore();
+
         tflUserId = randomUUID();
         tvlUserId = randomUUID();
 
         stubAssignmentReplicationCommands();
         stubGroupForUser(tflUserId, SJP_PROSECUTORS_GROUP);
         stubForUserDetails(tflUserId, TFL);
+
+        ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery();
+        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
+
         this.tflCaseBuilder = createCaseBuilder(TFL, 1);
 
         stubEnforcementAreaByPostcode(tflCaseBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
@@ -118,7 +124,6 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
         stubForUserDetails(tvlUserId, TVL);
         this.tvlInitialPendingDatesToAvoidCount = pollForCountOfCasesPendingDatesToAvoid(tvlUserId);
 
-        ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery();
         eventListener = new EventListener();
     }
 

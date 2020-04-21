@@ -16,8 +16,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.matchers.JsonValueIsJsonMatcher.isJson;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.DELEGATED_POWERS_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.DVLA;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
@@ -29,17 +27,17 @@ import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SET_PLEAS;
 import static uk.gov.moj.sjp.it.command.AddDatesToAvoid.addDatesToAvoid;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.pollUntilCaseAssignedToUser;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSessionAsync;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.*;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubGetEmptyAssignmentsByDomainObjectId;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
-import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE;
+import static uk.gov.moj.sjp.it.util.Defaults.*;
 
+import com.google.common.collect.Sets;
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.event.processor.AssignmentProcessor;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
@@ -52,14 +50,11 @@ import uk.gov.moj.sjp.it.helper.SessionHelper;
 import uk.gov.moj.sjp.it.helper.SetPleasHelper;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
+import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Triple;
@@ -88,14 +83,17 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
     @Before
     public void setUp() throws Exception {
         final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
-        databaseCleaner.cleanAll();
+        databaseCleaner.cleanViewStore();
 
         stubDefaultCourtByCourtHouseOUCodeQuery();
         AssignmentStub.stubAssignmentReplicationCommands();
         SchedulingStub.stubStartSjpSessionCommand();
 
         stubProsecutorQuery(TFL.name(), TFL.getFullName(), randomUUID());
+        stubProsecutorQuery(TVL.name(), TVL.getFullName(), randomUUID());
         stubProsecutorQuery(DVLA.name(), DVLA.getFullName(), randomUUID());
+
+        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
         final String defaultPostcodeUsed = CreateCase.CreateCasePayloadBuilder.withDefaults().getDefendantBuilder().getAddressBuilder().getPostcode();
 
@@ -117,11 +115,11 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
         tvlPiaCasePayloadBuilder =
                 CreateCase.CreateCasePayloadBuilder.withDefaults()
                         .withPostingDate(daysAgo(30))
-                        .withProsecutingAuthority(ProsecutingAuthority.TVL);
+                        .withProsecutingAuthority(TVL);
 
         tvlPleadedGuiltyRequestHearingCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
                 .withPostingDate(daysAgo(10))
-                .withProsecutingAuthority(ProsecutingAuthority.TVL);
+                .withProsecutingAuthority(TVL);
 
         dvlaPiaCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()
                 .withPostingDate(daysAgo(33))
@@ -131,18 +129,17 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
                 .withPostingDate(daysAgo(5))
                 .withProsecutingAuthority(DVLA);
 
-        this.databaseCleaner.cleanAll();
 
         final List<CreateCase.CreateCasePayloadBuilder> caseHelpers = asList(
-                tflPiaCasePayloadBuilder,
-                tflOldPiaCasePayloadBuilder,
                 tflPleadedGuiltyCasePayloadBuilder,
                 tflPleadedNotGuiltyCasePayloadBuilder,
                 tflPendingWithdrawalCasePayloadBuilder,
                 tvlPleadedGuiltyRequestHearingCasePayloadBuilder,
-                tvlPiaCasePayloadBuilder,
                 dvlaPleadedNotGuiltyCasePayloadBuilder,
-                dvlaPiaCasePayloadBuilder);
+                dvlaPiaCasePayloadBuilder,
+                tflPiaCasePayloadBuilder,
+                tflOldPiaCasePayloadBuilder,
+                tvlPiaCasePayloadBuilder);
 
         stubEnforcementAreaByPostcode(defaultPostcodeUsed, "1080", "Bedfordshire Magistrates' Court");
         stubRegionByPostcode("1080", "TestRegion");
@@ -201,6 +198,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
                 PUBLIC_EVENT_SET_PLEAS);
 
 
+
         userId = randomUUID();
 
         OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(userId, EVENT_OFFENCES_WITHDRAWAL_STATUS_SET);
@@ -221,11 +219,15 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
 
         addDatesToAvoid(tflPleadedNotGuiltyCasePayloadBuilder.getId(), DATE_TO_AVOID);
         addDatesToAvoid(dvlaPleadedNotGuiltyCasePayloadBuilder.getId(), DATE_TO_AVOID);
+
+
+
     }
 
     @Test
     public void londonCourtsCanHandleBothTflAndTvlCases() {
         verifyCaseAssignedFromMagistrateSession(DEFAULT_LONDON_COURT_HOUSE_OU_CODE, tflPleadedGuiltyCasePayloadBuilder.getId());
+        verifyCaseAssignedFromMagistrateSession(DEFAULT_LONDON_COURT_HOUSE_OU_CODE, dvlaPiaCasePayloadBuilder.getId());
         verifyCaseAssignedFromMagistrateSession(DEFAULT_LONDON_COURT_HOUSE_OU_CODE, tflOldPiaCasePayloadBuilder.getId());
         verifyCaseAssignedFromMagistrateSession(DEFAULT_LONDON_COURT_HOUSE_OU_CODE, tflPiaCasePayloadBuilder.getId());
         verifyCaseAssignedFromMagistrateSession(DEFAULT_LONDON_COURT_HOUSE_OU_CODE, tvlPiaCasePayloadBuilder.getId());
@@ -268,7 +270,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
 
         assertThat(assignedCaseByUserId.keySet(), containsInAnyOrder(sessionIdByUserId.keySet().toArray()));
         assertThat(assignedCaseByUserId.values(), containsInAnyOrder(
-                tflPiaCasePayloadBuilder.getId(),
+                dvlaPiaCasePayloadBuilder.getId(),
                 tflOldPiaCasePayloadBuilder.getId(),
                 tflPleadedGuiltyCasePayloadBuilder.getId())
         );

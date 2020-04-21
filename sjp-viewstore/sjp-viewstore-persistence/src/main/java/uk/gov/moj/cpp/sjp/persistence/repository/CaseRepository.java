@@ -1,5 +1,15 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+
 import org.apache.deltaspike.data.api.AbstractEntityRepository;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.QueryParam;
@@ -7,14 +17,6 @@ import org.apache.deltaspike.data.api.QueryResult;
 import org.apache.deltaspike.data.api.Repository;
 import org.apache.deltaspike.data.api.SingleResultType;
 import org.apache.deltaspike.data.api.criteria.CriteriaSupport;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Repository for {@link CaseDetail}
@@ -85,6 +87,29 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
             "AND cd.id IN (SELECT cps.caseId FROM CasePublishStatus cps WHERE cps.numberOfPublishes < 5)" +
             "ORDER BY cd.postingDate")
     public abstract List<PendingCaseToPublishPerOffence> findPendingCasesToPublish();
+
+    @Query(value = "SELECT DISTINCT new uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea" +
+            "(e.id, e.urn, o.pleaDate, d.personalDetails.firstName, d.personalDetails.lastName, e.prosecutingAuthority, e.caseManagementStatus) " +
+            "FROM CaseDetail e " +
+            "JOIN e.defendant d " +
+            "JOIN d.offences o " +
+            "WHERE e.completed = false " +
+            "AND o.plea = 'NOT_GUILTY' " +
+            "AND e.caseStatus != 'REFER_FOR_COURT_HEARING' " +
+            "AND e.prosecutingAuthority = :prosecutingAuthority " +
+            "ORDER BY o.pleaDate DESC ")
+    public abstract List<CaseNotGuiltyPlea> findCasesNotGuiltyPleaByProsecutingAuthority(@QueryParam("prosecutingAuthority") String prosecutingAuthority);
+
+    @Query(value = "SELECT DISTINCT new uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea" +
+            "(e.id, e.urn, o.pleaDate, d.personalDetails.firstName, d.personalDetails.lastName, e.prosecutingAuthority, e.caseManagementStatus) " +
+            "FROM CaseDetail e " +
+            "JOIN e.defendant d " +
+            "JOIN d.offences o " +
+            "WHERE e.completed = false " +
+            "AND o.plea = 'NOT_GUILTY' " +
+            "AND e.caseStatus != 'REFER_FOR_COURT_HEARING' " +
+            "ORDER BY o.pleaDate DESC ")
+    public abstract List<CaseNotGuiltyPlea> findCasesNotGuiltyPlea();
 
     public void updateDatesToAvoid(final UUID caseId, final String datesToAvoid) {
         findBy(caseId).setDatesToAvoid(datesToAvoid);

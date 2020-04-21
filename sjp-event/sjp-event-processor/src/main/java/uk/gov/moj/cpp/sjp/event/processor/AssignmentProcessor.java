@@ -63,9 +63,9 @@ public class AssignmentProcessor {
         final UUID sessionId = UUID.fromString(session.getString("id"));
         final SessionType sessionType = SessionType.valueOf(session.getString("type"));
         final UUID userId = UUID.fromString(session.getString("userId"));
-        final String courtHouseCode = session.getString("courtHouseCode");
+        final String localJusticeAreaNationalCourtCode = session.getString("localJusticeAreaNationalCourtCode");
 
-        final List<AssignmentCandidate> assignmentCandidates = assignmentService.getAssignmentCandidates(caseAssignmentRequest, userId, courtHouseCode, sessionType);
+        final List<AssignmentCandidate> assignmentCandidates = assignmentService.getAssignmentCandidates(caseAssignmentRequest, userId, sessionType, localJusticeAreaNationalCourtCode);
 
         if (assignmentCandidates.isEmpty()) {
             emitCaseNotAssignedPublicEvent(caseAssignmentRequest);

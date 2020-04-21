@@ -10,14 +10,17 @@ public class ProsecutionCaseIdentifierView {
     private final UUID prosecutionAuthorityId;
     private final String prosecutionAuthorityCode;
     private final String prosecutionAuthorityReference;
+    private final String caseURN;
 
     public ProsecutionCaseIdentifierView(final UUID prosecutionAuthorityId,
                                          final String prosecutionAuthorityCode,
-                                         final String prosecutionAuthorityReference) {
+                                         final String prosecutionAuthorityReference,
+                                         final String caseURN) {
 
         this.prosecutionAuthorityId = prosecutionAuthorityId;
         this.prosecutionAuthorityCode = prosecutionAuthorityCode;
         this.prosecutionAuthorityReference = prosecutionAuthorityReference;
+        this.caseURN = caseURN;
     }
 
 
@@ -33,6 +36,10 @@ public class ProsecutionCaseIdentifierView {
         return prosecutionAuthorityReference;
     }
 
+    public String getCaseURN() {
+        return caseURN;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -46,11 +53,12 @@ public class ProsecutionCaseIdentifierView {
 
         return Objects.equal(prosecutionAuthorityId, that.prosecutionAuthorityId) &&
                 Objects.equal(prosecutionAuthorityCode, that.prosecutionAuthorityCode) &&
-                Objects.equal(prosecutionAuthorityReference, that.prosecutionAuthorityReference);
+                Objects.equal(prosecutionAuthorityReference, that.prosecutionAuthorityReference) &&
+                Objects.equal(caseURN, that.caseURN);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(prosecutionAuthorityId, prosecutionAuthorityCode, prosecutionAuthorityReference);
+        return Objects.hashCode(prosecutionAuthorityId, prosecutionAuthorityCode, prosecutionAuthorityReference, caseURN);
     }
 }

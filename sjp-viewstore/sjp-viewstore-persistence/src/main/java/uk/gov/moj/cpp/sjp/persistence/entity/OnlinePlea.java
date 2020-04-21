@@ -58,12 +58,16 @@ public class OnlinePlea {
 
     @Embedded
     private OnlinePleaPersonalDetails personalDetails;
+
     @Embedded
     private PleaDetails pleaDetails;
+
     @Embedded
     private OnlinePlea.Employment employment;
+
     @Embedded
     private OnlinePlea.Employer employer;
+
     @Embedded
     private Outgoings outgoings;
 

@@ -46,6 +46,7 @@ public class ProsecutionCasesDataSourcingService {
             final CaseDetails caseDetails,
             final CaseReferredForCourtHearing caseReferredForCourtHearing,
             final DefendantsOnlinePlea defendantPleaDetails,
+            final JsonObject prosecutionCaseFile,
             final JsonObject caseFileDefendantDetails,
             final JsonEnvelope emptyEnvelopeWithReferralEventMetadata) {
 
@@ -92,6 +93,7 @@ public class ProsecutionCasesDataSourcingService {
         return prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
                 prosecutor,
+                prosecutionCaseFile,
                 caseFileDefendantDetails,
                 employer,
                 nationalityId,

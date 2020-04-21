@@ -40,11 +40,13 @@ class DecisionBuilder{
         OffenceDecisionInformation offenceDecisionInformation = new OffenceDecisionInformation(offenceId, verdict);
         if(type == FinancialPenalty.class)
         {
-            return (T) new FinancialPenalty(id, offenceDecisionInformation, ZERO, ZERO, "", false, null, null);
+            return (T) new FinancialPenalty(id, offenceDecisionInformation, ZERO, ZERO, "", false, null, null,
+                    null, null, null, null, null, null, null, null);
         }
         if(type == Discharge.class)
         {
-            return (T) new Discharge(id, offenceDecisionInformation, DischargeType.ABSOLUTE, null, ZERO, "", false, null);
+            return (T) new Discharge(id, offenceDecisionInformation, DischargeType.ABSOLUTE, null, ZERO, "", false, null,
+                    null, null, null, null, null, null, null, null);
         }
         if(type == Withdraw.class)
         {

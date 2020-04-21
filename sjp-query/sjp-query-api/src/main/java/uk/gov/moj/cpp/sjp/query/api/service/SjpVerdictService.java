@@ -5,6 +5,7 @@ import static javax.json.Json.createObjectBuilder;
 
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.domain.verdict.ConvictionType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictService;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 
@@ -36,8 +37,9 @@ public class SjpVerdictService {
                 PleaType.valueOf(offenceDecision.getString("pleaType")) : null;
         final int offenceNumber = offenceDecision.getInt("offenceNumber");
         final DecisionType decisionType = DecisionType.valueOf(offenceDecision.getString("decision"));
+        final ConvictionType convictionType = ConvictionType.valueOf(offenceDecision.getString("conviction"));
 
-        final VerdictType verdict = verdictService.calculateVerdict(pleaType, decisionType);
+        final VerdictType verdict = verdictService.calculateVerdict(pleaType, decisionType, convictionType);
 
         return createObjectBuilder().
                 add("offenceNumber", offenceNumber).

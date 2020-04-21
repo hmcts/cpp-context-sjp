@@ -538,3 +538,54 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
                 application/vnd.sjp.query.case-results+json:
                   schema: !include json/schema/sjp.query.case-results.json
                   example: !include json/sjp.query.case-results.json
+
+/not-guilty-plea-cases:
+  get:
+    description: |
+      Retrieve not-guilty-plead cases for a given prosecuting authority
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.not-guilty-plea-cases+json
+          name: sjp.query.not-guilty-plea-cases
+      ...
+    queryParameters:
+      prosecutingAuthority:
+        description: Prosecuting authority (i.e. TFL, TVL or TFL,TVL,DVLA,POLICE)
+        type: string
+        required: false
+      pageSize:
+        description: Number of item per page. Default is 20
+        type: number
+        required: false
+      pageNumber:
+        description: Current page. Could be 1 or 2 or 3 or ...
+        type: number
+        required: false
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.not-guilty-plea-cases+json:
+                  schema: !include json/schema/sjp.query.not-guilty-plea-cases.json
+                  example: !include json/sjp.query.not-guilty-plea-cases.json
+
+/case-assignment-restriction:
+  get:
+    description: |
+      Retrieve case assignment restriction for a given prosecutor oucode
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.case-assignment-restriction+json
+          name: sjp.query.case-assignment-restriction
+      ...
+    queryParameters:
+      prosecutingAuthority:
+        type: string
+        required: true
+    responses:
+        200:
+          description: OK
+          body:
+                application/vnd.sjp.query.case-assignment-restriction+json:
+                  schema: !include json/schema/sjp.query.case-assignment-restriction.json
+                  example: !include json/sjp.query.case-assignment-restriction.json

@@ -129,9 +129,17 @@ public final class RuleConstants {
     public static List<String> resolveCaseStatusGroups() {
         return singletonList(GROUP_SYSTEM_USERS);
     }
+
     public static List<String> getDeleteFinancialMeansGroups() {
         return Arrays.asList(GROUP_SYSTEM_USERS);
     }
 
+    public static List<String> updateCasesManagementStatusGroups() {
+        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+    }
+
+    public static List<String> getAddCaseAssignmentRestrictionActionGroups() {
+        return Arrays.asList(GROUP_SYSTEM_USERS);
+    }
 }
 

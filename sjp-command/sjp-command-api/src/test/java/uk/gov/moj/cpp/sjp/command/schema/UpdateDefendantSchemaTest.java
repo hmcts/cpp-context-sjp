@@ -84,6 +84,17 @@ public class UpdateDefendantSchemaTest {
         assertThat(envelope, jsonEnvelope().thatMatchesSchema());
     }
 
+    @Test
+    public void acceptsWhenValidDriverNumber() {
+        //given
+        final JsonObject payload = readPayloadFromResource("/updateDefendantPayload/validDriverNumber.json");
+        JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID("sjp.update-defendant-details"),
+                payload);
+
+        //then
+        assertThat(envelope, jsonEnvelope().thatMatchesSchema());
+    }
+
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 

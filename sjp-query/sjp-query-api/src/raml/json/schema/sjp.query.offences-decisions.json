@@ -20,12 +20,19 @@
           },
           "decision": {
             "$ref": "http://cpp.moj.gov.uk/core/sjp/decision/decision-type.json"
+          },
+          "conviction": {
+            "enum" : [
+              "PRE",
+              "POST"
+            ]
           }
         },
         "required": [
           "offenceNumber",
           "decision",
-          "pleaType"
+          "pleaType",
+          "conviction"
         ]
       }
     }

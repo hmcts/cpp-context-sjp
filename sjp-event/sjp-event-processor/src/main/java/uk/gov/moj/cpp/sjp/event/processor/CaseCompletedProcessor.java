@@ -55,35 +55,27 @@ import org.slf4j.LoggerFactory;
 public class CaseCompletedProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseCompletedProcessor.class);
-
-    @Inject
-    private Enveloper enveloper;
-
-    @Inject
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Inject
-    private Sender sender;
-
-    @Inject
-    private SjpService sjpService;
-
-    @Inject
-    private ReferenceDataService referenceDataService;
-
-    @Inject
-    @ServiceComponent(Component.EVENT_PROCESSOR)
-    private Requester requester;
-
-    @Inject
-    private ResultingToResultsConverter converter;
-
     private static final String CASE_RESULTS = "sjp.query.case-results";
-
     private static final String[] WITHDRAWN_OR_DISMISSED_SHORTCODES = {"DISM", "WDRNNOT"};
     private static final String FIELD_SHORT_CODE = "shortCode";
     private static final String FIELD_ID = "id";
     private static final JsonObject EMPTY_JSON_OBJECT = createObjectBuilder().build();
+    @Inject
+    private Enveloper enveloper;
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+    @Inject
+    private Sender sender;
+    @Inject
+    private SjpService sjpService;
+    @Inject
+    private ReferenceDataService referenceDataService;
+    @Inject
+    @ServiceComponent(Component.EVENT_PROCESSOR)
+    private Requester requester;
+    @Inject
+    private ResultingToResultsConverter converter;
+
 
     @Handles(CaseCompleted.EVENT_NAME)
     public void handleCaseCompleted(final JsonEnvelope caseCompletedEnvelope) {
@@ -106,11 +98,12 @@ public class CaseCompletedProcessor {
                 caseResults
                         .getCaseDecisions()
                         .stream()
-                        .allMatch((caseDecision) -> TRUE.equals(
-                                allOffencesWithdrawnOrDismissed(caseDecision.getOffences(),
-                                        getWithdrawnOrDismissedResultDefinitions(
-                                                caseCompletedEnvelope.metadata(),
-                                                caseDecision.getResultedOn().toLocalDate()))));
+                        .allMatch(caseDecision -> !caseDecision.getOffences().isEmpty() &&
+                                TRUE.equals(
+                                        allOffencesWithdrawnOrDismissed(caseDecision.getOffences(),
+                                                getWithdrawnOrDismissedResultDefinitions(
+                                                        caseCompletedEnvelope.metadata(),
+                                                        caseDecision.getResultedOn().toLocalDate()))));
 
         if (allOffencesWithDrawnOrDismissed) {
             sender.send(envelop(

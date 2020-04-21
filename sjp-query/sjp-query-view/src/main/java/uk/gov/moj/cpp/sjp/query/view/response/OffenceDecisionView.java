@@ -5,10 +5,13 @@ import static java.util.Optional.ofNullable;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargePeriod;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
+import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
+import uk.gov.moj.cpp.sjp.domain.decision.endorsement.PenaltyPointsReason;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.persistence.entity.AdjournOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.DischargeOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.FinancialPenaltyOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.NoSeparatePenaltyOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReferForCourtHearingDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReferredToOpenCourtDecision;
@@ -33,6 +36,7 @@ public class OffenceDecisionView {
     private BigDecimal compensation;
     private String noCompensationReason;
     private Boolean guiltyPleaTakenIntoAccount;
+    private Boolean licenceEndorsement;
     private BigDecimal fine;
     private String magistratesCourt;
     private String reason;
@@ -41,11 +45,21 @@ public class OffenceDecisionView {
     private ZonedDateTime referredToDateTime;
     private BigDecimal backDuty;
     private BigDecimal excisePenalty;
+    private LocalDate convictionDate;
+    private Integer penaltyPointsImposed;
+    private PenaltyPointsReason penaltyPointsReason;
+    private String additionalPointsReason;
+    private Boolean disqualification;
+    private DisqualificationType disqualificationType;
+    private DisqualificationPeriodView disqualificationPeriod;
+    private Integer notionalPenaltyPoints;
+
 
     public OffenceDecisionView(final OffenceDecision offenceDecision) {
         this.offenceId = offenceDecision.getOffenceId();
         this.decisionType = offenceDecision.getDecisionType();
         this.verdict = offenceDecision.getVerdictType();
+        this.convictionDate = offenceDecision.getConvictionDate();
         switch (offenceDecision.getDecisionType()) {
             case WITHDRAW:
                 this.withdrawalReasonId = ((WithdrawOffenceDecision) offenceDecision).getWithdrawalReasonId();
@@ -70,6 +84,11 @@ public class OffenceDecisionView {
                 final ReferredToOpenCourtDecision referredToOpenCourtDecision = (ReferredToOpenCourtDecision) offenceDecision;
                 setReferredToOpenCourtDecision(referredToOpenCourtDecision);
                 break;
+            case NO_SEPARATE_PENALTY:
+                final NoSeparatePenaltyOffenceDecision noSeparatePenalty = (NoSeparatePenaltyOffenceDecision) offenceDecision;
+                this.guiltyPleaTakenIntoAccount = noSeparatePenalty.getGuiltyPleaTakenIntoAccount();
+                this.licenceEndorsement = noSeparatePenalty.getLicenceEndorsement();
+                break;
             default:
                 break;
         }
@@ -90,6 +109,16 @@ public class OffenceDecisionView {
         this.fine = financialPenalty.getFine();
         this.backDuty = financialPenalty.getBackDuty();
         this.excisePenalty = financialPenalty.getExcisePenalty();
+        this.licenceEndorsement = financialPenalty.getLicenceEndorsement();
+        this.penaltyPointsImposed = financialPenalty.getPenaltyPointsImposed();
+        this.penaltyPointsReason = financialPenalty.getPenaltyPointsReason();
+        this.additionalPointsReason = financialPenalty.getAdditionalPointsReason();
+        this.disqualification = financialPenalty.getDisqualification();
+        this.disqualificationType = financialPenalty.getDisqualificationType();
+        this.disqualificationPeriod = ofNullable(financialPenalty.getDisqualificationPeriodValue())
+                .map(disqualificationPeriodValue ->  new DisqualificationPeriodView(disqualificationPeriodValue, financialPenalty.getDisqualificationPeriodUnit()))
+                .orElse(null);
+        this.notionalPenaltyPoints = financialPenalty.getNotionalPenaltyPoints();
     }
 
     private void setDischarge(final DischargeOffenceDecision discharge) {
@@ -101,6 +130,16 @@ public class OffenceDecisionView {
         this.noCompensationReason = discharge.getNoCompensationReason();
         this.guiltyPleaTakenIntoAccount = discharge.isGuiltyPleaTakenIntoAccount();
         this.backDuty = discharge.getBackDuty();
+        this.licenceEndorsement = discharge.getLicenceEndorsement();
+        this.penaltyPointsImposed = discharge.getPenaltyPointsImposed();
+        this.penaltyPointsReason = discharge.getPenaltyPointsReason();
+        this.additionalPointsReason = discharge.getAdditionalPointsReason();
+        this.disqualification = discharge.getDisqualification();
+        this.disqualificationType = discharge.getDisqualificationType();
+        this.disqualificationPeriod = ofNullable(discharge.getDisqualificationPeriodValue())
+                .map(disqualificationPeriodValue ->  new DisqualificationPeriodView(disqualificationPeriodValue, discharge.getDisqualificationPeriodUnit()))
+                .orElse(null);
+        this.notionalPenaltyPoints = discharge.getNotionalPenaltyPoints();
     }
 
     public UUID getOffenceId() {
@@ -181,5 +220,41 @@ public class OffenceDecisionView {
 
     public BigDecimal getExcisePenalty() {
         return excisePenalty;
+    }
+
+    public LocalDate getConvictionDate() {
+        return convictionDate;
+    }
+
+    public Boolean getLicenceEndorsement() {
+        return licenceEndorsement;
+    }
+
+    public Integer getPenaltyPointsImposed() {
+        return penaltyPointsImposed;
+    }
+
+    public PenaltyPointsReason getPenaltyPointsReason() {
+        return penaltyPointsReason;
+    }
+
+    public String getAdditionalPointsReason() {
+        return additionalPointsReason;
+    }
+
+    public Boolean getDisqualification() {
+        return disqualification;
+    }
+
+    public DisqualificationType getDisqualificationType() {
+        return disqualificationType;
+    }
+
+    public DisqualificationPeriodView getDisqualificationPeriod() {
+        return disqualificationPeriod;
+    }
+
+    public Integer getNotionalPenaltyPoints() {
+        return notionalPenaltyPoints;
     }
 }

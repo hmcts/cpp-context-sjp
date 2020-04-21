@@ -7,7 +7,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -16,9 +15,14 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
-import uk.gov.moj.cpp.sjp.event.listener.converter.*;
+import uk.gov.moj.cpp.sjp.event.listener.converter.AddressToAddressEntity;
+import uk.gov.moj.cpp.sjp.event.listener.converter.CaseReceivedToCase;
+import uk.gov.moj.cpp.sjp.event.listener.converter.ContactDetailsToContactDetailsEntity;
+import uk.gov.moj.cpp.sjp.event.listener.converter.DefendantToDefendantDetails;
+import uk.gov.moj.cpp.sjp.event.listener.converter.OffenceToOffenceDetail;
+import uk.gov.moj.cpp.sjp.event.listener.converter.PersonToPersonalDetailsEntity;
+import uk.gov.moj.cpp.sjp.event.listener.converter.SpeaksWelshConverter;
 import uk.gov.moj.cpp.sjp.event.listener.handler.CaseSearchResultService;
 import uk.gov.moj.cpp.sjp.persistence.entity.Address;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -94,8 +98,8 @@ public class CaseReceivedListenerTest {
     private JsonObjectToObjectConverter converter = new JsonObjectToObjectConverter();
 
     private static final UUID caseId = UUID.randomUUID();
-    private static final ProsecutingAuthority prosecutingAuthority = TFL;
-    private static final String urn = prosecutingAuthority.name() + "1234";
+    private static final String prosecutingAuthority = "TFL";
+    private static final String urn = prosecutingAuthority + "1234";
     private static final String enterpriseId = RandomStringUtils.randomAlphanumeric(12).toUpperCase();
     private static final BigDecimal costs = BigDecimal.valueOf(12.23);
     private static final LocalDate postingDate = LocalDate.of(2017, 1, 1);
@@ -107,6 +111,7 @@ public class CaseReceivedListenerTest {
     private static final LocalDate defendantDateOfBirth = LocalDate.of(1960, 1, 1);
     private static final Gender defendantGender = Gender.MALE;
     private static final String nationalInsuranceNumber = RandomStringUtils.randomAlphanumeric(10);
+    private static final String driverNumber = "TESTY708166G99KZ";
     private static final int numPreviousConvictions = 2;
 
     private static final String address1 = "Flat 1, Apple Building";
@@ -176,6 +181,8 @@ public class CaseReceivedListenerTest {
                                 defendantDateOfBirth,
                                 defendantGender,
                                 nationalInsuranceNumber,
+                                driverNumber,
+                                null,
                                 new Address(
                                         address1,
                                         address2,
@@ -265,7 +272,7 @@ public class CaseReceivedListenerTest {
         final JsonObject caseReceivedEventPayload = createObjectBuilder()
                 .add("caseId", caseId.toString())
                 .add("urn", urn)
-                .add("prosecutingAuthority", prosecutingAuthority.name())
+                .add("prosecutingAuthority", prosecutingAuthority)
                 .add("costs", costs)
                 .add("postingDate", LocalDates.to(postingDate))
                 .add("createdOn", caseCreatedOn)

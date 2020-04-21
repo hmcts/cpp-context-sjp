@@ -19,15 +19,14 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.fail;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.CPS;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.DVLA;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus.IN_PROGRESS;
 
+import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
@@ -35,12 +34,12 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDocumentBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSummary;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -52,6 +51,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
+import uk.gov.moj.cpp.sjp.query.view.response.CaseNotGuiltyPleaView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
@@ -61,6 +61,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -69,9 +70,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
 import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
@@ -97,6 +96,7 @@ public class CaseServiceTest {
     private static final String FIRST_NAME = "Adam";
     private static final String LAST_NAME = "Zuma";
     private static final String POSTCODE = "AB1 2CD";
+    private static final String PROSECUTOR_TFL = "TFL";
     private final LocalDate DATE_OF_BIRTH = now(UTC).minusYears(30);
     private final Clock clock = new StoppedClock(new UtcClock().now());
     private final JsonArray PROSECUTORS = createArrayBuilder().add(
@@ -104,8 +104,9 @@ public class CaseServiceTest {
                     .add("id", "31af405e-7b60-4dd8-a244-c24c2d3fa595")
                     .add("sequenceNumber", 1)
                     .add("majorCreditorCode", "TFL2")
-                    .add("shortName", "TFL")
+                    .add("shortName", PROSECUTOR_TFL)
                     .add("fullName", "Transport for London")
+                    .add("policeFlag", false)
                     .add("oucode", "GAFTL00")
                     .add("nameWelsh", "Transport for London")
                     .add("address", createObjectBuilder()
@@ -138,6 +139,9 @@ public class CaseServiceTest {
 
     @InjectMocks
     private CaseService service;
+
+    @Mock
+    private ListToJsonArrayConverter<CaseNotGuiltyPleaView> listToJsonArrayConverter;
 
     @Test
     public void shouldFindCaseViewWithDocumentsWherePostalPlea() {
@@ -312,7 +316,7 @@ public class CaseServiceTest {
         final UUID materialId = UUID.randomUUID();
         final CaseDetail caseDetail = new CaseDetail();
         caseDetail.setId(CASE_ID);
-        caseDetail.setProsecutingAuthority(TVL);
+        caseDetail.setProsecutingAuthority("TVL");
 
         when(caseRepository.findByMaterialId(materialId)).thenReturn(caseDetail);
 
@@ -321,7 +325,7 @@ public class CaseServiceTest {
 
         assertThat(searchCaseByMaterialIdView.getCaseId(), is(CASE_ID));
         assertThat(searchCaseByMaterialIdView.getProsecutingAuthority(),
-                is(ProsecutingAuthority.TVL));
+                is("TVL"));
     }
 
     @Test
@@ -329,7 +333,7 @@ public class CaseServiceTest {
         final UUID materialId = UUID.randomUUID();
         final CaseDetail caseDetail = new CaseDetail();
         caseDetail.setId(CASE_ID);
-        caseDetail.setProsecutingAuthority(DVLA);
+        caseDetail.setProsecutingAuthority("DVLA");
 
         when(caseRepository.findByMaterialId(materialId)).thenReturn(caseDetail);
 
@@ -338,7 +342,7 @@ public class CaseServiceTest {
 
         assertThat(searchCaseByMaterialIdView.getCaseId(), is(CASE_ID));
         assertThat(searchCaseByMaterialIdView.getProsecutingAuthority(),
-                is(ProsecutingAuthority.DVLA));
+                is("DVLA"));
     }
 
     @Test
@@ -346,7 +350,7 @@ public class CaseServiceTest {
         final UUID materialId = UUID.randomUUID();
         final CaseDetail caseDetail = new CaseDetail();
         caseDetail.setId(CASE_ID);
-        caseDetail.setProsecutingAuthority(TFL);
+        caseDetail.setProsecutingAuthority(PROSECUTOR_TFL);
 
         when(caseRepository.findByMaterialId(materialId)).thenReturn(caseDetail);
 
@@ -354,8 +358,7 @@ public class CaseServiceTest {
                 service.searchCaseByMaterialId(materialId);
 
         assertThat(searchCaseByMaterialIdView.getCaseId(), is(CASE_ID));
-        assertThat(searchCaseByMaterialIdView.getProsecutingAuthority(),
-                is(ProsecutingAuthority.TFL));
+        assertThat(searchCaseByMaterialIdView.getProsecutingAuthority(), is(PROSECUTOR_TFL));
     }
 
     @Test
@@ -646,12 +649,48 @@ public class CaseServiceTest {
         assertThat(service.getCase(CASE_ID).isPresent(), is(false));
     }
 
+    @Test
+    public void shouldFindNotGuiltyPleaCases() {
+        final ZonedDateTime pleaDate = ZonedDateTime.parse("2018-03-20T18:14:29.894Z");
+        final CaseNotGuiltyPlea caseNotGuiltyPlea = new CaseNotGuiltyPlea(CASE_ID, URN, pleaDate, "Hakan", "Kurtulus", "TVL", IN_PROGRESS);
+
+        final List<CaseNotGuiltyPlea> caseList = Collections.singletonList(caseNotGuiltyPlea);
+        final JsonArray prosecutors = createArrayBuilder()
+                .add(createObjectBuilder().add("sequenceNumber", 1).add("shortName", "TFL").add("fullName", "Transport for London"))
+                .add(createObjectBuilder().add("sequenceNumber", 2).add("shortName", "TVL").add("fullName", "TV License"))
+                .build();
+
+        when(referenceDataService.getAllProsecutors()).thenReturn(of(prosecutors));
+        when(caseRepository.findCasesNotGuiltyPlea()).thenReturn(caseList);
+
+        final JsonArray buildNotGuiltyPleaCases = buildNotGuiltyPleaCases(pleaDate);
+        when(listToJsonArrayConverter.convert(any())).thenReturn(buildNotGuiltyPleaCases);
+
+        final JsonObject result = service.buildNotGuiltyPleaCasesView("", 1, 1);
+
+        assertThat(result.getInt("results"), is(1));
+        assertThat(result.getInt("pageCount"), is(1));
+        assertThat(result.getJsonArray("cases").size(), is(1));
+    }
+
+    private JsonArray buildNotGuiltyPleaCases(final ZonedDateTime pleaDate) {
+        return createArrayBuilder().add(createObjectBuilder()
+                .add("id", CASE_ID.toString())
+                .add("urn", URN)
+                .add("firstName", "Hakan")
+                .add("lastName", "Kurtulus")
+                .add("pleaDate", pleaDate.toString())
+                .add("prosecutingAuthority", "Transport for London")
+                .add("caseManagementStatus", IN_PROGRESS.name()))
+                .build();
+    }
+
     private CaseDetail createCaseDetail() {
         return createCaseDetail(false);
     }
 
     private CaseDetail createCaseDetail(final boolean onlinePleaReceived) {
-        final CaseDetail caseDetail = new CaseDetail(CASE_ID, URN, ENTERPRISE_ID, CPS, COMPLETED,
+        final CaseDetail caseDetail = new CaseDetail(CASE_ID, URN, ENTERPRISE_ID, "CPS", COMPLETED,
                 null, clock.now(), DefendantDetailBuilder.aDefendantDetail().build(), null, now().minusDays(5));
         caseDetail.setOnlinePleaReceived(onlinePleaReceived);
         caseDetail.setCaseStatus(CASE_STATUS_REFERRED_FOR_COURT_HEARING);

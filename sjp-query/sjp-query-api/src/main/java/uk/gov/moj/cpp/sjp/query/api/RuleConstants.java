@@ -90,7 +90,7 @@ public final class RuleConstants {
     }
 
     public static List<String> getCaseNotesGroups() {
-        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SJP_PROSECUTORS);
     }
 
     public static List<String> getAllowedGroupsForTransparencyReport() {
@@ -107,6 +107,14 @@ public final class RuleConstants {
 
     public static List<String> getAllowedGroupsForCaseResults() {
         return asList(GROUP_SYSTEM_USERS, GROUP_SJP_PROSECUTORS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
+    }
+
+    public static List<String> getAllowedGroupsForNotGuiltyPleaCaseResults() {
+        return asList(GROUP_SYSTEM_USERS, GROUP_SJP_PROSECUTORS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
+    }
+
+    public static List<String> getAllowedGroupsForCaseAssignmentRestriction() {
+        return asList(GROUP_SYSTEM_USERS);
     }
 
 }

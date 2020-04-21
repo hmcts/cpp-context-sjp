@@ -87,6 +87,7 @@ public class UpdateDefendantDetailsHandlerTest extends CaseAggregateBaseTest {
     private static final String POSTCODE = "W1T 1JY";
     private static final Address ADDRESS = new Address(ADDRESS_1, ADDRESS_2, ADDRESS_3, ADDRESS_4, ADDRESS_5, POSTCODE);
     private static final String REGION = "REGION";
+    private static final String DRIVER_NUMBER = "MORGA753116SM9IJ";
 
     @Test
     public void shouldUpdateDefendantDetails() throws EventStreamException {
@@ -123,7 +124,8 @@ public class UpdateDefendantDetailsHandlerTest extends CaseAggregateBaseTest {
                                         withJsonPath("$.contactDetails.home", equalTo(defendant.getContactDetails().getHome())),
                                         withJsonPath("$.contactDetails.mobile", equalTo(defendant.getContactDetails().getMobile())),
                                         withJsonPath("$.dateOfBirth", equalTo(defendant.getDateOfBirth().format(ofPattern("YYY-MM-dd")))),
-                                        withJsonPath("$.region", equalTo(REGION)))))
+                                        withJsonPath("$.region", equalTo(REGION)),
+                                        withJsonPath("$.driverNumber", equalTo(DRIVER_NUMBER)))))
                 )));
     }
 
@@ -146,7 +148,8 @@ public class UpdateDefendantDetailsHandlerTest extends CaseAggregateBaseTest {
                 .add("nationalInsuranceNumber", defendant.getNationalInsuranceNumber())
                 .add("contactNumber", contactNumber)
                 .add("address", toJsonObject(defendant.getAddress()))
-                .add("region", REGION);
+                .add("region", REGION)
+                .add("driverNumber", DRIVER_NUMBER);
 
         return envelopeFrom(
                 metadataOf(randomUUID(), "sjp.command.update-defendant-details").withUserId(userId.toString()),

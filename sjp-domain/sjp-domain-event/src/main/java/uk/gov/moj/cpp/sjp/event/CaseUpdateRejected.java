@@ -16,6 +16,7 @@ public class CaseUpdateRejected {
         CASE_ASSIGNED,
         CASE_COMPLETED,
         CASE_REFERRED_FOR_COURT_HEARING,
+        OFFENCE_HAS_CONVICTION,
         //below applies to online-plea only
         PLEA_ALREADY_SUBMITTED,
         PLEA_REJECTED_AS_FINAL_DECISION_TAKEN_FOR_OFFENCE

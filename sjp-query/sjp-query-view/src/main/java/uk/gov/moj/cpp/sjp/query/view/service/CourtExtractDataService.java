@@ -64,7 +64,7 @@ public class CourtExtractDataService {
     }
 
     private void resolveProsecutorDetails(final CaseDetail caseDetail, final CaseCourtExtractView caseCourtExtract) {
-        referenceDataService.getProsecutorsByProsecutorCode(caseDetail.getProsecutingAuthority().name()).
+        referenceDataService.getProsecutorsByProsecutorCode(caseDetail.getProsecutingAuthority()).
                 ifPresent(prosecutors -> {
                     if (!prosecutors.isEmpty()) {
                         final JsonObject prosecutor = prosecutors.getJsonObject(0);

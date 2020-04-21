@@ -43,15 +43,27 @@ public class ReadyCaseListener {
         final UUID caseId = fromString(caseMarkedReadyForDecision.getString("caseId"));
         final CaseDetail caseDetail = caseRepository.findBy(caseId);
 
-        final ReadyCase readyCase = new ReadyCase(
-                caseId,
-                CaseReadinessReason.valueOf(caseMarkedReadyForDecision.getString("reason")),
-                null,
-                SessionType.valueOf(caseMarkedReadyForDecision.getString("sessionType")),
-                Priority.valueOf(caseMarkedReadyForDecision.getString("priority")).getIntValue(),
-                caseDetail.getProsecutingAuthority(),
-                caseDetail.getPostingDate()
-        );
+        ReadyCase readyCase = readyCaseRepository.findBy(caseId);
+
+        // for set aside case we want to continue with the user id,
+        // even if it is not the case why cant the same user be getting the same case next it is ready again immediately?
+        if (null != readyCase) {
+            readyCase.setReason(CaseReadinessReason.valueOf(caseMarkedReadyForDecision.getString("reason")));
+            readyCase.setSessionType(SessionType.valueOf(caseMarkedReadyForDecision.getString("sessionType")));
+            readyCase.setPriority(Priority.valueOf(caseMarkedReadyForDecision.getString("priority")).getIntValue());
+            readyCase.setProsecutionAuthority(caseDetail.getProsecutingAuthority());
+            readyCase.setPostingDate(caseDetail.getPostingDate());
+        } else {
+            readyCase = new ReadyCase(
+                    caseId,
+                    CaseReadinessReason.valueOf(caseMarkedReadyForDecision.getString("reason")),
+                    null,
+                    SessionType.valueOf(caseMarkedReadyForDecision.getString("sessionType")),
+                    Priority.valueOf(caseMarkedReadyForDecision.getString("priority")).getIntValue(),
+                    caseDetail.getProsecutingAuthority(),
+                    caseDetail.getPostingDate()
+            );
+        }
         readyCaseRepository.save(readyCase);
 
         createCasePublishStatusIfNotExists(readyCase.getCaseId());

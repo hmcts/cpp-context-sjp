@@ -1,11 +1,26 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import static com.google.common.collect.ImmutableList.copyOf;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
+import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED;
+
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -22,21 +37,8 @@ import javax.persistence.OneToOne;
 import javax.persistence.SqlResultSetMapping;
 import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
 
-import static com.google.common.collect.ImmutableList.copyOf;
-import static org.apache.commons.lang3.BooleanUtils.isTrue;
-import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
-import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @SqlResultSetMappings({
         @SqlResultSetMapping(
@@ -130,9 +132,16 @@ public class CaseDetail implements Serializable {
     @Column(name = "adjourned_to")
     private LocalDate adjournedTo;
 
+    @Column(name = "set_aside")
+    private Boolean setAside;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "case_status")
     private CaseStatus caseStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "case_management_status")
+    private CaseManagementStatus caseManagementStatus;
 
     public CaseDetail() {
         defendant.setCaseDetail(this);
@@ -146,7 +155,7 @@ public class CaseDetail implements Serializable {
     public CaseDetail(final UUID id,
                       final String urn,
                       final String enterpriseId,
-                      final ProsecutingAuthority prosecutingAuthority,
+                      final String prosecutingAuthority,
                       final Boolean completed,
                       final UUID assigneeId,
                       final ZonedDateTime createdOn,
@@ -156,7 +165,7 @@ public class CaseDetail implements Serializable {
         this(id);
         this.urn = urn;
         this.enterpriseId = enterpriseId;
-        this.prosecutingAuthority = prosecutingAuthority == null ? null : prosecutingAuthority.name();
+        this.prosecutingAuthority = prosecutingAuthority;
         this.completed = completed;
         this.assigneeId = assigneeId;
         this.dateTimeCreated = createdOn;
@@ -221,12 +230,12 @@ public class CaseDetail implements Serializable {
         this.dateTimeCreated = dateTimeCreated;
     }
 
-    public ProsecutingAuthority getProsecutingAuthority() {
-        return this.prosecutingAuthority == null ? null : ProsecutingAuthority.valueOf(prosecutingAuthority);
+    public String getProsecutingAuthority() {
+        return this.prosecutingAuthority;
     }
 
-    public void setProsecutingAuthority(final ProsecutingAuthority prosecutingAuthority) {
-        this.prosecutingAuthority = prosecutingAuthority == null ? null : prosecutingAuthority.name();
+    public void setProsecutingAuthority(final String prosecutingAuthority) {
+        this.prosecutingAuthority = prosecutingAuthority;
     }
 
     public boolean isCompleted() {
@@ -379,6 +388,22 @@ public class CaseDetail implements Serializable {
 
     public CaseStatus getCaseStatus() {
         return caseStatus;
+    }
+
+    public void setCaseManagementStatus(final CaseManagementStatus caseManagementStatus) {
+        this.caseManagementStatus = caseManagementStatus;
+    }
+
+    public CaseManagementStatus getCaseManagementStatus() {
+        return caseManagementStatus;
+    }
+
+    public Boolean getSetAside() {
+        return setAside;
+    }
+
+    public void setSetAside(final Boolean setAside) {
+        this.setAside = setAside;
     }
 
     public void setCaseStatus(final CaseStatus caseStatus) {

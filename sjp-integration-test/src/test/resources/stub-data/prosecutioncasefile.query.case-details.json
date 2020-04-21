@@ -4,6 +4,7 @@
   "appliedProsecutorCosts": 200,
   "prosecutorInformant": "Adam 1111",
   "prosecutionAuthority": "GAEAA01",
+  "originatingOrganisation" : "GAEAA01",
   "defendants": [
     {
       "defendantId": "4a1e66ab-8673-4300-aed8-b2391e38d8db",

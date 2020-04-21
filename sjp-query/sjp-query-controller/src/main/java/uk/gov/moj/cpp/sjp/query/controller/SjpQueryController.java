@@ -1,19 +1,17 @@
 package uk.gov.moj.cpp.sjp.query.controller;
 
-import static javax.json.Json.createObjectBuilder;
-
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.query.controller.converter.CaseConverter;
 import uk.gov.moj.cpp.sjp.query.controller.service.UserAndGroupsService;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
-import javax.json.JsonValue;
+
+import static javax.json.Json.createObjectBuilder;
 
 @SuppressWarnings("WeakerAccess")
 @ServiceComponent(Component.QUERY_CONTROLLER)
@@ -26,9 +24,6 @@ public class SjpQueryController {
 
     @Inject
     private UserAndGroupsService userAndGroupsService;
-
-    @Inject
-    private CaseConverter caseConverter;
 
     @Inject
     private Enveloper enveloper;
@@ -53,14 +48,7 @@ public class SjpQueryController {
 
     @Handles("sjp.query.case-by-urn-postcode")
     public JsonEnvelope findCaseByUrnPostcode(final JsonEnvelope query) {
-
-        final JsonValue caseDetails = requester.request(query).payload();
-
-        final JsonValue responsePayload = !JsonValue.NULL.equals(caseDetails) ?
-                caseConverter.addOffenceReferenceDataToOffences((JsonObject) caseDetails, query) : null;
-
-        return enveloper.withMetadataFrom(query, "sjp.query.case-by-urn-postcode")
-                .apply(responsePayload);
+        return requester.request(query);
     }
 
     @Handles("sjp.query.financial-means")
@@ -153,6 +141,11 @@ public class SjpQueryController {
 
     @Handles("sjp.query.case-results")
     public JsonEnvelope getCaseResults(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
+    @Handles("sjp.query.not-guilty-plea-cases")
+    public JsonEnvelope getNotGuiltyPleaCases(final JsonEnvelope query) {
         return requester.request(query);
     }
 }

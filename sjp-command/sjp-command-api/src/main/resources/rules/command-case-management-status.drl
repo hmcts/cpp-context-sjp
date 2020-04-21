@@ -1,0 +1,17 @@
+package uk.gov.moj.cpp.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import java.util.Arrays;
+import uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants;
+
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command API  - update cases management status"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.update-cases-management-status");
+     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.updateCasesManagementStatusGroups()));
+  then
+    $outcome.setSuccess(true);
+end

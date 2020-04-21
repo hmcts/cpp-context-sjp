@@ -73,6 +73,7 @@
   "prosecutingAuthority": "TFL",
   "completed": false,
   "assigned": false,
+  "postConviction": false,
   "costs": 20,
   "postingDate": "2018-01-05",
   "adjournedTo": "2020-01-01",

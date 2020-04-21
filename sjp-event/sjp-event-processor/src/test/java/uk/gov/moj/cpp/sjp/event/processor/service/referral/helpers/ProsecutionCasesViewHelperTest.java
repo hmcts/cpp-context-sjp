@@ -93,6 +93,7 @@ public class ProsecutionCasesViewHelperTest {
     private static final String DEFENDANT_SECONDARY_EMAIL = "defendant secondary email";
     private static final LocalDate OFFENCE_END_DATE = LocalDate.now().plusDays(20);
     private static final ZonedDateTime PLEA_DATE = ZonedDateTime.now();
+    private static final String PROSECUTION_CASE_REFERENCE = "2OknbZ5Xl4";
 
     private ProsecutionCasesViewHelper prosecutionCasesViewHelper = new ProsecutionCasesViewHelper();
 
@@ -191,6 +192,7 @@ public class ProsecutionCasesViewHelperTest {
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
                 prosecutor,
+                null,
                 caseFileDefendantDetails,
                 employer,
                 DEFENDANT_NATIONALITY_ID,
@@ -236,11 +238,13 @@ public class ProsecutionCasesViewHelperTest {
 
         final JsonObject prosecutor = createProsecutor();
         final EmployerDetails employer = createEmployer();
+        final JsonObject prosecutionCaseFile = createCaseFileDetails();
         final JsonObject caseFileDefendantDetails = createCaseFileDefendantDetails();
 
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
                 prosecutor,
+                prosecutionCaseFile,
                 caseFileDefendantDetails,
                 employer,
                 nonNull(caseFileDefendantDetails) ? DEFENDANT_NATIONALITY_ID : null,
@@ -253,7 +257,7 @@ public class ProsecutionCasesViewHelperTest {
         assertThat(prosecutionCaseViews.size(), is(1));
 
         final ProsecutionCaseView prosecutionCaseView = prosecutionCaseViews.get(0);
-        assertProsecutionView(prosecutionCaseView, nonReferredOffence, caseFileDefendantDetails);
+        assertProsecutionView(prosecutionCaseView, nonReferredOffence, prosecutionCaseFile, caseFileDefendantDetails);
 
         final DefendantView defendantView = prosecutionCaseView.getDefendants().get(0);
 
@@ -317,11 +321,13 @@ public class ProsecutionCasesViewHelperTest {
 
         final JsonObject prosecutor = createProsecutor();
         final EmployerDetails employer = createEmployer();
+        final JsonObject prosecutionCaseFile = createCaseFileDetails();
         final JsonObject caseFileDefendantDetails = createCaseFileDefendantDetails();
 
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
                 prosecutor,
+                prosecutionCaseFile,
                 caseFileDefendantDetails,
                 employer,
                 nonNull(caseFileDefendantDetails) ? DEFENDANT_NATIONALITY_ID : null,
@@ -334,7 +340,7 @@ public class ProsecutionCasesViewHelperTest {
         assertThat(prosecutionCaseViews.size(), is(1));
 
         final ProsecutionCaseView prosecutionCaseView = prosecutionCaseViews.get(0);
-        assertProsecutionView(prosecutionCaseView, nonReferredOffence, caseFileDefendantDetails);
+        assertProsecutionView(prosecutionCaseView, nonReferredOffence, prosecutionCaseFile, caseFileDefendantDetails);
 
         final DefendantView defendantView = prosecutionCaseView.getDefendants().get(0);
 
@@ -376,6 +382,7 @@ public class ProsecutionCasesViewHelperTest {
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
                 prosecutor,
+                null,
                 caseFileDefendantDetails,
                 employer,
                 nonNull(caseFileDefendantDetails) ? DEFENDANT_NATIONALITY_ID : null,
@@ -388,7 +395,7 @@ public class ProsecutionCasesViewHelperTest {
         assertThat(prosecutionCaseViews.size(), is(1));
 
         final ProsecutionCaseView prosecutionCaseView = prosecutionCaseViews.get(0);
-        assertProsecutionView(prosecutionCaseView, offence, caseFileDefendantDetails);
+        assertProsecutionView(prosecutionCaseView, offence, null, caseFileDefendantDetails);
 
         final DefendantView defendantView = prosecutionCaseView.getDefendants().get(0);
 
@@ -483,14 +490,16 @@ public class ProsecutionCasesViewHelperTest {
         assertThat(actual, is(StringUtils.isBlank(expected) ? null : expected));
     }
 
-    private void assertProsecutionView(final ProsecutionCaseView prosecutionCaseView, Offence offence, final JsonObject caseFileDefendantDetails) {
+    private void assertProsecutionView(final ProsecutionCaseView prosecutionCaseView, Offence offence,
+                                       final JsonObject prosecutionCaseFile, final JsonObject caseFileDefendantDetails) {
         assertThat(prosecutionCaseView.getId(), is(CASE_ID));
         assertThat(prosecutionCaseView.getInitiationCode(), is("J"));
         assertThat(prosecutionCaseView.getStatementOfFacts(), is(offence.getProsecutionFacts()));
         assertThat(prosecutionCaseView.getProsecutionCaseIdentifier(), is(new ProsecutionCaseIdentifierView(
                 PROSECUTOR_ID,
                 PROSECUTOR_CODE,
-                CASE_URN.toString())));
+                CASE_URN.toString(),
+                null)));
         assertThat(prosecutionCaseView.getStatementOfFactsWelsh(), is(nonNull(caseFileDefendantDetails) ? STATEMENT_OF_FACTS_WELSH : null));
         assertThat(prosecutionCaseView.getDefendants(), iterableWithSize(1));
     }
@@ -580,8 +589,20 @@ public class ProsecutionCasesViewHelperTest {
                 .add("specificRequirements", DEFENDANT_SPECIFIC_REQUIREMENTS)
                 .add("offences", createArrayBuilder()
                         .add(createObjectBuilder()
+                                .add("offenceId", OFFENCE_ID1.toString())
                                 .add("statementOfFactsWelsh", STATEMENT_OF_FACTS_WELSH)
                                 .add("offenceCommittedEndDate", OFFENCE_END_DATE.toString())))
+                .build();
+    }
+
+    private JsonObject createCaseFileDetails(){
+        return createObjectBuilder()
+                .add("caseId", "709f6cd8-b371-41bc-be6b-841d42b7fbfd")
+                .add("prosecutorInformant", "Adam")
+                .add("prosecutionCaseReference", PROSECUTION_CASE_REFERENCE)
+                .add("prosecutionAuthority", "GAEAA01")
+                .add("originatingOrganisation", "GAEAA01")
+                .add("defendants", createArrayBuilder().add(createCaseFileDefendantDetails()))
                 .build();
     }
 

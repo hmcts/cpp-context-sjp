@@ -65,43 +65,14 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class CaseCompletedProcessorTest {
 
 
-    @InjectMocks
-    private CaseCompletedProcessor caseCompletedProcessor;
-
-    @Mock
-    private Requester requester;
-
-    @Mock
-    private Sender sender;
-
-    @Mock
-    private SjpService sjpService;
-
-    @Mock
-    private ReferenceDataService referenceDataService;
-
-    @Mock
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Captor
-    private ArgumentCaptor<Envelope<JsonValue>> jsonEnvelopeCaptor;
-
-    @Mock
-    private ResultingToResultsConverter resultingToResultsConverter;
-
-    @Mock
-    private PublicSjpResulted publicSjpResulted;
-
     private static final DefaultJsonEnvelopeProvider defaultJsonEnvelopeProvider = new DefaultJsonEnvelopeProvider();
     private static final ObjectMapperProducer objectMapperProducer = new ObjectMapperProducer();
-
     private static final UUID CASE_ID = randomUUID();
     private static final UUID SESSION1_ID = randomUUID();
     private static final UUID RESULT_DEFINITION_ID = randomUUID();
     private static final ZonedDateTime DECISION1_SAVED_AT = ZonedDateTime.now();
     private static final UUID OFFENCE1_ID = randomUUID();
     private static final UUID OFFENCE2_ID = randomUUID();
-
     private static final String FIELD_ID = "id";
     private static final String FIELD_VERSION = "version";
     private static final String FIELD_LABEL = "label";
@@ -118,9 +89,47 @@ public class CaseCompletedProcessorTest {
     private static final String DISMISSED_RESULT_ID = "14d66587-8fbe-424f-a369-b1144f1684e3";
     private static final String WITHDRAWN_SHORT_CODE = "WDRNNOT";
     private static final String DISMISSED_SHORT_CODE = "DISM";
-
     private static final String CASE_RESULTS = "sjp.query.case-results";
     private static final String CASE_COMPLETED = "sjp.events.case-completed";
+    @InjectMocks
+    private CaseCompletedProcessor caseCompletedProcessor;
+    @Mock
+    private Requester requester;
+    @Mock
+    private Sender sender;
+    @Mock
+    private SjpService sjpService;
+    @Mock
+    private ReferenceDataService referenceDataService;
+    @Mock
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+    @Captor
+    private ArgumentCaptor<Envelope<JsonValue>> jsonEnvelopeCaptor;
+    @Mock
+    private ResultingToResultsConverter resultingToResultsConverter;
+    @Mock
+    private PublicSjpResulted publicSjpResulted;
+
+
+    private static JsonEnvelope toJsonEnvelope(final Object envelope) {
+        if (envelope instanceof JsonEnvelope) {
+            return (JsonEnvelope) envelope;
+        } else if (envelope instanceof DefaultEnvelope) {
+            try {
+                final DefaultEnvelope defaultEnvelope = (DefaultEnvelope) envelope;
+                final String jsonString = objectMapperProducer.objectMapper().writeValueAsString(defaultEnvelope.payload());
+                final StringReader stringReader = new StringReader(jsonString);
+                final JsonObject payload = createReader(stringReader).readObject();
+                stringReader.close();
+                return defaultJsonEnvelopeProvider.envelopeFrom(defaultEnvelope.metadata(), payload);
+            } catch (final JsonProcessingException ex) {
+                throw new RuntimeException(ex.getMessage(), ex);
+            }
+
+        } else {
+            throw new IllegalArgumentException("don't know how to convert this");
+        }
+    }
 
     @Before
     public void setUp() {
@@ -173,24 +182,6 @@ public class CaseCompletedProcessorTest {
             fail("Should throw IllegalArgumentException when no Results received");
         } catch (final IllegalArgumentException exception) {
             Assert.assertThat(exception.getMessage(), equalTo("No results for offence in ReferencedDecisionsSaved event"));
-        }
-    }
-
-    @Test
-    public void shouldErrorIfNoOffencesReceived() {
-        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(CASE_COMPLETED), createObjectBuilder().add("caseId", CASE_ID.toString()).build());
-        final JsonObject responsePayload = createResponsePayloadForNoOffences();
-        final JsonEnvelope responseEnvelope = envelopeFrom(metadataFrom(envelope.metadata()).withName(CASE_RESULTS), responsePayload);
-
-        when(sjpService.getCaseDetails(any(), any())).thenReturn(buildCaseDetails());
-        when(referenceDataService.getAllResultDefinitions(any(), any())).thenReturn(getAllResultsDefinitionJsonObject());
-        when(requester.request(any())).thenReturn(responseEnvelope);
-
-        try {
-            caseCompletedProcessor.handleCaseCompleted(envelope);
-            fail("Should throw IllegalArgumentException when no Results received");
-        } catch (final IllegalArgumentException exception) {
-            Assert.assertThat(exception.getMessage(), equalTo("No offences in ReferencedDecisionsSaved event"));
         }
     }
 
@@ -427,26 +418,6 @@ public class CaseCompletedProcessorTest {
 
     private List<JsonEnvelope> standardizeJsonEnvelopes(final List<Object> allValues) {
         return allValues.stream().map(CaseCompletedProcessorTest::toJsonEnvelope).collect(toList());
-    }
-
-    private static JsonEnvelope toJsonEnvelope(final Object envelope) {
-        if (envelope instanceof JsonEnvelope) {
-            return (JsonEnvelope) envelope;
-        } else if (envelope instanceof DefaultEnvelope) {
-            try {
-                final DefaultEnvelope defaultEnvelope = (DefaultEnvelope) envelope;
-                final String jsonString = objectMapperProducer.objectMapper().writeValueAsString(defaultEnvelope.payload());
-                final StringReader stringReader = new StringReader(jsonString);
-                final JsonObject payload = createReader(stringReader).readObject();
-                stringReader.close();
-                return defaultJsonEnvelopeProvider.envelopeFrom(defaultEnvelope.metadata(), payload);
-            } catch (final JsonProcessingException ex) {
-                throw new RuntimeException(ex.getMessage(), ex);
-            }
-
-        } else {
-            throw new IllegalArgumentException("don't know how to convert this");
-        }
     }
 
 }

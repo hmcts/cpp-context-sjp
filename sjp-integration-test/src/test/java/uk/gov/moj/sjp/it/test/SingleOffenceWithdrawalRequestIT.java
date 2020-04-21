@@ -24,7 +24,7 @@ import static uk.gov.moj.sjp.it.util.EventUtil.eventsByName;
 
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequestReasonChanged;

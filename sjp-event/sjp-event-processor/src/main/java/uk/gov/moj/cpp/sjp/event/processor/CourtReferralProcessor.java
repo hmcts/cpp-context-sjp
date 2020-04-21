@@ -112,7 +112,8 @@ public class CourtReferralProcessor {
                 .map(pleaReceived -> sjpService.getDefendantPleaDetails(caseDetails.getId(), caseDetails.getDefendant().getId(), emptyEnvelope))
                 .orElse(null);
 
-        final JsonObject caseFileDefendantDetails = prosecutionCaseFileService.getCaseFileDefendantDetails(caseDetails.getId(), emptyEnvelope).orElse(null);
+        final Optional<JsonObject> prosecutionCaseFileOptional = prosecutionCaseFileService.getCaseFileDetails(caseDetails.getId(), emptyEnvelope);
+        final JsonObject caseFileDefendantDetails = prosecutionCaseFileOptional.map(this::getCaseFileDefendant).orElse(null);
 
         final List<HearingRequestView> listHearingRequestViews = hearingRequestsDataSourcingService.createHearingRequestViews(
                 caseReferredForCourtHearing,
@@ -127,6 +128,7 @@ public class CourtReferralProcessor {
                 caseDetails,
                 caseReferredForCourtHearing,
                 defendantOnlinePleaDetails,
+                prosecutionCaseFileOptional.orElse(null),
                 caseFileDefendantDetails,
                 emptyEnvelope);
         final List<CourtDocumentView> courtDocumentViews = courtDocumentsDataSourcingService.createCourtDocumentViews(
@@ -144,6 +146,10 @@ public class CourtReferralProcessor {
                         courtDocumentViews));
 
         sender.send(command);
+    }
+
+    private JsonObject getCaseFileDefendant(final JsonObject caseFile) {
+        return caseFile.getJsonArray("defendants").getJsonObject(0);
     }
 
 }

@@ -130,17 +130,22 @@ public class DecisionApiTest {
 
     @Test
     public void shouldThrowBadRequestWhenAdjournDateIsInThePast() {
-        expectBadRequestException("The adjournment date must be between 1 and 21 days in the future");
-        final LocalDate pastAdjournDate = now().minusDays(10);
-        final JsonEnvelope envelope = createCaseDecisionCommandWithOffence(buildOffenceWithAdjournDecisionWithAdjournDate(pastAdjournDate));
+        expectBadRequestException("The adjournment date must be between 1 and 28 days in the future");
+        final LocalDate yesterday = now().minusDays(1);
+        final JsonEnvelope envelope = createCaseDecisionCommandWithOffence(buildOffenceWithAdjournDecisionWithAdjournDate(yesterday));
         decisionApi.saveDecision(envelope);
         verify(sender).send(envelopeCaptor.capture());
     }
 
     @Test
-    public void shouldThrowBadRequestWhenAdjournDateIsMoreThan21DaysInFuture() {
-        expectBadRequestException("The adjournment date must be between 1 and 21 days in the future");
-        final LocalDate futureAdjournDate = now().plusDays(22);
+    public void shouldThrowBadRequestWhenAdjournDateIsMoreThan28DaysInFuture() {
+        // assume no exception thrown up to 28 days
+        final LocalDate dateWithinUpperLimit = now().plusDays(28);
+        final JsonEnvelope validEnvelope = createCaseDecisionCommandWithOffence(buildOffenceWithAdjournDecisionWithAdjournDate(dateWithinUpperLimit));
+        decisionApi.saveDecision(validEnvelope);
+
+        expectBadRequestException("The adjournment date must be between 1 and 28 days in the future");
+        final LocalDate futureAdjournDate = now().plusDays(29);
         final JsonEnvelope envelope = createCaseDecisionCommandWithOffence(buildOffenceWithAdjournDecisionWithAdjournDate(futureAdjournDate));
         decisionApi.saveDecision(envelope);
         verify(sender).send(envelopeCaptor.capture());
@@ -148,7 +153,12 @@ public class DecisionApiTest {
 
     @Test
     public void shouldThrowBadRequestWhenAdjournDateIsSameAsToday() {
-        expectBadRequestException("The adjournment date must be between 1 and 21 days in the future");
+        // assume no exception thrown with date within lower limit (D+1)
+        final LocalDate tomorrow = now().plusDays(1);
+        final JsonEnvelope validEnvelope = createCaseDecisionCommandWithOffence(buildOffenceWithAdjournDecisionWithAdjournDate(tomorrow));
+        decisionApi.saveDecision(validEnvelope);
+
+        expectBadRequestException("The adjournment date must be between 1 and 28 days in the future");
         final LocalDate adjournDate = now();
         final JsonEnvelope envelope = createCaseDecisionCommandWithOffence(buildOffenceWithAdjournDecisionWithAdjournDate(adjournDate));
         decisionApi.saveDecision(envelope);

@@ -3,6 +3,7 @@
     "prosecutionCases": [
       {
         "statementOfFacts": "No ticket at the gates, forgery",
+        "originatingOrganisation" : "GAEAA01",
         "statementOfFactsWelsh": "some facts in welsh",
         "defendants": [
           {
@@ -96,7 +97,8 @@
                   "work": "02020202020"
                 },
                 "name": "Test Org"
-              }
+              },
+              "driverNumber": "${DRIVER_NUMBER}"
             }
           }
         ],

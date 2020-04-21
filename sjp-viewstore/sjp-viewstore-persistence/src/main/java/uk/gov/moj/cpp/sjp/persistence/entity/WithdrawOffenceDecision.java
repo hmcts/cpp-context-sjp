@@ -24,7 +24,7 @@ public class WithdrawOffenceDecision extends OffenceDecision {
                                    final UUID withdrawalReasonId,
                                    final VerdictType verdict) {
 
-        super(offenceId, caseDecisionId, DecisionType.WITHDRAW, verdict);
+        super(offenceId, caseDecisionId, DecisionType.WITHDRAW, verdict, null);
         this.withdrawalReasonId = withdrawalReasonId;
     }
 

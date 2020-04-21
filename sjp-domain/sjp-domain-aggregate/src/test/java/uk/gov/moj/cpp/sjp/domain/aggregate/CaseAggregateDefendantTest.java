@@ -53,7 +53,8 @@ public class CaseAggregateDefendantTest {
     private final String firstName = "Random";
     private final String lastName = "Guy";
     private final String nationalInsuranceNumber = "valid nino";
-    private final String driverNumber = "valid_driverNumber";
+    private final String driverNumber = "TESTY708166G99KZ";
+    private final String driverLicenceDetails = "driver_licence_details";
     private final LocalDate dateOfBirth = LocalDates.from("2000-01-01");
     private final String email = "test_email1@example.com";
     private final String email2 = "test_email2@example.com";
@@ -332,7 +333,7 @@ public class CaseAggregateDefendantTest {
         return (CaseReceived) caseAggregate.receiveCase(
                 CaseBuilder.aDefaultSjpCase()
                         .withId(caseId)
-                        .withDefendant(new Defendant(
+                        .withDefendant( new Defendant(
                                 defendantData.defendantId,
                                 defendantData.title,
                                 defendantData.firstName,
@@ -341,6 +342,7 @@ public class CaseAggregateDefendantTest {
                                 defendantData.gender,
                                 defendantData.nationalInsuranceNumber,
                                 defendantData.driverNumber,
+                                defendantData.driverLicenceDetails,
                                 defendantData.address,
                                 defendantData.contactDetails,
                                 defendantData.numPreviousConvictions,
@@ -362,6 +364,7 @@ public class CaseAggregateDefendantTest {
                 updatedDefendantData.gender,
                 updatedDefendantData.nationalInsuranceNumber,
                 updatedDefendantData.driverNumber,
+                updatedDefendantData.driverLicenceDetails,
                 updatedDefendantData.address,
                 updatedDefendantData.contactDetails,
                 updatedDefendantData.region);
@@ -382,6 +385,7 @@ public class CaseAggregateDefendantTest {
         private final Gender gender = CaseAggregateDefendantTest.this.gender;
         private final String nationalInsuranceNumber = CaseAggregateDefendantTest.this.nationalInsuranceNumber;
         private final String driverNumber = CaseAggregateDefendantTest.this.driverNumber;
+        private final String driverLicenceDetails = CaseAggregateDefendantTest.this.driverLicenceDetails;
         private final Language hearingLanguage = CaseAggregateDefendantTest.this.hearingLanguage;
         private final String languageNeeds = CaseAggregateDefendantTest.this.languageNeeds;
         private final ContactDetails contactDetails = CaseAggregateDefendantTest.this.contactDetails;

@@ -110,6 +110,8 @@ public class CaseDefendantHandler {
                 .withDateOfBirth(person.getDateOfBirth())
                 .withGender(person.getGender())
                 .withNationalInsuranceNumber(person.getNationalInsuranceNumber())
+                .withDriverNumber(person.getDriverNumber())
+                .withDriverLicenceDetails(person.getDriverLicenceDetails())
                 .withContactDetails(person.getContactDetails())
                 .withAddress(person.getAddress())
                 .withUpdateByOnlinePlea(updatedByOnlinePlea)

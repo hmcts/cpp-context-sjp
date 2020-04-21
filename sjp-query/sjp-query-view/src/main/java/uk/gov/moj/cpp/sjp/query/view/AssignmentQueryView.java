@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view;
 
 
-import static java.util.stream.Collectors.toSet;
 import static javax.json.Json.createObjectBuilder;
 
 import uk.gov.justice.services.core.annotation.Component;
@@ -10,24 +9,17 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
-import uk.gov.moj.cpp.sjp.domain.AssignmentRuleType;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.query.view.service.AssignmentService;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Stream;
+import java.util.*;
 
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
-
-import org.apache.commons.lang3.StringUtils;
 
 @ServiceComponent(Component.QUERY_VIEW)
 public class AssignmentQueryView {
@@ -65,16 +57,12 @@ public class AssignmentQueryView {
 
         final UUID assigneeId = UUID.fromString(queryOptions.getString("assigneeId"));
         final SessionType sessionType = SessionType.valueOf(queryOptions.getString("sessionType"));
+        final String localJusticeAreaNationalCourtCode = queryOptions.getString("localJusticeAreaNationalCourtCode");
         final int limit = queryOptions.getInt("limit");
-        final String prosecutingAuthoritiesAsString = queryOptions.getString("prosecutingAuthorities", "");
-        final AssignmentRuleType assignmentRule = AssignmentRuleType.valueOf(queryOptions.getString("assignmentRule"));
 
-        final Set<String> prosecutingAuthorities = Stream.of(prosecutingAuthoritiesAsString.split(","))
-                .map(String::trim)
-                .filter(StringUtils::isNotEmpty)
-                .collect(toSet());
+        final Set<String> prosecutingAuthorities = new HashSet<>(assignmentService.getProsecutingAuthorityByLja(localJusticeAreaNationalCourtCode));
 
-        final List<AssignmentCandidate> assignmentCandidatesList = assignmentService.getAssignmentCandidates(assigneeId, sessionType, prosecutingAuthorities, assignmentRule, limit);
+        final List<AssignmentCandidate> assignmentCandidatesList = assignmentService.getAssignmentCandidates(assigneeId, sessionType, prosecutingAuthorities, limit);
 
         final JsonArrayBuilder casesReadyForDecisionBuilder = Json.createArrayBuilder();
 

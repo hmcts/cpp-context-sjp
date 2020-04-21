@@ -9,8 +9,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty.createFinancialPenalty;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType.PAY_TO_COURT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
@@ -18,9 +18,14 @@ import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.*;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.*;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
@@ -29,9 +34,13 @@ import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_USER_ID;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
+import com.google.common.collect.Sets;
 import uk.gov.justice.json.schemas.domains.sjp.User;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
+import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPeriod;
+import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPeriodTimeUnit;
+import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
+import uk.gov.moj.cpp.sjp.domain.decision.endorsement.PenaltyPointsReason;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.CostsAndSurcharge;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.InstallmentPeriod;
@@ -45,6 +54,8 @@ import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.DecisionHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.JsonHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
@@ -82,8 +93,7 @@ public class CaseResultsIT extends BaseIntegrationTest {
 
     @Before
     public void beforeEveryTest() throws SQLException {
-
-        databaseCleaner.cleanAll();
+        databaseCleaner.cleanViewStore();
 
         stubStartSjpSessionCommand();
         stubEndSjpSessionCommand();
@@ -93,6 +103,9 @@ public class CaseResultsIT extends BaseIntegrationTest {
         stubResultIds();
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
         stubForUserDetails(user, prosecutingAuthority.name());
+
+        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
+
 
         final CreateCase.CreateCasePayloadBuilder caseBuilder = CreateCase
                 .CreateCasePayloadBuilder
@@ -127,8 +140,76 @@ public class CaseResultsIT extends BaseIntegrationTest {
     @Test
     public void testCaseResults() {
 
-        final FinancialPenalty financialPenalty = FinancialPenalty.createFinancialPenalty(null, createOffenceDecisionInformation(offenceId, PROVED_SJP),
-                BigDecimal.TEN, BigDecimal.ZERO, "Not Requested", false);
+        final FinancialPenalty financialPenalty = createFinancialPenalty(null, createOffenceDecisionInformation(offenceId, PROVED_SJP),
+                BigDecimal.TEN, BigDecimal.ZERO, "Not Requested", false, null, null);
+
+        final List<FinancialPenalty> offencesDecisions = Collections.singletonList(financialPenalty);
+
+        final FinancialImposition financialImposition = new FinancialImposition(
+                new CostsAndSurcharge(new BigDecimal(120), null, new BigDecimal(32), null, null, true),
+                new Payment(new BigDecimal(272), PAY_TO_COURT, "No information from defendant", null,
+                        new PaymentTerms(false, null, new Installments(new BigDecimal(20), InstallmentPeriod.MONTHLY, LocalDate.now().plusDays(30))), null
+                ));
+        final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, laUser, offencesDecisions, financialImposition);
+
+        eventListener
+                .subscribe(DecisionSaved.EVENT_NAME)
+                .subscribe(CaseCompleted.EVENT_NAME)
+                .run(() -> DecisionHelper.saveDecision(decision));
+
+        final JsonObject payload = getCaseResults(caseId, laUser.getUserId(), Response.Status.OK);
+
+        Matcher<? super Object> allMatchers = allOf(
+                hasJsonPath("$.caseId", equalTo(caseId.toString())),
+                hasJsonPath("$.caseDecisions[0].sjpSessionId", equalTo(sessionId.toString())),
+                hasJsonPath("$.caseDecisions[0].offences[*]", hasSize(greaterThan(0))),
+                hasJsonPath("$.caseDecisions[0].offences[0].id", equalTo(offenceId.toString()))
+        );
+
+        assertThat(payload.toString(), allMatchers);
+
+    }
+
+    @Test
+    public void testCaseResultsForEndorsement() {
+
+        final FinancialPenalty financialPenalty = new FinancialPenalty(null, createOffenceDecisionInformation(offenceId, PROVED_SJP),
+                BigDecimal.TEN, BigDecimal.ZERO, "Not Requested", false, null, null,
+                true, 2, PenaltyPointsReason.DIFFERENT_OCCASIONS, null,false,null, null, null);
+
+        final List<FinancialPenalty> offencesDecisions = Collections.singletonList(financialPenalty);
+
+        final FinancialImposition financialImposition = new FinancialImposition(
+                new CostsAndSurcharge(new BigDecimal(120), null, new BigDecimal(32), null, null, true),
+                new Payment(new BigDecimal(272), PAY_TO_COURT, "No information from defendant", null,
+                        new PaymentTerms(false, null, new Installments(new BigDecimal(20), InstallmentPeriod.MONTHLY, LocalDate.now().plusDays(30))), null
+                ));
+        final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, laUser, offencesDecisions, financialImposition);
+
+        eventListener
+                .subscribe(DecisionSaved.EVENT_NAME)
+                .subscribe(CaseCompleted.EVENT_NAME)
+                .run(() -> DecisionHelper.saveDecision(decision));
+
+        final JsonObject payload = getCaseResults(caseId, laUser.getUserId(), Response.Status.OK);
+
+        Matcher<? super Object> allMatchers = allOf(
+                hasJsonPath("$.caseId", equalTo(caseId.toString())),
+                hasJsonPath("$.caseDecisions[0].sjpSessionId", equalTo(sessionId.toString())),
+                hasJsonPath("$.caseDecisions[0].offences[*]", hasSize(greaterThan(0))),
+                hasJsonPath("$.caseDecisions[0].offences[0].id", equalTo(offenceId.toString()))
+        );
+
+        assertThat(payload.toString(), allMatchers);
+
+    }
+
+    @Test
+    public void testCaseResultsForDisqualification() {
+
+        final FinancialPenalty financialPenalty = new FinancialPenalty(null, createOffenceDecisionInformation(offenceId, PROVED_SJP),
+                BigDecimal.TEN, BigDecimal.ZERO, "Not Requested", false, null, null,
+                false, null, null, null,true, DisqualificationType.DISCRETIONARY, new DisqualificationPeriod(2, DisqualificationPeriodTimeUnit.MONTH), null);
 
         final List<FinancialPenalty> offencesDecisions = Collections.singletonList(financialPenalty);
 

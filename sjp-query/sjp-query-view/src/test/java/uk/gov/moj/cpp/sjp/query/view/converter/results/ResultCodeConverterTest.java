@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.converter.results;
 
 import static java.lang.String.format;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -14,7 +15,7 @@ import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Employer;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.query.view.converter.ResultCode;
@@ -53,7 +54,7 @@ public abstract class ResultCodeConverterTest {
         caseDetail.setId(caseId);
         caseDetail.setUrn(null);
         caseDetail.setEnterpriseId(null);
-        caseDetail.setProsecutingAuthority(ProsecutingAuthority.valueOf(getProsecutingAuthority()));
+        caseDetail.setProsecutingAuthority(getProsecutingAuthority());
         DefendantDetail defendantDetail = new DefendantDetail();
         defendantDetail.setId(defendantId);
         caseDetail.setDefendant(defendantDetail);
@@ -84,7 +85,12 @@ public abstract class ResultCodeConverterTest {
 
         final ResultCode resultCode = code.get();
 
-        final CaseView caseView = new CaseView(caseDetail, "DVLA");
+        JsonObject prosecutorPayload = createObjectBuilder()
+                .add("fullName", "DVLA")
+                .add("policeFlag", false)
+                .build();
+
+        final CaseView caseView = new CaseView(caseDetail, prosecutorPayload);
 
         Employer employer = new Employer(defendantId, "McDonald's", "12345", "020 7998 9300",
                 new Address("14 Tottenham Court Road", "London", "England", "UK", "Greater London", "W1T 1JY"));

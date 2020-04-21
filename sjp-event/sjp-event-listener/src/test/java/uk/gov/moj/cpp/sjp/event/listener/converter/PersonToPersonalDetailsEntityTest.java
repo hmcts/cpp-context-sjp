@@ -48,6 +48,8 @@ public class PersonToPersonalDetailsEntityTest {
                 inputPerson.getDateOfBirth(),
                 inputPerson.getGender(),
                 inputPerson.getNationalInsuranceNumber(),
+                inputPerson.getDriverNumber(),
+                inputPerson.getDriverLicenceDetails(),
                 mockedAddress,
                 mockedContactDetails,
                 inputPerson.getRegion());

@@ -70,7 +70,13 @@ public enum Prompt {
     SUMRTO_MAGISTRATES_COURT(15, fromString("f5699b34-f32f-466e-b7d8-40b4173df154"), PromptConverter::new),
     SUMRTO_REASONS_FOR_REFERRING(35, fromString("dbbb47c9-2202-4913-9a0d-db0a048bfd5f"), PromptConverter::new),
     COURT_TO_WHICH_FINE_IS_TRANSFERRED(1, fromString("5f589095-2986-4d2b-98fa-30ab00f675d4"), PromptConverter::new),
-    NCOLLO_REASON(0, fromString("de27ffb3-b7ef-4308-b8c7-ca51ab0c1136"), () -> new HardcodedValuePromptConverter("impracticable or inappropriate"));
+    NCOLLO_REASON(0, fromString("de27ffb3-b7ef-4308-b8c7-ca51ab0c1136"), () -> new HardcodedValuePromptConverter("impracticable or inappropriate")),
+    LEA_REASON_FOR_PENALTY_POINTS(1, fromString("bbbb47bb-3418-463c-bfc3-43c6f72bb7c9"), PromptConverter::new),
+    LEP_PENALTY_POINTS(1, fromString("a8719de4-7783-448a-b792-e3f94e670ad0"), PromptConverter::new),
+    DDD_DISQUALIFICATION_PERIOD(1, fromString("2bf54447-328c-4c1b-a123-341adbd52172"), PromptConverter::new),
+    DDO_DISQUALIFICATION_PERIOD(1, fromString("2bf54447-328c-4c1b-a123-341adbd52172"), PromptConverter::new),
+    DDP_DISQUALIFICATION_PERIOD(1, fromString("2bf54447-328c-4c1b-a123-341adbd52172"), PromptConverter::new),
+    DDP_NOTIONAL_PENALTY_POINTS(2, fromString("462d5ba8-7a1c-44a0-a732-6c75601bd6af"), PromptConverter::new);
 
     private final Integer index;
     private final UUID id;
@@ -92,7 +98,7 @@ public enum Prompt {
         return index;
     }
 
-    public void createPrompt(final JsonArrayBuilder promptsPayloadBuilder, final JsonObject terminalEntry, final OffenceDataSupplier offenceDataSupplier){
-            promptConverter.get().createPrompt(promptsPayloadBuilder, terminalEntry, this, offenceDataSupplier);
+    public void createPrompt(final JsonArrayBuilder promptsPayloadBuilder, final JsonObject terminalEntry, final OffenceDataSupplier offenceDataSupplier) {
+        promptConverter.get().createPrompt(promptsPayloadBuilder, terminalEntry, this, offenceDataSupplier);
     }
 }

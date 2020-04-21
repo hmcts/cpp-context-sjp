@@ -1,17 +1,25 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
 
+import static java.lang.Boolean.TRUE;
+import static java.time.LocalDate.now;
+import static java.util.UUID.fromString;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.common.CaseByManagementStatus;
+import uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
 import uk.gov.moj.cpp.sjp.event.CaseListedInCriminalCourts;
 import uk.gov.moj.cpp.sjp.event.CaseStatusChanged;
+import uk.gov.moj.cpp.sjp.event.casemanagement.UpdateCasesManagementStatus;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseDocumentAddedToCaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
@@ -20,17 +28,16 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.ReadyCaseRepository;
 
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.transaction.Transactional;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Optional;
-import java.util.UUID;
-
-import static java.lang.Boolean.TRUE;
-import static java.time.LocalDate.now;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 @ServiceComponent(EVENT_LISTENER)
 public class CaseUpdatedListener {
@@ -121,7 +128,7 @@ public class CaseUpdatedListener {
     @Transactional
     public void undoCaseReopened(final JsonEnvelope envelope) {
         final CaseDetail caseDetail = findCaseById(
-                UUID.fromString(envelope.payloadAsJsonObject().getString(CASE_ID))
+                fromString(envelope.payloadAsJsonObject().getString(CASE_ID))
         );
         caseDetail.undoReopenCase();
     }
@@ -131,17 +138,33 @@ public class CaseUpdatedListener {
     public void updateCaseListedInCriminalCourts(final JsonEnvelope envelope) {
         final JsonObject payload = envelope.payloadAsJsonObject();
         final CaseDetail caseDetail = findCaseById(
-                UUID.fromString(payload.getString(CASE_ID))
+                fromString(payload.getString(CASE_ID))
         );
         caseDetail.setListedInCriminalCourts(TRUE);
         caseDetail.setHearingCourtName(Optional.ofNullable(payload.getString("hearingCourtName")).orElse(null));
         caseDetail.setHearingTime(ZonedDateTime.parse(payload.getString("hearingTime")));
     }
 
+    @Handles(UpdateCasesManagementStatus.EVENT_NAME)
+    @Transactional
+    public void updateCaseManagementStatus(final JsonEnvelope envelope) {
+        final JsonObject payload = envelope.payloadAsJsonObject();
+        final List<CaseByManagementStatus> cases = payload.getJsonArray("cases")
+                .getValuesAs(JsonObject.class)
+                .stream()
+                .map(caseJson -> new CaseByManagementStatus(fromString(caseJson.getString(CASE_ID)), CaseManagementStatus.valueOf(caseJson.getString("caseManagementStatus"))))
+                .collect(Collectors.toList());
+
+        cases.forEach(caseByManagementStatus -> {
+            final CaseDetail caseDetail = findCaseById(caseByManagementStatus.getCaseId());
+            caseDetail.setCaseManagementStatus(caseByManagementStatus.getCaseManagementStatus());
+        });
+    }
+
     private void handleCaseReopened(final JsonEnvelope envelope) {
         final JsonObject payload = envelope.payloadAsJsonObject();
 
-        final UUID caseId = UUID.fromString(payload.getString(CASE_ID));
+        final UUID caseId = fromString(payload.getString(CASE_ID));
         final CaseDetail caseDetail = findCaseById(caseId);
         caseDetail.setReopenedDate(LocalDates.from(payload.getString("reopenedDate")));
         caseDetail.setLibraCaseNumber(payload.getString("libraCaseNumber"));

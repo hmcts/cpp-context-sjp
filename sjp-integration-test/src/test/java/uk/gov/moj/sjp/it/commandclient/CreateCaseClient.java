@@ -1,7 +1,7 @@
 package uk.gov.moj.sjp.it.commandclient;
 
 import uk.gov.justice.services.common.converter.LocalDates;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.sjp.it.util.commandclient.CommandClient;

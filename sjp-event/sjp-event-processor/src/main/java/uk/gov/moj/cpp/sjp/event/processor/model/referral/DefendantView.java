@@ -12,13 +12,15 @@ public class DefendantView {
     private final String mitigation;
     private final List<OffenceView> offences;
     private final PersonDefendantView personDefendant;
+    private final List<DefendantAliasView> aliases;
 
     public DefendantView(final UUID id,
                          final UUID prosecutionCaseId,
                          final Integer numberOfPreviousConvictionsCited,
                          final String mitigation,
                          final List<OffenceView> offences,
-                         final PersonDefendantView personDefendant) {
+                         final PersonDefendantView personDefendant,
+                         final List<DefendantAliasView> aliases) {
 
         this.id = id;
         this.prosecutionCaseId = prosecutionCaseId;
@@ -26,6 +28,7 @@ public class DefendantView {
         this.mitigation = mitigation;
         this.offences = offences;
         this.personDefendant = personDefendant;
+        this.aliases = aliases;
     }
 
     public UUID getId() {
@@ -52,4 +55,7 @@ public class DefendantView {
         return personDefendant;
     }
 
+    public List<DefendantAliasView> getAliases() {
+        return aliases;
+    }
 }

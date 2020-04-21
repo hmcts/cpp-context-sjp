@@ -1,9 +1,0 @@
-{
-  "id": "%s",
-  "withdrawalReasonId": "11b9087a-4681-3484-b2cf-684295353ac6",
-  "type": "WITHDRAW",
-  "offenceDecisionInformation": {
-    "offenceId": "d1f4f315-6645-412c-89bd-f1eb45c663c8",
-    "verdict": "NO_VERDICT"
-  }
-}

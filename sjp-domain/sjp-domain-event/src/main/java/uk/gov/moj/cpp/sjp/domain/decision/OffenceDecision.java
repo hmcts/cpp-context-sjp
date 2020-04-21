@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toList;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -24,7 +25,9 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
         @Type(value = Discharge.class, name = DecisionType.DecisionName.DISCHARGE),
         @Type(value = ReferredToOpenCourt.class, name = DecisionType.DecisionName.REFERRED_TO_OPEN_COURT),
         @Type(value = ReferredForFutureSJPSession.class, name = DecisionType.DecisionName.REFERRED_FOR_FUTURE_SJP_SESSION),
-        @Type(value = FinancialPenalty.class, name = DecisionType.DecisionName.FINANCIAL_PENALTY)
+        @Type(value = FinancialPenalty.class, name = DecisionType.DecisionName.FINANCIAL_PENALTY),
+        @Type(value = NoSeparatePenalty.class, name = DecisionType.DecisionName.NO_SEPARATE_PENALTY),
+        @Type(value = SetAside.class, name = DecisionType.DecisionName.SET_ASIDE)
 })
 public abstract class OffenceDecision implements Serializable {
 
@@ -73,6 +76,21 @@ public abstract class OffenceDecision implements Serializable {
      */
     @JsonIgnore
     public abstract List<OffenceDecisionInformation> offenceDecisionInformationAsList();
+
+    @JsonIgnore
+    public Optional<OffenceDecisionInformation> getOffenceDecisionInformation(final UUID offenceId){
+        return offenceDecisionInformationAsList()
+                .stream()
+                .filter(offenceDecisionInformation -> offenceDecisionInformation.getOffenceId().equals(offenceId))
+                .findFirst();
+    }
+
+    @JsonIgnore
+    public boolean isConviction(final UUID offenceId) {
+        return getOffenceDecisionInformation(offenceId)
+                .map(OffenceDecisionInformation::isConviction)
+                .orElse(false);
+    }
 
     @Override
     public boolean equals(Object o) {

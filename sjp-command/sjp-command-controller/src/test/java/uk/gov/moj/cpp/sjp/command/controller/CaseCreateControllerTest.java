@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.command.controller;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -74,7 +75,7 @@ public class CaseCreateControllerTest {
 
     @Before
     public void before() {
-        when(referenceDataService.getEnforcementArea(POSTCODE)).thenReturn(enforcementAreaPayload);
+        when(referenceDataService.getEnforcementArea(POSTCODE)).thenReturn(of(enforcementAreaPayload));
     }
 
     public void after() {
@@ -88,7 +89,7 @@ public class CaseCreateControllerTest {
         final JsonEnvelope jsonEnvelope = envelopeFrom(metadata, payload);
         final String REGION = "ESSEX";
         final JsonObject localJusticeAreasPayload = getLocalJusticeAreasPayload(REGION, NATIONAL_COURTCODE);
-        when(referenceDataService.getLocalJusticeAreas(NATIONAL_COURTCODE)).thenReturn(localJusticeAreasPayload);
+        when(referenceDataService.getLocalJusticeAreas(NATIONAL_COURTCODE)).thenReturn(of(localJusticeAreasPayload));
 
         //when
         caseCreateController.createSjpCase(jsonEnvelope);
@@ -110,7 +111,7 @@ public class CaseCreateControllerTest {
         final Metadata metadata = metadataWithRandomUUID(COMMAND_NAME).withUserId(userId).build();
         final JsonEnvelope jsonEnvelope = envelopeFrom(metadata, payload);
         final JsonObject localJusticeAreasPayload = getLocalJusticeAreasPayload(null, NATIONAL_COURTCODE);
-        when(referenceDataService.getLocalJusticeAreas(NATIONAL_COURTCODE)).thenReturn(localJusticeAreasPayload);
+        when(referenceDataService.getLocalJusticeAreas(NATIONAL_COURTCODE)).thenReturn(of(localJusticeAreasPayload));
 
         //when
         caseCreateController.createSjpCase(jsonEnvelope);

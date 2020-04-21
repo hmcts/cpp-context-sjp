@@ -6,6 +6,7 @@ import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HE
 
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,6 +19,7 @@ public class ReferForCourtHearing extends MultipleOffenceDecision {
     private final String listingNotes;
     private final Integer estimatedHearingDuration;
     private final DefendantCourtOptions defendantCourtOptions;
+    private LocalDate convictionDate;
 
     @JsonCreator
     public ReferForCourtHearing(@JsonProperty("id") final UUID id,
@@ -48,6 +50,14 @@ public class ReferForCourtHearing extends MultipleOffenceDecision {
 
     public DefendantCourtOptions getDefendantCourtOptions() {
         return defendantCourtOptions;
+    }
+
+    public LocalDate getConvictionDate() {
+        return convictionDate;
+    }
+
+    public void setConvictionDate(final LocalDate convictionDate) {
+        this.convictionDate = convictionDate;
     }
 
     @Override

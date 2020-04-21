@@ -176,4 +176,10 @@ subscriptions_descriptor:
         - name: sjp.events.financial-means-deleted
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.financial-means-deleted.json
 
+        - name: sjp.events.update-cases-management-status
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/update-cases-management-status.json
+
+        - name: sjp.events.case-assignment-restriction-added
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/case-assignment-restriction-added.json
+
       event_source_name: sjp

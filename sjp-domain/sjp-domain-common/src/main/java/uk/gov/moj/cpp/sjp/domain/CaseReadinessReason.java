@@ -6,6 +6,7 @@ public enum CaseReadinessReason {
     PLEADED_NOT_GUILTY,
     PLEADED_GUILTY_REQUEST_HEARING,
     WITHDRAWAL_REQUESTED,
+    SET_ASIDE,
     UNKNOWN;
 
 

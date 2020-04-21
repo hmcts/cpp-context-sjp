@@ -12,7 +12,8 @@
       "lastName": "Krumps",
       "dateOfBirth": "1972-01-01",
       "gender": "Male",
-      "nationalInsuranceNumber": "SR67854OP"
+      "nationalInsuranceNumber": "SR67854OP",
+      "driverNumber" : "MORGA753116SM9IJ"
     },
     "prosecutingAuthority": "TFL",
     "postingDate": "2019-05-03"
@@ -26,7 +27,8 @@
         "lastName": "Craig",
         "dateOfBirth": "1980-07-12",
         "gender": "Female",
-        "nationalInsuranceNumber": "SR63344OQ"
+        "nationalInsuranceNumber": "SR63344OQ",
+        "driverNumber": "TESTY708166G99KZ"
       },
       "prosecutingAuthority": "TFL",
       "postingDate": "2019-05-03"

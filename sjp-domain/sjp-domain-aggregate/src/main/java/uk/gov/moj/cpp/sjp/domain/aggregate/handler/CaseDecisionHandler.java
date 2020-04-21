@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
@@ -16,22 +17,24 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.json.schemas.domains.sjp.Note.note;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.ADJOURNMENT;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.DECISION;
+import static uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded.caseNoteAdded;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISCHARGE;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISMISS;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.FINANCIAL_PENALTY;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.SET_ASIDE;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.WITHDRAW;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
-import static uk.gov.moj.cpp.sjp.event.CaseNoteAdded.caseNoteAdded;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
 import uk.gov.justice.json.schemas.domains.sjp.Note;
 import uk.gov.justice.json.schemas.domains.sjp.NoteType;
 import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
@@ -41,22 +44,32 @@ import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.Decision;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.Defendant;
+import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
+import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
+import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
+import uk.gov.moj.cpp.sjp.domain.decision.NoSeparatePenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
+import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionVisitor;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
+import uk.gov.moj.cpp.sjp.domain.decision.ReferredForFutureSJPSession;
+import uk.gov.moj.cpp.sjp.domain.decision.ReferredToOpenCourt;
+import uk.gov.moj.cpp.sjp.domain.decision.SetAside;
+import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
-import uk.gov.moj.cpp.sjp.event.CaseNoteAdded;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionRejected;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionSetAside;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionSetAsideReset;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -75,14 +88,18 @@ public class CaseDecisionHandler {
 
     public static final CaseDecisionHandler INSTANCE = new CaseDecisionHandler();
 
+    private final static List<DecisionType> NO_PREVIOUS_CONVICTION_DECISIONS = asList(DISMISS, WITHDRAW);
+
     private CaseDecisionHandler() {
     }
 
-    private static void addDecisionSavedEvent(final Session session, Decision decision, final Stream.Builder<Object> streamBuilder) {
+    private static void addDecisionSavedEvent(final Session session, Decision decision, final CaseAggregateState state, final Stream.Builder<Object> streamBuilder) {
 
-        if(decisionHasFinancialImposition(decision) && sessionCourtAndDefendantCourtAreDifferent(session, decision.getDefendant())){
+        if (decisionHasFinancialImposition(decision) && sessionCourtAndDefendantCourtAreDifferent(session, decision.getDefendant())) {
             decision.getFinancialImposition().getPayment().setFineTransferredTo(decision.getDefendant().getCourt());
         }
+
+        addOffencesConvictionDate(decision, state);
 
         streamBuilder.add(new DecisionSaved(
                 decision.getDecisionId(),
@@ -93,13 +110,19 @@ public class CaseDecisionHandler {
                 decision.getFinancialImposition()));
     }
 
+    private static void addOffencesConvictionDate(final Decision decision, final CaseAggregateState state) {
+        final ConvictionDateOffenceVisitor convictionDateOffenceVisitor = new ConvictionDateOffenceVisitor(state);
+        decision.getOffenceDecisions()
+                .forEach(offenceDecision -> offenceDecision.accept(convictionDateOffenceVisitor));
+    }
+
     private static boolean sessionCourtAndDefendantCourtAreDifferent(final Session session, final Defendant defendant) {
-        return defendant!=null && defendant.getCourt()!=null &&
+        return defendant != null && defendant.getCourt() != null &&
                 !session.getLocalJusticeAreaNationalCourtCode().equals(defendant.getCourt().getNationalCourtCode());
     }
 
     private static boolean decisionHasFinancialImposition(final Decision decision) {
-        return decision.getFinancialImposition()!=null && decision.getOffenceDecisions().stream()
+        return decision.getFinancialImposition() != null && decision.getOffenceDecisions().stream()
                 .map(OffenceDecision::getType)
                 .anyMatch(decisionType -> decisionType.equals(DISCHARGE) || decisionType.equals(FINANCIAL_PENALTY));
     }
@@ -111,7 +134,30 @@ public class CaseDecisionHandler {
     }
 
     private static void addCaseUnassignedEvent(final Decision decision, final Stream.Builder<Object> streamBuilder) {
-        streamBuilder.add(new CaseUnassigned(decision.getCaseId()));
+        final boolean setAsideDecision = decision
+                .getOffenceDecisions()
+                .stream()
+                .allMatch(e -> SET_ASIDE.equals(e.getType()));
+
+        if (!setAsideDecision) {
+            streamBuilder.add(new CaseUnassigned(decision.getCaseId()));
+        }
+    }
+
+    private static void handleSetAside(final Decision decision,
+                                       final Stream.Builder<Object> streamBuilder,
+                                       final CaseAggregateState caseAggregateState) {
+        final boolean setAsideDecision = decision
+                .getOffenceDecisions()
+                .stream()
+                .allMatch(e -> SET_ASIDE.equals(e.getType()));
+
+        // if previous one is set aside and the current one is not
+        if (caseAggregateState.isSetAside() && !setAsideDecision) {
+            streamBuilder.add(new DecisionSetAsideReset(decision.getDecisionId(), decision.getCaseId()));
+        } else if (setAsideDecision) { // if the current one is set aside
+            streamBuilder.add(new DecisionSetAside(decision.getDecisionId(), decision.getCaseId()));
+        }
     }
 
     private static void addCaseCompletedEventIfAllOffencesHasFinalDecision(final Decision decision, final Stream.Builder<Object> streamBuilder, final CaseAggregateState state) {
@@ -214,6 +260,13 @@ public class CaseDecisionHandler {
     }
 
     private static void validateOffencesDoNotHavePreviousFinalDecision(final Decision decision, final CaseAggregateState state, final List<String> rejectionReasons) {
+        if (decision
+                .getOffenceDecisions()
+                .stream()
+                .allMatch(e -> SET_ASIDE.equals(e.getType()))) {
+            return;
+        }
+
         final Set<UUID> offenceIdsWithFinalDecision = getOffenceIds(state.getOffenceDecisions(), OffenceDecision::isFinalDecision);
 
         decision.getOffenceIds().stream()
@@ -246,6 +299,26 @@ public class CaseDecisionHandler {
 
             if (!incompatibleDecisionTypes.isEmpty()) {
                 rejectionReasons.add(format("%s decision can not be saved with decision(s) %s", ADJOURN, incompatibleDecisionTypes.stream().map(DecisionType::name).collect(joining(","))));
+            }
+
+            final Set<VerdictType> verdicts = decision.getOffenceDecisions().stream()
+                    .filter(offenceDecision -> offenceDecision.getType() == ADJOURN)
+                    .map(OffenceDecision::offenceDecisionInformationAsList)
+                    .flatMap(List::stream)
+                    .map(OffenceDecisionInformation::getVerdict)
+                    .collect(toSet());
+
+            if (verdicts.size() > 1 && verdicts.contains(NO_VERDICT)) {
+                rejectionReasons.add("ADJOURN decisions with pre and post convictions can not be combined");
+            }
+        } else if (decisionsCountByType.containsKey(SET_ASIDE)) {
+
+            if (decisionsCountByType.get(SET_ASIDE) != 1) {
+                rejectionReasons.add("Only one set-aside decision can be made");
+            }
+
+            if (decisionsCountByType.size() != 1) {
+                rejectionReasons.add("Along with set-aside not other decisions are allowed");
             }
         }
     }
@@ -290,10 +363,11 @@ public class CaseDecisionHandler {
         }
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        addDecisionSavedEvent(session, decision, streamBuilder);
+        addDecisionSavedEvent(session, decision, state, streamBuilder);
         addCaseNoteAddedEventIfNoteIsPresent(decision, streamBuilder);
         addCaseUnassignedEvent(decision, streamBuilder);
 
+        handleSetAside(decision, streamBuilder, state);
         handleAdjournDecision(decision, streamBuilder);
         handleReferToCriminalCourtDecision(decision, state, streamBuilder);
 
@@ -313,9 +387,12 @@ public class CaseDecisionHandler {
         validateDecisionsCombinations(decision, rejectionReason);
         validateOffencesDoNotHavePreviousFinalDecision(decision, state, rejectionReason);
         validateDecisionTypesAndVerdict(decision, rejectionReason);
+        validateDecisionsWithoutVerdict(decision, state, rejectionReason);
         validateEmployerDetailsAppliedWhenPaymentTypeIsAttachedToEarnings(decision, state, rejectionReason);
+        validateDecisionTypesAndPreviousConvictions(decision, state, rejectionReason);
 
         validateDelegatedPowerCanNotSubmitVerdictForReferToCourtHearing(decision, sessionType, rejectionReason);
+        validateDelegatedPowerCanNotSubmitVerdictForAdjourn(decision, sessionType, rejectionReason);
         validateForMagistrateSessionNotGuiltyCanNotBeWithReferToCourtHearing(decision, state, sessionType, rejectionReason);
         validateNoPleaShouldHaveProvedSJPVerdictForReferToCourtHearing(decision, state, rejectionReason);
         validateIfPleaExistsThenVerdictCanNotBeProvedSJPVerdict(decision, state, rejectionReason);
@@ -324,13 +401,22 @@ public class CaseDecisionHandler {
         return rejectionReason;
     }
 
+    private void validateDecisionTypesAndPreviousConvictions(final Decision decision, final CaseAggregateState state, final List<String> rejectionReasons) {
+        decision.getOffenceDecisions()
+                .stream()
+                .filter(offenceDecision -> NO_PREVIOUS_CONVICTION_DECISIONS.contains(offenceDecision.getType()))
+                .flatMap(offenceDecision -> offenceDecision.getOffenceIds().stream())
+                .filter(state::offenceHasPreviousConviction)
+                .forEach(offenceId -> rejectionReasons.add(format("offence %s : WITHDRAW or DISMISS can't be used on an offence decision with a previous conviction", offenceId.toString())));
+    }
+
     private void validateDecisionTypesAndVerdict(final Decision decision, final List<String> rejectionReasons) {
 
         final Map<DecisionType, List<OffenceDecisionInformation>> collect =
                 decision.getOffenceDecisions()
-                .stream()
-                .collect(groupingBy(OffenceDecision::getType,
-                        mapping(OffenceDecision::offenceDecisionInformationAsList, toList()))).entrySet().stream()
+                        .stream()
+                        .collect(groupingBy(OffenceDecision::getType,
+                                mapping(OffenceDecision::offenceDecisionInformationAsList, toList()))).entrySet().stream()
                         .collect(Collectors.toMap(Map.Entry::getKey, decisionTypeListEntry -> decisionTypeListEntry.getValue().stream().flatMap(Collection::stream).collect(toList())));
 
         final BiFunction<Predicate<DecisionType>, Predicate<VerdictType>, Long> unmatchedDecisionTypeAndVerdicts = (decisionType, matchedVerdicts) -> collect.entrySet().stream()
@@ -342,7 +428,7 @@ public class CaseDecisionHandler {
         final String message = "Decisions of type %s's verdict type can only be %s";
 
         if (unmatchedDecisionTypeAndVerdicts.apply(a -> a == FINANCIAL_PENALTY || a == DISCHARGE,
-                verdict -> verdict == FOUND_GUILTY || verdict == PROVED_SJP) > 0) {
+                verdict -> verdict == FOUND_GUILTY || verdict == PROVED_SJP || verdict == null) > 0) {
             rejectionReasons.add(format(message, "Financial Penalty and Discharge", "either FOUND_GUILTY or PROVED_SJP"));
         }
 
@@ -353,6 +439,29 @@ public class CaseDecisionHandler {
         if (unmatchedDecisionTypeAndVerdicts.apply(a -> a == DISMISS, verdict -> verdict == FOUND_NOT_GUILTY) > 0) {
             rejectionReasons.add(format(message, "Dismiss", "FOUND_NOT_GUILTY"));
         }
+
+        if (unmatchedDecisionTypeAndVerdicts.apply(a -> a == SET_ASIDE, verdict -> Objects.isNull(verdict)) > 0) {
+            rejectionReasons.add(format(message, "SetAside", "null"));
+        }
+    }
+
+    private static void validateDecisionsWithoutVerdict(final Decision decision, final CaseAggregateState state, final List<String> rejectionReason) {
+        if (decision.getOffenceDecisions()
+                .stream()
+                .allMatch(e -> SET_ASIDE.equals(e.getType()))) {
+            return;
+        }
+
+        final Stream<OffenceDecisionInformation> offenceDecisionsWithoutVerdict = decision
+                .getOffenceDecisions().stream()
+                .flatMap(offenceDecision -> offenceDecision.offenceDecisionInformationAsList().stream())
+                .filter(offenceDecisionInformation -> Objects.isNull(offenceDecisionInformation.getVerdict()));
+
+        offenceDecisionsWithoutVerdict
+                .map(OffenceDecisionInformation::getOffenceId)
+                .filter(offenceId -> !state.offenceHasPreviousConviction(offenceId))
+                .forEach(offenceId ->
+                        rejectionReason.add(format("offence %s : can't have an offence without verdict if it wasn't previously convicted", offenceId.toString())));
     }
 
     private static void validateEmployerDetailsAppliedWhenPaymentTypeIsAttachedToEarnings(final Decision decision, final CaseAggregateState state, final List<String> rejectionReason) {
@@ -364,10 +473,10 @@ public class CaseDecisionHandler {
     private void validateIfPleaExistsThenVerdictCanNotBeProvedSJPVerdict(Decision decision, CaseAggregateState state, List<String> rejectionReasons) {
         decision.getOffenceDecisions().stream()
                 .map(offenceDecision ->
-                    offenceDecision.offenceDecisionInformationAsList().stream().filter(offenceDecisionInformation ->  {
-                        final PleaType pleaType = state.getPleaTypeForOffenceId(offenceDecisionInformation.getOffenceId());
-                        return !isNull(pleaType) && PROVED_SJP == offenceDecisionInformation.getVerdict();
-                    }).collect(toList())
+                        offenceDecision.offenceDecisionInformationAsList().stream().filter(offenceDecisionInformation -> {
+                            final PleaType pleaType = state.getPleaTypeForOffenceId(offenceDecisionInformation.getOffenceId());
+                            return !isNull(pleaType) && PROVED_SJP == offenceDecisionInformation.getVerdict();
+                        }).collect(toList())
                 )
                 .flatMap(List::stream)
                 .map(offenceDecisionInformation -> format("Offence with Plea can not have verdict as PROVED_SJP, %s decision can not be saved for offence %s", REFER_FOR_COURT_HEARING, offenceDecisionInformation.getOffenceId()))
@@ -379,7 +488,7 @@ public class CaseDecisionHandler {
         decision.getOffenceDecisions().stream()
                 .filter(offenceDecision -> DecisionType.REFER_FOR_COURT_HEARING == offenceDecision.getType())
                 .map(offenceDecision ->
-                        offenceDecision.offenceDecisionInformationAsList().stream().filter(offenceDecisionInformation ->  {
+                        offenceDecision.offenceDecisionInformationAsList().stream().filter(offenceDecisionInformation -> {
                             final PleaType pleaType = state.getPleaTypeForOffenceId(offenceDecisionInformation.getOffenceId());
                             return predicate.test(pleaType, offenceDecisionInformation.getVerdict());
                         }).collect(toList())
@@ -391,33 +500,33 @@ public class CaseDecisionHandler {
 
     private void validateGuiltyPleaShouldHaveFoundGuiltyVerdictForReferToCourtHearing(Decision decision, CaseAggregateState state, List<String> rejectionReasons) {
         validateVerdictForDecisionReferToCourtIsCorrect(decision, state, rejectionReasons, (pleaType, verdictType) ->
-                PleaType.GUILTY.equals(pleaType) && !Arrays.asList(FOUND_GUILTY, VerdictType.NO_VERDICT).contains(verdictType),
+                        PleaType.GUILTY.equals(pleaType) && !asList(FOUND_GUILTY, NO_VERDICT, null).contains(verdictType),
                 "Guilty plea should have Found Guilty Verdict");
     }
 
     private void validateNotGuiltyPleaShouldHaveNoVerdictForReferToCourtHearing(Decision decision, CaseAggregateState state, List<String> rejectionReasons) {
         validateVerdictForDecisionReferToCourtIsCorrect(decision, state, rejectionReasons, (pleaType, verdictType) ->
-                PleaType.NOT_GUILTY.equals(pleaType) && VerdictType.NO_VERDICT != verdictType,
+                        PleaType.NOT_GUILTY.equals(pleaType) && VerdictType.NO_VERDICT != verdictType,
                 "Not Guilty plea should have no verdict");
     }
 
     private void validateNoPleaShouldHaveProvedSJPVerdictForReferToCourtHearing(Decision decision, CaseAggregateState state, List<String> rejectionReasons) {
 
         validateVerdictForDecisionReferToCourtIsCorrect(decision, state, rejectionReasons, (pleaType, verdictType) ->
-                isNull(pleaType) && VerdictType.NO_VERDICT != verdictType && PROVED_SJP != verdictType,
+                        isNull(pleaType) && VerdictType.NO_VERDICT != verdictType && PROVED_SJP != verdictType && verdictType != null,
                 "Offence with No Plea should have verdict as either NO_VERDICT or PROVED_SJP");
     }
 
     private void validateForMagistrateSessionNotGuiltyCanNotBeWithReferToCourtHearing(Decision decision, final CaseAggregateState state, final SessionType sessionType, List<String> rejectionReasons) {
 
         validateVerdictForDecisionReferToCourtIsCorrect(decision, state, rejectionReasons,
-                (pleaType, verdictType) -> SessionType.MAGISTRATE == sessionType && PleaType.NOT_GUILTY == pleaType,
+                (pleaType, verdictType) -> SessionType.MAGISTRATE == sessionType && PleaType.NOT_GUILTY == pleaType && (verdictType == null || verdictType == PROVED_SJP),
                 "For Magistrate Session, NOT GUILTY cannot be with refer to court hearing post conviction");
     }
 
     private void validateDelegatedPowerCanNotSubmitVerdictForReferToCourtHearing(final Decision decision, final SessionType sessionType, final List<String> rejectionReasons) {
 
-        if(SessionType.DELEGATED_POWERS == sessionType){
+        if (SessionType.DELEGATED_POWERS == sessionType) {
             decision.getOffenceDecisions().stream()
                     .filter(offenceDecision -> DecisionType.REFER_FOR_COURT_HEARING == offenceDecision.getType())
                     .map(offenceDecision ->
@@ -430,4 +539,114 @@ public class CaseDecisionHandler {
                     .forEach(rejectionReasons::add);
         }
     }
+
+    private void validateDelegatedPowerCanNotSubmitVerdictForAdjourn(final Decision decision, final SessionType sessionType, final List<String> rejectionReasons) {
+
+        if (SessionType.DELEGATED_POWERS == sessionType) {
+            decision.getOffenceDecisions().stream()
+                    .filter(offenceDecision -> ADJOURN == offenceDecision.getType())
+                    .map(offenceDecision ->
+                            offenceDecision.offenceDecisionInformationAsList().stream().filter(offenceDecisionInformation ->
+                                    VerdictType.NO_VERDICT != offenceDecisionInformation.getVerdict()
+                            ).collect(toList())
+                    )
+                    .flatMap(List::stream)
+                    .map(offenceDecisionInformation -> "For Delegated Power session only NO_VERDICT is allowed, ADJOURN decision can not be saved for offence " + offenceDecisionInformation.getOffenceId())
+                    .forEach(rejectionReasons::add);
+        }
+    }
+
+    private static class ConvictionDateOffenceVisitor implements OffenceDecisionVisitor {
+
+        private final CaseAggregateState state;
+
+        public ConvictionDateOffenceVisitor(final CaseAggregateState state) {
+            this.state = state;
+        }
+
+        @Override
+        public void visit(final Dismiss dismiss) {
+            //No conviction possible for dismiss decisions
+        }
+
+        @Override
+        public void visit(final Withdraw withdraw) {
+            //No conviction possible for withdraw decisions
+        }
+
+
+        private boolean offenceHasPreviousConviction(final OffenceDecision offenceDecision) {
+            return offenceDecision.getOffenceIds()
+                    .stream()
+                    .anyMatch(state::offenceHasPreviousConviction);
+        }
+
+        @Override
+        public void visit(final Adjourn adjourn) {
+            if (offenceHasPreviousConviction(adjourn)) {
+                adjourn.getOffenceIds().stream()
+                        .map(state::getOffencePreviousConvictionDate)
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .ifPresent(convictionDate ->
+                                adjourn.setConvictionDate(convictionDate.toLocalDate()));
+            }
+        }
+
+        @Override
+        public void visit(final ReferForCourtHearing referForCourtHearing) {
+            if (offenceHasPreviousConviction(referForCourtHearing)) {
+                referForCourtHearing.getOffenceIds().stream()
+                        .map(state::getOffencePreviousConvictionDate)
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .ifPresent(convictionDate ->
+                                referForCourtHearing.setConvictionDate(convictionDate.toLocalDate()));
+            }
+        }
+
+        @Override
+        public void visit(final Discharge discharge) {
+            if (offenceHasPreviousConviction(discharge)) {
+                final UUID offenceId = discharge.getOffenceDecisionInformation().getOffenceId();
+                final ZonedDateTime convictionDate = state.getOffencePreviousConvictionDate(offenceId);
+                discharge.setConvictionDate(convictionDate.toLocalDate());
+            }
+        }
+
+        @Override
+        public void visit(final FinancialPenalty financialPenalty) {
+            if (offenceHasPreviousConviction(financialPenalty)) {
+                final UUID offenceId = financialPenalty.getOffenceDecisionInformation().getOffenceId();
+                final ZonedDateTime convictionDate = state.getOffencePreviousConvictionDate(offenceId);
+                financialPenalty.setConvictionDate(convictionDate.toLocalDate());
+            }
+        }
+
+        @Override
+        public void visit(final ReferredToOpenCourt referredToOpenCourt) {
+            //No conviction for legacy decision types
+        }
+
+        @Override
+        public void visit(final ReferredForFutureSJPSession referredForFutureSJPSession) {
+            //No conviction for legacy decision types
+        }
+
+        @Override
+        public void visit(final NoSeparatePenalty noSeparatePenalty) {
+            if (offenceHasPreviousConviction(noSeparatePenalty)) {
+                final UUID offenceId = noSeparatePenalty.getOffenceDecisionInformation().getOffenceId();
+                final ZonedDateTime convictionDate = state.getOffencePreviousConvictionDate(offenceId);
+                noSeparatePenalty.setConvictionDate(convictionDate.toLocalDate());
+            }
+        }
+
+        @Override
+        public void visit(final SetAside setAside) {
+            //No conviction as the decision should be discarded
+        }
+
+    }
+
 }

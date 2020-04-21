@@ -30,8 +30,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.event.processor.service.assignment.AssignmentConfiguration;
-import uk.gov.moj.cpp.sjp.event.processor.service.assignment.AssignmentRule;
-import uk.gov.moj.cpp.sjp.event.processor.service.assignment.AssignmentRules;
 import uk.gov.moj.cpp.sjp.event.processor.service.assignment.AssignmentService;
 
 import java.util.List;
@@ -60,9 +58,6 @@ public class AssignmentServiceTest {
     private AssignmentConfiguration assignmentConfiguration;
 
     @Mock
-    private AssignmentRules assignmentRules;
-
-    @Mock
     private Requester requester;
 
     @Spy
@@ -79,8 +74,7 @@ public class AssignmentServiceTest {
         final UUID legalAdviserId = UUID.randomUUID();
         final String courtHouseCode = "B23HS";
         final int assignmentCandidatesLimit = 10;
-
-        final AssignmentRule assignmentRule = new AssignmentRule("B23", asList("TFL", "TVL"), DISALLOW);
+        final String localJusticeAreaNationalCourtCode= "1800";
 
         final AssignmentCandidate assignmentCandidate1 = new AssignmentCandidate(randomUUID(), 4);
         final AssignmentCandidate assignmentCandidate2 = new AssignmentCandidate(randomUUID(), 5);
@@ -100,21 +94,18 @@ public class AssignmentServiceTest {
                 ).build());
 
         when(assignmentConfiguration.getAssignmentCandidatesLimit()).thenReturn(assignmentCandidatesLimit);
-        when(assignmentConfiguration.getAssignmentRules()).thenReturn(assignmentRules);
-        when(assignmentRules.getBestCaseAssignmentRule(courtHouseCode)).thenReturn(assignmentRule);
 
         when(requester.request(argThat(jsonEnvelope()
                 .withMetadataOf(withMetadataEnvelopedFrom(sourceCommand))
                 .withPayloadOf(payloadIsJson(allOf(
                         withJsonPath("sessionType", equalTo(MAGISTRATE.toString())),
                         withJsonPath("assigneeId", equalTo(legalAdviserId.toString())),
-                        withJsonPath("prosecutingAuthorities", equalTo("TFL,TVL")),
-                        withJsonPath("assignmentRule", equalTo(DISALLOW.name())),
+                        withJsonPath("localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                         withJsonPath("limit", equalTo(assignmentCandidatesLimit))
                 ))))))
                 .thenReturn(assignmentCandidatesResponse);
 
-        final List<AssignmentCandidate> assignmentCandidates = assignmentService.getAssignmentCandidates(sourceCommand, legalAdviserId, courtHouseCode, MAGISTRATE);
+        final List<AssignmentCandidate> assignmentCandidates = assignmentService.getAssignmentCandidates(sourceCommand, legalAdviserId, MAGISTRATE, localJusticeAreaNationalCourtCode);
 
         assertThat(assignmentCandidates, contains(assignmentCandidate1, assignmentCandidate2));
     }
@@ -124,7 +115,7 @@ public class AssignmentServiceTest {
         final UUID legalAdviserId = UUID.randomUUID();
         final String courtHouseCode = "B23HS";
         final int assignmentCandidatesLimit = 10;
-        final AssignmentRule assignmentRule = new AssignmentRule("B23", asList("TFL"), DISALLOW);
+        final String localJusticeAreaNationalCourtCode= "1800";
 
         final JsonEnvelope sourceCommand = envelopeFrom(metadataWithRandomUUID(SESSION_STARTED_EVENT), createObjectBuilder().build());
 
@@ -133,21 +124,18 @@ public class AssignmentServiceTest {
                 .build());
 
         when(assignmentConfiguration.getAssignmentCandidatesLimit()).thenReturn(assignmentCandidatesLimit);
-        when(assignmentConfiguration.getAssignmentRules()).thenReturn(assignmentRules);
-        when(assignmentRules.getBestCaseAssignmentRule(courtHouseCode)).thenReturn(assignmentRule);
 
         when(requester.request(argThat(jsonEnvelope()
                 .withMetadataOf(withMetadataEnvelopedFrom(sourceCommand))
                 .withPayloadOf(payloadIsJson(allOf(
                         withJsonPath("sessionType", equalTo(DELEGATED_POWERS.toString())),
                         withJsonPath("assigneeId", equalTo(legalAdviserId.toString())),
-                        withJsonPath("prosecutingAuthorities", is("TFL")),
-                        withJsonPath("assignmentRule", equalTo(DISALLOW.name())),
+                        withJsonPath("localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode)),
                         withJsonPath("limit", equalTo(assignmentCandidatesLimit))
                 ))))))
                 .thenReturn(assignmentCandidatesResponse);
 
-        final List<AssignmentCandidate> assignmentCandidates = assignmentService.getAssignmentCandidates(sourceCommand, legalAdviserId, courtHouseCode, DELEGATED_POWERS);
+        final List<AssignmentCandidate> assignmentCandidates = assignmentService.getAssignmentCandidates(sourceCommand, legalAdviserId, DELEGATED_POWERS, localJusticeAreaNationalCourtCode);
 
         assertThat(assignmentCandidates, hasSize(0));
     }

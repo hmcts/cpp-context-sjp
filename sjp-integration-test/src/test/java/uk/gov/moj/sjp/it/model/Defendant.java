@@ -43,7 +43,7 @@ public class Defendant {
     public String nationalInsuranceNumber = "AB123456C";
 
     @Builder.Default
-    public String driverNumber = "Driver number";
+    public String driverNumber = "MORGA753116SM9IJ";
 
     @Valid
     @NotNull(message = "ContactDetails is required")

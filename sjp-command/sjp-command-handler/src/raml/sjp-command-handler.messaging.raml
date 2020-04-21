@@ -152,6 +152,18 @@ version: v1
         example: !include json/sjp.command.expire-dates-to-avoid-timer.json
         schema:  !include json/schema/sjp.command.expire-dates-to-avoid-timer.json
 
+      application/vnd.sjp.command.add-case-assignment-restriction+json:
+        example: !include json/sjp.command.add-case-assignment-restriction.json
+        schema:  !include json/schema/sjp.command.add-case-assignment-restriction.json
+
       application/vnd.sjp.command.set-dates-to-avoid-required+json: !!null
 
       application/vnd.sjp.command.resolve-case-status+json: !!null
+
+      application/vnd.sjp.command.update-cases-management-status+json:
+        example: !include json/sjp.command.update-cases-management-status.json
+        schema:  !include json/schema/sjp.command.update-cases-management-status.json
+
+      application/vnd.sjp.command.change-case-management-status+json:
+       example: !include json/sjp.command.change-case-management-status.json
+       schema:  !include json/schema/sjp.command.change-case-management-status.json

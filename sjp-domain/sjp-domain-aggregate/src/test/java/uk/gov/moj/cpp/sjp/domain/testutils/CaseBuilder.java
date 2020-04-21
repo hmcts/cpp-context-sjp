@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.domain.testutils;
 
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.util.DefaultTestData;
 
 import java.math.BigDecimal;
@@ -19,14 +18,14 @@ public class CaseBuilder {
     private UUID id;
     private String urn;
     private String enterpriseId;
-    private ProsecutingAuthority prosecutingAuthority;
+    private String prosecutingAuthority;
     private Defendant defendant;
 
     private CaseBuilder() {
         id = DefaultTestData.CASE_ID;
         urn = URN;
         enterpriseId = ENTERPRISE_ID;
-        prosecutingAuthority = ProsecutingAuthority.TFL;
+        prosecutingAuthority = "TFL";
         defendant = new DefendantBuilder().build();
     }
 

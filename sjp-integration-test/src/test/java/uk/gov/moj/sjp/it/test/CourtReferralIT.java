@@ -22,6 +22,7 @@ import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.CaseReferralHelper.findReferralStatusForCase;
 import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.*;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.MaterialStub.stubMaterialMetadata;
 import static uk.gov.moj.sjp.it.stub.ProgressionServiceStub.stubReferCaseToCourtCommand;
@@ -46,13 +47,14 @@ import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_COURT_HOUSE_OU_
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
+import com.google.common.collect.Sets;
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.json.schemas.domains.sjp.Language;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
@@ -73,6 +75,7 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.producer.ReferToCourtHearingProducer;
+import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.FileUtil;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
@@ -152,7 +155,10 @@ public class CourtReferralIT extends BaseIntegrationTest {
         stubMaterialMetadata(MATERIAL_ID, FILE_NAME, MIME_TYPE, ADDED_AT);
         stubReferCaseToCourtCommand();
 
-        new SjpDatabaseCleaner().cleanAll();
+        new SjpDatabaseCleaner().cleanViewStore();
+
+        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
+
     }
 
     @Test
@@ -199,6 +205,16 @@ public class CourtReferralIT extends BaseIntegrationTest {
 
         startSessionAndRequestAssignment(sessionId, MAGISTRATE, DEFAULT_LONDON_COURT_HOUSE_OU_CODE);
         referCaseToCourtAndVerifyCommandSendToProgressionMatchesExpected("payload/referral/progression.refer-for-court-hearing_no-plea.json", W);
+    }
+
+    @Test
+    public void shouldSendReferToCourtHearingCommandToProgressionContext_PoliceCase() {
+        stubCaseDetails(caseId, "stub-data/prosecutioncasefile.query.case-details-police.json");
+        createCaseWithSingleOffence(W, true);
+        addCaseDocumentAndUpdateEmployer();
+
+        startSessionAndRequestAssignment(sessionId, MAGISTRATE, DEFAULT_LONDON_COURT_HOUSE_OU_CODE);
+        referCaseToCourtAndVerifyCommandSendToProgressionMatchesExpected("payload/referral/progression.refer-for-court-hearing_police.json", W);
     }
 
     @Test
@@ -276,6 +292,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 .put("UPLOAD_DATE_TIME", ADDED_AT.format(CPP_ZONED_DATE_TIME_FORMATTER))
                 .put("NINO", NATIONAL_INSURANCE_NUMBER)
                 .put("HEARING_LANGUAGE", (language.equals(W) ? "WELSH" : "ENGLISH"))
+                .put("DRIVER_NUMBER", createCasePayloadBuilder.getDefendantBuilder().getDriverNumber())
                 .build());
     }
 
@@ -302,9 +319,13 @@ public class CourtReferralIT extends BaseIntegrationTest {
     }
 
     private void createCaseWithSingleOffence(Language language) {
+        createCaseWithSingleOffence(language, false);
+    }
+
+    private void createCaseWithSingleOffence(Language language, boolean policeFlag) {
         prosecutingAuthority = ProsecutingAuthority.TFL;
         caseUrn = generate(prosecutingAuthority);
-        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), PROSECUTOR_ID);
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), PROSECUTOR_ID, policeFlag);
         stubForUserDetails(user, prosecutingAuthority.name());
 
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults()

@@ -37,6 +37,8 @@ import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIE
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_ADDRESS_4;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_ADDRESS_5;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_DOB;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_DRIVER_LICENCE_DETAILS;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_DRIVER_NUMBER;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_EMAIL;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_FIRST_NAME;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.PERSON_LAST_NAME;
@@ -152,6 +154,8 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         PERSON_EMAIL(o -> o.getPersonalDetails().getEmail(), "personalDetails", "email"),
         PERSON_DOB(o -> o.getPersonalDetails().getDateOfBirth(), "personalDetails", "dateOfBirth"),
         PERSON_NI_NUMBER(o -> o.getPersonalDetails().getNationalInsuranceNumber(), "personalDetails", "nationalInsuranceNumber"),
+        PERSON_DRIVER_NUMBER(o -> o.getPersonalDetails().getDriverNumber(), "personalDetails", "driverNumber"),
+        PERSON_DRIVER_LICENCE_DETAILS(o -> o.getPersonalDetails().getDriverLicenceDetails(), "personalDetails", "driverLicenceDetails"),
         PERSON_ADDRESS_1(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress1).orElse(null), "personalDetails", "address", "address1"),
         PERSON_ADDRESS_2(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress2).orElse(null), "personalDetails", "address", "address2"),
         PERSON_ADDRESS_3(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress3).orElse(null), "personalDetails", "address", "address3"),
@@ -265,7 +269,9 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
                     PERSON_ADDRESS_3,
                     PERSON_ADDRESS_4,
                     PERSON_ADDRESS_5,
-                    PERSON_POSTCODE
+                    PERSON_POSTCODE,
+                    PERSON_DRIVER_NUMBER,
+                    PERSON_DRIVER_LICENCE_DETAILS
             );
         }
     }

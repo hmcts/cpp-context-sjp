@@ -2,18 +2,6 @@ package uk.gov.moj.cpp.sjp.domain.verdict;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
-import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISCHARGE;
-import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISMISS;
-import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
-import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.WITHDRAW;
-import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
-import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
-import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
-import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
-import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
-import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
-import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -29,33 +17,42 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class VerdictServiceTest {
 
-    private VerdictService verdictService = new VerdictService();
-
     @Parameter(0)
     public PleaType pleaType;
-
     @Parameter(1)
     public DecisionType decisionType;
-
     @Parameter(2)
+    public ConvictionType convictionType;
+    @Parameter(3)
     public VerdictType expectedVerdict;
 
-    @Test
-    public void testVerdicts(){
-        assertEquals(expectedVerdict, verdictService.calculateVerdict(pleaType, decisionType));
-    }
+    private VerdictService verdictService = new VerdictService();
 
     @Parameters(name = "verdict test decisions-pleas {0} returns verdicts {1}")
     public static Collection<Object[]> testData() {
         return asList(new Object[][]{
-                { GUILTY, ADJOURN, NO_VERDICT },
-                { NOT_GUILTY, WITHDRAW, NO_VERDICT },
-                { GUILTY, REFER_FOR_COURT_HEARING, FOUND_GUILTY },
-                { GUILTY_REQUEST_HEARING, REFER_FOR_COURT_HEARING, FOUND_GUILTY },
-                { GUILTY, DISCHARGE, FOUND_GUILTY },
-                { NOT_GUILTY, DISCHARGE, PROVED_SJP },
-                { NOT_GUILTY, DISMISS, FOUND_NOT_GUILTY },
-                { null, REFER_FOR_COURT_HEARING, PROVED_SJP}
+                {PleaType.GUILTY, DecisionType.ADJOURN, ConvictionType.PRE, VerdictType.NO_VERDICT},
+                {PleaType.NOT_GUILTY, DecisionType.WITHDRAW, ConvictionType.PRE, VerdictType.NO_VERDICT},
+                {PleaType.GUILTY, DecisionType.REFER_FOR_COURT_HEARING, ConvictionType.PRE, VerdictType.FOUND_GUILTY},
+                {PleaType.GUILTY_REQUEST_HEARING, DecisionType.REFER_FOR_COURT_HEARING, ConvictionType.PRE, VerdictType.FOUND_GUILTY},
+                {null, DecisionType.REFER_FOR_COURT_HEARING, ConvictionType.PRE, VerdictType.PROVED_SJP},
+                {PleaType.GUILTY, DecisionType.DISCHARGE, ConvictionType.POST, VerdictType.FOUND_GUILTY},
+                {PleaType.NOT_GUILTY, DecisionType.DISCHARGE, ConvictionType.PRE, VerdictType.PROVED_SJP},
+                {PleaType.NOT_GUILTY, DecisionType.DISMISS, ConvictionType.PRE, VerdictType.FOUND_NOT_GUILTY},
+                {PleaType.NOT_GUILTY, DecisionType.DISMISS, ConvictionType.PRE, VerdictType.FOUND_NOT_GUILTY},
+                // NO_SEPARATE_PENALTY
+                {PleaType.GUILTY, DecisionType.NO_SEPARATE_PENALTY, ConvictionType.POST, VerdictType.FOUND_GUILTY},
+                {PleaType.NOT_GUILTY, DecisionType.NO_SEPARATE_PENALTY, ConvictionType.POST, VerdictType.PROVED_SJP},
+                {null, DecisionType.NO_SEPARATE_PENALTY, ConvictionType.POST, VerdictType.PROVED_SJP},
+                // FINANCIAL_PENALTY
+                {PleaType.GUILTY, DecisionType.FINANCIAL_PENALTY, ConvictionType.POST, VerdictType.FOUND_GUILTY},
+                {PleaType.NOT_GUILTY, DecisionType.FINANCIAL_PENALTY, ConvictionType.POST, VerdictType.PROVED_SJP},
+                {null, DecisionType.FINANCIAL_PENALTY, ConvictionType.POST, VerdictType.PROVED_SJP}
         });
+    }
+
+    @Test
+    public void testVerdicts() {
+        assertEquals(expectedVerdict, verdictService.calculateVerdict(pleaType, decisionType, convictionType));
     }
 }

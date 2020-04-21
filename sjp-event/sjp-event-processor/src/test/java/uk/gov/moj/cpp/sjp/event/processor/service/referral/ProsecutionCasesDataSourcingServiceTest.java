@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor.service.referral;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
@@ -74,6 +75,9 @@ public class ProsecutionCasesDataSourcingServiceTest {
             .withReferredOffences(createDecisionInformationList(OFFENCE_ID1, OFFENCE_ID2))
             .build();
     private static final EmployerDetails EMPLOYER = EmployerDetails.employerDetails().build();
+
+    private static final JsonObject CASE_FILE_DETAILS = createCaseFileDetails();
+
     private static final JsonObject CASE_FILE_DEFENDANT_DETAILS = createCaseFileDefendantDetails();
     private static final String DEFENDANT_NATIONALITY_CODE = "defendant nationality code";
     private static final String DEFENDANT_NATIONALITY_ID = "defendant nationality id";
@@ -116,6 +120,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
                 CASE_DETAILS,
                 REFERRAL_EVEN_PAYLOAD,
                 defendantPlea,
+                CASE_FILE_DETAILS,
                 CASE_FILE_DEFENDANT_DETAILS,
                 EMPTY_ENVELOPE);
 
@@ -123,6 +128,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
                 .createProsecutionCaseViews(
                         CASE_DETAILS,
                         PROSECUTOR,
+                        CASE_FILE_DETAILS,
                         CASE_FILE_DEFENDANT_DETAILS,
                         EMPLOYER,
                         DEFENDANT_NATIONALITY_ID,
@@ -139,12 +145,14 @@ public class ProsecutionCasesDataSourcingServiceTest {
                 CASE_DETAILS,
                 REFERRAL_EVEN_PAYLOAD,
                 null,
+                CASE_FILE_DETAILS,
                 CASE_FILE_DEFENDANT_DETAILS,
                 EMPTY_ENVELOPE);
 
         verify(prosecutionCasesViewHelper).createProsecutionCaseViews(
                 CASE_DETAILS,
                 PROSECUTOR,
+                CASE_FILE_DETAILS,
                 CASE_FILE_DEFENDANT_DETAILS,
                 EMPLOYER,
                 DEFENDANT_NATIONALITY_ID,
@@ -161,6 +169,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
                 CASE_DETAILS,
                 REFERRAL_EVEN_PAYLOAD,
                 null,
+                CASE_FILE_DETAILS,
                 null,
                 EMPTY_ENVELOPE);
 
@@ -169,6 +178,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
         verify(prosecutionCasesViewHelper).createProsecutionCaseViews(
                 CASE_DETAILS,
                 PROSECUTOR,
+                CASE_FILE_DETAILS,
                 null,
                 EMPLOYER,
                 null,
@@ -184,6 +194,12 @@ public class ProsecutionCasesDataSourcingServiceTest {
                 .add("selfDefinedInformation", createObjectBuilder()
                         .add("nationality", DEFENDANT_NATIONALITY_CODE)
                         .add("ethnicity", DEFENDANT_ETHNICITY_CODE))
+                .build();
+    }
+
+    private static JsonObject createCaseFileDetails() {
+        return createObjectBuilder()
+                .add("defendants", createArrayBuilder().add(createCaseFileDefendantDetails()))
                 .build();
     }
 

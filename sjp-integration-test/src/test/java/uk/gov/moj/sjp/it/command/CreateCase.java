@@ -14,9 +14,9 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.getPostCallResponse;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.Language;
 import uk.gov.justice.services.common.converter.LocalDates;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 import uk.gov.moj.sjp.it.command.builder.ContactDetailsBuilder;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.util.UrnProvider;
 
 import java.math.BigDecimal;
@@ -104,6 +104,7 @@ public class CreateCase {
                 .add("firstName", payloadBuilder.defendantBuilder.firstName)
                 .add("lastName", payloadBuilder.defendantBuilder.lastName)
                 .add("nationalInsuranceNumber", payloadBuilder.defendantBuilder.nationalInsuranceNumber)
+                .add("driverNumber", payloadBuilder.defendantBuilder.driverNumber)
                 .add("gender", payloadBuilder.defendantBuilder.gender.toString())
                 .add("numPreviousConvictions", payloadBuilder.defendantBuilder.numPreviousConvictions)
                 .add("address", addressBuilder)
@@ -123,6 +124,12 @@ public class CreateCase {
 
         ofNullable(payloadBuilder.defendantBuilder.dateOfBirth).map(LocalDates::to)
                 .ifPresent(dateOfBirth -> defendantBuilder.add("dateOfBirth", dateOfBirth));
+
+        ofNullable(payloadBuilder.defendantBuilder.driverLicenceDetails)
+                .ifPresent(driverLicenceDetails -> defendantBuilder.add("driverLicenceDetails", driverLicenceDetails));
+
+        ofNullable(payloadBuilder.defendantBuilder.driverNumber)
+                .ifPresent(driverNumber -> defendantBuilder.add("driverNumber", driverNumber));
 
         payload.add("defendant", defendantBuilder);
         return payload.build();
@@ -152,8 +159,12 @@ public class CreateCase {
 
             ofNullable(offenceBuilder.offenceWordingWelsh)
                     .ifPresent(offenceWordingWelsh -> offence.add("offenceWordingWelsh", offenceWordingWelsh));
+
+            ofNullable(offenceBuilder.endorsable)
+                    .ifPresent(endorsable -> offence.add("endorsable", endorsable));
+
             return offence;
-        }).forEach(offence -> offenceArrayBuilder.add(offence));
+        }).forEach(offenceArrayBuilder::add);
 
         return offenceArrayBuilder;
     }
@@ -238,6 +249,10 @@ public class CreateCase {
             return offenceBuilders.get(0);
         }
 
+        public List<OffenceBuilder> getOffenceBuilders() {
+            return offenceBuilders;
+        }
+
         public Collection<UUID> getOffenceIds() {
             return offenceBuilders.stream()
                     .map(OffenceBuilder::getId)
@@ -297,6 +312,8 @@ public class CreateCase {
         Gender gender;
         int numPreviousConvictions;
         String nationalInsuranceNumber;
+        String driverNumber;
+        String driverLicenceDetails;
 
         AddressBuilder addressBuilder;
         ContactDetailsBuilder contactDetailsBuilder;
@@ -322,6 +339,8 @@ public class CreateCase {
             builder.gender = Gender.MALE;
             builder.numPreviousConvictions = 2;
             builder.nationalInsuranceNumber = "BB123456B";
+            builder.driverNumber = "MORGA753116SM9IJ";
+            builder.driverLicenceDetails = "test";
             builder.addressBuilder = AddressBuilder.withDefaults();
             builder.contactDetailsBuilder = ContactDetailsBuilder.withDefaults();
             builder.hearingLanguage = null;
@@ -356,6 +375,16 @@ public class CreateCase {
 
         public DefendantBuilder withNationalInsuranceNumber(final String nationalInsuranceNumber) {
             this.nationalInsuranceNumber = nationalInsuranceNumber;
+            return this;
+        }
+
+        public DefendantBuilder withDriverNumber(final String driverNumber) {
+            this.driverNumber = driverNumber;
+            return this;
+        }
+
+        public DefendantBuilder withDriverLicenceDetails(final String driverLicenceDetails) {
+            this.driverLicenceDetails = driverLicenceDetails;
             return this;
         }
 
@@ -422,6 +451,14 @@ public class CreateCase {
         public Language getHearingLanguage() {
             return hearingLanguage;
         }
+
+        public String getDriverNumber() {
+            return driverNumber;
+        }
+
+        public String getDriverLicenceDetails() {
+            return driverLicenceDetails;
+        }
     }
 
     public static class OffenceBuilder {
@@ -442,6 +479,7 @@ public class CreateCase {
         private String vehicleRegistrationMark;
         private int fineLevel;
         private BigDecimal maxFineValue;
+        private Boolean endorsable;
 
         private OffenceBuilder() {
 
@@ -469,6 +507,7 @@ public class CreateCase {
             builder.vehicleRegistrationMark = "FG59 4FD";
             builder.fineLevel = 3;
             builder.maxFineValue = BigDecimal.valueOf(1000);
+            builder.endorsable = false;
 
             return builder;
         }
@@ -526,6 +565,11 @@ public class CreateCase {
 
         public OffenceBuilder withMaxFineValue(BigDecimal maxFineValue) {
             this.maxFineValue = maxFineValue;
+            return this;
+        }
+
+        public OffenceBuilder withEndorsable(final Boolean endorsable) {
+            this.endorsable = endorsable;
             return this;
         }
 
@@ -600,6 +644,10 @@ public class CreateCase {
 
         public BigDecimal getMaxFineValue() {
             return maxFineValue;
+        }
+
+        public Boolean getEndorsable() {
+            return endorsable;
         }
     }
 }

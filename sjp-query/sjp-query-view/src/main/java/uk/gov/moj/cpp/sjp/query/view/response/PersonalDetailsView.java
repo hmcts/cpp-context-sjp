@@ -22,6 +22,10 @@ public class PersonalDetailsView {
 
     private String nationalInsuranceNumber;
 
+    private String driverNumber;
+
+    private String driverLicenceDetails;
+
     private PersonalAddressView address;
 
     private ContactDetailsView contactDetails;
@@ -41,6 +45,8 @@ public class PersonalDetailsView {
             this.gender = personalDetails.getGender();
             this.nationalInsuranceNumber = personalDetails.getNationalInsuranceNumber();
             this.address = ofNullable(personalDetails.getAddress()).map(PersonalAddressView::new).orElse(null);
+            this.driverNumber = personalDetails.getDriverNumber();
+            this.driverLicenceDetails = personalDetails.getDriverLicenceDetails();
             this.contactDetails = new ContactDetailsView(personalDetails.getContactDetails());
             this.addressChanged = nonNull(personalDetails.getAddressUpdatedAt());
             this.dobChanged = nonNull(personalDetails.getDateOfBirthUpdatedAt());
@@ -70,6 +76,14 @@ public class PersonalDetailsView {
 
     public String getNationalInsuranceNumber() {
         return nationalInsuranceNumber;
+    }
+
+    public String getDriverNumber() {
+        return driverNumber;
+    }
+
+    public String getDriverLicenceDetails() {
+        return driverLicenceDetails;
     }
 
     public PersonalAddressView getAddress() {

@@ -92,6 +92,7 @@
                                 <include>**/sjp.command.add-case-note.json</include>
                                 <include>**/sjp.command.set-offences-withdrawal-requests-status.json</include>
                                 <include>**/sjp.command.update-all-financial-means.json</include>
+                                <include>**/sjp.command.add-case-assignment-restriction.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>

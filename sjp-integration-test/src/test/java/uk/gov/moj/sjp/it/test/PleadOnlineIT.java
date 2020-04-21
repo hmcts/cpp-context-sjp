@@ -43,6 +43,9 @@ import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.getOnlinePlea;
 import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.createCase;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.stubNotifications;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.verifyNotification;
@@ -67,7 +70,6 @@ import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
@@ -85,8 +87,10 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.FinancialMeansHelper;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
 import uk.gov.moj.sjp.it.stub.UsersGroupsStub;
+import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.Defaults;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
@@ -99,6 +103,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -107,6 +112,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.ws.rs.core.Response;
 
+import com.google.common.collect.Sets;
 import com.jayway.jsonpath.ReadContext;
 import com.jayway.restassured.path.json.JsonPath;
 import org.apache.commons.lang.text.StrSubstitutor;
@@ -115,20 +121,21 @@ import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("This IT test always fails in the pipeline. Need to check with ATCM team")
 public class PleadOnlineIT extends BaseIntegrationTest {
 
     private static final String TEMPLATE_PLEA_NOT_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__not-guilty.json";
     private static final String TEMPLATE_PLEA_MULTI_OFFENCE_PAYLOAD = "raml/json/sjp.command.plead-online__multi_offence.json";
     private static final String TEMPLATE_PLEA_MULTI_OFFENCE_CUSTOM_V2 = "raml/json/sjp.command.plead-online__multi_offence_v2.json";
     private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__guilty.json";
+    private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD_WITH_DRIVER_LICENCE_DETAILS = "raml/json/sjp.command.plead-online__guilty_with_driver_licence_details.json";
     private static final String TEMPLATE_PLEA_GUILTY_REQUEST_HEARING_PAYLOAD = "raml/json/sjp.command.plead-online__guilty_request_hearing.json";
     private static final String TEMPLATE_PLEA_MULTI_OFFENCE_NO_CHANGE_PERSONAL_DETAILS_PAYLOAD = "raml/json/sjp.command.plead-online__david-lloyd.json";
     private static final String TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_RESPONSE = "raml/json/sjp.command.plead-online__guilty_with_finances_response.json";
+    private static final String TEMPLATE_PLEA_GUILTY_WITH_DRIVER_LICENCE_DETAILS_RESPONSE = "raml/json/sjp.command.plead-online__guilty_with_driver_licence_details_response.json";
     private static final String TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_CASE_RESPONSE = "raml/json/sjp.command.plead-online__guilty_with_finances_case_response.json";
+    private static final String TEMPLATE_PLEA_GUILTY_WITH_DRIVER_LICENCE_DETAILS_CASE_RESPONSE = "raml/json/sjp.command.plead-online__guilty_with_driver_licence_details_case_response.json";
     private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_finances_response.json";
     private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_FINANCIAL_MEANS_AND_OUTGOINGS_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_finances_and_outgoings_response.json";
     private static final String TEMPLATE_PLEA_NOT_GUILTY_WITHOUT_OUTGOINGS_RESPONSE = "raml/json/sjp.command.plead-online__not-guilty_without_outgoings_response.json";
@@ -153,11 +160,14 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private UUID offenceId;
 
-
     @Before
+    @SuppressWarnings("squid:S2925")
     public void setUp() throws Exception {
         offenceId = randomUUID();
-        databaseCleaner.cleanAll();
+        databaseCleaner.cleanViewStore();
+
+        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
+
         this.createCasePayloadBuilder =
                 CreateCase.CreateCasePayloadBuilder
                         .withDefaults()
@@ -196,6 +206,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final String firstName = person.getString("firstName");
         final String lastName = person.getString("lastName");
         final String nationalInsuranceNumber = person.getString("nationalInsuranceNumber");
+        final String driverNumber = person.optString("driverNumber", null);
+        final String driverLicenceDetails = person.optString("driverLicenceDetails", null);
         final String dateOfBirth = person.getString("dateOfBirth");
 
         final JSONObject contactDetails = person.getJSONObject("contactDetails");
@@ -215,7 +227,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final String title = personInfoVerifier.getPersonalDetails().getTitle();
         final Gender gender = personInfoVerifier.getPersonalDetails().getGender();
 
-        return new PersonalDetails(title, firstName, lastName, LocalDate.parse(dateOfBirth), gender, nationalInsuranceNumber,
+        return new PersonalDetails(title, firstName, lastName, LocalDate.parse(dateOfBirth), gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails,
                 new Address(address1, address2, address3, address4, address5, postcode),
                 new ContactDetails(email, homeNumber, mobileNumber),
                 null
@@ -332,6 +344,14 @@ public class PleadOnlineIT extends BaseIntegrationTest {
             assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("offenceId"), equalTo(offenceId3.toString()));
             assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("plea"), equalTo(pleaType3.name()));
             assertFalse(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).has("mitigation"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").get("firstName"), equalTo("David"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").get("lastName"), equalTo("LLOYD"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address1"), equalTo("14 Tottenham Court Road"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address2"), equalTo("London"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address3"), equalTo("England"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address4"), equalTo("UK"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address5"), equalTo("Greater London"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("postcode"), equalTo("W1T 1JY"));
             assertTrue(defendantsPlea.getJSONObject("pleaDetails").getBoolean("outstandingFines"));
 
             final JsonObject updatedDefendantDetails = getUpdatedDefendantDetails();
@@ -670,15 +690,15 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final String pleaDate = response.getString("defendant.offences[0].pleaDate");
         final String caseStatus = response.getString("status");
 
-        final Map<String, String> params = new HashMap<>();
-        params.put("dateTimeCreated", dateTimeCreated);
-        params.put("offenceId", offenceId);
-        params.put("defendantId", defendantId);
-        params.put("pleaDate", pleaDate);
-        params.put("caseStatus", caseStatus);
-        params.put("speakWelsh", "false");
+        final Map<String, String> expectedParams = new HashMap<>();
+        expectedParams.put("dateTimeCreated", dateTimeCreated);
+        expectedParams.put("offenceId", offenceId);
+        expectedParams.put("defendantId", defendantId);
+        expectedParams.put("pleaDate", pleaDate);
+        expectedParams.put("caseStatus", caseStatus);
+        expectedParams.put("speakWelsh", "false");
 
-        final JsonPath expectedResponse = fillTemplate(templatePath, params);
+        final JsonPath expectedResponse = fillTemplate(templatePath, expectedParams);
 
         assertEquals(expectedResponse.prettify(), response.prettify());
     }
@@ -687,6 +707,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         values.putIfAbsent("caseId", createCasePayloadBuilder.getId().toString());
         values.putIfAbsent("urn", createCasePayloadBuilder.getUrn());
         values.putIfAbsent("enterpriseId", createCasePayloadBuilder.getEnterpriseId());
+        values.putIfAbsent("postConviction", "false");
 
         return JsonPath.from(new StrSubstitutor(values).replace(getPayload(nameFile)));
     }

@@ -1,110 +1,29 @@
 package uk.gov.moj.cpp.sjp.query.view.converter;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DecisionName.ADJOURN;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ABSOLUTE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ABSOLUTE_DISCHARGE_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.AMOUNT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.APPLICATION_MADE_FOR_BENEFIT_DEDUCTIONS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ATTACHMENT_OF_EARNINGS_ORDER;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ATTACH_TO_EARNINGS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.BACK_DUTY;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.BACK_DUTY_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COLLECTION_ORDER_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COLLECTION_ORDER_MADE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COMPENSATION;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COMPENSATION_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COMPENSATION_ORDERED;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.CONDITIONAL;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.CONDITIONAL_DISCHARGE_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COSTS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.COSTS_AND_SURCHARGE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DATE_FORMAT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DEDUCT_FROM_BENEFITS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DEFENDANT_KNOWN_DEFAULTER;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DEFENDANT_REQUESTED;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISCHARGE_FOR;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISCHARGE_FOR_DAY;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISCHARGE_FOR_MONTH;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISCHARGE_FOR_WEEK;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISCHARGE_FOR_YEAR;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISCHARGE_TYPE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.DISMISS_RESULT_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.EXCISE_PENALTY;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.EXCISE_PENALTY_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.FINANCIAL_COSTS_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.FINANCIAL_IMPOSITION;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.FINE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.FINE_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.HOUR_FORMAT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ID;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.INDEX;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.INSTALLMENTS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.INSTALLMENTS_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.LUMP_SUM;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.LUMP_SUM_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.LUMP_SUM_PLUS_INSTALLMENTS_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.MAGISTRATES_COURT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.NO_COMPENSATION_REASON;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.NO_COMPENSATION_REASON_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.NO_COSTS_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.NO_VICTIM_SURCHARGE_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.OFFENCE_DECISIONS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.OFFENCE_DECISION_INFORMATION;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.OFFENCE_ID;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PAYMENT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PAYMENT_TERMS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PAYMENT_TYPE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PAY_TO_COURT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PERIOD;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PROVED_SJP;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.PROVED_SJP_NAME;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REASON;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REASON_FOR_DEDUCTING_FROM_BENEFITS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REASON_FOR_NO_COSTS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REASON_WHY_NOT_ATTACHED_OR_DEDUCTED;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REFERRED_FOR_FUTURE_SJP_SESSION_RESULT_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REFERRED_TO_COURT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REFERRED_TO_DATE_TIME;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REFERRED_TO_OPEN_COURT_RESULT_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REFERRED_TO_ROOM;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.REFER_FOR_COURT_HEARING_RESULT_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.RESERVE_TERMS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.RESERVE_TERMS_INSTALLMENTS_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.RESERVE_TERMS_LUMP_SUM_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.RESERVE_TERMS_LUMP_SUM_PLUS_INSTALLMENTS_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.RESULTS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.RESULT_TYPE_ID;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.START_DATE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.TERMINAL_ENTRIES;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.TERMINAL_ENTRIES_DATE_FORMAT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.TOTAL_SUM;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.TYPE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.UNIT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.VALUE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.VERDICT;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.VICTIM_SURCHARGE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.VICTIM_SURCHARGE_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.WITHDRAW_REASON_ID;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.WITHDRAW_RESULT_CODE;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.WITHIN_DAYS;
+import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.*;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
+import uk.gov.moj.cpp.sjp.domain.decision.endorsement.PenaltyPointsReason;
 import uk.gov.moj.cpp.sjp.query.view.service.CachedReferenceData;
 import uk.gov.moj.cpp.sjp.query.view.service.ReferenceDataService;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -131,13 +50,13 @@ public class ReferencedDecisionSavedOffenceConverter {
     private static final Map<String, String> paymentTypeMap = ImmutableMap.of(
             PAY_TO_COURT, "Pay directly to court",
             DEDUCT_FROM_BENEFITS, "Deduct from benefits",
-            ATTACH_TO_EARNINGS,"Attach to earnings"
+            ATTACH_TO_EARNINGS, "Attach to earnings"
     );
 
-    private static final Map<String,String> deductFromBenefitsMap = ImmutableMap.of(
-            COMPENSATION_ORDERED,"Compensation ordered",
-            DEFENDANT_KNOWN_DEFAULTER,"Defendant known defaulter",
-            DEFENDANT_REQUESTED,"Defendant requested"
+    private static final Map<String, String> deductFromBenefitsMap = ImmutableMap.of(
+            COMPENSATION_ORDERED, "Compensation ordered",
+            DEFENDANT_KNOWN_DEFAULTER, "Defendant known defaulter",
+            DEFENDANT_REQUESTED, "Defendant requested"
     );
 
     private ReferenceDataService referenceDataService;
@@ -191,19 +110,42 @@ public class ReferencedDecisionSavedOffenceConverter {
                 return convertReferredForFutureSjpDecision(offenceDecision, referenceData);
             case REFER_FOR_COURT_HEARING:
                 return convertReferredForCourtHearing(offenceDecision, referenceData);
+            case NO_SEPARATE_PENALTY:
+                return convertNoSeparatePenalty(offenceDecision, referenceData);
             default:
                 return emptyList();
         }
+    }
+
+    private List<JsonObject> convertNoSeparatePenalty(final JsonObject offenceDecision, final CachedReferenceData referenceData) {
+        final JsonArrayBuilder results = createArrayBuilder().add(noSeparatePenalty(referenceData));
+        addEndorsementAndDisqualificationResults(offenceDecision, results, referenceData);
+
+        final String offenceId = offenceDecision.getJsonArray(OFFENCE_DECISION_INFORMATION).getJsonObject(0).getString("offenceId");
+        final String verdict = offenceDecision.getJsonArray(OFFENCE_DECISION_INFORMATION).getJsonObject(0).getString("verdict");
+
+        return Collections.singletonList(createObjectBuilder()
+                .add(ID, offenceId)
+                .add(VERDICT, verdict)
+                .add(RESULTS, results)
+                .build());
+    }
+
+    private JsonObjectBuilder noSeparatePenalty(final CachedReferenceData referenceData) {
+        return createObjectBuilder()
+                .add(CODE, "NSP")
+                .add(RESULT_TYPE_ID, referenceData.getResultId("NSP").toString())
+                .add(TERMINAL_ENTRIES, createArrayBuilder());
     }
 
     private JsonObject convertFinancialImposition(JsonObject financialImposition, CachedReferenceData referenceData) {
         final JsonArrayBuilder resultsArray = createArrayBuilder();
         final JsonObject costsAndSurcharge = financialImposition.getJsonObject(COSTS_AND_SURCHARGE);
         final JsonObject payment = financialImposition.getJsonObject(PAYMENT);
-        final JsonObject paymentTerms =  payment.getJsonObject(PAYMENT_TERMS);
+        final JsonObject paymentTerms = payment.getJsonObject(PAYMENT_TERMS);
 
         final JsonNumber costs = costsAndSurcharge.getJsonNumber(COSTS);
-        if(costs.doubleValue() > 0) {
+        if (costs.doubleValue() > 0) {
             resultsArray.add(costsResult(costsAndSurcharge, referenceData));
         }
 
@@ -227,9 +169,9 @@ public class ReferencedDecisionSavedOffenceConverter {
 
         final String paymentType = payment.getString(PAYMENT_TYPE);
 
-        if(paymentType.equals(DEDUCT_FROM_BENEFITS)){
+        if (paymentType.equals(DEDUCT_FROM_BENEFITS)) {
             resultsArray.add(deductFromBenefits(payment, referenceData));
-        } else if(paymentType.equals(ATTACH_TO_EARNINGS)){
+        } else if (paymentType.equals(ATTACH_TO_EARNINGS)) {
             resultsArray.add(attachToEarnings(payment, referenceData));
         }
 
@@ -255,7 +197,7 @@ public class ReferencedDecisionSavedOffenceConverter {
                 .add(terminalEntry(10, ZonedDateTime.parse(offenceDecision.getString(REFERRED_TO_DATE_TIME)).format(HOUR_FORMAT)))
                 .add(terminalEntry(15, offenceDecision.getString(REFERRED_TO_COURT)))
                 .add(terminalEntry(20, offenceDecision.getString(MAGISTRATES_COURT)))
-                .add(terminalEntry(30, offenceDecision.getJsonNumber(REFERRED_TO_ROOM).toString() ))
+                .add(terminalEntry(30, offenceDecision.getJsonNumber(REFERRED_TO_ROOM).toString()))
                 .add(terminalEntry(35, offenceDecision.getString(REASON)));
 
         return offenceDecision.getJsonArray(OFFENCE_DECISION_INFORMATION).getValuesAs(JsonObject.class).stream()
@@ -291,7 +233,7 @@ public class ReferencedDecisionSavedOffenceConverter {
 
     private List<JsonObject> convertAdjournDecision(final JsonObject offenceDecision, final CachedReferenceData referenceData) {
         return offenceDecision.getJsonArray(OFFENCE_DECISION_INFORMATION).getValuesAs(JsonObject.class).stream()
-                .map(offenceDecisionInformation -> convertDecision(offenceDecisionInformation, ADJOURN, terminalEntry(-1, offenceDecision.getString("adjournTo")), referenceData) )
+                .map(offenceDecisionInformation -> convertDecision(offenceDecisionInformation, ADJOURN, terminalEntry(-1, offenceDecision.getString("adjournTo")), referenceData))
                 .collect(toList());
     }
 
@@ -306,8 +248,8 @@ public class ReferencedDecisionSavedOffenceConverter {
                 .add(CODE, decisionType)
                 .add(RESULT_TYPE_ID, referenceData.getResultId("ADJOURN".equalsIgnoreCase(decisionType) ? "ADJOURNSJP" : decisionType).toString());
 
-        if(nonNull(terminalEntry)) {
-                result.add(TERMINAL_ENTRIES, terminalEntries(terminalEntry));
+        if (nonNull(terminalEntry)) {
+            result.add(TERMINAL_ENTRIES, terminalEntries(terminalEntry));
         } else {
             result.add(TERMINAL_ENTRIES, createArrayBuilder());
         }
@@ -326,7 +268,82 @@ public class ReferencedDecisionSavedOffenceConverter {
             results.add(backDutyResult(offenceDecision, referenceData));
         }
 
+        addEndorsementAndDisqualificationResults(offenceDecision, results, referenceData);
+
         return convertFinancialOffence(offenceDecision, results, referenceData);
+    }
+
+    private void addEndorsementAndDisqualificationResults(final JsonObject offenceDecision, final JsonArrayBuilder results, final CachedReferenceData referenceData) {
+        if (offenceDecision.containsKey(LICENCE_ENDORSEMENT) && offenceDecision.getBoolean(LICENCE_ENDORSEMENT)) {
+            results.add(licenceEndorsementResult(offenceDecision, referenceData));
+        }
+
+        if (offenceDecision.containsKey(DISQUALIFICATION) && offenceDecision.getBoolean(DISQUALIFICATION)) {
+            results.add(disqualificationResult(offenceDecision, referenceData));
+        }
+    }
+
+    @SuppressWarnings("squid:S1151")
+    private JsonObjectBuilder disqualificationResult(final JsonObject offenceDecision, final CachedReferenceData referenceData) {
+        String code;
+        final JsonArrayBuilder terminalEntries = createArrayBuilder();
+        final String disqualificationType = offenceDecision.getString(DISQUALIFICATION_TYPE);
+        final Optional<JsonObject> disqPeriod = ofNullable(offenceDecision.getJsonObject(DISQUALIFICATION_PERIOD));
+
+        switch (disqualificationType) {
+            default:
+            case "DISCRETIONARY":
+                code = DISQUALIFICATION_ORDINARY;
+                disqPeriod.ifPresent(disqPeriodObject -> terminalEntries.add(terminalEntry(1, disqualificationPeriod(disqPeriodObject))));
+                break;
+            case "POINTS":
+                code = POINTS_DISQUALIFICATION;
+                disqPeriod.ifPresent(disqPeriodObject -> terminalEntries.add(terminalEntry(1, disqualificationPeriod(disqPeriodObject))));
+                if (offenceDecision.containsKey(NOTIONAL_PENALTY_POINTS)) {
+                    terminalEntries.add(terminalEntry(2, String.valueOf(offenceDecision.getInt(NOTIONAL_PENALTY_POINTS))));
+                }
+                break;
+            case "OBLIGATORY":
+                code = OBLIGATORY_DISQUALIFICATION;
+                disqPeriod.ifPresent(disqPeriodObject -> terminalEntries.add(terminalEntry(1, disqualificationPeriod(disqPeriodObject))));
+                break;
+        }
+
+        return createObjectBuilder()
+                .add(CODE, code)
+                .add(RESULT_TYPE_ID, referenceData.getResultId(code).toString())
+                .add(TERMINAL_ENTRIES, terminalEntries);
+    }
+
+    private String disqualificationPeriod(final JsonObject disqualificationPeriodObject) {
+        return format("%d %s", disqualificationPeriodObject.getInt(DISQUALIFICATION_PERIOD_VALUE, -1), disqualificationPeriodObject.getString(DISQUALIFICATION_PERIOD_UNIT, "?").toLowerCase());
+    }
+
+    private JsonObjectBuilder licenceEndorsementResult(final JsonObject offenceDecision, final CachedReferenceData referenceData) {
+        String code;
+        final JsonArrayBuilder terminalEntries = createArrayBuilder();
+
+        if (!offenceDecision.containsKey(PENALTY_POINTS_IMPOSED)) {
+            code = ENDORSEMENT_NO_POINTS;
+        } else if (offenceDecision.containsKey(PENALTY_POINTS_IMPOSED)
+                && !offenceDecision.containsKey(PENALTY_POINTS_REASON)) {
+            code = ENDORSEMENT_WITH_PENALTY_POINTS;
+            terminalEntries.add(terminalEntry(1, offenceDecision.getJsonNumber(PENALTY_POINTS_IMPOSED).toString()));
+        } else if (offenceDecision.containsKey(PENALTY_POINTS_IMPOSED) &&
+                offenceDecision.containsKey(PENALTY_POINTS_REASON)) {
+            code = ENDORSEMENT_WITH_ADDITIONAL_POINTS;
+            terminalEntries.add(terminalEntry(1, offenceDecision.getJsonNumber(PENALTY_POINTS_IMPOSED).toString()));
+            final String penaltyPointsReason = offenceDecision.getString(PENALTY_POINTS_REASON, "");
+            terminalEntries.add(terminalEntry(2, penaltyPointsReason.equals(PenaltyPointsReason.DIFFERENT_OCCASIONS.name()) ?
+                    penaltyPointsReason : offenceDecision.getString(ADDITIONAL_POINTS_REASON, "")));
+        } else {
+            code = ENDORSEMENT_NO_POINTS;
+        }
+
+        return createObjectBuilder()
+                .add(CODE, code)
+                .add(RESULT_TYPE_ID, referenceData.getResultId(code).toString())
+                .add(TERMINAL_ENTRIES, terminalEntries);
     }
 
     private List<JsonObject> convertFinancialOffence(JsonObject offenceDecision, JsonArrayBuilder results, CachedReferenceData referenceData) {
@@ -361,6 +378,8 @@ public class ReferencedDecisionSavedOffenceConverter {
             results.add(excisePenaltyResult(offenceDecision, referenceData));
         }
 
+        addEndorsementAndDisqualificationResults(offenceDecision, results, referenceData);
+
         return convertFinancialOffence(offenceDecision, results, referenceData);
     }
 
@@ -393,7 +412,7 @@ public class ReferencedDecisionSavedOffenceConverter {
                 .add(terminalEntry(4, paymentTypeMap.get(sjpPayment.getString(PAYMENT_TYPE))));
 
         terminalEntries.add(terminalEntry(9, sjpPayment.containsKey(REASON_WHY_NOT_ATTACHED_OR_DEDUCTED) ?
-                sjpPayment.getString(REASON_WHY_NOT_ATTACHED_OR_DEDUCTED): "")
+                sjpPayment.getString(REASON_WHY_NOT_ATTACHED_OR_DEDUCTED) : "")
         );
 
         final JsonObjectBuilder collectionOrder = createObjectBuilder()
@@ -408,11 +427,11 @@ public class ReferencedDecisionSavedOffenceConverter {
         return costsAndSurcharge.containsKey(COLLECTION_ORDER_MADE) && costsAndSurcharge.getBoolean(COLLECTION_ORDER_MADE);
     }
 
-    private JsonObject createOffence(final JsonObject offenceDecisionInformation, final JsonArrayBuilder  results) {
+    private JsonObject createOffence(final JsonObject offenceDecisionInformation, final JsonArrayBuilder results) {
         return createObjectBuilder()
                 .add(ID, offenceDecisionInformation.getString(OFFENCE_ID))
-                .add(PROVED_SJP_NAME, PROVED_SJP.equals(offenceDecisionInformation.getString(VERDICT)))
-                .add(VERDICT, offenceDecisionInformation.getString(VERDICT))
+                .add(PROVED_SJP_NAME, PROVED_SJP.equals(offenceDecisionInformation.getString(VERDICT, null)))
+                .add(VERDICT, offenceDecisionInformation.getString(VERDICT, null))
                 .add(RESULTS, results).
                         build();
     }
@@ -479,7 +498,7 @@ public class ReferencedDecisionSavedOffenceConverter {
     private JsonObjectBuilder fineResult(JsonObject offenceDecision, CachedReferenceData referenceData) {
         final JsonArrayBuilder terminalEntries = createArrayBuilder();
 
-        if(offenceDecision.containsKey(FINE)){
+        if (offenceDecision.containsKey(FINE)) {
             terminalEntries.add(terminalEntry(1, offenceDecision.getJsonNumber(FINE).toString()));
         }
 
@@ -490,13 +509,13 @@ public class ReferencedDecisionSavedOffenceConverter {
     }
 
     private JsonArray terminalEntries(final JsonObject... terminalEntries) {
-        if(nonNull(terminalEntries)) {
+        if (nonNull(terminalEntries)) {
             return Arrays.stream(terminalEntries).reduce(Json.createArrayBuilder(), JsonArrayBuilder::add, JsonArrayBuilder::add).build();
         }
         return createArrayBuilder().build();
     }
 
-    private JsonObject victimSurcharge(final JsonNumber victimSurchargeValue, CachedReferenceData referenceData){
+    private JsonObject victimSurcharge(final JsonNumber victimSurchargeValue, CachedReferenceData referenceData) {
         return createObjectBuilder()
                 .add(CODE, VICTIM_SURCHARGE_CODE)
                 .add(RESULT_TYPE_ID, referenceData.getResultId(VICTIM_SURCHARGE_CODE).toString())
@@ -505,7 +524,7 @@ public class ReferencedDecisionSavedOffenceConverter {
                 ).build();
     }
 
-    private JsonObject noVictimSurcharge(CachedReferenceData referenceData){
+    private JsonObject noVictimSurcharge(CachedReferenceData referenceData) {
         return createObjectBuilder()
                 .add(CODE, NO_VICTIM_SURCHARGE_CODE)
                 .add(RESULT_TYPE_ID, referenceData.getResultId(NO_VICTIM_SURCHARGE_CODE).toString())
@@ -515,7 +534,7 @@ public class ReferencedDecisionSavedOffenceConverter {
                 ).build();
     }
 
-    private JsonObject deductFromBenefits(final JsonObject sjpPayment, CachedReferenceData referenceData){
+    private JsonObject deductFromBenefits(final JsonObject sjpPayment, CachedReferenceData referenceData) {
         return createObjectBuilder()
                 .add(CODE, APPLICATION_MADE_FOR_BENEFIT_DEDUCTIONS)
                 .add(RESULT_TYPE_ID, referenceData.getResultId(APPLICATION_MADE_FOR_BENEFIT_DEDUCTIONS).toString())
@@ -525,7 +544,7 @@ public class ReferencedDecisionSavedOffenceConverter {
                 ).build();
     }
 
-    private JsonObject attachToEarnings(final JsonObject payment, CachedReferenceData referenceData){
+    private JsonObject attachToEarnings(final JsonObject payment, CachedReferenceData referenceData) {
         return createObjectBuilder()
                 .add(CODE, ATTACHMENT_OF_EARNINGS_ORDER)
                 .add(RESULT_TYPE_ID, referenceData.getResultId(ATTACHMENT_OF_EARNINGS_ORDER).toString())
@@ -543,18 +562,18 @@ public class ReferencedDecisionSavedOffenceConverter {
                 RESERVE_TERMS_LUMP_SUM_PLUS_INSTALLMENTS_CODE : LUMP_SUM_PLUS_INSTALLMENTS_CODE;
         final String lumpSumCode = isReserveTerms ? RESERVE_TERMS_LUMP_SUM_CODE : LUMP_SUM_CODE;
         final String installmentsCode = isReserveTerms ? RESERVE_TERMS_INSTALLMENTS_CODE : INSTALLMENTS_CODE;
-        if(lumpSumSelected && installmentsSelected){
+        if (lumpSumSelected && installmentsSelected) {
             return lumpSumAndInstallments(
                     lumpSumAndInstallmentsCode,
                     sjpPaymentTerms.getJsonObject(LUMP_SUM),
                     sjpPaymentTerms.getJsonObject(INSTALLMENTS),
                     referenceData);
-        } else if(lumpSumSelected) {
+        } else if (lumpSumSelected) {
             return lumpSum(
                     lumpSumCode,
                     sjpPaymentTerms.getJsonObject(LUMP_SUM),
                     referenceData);
-        } else if(installmentsSelected) {
+        } else if (installmentsSelected) {
             return installments(installmentsCode, sjpPaymentTerms.getJsonObject(INSTALLMENTS), referenceData);
         } else {
             throw new IllegalArgumentException("invalid payment terms doesn't contain installments or lump sum");
@@ -568,13 +587,13 @@ public class ReferencedDecisionSavedOffenceConverter {
                 .build();
     }
 
-    private JsonObject lumpSum(final String code, final JsonObject sjpLumpSum, CachedReferenceData referenceData){
+    private JsonObject lumpSum(final String code, final JsonObject sjpLumpSum, CachedReferenceData referenceData) {
         return createObjectBuilder()
                 .add(CODE, code)
                 .add(RESULT_TYPE_ID, referenceData.getResultId(code).toString())
                 .add(TERMINAL_ENTRIES, createArrayBuilder()
                         .add(terminalEntry(5, sjpLumpSum.getJsonNumber(AMOUNT).toString()))
-                        .add(terminalEntry(6, String.format("lump sum within %d days", sjpLumpSum.getInt(WITHIN_DAYS))))
+                        .add(terminalEntry(6, format("lump sum within %d days", sjpLumpSum.getInt(WITHIN_DAYS))))
                 ).build();
     }
 

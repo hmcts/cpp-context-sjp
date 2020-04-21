@@ -1,28 +1,37 @@
 package uk.gov.moj.cpp.sjp.query.api;
 
-import static java.util.Optional.ofNullable;
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
-
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
+import uk.gov.justice.services.common.converter.ObjectToJsonValueConverter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.query.api.converter.CaseConverter;
 import uk.gov.moj.cpp.sjp.query.api.decorator.DecisionDecorator;
 import uk.gov.moj.cpp.sjp.query.api.decorator.DocumentMetadataDecorator;
 import uk.gov.moj.cpp.sjp.query.api.decorator.OffenceDecorator;
 import uk.gov.moj.cpp.sjp.query.api.helper.SjpQueryHelper;
 import uk.gov.moj.cpp.sjp.query.api.service.SjpVerdictService;
+import uk.gov.moj.cpp.sjp.query.api.validator.SjpQueryApiValidator;
 import uk.gov.moj.cpp.sjp.query.service.OffenceFineLevels;
 import uk.gov.moj.cpp.sjp.query.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.query.service.WithdrawalReasons;
 
 import javax.inject.Inject;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
+import javax.ws.rs.NotFoundException;
+
+import java.util.List;
+import java.util.Map;
+
+import static java.util.Optional.ofNullable;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
 @SuppressWarnings("WeakerAccess")
 @ServiceComponent(Component.QUERY_API)
@@ -48,6 +57,15 @@ public class SjpQueryApi {
 
     @Inject
     private SjpVerdictService verdictService;
+
+    @Inject
+    private SjpQueryApiValidator sjpQueryApiValidator;
+
+    @Inject
+    private ObjectToJsonValueConverter objectToJsonValueConverter;
+
+    @Inject
+    private CaseConverter caseConverter;
 
     @Handles("sjp.query.case")
     public JsonEnvelope findCase(final JsonEnvelope query) {
@@ -82,7 +100,21 @@ public class SjpQueryApi {
 
     @Handles("sjp.query.case-by-urn-postcode")
     public JsonEnvelope findCaseByUrnPostcode(final JsonEnvelope query) {
-        return requester.request(query);
+        final JsonValue caseDetails = requester.request(query).payload();
+        if (null != caseDetails && caseDetails.getValueType() == JsonValue.ValueType.NULL) {
+            throw new NotFoundException();
+        }
+        final Map<String, List<String>> validationErrors = sjpQueryApiValidator.validateCasePostConviction((JsonObject)caseDetails);
+
+        if (!validationErrors.isEmpty()) {
+            throw new BadRequestException(objectToJsonValueConverter.convert(validationErrors).toString());
+        }
+
+        final JsonValue responsePayload = !JsonValue.NULL.equals(caseDetails) ?
+                caseConverter.addOffenceReferenceDataToOffences((JsonObject) caseDetails, query) : null;
+
+        return enveloper.withMetadataFrom(query, "sjp.query.case-by-urn-postcode")
+                .apply(responsePayload);
     }
 
     @Handles("sjp.query.financial-means")
@@ -200,6 +232,11 @@ public class SjpQueryApi {
 
     @Handles("sjp.query.case-results")
     public JsonEnvelope getCaseResults(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
+    @Handles("sjp.query.not-guilty-plea-cases")
+    public JsonEnvelope getNotGuiltyPleaCases(final JsonEnvelope query) {
         return requester.request(query);
     }
 }

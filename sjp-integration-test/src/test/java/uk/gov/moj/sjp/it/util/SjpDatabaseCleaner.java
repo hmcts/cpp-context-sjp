@@ -12,6 +12,27 @@ public class SjpDatabaseCleaner {
 
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
 
+    public void cleanViewStore() throws SQLException {
+        cleanSnapshot();
+
+        databaseCleaner.cleanViewStoreTables(
+                SJP_NAME,
+                "financial_means",
+                "employer",
+                "case_decision",
+                "case_search_result",
+                "offence",
+                "case_document",
+                "defendant",
+                "offence_decision",
+                "online_plea",
+                "session",
+                "case_details",
+                "ready_cases",
+                "case_assignment_restriction"
+        );
+    }
+
     public void cleanAll() throws SQLException {
         cleanSnapshot();
         databaseCleaner.cleanEventLogTable(SJP_NAME);
@@ -31,7 +52,8 @@ public class SjpDatabaseCleaner {
                 "online_plea",
                 "session",
                 "case_details",
-                "ready_cases"
+                "ready_cases",
+                "case_assignment_restriction"
         );
     }
 

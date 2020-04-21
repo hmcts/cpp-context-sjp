@@ -5,6 +5,7 @@ import static java.util.Objects.isNull;
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -103,6 +104,17 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
     @Column(name = "back_duty_date_to")
     private LocalDate backDutyDateTo;
 
+    @Column(name = "conviction")
+    @Enumerated(EnumType.STRING)
+    private VerdictType conviction;
+
+    @Column(name = "conviction_date")
+    @Convert(converter = LocalDatePersistenceConverter.class)
+    private LocalDate convictionDate;
+
+    @Column(name = "endorsable")
+    private Boolean endorsable;
+
     public OffenceDetail() {
         super();
     }
@@ -129,6 +141,7 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         this.backDutyDateTo = builder.backDutyDateTo;
         this.vehicleMake = builder.vehicleMake;
         this.vehicleRegistrationMark = builder.vehicleRegistrationMark;
+        this.endorsable = builder.endorsable;
     }
 
     public static OffenceDetailBuilder builder() {
@@ -313,6 +326,30 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         this.backDutyDateTo = backDutyDateTo;
     }
 
+    public VerdictType getConviction() {
+        return conviction;
+    }
+
+    public void setConviction(final VerdictType conviction) {
+        this.conviction = conviction;
+    }
+
+    public LocalDate getConvictionDate() {
+        return convictionDate;
+    }
+
+    public void setConvictionDate(final LocalDate convictionDate) {
+        this.convictionDate = convictionDate;
+    }
+
+    public Boolean getEndorsable() {
+        return endorsable;
+    }
+
+    public void setEndorsable(final Boolean endorsable) {
+        this.endorsable = endorsable;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -359,6 +396,7 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         private LocalDate backDutyDateTo;
         private String vehicleMake;
         private String vehicleRegistrationMark;
+        private Boolean endorsable;
 
         public OffenceDetail build() {
             return new OffenceDetail(this);
@@ -464,6 +502,11 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
 
         public OffenceDetailBuilder withVehicleRegistrationMark(String vehicleRegistrationMark) {
             this.vehicleRegistrationMark = vehicleRegistrationMark;
+            return this;
+        }
+
+        public OffenceDetailBuilder withEndorsable(final Boolean endorsable) {
+            this.endorsable = endorsable;
             return this;
         }
     }

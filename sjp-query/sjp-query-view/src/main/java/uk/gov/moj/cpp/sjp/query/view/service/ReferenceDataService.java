@@ -54,6 +54,18 @@ public class ReferenceDataService {
                 map(payload -> payload.getJsonArray("prosecutors"));
     }
 
+    public Optional<JsonArray> getAllProsecutors() {
+        final JsonEnvelope prosecutorsQueryEnvelope = envelopeFrom(
+                metadataBuilder().
+                        withName("referencedata.query.prosecutors").
+                        withId(randomUUID()), createObjectBuilder());
+
+        final JsonEnvelope prosecutorsData = requester.requestAsAdmin(prosecutorsQueryEnvelope);
+
+        return ofNullable(prosecutorsData.payloadAsJsonObject()).
+                map(payload -> payload.getJsonArray("prosecutors"));
+    }
+
     public Optional<JsonObject> getOffenceData(String offenceCode){
         final JsonEnvelope offenceQueryEnvelope = envelopeFrom(
                 metadataBuilder().

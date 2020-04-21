@@ -621,3 +621,46 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
         description: Accepted
       500:
         description: Internal Server Error
+
+/cases-management-status:
+  post:
+    description: |
+      update cases management status
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.update-cases-management-status+json
+          name: sjp.update-cases-management-status
+      ...
+    body:
+      application/vnd.sjp.update-cases-management-status+json:
+        example:
+          !include json/sjp.update-cases-management-status.json
+        schema:
+          !include json/schema/sjp.update-cases-management-status.json
+    responses:
+      202:
+        description: Accepted
+      500:
+        description: Internal Server Error
+
+
+/case-assignment-restriction:
+  post:
+    description: |
+      Creates case assignment restriction
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.add-case-assignment-restriction+json
+          name: sjp.add-case-assignment-restriction
+      ...
+    body:
+      application/vnd.sjp.add-case-assignment-restriction+json:
+        example:
+          !include json/sjp.add-case-assignment-restriction.json
+        schema:
+          !include json/schema/sjp.add-case-assignment-restriction.json
+    responses:
+      500:
+            description: Internal Server Error
+      202:
+        description: Accepted

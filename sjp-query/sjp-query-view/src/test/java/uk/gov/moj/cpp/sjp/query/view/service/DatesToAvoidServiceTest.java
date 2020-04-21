@@ -9,7 +9,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingDatesToAvoid;
 import uk.gov.moj.cpp.sjp.persistence.repository.PendingDatesToAvoidRepository;
@@ -46,8 +46,8 @@ public class DatesToAvoidServiceTest {
         final JsonEnvelope envelope = envelope()
                 .with(metadataWithRandomUUID("sjp.pending-dates-to-avoid"))
                 .build();
-        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of(ProsecutingAuthority.TFL.toString());
-        final String prosecutingAuthorityFilterValue = ProsecutingAuthority.TFL.toString();
+        final ProsecutingAuthorityAccess prosecutingAuthorityAccess = ProsecutingAuthorityAccess.of("TFL");
+        final String prosecutingAuthorityFilterValue = "TFL";
         final List<PendingDatesToAvoid> pendingDatesToAvoidList = Arrays.asList(new PendingDatesToAvoid(new CaseDetail(UUID.randomUUID())));
 
         when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope)).thenReturn(prosecutingAuthorityAccess);

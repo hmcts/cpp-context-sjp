@@ -35,7 +35,8 @@
     },
     "email": "A@b.co",
     "dateOfBirth": "1960-09-09",
-    "nationalInsuranceNumber": "AA123456D"
+    "nationalInsuranceNumber": "AA123456D",
+    "driverNumber": "TESTY708166G99KZ"
   },
   "pleaDetails": {
     "comeToCourt": true,

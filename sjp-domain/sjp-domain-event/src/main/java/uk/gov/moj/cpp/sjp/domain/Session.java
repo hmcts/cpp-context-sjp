@@ -13,16 +13,19 @@ public class Session {
     private final UUID userId;
     private final SessionType type;
     private final String courtHouseCode;
+    private final String localJusticeAreaNationalCourtCode;
 
     public Session(
             @JsonProperty("id") final UUID id,
             @JsonProperty("userId") final UUID userId,
             @JsonProperty("type") final SessionType type,
-            @JsonProperty("courtHouseCode") String courtHouseCode) {
+            @JsonProperty("courtHouseCode") String courtHouseCode,
+            @JsonProperty("localJusticeAreaNationalCourtCode") String localJusticeAreaNationalCourtCode) {
         this.id = id;
         this.userId = userId;
         this.type = type;
         this.courtHouseCode = courtHouseCode;
+        this.localJusticeAreaNationalCourtCode = localJusticeAreaNationalCourtCode;
     }
 
     public UUID getId() {
@@ -41,6 +44,11 @@ public class Session {
         return courtHouseCode;
     }
 
+    public String getLocalJusticeAreaNationalCourtCode() {
+        return localJusticeAreaNationalCourtCode;
+    }
+
+    @SuppressWarnings("squid:S1067")
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -53,12 +61,12 @@ public class Session {
         return Objects.equals(id, session.id) &&
                 Objects.equals(userId, session.userId) &&
                 type == session.type &&
-                Objects.equals(courtHouseCode, session.courtHouseCode);
+                Objects.equals(courtHouseCode, session.courtHouseCode) &&
+                Objects.equals(localJusticeAreaNationalCourtCode, session.localJusticeAreaNationalCourtCode);
     }
 
     @Override
     public int hashCode() {
-
-        return Objects.hash(id, userId, type, courtHouseCode);
+        return Objects.hash(id, userId, type, courtHouseCode, localJusticeAreaNationalCourtCode);
     }
 }

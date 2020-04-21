@@ -19,7 +19,6 @@ import javax.ws.rs.core.Response;
 
 public class UpdateDefendantDetails {
 
-
     private final DefendantDetailsPayloadBuilder payloadBuilder;
 
     public UpdateDefendantDetails(final DefendantDetailsPayloadBuilder payloadBuilder) {
@@ -93,6 +92,11 @@ public class UpdateDefendantDetails {
         ofNullable(payloadBuilder.getNationalInsuranceNumber())
                 .ifPresent(nationalInsuranceNumber -> defendantDetailsUpdateBuilder.add("nationalInsuranceNumber", payloadBuilder.getNationalInsuranceNumber()));
 
+        ofNullable(payloadBuilder.getDriverNumber())
+                .ifPresent(driverNumber -> defendantDetailsUpdateBuilder.add("driverNumber", driverNumber));
+
+        ofNullable(payloadBuilder.getDriverLicenceDetails())
+                .ifPresent(driverLicenceDetails -> defendantDetailsUpdateBuilder.add("driverLicenceDetails", driverLicenceDetails));
 
         return defendantDetailsUpdateBuilder.build();
     }
@@ -111,6 +115,8 @@ public class UpdateDefendantDetails {
         ContactDetailsBuilder contactDetailsBuilder;
 
         String nationalInsuranceNumber;
+        String driverNumber;
+        String driverLicenceDetails;
 
         private DefendantDetailsPayloadBuilder() {
             title = "Mr";
@@ -124,6 +130,7 @@ public class UpdateDefendantDetails {
                     .withAddress1("14 Shaftesbury Road");
 
             nationalInsuranceNumber = "QQ 12 34 56 C";
+            driverNumber = "MORGA753116SM9IJ";
         }
 
         public static DefendantDetailsPayloadBuilder withDefaults() {
@@ -160,6 +167,16 @@ public class UpdateDefendantDetails {
             return this;
         }
 
+        public DefendantDetailsPayloadBuilder withDriverNumber(final String driverNumber) {
+            this.driverNumber = driverNumber;
+            return this;
+        }
+
+        public DefendantDetailsPayloadBuilder withDriverLicenceDetails(final String driverLicenceDetails) {
+            this.driverLicenceDetails = driverLicenceDetails;
+            return this;
+        }
+
         public String getTitle() {
             return title;
         }
@@ -192,5 +209,12 @@ public class UpdateDefendantDetails {
             return nationalInsuranceNumber;
         }
 
+        public String getDriverNumber() {
+            return driverNumber;
+        }
+
+        public String getDriverLicenceDetails() {
+            return driverLicenceDetails;
+        }
     }
 }

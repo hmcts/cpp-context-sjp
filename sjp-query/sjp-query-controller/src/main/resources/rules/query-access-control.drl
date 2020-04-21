@@ -186,3 +186,19 @@ rule "sjp.query.case-results"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp.query.not-guilty-plea-cases"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.not-guilty-plea-cases");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp.query.case-assignment-restriction"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.case-assignment-restriction");
+  then
+    $outcome.setSuccess(true);
+end

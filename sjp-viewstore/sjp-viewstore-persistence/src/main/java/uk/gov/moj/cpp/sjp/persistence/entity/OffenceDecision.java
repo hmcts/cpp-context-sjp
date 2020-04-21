@@ -1,13 +1,16 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
+import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -48,15 +51,21 @@ public abstract class OffenceDecision {
     @Column(name = "plea_date")
     private ZonedDateTime pleaDate;
 
+    @Column(name = "conviction_date")
+    @Convert(converter = LocalDatePersistenceConverter.class)
+    private LocalDate convictionDate;
+
     protected OffenceDecision() {
     }
 
     protected OffenceDecision(final UUID offenceId, final UUID caseDecisionId,
-                              final DecisionType decisionType, final VerdictType verdictType) {
+                              final DecisionType decisionType, final VerdictType verdictType,
+                              final LocalDate convictionDate) {
         this.offenceId = offenceId;
         this.caseDecisionId = caseDecisionId;
         this.decisionType = decisionType;
         this.verdictType = verdictType;
+        this.convictionDate = convictionDate;
     }
 
     public UUID getOffenceId() {
@@ -89,5 +98,13 @@ public abstract class OffenceDecision {
 
     public void setPleaDate(ZonedDateTime pleaDate) {
         this.pleaDate = pleaDate;
+    }
+
+    public LocalDate getConvictionDate() {
+        return convictionDate;
+    }
+
+    public void setConvictionDate(final LocalDate convictionDate) {
+        this.convictionDate = convictionDate;
     }
 }

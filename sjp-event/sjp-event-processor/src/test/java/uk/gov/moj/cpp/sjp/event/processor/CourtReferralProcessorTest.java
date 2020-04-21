@@ -169,7 +169,7 @@ public class CourtReferralProcessorTest {
         when(sjpService.getCaseDetails(any(), any(JsonEnvelope.class))).thenReturn(caseDetails);
 
         final ProsecutionCaseView prosecutionCaseView = createDummyProsecutionCaseView(caseId);
-        when(prosecutionCasesDataSourcingService.createProsecutionCaseViews(any(), any(), any(), any(), any())).thenReturn(singletonList(prosecutionCaseView));
+        when(prosecutionCasesDataSourcingService.createProsecutionCaseViews(any(), any(), any(), any(), any(), any())).thenReturn(singletonList(prosecutionCaseView));
 
         final SjpReferralView sjpReferralView = createDummySjpReferralView();
         when(sjpReferralDataSourcingService.createSjpReferralView(any(), any(), any())).thenReturn(sjpReferralView);
@@ -177,7 +177,7 @@ public class CourtReferralProcessorTest {
         final Optional<JsonObject> caseFileDefendantDetails = Optional.of(createObjectBuilder()
                 .add("defendants", createArrayBuilder().add(createObjectBuilder()))
                 .build());
-        when(prosecutionCaseFileService.getCaseFileDefendantDetails(eq(caseId), any())).thenReturn(caseFileDefendantDetails);
+        when(prosecutionCaseFileService.getCaseFileDetails(eq(caseId), any())).thenReturn(caseFileDefendantDetails);
 
         final HearingRequestView listHearingRequestView = createDummyHearingRequestView();
         when(hearingRequestsDataSourcingService.createHearingRequestViews(any(), any(), any(), any())).thenReturn(singletonList(listHearingRequestView));
@@ -270,8 +270,9 @@ public class CourtReferralProcessorTest {
                 new ProsecutionCaseIdentifierView(
                         randomUUID(),
                         "TFL",
-                        "TFL12345"),
-                emptyList());
+                        "TFL12345","TFL12345"),
+                emptyList(),
+                "TFL");
     }
 
     @Test

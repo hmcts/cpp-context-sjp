@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.query.api.util.FileUtil.getFileContentAsJson;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.json.JsonArray;
@@ -105,6 +106,10 @@ public class OffenceHelperTest {
         assertTrue(offenceHelper.hasFinalDecision(offence2, getCaseDecisions()));
 
         assertFalse(offenceHelper.hasFinalDecision(offence3, getCaseDecisions()));
+
+        assertFalse(offenceHelper.hasFinalDecision(offence1, getCaseDecisionsWithSetAside()));
+        assertFalse(offenceHelper.hasFinalDecision(offence2, getCaseDecisionsWithSetAside()));
+        assertFalse(offenceHelper.hasFinalDecision(offence3, getCaseDecisionsWithSetAside()));
     }
 
     @Test
@@ -143,9 +148,10 @@ public class OffenceHelperTest {
 
 
     private static JsonArray getCaseDecisions() {
-
+        final ZonedDateTime savedAt = ZonedDateTime.parse("2018-12-28T11:53:04.693Z");
 
         JsonArray offenceDecisions = createArrayBuilder().add(createObjectBuilder()
+                .add("savedAt", savedAt.toString())
                 .add("offenceDecisions", createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add("offenceId", offenceId_1)
@@ -161,6 +167,46 @@ public class OffenceHelperTest {
                         .add(createObjectBuilder().add("offenceId", offenceId_3)
                                 .add("decisionType", "ADJOURN")
                                 .add("verdict", "NO_VERDICT")))).build();
+
+        return offenceDecisions;
+    }
+
+
+    private static JsonArray getCaseDecisionsWithSetAside() {
+
+        final ZonedDateTime savedAt1 = ZonedDateTime.parse("2018-12-28T11:53:04.693Z");
+        final ZonedDateTime savedAt2 = ZonedDateTime.parse("2018-12-28T11:53:04.694Z");
+
+        final JsonArray offenceDecisions = createArrayBuilder()
+                .add(createObjectBuilder()
+                        .add("savedAt", savedAt1.toString())
+                        .add("offenceDecisions", createArrayBuilder()
+                                .add(createObjectBuilder()
+                                        .add("offenceId", offenceId_1)
+                                        .add("decisionType", "WITHDRAW")
+                                        .add("withdrawalReasonId", WITHDRAWAL_REQUEST_REASON_ID_FOR_INSUFFICIENT_EVIDENCE)
+
+                                        .add("verdict", "NO_VERDICT"))
+                                .add(createObjectBuilder().add("offenceId", offenceId_2)
+                                        .add("decisionType", "WITHDRAW")
+                                        .add("withdrawalReasonId", WITHDRAWAL_REQUEST_REASON_ID_FOR_NOT_IN_PUBLIC_INTEREST_TO_PROCEED)
+
+                                        .add("verdict", "NO_VERDICT"))
+                                .add(createObjectBuilder().add("offenceId", offenceId_3)
+                                        .add("decisionType", "ADJOURN")
+                                        .add("verdict", "NO_VERDICT")))
+                        .build())
+                .add(createObjectBuilder()
+                        .add("savedAt", savedAt2.toString())
+                        .add("offenceDecisions", createArrayBuilder()
+                                .add(createObjectBuilder()
+                                        .add("offenceId", offenceId_1)
+                                        .add("decisionType", "SET_ASIDE"))
+                                .add(createObjectBuilder().add("offenceId", offenceId_2)
+                                        .add("decisionType", "SET_ASIDE"))
+                                .add(createObjectBuilder().add("offenceId", offenceId_3)
+                                        .add("decisionType", "SET_ASIDE"))).build())
+                .build();
 
         return offenceDecisions;
     }

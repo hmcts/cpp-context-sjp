@@ -17,24 +17,10 @@ public class Person {
     private final Gender gender;
     private final String nationalInsuranceNumber;
     private final String driverNumber;
+    private final String driverLicenceDetails;
     private final Address address;
     private final ContactDetails contactDetails;
     private final String region;
-
-    @SuppressWarnings("squid:S00107")
-    public Person(
-            final String title,
-            final String firstName,
-            final String lastName,
-            final LocalDate dateOfBirth,
-            final Gender gender,
-            final String nationalInsuranceNumber,
-            final Address address,
-            final ContactDetails contactDetails,
-            final String region) {
-        this(title, firstName, lastName, dateOfBirth, gender,
-                nationalInsuranceNumber, null, address, contactDetails, region);
-    }
 
     @JsonCreator
     public Person(
@@ -45,6 +31,7 @@ public class Person {
             @JsonProperty("gender") final Gender gender,
             @JsonProperty("nationalInsuranceNumber") final String nationalInsuranceNumber,
             @JsonProperty("driverNumber") final String driverNumber,
+            @JsonProperty("driverLicenceDetails") final String driverLicenceDetails,
             @JsonProperty("address") final Address address,
             @JsonProperty("contactDetails") final ContactDetails contactDetails,
             @JsonProperty("region") final String region
@@ -56,6 +43,7 @@ public class Person {
         this.gender = gender;
         this.nationalInsuranceNumber = nationalInsuranceNumber;
         this.driverNumber = driverNumber;
+        this.driverLicenceDetails = driverLicenceDetails;
         this.address = address;
         this.contactDetails = contactDetails;
         this.region = region;
@@ -87,6 +75,10 @@ public class Person {
 
     public String getDriverNumber() {
         return driverNumber;
+    }
+
+    public String getDriverLicenceDetails() {
+        return driverLicenceDetails;
     }
 
     public Address getAddress() {

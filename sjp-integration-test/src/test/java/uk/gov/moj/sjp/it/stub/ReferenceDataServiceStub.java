@@ -29,7 +29,7 @@ import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.justice.services.common.http.HeaderConstants;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -79,6 +79,10 @@ public class ReferenceDataServiceStub {
     }
 
     public static void stubProsecutorQuery(final String prosecutingAuthorityCode, final String prosecutingAuthorityFullName, final UUID prosecutorId) {
+        stubProsecutorQuery(prosecutingAuthorityCode, prosecutingAuthorityFullName, prosecutorId, false);
+    }
+
+    public static void stubProsecutorQuery(final String prosecutingAuthorityCode, final String prosecutingAuthorityFullName, final UUID prosecutorId, final boolean policeFlag) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
 
         final String urlPath = "/referencedata-service/query/api/rest/referencedata/prosecutors";
@@ -93,6 +97,7 @@ public class ReferenceDataServiceStub {
                                                 .add("id", prosecutorId.toString())
                                                 .add("shortName", prosecutingAuthorityCode)
                                                 .add("fullName", prosecutingAuthorityFullName)
+                                                .add("policeFlag", policeFlag)
                                                 .add("address", createObjectBuilder()
                                                         .add("address1", "6th Floor Windsor House")
                                                         .add("address2", "42-50 Victoria Street")
@@ -366,8 +371,6 @@ public class ReferenceDataServiceStub {
 
     public static void stubResultIds() {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
-
-        final String query = "application/vnd.referencedata.query.results+json";
         final String urlPath = "/referencedata-service/query/api/rest/referencedata/results";
 
         stubFor(get(urlPathEqualTo(urlPath))

@@ -10,7 +10,8 @@
       "dateOfBirthUpdated": false,
       "addressUpdated": false,
       "updatedOn": "2018-12-01",
-      "region": "Cambridge"
+      "region": "Cambridge",
+      "driverNumber": "TESTY708166G99KZ"
     }, {
       "firstName": "Camilla",
       "lastName": "SMITH",
@@ -20,7 +21,8 @@
       "dateOfBirthUpdated": true,
       "addressUpdated": true,
       "updatedOn": "2018-11-01",
-      "region": "Kent"
+      "region": "Kent",
+      "driverNumber": "TESTY708166G99KZ"
     }, {
       "firstName": "Steven",
       "lastName": "GERARD",
@@ -30,7 +32,8 @@
       "dateOfBirthUpdated": false,
       "addressUpdated": true,
       "updatedOn": "2018-11-11",
-      "region": "sussex"
+      "region": "sussex",
+      "driverNumber": "TESTY708166G99KZ"
     }
   ]
 }

@@ -3,7 +3,7 @@ package uk.gov.moj.sjp.it.test;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.time.LocalDate.now;
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
@@ -25,6 +25,7 @@ import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseNotReady;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.requestSetPleas;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.*;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
@@ -34,10 +35,11 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubWithdrawalReas
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 
+import com.google.common.collect.Sets;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
@@ -52,6 +54,7 @@ import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.ActivitiHelper;
+import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.sql.SQLException;
@@ -60,6 +63,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import javax.jms.JMSException;
 
 import org.apache.commons.lang3.tuple.Triple;
 import org.hamcrest.CoreMatchers;
@@ -89,7 +94,8 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
         caseId = randomUUID();
         sessionId = randomUUID();
         offenceId = randomUUID();
-        databaseCleaner.cleanAll();
+        databaseCleaner.cleanViewStore();
+        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
         AssignmentStub.stubAssignmentReplicationCommands();
         SchedulingStub.stubStartSjpSessionCommand();
@@ -117,7 +123,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
 
     @Test
     public void shouldRecordCaseAdjournmentAndChangeCaseStatusToNotReady() {
-        adjournOffence();
+        adjournOffence(VerdictType.NO_VERDICT);
 
         pollUntilCaseNotReady(caseId); // TODO should be handled as part of ATCM-4395
         pollUntilCaseByIdIsOk(caseId, allOf(caseAssigned(false), caseAdjourned(adjournmentDate)));
@@ -125,7 +131,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
 
     @Test
     public void shouldRemoveAdjournToDateWhenWithdrawalReceivedAndCaseCompleted() {
-        adjournOffence();
+        adjournOffence(VerdictType.NO_VERDICT);
 
         final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(USER_ID);
         offencesWithdrawalRequestHelper.requestWithdrawalOfOffences(caseId, offencesWithdrawalRequestHelper.preparePayloadWithDefaultsForCase(createCasePayloadBuilder));
@@ -157,7 +163,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
                     true,
                     null,
                     false,
-                    asList(Triple.of(createCasePayloadBuilder.getOffenceId(),
+                    singletonList(Triple.of(createCasePayloadBuilder.getOffenceId(),
                             createCasePayloadBuilder.getDefendantBuilder().getId(),
                             GUILTY)),
                     PUBLIC_EVENT_SET_PLEAS);
@@ -165,7 +171,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
             readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, PLEADED_GUILTY, MAGISTRATE, MEDIUM);
             pollUntilCaseReady(caseId);
 
-            adjournOffence();
+            adjournOffence(VerdictType.NO_VERDICT);
 
             readyCaseHelper.verifyCaseUnmarkedReadyForDecisionEventEmitted(caseId, adjournmentDate); // TODO should be handled as part of ATCM-4395
             pollUntilCaseNotReady(caseId);
@@ -206,7 +212,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
                     true,
                     null,
                     false,
-                    asList(Triple.of(createCasePayloadBuilder.getOffenceId(),
+                    singletonList(Triple.of(createCasePayloadBuilder.getOffenceId(),
                             createCasePayloadBuilder.getDefendantBuilder().getId(),
                             GUILTY)),
                     PUBLIC_EVENT_SET_PLEAS);
@@ -214,7 +220,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
             readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, PLEADED_GUILTY, MAGISTRATE, MEDIUM);
             pollUntilCaseReady(caseId);
 
-            adjournOffence();
+            adjournOffence(VerdictType.NO_VERDICT);
 
             readyCaseHelper.verifyCaseUnmarkedReadyForDecisionEventEmitted(caseId, adjournmentDate);  // TODO should be handled as part of ATCM-4395
             pollUntilCaseNotReady(caseId);
@@ -226,7 +232,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
                     true,
                     null,
                     false,
-                    asList(Triple.of(createCasePayloadBuilder.getOffenceId(), createCasePayloadBuilder.getDefendantBuilder().getId(), NOT_GUILTY)),
+                    singletonList(Triple.of(createCasePayloadBuilder.getOffenceId(), createCasePayloadBuilder.getDefendantBuilder().getId(), NOT_GUILTY)),
                     PUBLIC_EVENT_SET_PLEAS);
 
             // TODO: SEPARATE STORY FOR CaseExpectedDateReadyChanged
@@ -241,7 +247,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
                     true,
                     null,
                     false,
-                    asList(Triple.of(createCasePayloadBuilder.getOffenceId(), createCasePayloadBuilder.getDefendantBuilder().getId(), GUILTY)),
+                    singletonList(Triple.of(createCasePayloadBuilder.getOffenceId(), createCasePayloadBuilder.getDefendantBuilder().getId(), GUILTY)),
                     PUBLIC_EVENT_SET_PLEAS);
 
             // TODO: SEPARATE STORY FOR CaseExpectedDateReadyChanged
@@ -256,7 +262,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
                     true,
                     null,
                     false,
-                    asList(Triple.of(createCasePayloadBuilder.getOffenceId(), createCasePayloadBuilder.getDefendantBuilder().getId(), null)),
+                    singletonList(Triple.of(createCasePayloadBuilder.getOffenceId(), createCasePayloadBuilder.getDefendantBuilder().getId(), null)),
                     PUBLIC_EVENT_SET_PLEAS);
             pollUntilCaseNotReady(caseId);
             pollUntilCaseByIdIsOk(caseId, allOf(caseAssigned(false), caseAdjourned(adjournmentDate)));
@@ -264,11 +270,80 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
 
     }
 
-    private void adjournOffence() {
+    @Test
+    public void shouldCaseBeInPleaReceivedNotReadyForDecisionStateWhenThereIsPleaAndWithdrawalRequestedOnAllAndAdjournedPostConviction() throws JMSException {
+        try (final ReadyCaseHelper readyCaseHelper = new ReadyCaseHelper()) {
+
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
+                    createCasePayloadBuilder.getUrn(),
+                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
+
+            requestSetPleas(caseId,
+                    eventListener,
+                    true,
+                    false,
+                    true,
+                    null,
+                    false,
+                    singletonList(Triple.of(createCasePayloadBuilder.getOffenceId(),
+                            createCasePayloadBuilder.getDefendantBuilder().getId(),
+                            GUILTY)),
+                    PUBLIC_EVENT_SET_PLEAS);
+            caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
+            readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, PLEADED_GUILTY, MAGISTRATE, MEDIUM);
+            pollUntilCaseReady(caseId);
+
+            adjournOffence(VerdictType.FOUND_GUILTY);
+            readyCaseHelper.verifyCaseUnmarkedReadyForDecisionEventEmitted(caseId, adjournmentDate);
+            pollUntilCaseNotReady(caseId);
+            caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_NOT_READY_FOR_DECISION);
+
+            final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(user.getUserId(), EVENT_OFFENCES_WITHDRAWAL_STATUS_SET);
+            offencesWithdrawalRequestHelper.requestWithdrawalOfOffences(caseId, getRequestWithdrawalPayload(createCasePayloadBuilder.getOffenceId()));
+            caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_NOT_READY_FOR_DECISION);
+
+            final String pendingAdjournmentProcess = ActivitiHelper.pollUntilProcessExists(TIMER_TIMEOUT_PROCESS_NAME, caseId.toString());
+            ActivitiHelper.executeTimerJobs(pendingAdjournmentProcess);
+
+            readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, WITHDRAWAL_REQUESTED, MAGISTRATE, HIGH);
+            pollUntilCaseReady(caseId);
+            caseSearchResultHelper.verifyCaseStatus(CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION);
+        }
+    }
+
+    @Test
+    public void shouldCaseBeInNoPleaReceivedStateWhenThereIsNoPleaAndWithdrawalRequestedOnAllAndAdjournedPostConviction() throws JMSException {
+        try (final ReadyCaseHelper readyCaseHelper = new ReadyCaseHelper()) {
+
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
+                    createCasePayloadBuilder.getUrn(),
+                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
+
+            adjournOffence(VerdictType.FOUND_GUILTY);
+            readyCaseHelper.verifyCaseUnmarkedReadyForDecisionEventEmitted(caseId, adjournmentDate);
+            pollUntilCaseNotReady(caseId);
+            caseSearchResultHelper.verifyCaseStatus(CaseStatus.NO_PLEA_RECEIVED);
+
+            final OffencesWithdrawalRequestHelper offencesWithdrawalRequestHelper = new OffencesWithdrawalRequestHelper(user.getUserId(), EVENT_OFFENCES_WITHDRAWAL_STATUS_SET);
+            offencesWithdrawalRequestHelper.requestWithdrawalOfOffences(caseId, getRequestWithdrawalPayload(createCasePayloadBuilder.getOffenceId()));
+            caseSearchResultHelper.verifyCaseStatus(CaseStatus.NO_PLEA_RECEIVED);
+
+            final String pendingAdjournmentProcess = ActivitiHelper.pollUntilProcessExists(TIMER_TIMEOUT_PROCESS_NAME, caseId.toString());
+            ActivitiHelper.executeTimerJobs(pendingAdjournmentProcess);
+
+            readyCaseHelper.verifyCaseMarkedReadyForDecisionEventEmitted(caseId, WITHDRAWAL_REQUESTED, MAGISTRATE, HIGH);
+            pollUntilCaseReady(caseId);
+            caseSearchResultHelper.verifyCaseStatus(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION);
+        }
+    }
+
+    private void adjournOffence(final VerdictType verdictType) {
         requestCaseAssignment(sessionId, user.getUserId());
 
-        final Adjourn adjournDecision = new Adjourn(null, asList(new OffenceDecisionInformation(offenceId, VerdictType.NO_VERDICT)), "reason", adjournmentDate);
-        final List<Adjourn> offencesDecisions = asList(adjournDecision);
+        final Adjourn adjournDecision = new Adjourn(null, singletonList(new OffenceDecisionInformation(offenceId, verdictType)), "reason", adjournmentDate);
+        final List<Adjourn> offencesDecisions = singletonList(adjournDecision);
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, offencesDecisions, null);
 
         final Optional<JsonEnvelope> caseAdjournmentRecordedEvent = new EventListener()

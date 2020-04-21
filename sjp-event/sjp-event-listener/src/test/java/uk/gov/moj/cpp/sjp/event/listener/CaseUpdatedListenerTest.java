@@ -4,6 +4,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Boolean.TRUE;
 import static java.time.LocalDate.now;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -14,8 +15,9 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus.DONE;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus.IN_PROGRESS;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -23,6 +25,7 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentAdded;
+import uk.gov.moj.cpp.sjp.event.casemanagement.UpdateCasesManagementStatus;
 import uk.gov.moj.cpp.sjp.event.listener.converter.CaseDocumentAddedToCaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
@@ -77,6 +80,8 @@ public class CaseUpdatedListenerTest {
 
     @Mock
     private CaseDetail caseDetail;
+    @Mock
+    private CaseDetail caseDetail2;
 
     @Mock
     private CaseDocument caseDocument;
@@ -91,7 +96,7 @@ public class CaseUpdatedListenerTest {
     public void shouldUpdateCompletedStatusAndRemoveCaseReadinessIfExists() {
         final JsonObject caseCompletedEventPayload = createObjectBuilder().build();
         final JsonEnvelope envelopeIn = envelopeFrom(metadataWithRandomUUID(CaseCompleted.EVENT_NAME), caseCompletedEventPayload);
-        final ReadyCase readyCase = new ReadyCase(caseId, PIA, null, MAGISTRATE, 3, TFL, now());
+        final ReadyCase readyCase = new ReadyCase(caseId, PIA, null, MAGISTRATE, 3, "TFL", now());
 
         when(jsonObjectToObjectConverter.convert(caseCompletedEventPayload, CaseCompleted.class)).thenReturn(new CaseCompleted(caseId, newHashSet(randomUUID())));
         when(readyCaseRepository.findBy(caseId)).thenReturn(readyCase);
@@ -173,5 +178,27 @@ public class CaseUpdatedListenerTest {
 
     }
 
+    @Test
+    public void shouldUpdateCaseManagementStatus() {
+        final UUID case1Id = randomUUID();
+        final UUID case2Id = randomUUID();
 
+        final JsonObject caseManagementStatusChanged = createObjectBuilder().add("cases", createArrayBuilder()
+                .add(createObjectBuilder()
+                        .add("caseId", case1Id.toString())
+                        .add("caseManagementStatus", IN_PROGRESS.toString()))
+                .add(createObjectBuilder()
+                        .add("caseId", case2Id.toString())
+                        .add("caseManagementStatus", DONE.toString()))).build();
+
+        final JsonEnvelope envelopeIn = envelopeFrom(metadataWithRandomUUID(UpdateCasesManagementStatus.EVENT_NAME), caseManagementStatusChanged);
+
+        when(caseRepository.findBy(case1Id)).thenReturn(caseDetail);
+        when(caseRepository.findBy(case2Id)).thenReturn(caseDetail2);
+
+        listener.updateCaseManagementStatus(envelopeIn);
+
+        verify(caseRepository).findBy(case1Id);
+        verify(caseRepository).findBy(case2Id);
+    }
 }

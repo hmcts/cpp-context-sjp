@@ -5,6 +5,7 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 
 import java.math.BigDecimal;
@@ -35,6 +36,9 @@ public class OffenceView {
     private BigDecimal compensation;
     private String prosecutionFacts;
     private UUID withdrawalRequestReasonId;
+    private VerdictType conviction;
+    private LocalDate convictionDate;
+    private Boolean endorsable;
 
     public OffenceView(final OffenceDetail offence) {
 
@@ -61,6 +65,9 @@ public class OffenceView {
         this.backDutyDateTo = offence.getBackDutyDateTo();
         this.vehicleMake = offence.getVehicleMake();
         this.vehicleRegistrationMark = offence.getVehicleRegistrationMark();
+        this.conviction = offence.getConviction();
+        this.convictionDate = offence.getConvictionDate();
+        this.endorsable = offence.getEndorsable();
     }
 
     public UUID getId() {
@@ -139,5 +146,17 @@ public class OffenceView {
 
     public String getVehicleRegistrationMark() {
         return vehicleRegistrationMark;
+    }
+
+    public VerdictType getConviction() {
+        return conviction;
+    }
+
+    public LocalDate getConvictionDate() {
+        return convictionDate;
+    }
+
+    public Boolean getEndorsable() {
+        return endorsable;
     }
 }

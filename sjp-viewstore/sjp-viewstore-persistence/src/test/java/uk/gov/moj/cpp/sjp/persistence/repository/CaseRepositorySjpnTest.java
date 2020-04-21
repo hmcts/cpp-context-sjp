@@ -8,12 +8,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isIn;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetailMissingSjpn;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
@@ -50,8 +47,8 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
     @Before
     public void addCasesAndDocuments() {
 
-        tflCases = createCasesAndDocuments(TFL);
-        tvlCases = createCasesAndDocuments(TVL);
+        tflCases = createCasesAndDocuments("TFL");
+        tvlCases = createCasesAndDocuments("TVL");
 
         allCases.sjpCasesWithSjpn = union(tflCases.sjpCasesWithSjpn, tvlCases.sjpCasesWithSjpn);
 
@@ -141,7 +138,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
         }
     }
 
-    private SjpCases createCasesAndDocuments(final ProsecutingAuthority prosecutingAuthority) {
+    private SjpCases createCasesAndDocuments(final String prosecutingAuthority) {
 
         final SjpCases cases = new SjpCases();
 
@@ -165,7 +162,7 @@ public class CaseRepositorySjpnTest extends BaseTransactionalTest {
         return cases;
     }
 
-    private List<CaseDetail> createCases(final int count, final ProsecutingAuthority prosecutingAuthority) {
+    private List<CaseDetail> createCases(final int count, final String prosecutingAuthority) {
 
         final List<CaseDetail> cases = Stream.generate(CaseDetail::new)
                 .limit(count).collect(Collectors.toList());

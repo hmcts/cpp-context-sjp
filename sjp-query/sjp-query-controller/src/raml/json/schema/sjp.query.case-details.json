@@ -33,6 +33,12 @@
     "prosecutingAuthorityName": {
       "type" : "string"
     },
+    "policeFlag": {
+      "type": "boolean"
+    },
+    "postConviction": {
+      "type": "boolean"
+    },
     "completed": {
       "type": "boolean"
     },
@@ -70,6 +76,9 @@
       "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/case-status.json"
     },
     "listedInCriminalCourts": {
+      "type": "boolean"
+    },
+    "setAside": {
       "type": "boolean"
     }
   },

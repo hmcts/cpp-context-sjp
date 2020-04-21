@@ -27,6 +27,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseFinancialMeansHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseLanguageHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseNoteHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseReadinessHandler;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ChangeCaseManagementStatusHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CourtReferralHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.OffenceWithdrawalHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ResolveCaseStatusHandler;
@@ -36,6 +37,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.OnlinePleaHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.SetPleasHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.mutator.AggregateStateMutator;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus;
 import uk.gov.moj.cpp.sjp.domain.common.CaseState;
 import uk.gov.moj.cpp.sjp.domain.decision.Decision;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
@@ -260,6 +262,10 @@ public class CaseAggregate implements Aggregate {
         return apply(ResolveCaseStatusHandler.INSTANCE.resolveCaseStatus(state, CaseStatusResolver.resolve(state)));
     }
 
+    public Stream<Object> changeCaseManagementStatus(final CaseManagementStatus caseManagementStatus) {
+        return apply(ChangeCaseManagementStatusHandler.INSTANCE.changeCaseManagementStatus(state, caseManagementStatus));
+    }
+
     private Stream<Object> applyAndResolveCaseReadiness(final Supplier<Stream<Object>> streamSupplier) {
         final CaseState previousCaseState = CaseStatusResolver.resolve(state);
         final Stream<Object> stream = apply(streamSupplier.get());
@@ -277,4 +283,6 @@ public class CaseAggregate implements Aggregate {
         AGGREGATE_STATE_MUTATOR.apply(event, state);
         return event;
     }
+
+
 }

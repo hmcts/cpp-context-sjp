@@ -18,4 +18,8 @@ public interface OffenceDecisionVisitor {
 
     void visit(ReferredForFutureSJPSession referredForFutureSJPSession);
 
+    void visit(NoSeparatePenalty noSeparatePenalty);
+
+    void visit(SetAside setAside);
+
 }

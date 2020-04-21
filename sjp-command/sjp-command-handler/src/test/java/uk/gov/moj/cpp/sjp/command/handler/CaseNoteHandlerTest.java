@@ -15,6 +15,7 @@ import static uk.gov.justice.json.schemas.domains.sjp.AddCaseNote.addCaseNote;
 import static uk.gov.justice.json.schemas.domains.sjp.Note.note;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.DECISION;
 import static uk.gov.justice.json.schemas.domains.sjp.User.user;
+import static uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded.caseNoteAdded;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -25,11 +26,11 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.moj.cpp.sjp.event.CaseNoteAdded.caseNoteAdded;
 
 import uk.gov.justice.json.schemas.domains.sjp.AddCaseNote;
 import uk.gov.justice.json.schemas.domains.sjp.Note;
 import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -39,7 +40,6 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
-import uk.gov.moj.cpp.sjp.event.CaseNoteAdded;
 
 import java.util.UUID;
 import java.util.stream.Stream;

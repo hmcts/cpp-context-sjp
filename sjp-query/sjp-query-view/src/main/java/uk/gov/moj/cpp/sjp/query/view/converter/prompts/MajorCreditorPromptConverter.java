@@ -26,7 +26,7 @@ public class MajorCreditorPromptConverter extends PromptConverter{
         final Optional<JsonObject> referenceDataFixedList = mapToReferenceDataFixedList(allFixedListResult);
         if (referenceDataFixedList.isPresent()) {
             final Optional<JsonObject> matchedList = referenceDataFixedList.get().getJsonArray("elements").getValuesAs(JsonObject.class).stream()
-                    .filter(fixedList -> fixedList.getString("code").startsWith(caseView.getProsecutingAuthority().name())).findFirst();
+                    .filter(fixedList -> fixedList.getString("code").startsWith(caseView.getProsecutingAuthority())).findFirst();
             if (matchedList.isPresent()) {
                 return ofNullable(matchedList.get().getString(VALUE, null));
             }

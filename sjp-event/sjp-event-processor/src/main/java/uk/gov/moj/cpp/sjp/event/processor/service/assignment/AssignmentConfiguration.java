@@ -15,21 +15,11 @@ public class AssignmentConfiguration {
     @Value(key = "assignmentCandidatesLimit", defaultValue = "5")
     private String assignmentCandidatesLimitAsString;
 
-    @Inject
-    private AssignmentRulesLoader assignmentRulesLoader;
-
     private int assignmentCandidatesLimit;
-
-    private AssignmentRules assignmentRules;
 
     @PostConstruct
     private void readConfiguration() throws IOException {
-        assignmentRules = assignmentRulesLoader.load();
         assignmentCandidatesLimit = Integer.parseInt(assignmentCandidatesLimitAsString);
-    }
-
-    public AssignmentRules getAssignmentRules() {
-        return assignmentRules;
     }
 
     public int getAssignmentCandidatesLimit() {

@@ -26,7 +26,10 @@
       "type": "integer"
     },
     "driverNumber": {
-      "type": "string"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/dvlaDriverLicence"
+    },
+    "driverLicenceDetails" : {
+      "type" : "string"
     },
     "hearingLanguage": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/language.json"

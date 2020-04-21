@@ -132,6 +132,7 @@
                             <sourceDirectory>CLASSPATH</sourceDirectory>
                             <includes>
                                 <include>raml/json/schema/sjp.command.plead-online.json</include>
+                                <include>raml/json/schema/sjp.command.controller.add-case-assignment-restriction.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>

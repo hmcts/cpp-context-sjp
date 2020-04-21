@@ -39,6 +39,10 @@ public class OnlinePleaPersonalDetails {
     private LocalDate dateOfBirth;
     @Column(name = "personal_details_national_insurance_number")
     private String nationalInsuranceNumber;
+    @Column(name = "personal_details_driver_number")
+    private String driverNumber;
+    @Column(name = "personal_details_driver_licence_details")
+    private String driverLicenceDetails;
 
     public OnlinePleaPersonalDetails() {}
 
@@ -56,6 +60,8 @@ public class OnlinePleaPersonalDetails {
         }
         this.dateOfBirth = defendantDetailsUpdated.getDateOfBirth();
         this.nationalInsuranceNumber = defendantDetailsUpdated.getNationalInsuranceNumber();
+        this.driverNumber = defendantDetailsUpdated.getDriverNumber();
+        this.driverLicenceDetails = defendantDetailsUpdated.getDriverLicenceDetails();
     }
 
     public OnlinePleaPersonalDetails(final DefendantDetail defendantDetail) {
@@ -66,10 +72,12 @@ public class OnlinePleaPersonalDetails {
             ofNullable(personalDetails.getContactDetails()).ifPresent(contactDetails -> {
                 this.homeTelephone = contactDetails.getHome();
                 this.mobile = contactDetails.getMobile();
-                this.email = contactDetails.getMobile();
+                this.email = contactDetails.getEmail();
             });
             this.dateOfBirth = personalDetails.getDateOfBirth();
             this.nationalInsuranceNumber = personalDetails.getNationalInsuranceNumber();
+            this.driverNumber = personalDetails.getDriverNumber();
+            this.driverLicenceDetails = personalDetails.getDriverLicenceDetails();
         });
     }
 
@@ -135,5 +143,21 @@ public class OnlinePleaPersonalDetails {
 
     public void setNationalInsuranceNumber(String nationalInsuranceNumber) {
         this.nationalInsuranceNumber = nationalInsuranceNumber;
+    }
+
+    public String getDriverNumber() {
+        return driverNumber;
+    }
+
+    public void setDriverNumber(final String driverNumber) {
+        this.driverNumber = driverNumber;
+    }
+
+    public String getDriverLicenceDetails() {
+        return driverLicenceDetails;
+    }
+
+    public void setDriverLicenceDetails(final String driverLicenceDetails) {
+        this.driverLicenceDetails = driverLicenceDetails;
     }
 }

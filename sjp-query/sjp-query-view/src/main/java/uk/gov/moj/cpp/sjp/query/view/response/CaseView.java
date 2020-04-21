@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 
@@ -12,7 +12,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.util.Objects.nonNull;
+
 import com.google.common.collect.ImmutableList;
+
+import javax.json.JsonObject;
 
 public class CaseView {
 
@@ -22,7 +26,7 @@ public class CaseView {
     private final List<CaseDecisionView> caseDecisions;
     private final ZonedDateTime dateTimeCreated;
     private final Set<CaseDocumentView> caseDocuments;
-    private final ProsecutingAuthority prosecutingAuthority;
+    private final String prosecutingAuthority;
     private final String prosecutingAuthorityName;
     private final Boolean completed;
     private final Boolean assigned;
@@ -32,20 +36,28 @@ public class CaseView {
     private final LocalDate reopenedDate;
     private final String libraCaseNumber;
     private final String enterpriseId;
-    private final boolean onlinePleaReceived;
+    private final Boolean onlinePleaReceived;
     private final String datesToAvoid;
     private final CaseStatus status;
     private final Boolean listedInCriminalCourts;
     private final String hearingCourtName;
     private final ZonedDateTime hearingTime;
     private final LocalDate adjournedTo;
+    private final Boolean policeFlag;
+    private final Boolean postConviction;
+    private final Boolean setAside;
 
-    public CaseView(final CaseDetail caseDetail, final String prosecutingAuthorityName) {
+    public CaseView(final CaseDetail caseDetail, final JsonObject prosecutor) {
+
+        this.postConviction = caseDetail.getDefendant().getOffences().stream().anyMatch(
+                offence -> nonNull(offence.getConviction()));
 
         this.id = caseDetail.getId().toString();
         this.urn = caseDetail.getUrn();
+
         this.prosecutingAuthority = caseDetail.getProsecutingAuthority();
-        this.prosecutingAuthorityName = prosecutingAuthorityName;
+        this.prosecutingAuthorityName = prosecutor.getString("fullName");
+        this.policeFlag = prosecutor.getBoolean("policeFlag");
 
         this.defendant = new DefendantView(caseDetail.getDefendant());
         this.caseDecisions = new ArrayList<>();
@@ -74,6 +86,7 @@ public class CaseView {
         this.listedInCriminalCourts = caseDetail.getListedInCriminalCourts();
         this.hearingCourtName = caseDetail.getHearingCourtName();
         this.hearingTime = caseDetail.getHearingTime();
+        this.setAside = caseDetail.getSetAside();
     }
 
     public String getId() {
@@ -96,7 +109,7 @@ public class CaseView {
         return ImmutableList.copyOf(caseDecisions);
     }
 
-    public ProsecutingAuthority getProsecutingAuthority() {
+    public String getProsecutingAuthority() {
         return prosecutingAuthority;
     }
 
@@ -140,7 +153,7 @@ public class CaseView {
         return enterpriseId;
     }
 
-    public boolean isOnlinePleaReceived() {
+    public Boolean isOnlinePleaReceived() {
         return onlinePleaReceived;
     }
 
@@ -167,4 +180,17 @@ public class CaseView {
     public LocalDate getAdjournedTo() {
         return adjournedTo;
     }
+
+    public Boolean getPoliceFlag() {
+        return policeFlag;
+    }
+
+    public Boolean getPostConviction() {
+        return postConviction;
+    }
+
+    public Boolean isSetAside() {
+        return setAside;
+    }
+
 }

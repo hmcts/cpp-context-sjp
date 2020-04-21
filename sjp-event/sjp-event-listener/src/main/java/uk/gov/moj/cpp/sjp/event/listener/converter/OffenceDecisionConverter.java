@@ -1,27 +1,33 @@
 package uk.gov.moj.cpp.sjp.event.listener.converter;
 
 import static java.util.Collections.singletonList;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
 import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
+import uk.gov.moj.cpp.sjp.domain.decision.NoSeparatePenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionVisitor;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferredForFutureSJPSession;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferredToOpenCourt;
+import uk.gov.moj.cpp.sjp.domain.decision.SetAside;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
+import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPeriod;
 import uk.gov.moj.cpp.sjp.persistence.entity.AdjournOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.DischargeOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.DischargePeriod;
 import uk.gov.moj.cpp.sjp.persistence.entity.DismissOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.FinancialPenaltyOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.NoSeparatePenaltyOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReferForCourtHearingDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReferredForFutureSJPSessionDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReferredToOpenCourtDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.SetAsideOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.WithdrawOffenceDecision;
 
 import java.util.LinkedList;
@@ -36,6 +42,12 @@ public class OffenceDecisionConverter implements OffenceDecisionVisitor {
 
     private OffenceDecisionConverter(final UUID caseDecisionId) {
         this.caseDecisionId = caseDecisionId;
+    }
+
+    public static List<OffenceDecision> convert(UUID caseDecisionId, uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision offenceDecision) {
+        final OffenceDecisionConverter converter = new OffenceDecisionConverter(caseDecisionId);
+        offenceDecision.accept(converter);
+        return converter.entities;
     }
 
     @Override
@@ -66,7 +78,8 @@ public class OffenceDecisionConverter implements OffenceDecisionVisitor {
                         caseDecisionId,
                         adjournDecision.getReason(),
                         adjournDecision.getAdjournTo(),
-                        offenceDecisionInformation.getVerdict()
+                        offenceDecisionInformation.getVerdict(),
+                        adjournDecision.getConvictionDate()
                 ))
                 .collect(toList());
     }
@@ -84,7 +97,18 @@ public class OffenceDecisionConverter implements OffenceDecisionVisitor {
                 discharge.getCompensation(),
                 discharge.getNoCompensationReason(),
                 discharge.getDischargeType(),
-                discharge.getBackDuty());
+                discharge.getBackDuty(),
+                discharge.getConvictionDate(),
+                discharge.getLicenceEndorsed(),
+                discharge.getPenaltyPointsImposed(),
+                discharge.getPenaltyPointsReason(),
+                discharge.getAdditionalPointsReason(),
+                discharge.getDisqualification(),
+                discharge.getDisqualificationType(),
+                ofNullable(discharge.getDisqualificationPeriod()).map(DisqualificationPeriod::getValue).orElse(null),
+                ofNullable(discharge.getDisqualificationPeriod()).map(DisqualificationPeriod::getUnit).orElse(null),
+                discharge.getNotionalPenaltyPoints()
+        );
 
         entities = singletonList(dischargeOffenceDecision);
     }
@@ -98,14 +122,9 @@ public class OffenceDecisionConverter implements OffenceDecisionVisitor {
                         referForCourtHearing.getReferralReasonId(),
                         referForCourtHearing.getEstimatedHearingDuration(),
                         referForCourtHearing.getListingNotes(),
-                        offenceDecisionInformation.getVerdict()))
+                        offenceDecisionInformation.getVerdict(),
+                        referForCourtHearing.getConvictionDate()))
                 .collect(toList());
-    }
-
-    public static List<OffenceDecision> convert(UUID caseDecisionId, uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision offenceDecision) {
-        final OffenceDecisionConverter converter = new OffenceDecisionConverter(caseDecisionId);
-        offenceDecision.accept(converter);
-        return converter.entities;
     }
 
     @Override
@@ -120,7 +139,17 @@ public class OffenceDecisionConverter implements OffenceDecisionVisitor {
                 financialPenalty.getNoCompensationReason(),
                 financialPenalty.getFine(),
                 financialPenalty.getBackDuty(),
-                financialPenalty.getExcisePenalty());
+                financialPenalty.getExcisePenalty(),
+                financialPenalty.getConvictionDate(),
+                financialPenalty.getLicenceEndorsed(),
+                financialPenalty.getPenaltyPointsImposed(),
+                financialPenalty.getPenaltyPointsReason(),
+                financialPenalty.getAdditionalPointsReason(),
+                financialPenalty.getDisqualification(),
+                financialPenalty.getDisqualificationType(),
+                ofNullable(financialPenalty.getDisqualificationPeriod()).map(DisqualificationPeriod::getValue).orElse(null),
+                ofNullable(financialPenalty.getDisqualificationPeriod()).map(DisqualificationPeriod::getUnit).orElse(null),
+                financialPenalty.getNotionalPenaltyPoints());
 
         entities = singletonList(financialPenaltyOffenceDecision);
     }
@@ -150,6 +179,29 @@ public class OffenceDecisionConverter implements OffenceDecisionVisitor {
                         caseDecisionId,
                         offenceDecisionInformation.getVerdict()))
                 .collect(toList());
+    }
+
+    @Override
+    public void visit(final NoSeparatePenalty noSeparatePenalty) {
+        entities = singletonList(new NoSeparatePenaltyOffenceDecision(
+                noSeparatePenalty.getOffenceDecisionInformation().getOffenceId(),
+                caseDecisionId,
+                noSeparatePenalty.getOffenceDecisionInformation().getVerdict(),
+                noSeparatePenalty.getConvictionDate(),
+                noSeparatePenalty.getGuiltyPleaTakenIntoAccount(),
+                noSeparatePenalty.getLicenceEndorsed()
+        ));
+    }
+
+    @Override
+    public void visit(final SetAside setAside) {
+        entities = setAside.offenceDecisionInformationAsList()
+                .stream()
+                .map(offenceDecisionInformation -> new SetAsideOffenceDecision(
+                        offenceDecisionInformation.getOffenceId(),
+                        caseDecisionId
+                )).collect(toList());
+
     }
 
 }

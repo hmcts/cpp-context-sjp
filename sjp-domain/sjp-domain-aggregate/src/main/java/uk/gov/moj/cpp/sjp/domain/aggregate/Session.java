@@ -106,7 +106,7 @@ public class Session implements Aggregate {
         } else if (!userId.equals(this.userId)) {
             streamBuilder.add(new CaseAssignmentRejected(CaseAssignmentRejected.RejectReason.SESSION_NOT_OWNED_BY_USER));
         } else {
-            streamBuilder.add(new CaseAssignmentRequested(new uk.gov.moj.cpp.sjp.domain.Session(id, userId, sessionType, courtHouseCode)));
+            streamBuilder.add(new CaseAssignmentRequested(new uk.gov.moj.cpp.sjp.domain.Session(id, userId, sessionType, courtHouseCode, localJusticeAreaNationalCourtCode)));
         }
 
         return apply(streamBuilder.build());
@@ -182,6 +182,11 @@ public class Session implements Aggregate {
 
     public void setCourtHouseCode(String courtHouseCode) {
         this.courtHouseCode = courtHouseCode;
+    }
+
+    // Expose to test
+    public void setLocalJusticeAreaNationalCourtCode(String localJusticeAreaNationalCourtCode) {
+        this.localJusticeAreaNationalCourtCode = localJusticeAreaNationalCourtCode;
     }
 
     private enum SessionState {

@@ -11,8 +11,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TFL;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -45,6 +45,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ReadyCaseListenerTest {
 
     private static final LocalDate POSTING_DATE = now().minusDays(15);
+    private static final String PROSECUTOR_TFL = "TFL";
     private final UUID caseId = randomUUID();
     @Mock
     private ReadyCaseRepository readyCaseRepository;
@@ -80,6 +81,25 @@ public class ReadyCaseListenerTest {
         assertThat(readyCase.getCaseId(), equalTo(caseId));
     }
 
+
+    @Test
+    public void shouldKeepTheAssigneeSameIfTheCaseIsMarkedForReadyAgain() {
+        setupAndMarkReadyForDecision(null);
+        final UUID assigneeId = UUID.randomUUID();
+        final ReadyCase readyCase = new ReadyCase(caseId, PIA, assigneeId, MAGISTRATE, 1, "TFL", POSTING_DATE);
+
+        when(readyCaseRepository.findBy(caseId)).thenReturn(readyCase);
+
+
+        assertThat(readyCase.getReason(), equalTo(PIA));
+        assertThat(readyCase.getCaseId(), equalTo(caseId));
+        assertThat(readyCase.getAssigneeId().get(), equalTo(assigneeId));
+        assertThat(readyCase.getPostingDate(), equalTo(POSTING_DATE));
+        assertThat(readyCase.getPriority(), equalTo(1));
+        assertThat(readyCase.getProsecutionAuthority(), equalTo(PROSECUTOR_TFL));
+        assertThat(readyCase.getSessionType(), equalTo(MAGISTRATE));
+    }
+
     @Test
     public void shouldHandleCaseUnmarkedReadyForDecision() {
         final JsonEnvelope caseUnmarkedReadyForDecisionEvent = givenCaseUnMarkedEventIsRaised();
@@ -94,7 +114,7 @@ public class ReadyCaseListenerTest {
 
     private void setupAndMarkReadyForDecision(final CasePublishStatus casePublishStatus) {
         caseDetail = new CaseDetail();
-        caseDetail.setProsecutingAuthority(TFL);
+        caseDetail.setProsecutingAuthority(PROSECUTOR_TFL);
         caseDetail.setPostingDate(POSTING_DATE);
         final JsonEnvelope caseMarkedReadyForDecisionEvent = givenCaseMarkedReadyForDecisionEventIsRaised();
         when(caseRepository.findBy(caseId)).thenReturn(caseDetail);
@@ -133,9 +153,10 @@ public class ReadyCaseListenerTest {
         final ReadyCase readyCase = readyCasesCaptor.getValue();
         assertThat(readyCase.getReason(), equalTo(PLEADED_GUILTY));
         assertThat(readyCase.getCaseId(), equalTo(caseId));
+        assertThat(readyCase.getAssigneeId().isPresent(), equalTo(false));
         assertThat(readyCase.getPostingDate(), equalTo(POSTING_DATE));
         assertThat(readyCase.getPriority(), equalTo(2));
-        assertThat(readyCase.getProsecutionAuthority(), equalTo(TFL));
+        assertThat(readyCase.getProsecutionAuthority(), equalTo(PROSECUTOR_TFL));
         assertThat(readyCase.getSessionType(), equalTo(MAGISTRATE));
     }
 

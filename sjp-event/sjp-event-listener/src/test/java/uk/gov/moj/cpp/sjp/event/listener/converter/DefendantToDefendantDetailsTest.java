@@ -46,7 +46,8 @@ public class DefendantToDefendantDetailsTest {
     public void shouldConvertDefendantToDefendantDetails() {
         // GIVEN
         final Defendant inputDefendant = new Defendant(UUID.randomUUID(), "title", "firstName", "lastName",
-                LocalDate.of(1980, 1,1), Gender.MALE, RandomStringUtils.random(10), RandomStringUtils.random(10),
+                LocalDate.of(1980, 1,1), Gender.MALE, RandomStringUtils.random(10),
+                RandomStringUtils.random(16), RandomStringUtils.random(50),
                 new uk.gov.moj.cpp.sjp.domain.Address("l1", "l2", "l3", "l4", "l5", "p"),
                 new uk.gov.moj.cpp.sjp.domain.ContactDetails("home", "mobile", "business" , "email1@abc.com", "email2@abc.com"),
                 3, asList(mock(Offence.class), mock(Offence.class)), Language.W, "languageNeeds", "region");

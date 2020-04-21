@@ -4,6 +4,8 @@
   "completed": true,
   "assigned": true,
   "status": "COMPLETED",
+  "policeFlag": false,
+  "postConviction": false,
   "defendant": {
     "id": "1613a21d-d627-46f7-95f0-c9dd7b32c39e",
     "personalDetails": {

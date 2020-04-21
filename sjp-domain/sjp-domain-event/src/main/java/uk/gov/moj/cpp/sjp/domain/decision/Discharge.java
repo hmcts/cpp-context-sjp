@@ -3,15 +3,19 @@ package uk.gov.moj.cpp.sjp.domain.decision;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargePeriod;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
+import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPeriod;
+import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
+import uk.gov.moj.cpp.sjp.domain.decision.endorsement.PenaltyPointsReason;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISCHARGE;
 
-public class Discharge extends SingleOffenceDecision {
+public class Discharge extends DisqualifyEndorseDecision {
 
     private DischargeType dischargeType;
 
@@ -25,6 +29,9 @@ public class Discharge extends SingleOffenceDecision {
 
     private BigDecimal backDuty;
 
+    private LocalDate convictionDate;
+
+    @SuppressWarnings("squid:S00107")
     public Discharge(@JsonProperty("id") final UUID id,
                      @JsonProperty("offenceDecisionInformation") OffenceDecisionInformation offenceDecisionInformation,
                      @JsonProperty("dischargeType") final DischargeType dischargeType,
@@ -32,8 +39,18 @@ public class Discharge extends SingleOffenceDecision {
                      @JsonProperty("compensation") final BigDecimal compensation,
                      @JsonProperty("noCompensationReason") final String noCompensationReason,
                      @JsonProperty("guiltyPleaTakenIntoAccount") final Boolean guiltyPleaTakenIntoAccount,
-                     @JsonProperty("backDuty") final BigDecimal backDuty) {
-        super(id, DISCHARGE, offenceDecisionInformation);
+                     @JsonProperty("backDuty") final BigDecimal backDuty,
+                     @JsonProperty("licenceEndorsed") final Boolean licenceEndorsed,
+                     @JsonProperty("penaltyPointsImposed") final Integer penaltyPointsImposed,
+                     @JsonProperty("penaltyPointsReason") final PenaltyPointsReason penaltyPointsReason,
+                     @JsonProperty("additionalPointsReason") final String additionalPointsReason,
+                     @JsonProperty("disqualification") final Boolean disqualification,
+                     @JsonProperty("disqualificationType") final DisqualificationType disqualificationType,
+                     @JsonProperty("disqualificationPeriod") final DisqualificationPeriod disqualificationPeriod,
+                     @JsonProperty("notionalPenaltyPoints") final Integer notionalPenaltyPoints) {
+        super(id, DISCHARGE, offenceDecisionInformation,licenceEndorsed, penaltyPointsImposed,
+                penaltyPointsReason, additionalPointsReason, disqualification, disqualificationType,
+                disqualificationPeriod, notionalPenaltyPoints);
         this.dischargeType = dischargeType;
         this.dischargedFor = dischargedFor;
         this.compensation = compensation;
@@ -48,8 +65,10 @@ public class Discharge extends SingleOffenceDecision {
                                             final DischargePeriod dischargedFor,
                                             final BigDecimal compensation,
                                             final String noCompensationReason,
-                                            final Boolean guiltyPleaTakenIntoAccount) {
-        return new Discharge(id, offenceDecisionInformation, dischargeType, dischargedFor, compensation, noCompensationReason, guiltyPleaTakenIntoAccount, null);
+                                            final Boolean guiltyPleaTakenIntoAccount,
+                                            final BigDecimal backDuty) {
+        return new Discharge(id, offenceDecisionInformation, dischargeType, dischargedFor, compensation, noCompensationReason, guiltyPleaTakenIntoAccount, backDuty, null,
+                null, null, null, null, null, null, null);
     }
 
     public DischargeType getDischargeType() {
@@ -74,6 +93,14 @@ public class Discharge extends SingleOffenceDecision {
 
     public BigDecimal getBackDuty() {
         return backDuty;
+    }
+
+    public LocalDate getConvictionDate() {
+        return convictionDate;
+    }
+
+    public void setConvictionDate(final LocalDate convictionDate) {
+        this.convictionDate = convictionDate;
     }
 
     @Override

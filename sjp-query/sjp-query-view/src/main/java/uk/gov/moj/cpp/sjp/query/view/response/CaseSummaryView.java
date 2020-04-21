@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 
 import java.time.LocalDate;
@@ -10,7 +9,7 @@ public class CaseSummaryView {
     private final String id;
     private final String urn;
     private final DefendantSummaryView defendant;
-    private final ProsecutingAuthority prosecutingAuthority;
+    private final String prosecutingAuthority;
     private final LocalDate postingDate;
 
     public CaseSummaryView(final CaseDetail caseDetail) {
@@ -33,7 +32,7 @@ public class CaseSummaryView {
         return defendant;
     }
 
-    public ProsecutingAuthority getProsecutingAuthority() {
+    public String getProsecutingAuthority() {
         return prosecutingAuthority;
     }
 

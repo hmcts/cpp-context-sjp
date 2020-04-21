@@ -3,10 +3,10 @@ package uk.gov.moj.cpp.sjp.event.listener;
 
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
+import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.moj.cpp.sjp.event.CaseNoteAdded;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseNote;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseNoteRepository;
 

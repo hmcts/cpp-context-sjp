@@ -81,13 +81,17 @@ public class AssignmentProcessorTest {
 
     @Test
     public void shouldReturnListOfAssignmentCandidatesForMagistrateSession() {
+        final String localJusticeAreaNationalCourtCode= "1800";
+
         final JsonEnvelope caseAssignmentRequestedEvent = envelopeFrom(metadataWithRandomUUID(CaseAssignmentRequested.EVENT_NAME), createObjectBuilder()
                 .add("session", createObjectBuilder()
                         .add("id", sessionId.toString())
                         .add("type", MAGISTRATE.name())
                         .add("userId", assigneeId.toString())
                         .add("courtHouseCode", courtHouseCode)
+                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
                 ).build());
+
 
 
         final AssignmentCandidate assignmentCandidate1 = new AssignmentCandidate(randomUUID(), 1);
@@ -95,7 +99,7 @@ public class AssignmentProcessorTest {
 
         final List<AssignmentCandidate> assignmentCandidates = Arrays.asList(assignmentCandidate1, assignmentCandidate2);
 
-        when(assignmentService.getAssignmentCandidates(caseAssignmentRequestedEvent, assigneeId, courtHouseCode, MAGISTRATE)).thenReturn(assignmentCandidates);
+        when(assignmentService.getAssignmentCandidates(caseAssignmentRequestedEvent, assigneeId, MAGISTRATE, localJusticeAreaNationalCourtCode)).thenReturn(assignmentCandidates);
 
         assignmentProcessor.handleCaseAssignmentRequestedEvent(caseAssignmentRequestedEvent);
 
@@ -112,12 +116,15 @@ public class AssignmentProcessorTest {
 
     @Test
     public void shouldReturnListOfAssignmentCandidatesForDelegatedPowersSession() {
+        final String localJusticeAreaNationalCourtCode= "1800";
+
         final JsonEnvelope caseAssignmentRequestedEvent = envelopeFrom(metadataWithRandomUUID(CaseAssignmentRequested.EVENT_NAME), createObjectBuilder()
                 .add("session", createObjectBuilder()
                         .add("id", sessionId.toString())
                         .add("type", DELEGATED_POWERS.name())
                         .add("userId", assigneeId.toString())
                         .add("courtHouseCode", courtHouseCode)
+                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
                 ).build());
 
         final AssignmentCandidate assignmentCandidate1 = new AssignmentCandidate(randomUUID(), 1);
@@ -125,7 +132,7 @@ public class AssignmentProcessorTest {
 
         final List<AssignmentCandidate> assignmentCandidates = Arrays.asList(assignmentCandidate1, assignmentCandidate2);
 
-        when(assignmentService.getAssignmentCandidates(caseAssignmentRequestedEvent, assigneeId, courtHouseCode, DELEGATED_POWERS)).thenReturn(assignmentCandidates);
+        when(assignmentService.getAssignmentCandidates(caseAssignmentRequestedEvent, assigneeId, DELEGATED_POWERS, localJusticeAreaNationalCourtCode)).thenReturn(assignmentCandidates);
 
         assignmentProcessor.handleCaseAssignmentRequestedEvent(caseAssignmentRequestedEvent);
 
@@ -142,15 +149,18 @@ public class AssignmentProcessorTest {
 
     @Test
     public void shouldEmitCaseNotAssignedPublicEvent() {
+        final String localJusticeAreaNationalCourtCode= "1800";
+
         final JsonEnvelope caseAssignmentRequestedEvent = envelopeFrom(metadataWithRandomUUID(CaseAssignmentRequested.EVENT_NAME), createObjectBuilder()
                 .add("session", createObjectBuilder()
                         .add("id", sessionId.toString())
                         .add("type", DELEGATED_POWERS.name())
                         .add("userId", assigneeId.toString())
                         .add("courtHouseCode", courtHouseCode)
+                        .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
                 ).build());
 
-        when(assignmentService.getAssignmentCandidates(caseAssignmentRequestedEvent, assigneeId, courtHouseCode, DELEGATED_POWERS)).thenReturn(Collections.emptyList());
+        when(assignmentService.getAssignmentCandidates(caseAssignmentRequestedEvent, assigneeId, DELEGATED_POWERS, localJusticeAreaNationalCourtCode)).thenReturn(Collections.emptyList());
 
         assignmentProcessor.handleCaseAssignmentRequestedEvent(caseAssignmentRequestedEvent);
 

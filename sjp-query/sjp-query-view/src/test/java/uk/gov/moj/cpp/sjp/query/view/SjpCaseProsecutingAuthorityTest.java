@@ -11,12 +11,10 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.matchers.JsonValueNullMatcher.isJsonValueNull;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority.TVL;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
 import java.util.UUID;
@@ -51,13 +49,13 @@ public class SjpCaseProsecutingAuthorityTest {
 
     @Test
     public void shouldGetCaseProsecutingAuthority() {
-        final ProsecutingAuthority prosecutingAuthority = TVL;
+        final String prosecutingAuthority = "TVL";
 
-        when(caseRepository.getProsecutingAuthority(caseId)).thenReturn(prosecutingAuthority.name());
+        when(caseRepository.getProsecutingAuthority(caseId)).thenReturn(prosecutingAuthority);
 
         assertThat(sjpQueryView.getProsecutingAuthority(queryEnvelope), jsonEnvelope(
                 metadata().withName(PROSECUTING_AUTHORITY_QUERY_NAME),
-                payload().isJson(withJsonPath("$.prosecutingAuthority", equalTo(prosecutingAuthority.name())))
+                payload().isJson(withJsonPath("$.prosecutingAuthority", equalTo(prosecutingAuthority)))
         ));
     }
 

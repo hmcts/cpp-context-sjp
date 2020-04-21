@@ -25,6 +25,7 @@ public class OffenceToOffenceDetail implements Converter<Offence, OffenceDetail>
                 .withBackDutyDateTo(offence.getBackDutyDateTo())
                 .withVehicleMake(offence.getVehicleMake())
                 .withVehicleRegistrationMark(offence.getVehicleRegistrationMark())
+                .withEndorsable(offence.getEndorsable())
                 .build();
     }
 

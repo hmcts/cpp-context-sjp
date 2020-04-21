@@ -101,7 +101,10 @@ public class DefendantUpdatedListener {
             entity.setTitle(newData.getTitle());
             entity.setDateOfBirth(newData.getDateOfBirth());
             entity.setNationalInsuranceNumber(newData.getNationalInsuranceNumber());
+            entity.setDriverNumber(newData.getDriverNumber());
+            entity.setDriverLicenceDetails(newData.getDriverLicenceDetails());
         }
+
         ofNullable(newData.getAddress()).map(addressToAddressEntity::convert).ifPresent(entity::setAddress);
         ofNullable(newData.getContactDetails()).map(contactDetailsToContactDetailsEntity::convert).ifPresent(entity::setContactDetails);
         ofNullable(newData.getRegion()).ifPresent(entity::setRegion);

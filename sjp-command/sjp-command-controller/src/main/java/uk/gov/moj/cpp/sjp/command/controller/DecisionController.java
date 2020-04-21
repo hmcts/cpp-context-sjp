@@ -78,8 +78,9 @@ public class DecisionController {
                 });
     }
 
-    private JsonObject getDefendantCourtDetails(final JsonObject enforcementArea) {
-        return ofNullable(enforcementArea.getJsonObject("localJusticeArea"))
+    private JsonObject getDefendantCourtDetails(final Optional<JsonObject> enforcementArea) {
+        return enforcementArea
+                .map(value -> value.getJsonObject("localJusticeArea"))
                 .map(localJusticeArea -> createObjectBuilder()
                             .add("nationalCourtCode", localJusticeArea.getString("nationalCourtCode"))
                             .add("nationalCourtName", localJusticeArea.getString("name"))

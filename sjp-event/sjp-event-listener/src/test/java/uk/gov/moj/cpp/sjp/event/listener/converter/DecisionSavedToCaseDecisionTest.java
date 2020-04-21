@@ -15,6 +15,7 @@ import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISMISS;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.FINANCIAL_PENALTY;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.WITHDRAW;
+import static uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty.*;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.WEEK;
 import static uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType.PAY_TO_COURT;
@@ -163,16 +164,18 @@ public class DecisionSavedToCaseDecisionTest {
                             createOffenceDecisionInformation(randomUUID(), FOUND_GUILTY),
                             DischargeType.CONDITIONAL,
                             new DischargePeriod(10, WEEK),
-                            BigDecimal.valueOf(20.3), null, true
+                            BigDecimal.valueOf(20.3), null, true,
+                            null
                     ));
                     break;
                 case FINANCIAL_PENALTY:
-                    offenceDecisions.add(FinancialPenalty.createFinancialPenalty(randomUUID(),
+                    offenceDecisions.add(createFinancialPenalty(randomUUID(),
                             createOffenceDecisionInformation(randomUUID(), FOUND_GUILTY),
                             BigDecimal.valueOf(20.3),
                             BigDecimal.valueOf(20.4),
                             null,
-                            true));
+                            true,
+                            null, null));
                     break;
                 default:
                     throw new UnsupportedOperationException();
@@ -204,7 +207,7 @@ public class DecisionSavedToCaseDecisionTest {
                                 offenceDecisionInformation.getOffenceId(),
                                 caseDecisionId,
                                 adjourn.getReason(),
-                                adjourn.getAdjournTo(), NO_VERDICT));
+                                adjourn.getAdjournTo(), NO_VERDICT, null));
             case WITHDRAW:
                 final Withdraw withdraw = (Withdraw) offenceDecision;
                 final WithdrawOffenceDecision withdrawEntity = new WithdrawOffenceDecision(withdraw.getOffenceDecisionInformation().getOffenceId(), caseDecisionId, withdraw.getWithdrawalReasonId(), NO_VERDICT);
@@ -218,7 +221,7 @@ public class DecisionSavedToCaseDecisionTest {
                                 referForCourtHearing.getReferralReasonId(),
                                 referForCourtHearing.getEstimatedHearingDuration(),
                                 referForCourtHearing.getListingNotes(),
-                                PROVED_SJP));
+                                PROVED_SJP, null));
             case DISMISS:
                 final Dismiss dismiss = (Dismiss) offenceDecision;
                 return Stream.of(new DismissOffenceDecision(dismiss.getOffenceDecisionInformation().getOffenceId(), caseDecisionId, FOUND_NOT_GUILTY));
@@ -231,7 +234,7 @@ public class DecisionSavedToCaseDecisionTest {
                         true, BigDecimal.valueOf(20.3),
                         null,
                         DischargeType.CONDITIONAL,
-                        null
+                        null, null
                 ));
             case FINANCIAL_PENALTY:
                 final FinancialPenalty financialPenalty = (FinancialPenalty) offenceDecision;
@@ -242,7 +245,7 @@ public class DecisionSavedToCaseDecisionTest {
                         BigDecimal.valueOf(20.4),
                         null,
                         BigDecimal.valueOf(20.3),
-                        null, null
+                        null, null, null
                 ));
             default:
                 throw new UnsupportedOperationException();

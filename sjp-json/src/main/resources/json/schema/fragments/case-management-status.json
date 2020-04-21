@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/case-management-status.json",
+  "enum": [
+    "NOT_STARTED",
+    "NOT_NEEDED",
+    "IN_PROGRESS",
+    "DONE"
+  ]
+}

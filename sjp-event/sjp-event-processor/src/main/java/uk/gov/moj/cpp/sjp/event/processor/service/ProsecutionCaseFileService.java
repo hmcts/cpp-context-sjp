@@ -26,6 +26,16 @@ public class ProsecutionCaseFileService {
     @ServiceComponent(Component.EVENT_PROCESSOR)
     private Requester requester;
 
+    public Optional<JsonObject> getCaseFileDetails(final UUID caseId, final JsonEnvelope envelope) {
+        final JsonObject payload = createObjectBuilder().add("caseId", caseId.toString()).build();
+        final JsonEnvelope request = enveloper.withMetadataFrom(envelope, "prosecutioncasefile.query.case").apply(payload);
+        final JsonEnvelope response = requester.requestAsAdmin(request);
+
+        return response.payload() != JsonValue.NULL
+                ? ofNullable(response.payloadAsJsonObject())
+                : empty();
+    }
+
     public Optional<JsonObject> getCaseFileDefendantDetails(final UUID caseId, final JsonEnvelope envelope) {
         final JsonObject payload = createObjectBuilder().add("caseId", caseId.toString()).build();
         final JsonEnvelope request = enveloper.withMetadataFrom(envelope, "prosecutioncasefile.query.case").apply(payload);
@@ -35,4 +45,5 @@ public class ProsecutionCaseFileService {
                 ? ofNullable(response.payloadAsJsonObject().getJsonArray("defendants").getJsonObject(0))
                 : empty();
     }
+
 }

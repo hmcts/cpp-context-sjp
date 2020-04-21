@@ -15,6 +15,8 @@ public class DefendantSummaryView {
     private final LocalDate dateOfBirth;
     private final Gender gender;
     private final String nationalInsuranceNumber;
+    private final String driverNumber;
+    private final String driverLicenceDetails;
 
     public DefendantSummaryView(final DefendantDetail defendant){
         this.id = defendant.getId().toString();
@@ -25,6 +27,8 @@ public class DefendantSummaryView {
         this.dateOfBirth = personalDetails.getDateOfBirth();
         this.gender = personalDetails.getGender();
         this.nationalInsuranceNumber = personalDetails.getNationalInsuranceNumber();
+        this.driverNumber = personalDetails.getDriverNumber();
+        this.driverLicenceDetails = personalDetails.getDriverLicenceDetails();
     }
 
     public String getId() {
@@ -53,5 +57,13 @@ public class DefendantSummaryView {
 
     public String getNationalInsuranceNumber() {
         return nationalInsuranceNumber;
+    }
+
+    public String getDriverNumber() {
+        return driverNumber;
+    }
+
+    public String getDriverLicenceDetails() {
+        return driverLicenceDetails;
     }
 }

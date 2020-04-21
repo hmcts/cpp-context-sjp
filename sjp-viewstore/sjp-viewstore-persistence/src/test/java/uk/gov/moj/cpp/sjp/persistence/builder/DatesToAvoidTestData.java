@@ -1,21 +1,19 @@
 package uk.gov.moj.cpp.sjp.persistence.builder;
 
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
-
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
 public class DatesToAvoidTestData {
 
     private final UUID caseId;
-    private final ProsecutingAuthority prosecutingAuthority;
+    private final String prosecutingAuthority;
     private final String previouslySubmittedDatesToAvoid;
     private final boolean inSession;
     private final boolean completed;
     private final ZonedDateTime pleaDate;
 
-    public DatesToAvoidTestData(final ProsecutingAuthority prosecutingAuthority, final String previouslySubmittedDatesToAvoid, final boolean inSession,
-                                final boolean completed, final ZonedDateTime pleaDate) {
+    public DatesToAvoidTestData(final String prosecutingAuthority, final String previouslySubmittedDatesToAvoid,
+                                final boolean inSession, final boolean completed, final ZonedDateTime pleaDate) {
         this.caseId = UUID.randomUUID();
         this.prosecutingAuthority = prosecutingAuthority;
         this.previouslySubmittedDatesToAvoid = previouslySubmittedDatesToAvoid;
@@ -28,7 +26,7 @@ public class DatesToAvoidTestData {
         return caseId;
     }
 
-    public ProsecutingAuthority getProsecutingAuthority() {
+    public String getProsecutingAuthority() {
         return prosecutingAuthority;
     }
 

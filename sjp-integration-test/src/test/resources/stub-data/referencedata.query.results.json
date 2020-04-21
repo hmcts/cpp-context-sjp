@@ -43,6 +43,34 @@
     {
       "id": "b318f084-f40e-438c-98ba-99b7ce5f3eb3",
       "code": "INSTL"
+    },
+    {
+      "id": "0bd4ce39-2055-4fae-9087-dfd7e5ddd449",
+      "code": "LEN"
+    },
+    {
+      "id": "2391bb68-579f-4c3b-bc12-9d6ff681668d",
+      "code": "LEP"
+    },
+    {
+      "id": "ad511d29-af34-4db1-841e-77b174f16bc7",
+      "code": "LEA"
+    },
+    {
+      "id": "b8c354b4-be3d-4f73-b313-65e0b92f0d86",
+      "code": "DDD"
+    },
+    {
+      "id": "b96f6aae-ed91-4e39-a85d-cfd440288a0e",
+      "code": "DDO"
+    },
+    {
+      "id": "dd016c2e-7745-4c4c-a02d-cb899bc10aee",
+      "code": "DDP"
+    },
+    {
+      "id": "49939c7c-750f-403e-9ce1-f82e3e568065",
+      "code": "NSP"
     }
   ]
 }

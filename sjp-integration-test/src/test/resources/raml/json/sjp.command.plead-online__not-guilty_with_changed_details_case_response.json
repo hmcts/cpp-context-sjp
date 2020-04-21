@@ -1,7 +1,9 @@
 {
   "urn": "${urn}",
   "prosecutingAuthority": "TFL",
+  "policeFlag": false,
   "costs": 1.23,
+  "postConviction": false,
   "dateTimeCreated": "${dateTimeCreated}",
   "prosecutingAuthorityName": "Transport for London",
   "defendant": {
@@ -36,12 +38,15 @@
         "wording": "Committed some offence",
         "chargeDate": "2016-01-01",
         "startDate": "2016-01-01",
-        "backDuty": 340.3
+        "backDuty": 340.3,
+        "endorsable": false
       }
     ],
     "caseId": "${caseId}",
     "numPreviousConvictions": 2,
     "personalDetails": {
+      "driverNumber": "MORGA753116SM9IJ",
+      "driverLicenceDetails": "test",
       "firstName": "Changy",
       "lastName": "Testerson",
       "address": {
@@ -77,6 +82,7 @@
 
   ],
   "listedInCriminalCourts": false,
+  "postConviction": false,
   "assigned": false,
   "id": "${caseId}",
   "completed": false,

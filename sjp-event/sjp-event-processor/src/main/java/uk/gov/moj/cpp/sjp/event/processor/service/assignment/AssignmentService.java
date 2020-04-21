@@ -41,18 +41,14 @@ public class AssignmentService {
     @ServiceComponent(Component.EVENT_PROCESSOR)
     private Sender sender;
 
-    public List<AssignmentCandidate> getAssignmentCandidates(final JsonEnvelope envelope, final UUID legalAdviserId, final String courtHouseCode, final SessionType sessionType) {
+    public List<AssignmentCandidate> getAssignmentCandidates(final JsonEnvelope envelope, final UUID legalAdviserId, final SessionType sessionType, final String localJusticeAreaNationalCourtCode) {
 
         final int assignmentCandidatesLimit = assignmentConfiguration.getAssignmentCandidatesLimit();
-        final AssignmentRule assignmentRule = assignmentConfiguration.getAssignmentRules().getBestCaseAssignmentRule(courtHouseCode);
-
-        final String prosecutingAuthorities = String.join(",", assignmentRule.getProsecutingAuthorities());
 
         final JsonObject queryOptions = createObjectBuilder()
                 .add("sessionType", sessionType.name())
                 .add("assigneeId", legalAdviserId.toString())
-                .add("assignmentRule", assignmentRule.getAssignmentRuleType().name())
-                .add("prosecutingAuthorities", prosecutingAuthorities)
+                .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
                 .add("limit", assignmentCandidatesLimit)
                 .build();
 

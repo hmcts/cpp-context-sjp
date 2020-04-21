@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilderWithFilter;
+import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 
 import uk.gov.justice.domain.annotation.Event;
@@ -40,13 +41,13 @@ public class CaseAssignmentRequestedEventBackwardCompatibilityTest {
         final JsonObject oldEventPayload = Json.createObjectBuilder()
                 .add("session", Json.createObjectBuilder()
                         .add("id", sessionId.toString())
+                        .add("localJusticeAreaNationalCourtCode", ljaNationalCourtCode)
                         .add("type", MAGISTRATE.toString())
-                        .add("userId", userId.toString())
-                        .add("localJusticeAreaNationalCourtCode", ljaNationalCourtCode))
+                        .add("userId", userId.toString()))
                 .build();
 
         final CaseAssignmentRequested actualCaseAssignmentRequestedEvent = objectMapper.readValue(oldEventPayload.toString(), CaseAssignmentRequested.class);
-        final CaseAssignmentRequested expectedCaseAssignmentRequestedEvent = new CaseAssignmentRequested(new Session(sessionId, userId, sessionType, null));
+        final CaseAssignmentRequested expectedCaseAssignmentRequestedEvent = new CaseAssignmentRequested(new Session(sessionId, userId, sessionType, null, ljaNationalCourtCode));
 
         if (!new ReflectionEquals(actualCaseAssignmentRequestedEvent).matches(expectedCaseAssignmentRequestedEvent)) {
             fail("Old event version can be serialized into event class");
@@ -56,7 +57,7 @@ public class CaseAssignmentRequestedEventBackwardCompatibilityTest {
 
         // remove json ignored fields
         final String expectedCaseAssignmentRequestedEventDeserialized = createObjectBuilderWithFilter(oldEventPayload, field -> !"session".equals(field))
-                .add("session", createObjectBuilderWithFilter(oldEventPayload.getJsonObject("session"), field -> !"localJusticeAreaNationalCourtCode".equals(field)))
+                .add("session", createObjectBuilder(oldEventPayload.getJsonObject("session")))
                 .build()
                 .toString();
 

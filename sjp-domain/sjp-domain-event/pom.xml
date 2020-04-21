@@ -64,6 +64,7 @@
                                 <include>json/schema/events/sjp.events.case-adjourned-to-later-sjp-hearing-recorded.json</include>
                                 <include>json/schema/events/sjp.events.case-adjournment-to-later-sjp-hearing-elapsed.json</include>
                                 <include>json/schema/events/sjp.events.offences-withdrawal-status-set.json</include>
+                                <include>json/schema/events/sjp.events.case-assignment-restriction-added.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>

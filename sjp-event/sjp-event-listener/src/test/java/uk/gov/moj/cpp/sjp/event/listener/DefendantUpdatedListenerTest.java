@@ -123,7 +123,7 @@ public class DefendantUpdatedListenerTest {
         caseDetail.getDefendant().setPersonalDetails(
                 new PersonalDetails(
                         previousTitle, "Joe", "Blogs", LocalDate.of(1965, 8, 6),
-                        previousGender, previousNiNumber,
+                        previousGender, previousNiNumber, null, null,
                         new uk.gov.moj.cpp.sjp.persistence.entity.Address(
                                 "address1",
                                 "address2",
@@ -278,7 +278,7 @@ public class DefendantUpdatedListenerTest {
         }
         return new PersonalDetails(title, defendantDetailsUpdated.getFirstName(),
                 defendantDetailsUpdated.getLastName(), defendantDetailsUpdated.getDateOfBirth(), gender,
-                nationalInsuranceNumber,
+                nationalInsuranceNumber, defendantDetailsUpdated.getDriverNumber(), defendantDetailsUpdated.getDriverLicenceDetails(),
                 new uk.gov.moj.cpp.sjp.persistence.entity.Address(
                         defendantDetailsUpdated.getAddress().getAddress1(),
                         defendantDetailsUpdated.getAddress().getAddress2(),

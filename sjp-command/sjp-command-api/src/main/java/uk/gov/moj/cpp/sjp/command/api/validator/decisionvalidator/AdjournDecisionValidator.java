@@ -15,8 +15,8 @@ public class AdjournDecisionValidator {
 
     public static void validateAdjournDecision(JsonObject adjourn) {
         final LocalDate adjournTo = parse(adjourn.getString("adjournTo"));
-        if (adjournTo.isBefore(now().plusDays(1)) || adjournTo.isAfter(now().plusDays(21))) {
-            throw new BadRequestException("The adjournment date must be between 1 and 21 days in the future");
+        if (adjournTo.isBefore(now().plusDays(1)) || adjournTo.isAfter(now().plusDays(28))) {
+            throw new BadRequestException("The adjournment date must be between 1 and 28 days in the future");
         }
     }
 }

@@ -15,6 +15,7 @@ public class Adjourn extends MultipleOffenceDecision {
 
     private final String reason;
     private final LocalDate adjournTo;
+    private LocalDate convictionDate;
 
     @JsonCreator
     public Adjourn(@JsonProperty("id") final UUID id,
@@ -33,6 +34,14 @@ public class Adjourn extends MultipleOffenceDecision {
 
     public LocalDate getAdjournTo() {
         return adjournTo;
+    }
+
+    public LocalDate getConvictionDate() {
+        return convictionDate;
+    }
+
+    public void setConvictionDate(final LocalDate convictionDate) {
+        this.convictionDate = convictionDate;
     }
 
     @Override

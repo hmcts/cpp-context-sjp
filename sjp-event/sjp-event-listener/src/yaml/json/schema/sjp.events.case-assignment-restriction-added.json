@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/case-assignment-restriction-added.json",
+  "type": "object",
+  "properties": {
+    "prosecutingAuthority": {
+      "type": "string"
+    },
+    "includeOnly": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "exclude": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dateTimeCreated": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "prosecutingAuthority",
+    "includeOnly",
+    "exclude",
+    "dateTimeCreated"
+  ],
+  "additionalProperties": false
+}

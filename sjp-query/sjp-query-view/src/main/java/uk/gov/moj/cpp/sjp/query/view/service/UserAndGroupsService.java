@@ -24,6 +24,8 @@ public class UserAndGroupsService {
 
     private static final List<String> SHOW_ONLINE_PLEA_FINANCES = asList("Legal Advisers", "Court Administrators");
 
+    private static final String GROUP_SJP_PROSECUTORS = "SJP Prosecutors";
+
     @Inject
     private UserAndGroupProvider userAndGroupProvider;
 
@@ -34,8 +36,12 @@ public class UserAndGroupsService {
     @ServiceComponent(QUERY_VIEW)
     private Requester requester;
 
-    public boolean canSeeOnlinePleaFinances(JsonEnvelope originalEnvelope) {
+    public boolean canSeeOnlinePleaFinances(final JsonEnvelope originalEnvelope) {
         return userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(new Action(originalEnvelope), SHOW_ONLINE_PLEA_FINANCES);
+    }
+
+    public boolean isUserProsecutor(final JsonEnvelope originalEnvelope) {
+        return userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(new Action(originalEnvelope), GROUP_SJP_PROSECUTORS);
     }
 
     public String getUserDetails(final UUID userId) {

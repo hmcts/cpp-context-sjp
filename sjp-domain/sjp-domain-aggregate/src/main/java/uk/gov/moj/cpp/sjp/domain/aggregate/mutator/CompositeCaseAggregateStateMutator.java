@@ -45,6 +45,8 @@ import uk.gov.moj.cpp.sjp.event.SjpCaseCreated;
 import uk.gov.moj.cpp.sjp.event.TrialRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.TrialRequested;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionSetAside;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionSetAsideReset;
 import uk.gov.moj.cpp.sjp.event.decommissioned.CaseAssignmentDeleted;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
@@ -148,7 +150,11 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 state.putOffencePleaDate(event.getOffenceId(), LocalDate.of(event.getPleadDate().getYear(), event.getPleadDate().getMonth(), event.getPleadDate().getDayOfMonth()));
             });
     private static final AggregateStateMutator<DecisionSaved, CaseAggregateState> DECISION_MUTATOR =
-            ((event, state) -> state.updateOffenceDecisions(event.getOffenceDecisions(), event.getSessionId()));
+            ((event, state) -> {
+                state.updateOffenceDecisions(event.getOffenceDecisions(), event.getSessionId());
+                state.updateOffenceConvictionDates(event.getSavedAt(), event.getOffenceDecisions());
+            });
+
     private static final AggregateStateMutator<PleasSet, CaseAggregateState> PLEAS_SET_MUTATOR =
             ((event, state) -> state.setPleas(event.getPleas()));
 
@@ -169,6 +175,12 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 state.setDatesToAvoidExpirationDate(event.getDatesToAvoidExpirationDate());
                 state.setDatesToAvoidPreviouslyRequested();
             });
+
+    private static final AggregateStateMutator<DecisionSetAside, CaseAggregateState> DECISION_SET_ASIDE =
+            ((event, state) -> state.setSetAside(true));
+
+    private static final AggregateStateMutator<DecisionSetAsideReset, CaseAggregateState> DECISION_SET_ASIDE_RESET =
+            ((event, state) -> state.setSetAside(false));
 
 
     static final CompositeCaseAggregateStateMutator INSTANCE = new CompositeCaseAggregateStateMutator();
@@ -224,6 +236,8 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 .put(DatesToAvoidTimerExpired.class, DATES_TO_AVOID_TIMER_EXPIRED_MUTATOR)
                 .put(DefendantResponseTimerExpired.class, DEFENDANT_RESPONSE_TIMER_EXPIRED)
                 .put(DatesToAvoidRequired.class, DATES_TO_AVOID_REQUIRED)
+                .put(DecisionSetAside.class, DECISION_SET_ASIDE)
+                .put(DecisionSetAsideReset.class, DECISION_SET_ASIDE_RESET)
                 .build();
     }
 

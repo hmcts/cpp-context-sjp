@@ -96,7 +96,7 @@ public class CaseReadinessHandler {
         streamBuilder.add(new CaseMarkedReadyForDecision(aggregateState.getCaseId(),
                 caseReadinessReason,
                 calculateMarkedAtReadyDate(aggregateState),
-                getSessionType(caseReadinessReason),
+                getSessionType(caseReadinessReason, aggregateState.isPostConviction(), aggregateState.isSetAside()),
                 getPriority(aggregateState)));
     }
 

@@ -27,6 +27,12 @@
     "prosecutingAuthorityName": {
       "type" : "string"
     },
+    "policeFlag": {
+      "type": "boolean"
+    },
+    "postConviction": {
+      "type": "boolean"
+    },
     "completed": {
       "type": "boolean"
     },

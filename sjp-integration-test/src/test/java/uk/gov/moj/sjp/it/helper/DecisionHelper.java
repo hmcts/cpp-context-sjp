@@ -45,12 +45,15 @@ import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaultsUnti
 
 import uk.gov.justice.json.schemas.domains.sjp.NoteType;
 import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 import uk.gov.justice.services.test.utils.core.matchers.JsonValueIsJsonMatcher;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
+import uk.gov.moj.cpp.sjp.domain.decision.NoSeparatePenalty;
+import uk.gov.moj.cpp.sjp.domain.decision.SetAside;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
@@ -66,7 +69,6 @@ import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
 import uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
-import uk.gov.moj.cpp.sjp.event.CaseNoteAdded;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
@@ -83,6 +85,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -163,7 +166,13 @@ public class DecisionHelper {
     }
 
     public static void verifyCaseIsReadyInViewStore(final UUID caseId, final UUID userId) {
-        pollReadyCasesUntilResponseIsJson(userId, withJsonPath("readyCases.*", CoreMatchers.hasItem(
+        pollReadyCasesUntilResponseIsJson(userId, withJsonPath("readyCases.*", CoreMatchers.hasItems(
+                JsonPathMatchers.isJson(withJsonPath("caseId", equalTo(caseId.toString())))
+        )));
+    }
+
+    public static void verifyCaseIsReadyInViewStoreAndAssignedTo(final UUID caseId, final UUID userId) {
+        pollReadyCasesUntilResponseIsJson(userId, withJsonPath("readyCases.*", CoreMatchers.hasItems(
                 JsonPathMatchers.isJson(withJsonPath("caseId", equalTo(caseId.toString())))
         )));
     }
@@ -351,7 +360,16 @@ public class DecisionHelper {
                             hasProperty("dischargedFor", is(discharge.getDischargedFor())),
                             hasProperty("compensation", is(discharge.getCompensation())),
                             hasProperty("noCompensationReason", is(discharge.getNoCompensationReason())),
-                            hasProperty("guiltyPleaTakenIntoAccount", is(discharge.getGuiltyPleaTakenIntoAccount()))
+                            hasProperty("guiltyPleaTakenIntoAccount", is(discharge.getGuiltyPleaTakenIntoAccount())),
+                            hasProperty("backDuty", is(discharge.getBackDuty())),
+                            hasProperty("licenceEndorsed", is(discharge.getLicenceEndorsed())),
+                            hasProperty("penaltyPointsImposed", is(discharge.getPenaltyPointsImposed())),
+                            hasProperty("penaltyPointsReason", is(discharge.getPenaltyPointsReason())),
+                            hasProperty("additionalPointsReason", is(discharge.getAdditionalPointsReason())),
+                            hasProperty("disqualification", is(discharge.getDisqualification())),
+                            hasProperty("disqualificationType", is(discharge.getDisqualificationType())),
+                            hasProperty("disqualificationPeriod", is(discharge.getDisqualificationPeriod())),
+                            hasProperty("notionalPenaltyPoints", is(discharge.getNotionalPenaltyPoints()))
                     );
                     break;
                 case FINANCIAL_PENALTY:
@@ -362,7 +380,27 @@ public class DecisionHelper {
                             hasProperty("fine", is(financialPenalty.getFine())),
                             hasProperty("compensation", is(financialPenalty.getCompensation())),
                             hasProperty("noCompensationReason", is(financialPenalty.getNoCompensationReason())),
-                            hasProperty("guiltyPleaTakenIntoAccount", is(financialPenalty.getGuiltyPleaTakenIntoAccount()))
+                            hasProperty("guiltyPleaTakenIntoAccount", is(financialPenalty.getGuiltyPleaTakenIntoAccount())),
+                            hasProperty("backDuty", is(financialPenalty.getBackDuty())),
+                            hasProperty("excisePenalty", is(financialPenalty.getExcisePenalty())),
+                            hasProperty("licenceEndorsed", is(financialPenalty.getLicenceEndorsed())),
+                            hasProperty("penaltyPointsImposed", is(financialPenalty.getPenaltyPointsImposed())),
+                            hasProperty("penaltyPointsReason", is(financialPenalty.getPenaltyPointsReason())),
+                            hasProperty("additionalPointsReason", is(financialPenalty.getAdditionalPointsReason())),
+                            hasProperty("disqualification", is(financialPenalty.getDisqualification())),
+                            hasProperty("disqualificationType", is(financialPenalty.getDisqualificationType())),
+                            hasProperty("disqualificationPeriod", is(financialPenalty.getDisqualificationPeriod())),
+                            hasProperty("notionalPenaltyPoints", is(financialPenalty.getNotionalPenaltyPoints()))
+                    );
+                    break;
+                case NO_SEPARATE_PENALTY:
+                    NoSeparatePenalty noSeparatePenalty = (NoSeparatePenalty) offenceDecision;
+                    decisionTypeSpecificMatcher = allOf(
+                            isA(NoSeparatePenalty.class),
+                            hasProperty("offenceDecisionInformation", is(noSeparatePenalty.getOffenceDecisionInformation())),
+                            hasProperty("guiltyPleaTakenIntoAccount", is(noSeparatePenalty.getGuiltyPleaTakenIntoAccount())),
+                            hasProperty("licenceEndorsed", is(noSeparatePenalty.getLicenceEndorsed())),
+                            hasProperty("convictionDate", equalTo(noSeparatePenalty.getConvictionDate()))
                     );
                     break;
                 case REFERRED_FOR_FUTURE_SJP_SESSION: // legacy decision type
@@ -384,6 +422,18 @@ public class DecisionHelper {
                             hasProperty("reason", is(referredToOpenCourt.getReason()))
                     );
                     break;
+                case SET_ASIDE:
+                    SetAside setAside = (SetAside) offenceDecision;
+                    decisionTypeSpecificMatcher = allOf(
+                            isA(SetAside.class)
+                    );
+                    break;
+
+            }
+
+            if (isPostConvictionOffenceDecision(offenceDecision)
+                    && !DecisionType.SET_ASIDE.equals(offenceDecision.getType())) { // TODO revisit to add more specific assertions
+                decisionTypeSpecificMatcher = allOf(decisionTypeSpecificMatcher, hasProperty("convictionDate"));
             }
 
             assertThat(eventDecisions, hasItem(
@@ -392,6 +442,12 @@ public class DecisionHelper {
         }
     }
 
+    private static boolean isPostConvictionOffenceDecision(final OffenceDecision offenceDecision) {
+        return offenceDecision.offenceDecisionInformationAsList()
+                .stream()
+                .map(OffenceDecisionInformation::getVerdict)
+                .anyMatch(Objects::isNull);
+    }
 
 
     public static void verifyDecisionSavedPublicEventEmit(final DecisionSaved decisionSaved, final JsonEnvelope decisionSavedEnvelope) {

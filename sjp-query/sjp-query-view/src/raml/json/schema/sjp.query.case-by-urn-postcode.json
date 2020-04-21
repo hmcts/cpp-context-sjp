@@ -57,6 +57,12 @@
         "nationalInsuranceNumber": {
           "type": "string"
         },
+        "driverNumber": {
+          "type": "string"
+        },
+        "driverLicenceDetails": {
+          "type": "string"
+        },
         "contactDetails": {
           "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/contact-details.json"
         },
@@ -118,6 +124,12 @@
     "urn": {
       "type": "string"
     },
+    "policeFlag": {
+      "type": "boolean"
+    },
+    "postConviction": {
+      "type": "boolean"
+    },
     "completed": {
       "type": "boolean"
     },
@@ -137,6 +149,8 @@
     "urn",
     "completed",
     "assigned",
-    "defendant"
+    "defendant",
+    "policeFlag",
+    "postConviction"
   ]
 }

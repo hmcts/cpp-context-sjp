@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.persistence.entity;
 
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
-import uk.gov.moj.cpp.sjp.domain.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 
 import java.time.LocalDate;
@@ -41,8 +40,7 @@ public class ReadyCase {
     private Integer priority;
 
     @Column(name = "prosecuting_authority")
-    @Enumerated(EnumType.STRING)
-    private ProsecutingAuthority prosecutionAuthority;
+    private String prosecutionAuthority;
 
     @Column(name = "posting_date")
     @Convert(converter = LocalDatePersistenceConverter.class)
@@ -57,7 +55,7 @@ public class ReadyCase {
                      final UUID assigneeId,
                      final SessionType sessionType,
                      final Integer priority,
-                     final ProsecutingAuthority prosecutionAuthority,
+                     final String prosecutionAuthority,
                      final LocalDate postingDate) {
         this.caseId = caseId;
         this.reason = reason;
@@ -70,6 +68,10 @@ public class ReadyCase {
 
     public UUID getCaseId() {
         return caseId;
+    }
+
+    public void setReason(final CaseReadinessReason reason) {
+        this.reason = reason;
     }
 
     public CaseReadinessReason getReason() {
@@ -100,11 +102,11 @@ public class ReadyCase {
         this.priority = priority;
     }
 
-    public ProsecutingAuthority getProsecutionAuthority() {
+    public String getProsecutionAuthority() {
         return prosecutionAuthority;
     }
 
-    public void setProsecutionAuthority(final ProsecutingAuthority prosecutionAuthority) {
+    public void setProsecutionAuthority(final String prosecutionAuthority) {
         this.prosecutionAuthority = prosecutionAuthority;
     }
 

@@ -6,6 +6,7 @@
   "costs": 50.50,
   "completed": false,
   "assigned": false,
+  "postConviction": false,
   "postingDate": "2016-07-01",
   "reopenedDate": "2017-01-01",
   "adjournedTo": "2020-01-01",

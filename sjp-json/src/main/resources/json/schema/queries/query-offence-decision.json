@@ -80,6 +80,55 @@
     },
     "referredToDateTime": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
+    "convictionDate": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+    },
+    "licenceEndorsed" : {
+      "type" : "boolean"
+    },
+    "penaltyPointsImposed" : {
+      "type" : "integer",
+      "minimum" : 1
+    },
+    "penaltyPointsReason" : {
+      "enum" : [
+        "DIFFERENT_OCCASIONS",
+        "OTHER"
+      ]
+    },
+    "additionalPointsReason" : {
+      "type" : "string"
+    },
+    "disqualification" : {
+      "type": "boolean"
+    },
+    "disqualificationType" : {
+      "enum": [
+        "DISCRETIONARY",
+        "POINTS",
+        "OBLIGATORY"
+      ]
+    },
+    "disqualificationPeriod" : {
+      "type" : "object",
+      "properties" : {
+        "value": {
+          "type": "number",
+          "minimum": 1
+        },
+        "unit": {
+          "enum": [
+            "DAY",
+            "MONTH",
+            "YEAR"
+          ]
+        }
+      }
+    },
+    "notionalPenaltyPoints" : {
+      "type" : "integer",
+      "minimum" : 1
     }
   },
   "required": [

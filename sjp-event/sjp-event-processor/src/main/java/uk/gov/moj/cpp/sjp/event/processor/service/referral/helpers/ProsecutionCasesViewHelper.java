@@ -21,6 +21,7 @@ import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.AddressView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ContactView;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.DefendantAliasView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.DefendantView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.EmployerOrganisationView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.NotifiedPleaView;
@@ -38,6 +39,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +53,7 @@ public class ProsecutionCasesViewHelper {
     public List<ProsecutionCaseView> createProsecutionCaseViews(
             final CaseDetails caseDetails,
             final JsonObject prosecutors,
+            final JsonObject prosecutionCaseFile,
             final JsonObject caseFileDefendantDetails,
             final EmployerDetails employer,
             final String nationalityId,
@@ -77,10 +80,23 @@ public class ProsecutionCasesViewHelper {
                 caseReferredForCourtHearing.getDefendantCourtOptions());
 
         final JsonObject prosecutor = prosecutors.getJsonArray("prosecutors").getJsonObject(0);
+        final boolean policeCase = ofNullable(caseDetails.getPoliceFlag()).orElse(false);
+        String prosecutingAuthorityReference = null;
+        String caseURN = null;
+
+        if(policeCase){
+            caseURN = caseDetails.getUrn();
+        } else {
+            prosecutingAuthorityReference = caseDetails.getUrn();
+        }
+
         final ProsecutionCaseIdentifierView prosecutionCaseIdentifier = new ProsecutionCaseIdentifierView(
                 UUID.fromString(prosecutor.getString("id")),
                 prosecutor.getString("shortName"),
-                caseDetails.getUrn());
+                prosecutingAuthorityReference,
+                caseURN
+        );
+
 
         final String statementOfFactsWelsh = Optional.ofNullable(caseFileDefendantDetails)
                 .map(defendantDetails -> defendantDetails.getJsonArray(OFFENCES_KEY))
@@ -93,7 +109,10 @@ public class ProsecutionCasesViewHelper {
                 prosecutionFacts,
                 statementOfFactsWelsh,
                 prosecutionCaseIdentifier,
-                singletonList(defendantView));
+                singletonList(defendantView),
+                ofNullable(prosecutionCaseFile)
+                        .map(caseFile -> caseFile.getString("originatingOrganisation", null))
+                        .orElse(null));
 
         return singletonList(prosecutionCaseView);
     }
@@ -131,13 +150,38 @@ public class ProsecutionCasesViewHelper {
                         offenceDefinitionIdByOffenceCode))
                 .collect(Collectors.toList());
 
+        final List<DefendantAliasView> aliases = ofNullable(caseFileDefendantDetails)
+                .map(pcfDefendantDetails -> {
+                    if (caseFileDefendantDetails.containsKey("individualAliases")) {
+                        final JsonArray individualAliases = caseFileDefendantDetails.getJsonArray("individualAliases");
+                        return individualAliases
+                                .getValuesAs(JsonObject.class).stream()
+                                .map(this::toDefendantAliasView)
+                                .collect(Collectors.toList());
+                    }
+                    return null;
+                })
+                .filter(aliasViews -> !aliasViews.isEmpty())
+                .orElse(null);
+
+
         return new DefendantView(
                 defendantDetails.getId(),
                 caseDetails.getId(),
                 defendantDetails.getNumPreviousConvictions(),
                 pleaMitigation,
                 offenceViews,
-                personDefendantView);
+                personDefendantView,
+                aliases);
+    }
+
+    private DefendantAliasView toDefendantAliasView(final JsonObject individualAlias) {
+        return new DefendantAliasView(
+                individualAlias.getString("title", null),
+                individualAlias.getString("firstName", null),
+                individualAlias.getString("givenName2", null),
+                individualAlias.getString("lastName", null)
+        );
     }
 
     private static PersonDefendantView createPersonDefendantView(final Defendant defendant,
@@ -185,7 +229,13 @@ public class ProsecutionCasesViewHelper {
                                 employerName,
                                 createAddressView(employer.getAddress()),
                                 new ContactView(employer.getPhone())))
-                        .orElse(null), ethnicityId);
+                        .orElse(null),
+                ethnicityId,
+                defendantPersonalDetails.getDriverNumber(),
+                null,
+                ofNullable(caseFileDefendantDetails)
+                        .map(defendantDetails -> defendantDetails.getString("asn", null))
+                        .orElse(null));
 
     }
 
@@ -198,7 +248,11 @@ public class ProsecutionCasesViewHelper {
             final Map<String, UUID> offenceDefinitionIdByOffenceCode) {
 
         final Optional<JsonObject> caseFileOffenceDetailsOptional = ofNullable(caseFileDefendantDetails)
-                .map(defendantDetails -> defendantDetails.getJsonArray(OFFENCES_KEY).getJsonObject(0));
+                .flatMap(defendantDetails -> defendantDetails.getJsonArray(OFFENCES_KEY)
+                        .getValuesAs(JsonObject.class)
+                        .stream()
+                        .filter(caseFileOffence -> offenceDetails.getId().toString().equals(caseFileOffence.getString("offenceId",null)))
+                        .findFirst());
 
         final VerdictType verdict = offenceDecisionInformationList
                 .stream()
@@ -222,17 +276,29 @@ public class ProsecutionCasesViewHelper {
                 .withEndDate(caseFileOffenceDetailsOptional.map(caseFileOffenceDetails -> caseFileOffenceDetails.getString("offenceCommittedEndDate", null))
                         .map(LocalDate::parse)
                         .orElse(null))
-                .withOffenceFacts(createOffenceFactsView(offenceDetails))
+                .withOffenceFacts(createOffenceFactsView(offenceDetails, caseFileOffenceDetailsOptional))
                 .build();
 
     }
 
-    private static OffenceFactsView createOffenceFactsView(final Offence offence) {
+    private static OffenceFactsView createOffenceFactsView(final Offence offence, final Optional<JsonObject> caseFileOffenceOptional) {
         if(isNotEmpty(offence.getVehicleRegistrationMark()) ||  isNotEmpty(offence.getVehicleMake())) {
-            return OffenceFactsView.builder()
+
+            final OffenceFactsView.Builder factsBuilder = OffenceFactsView.builder()
                     .withVehicleMake(offence.getVehicleMake())
-                    .withVehicleRegistration(offence.getVehicleRegistrationMark())
-                    .build();
+                    .withVehicleRegistration(offence.getVehicleRegistrationMark());
+
+            caseFileOffenceOptional
+                    .map(caseFileOffence -> caseFileOffence.getJsonObject("alcoholRelatedOffence"))
+                    .ifPresent(alcoholRelatedFacts -> {
+                        if(alcoholRelatedFacts.containsKey("alcoholLevelAmount")){
+                            factsBuilder.withAlcoholReadingAmount(alcoholRelatedFacts.getInt("alcoholLevelAmount"));
+                        }
+
+                        factsBuilder.withAlcoholReadingMethodCode(alcoholRelatedFacts.getString("alcoholLevelMethod", null));
+                    });
+
+            return factsBuilder.build();
         } else {
             return null;
         }

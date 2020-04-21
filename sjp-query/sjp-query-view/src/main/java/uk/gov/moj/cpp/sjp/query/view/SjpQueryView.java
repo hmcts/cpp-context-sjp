@@ -1,10 +1,13 @@
 package uk.gov.moj.cpp.sjp.query.view;
 
+import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.UUID.fromString;
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.moj.cpp.sjp.query.view.util.JsonUtility.getString;
 
+import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -20,6 +23,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
+import uk.gov.moj.cpp.sjp.query.view.response.CaseNotGuiltyPleaView;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
 import uk.gov.moj.cpp.sjp.query.view.service.DefendantService;
@@ -48,12 +52,14 @@ public class SjpQueryView {
     static final String FIELD_DEFENDANT_ID = "defendantId";
     static final String FIELD_DAYS_SINCE_POSTING = "daysSincePosting";
 
+
     private static final String NAME_RESPONSE_CASE = "sjp.query.case-response";
     private static final String NAME_RESPONSE_CASES_SEARCH = "sjp.query.cases-search-response";
     private static final String NAME_RESPONSE_CASES_SEARCH_BY_MATERIAL_ID = "sjp.query.cases-search-by-material-id-response";
     private static final String NAME_RESPONSE_CASE_DOCUMENTS = "sjp.query.case-documents-response";
     private static final String NAME_RESPONSE_PENDING_CASES = "sjp.query.pending-cases";
     private static final String TRANSPARENCY_REPORT_METADATA_RESPONSE_NAME = "sjp.query.transparency-report-metadata";
+    private static final String NOT_GUILTY_PLEA_CASES_RESPONSE_NAME = "sjp.query.not-guilty-plea-cases";
 
     @Inject
     private CaseService caseService;
@@ -93,6 +99,9 @@ public class SjpQueryView {
 
     @Inject
     private Enveloper enveloper;
+
+    @Inject
+    private ListToJsonArrayConverter<CaseNotGuiltyPleaView> listToJsonArrayConverter;
 
     @Handles("sjp.query.case")
     public JsonEnvelope findCase(final JsonEnvelope envelope) {
@@ -248,8 +257,24 @@ public class SjpQueryView {
                 transparencyReportService.getMetaData());
     }
 
+    @Handles("sjp.query.not-guilty-plea-cases")
+    public JsonEnvelope getNotGuiltyPleaCases(final JsonEnvelope query) {
+        final JsonObject queryFilters = query.payloadAsJsonObject();
+
+        final String prosecutingAuthority = getString(queryFilters, "prosecutingAuthority");
+        final int pageSize = queryFilters.getInt("pageSize");
+        final int pageNumber = queryFilters.getInt("pageNumber");
+
+        if(pageNumber <= 0 || pageSize <= 0) {
+            throw new IllegalArgumentException(format("invalid page number (%d) or page size (%d)", pageNumber, pageSize));
+        }
+
+        final JsonObject result = caseService.buildNotGuiltyPleaCasesView(prosecutingAuthority, pageSize, pageNumber);
+
+        return enveloper.withMetadataFrom(query, NOT_GUILTY_PLEA_CASES_RESPONSE_NAME).apply(result);
+    }
+
     private static String extract(JsonEnvelope envelope, String fieldName) {
         return envelope.payloadAsJsonObject().getString(fieldName);
     }
-
 }

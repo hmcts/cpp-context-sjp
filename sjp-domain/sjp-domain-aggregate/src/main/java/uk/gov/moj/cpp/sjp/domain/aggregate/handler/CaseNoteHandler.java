@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
-import static uk.gov.moj.cpp.sjp.event.CaseNoteAdded.caseNoteAdded;
+
+import static uk.gov.justice.json.schemas.domains.sjp.events.CaseNoteAdded.caseNoteAdded;
 
 import uk.gov.justice.json.schemas.domains.sjp.Note;
 import uk.gov.justice.json.schemas.domains.sjp.User;

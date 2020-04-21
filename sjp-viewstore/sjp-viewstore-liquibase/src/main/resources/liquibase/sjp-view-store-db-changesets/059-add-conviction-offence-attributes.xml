@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="59" author="gustavo.almagro" logicalFilePath="liquibase/sjp-view-store-db-changelog/offence-conviction-attributes.xml">
+        <addColumn tableName="offence">
+            <column name="conviction" type="text"/>
+            <column name="conviction_date" type="date"/>
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="offence">
+                <column name="conviction" type="text"/>
+                <column name="conviction_date" type="date"/>
+            </dropColumn>
+        </rollback>
+
+    </changeSet>
+
+</databaseChangeLog>

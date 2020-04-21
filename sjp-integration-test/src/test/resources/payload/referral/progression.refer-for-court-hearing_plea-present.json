@@ -4,6 +4,7 @@
       {
         "statementOfFacts":"No ticket at the gates, forgery",
         "statementOfFactsWelsh": "some facts in welsh",
+        "originatingOrganisation" : "GAEAA01",
         "defendants": [
           {
             "offences": [
@@ -76,7 +77,8 @@
                   "work": "020 7998 0007"
                 },
                 "name": "Pret a manger"
-              }
+              },
+              "driverNumber": "${DRIVER_NUMBER}"
             },
             "mitigation":"I was drunk at the time"
           }

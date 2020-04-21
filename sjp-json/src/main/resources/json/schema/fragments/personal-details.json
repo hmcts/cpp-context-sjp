@@ -18,6 +18,12 @@
     "nationalInsuranceNumber": {
       "type": "string"
     },
+    "driverNumber": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/dvlaDriverLicence"
+    },
+    "driverLicenceDetails" : {
+      "type" : "string"
+    },
     "gender": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/gender.json"
     },

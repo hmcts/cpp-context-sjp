@@ -149,6 +149,9 @@ subscriptions_descriptor:
         - name: sjp.events.update-cases-management-status
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/update-cases-management-status.json
 
+        - name: sjp.events.outstanding-fines-requested
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.outstanding-fines-requested.json
+
       event_source_name: sjp
 
     - name: public event subscription

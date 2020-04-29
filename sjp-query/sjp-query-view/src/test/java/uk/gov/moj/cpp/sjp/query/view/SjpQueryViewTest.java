@@ -17,15 +17,18 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus.IN_PROGRESS;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
@@ -43,6 +46,8 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
+import uk.gov.moj.cpp.sjp.domain.DefendantOutstandingFineRequest;
+import uk.gov.moj.cpp.sjp.domain.DefendantOutstandingFineRequestsQueryResult;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Income;
@@ -64,6 +69,7 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesPendingDatesToAvoidView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantDetailsUpdatesView;
+import uk.gov.moj.cpp.sjp.query.view.response.DefendantProfilingView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
@@ -78,6 +84,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -86,8 +93,10 @@ import java.util.stream.Stream;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.persistence.NoResultException;
 
 import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -502,7 +511,7 @@ public class SjpQueryViewTest {
         ))));
     }
 
-    private List<OnlinePleaDetail> getOnlinePleaDetails(final UUID offenceId){
+    private List<OnlinePleaDetail> getOnlinePleaDetails(final UUID offenceId) {
         final List<OnlinePleaDetail> onlinePleaDetails = new ArrayList<>();
         final OnlinePleaDetail onlinePleaDetailGuilty = new OnlinePleaDetail();
         onlinePleaDetailGuilty.setOffenceId(offenceId);
@@ -575,6 +584,34 @@ public class SjpQueryViewTest {
     }
 
     @Test
+    public void shouldFindDefendantProfilingView() {
+        UUID defendantId = randomUUID();
+        Metadata metadata = metadataOf(
+                randomUUID(), "sjp.query.defendant-profile"
+        ).build();
+        final JsonEnvelope query = envelopeFrom(metadata,
+                createObjectBuilder()
+                        .add("defendantId", defendantId.toString())
+                        .build());
+
+        DefendantProfilingView defendantProfilingView = DefendantProfilingView.newBuilder()
+                                                                .withFirstName("name")
+                                                                .build();
+        when(defendantService.getDefendantProfilingView(defendantId)).thenReturn(
+                defendantProfilingView
+        );
+
+        final JsonEnvelope response = sjpQueryView.getDefendantProfile(query);
+
+        assertThat(response,
+                jsonEnvelope(
+                        metadata().withName("sjp.query.defendant-profile"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.firstName", equalTo("name")))
+                        )));
+
+    }
+    @Test
     public void shouldGetNotGuiltyPleaCases() {
         final String prosecutingAuthority = "TFL";
         ZonedDateTime pleaDate = ZonedDateTime.parse("2018-03-20T18:14:29.894Z");
@@ -641,5 +678,45 @@ public class SjpQueryViewTest {
         when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
         when(function.apply(any())).thenReturn(outputEnvelope);
         when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
+    }
+
+    @Test
+    public void getOutstandingFineRequestsWithNoResults() {
+
+        when(defendantService.getOutstandingFineRequests()).thenThrow(NoResultException.class);
+
+        final JsonEnvelope query = envelopeFrom(metadataWithRandomUUID("sjp.query.outstanding-fine-requests"),
+                createObjectBuilder()
+                        .build());
+
+        final JsonEnvelope result = sjpQueryView.getOutstandingFineRequests(query);
+
+        Assert.assertThat(result.metadata().name(), is("sjp.query.outstanding-fine-requests"));
+        assertTrue(result.payloadAsJsonObject().isEmpty());
+    }
+
+    @Test
+    public void getOutstandingFineRequestsWithResults() {
+
+        when(defendantService.getOutstandingFineRequests()).thenReturn(createDefendantRequestProfile());
+
+        final JsonEnvelope query = envelopeFrom(metadataWithRandomUUID("sjp.query.outstanding-fine-requests"),
+                createObjectBuilder()
+                        .build());
+
+        final JsonEnvelope result = sjpQueryView.getOutstandingFineRequests(query);
+        Assert.assertThat(result.metadata().name(), is("sjp.query.outstanding-fine-requests"));
+        assertTrue(result.payloadAsJsonObject().getJsonArray("defendantDetails").size() == 3);
+
+    }
+
+    private DefendantOutstandingFineRequestsQueryResult createDefendantRequestProfile() {
+        return new DefendantOutstandingFineRequestsQueryResult(
+                Arrays.asList(
+                        DefendantOutstandingFineRequest.newBuilder().withDefendantId(UUID.randomUUID()).withDateOfBirth("1980-06-25 00:00:00").withFirstName("Mr").withLastName("Brown").build(),
+                        DefendantOutstandingFineRequest.newBuilder().withDefendantId(UUID.randomUUID()).withFirstName("Mrs").withLastName("Brown").withNationalInsuranceNumber("AB123456Z").build(),
+                        DefendantOutstandingFineRequest.newBuilder().withDefendantId(UUID.randomUUID()).withLegalEntityDefendantName("ACME").build()
+                )
+        );
     }
 }

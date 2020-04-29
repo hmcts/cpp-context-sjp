@@ -81,7 +81,7 @@
                 <exclusion>
                     <groupId>org.tinyjee.jgraphx</groupId>
                     <artifactId>jgraphx</artifactId>
-                    <!-- FIXME OWASP security issue with used dependency version. We probably don't need that, as we are not generating / using activiti diagrams -->
+                    <!-- OWASP security issue with used dependency version. We probably don't need that, as we are not generating / using activiti diagrams -->
                 </exclusion>
             </exclusions>
         </dependency>
@@ -286,6 +286,18 @@
                         <groupId>uk.gov.moj.cpp.referencedata.offences</groupId>
                         <artifactId>referencedataoffences-query-api</artifactId>
                         <version>${referencedata.offences.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.staging.enforcement</groupId>
+                        <artifactId>stagingenforcement-command-api</artifactId>
+                        <version>${stagingenforcement.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>

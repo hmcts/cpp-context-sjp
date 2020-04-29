@@ -202,3 +202,11 @@ rule "sjp.query.case-assignment-restriction"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp.query.defendant-outstanding-fines"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.defendant-outstanding-fines");
+  then
+    $outcome.setSuccess(true);
+end

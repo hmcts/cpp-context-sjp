@@ -239,4 +239,9 @@ public class SjpQueryApi {
     public JsonEnvelope getNotGuiltyPleaCases(final JsonEnvelope query) {
         return requester.request(query);
     }
+
+    @Handles("sjp.query.defendant-outstanding-fines")
+    public JsonEnvelope getOutstandingFines(final JsonEnvelope query) {
+        return requester.request(query);
+    }
 }

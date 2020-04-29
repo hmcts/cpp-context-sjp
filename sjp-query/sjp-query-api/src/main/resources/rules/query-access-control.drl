@@ -272,3 +272,13 @@ rule "sjp - Query - API - Get Case Assignment Restriction"
   then
     $outcome.setSuccess(true);
 end
+
+
+rule "sjp - Query - API - sjp.query.defendant-outstanding-fines"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.defendant-outstanding-fines");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAllowedGroupsForOutstandingFines()));
+  then
+    $outcome.setSuccess(true);
+end

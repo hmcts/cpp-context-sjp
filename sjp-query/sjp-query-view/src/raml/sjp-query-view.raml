@@ -547,3 +547,40 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
                 application/vnd.sjp.query.case-assignment-restriction+json:
                   schema: !include json/schema/sjp.query.case-assignment-restriction.json
                   example: !include json/sjp.query.case-assignment-restriction.json
+
+
+/defendant/{defendantId}/profile:
+  uriParameters:
+        defendantId:
+           description: ID of defendant to query
+           type: string
+  get:
+      description: |
+        ...
+        (mapping):
+            responseType: application/vnd.sjp.query.defendant-profile+json
+            name: sjp.query.defendant-profile
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.sjp.query.defendant-profile+json:
+                    example:  !include json/sjp.query.defendant-profile.json
+                    schema:  !include  json/schema/sjp.query.defendant-profile.json
+
+/outstanding-fine-requests:
+   get:
+      description: |
+        ...
+        (mapping):
+            responseType: application/vnd.sjp.query.outstanding-fine-requests+json
+            name: sjp.query.outstanding-fine-requests
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.sjp.query.outstanding-fine-requests+json:
+                    example:  !include json/sjp.query.outstanding-fine-requests.json
+                    schema:  !include  json/schema/sjp.query.outstanding-fine-requests.json

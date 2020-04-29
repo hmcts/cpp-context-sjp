@@ -80,7 +80,9 @@ public class SjpQueryApiTest {
                         method("getProsecutingAuthority").thatHandles("sjp.query.case-prosecuting-authority").withRequesterPassThrough(),
                         method("getDefendantDetailsUpdates").thatHandles("sjp.query.defendant-details-updates").withRequesterPassThrough(),
                         method("getCaseNotes").thatHandles("sjp.query.case-notes").withRequesterPassThrough(),
-                        method("getOffencesVerdicts").thatHandles("sjp.query.offence-verdicts")
+                        method("getOffencesVerdicts").thatHandles("sjp.query.offence-verdicts"),
+                        method("getCaseNotes").thatHandles("sjp.query.case-notes").withRequesterPassThrough(),
+                        method("getOutstandingFines").thatHandles("sjp.query.defendant-outstanding-fines").withRequesterPassThrough()
                 )));
     }
 

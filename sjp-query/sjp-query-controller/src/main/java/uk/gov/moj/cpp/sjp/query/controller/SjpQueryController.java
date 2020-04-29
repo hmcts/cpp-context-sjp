@@ -1,21 +1,30 @@
 package uk.gov.moj.cpp.sjp.query.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.query.controller.response.DefendantProfilingView;
 import uk.gov.moj.cpp.sjp.query.controller.service.UserAndGroupsService;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import java.util.Objects;
 
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 
 @SuppressWarnings("WeakerAccess")
 @ServiceComponent(Component.QUERY_CONTROLLER)
 public class SjpQueryController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SjpQueryController.class);
 
     private static final String CASE_ID = "caseId";
 
@@ -147,5 +156,54 @@ public class SjpQueryController {
     @Handles("sjp.query.not-guilty-plea-cases")
     public JsonEnvelope getNotGuiltyPleaCases(final JsonEnvelope query) {
         return requester.request(query);
+    }
+
+    @Handles("sjp.query.defendant-outstanding-fines")
+    public JsonEnvelope getOutstandingFines(final JsonEnvelope query) {
+
+        final Envelope<DefendantProfilingView> profilingViewEnvelope = requester.request(
+                enveloper.withMetadataFrom(query, "sjp.query.defendant-profile")
+                        .apply(query.payloadAsJsonObject()), DefendantProfilingView.class);
+
+
+        final DefendantProfilingView defendantProfilingView = profilingViewEnvelope.payload();
+        JsonObject payload = null;
+        if (defendantProfilingView != null) {
+            final JsonObjectBuilder payloadBuilder = createObjectBuilder();
+            payloadBuilder
+                    .add("defendantId",defendantProfilingView.getId().toString())
+                    .add("firstname", defendantProfilingView.getFirstName())
+                    .add("lastname", defendantProfilingView.getLastName());
+            if (!Objects.isNull(defendantProfilingView.getDateOfBirth())) {
+                payloadBuilder.add("dob", defendantProfilingView.getDateOfBirth().toString());
+            }
+            if (!Objects.isNull(defendantProfilingView.getNationalInsuranceNumber())) {
+                payloadBuilder.add("ninumber", defendantProfilingView.getNationalInsuranceNumber());
+            }
+            payload = payloadBuilder.build();
+            final JsonEnvelope enforcementRequestEnvelope = requester.requestAsAdmin(
+                    enveloper.withMetadataFrom(query, "stagingenforcement.defendant.outstanding-fines")
+                            .apply(payload));
+
+            final JsonObject outstandingFines = enforcementRequestEnvelope.payloadAsJsonObject();
+
+            logSummary(defendantProfilingView, outstandingFines);
+
+            return enveloper.withMetadataFrom(query, "sjp.query.defendant-outstanding-fines")
+                    .apply(outstandingFines);
+        } else {
+            return enveloper.withMetadataFrom(query, "sjp.query.defendant-outstanding-fines")
+                    .apply(createObjectBuilder().add("outstandingFines", createArrayBuilder()).build());
+        }
+    }
+
+    private void logSummary(final DefendantProfilingView defendantProfilingView, final JsonObject outstandingFines) {
+        int numberOfFines = 0;
+        try {
+            numberOfFines = outstandingFines.getJsonArray("outstandingFines").size();
+        } catch (final ClassCastException e) {
+            LOGGER.trace(e.getMessage(), e);
+        }
+        LOGGER.info("OutstandingFines for {}: {} ", defendantProfilingView.getId(), numberOfFines);
     }
 }

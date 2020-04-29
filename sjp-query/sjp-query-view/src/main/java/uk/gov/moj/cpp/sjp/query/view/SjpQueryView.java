@@ -1,12 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view;
 
-import static java.lang.String.format;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
-import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.moj.cpp.sjp.query.view.util.JsonUtility.getString;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.core.annotation.Component;
@@ -14,6 +9,7 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.domain.DefendantOutstandingFineRequestsQueryResult;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
@@ -24,6 +20,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseNotGuiltyPleaView;
+import uk.gov.moj.cpp.sjp.query.view.response.DefendantProfilingView;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
 import uk.gov.moj.cpp.sjp.query.view.service.DefendantService;
@@ -33,13 +30,22 @@ import uk.gov.moj.cpp.sjp.query.view.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.query.view.service.TransparencyReportService;
 import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
 
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.persistence.NoResultException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
+import static java.lang.String.format;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
+import static java.util.UUID.fromString;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.sjp.query.view.util.JsonUtility.getString;
 
 @SuppressWarnings("WeakerAccess")
 @ServiceComponent(Component.QUERY_VIEW)
@@ -52,7 +58,8 @@ public class SjpQueryView {
     static final String FIELD_DEFENDANT_ID = "defendantId";
     static final String FIELD_DAYS_SINCE_POSTING = "daysSincePosting";
 
-
+    static final String FIELD_HEARING_DATE = "hearingDate";
+    private static final Logger LOGGER = LoggerFactory.getLogger(SjpQueryView.class);
     private static final String NAME_RESPONSE_CASE = "sjp.query.case-response";
     private static final String NAME_RESPONSE_CASES_SEARCH = "sjp.query.cases-search-response";
     private static final String NAME_RESPONSE_CASES_SEARCH_BY_MATERIAL_ID = "sjp.query.cases-search-by-material-id-response";
@@ -110,11 +117,10 @@ public class SjpQueryView {
     }
 
     @Handles("sjp.query.case-filter-other-and-financial-means-documents")
-    public JsonEnvelope findCaseAndFilterOtherAndFinancialMeansDocuments(JsonEnvelope envelope) {
+    public JsonEnvelope findCaseAndFilterOtherAndFinancialMeansDocuments(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE)
-                .apply(caseService.findCaseAndFilterOtherAndFinancialMeansDocuments(extract(envelope, FIELD_CASE_ID)));
+                       .apply(caseService.findCaseAndFilterOtherAndFinancialMeansDocuments(extract(envelope, FIELD_CASE_ID)));
     }
-
 
     @Handles("sjp.query.case-by-urn")
     public JsonEnvelope findCaseByUrn(final JsonEnvelope envelope) {
@@ -140,10 +146,10 @@ public class SjpQueryView {
         final JsonObject payload = envelope.payloadAsJsonObject();
         final Optional<Integer> limit = payload.containsKey("limit") ? Optional.of(payload.getInt("limit")) : empty();
         final Optional<LocalDate> postedBefore = payload.containsKey(FIELD_DAYS_SINCE_POSTING) ?
-                Optional.of(LocalDate.now().minusDays(payload.getInt(FIELD_DAYS_SINCE_POSTING))) : empty();
+                                                         Optional.of(LocalDate.now().minusDays(payload.getInt(FIELD_DAYS_SINCE_POSTING))) : empty();
 
         return enveloper.withMetadataFrom(envelope, "sjp.query.cases-missing-sjpn")
-                .apply(caseService.findCasesMissingSjpn(envelope, limit, postedBefore));
+                       .apply(caseService.findCasesMissingSjpn(envelope, limit, postedBefore));
     }
 
     @Handles("sjp.query.case-documents")
@@ -164,7 +170,7 @@ public class SjpQueryView {
         final UUID defendantId = fromString(extract(envelope, FIELD_DEFENDANT_ID));
         final Optional<FinancialMeans> financialMeans = financialMeansService.getFinancialMeans(defendantId);
         return enveloper.withMetadataFrom(envelope, "sjp.query.financial-means")
-                .apply(financialMeans.orElseGet(() -> new FinancialMeans(null, null, null, null)));
+                       .apply(financialMeans.orElseGet(() -> new FinancialMeans(null, null, null, null)));
     }
 
     @Handles("sjp.query.employer")
@@ -172,7 +178,7 @@ public class SjpQueryView {
         final UUID defendantId = fromString(extract(envelope, FIELD_DEFENDANT_ID));
         final Optional<Employer> employer = employerService.getEmployer(defendantId);
         return enveloper.withMetadataFrom(envelope, "sjp.query.employer")
-                .apply(employer.orElseGet(() -> new Employer(null, null, null, null, null)));
+                       .apply(employer.orElseGet(() -> new Employer(null, null, null, null, null)));
     }
 
     @Handles("sjp.query.cases-search-by-material-id")
@@ -194,14 +200,14 @@ public class SjpQueryView {
         final LocalDate toDate = LocalDates.from(extract(envelope, "toDate"));
 
         return enveloper.withMetadataFrom(envelope, "sjp.query.result-orders")
-                .apply(caseService.findResultOrders(fromDate, toDate));
+                       .apply(caseService.findResultOrders(fromDate, toDate));
     }
 
     @Handles("sjp.query.defendants-online-plea")
-    public JsonEnvelope findDefendantsOnlinePlea(JsonEnvelope envelope) {
+    public JsonEnvelope findDefendantsOnlinePlea(final JsonEnvelope envelope) {
         final UUID caseId = fromString(extract(envelope, FIELD_CASE_ID));
         final UUID defendantId = fromString(extract(envelope, FIELD_DEFENDANT_ID));
-        OnlinePlea onlinePlea;
+        final OnlinePlea onlinePlea;
         if (userAndGroupsService.canSeeOnlinePleaFinances(envelope)) {
             onlinePlea = onlinePleaRepository.findBy(caseId);
         } else {
@@ -216,10 +222,10 @@ public class SjpQueryView {
                 .forEach(onlinePleaDetail -> {
                     final OffenceDetail offenceDetail = offenceRepository.findBy(onlinePleaDetail.getOffenceId());
                     referenceDataService.getOffenceData(offenceDetail.getCode()).
-                        ifPresent(offenceRefData -> {
-                            final String title = nonNull(offenceRefData.getString("title", null)) ? offenceRefData.getString("title") : offenceRefData.getString("titleWelsh", null);
-                            onlinePleaDetail.setOffenceTitle(title);
-                        });
+                                                                                        ifPresent(offenceRefData -> {
+                                                                                            final String title = nonNull(offenceRefData.getString("title", null)) ? offenceRefData.getString("title") : offenceRefData.getString("titleWelsh", null);
+                                                                                            onlinePleaDetail.setOffenceTitle(title);
+                                                                                        });
                 });
 
         onlinePlea.setOnlinePleaDetails(onlinePleaDetails);
@@ -227,11 +233,10 @@ public class SjpQueryView {
         return enveloper.withMetadataFrom(envelope, "sjp.query.defendants-online-plea").apply(onlinePlea);
     }
 
-
     @Handles("sjp.query.pending-dates-to-avoid")
     public JsonEnvelope findPendingDatesToAvoid(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, "sjp.pending-dates-to-avoid")
-                .apply(datesToAvoidService.findCasesPendingDatesToAvoid(envelope));
+                       .apply(datesToAvoidService.findCasesPendingDatesToAvoid(envelope));
     }
 
     @Handles("sjp.query.case-prosecuting-authority")
@@ -239,16 +244,16 @@ public class SjpQueryView {
         final UUID caseId = fromString(query.payloadAsJsonObject().getString(FIELD_CASE_ID));
 
         final JsonObject prosecutingAuthorityPayload = Optional.ofNullable(caseRepository.getProsecutingAuthority(caseId))
-                .map(prosecutingAuthority -> createObjectBuilder().add("prosecutingAuthority", prosecutingAuthority).build())
-                .orElse(null);
+                                                               .map(prosecutingAuthority -> createObjectBuilder().add("prosecutingAuthority", prosecutingAuthority).build())
+                                                               .orElse(null);
 
         return enveloper.withMetadataFrom(query, "sjp.query.case-prosecuting-authority").apply(prosecutingAuthorityPayload);
     }
 
     @Handles("sjp.query.defendant-details-updates")
-    public JsonEnvelope findDefendantDetailUpdates(JsonEnvelope envelope) {
+    public JsonEnvelope findDefendantDetailUpdates(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, "sjp.query.defendant-details-updates")
-                .apply(defendantService.findDefendantDetailUpdates(envelope));
+                       .apply(defendantService.findDefendantDetailUpdates(envelope));
     }
 
     @Handles("sjp.query.transparency-report-metadata")
@@ -265,7 +270,7 @@ public class SjpQueryView {
         final int pageSize = queryFilters.getInt("pageSize");
         final int pageNumber = queryFilters.getInt("pageNumber");
 
-        if(pageNumber <= 0 || pageSize <= 0) {
+        if (pageNumber <= 0 || pageSize <= 0) {
             throw new IllegalArgumentException(format("invalid page number (%d) or page size (%d)", pageNumber, pageSize));
         }
 
@@ -274,7 +279,26 @@ public class SjpQueryView {
         return enveloper.withMetadataFrom(query, NOT_GUILTY_PLEA_CASES_RESPONSE_NAME).apply(result);
     }
 
-    private static String extract(JsonEnvelope envelope, String fieldName) {
+    private static String extract(final JsonEnvelope envelope, final String fieldName) {
         return envelope.payloadAsJsonObject().getString(fieldName);
+    }
+
+    @Handles("sjp.query.defendant-profile")
+    public JsonEnvelope getDefendantProfile(final JsonEnvelope envelope) {
+        final UUID defendantId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_DEFENDANT_ID));
+        final DefendantProfilingView defendant = defendantService.getDefendantProfilingView(defendantId);
+        return enveloper.withMetadataFrom(envelope, "sjp.query.defendant-profile").apply(defendant);
+    }
+
+    @SuppressWarnings("squid:S1166")
+    @Handles("sjp.query.outstanding-fine-requests")
+    public JsonEnvelope getOutstandingFineRequests(final JsonEnvelope envelope) {
+        try {
+            final DefendantOutstandingFineRequestsQueryResult result = defendantService.getOutstandingFineRequests();
+            return enveloper.withMetadataFrom(envelope, "sjp.query.outstanding-fine-requests").apply(result);
+        } catch (final NoResultException nre) {
+            LOGGER.error("### No defendant found ");
+            return envelopeFrom(envelope.metadata(), Json.createObjectBuilder().build());
+        }
     }
 }

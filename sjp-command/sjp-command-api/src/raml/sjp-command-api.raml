@@ -664,3 +664,16 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
             description: Internal Server Error
       202:
         description: Accepted
+
+/add-request-for-outstanding-fines:
+  post:
+    description: |
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.add-request-for-outstanding-fines+json
+          name: sjp.add-request-for-outstanding-fines
+      ...
+    body:
+      application/vnd.sjp.add-request-for-outstanding-fines+json:
+        example: !include json/sjp.add-request-for-outstanding-fines.json
+        schema: !include json/schema/sjp.add-request-for-outstanding-fines.json

@@ -1,18 +1,19 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
-
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
+import uk.gov.moj.cpp.sjp.domain.DefendantOutstandingFineRequestsQueryResult;
+import uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.UpdatedDefendantDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.DefendantRepository;
@@ -25,12 +26,17 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Matchers;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.iterableWithSize;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DefendantServiceTest {
@@ -53,9 +59,9 @@ public class DefendantServiceTest {
                 metadataWithRandomUUIDAndName(),
                 createObjectBuilder().add("limit", Integer.MAX_VALUE));
 
-        UpdatedDefendantDetails updatedDefendantDetails1 = createUpdatedDefendantDetails(ZonedDateTime.now());
-        UpdatedDefendantDetails updatedDefendantDetails2 = createUpdatedDefendantDetails(ZonedDateTime.now().minusDays(2));
-        UpdatedDefendantDetails updatedDefendantDetails3 = createUpdatedDefendantDetails(ZonedDateTime.now().minusDays(4));
+        final UpdatedDefendantDetails updatedDefendantDetails1 = createUpdatedDefendantDetails(ZonedDateTime.now());
+        final UpdatedDefendantDetails updatedDefendantDetails2 = createUpdatedDefendantDetails(ZonedDateTime.now().minusDays(2));
+        final UpdatedDefendantDetails updatedDefendantDetails3 = createUpdatedDefendantDetails(ZonedDateTime.now().minusDays(4));
 
         final List<UpdatedDefendantDetails> updatedDefendantDetails = newArrayList(
                 updatedDefendantDetails1,
@@ -101,14 +107,14 @@ public class DefendantServiceTest {
         when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(envelope))
                 .thenReturn(ProsecutingAuthorityAccess.ALL);
 
-        String prosecutingAuthorityAccessFilter = "%";
+        final String prosecutingAuthorityAccessFilter = "%";
         when(prosecutingAuthorityAccessFilterConverter.convertToProsecutingAuthorityAccessFilter(ProsecutingAuthorityAccess.ALL))
                 .thenReturn(prosecutingAuthorityAccessFilter);
         return prosecutingAuthorityAccessFilter;
     }
 
     private UpdatedDefendantDetails createUpdatedDefendantDetails(final ZonedDateTime updateTime) {
-        PersonalDetails personalDetails = new PersonalDetails();
+        final PersonalDetails personalDetails = new PersonalDetails();
         personalDetails.markAddressUpdated(updateTime);
         personalDetails.setDateOfBirth(LocalDate.now());
 
@@ -124,4 +130,40 @@ public class DefendantServiceTest {
                 UUID.randomUUID(),
                 "region");
     }
+
+    @Test
+    public void shouldFindDefendantListByReadyCasesWithEmptyResults() {
+
+
+        when(defendantRepository.findByReadyCases()).thenReturn(null);
+
+        final DefendantOutstandingFineRequestsQueryResult outstandingFineRequests = defendantService.getOutstandingFineRequests();
+
+        assertThat(outstandingFineRequests.getDefendantDetails() == null || outstandingFineRequests.getDefendantDetails().isEmpty(), is(true));
+
+
+    }
+
+    @Test
+    public void shouldFindDefendantListByReadyCases() {
+
+        final DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(),
+                new PersonalDetails("Mr", "Defen", "Dant",
+                        LocalDate.of(1970, 3, 1), Gender.MALE,
+                        "54321", null, null,null,null ,null),
+                null, 2);
+        final CaseDetail caseDetail = CaseDetailBuilder.aCase().withCaseId(UUID.randomUUID()).build();
+        defendantDetail.setCaseDetail(caseDetail);
+
+
+        when(defendantRepository.findByReadyCases()).thenReturn(asList(defendantDetail));
+
+        final DefendantOutstandingFineRequestsQueryResult outstandingFineRequests = defendantService.getOutstandingFineRequests();
+
+        assertThat(outstandingFineRequests.getDefendantDetails().size() , greaterThan(0));
+        assertThat(outstandingFineRequests.getDefendantDetails().get(0).getCaseId(), is(caseDetail.getId()));
+        assertThat(outstandingFineRequests.getDefendantDetails().get(0).getFirstName(), is("Defen"));
+
+    }
+
 }

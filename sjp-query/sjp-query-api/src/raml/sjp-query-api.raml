@@ -589,3 +589,24 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
                 application/vnd.sjp.query.case-assignment-restriction+json:
                   schema: !include json/schema/sjp.query.case-assignment-restriction.json
                   example: !include json/sjp.query.case-assignment-restriction.json
+
+
+/defendant/{defendantId}/outstanding-fines:
+  uriParameters:
+        defendantId:
+           description: ID of defendant to query outstanding fines
+           type: string
+  get:
+      description: |
+        ...
+        (mapping):
+            responseType: application/vnd.sjp.query.defendant-outstanding-fines+json
+            name: sjp.query.defendant-outstanding-fines
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.sjp.query.defendant-outstanding-fines+json:
+                    example:  !include json/sjp.query.defendant-outstanding-fines.json
+                    schema:  !include  json/schema/sjp.query.defendant-outstanding-fines.json

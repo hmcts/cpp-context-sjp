@@ -23,9 +23,6 @@ import org.apache.deltaspike.data.api.SingleResultType;
 @Repository
 public abstract class DefendantRepository implements EntityRepository<DefendantDetail, UUID> {
 
-    @Inject
-    private EntityManager entityManager;
-
     private static final String UPDATED_DEFENDANT_DETAILS = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.view.UpdatedDefendantDetails(" +
             "dd.personalDetails.firstName, " +
             "dd.personalDetails.lastName, " +
@@ -43,6 +40,8 @@ public abstract class DefendantRepository implements EntityRepository<DefendantD
             "AND (((dd.personalDetails.addressUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.personalDetails.addressUpdatedAt IS NOT NULL AND dd.personalDetails.updatesAcknowledgedAt is NULL OR dd.personalDetails.addressUpdatedAt > dd.personalDetails.updatesAcknowledgedAt)) " +
             "OR ((dd.personalDetails.dateOfBirthUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.personalDetails.dateOfBirthUpdatedAt IS NOT NULL AND dd.personalDetails.updatesAcknowledgedAt IS NULL OR dd.personalDetails.dateOfBirthUpdatedAt > dd.personalDetails.updatesAcknowledgedAt)) " +
             "OR ((dd.personalDetails.nameUpdatedAt BETWEEN :fromDate and :toDate) AND (dd.personalDetails.nameUpdatedAt IS NOT NULL AND dd.personalDetails.updatesAcknowledgedAt IS NULL OR dd.personalDetails.nameUpdatedAt > dd.personalDetails.updatesAcknowledgedAt)))";
+    @Inject
+    private EntityManager entityManager;
 
     public List<UpdatedDefendantDetails> findUpdatedByCaseProsecutingAuthority(
             String prosecutingAuthority,
@@ -65,4 +64,6 @@ public abstract class DefendantRepository implements EntityRepository<DefendantD
             singleResult = SingleResultType.OPTIONAL)
     public abstract UUID findOptionalCaseIdByDefendantId(@QueryParam("id") final UUID id);
 
+    @Query(value = "SELECT dd FROM DefendantDetail dd, ReadyCase rc where dd.caseDetail.id = rc.caseId")
+    public abstract List<DefendantDetail> findByReadyCases();
 }

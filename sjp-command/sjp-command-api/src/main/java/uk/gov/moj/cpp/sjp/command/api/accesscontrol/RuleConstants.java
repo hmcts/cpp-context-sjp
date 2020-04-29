@@ -141,5 +141,9 @@ public final class RuleConstants {
     public static List<String> getAddCaseAssignmentRestrictionActionGroups() {
         return Arrays.asList(GROUP_SYSTEM_USERS);
     }
+    public static List<String> getAddRequestForOutstandingFinesGroups() {
+        return Arrays.asList(GROUP_SYSTEM_USERS);
+    }
+
 }
 

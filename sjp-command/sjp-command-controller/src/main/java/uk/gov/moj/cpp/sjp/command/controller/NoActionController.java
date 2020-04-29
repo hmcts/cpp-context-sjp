@@ -142,6 +142,11 @@ public class NoActionController {
         send(envelope);
     }
 
+    @Handles("sjp.command.add-request-for-outstanding-fines")
+    public void addRequestForOutstandingFines(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
     private void send(final Envelope<?> envelope) {
         sender.send(envelope);
     }

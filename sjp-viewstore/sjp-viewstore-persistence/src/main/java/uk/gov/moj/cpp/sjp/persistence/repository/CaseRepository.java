@@ -77,9 +77,11 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
     public abstract String getProsecutingAuthority(@QueryParam("caseId") final UUID caseId);
 
     @Query(value = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
-            "(d.personalDetails.firstName, d.personalDetails.lastName, cd.id," +
+            "(d.personalDetails.firstName, d.personalDetails.lastName, d.personalDetails.dateOfBirth," +
+            "cd.id, cd.urn," +
+            "d.personalDetails.address.address1, d.personalDetails.address.address2," +
             "d.personalDetails.address.address3, d.personalDetails.address.address4, d.personalDetails.address.address5," +
-            "d.personalDetails.address.postcode, o.code, o.startDate, cd.prosecutingAuthority) " +
+            "d.personalDetails.address.postcode, o.code, o.startDate, o.wording, cd.prosecutingAuthority) " +
             "FROM CaseDetail cd " +
             "LEFT OUTER JOIN cd.defendant d " +
             "LEFT OUTER JOIN d.offences o " +

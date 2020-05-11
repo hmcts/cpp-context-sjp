@@ -97,6 +97,10 @@ public final class RuleConstants {
         return asList(GROUP_COURT_ADMINISTRATORS);
     }
 
+    public static List<String> getAllowedGroupsForPressTransparencyReport() {
+        return asList(GROUP_COURT_ADMINISTRATORS);
+    }
+
     public static List<String> getAllowedGroupsForOutstandingFines() {
         return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }

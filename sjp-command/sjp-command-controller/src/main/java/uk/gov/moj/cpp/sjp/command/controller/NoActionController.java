@@ -117,6 +117,11 @@ public class NoActionController {
         send(envelope);
     }
 
+    @Handles("sjp.command.request-press-transparency-report")
+    public void requestPressTransparencyReport(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
     @Handles("sjp.command.set-dates-to-avoid-required")
     public void setDatesToAvoidRequired(final JsonEnvelope envelope) {
         send(envelope);

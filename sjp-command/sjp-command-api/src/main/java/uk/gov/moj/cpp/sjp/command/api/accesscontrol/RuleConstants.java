@@ -106,6 +106,10 @@ public final class RuleConstants {
         return singletonList(GROUP_SYSTEM_USERS);
     }
 
+    public static List<String> getRequestPressTransparencyReportGroups() {
+        return singletonList(GROUP_SYSTEM_USERS);
+    }
+
     public static List<String> datesToAvoidRequiredGroups() {
         return singletonList(GROUP_SYSTEM_USERS);
     }

@@ -11,7 +11,9 @@ import org.apache.deltaspike.data.api.Repository;
 @Repository
 public interface TransparencyReportMetadataRepository extends EntityRepository<TransparencyReportMetadata, UUID> {
 
-    @Query(value = "SELECT trmd FROM TransparencyReportMetadata trmd ORDER BY trmd.generatedAt DESC", max = 1)
-     TransparencyReportMetadata findLatestTransparencyReportMetadata();
+    @Query(value = "SELECT trmd FROM TransparencyReportMetadata trmd " +
+            "WHERE trmd.englishFileServiceId is not null and trmd.welshFileServiceId is not null " +
+            "ORDER BY trmd.generatedAt DESC", max = 1)
+    TransparencyReportMetadata findLatestTransparencyReportMetadata();
 
 }

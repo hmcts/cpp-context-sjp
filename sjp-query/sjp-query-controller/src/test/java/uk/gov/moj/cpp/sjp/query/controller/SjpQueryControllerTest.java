@@ -73,6 +73,7 @@ public class SjpQueryControllerTest {
                                                              method("getDefendantDetailsUpdates").thatHandles("sjp.query.defendant-details-updates").withRequesterPassThrough(),
                                                              method("getCaseNotes").thatHandles("sjp.query.case-notes").withRequesterPassThrough(),
                                                              method("getTransparencyReportMetadata").thatHandles("sjp.query.transparency-report-metadata").withRequesterPassThrough(),
+                                                             method("getPressTransparencyReportMetadata").thatHandles("sjp.query.press-transparency-report-metadata").withRequesterPassThrough(),
                                                              method("getCourtExtract").thatHandles("sjp.query.case-court-extract").withRequesterPassThrough()
                                                      )));
     }

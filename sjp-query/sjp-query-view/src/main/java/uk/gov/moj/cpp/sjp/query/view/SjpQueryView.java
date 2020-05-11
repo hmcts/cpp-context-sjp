@@ -26,6 +26,7 @@ import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
 import uk.gov.moj.cpp.sjp.query.view.service.DefendantService;
 import uk.gov.moj.cpp.sjp.query.view.service.EmployerService;
 import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
+import uk.gov.moj.cpp.sjp.query.view.service.PressTransparencyReportService;
 import uk.gov.moj.cpp.sjp.query.view.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.query.view.service.TransparencyReportService;
 import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
@@ -66,6 +67,7 @@ public class SjpQueryView {
     private static final String NAME_RESPONSE_CASE_DOCUMENTS = "sjp.query.case-documents-response";
     private static final String NAME_RESPONSE_PENDING_CASES = "sjp.query.pending-cases";
     private static final String TRANSPARENCY_REPORT_METADATA_RESPONSE_NAME = "sjp.query.transparency-report-metadata";
+    private static final String PRESS_TRANSPARENCY_REPORT_METADATA_RESPONSE_NAME = "sjp.query.press-transparency-report-metadata";
     private static final String NOT_GUILTY_PLEA_CASES_RESPONSE_NAME = "sjp.query.not-guilty-plea-cases";
 
     @Inject
@@ -76,6 +78,9 @@ public class SjpQueryView {
 
     @Inject
     private TransparencyReportService transparencyReportService;
+
+    @Inject
+    private PressTransparencyReportService pressTransparencyReportService;
 
     @Inject
     private CaseRepository caseRepository;
@@ -260,6 +265,12 @@ public class SjpQueryView {
     public JsonEnvelope getTransparencyReportMetadata(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, TRANSPARENCY_REPORT_METADATA_RESPONSE_NAME).apply(
                 transparencyReportService.getMetaData());
+    }
+
+    @Handles("sjp.query.press-transparency-report-metadata")
+    public JsonEnvelope getPressTransparencyReportMetadata(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, PRESS_TRANSPARENCY_REPORT_METADATA_RESPONSE_NAME)
+                .apply(pressTransparencyReportService.getMetadata());
     }
 
     @Handles("sjp.query.not-guilty-plea-cases")

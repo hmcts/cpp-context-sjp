@@ -122,7 +122,21 @@ version: v1
           schema: !include json/schema/sjp.command.store-transparency-report-data.json
           example: !include json/sjp.command.store-transparency-report-data.json
 
+      application/vnd.sjp.command.update-transparency-report-data+json:
+          schema: !include json/schema/sjp.command.update-transparency-report-data.json
+          example: !include json/sjp.command.update-transparency-report-data.json
+
+      application/vnd.sjp.command.update-press-transparency-report-data+json:
+          schema: !include json/schema/sjp.command.update-press-transparency-report-data.json
+          example: !include json/sjp.command.update-press-transparency-report-data.json
+
+      application/vnd.sjp.command.store-press-transparency-report-data+json:
+          schema: !include json/schema/sjp.command.store-press-transparency-report-data.json
+          example: !include json/sjp.command.store-press-transparency-report-data.json
+
       application/vnd.sjp.command.request-transparency-report+json: !!null
+
+      application/vnd.sjp.command.request-press-transparency-report+json: !!null
 
       application/vnd.sjp.command.add-case-note+json:
         example: !include json/sjp.command.add-case-note.json

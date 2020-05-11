@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.command.handler;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
@@ -33,7 +32,8 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.aggregate.TransparencyReportAggregate;
 import uk.gov.moj.cpp.sjp.domain.transparency.ReportMetadata;
-import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportGenerated;
+import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportGenerationStarted;
+import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportMetadataAdded;
 import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportRequested;
 
 import java.time.ZonedDateTime;
@@ -54,10 +54,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class TransparencyHandlerTest {
 
+    public static final String UPDATE_TRANSPARENCY_REPORT_DATA_COMMAND = "sjp.command.update-transparency-report-data";
     private static final String REQUEST_TRANSPARENCY_REPORT_COMMAND = "sjp.command.request-transparency-report";
     private static final String STORE_TRANSPARENCY_REPORT_DATA_COMMAND = "sjp.command.store-transparency-report-data";
-
-    public static final UUID TRANSPARENCY_REPORT_STREAM_ID_IN_TEST = fromString("37c62719-f1cc-4a84-bca4-14087d9d826c");
 
     @InjectMocks
     private TransparencyHandler transparencyHandler;
@@ -79,13 +78,15 @@ public class TransparencyHandlerTest {
 
     @Spy
     private Enveloper enveloper = createEnveloperWithEvents(
-            TransparencyReportGenerated.class, TransparencyReportRequested.class);
+            TransparencyReportGenerationStarted.class,
+            TransparencyReportRequested.class,
+            TransparencyReportMetadataAdded.class);
 
     @Test
     public void shouldHandleRequestTransparencyReportCommand() {
         assertThat(transparencyHandler, isHandler(COMMAND_HANDLER)
                 .with(method("requestTransparencyReport")
-                        .thatHandles("sjp.command.request-transparency-report")
+                        .thatHandles(REQUEST_TRANSPARENCY_REPORT_COMMAND)
                 ));
     }
 
@@ -93,8 +94,16 @@ public class TransparencyHandlerTest {
     public void shouldHandleStoreTransparencyReportDataCommand() {
         assertThat(transparencyHandler, isHandler(COMMAND_HANDLER)
                 .with(method("storeTransparencyReportData")
-                        .thatHandles("sjp.command.store-transparency-report-data")
+                        .thatHandles(STORE_TRANSPARENCY_REPORT_DATA_COMMAND)
                 ));
+    }
+
+    public void shouldHandleUpdateTransparencyReportDataCommand() {
+        assertThat(transparencyHandler, isHandler(COMMAND_HANDLER)
+                .with(method("updateTransparencyReportData")
+                        .thatHandles(UPDATE_TRANSPARENCY_REPORT_DATA_COMMAND)
+                )
+        );
     }
 
     @Test
@@ -103,13 +112,15 @@ public class TransparencyHandlerTest {
                 metadataWithRandomUUID(REQUEST_TRANSPARENCY_REPORT_COMMAND),
                 createObjectBuilder());
 
+        final UUID transparencyReportId = requestTransparencyReportCommandJsonEnvelope.metadata().id();
+
         final ZonedDateTime requestedAt = ZonedDateTime.now();
         when(clock.now()).thenReturn(requestedAt);
 
-        final TransparencyReportRequested transparencyReportRequested = new TransparencyReportRequested(clock.now());
-        when(eventSource.getStreamById(TRANSPARENCY_REPORT_STREAM_ID_IN_TEST)).thenReturn(transparencyReportEventStream);
+        final TransparencyReportRequested transparencyReportRequested = new TransparencyReportRequested(transparencyReportId, clock.now());
+        when(eventSource.getStreamById(transparencyReportId)).thenReturn(transparencyReportEventStream);
         when(aggregateService.get(transparencyReportEventStream, TransparencyReportAggregate.class)).thenReturn(transparencyReportAggregate);
-        when(transparencyReportAggregate.requestTransparencyReport(clock.now())).thenReturn(Stream.of(transparencyReportRequested));
+        when(transparencyReportAggregate.requestTransparencyReport(transparencyReportId, clock.now())).thenReturn(Stream.of(transparencyReportRequested));
 
         transparencyHandler.requestTransparencyReport(requestTransparencyReportCommandJsonEnvelope);
         assertThat(transparencyReportEventStream, eventStreamAppendedWith(
@@ -118,18 +129,15 @@ public class TransparencyHandlerTest {
                                 withMetadataEnvelopedFrom(requestTransparencyReportCommandJsonEnvelope)
                                         .withName(TransparencyReportRequested.EVENT_NAME),
                                 payloadIsJson(allOf(
+                                        withJsonPath("$.transparencyReportId", equalTo(transparencyReportId.toString())),
                                         withJsonPath("$.requestedAt", equalTo(requestedAt.toLocalDateTime() + "Z"))
                                 ))))));
     }
 
     @Test
-    public void shouldGenerateTransparencyReport() throws EventStreamException {
+    public void shouldStartTransparencyReport() throws EventStreamException {
         final List<UUID> caseIds = newArrayList(randomUUID(), randomUUID(), randomUUID());
-        final ReportMetadata englishReportMetadata = new ReportMetadata("transparency-report-english.pdf", 3, 1744, randomUUID());
-        final ReportMetadata welshReportMetadata = new ReportMetadata("transparency-report-welsh.pdf", 2, 1235, randomUUID());
-
-        final JsonObject englishReportMetadataJsonObject = buildFileMetadataJsonObject(englishReportMetadata);
-        final JsonObject welshReportMetadataJsonObject = buildFileMetadataJsonObject(welshReportMetadata);
+        final UUID transparencyReportId = randomUUID();
 
         final JsonArrayBuilder caseIdArrayBuilder = createArrayBuilder();
         caseIds.forEach(caseId -> caseIdArrayBuilder.add(caseId.toString()));
@@ -138,33 +146,66 @@ public class TransparencyHandlerTest {
         final JsonEnvelope storeTransparencyReportDataCommandJsonEnvelope = envelopeFrom(
                 metadataWithRandomUUID(STORE_TRANSPARENCY_REPORT_DATA_COMMAND),
                 createObjectBuilder()
-                        .add("caseIds", caseIdArrayBuilder)
-                        .add("englishReportMetadata", englishReportMetadataJsonObject)
-                        .add("welshReportMetadata", welshReportMetadataJsonObject));
+                        .add("transparencyReportId", transparencyReportId.toString())
+                        .add("caseIds", caseIdArrayBuilder));
 
-        final TransparencyReportGenerated transparencyReportGenerated = new TransparencyReportGenerated(caseIds, englishReportMetadata, welshReportMetadata);
-        when(eventSource.getStreamById(TRANSPARENCY_REPORT_STREAM_ID_IN_TEST)).thenReturn(transparencyReportEventStream);
+        final TransparencyReportGenerationStarted transparencyReportGenerated = new TransparencyReportGenerationStarted(transparencyReportId, caseIds);
+        when(eventSource.getStreamById(transparencyReportId)).thenReturn(transparencyReportEventStream);
         when(aggregateService.get(transparencyReportEventStream, TransparencyReportAggregate.class)).thenReturn(transparencyReportAggregate);
-        when(transparencyReportAggregate.generateTransparencyReport(eq(caseIds), eq(englishReportMetadataJsonObject), eq(welshReportMetadataJsonObject))).thenReturn(Stream.of(transparencyReportGenerated));
+        when(transparencyReportAggregate.startTransparencyReportGeneration(eq(caseIds))).thenReturn(Stream.of(transparencyReportGenerated));
 
         transparencyHandler.storeTransparencyReportData(storeTransparencyReportDataCommandJsonEnvelope);
         assertThat(transparencyReportEventStream, eventStreamAppendedWith(
                 streamContaining(
                         jsonEnvelope(
                                 withMetadataEnvelopedFrom(storeTransparencyReportDataCommandJsonEnvelope)
-                                        .withName(TransparencyReportGenerated.EVENT_NAME),
+                                        .withName(TransparencyReportGenerationStarted.EVENT_NAME),
                                 payloadIsJson(allOf(
-                                        withJsonPath("$.englishReportMetadata.fileName", equalTo(englishReportMetadata.getFileName())),
-                                        withJsonPath("$.englishReportMetadata.numberOfPages", equalTo(englishReportMetadata.getNumberOfPages())),
-                                        withJsonPath("$.englishReportMetadata.fileSize", equalTo(englishReportMetadata.getFileSize())),
-                                        withJsonPath("$.englishReportMetadata.fileId", equalTo(englishReportMetadata.getFileId().toString())), withJsonPath("$.englishReportMetadata.fileName", equalTo(englishReportMetadata.getFileName())),
-                                        withJsonPath("$.welshReportMetadata.numberOfPages", equalTo(welshReportMetadata.getNumberOfPages())),
-                                        withJsonPath("$.welshReportMetadata.fileSize", equalTo(welshReportMetadata.getFileSize())),
-                                        withJsonPath("$.welshReportMetadata.fileId", equalTo(welshReportMetadata.getFileId().toString())),
+                                        withJsonPath("$.transparencyReportId", equalTo(transparencyReportId.toString())),
                                         withJsonPath("$.caseIds", equalTo(caseIds.stream().map(e -> e.toString()).collect(toList()))
                                         ))))
 
                 )));
+    }
+
+    @Test
+    public void shouldUpdateTransparencyReport() throws EventStreamException {
+        final UUID transparencyReportId = randomUUID();
+        final ReportMetadata englishReportMetadata = new ReportMetadata("transparency-report-english.pdf", 3, 1744, randomUUID());
+        final JsonObject englishReportMetadataJsonObject = buildFileMetadataJsonObject(englishReportMetadata);
+
+        final JsonEnvelope updateTransparencyReportDataCommandJsonEnvelope = envelopeFrom(
+                metadataWithRandomUUID(UPDATE_TRANSPARENCY_REPORT_DATA_COMMAND),
+                createObjectBuilder()
+                        .add("transparencyReportId", transparencyReportId.toString())
+                        .add("metadata", englishReportMetadataJsonObject)
+                        .add("language", "en")
+        );
+
+        final TransparencyReportMetadataAdded metadataAdded = new TransparencyReportMetadataAdded(transparencyReportId, englishReportMetadata, "en");
+        when(eventSource.getStreamById(transparencyReportId)).thenReturn(transparencyReportEventStream);
+        when(aggregateService.get(transparencyReportEventStream, TransparencyReportAggregate.class)).thenReturn(transparencyReportAggregate);
+        when(transparencyReportAggregate.updateMetadataForLanguage(eq("en"), eq(englishReportMetadataJsonObject))).thenReturn(Stream.of(metadataAdded));
+
+        transparencyHandler.updateTransparencyReportData(updateTransparencyReportDataCommandJsonEnvelope);
+        assertThat(transparencyReportEventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(updateTransparencyReportDataCommandJsonEnvelope)
+                                        .withName(TransparencyReportMetadataAdded.EVENT_NAME),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.transparencyReportId", equalTo(transparencyReportId.toString())),
+                                        withJsonPath("$.language", equalTo("en")),
+                                        withJsonPath("$.metadata.fileName", equalTo("transparency-report-english.pdf")),
+                                        withJsonPath("$.metadata.numberOfPages", equalTo(3)),
+                                        withJsonPath("$.metadata.fileSize", equalTo(1744)),
+                                        withJsonPath("$.metadata.fileId", equalTo(englishReportMetadata.getFileId().toString()))
+                                        )
+                                )
+                        )
+                )
+
+        ));
     }
 
     private JsonObject buildFileMetadataJsonObject(final ReportMetadata reportMetadata) {

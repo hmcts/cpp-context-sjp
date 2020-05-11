@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.press-transparency-report-metadata-added.json",
+  "type": "object",
+  "properties": {
+    "metadata": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/transparency-report-file-metadata.json"
+    },
+    "pressTransparencyReportId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "metadata",
+    "pressTransparencyReportId"
+  ],
+  "additionalProperties": false
+}

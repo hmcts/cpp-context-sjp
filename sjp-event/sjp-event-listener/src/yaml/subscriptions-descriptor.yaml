@@ -152,8 +152,11 @@ subscriptions_descriptor:
         - name: sjp.events.case-adjournment-to-later-sjp-hearing-elapsed
           schema_uri: http://cpp.moj.gov.uk/sjp/event/case-adjournment-to-later-sjp-hearing-elapsed.json
 
-        - name: sjp.events.transparency-report-generated
-          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.transparency-report-generated.json
+        - name: sjp.events.transparency-report-generation-started
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.transparency-report-generation-started.json
+
+        - name: sjp.events.transparency-report-metadata-added
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.transparency-report-metadata-added.json
 
         - name: sjp.events.case-note-added
           schema_uri: http://cpp.moj.gov.uk/sjp/event/case-note-added.json
@@ -181,5 +184,11 @@ subscriptions_descriptor:
 
         - name: sjp.events.case-assignment-restriction-added
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/case-assignment-restriction-added.json
+
+        - name: sjp.events.press-transparency-report-generation-started
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.press-transparency-report-generation-started.json
+
+        - name: sjp.events.press-transparency-report-metadata-added
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.press-transparency-report-metadata-added.json
 
       event_source_name: sjp

@@ -479,6 +479,21 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       202:
         description: Accepted
 
+/press-transparency-report/request:
+  post:
+    description: |
+      Request a new press transparency report
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.request-press-transparency-report+json
+          name: sjp.request-press-transparency-report
+      ...
+    body:
+      application/vnd.sjp.request-press-transparency-report+json: !!null
+    responses:
+      202:
+        description: Accepted
+
 
 /cases/{caseId}/notes:
   uriParameters:

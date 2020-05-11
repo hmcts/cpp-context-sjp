@@ -143,6 +143,11 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.press-transparency-report-metadata")
+    public JsonEnvelope getPressTransparencyReportMetadata(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
     @Handles("sjp.query.case-court-extract")
     public JsonEnvelope getCourtExtract(final JsonEnvelope query) {
         return requester.request(query);

@@ -61,6 +61,11 @@ public class TransparencyReportMetadata {
         this.generatedAt = generatedAt;
     }
 
+    public TransparencyReportMetadata(final UUID id, final LocalDateTime generatedAt) {
+        this.id = id;
+        this.generatedAt = generatedAt;
+    }
+
     public UUID getId() {
         return id;
     }

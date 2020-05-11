@@ -37,7 +37,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class TransparencyReportListenerTest {
 
     @InjectMocks
-    private TransparencyReportListener casesPublishedListener;
+    private TransparencyReportListener transparencyReportListener;
 
     @Mock
     private CasePublishStatusRepository casePublishStatusRepository;
@@ -47,27 +47,18 @@ public class TransparencyReportListenerTest {
 
     @Test
     public void shouldCreateReportMetadataAndIncrementCasePublishedCounters() {
+        final UUID transparencyReportId = randomUUID();
         final List<UUID> caseIds = newArrayList(randomUUID(), randomUUID());
-        final UUID englishReportFileId = randomUUID();
-        final UUID welshReportFileId = randomUUID();
-        final Integer englishReportNumberOfPages = 3;
-        final Integer englishPdfSizeInBytes = 325;
-        final Integer welshReportNumberOfPages = 4;
-        final Integer welshPdfSizeInBytes = 412;
-
-        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.transparency-report-generated"),
+        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.transparency-report-generation-start"),
                 createObjectBuilder()
-                        .add("englishReportMetadata",
-                                buildFileMetadataJsonObject("transparency-report-english.pdf", englishReportNumberOfPages, englishPdfSizeInBytes, englishReportFileId))
-                        .add("welshReportMetadata",
-                                buildFileMetadataJsonObject("transparency-report-welsh.pdf", welshReportNumberOfPages, welshPdfSizeInBytes, welshReportFileId))
+                        .add("transparencyReportId", transparencyReportId.toString())
                         .add("caseIds", createJsonArrayWithCaseIds(caseIds))
                         .build());
 
         final List<CasePublishStatus> publishedCases = createPublishedCases();
         when(casePublishStatusRepository.findByCaseIds(caseIds)).thenReturn(createPublishedCases());
 
-        casesPublishedListener.handleCasesArePublished(eventEnvelope);
+        transparencyReportListener.handleCasesArePublished(eventEnvelope);
 
         final ArgumentCaptor<CasePublishStatus> argument = ArgumentCaptor.forClass(CasePublishStatus.class);
         verify(casePublishStatusRepository, times(2)).save(argument.capture());
@@ -75,13 +66,35 @@ public class TransparencyReportListenerTest {
 
         final ArgumentCaptor<TransparencyReportMetadata> transparencyReportMetadataArgument = ArgumentCaptor.forClass(TransparencyReportMetadata.class);
         verify(transparencyReportMetadataRepository).save(transparencyReportMetadataArgument.capture());
-        assertThat(transparencyReportMetadataArgument.getValue().getEnglishFileServiceId(), is(englishReportFileId));
-        assertThat(transparencyReportMetadataArgument.getValue().getEnglishNumberOfPages(), is(englishReportNumberOfPages));
-        assertThat(transparencyReportMetadataArgument.getValue().getEnglishSizeInBytes(), is(englishPdfSizeInBytes));
-        assertThat(transparencyReportMetadataArgument.getValue().getWelshFileServiceId(), is(welshReportFileId));
-        assertThat(transparencyReportMetadataArgument.getValue().getWelshNumberOfPages(), is(welshReportNumberOfPages));
-        assertThat(transparencyReportMetadataArgument.getValue().getWelshSizeInBytes(), is(welshPdfSizeInBytes));
-        assertThat(transparencyReportMetadataArgument.getValue().getGeneratedAt(), is(LocalDateTime.class));
+        final TransparencyReportMetadata reportMetadata = transparencyReportMetadataArgument.getValue();
+        assertThat(reportMetadata.getId(), is(transparencyReportId));
+        assertThat(reportMetadata.getGeneratedAt(), is(LocalDateTime.class));
+    }
+
+    @Test
+    public void shouldUpdateReportMetadata() {
+        final UUID transparencyReportId = randomUUID();
+        final TransparencyReportMetadata transparencyReportMetadata = new TransparencyReportMetadata(transparencyReportId, LocalDateTime.now());
+        final UUID welshReportFileId = randomUUID();
+        final int welshReportNumberOfPages = 4;
+        final int welshPdfSizeInBytes = 412;
+
+        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.transparency-report-metadata-added"),
+                createObjectBuilder()
+                        .add("transparencyReportId", transparencyReportId.toString())
+                        .add("language", "cy")
+                        .add("metadata", createObjectBuilder()
+                                .add("fileId", welshReportFileId.toString())
+                                .add("numberOfPages", welshReportNumberOfPages)
+                                .add("fileSize", welshPdfSizeInBytes)
+                        )
+                        .build());
+        when(transparencyReportMetadataRepository.findBy(transparencyReportId)).thenReturn(transparencyReportMetadata);
+        transparencyReportListener.handleReportMetadataIsAdded(eventEnvelope);
+        assertThat(transparencyReportMetadata.getWelshFileServiceId(), is(welshReportFileId));
+        assertThat(transparencyReportMetadata.getWelshNumberOfPages(), is(welshReportNumberOfPages));
+        assertThat(transparencyReportMetadata.getWelshSizeInBytes(), is(welshPdfSizeInBytes));
+
     }
 
     private void assertThatIncremented(final CasePublishStatus casePublishStatus, final List<CasePublishStatus> incrementedCasePublishStatuses) {

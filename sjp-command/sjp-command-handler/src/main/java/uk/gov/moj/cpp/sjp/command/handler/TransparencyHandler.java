@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.sjp.command.handler;
 
+import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
-import static uk.gov.moj.cpp.sjp.domain.aggregate.TransparencyReportAggregate.TRANSPARENCY_REPORT_STREAM_ID;
 
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -41,8 +41,12 @@ public class TransparencyHandler {
 
     @Handles("sjp.command.request-transparency-report")
     public void requestTransparencyReport(final JsonEnvelope requestTransparencyReportCommand) throws EventStreamException {
-        applyToTransparencyReportAggregate(requestTransparencyReportCommand,
-                transparencyReportAggregate -> transparencyReportAggregate.requestTransparencyReport(clock.now()));
+        final UUID transparencyReportId = requestTransparencyReportCommand.metadata().id();
+        applyToTransparencyReportAggregate(
+                transparencyReportId,
+                requestTransparencyReportCommand,
+                transparencyReportAggregate -> transparencyReportAggregate.requestTransparencyReport(transparencyReportId, clock.now())
+        );
     }
 
     @Handles("sjp.command.store-transparency-report-data")
@@ -54,15 +58,28 @@ public class TransparencyHandler {
                 .map(JsonString::getString)
                 .map(UUID::fromString)
                 .collect(toList());
-        final JsonObject englishReportMetadata = storeTransparencyReportPayload.getJsonObject("englishReportMetadata");
-        final JsonObject welshReportMetadata = storeTransparencyReportPayload.getJsonObject("welshReportMetadata");
+        final UUID transparencyReportId = fromString(storeTransparencyReportPayload.getString("transparencyReportId"));
 
-        applyToTransparencyReportAggregate(storeTransparencyReportDataCommand,
-                transparencyReportAggregate -> transparencyReportAggregate.generateTransparencyReport(caseIds, englishReportMetadata, welshReportMetadata));
+        applyToTransparencyReportAggregate(
+                transparencyReportId,
+                storeTransparencyReportDataCommand,
+                transparencyReportAggregate -> transparencyReportAggregate.startTransparencyReportGeneration(caseIds));
     }
 
-    private void applyToTransparencyReportAggregate(final JsonEnvelope transparencyReportCommand, final Function<TransparencyReportAggregate, Stream<Object>> function) throws EventStreamException {
-        final EventStream eventStream = eventSource.getStreamById(TRANSPARENCY_REPORT_STREAM_ID);
+    @Handles("sjp.command.update-transparency-report-data")
+    public void updateTransparencyReportData(final JsonEnvelope updateTransparencyReportCommand) throws EventStreamException {
+        final JsonObject updateTransparencyReportPayload = updateTransparencyReportCommand.payloadAsJsonObject();
+        final UUID transparencyReportId = fromString(updateTransparencyReportPayload.getString("transparencyReportId"));
+        final JsonObject metadata = updateTransparencyReportPayload.getJsonObject("metadata");
+        final String language = updateTransparencyReportPayload.getString("language");
+        applyToTransparencyReportAggregate(
+                transparencyReportId,
+                updateTransparencyReportCommand,
+                transparencyReportAggregate -> transparencyReportAggregate.updateMetadataForLanguage(language, metadata));
+    }
+
+    private void applyToTransparencyReportAggregate(final UUID streamId, final JsonEnvelope transparencyReportCommand, final Function<TransparencyReportAggregate, Stream<Object>> function) throws EventStreamException {
+        final EventStream eventStream = eventSource.getStreamById(streamId);
         final TransparencyReportAggregate transparencyReportAggregate = aggregateService.get(eventStream, TransparencyReportAggregate.class);
         final Stream<Object> events = function.apply(transparencyReportAggregate);
 

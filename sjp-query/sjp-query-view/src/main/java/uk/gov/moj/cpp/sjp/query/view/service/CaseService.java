@@ -224,7 +224,6 @@ public class CaseService {
         return null;
     }
 
-
     private Optional<JsonObject> getProsecutorDetails(final String prosecutingAuthority) {
         return referenceDataService.getProsecutorsByProsecutorCode(prosecutingAuthority)
                 .map(prosecutors -> prosecutors.getValuesAs(JsonObject.class))
@@ -352,7 +351,7 @@ public class CaseService {
 
         final Optional<String> town = getTown(pendingCaseToPublishWithAnyOffence);
         final Optional<String> county = getCounty(pendingCaseToPublishWithAnyOffence);
-
+        final Optional<LocalDate> defendantDateOfBirth = getDateOfBirth(pendingCaseToPublishWithAnyOffence);
         final String postcode = getPostcode(pendingCaseToPublishWithAnyOffence);
 
         final JsonArrayBuilder offenceArrayBuilder = createArrayBuilder();
@@ -360,18 +359,25 @@ public class CaseService {
                 .forEach(casePerOffence -> offenceArrayBuilder.add(createObjectBuilder()
                         .add("offenceCode", casePerOffence.getOffenceCode())
                         .add("offenceStartDate", casePerOffence.getOffenceStartDate().toString())
+                        .add("offenceWording", casePerOffence.getOffenceWording())
                 ));
 
         final JsonObjectBuilder objectBuilder = createObjectBuilder()
                 .add("caseId", pendingCaseToPublishWithAnyOffence.getCaseId().toString())
+                .add("caseUrn", pendingCaseToPublishWithAnyOffence.getCaseUrn())
                 .add("defendantName", formatName(pendingCaseToPublishWithAnyOffence.getFirstName(), pendingCaseToPublishWithAnyOffence.getLastName()))
+                .add("firstName", ofNullable(pendingCaseToPublishWithAnyOffence.getFirstName()).orElse(""))
+                .add("lastName", ofNullable(pendingCaseToPublishWithAnyOffence.getLastName()).orElse(""))
                 .add("postcode", postcode)
                 .add("offences", offenceArrayBuilder)
                 .add("prosecutorName", pendingCaseToPublishWithAnyOffence.getProsecutor());
 
+
         town.ifPresent(t -> objectBuilder.add("town", t));
         county.ifPresent(c -> objectBuilder.add("county", c));
-
+        ofNullable(pendingCaseToPublishWithAnyOffence.getAddressLine1()).ifPresent(line1-> objectBuilder.add("addressLine1", line1));
+        ofNullable(pendingCaseToPublishWithAnyOffence.getAddressLine2()).ifPresent(line2-> objectBuilder.add("addressLine2", line2));
+        defendantDateOfBirth.ifPresent(dob -> objectBuilder.add("defendantDateOfBirth", dob.toString()));
         pendingCasesArrayBuilder.add(objectBuilder);
     }
 
@@ -380,10 +386,11 @@ public class CaseService {
     }
 
     private String formatName(final String firstName, final String lastName) {
-        if (firstName == null || firstName.length() < 2) {
-            return lastName;
+        final String lastN = ofNullable(lastName).orElse("");
+        if (firstName == null || firstName.trim().isEmpty()) {
+            return lastN;
         }
-        return firstName.substring(0, 1) + " " + lastName;
+        return String.join(" ", firstName.substring(0, 1), lastN).trim();
     }
 
     private Optional<String> getTown(final PendingCaseToPublishPerOffence pendingCase) {
@@ -394,6 +401,10 @@ public class CaseService {
     private Optional<String> getCounty(final PendingCaseToPublishPerOffence pendingCase) {
         final String county = isNotEmpty(pendingCase.getAddressLine5()) ? pendingCase.getAddressLine5() : pendingCase.getAddressLine4();
         return ofNullable(county);
+    }
+
+    private Optional<LocalDate> getDateOfBirth(final PendingCaseToPublishPerOffence pendingCaseToPublishWithAnyOffence) {
+        return ofNullable(pendingCaseToPublishWithAnyOffence.getDefendantDateOfBirth());
     }
 
     private String getPostcode(final PendingCaseToPublishPerOffence pendingCaseToPublishWithAnyOffence) {

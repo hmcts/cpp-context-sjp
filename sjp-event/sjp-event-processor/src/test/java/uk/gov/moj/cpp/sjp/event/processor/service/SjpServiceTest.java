@@ -2,17 +2,20 @@ package uk.gov.moj.cpp.sjp.event.processor.service;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
@@ -20,12 +23,11 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.query.DefendantsOnlinePlea;
 import uk.gov.justice.json.schemas.domains.sjp.query.EmployerDetails;
-import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 
+import java.util.List;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -34,14 +36,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SjpServiceTest {
-
-    @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloper();
 
     @Mock
     private Requester requester;
@@ -58,7 +56,7 @@ public class SjpServiceTest {
         final CaseDetails responseCaseDetails = CaseDetails.caseDetails()
                 .withId(CASE_ID)
                 .build();
-        final Envelope<CaseDetails> responseEnvelope = Envelope.envelopeFrom(
+        final Envelope<CaseDetails> responseEnvelope = envelopeFrom(
                 metadataWithRandomUUID("sjp.query.case").build(),
                 responseCaseDetails);
         when(requestCaseDetails()).thenReturn(responseEnvelope);
@@ -74,7 +72,7 @@ public class SjpServiceTest {
         final EmployerDetails employer = EmployerDetails.employerDetails()
                 .withName("employerName")
                 .build();
-        final Envelope<EmployerDetails> employerEnvelope = Envelope.envelopeFrom(
+        final Envelope<EmployerDetails> employerEnvelope = envelopeFrom(
                 metadataWithRandomUUID("sjp.query.employer").build(),
                 employer);
         when(requestEmployerDetails(defendantId)).thenReturn(employerEnvelope);
@@ -103,7 +101,7 @@ public class SjpServiceTest {
                 .withCaseId(CASE_ID)
                 .withDefendantId(DEFENDANT_ID)
                 .build();
-        final Envelope<DefendantsOnlinePlea> responseEnvelope = Envelope.envelopeFrom(
+        final Envelope<DefendantsOnlinePlea> responseEnvelope = envelopeFrom(
                 metadataWithRandomUUID("sjp.query.defendants-online-plea").build(),
                 pleaDetails);
         when(requestOnlinePleaDetails()).thenReturn(responseEnvelope);
@@ -113,9 +111,28 @@ public class SjpServiceTest {
         assertThat(result, is(pleaDetails));
     }
 
+    @Test
+    public void shouldGetPendingCases() {
+        final JsonObject pendingCasesPayload = createObjectBuilder()
+                .add("pendingCases", createArrayBuilder())
+                .build();
+        final JsonEnvelope responseEnvolope = envelopeFrom(
+                metadataWithRandomUUID("sjp.query.pending-cases").build(),
+                pendingCasesPayload
+        );
+
+        when(requestPendingCasesList()).thenReturn(responseEnvolope);
+
+        final List<JsonObject> result = sjpService.getPendingCases(envelope);
+
+        assertThat(result, is(createArrayBuilder().build()));
+    }
+
     private Object requestGetSessionDetails(final String sessionId) {
         return requester.requestAsAdmin(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope).withName("sjp.query.session"),
+                metadata()
+                        .withName("sjp.query.session")
+                        .withId(envelope.metadata().id()),
                 payloadIsJson(withJsonPath("$.sessionId", equalTo(sessionId))))));
     }
 
@@ -123,7 +140,9 @@ public class SjpServiceTest {
         return requester.request(
                 argThat(
                         jsonEnvelope(
-                                withMetadataEnvelopedFrom(envelope).withName("sjp.query.employer"),
+                                metadata()
+                                        .withName("sjp.query.employer")
+                                        .withId(envelope.metadata().id()),
                                 payloadIsJson(withJsonPath("$.defendantId", equalTo(defendantId.toString()))))),
                 eq(EmployerDetails.class));
     }
@@ -132,7 +151,9 @@ public class SjpServiceTest {
         return requester.request(
                 argThat(
                         jsonEnvelope(
-                                withMetadataEnvelopedFrom(envelope).withName("sjp.query.defendants-online-plea"),
+                                metadata()
+                                        .withName("sjp.query.defendants-online-plea")
+                                        .withId(envelope.metadata().id()),
                                 payloadIsJson(allOf(
                                         withJsonPath("$.caseId", equalTo(CASE_ID.toString())),
                                         withJsonPath("$.defendantId", equalTo(DEFENDANT_ID.toString())))
@@ -144,8 +165,23 @@ public class SjpServiceTest {
         return requester.request(
                 argThat(
                         jsonEnvelope(
-                                withMetadataEnvelopedFrom(envelope).withName("sjp.query.case"),
+                                metadata()
+                                        .withName("sjp.query.case")
+                                        .withId(envelope.metadata().id()),
                                 payloadIsJson(withJsonPath("$.caseId", equalTo(CASE_ID.toString()))))),
                 eq(CaseDetails.class));
     }
+
+    private Object requestPendingCasesList() {
+        return requester.request(
+                argThat(
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("sjp.query.pending-cases")
+                                        .withId(envelope.metadata().id()),
+                                payloadIsJson(notNullValue())
+                        ))
+        );
+    }
+
 }

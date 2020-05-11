@@ -5,9 +5,13 @@
   "properties": {
     "requestedAt": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    },
+    "transparencyReportId" : {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     }
   },
   "required": [
+    "transparencyReportId",
     "requestedAt"
   ],
   "additionalProperties": false

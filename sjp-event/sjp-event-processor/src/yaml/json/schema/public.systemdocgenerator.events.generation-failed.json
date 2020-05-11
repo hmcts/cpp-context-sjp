@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/json/schemas/systemdocgenerator/events/public/generation-failed.json",
+  "type": "object",
+  "properties": {
+    "payloadFileServiceId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "templateIdentifier": {
+      "type": "string"
+    },
+    "conversionFormat": {
+      "type": "string"
+    },
+    "originatingSource": {
+      "type": "string"
+    },
+    "requestedTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "failedTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sourceCorrelationId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+    },
+    "reason": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "payloadFileServiceId",
+    "failedTime",
+    "requestedTime",
+    "templateIdentifier",
+    "conversionFormat",
+    "reason",
+    "originatingSource"
+  ]
+}

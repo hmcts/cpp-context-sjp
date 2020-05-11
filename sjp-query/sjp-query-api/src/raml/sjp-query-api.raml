@@ -436,6 +436,23 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
             schema: !include json/schema/sjp.query.transparency-report-metadata.json
             example: !include json/sjp.query.transparency-report-metadata.json
 
+/press-transparency-report/metadata:
+  get:
+    description: |
+      fetch the latest press transparency report metadata
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.press-transparency-report-metadata+json
+          name: sjp.query.press-transparency-report-metadata
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.press-transparency-report-metadata+json:
+            schema: !include json/schema/sjp.query.press-transparency-report-metadata.json
+            example: !include json/sjp.query.press-transparency-report-metadata.json
+
+
 /transparency-report/content/{fileId}:
   get:
     description: |
@@ -449,6 +466,20 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
       200:
         body:
           application/vnd.sjp.query.transparency-report-content+json:
+
+/press-transparency-report/content/{fileId}:
+  get:
+    description: |
+      streams press transparency report content
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.press-transparency-report-content+json
+          name: sjp.query.press-transparency-report-content
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.press-transparency-report-content+json:
 
 
 /defendant/{defendantId}/all-financial-means:

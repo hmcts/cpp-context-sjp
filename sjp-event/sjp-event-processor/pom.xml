@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sjp-event</artifactId>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
-        <version>6.4.32-SNAPSHOT</version>
+        <version>6.4.37-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -154,6 +154,18 @@
                         <groupId>uk.gov.moj.cpp.material</groupId>
                         <artifactId>material-command-api</artifactId>
                         <version>${material.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.systemdocgenerator</groupId>
+                        <artifactId>systemdocgenerator-command-api</artifactId>
+                        <version>${systemdocgenerator.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>

@@ -3,11 +3,8 @@
   "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.cases-published.json",
   "type": "object",
   "properties": {
-    "englishReportMetadata": {
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/transparency-report-file-metadata.json"
-    },
-    "welshReportMetadata": {
-      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/transparency-report-file-metadata.json"
+    "transparencyReportId": {
+      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
     },
     "caseIds": {
       "type": "array",
@@ -17,8 +14,7 @@
     }
   },
   "required": [
-    "englishReportMetadata",
-    "welshReportMetadata",
+    "transparencyReportId",
     "caseIds"
   ],
   "additionalProperties": false

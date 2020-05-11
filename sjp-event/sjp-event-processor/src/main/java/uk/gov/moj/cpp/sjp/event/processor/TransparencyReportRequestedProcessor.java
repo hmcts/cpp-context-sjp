@@ -2,36 +2,41 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.UUID.fromString;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.LF;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.sjp.event.processor.DateTimeUtil.formatDateTimeForReport;
+import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.jsonObjectAsByteArray;
 
 import uk.gov.justice.services.core.annotation.FrameworkComponent;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
-import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.event.processor.exception.OffenceNotFoundException;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
-import uk.gov.moj.cpp.sjp.event.processor.utils.PdfHelper;
+import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportRequested;
-import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;
@@ -52,24 +57,13 @@ public class TransparencyReportRequestedProcessor {
 
     private static final String TEMPLATE_IDENTIFIER = "PendingCasesEnglish";
     private static final String TEMPLATE_IDENTIFIER_WELSH = "PendingCasesWelsh";
+    private static final int DEFENDANT_IS_18 = 18;
 
     private Table<String, String, JsonObject> offenceDataTable;
     private Table<String, Boolean, String> prosecutorDataTable;
 
     @Inject
-    private SystemUserProvider systemUserProvider;
-
-    @Inject
-    private DocumentGeneratorClientProducer documentGeneratorClientProducer;
-
-    @Inject
-    private PdfHelper pdfHelper;
-
-    @Inject
     private FileStorer fileStorer;
-
-    @Inject
-    private Enveloper enveloper;
 
     @Inject
     private ReferenceDataService referenceDataService;
@@ -78,8 +72,7 @@ public class TransparencyReportRequestedProcessor {
     private ReferenceDataOffencesService referenceDataOffencesService;
 
     @Inject
-    @FrameworkComponent(EVENT_PROCESSOR)
-    private Requester requester;
+    private SjpService sjpService;
 
     @Inject
     @FrameworkComponent(EVENT_PROCESSOR)
@@ -91,16 +84,23 @@ public class TransparencyReportRequestedProcessor {
     public void createTransparencyReport(final JsonEnvelope envelope) {
         initCache();
 
-        final List<JsonObject> pendingCasesFromViewStore = getPendingCasesFromViewStore(envelope);
+        final JsonObject eventPayload = envelope.payloadAsJsonObject();
+        final UUID transparencyReportId = fromString(eventPayload.getString("transparencyReportId"));
+        final List<JsonObject> allPendingCasesFromViewStore = getPendingCasesFromViewStore(envelope);
+        final List<JsonObject> filteredAdultOnlyCases = getFilteredCases(allPendingCasesFromViewStore);
+        storeReportMetadata(envelope, transparencyReportId, filteredAdultOnlyCases);
         try {
-            final JsonObject payloadForDocumentGenerationEnglish = buildPayloadForDocumentGeneration(pendingCasesFromViewStore, false, envelope);
-            final JsonObject englishTransparencyDocumentMetadata = generateDocument(TEMPLATE_IDENTIFIER, payloadForDocumentGenerationEnglish, "transparency-report-english.pdf");
+            final JsonObject payloadForDocumentGenerationEnglish = buildPayloadForDocumentGeneration(filteredAdultOnlyCases, false, envelope);
+            final String englishPayloadFileName = String.format("transparency-report-template-parameters.english.%s.json", transparencyReportId.toString());
+            final UUID englishPayloadFileId = storeDocumentGeneratorPayload(payloadForDocumentGenerationEnglish, englishPayloadFileName, TEMPLATE_IDENTIFIER);
+            requestDocumentGeneration(envelope, transparencyReportId, TEMPLATE_IDENTIFIER, englishPayloadFileId);
 
-            final JsonObject payloadForDocumentGenerationWelsh = buildPayloadForDocumentGeneration(pendingCasesFromViewStore, true, envelope);
-            final JsonObject welshTransparencyDocumentMetadata = generateDocument(TEMPLATE_IDENTIFIER_WELSH, payloadForDocumentGenerationWelsh, "transparency-report-welsh.pdf");
+            final JsonObject payloadForDocumentGenerationWelsh = buildPayloadForDocumentGeneration(filteredAdultOnlyCases, true, envelope);
+            final String welshPayloadFileName = String.format("transparency-report-template-parameters.welsh.%s.json", transparencyReportId.toString());
+            final UUID welshPayloadFileId = storeDocumentGeneratorPayload(payloadForDocumentGenerationWelsh, welshPayloadFileName, TEMPLATE_IDENTIFIER_WELSH);
+            requestDocumentGeneration(envelope, transparencyReportId, TEMPLATE_IDENTIFIER_WELSH, welshPayloadFileId);
 
-            storeReportData(envelope, englishTransparencyDocumentMetadata, welshTransparencyDocumentMetadata, pendingCasesFromViewStore);
-        } catch (IOException | FileServiceException e) {
+        } catch (FileServiceException e) {
             throw new RuntimeException("IO Exception happened during transparency report generation", e);
         }
     }
@@ -113,11 +113,25 @@ public class TransparencyReportRequestedProcessor {
     }
 
     private List<JsonObject> getPendingCasesFromViewStore(final JsonEnvelope envelope) {
-        return requester.request(enveloper.withMetadataFrom(envelope, "sjp.query.pending-cases")
-                .apply(createObjectBuilder().build()))
-                .payloadAsJsonObject()
-                .getJsonArray("pendingCases")
-                .getValuesAs(JsonObject.class);
+        return sjpService.getPendingCases(envelope);
+    }
+
+    private List<JsonObject> getFilteredCases(final List<JsonObject> pendingCases) {
+        return pendingCases.stream()
+                .filter(pendingCase -> {
+                    final LocalDate defendantDateOfBirth = Optional.ofNullable(pendingCase.getString("defendantDateOfBirth", null)).map(LocalDate::parse).orElse(null);
+                    final LocalDate earliestOffenceDate = pendingCase.getJsonArray("offences")
+                            .getValuesAs(JsonObject.class).stream()
+                            .map(offence -> offence.getString("offenceStartDate"))
+                            .map(LocalDate::parse)
+                            .min(Comparator.naturalOrder()).orElse(null);
+                    // Remove cases where the offender is younger than 18 years old for one of the offences
+                    if (nonNull(defendantDateOfBirth) && nonNull(earliestOffenceDate)) {
+                        final Period defendantAgeAtOffenceDate = Period.between(defendantDateOfBirth, earliestOffenceDate);
+                        return defendantAgeAtOffenceDate.getYears() >= DEFENDANT_IS_18;
+                    }
+                    return true;
+                }).collect(Collectors.toList());
     }
 
     private JsonObject buildPayloadForDocumentGeneration(final List<JsonObject> pendingCases, boolean isWelsh, final JsonEnvelope envelope) {
@@ -128,59 +142,71 @@ public class TransparencyReportRequestedProcessor {
                 .build();
     }
 
-    private JsonObject generateDocument(final String template, final JsonObject payload, final String filename) throws IOException, FileServiceException {
-        final byte[] pdfDocumentInBytes = this.documentGeneratorClientProducer.documentGeneratorClient()
-                .generatePdfDocument(payload, template, getSystemUser());
+    private void requestDocumentGeneration(final JsonEnvelope eventEnvelope,
+                                           final UUID transparencyReportId,
+                                           final String template,
+                                           final UUID payloadFileServiceUUID) {
 
-        final JsonObject metadata = createObjectBuilder()
-                .add("fileName", filename)
-                .add("numberOfPages", pdfHelper.getDocumentPageCount(pdfDocumentInBytes))
-                .add("fileSize", pdfDocumentInBytes.length)
+        final JsonObject docGeneratorPayload = createObjectBuilder()
+                .add("originatingSource", "sjp")
+                .add("templateIdentifier", template)
+                .add("conversionFormat", "pdf")
+                .add("sourceCorrelationId", transparencyReportId.toString())
+                .add("payloadFileServiceId", payloadFileServiceUUID.toString())
                 .build();
-        final UUID fileId = fileStorer.store(metadata, new ByteArrayInputStream(pdfDocumentInBytes));
 
-        return JsonObjects.createObjectBuilder(metadata)
-                .add("fileId", fileId.toString())
-                .build();
+        sender.sendAsAdmin(
+                Envelope.envelopeFrom(
+                    metadataFrom(eventEnvelope.metadata()).withName("systemdocgenerator.generate-document"),
+                    docGeneratorPayload
+                )
+        );
+
     }
 
-    private void storeReportData(final JsonEnvelope envelope,
-                                 final JsonObject englishTransparencyDocumentMetadata,
-                                 final JsonObject welshTransparencyDocumentMetadata,
-                                 final List<JsonObject> pendingCases) {
+    private UUID storeDocumentGeneratorPayload(final JsonObject documentGeneratorPayload, final String fileName, final String templateIdentifier) throws FileServiceException {
+        final byte[] jsonPayloadInBytes = jsonObjectAsByteArray(documentGeneratorPayload);
 
-        final JsonEnvelope envelopeToSend = enveloper.withMetadataFrom(envelope,
-                "sjp.command.store-transparency-report-data")
-                .apply(createObjectBuilder()
-                        .add("englishReportMetadata", englishTransparencyDocumentMetadata)
-                        .add("welshReportMetadata", welshTransparencyDocumentMetadata)
+        final JsonObject metadata = createObjectBuilder()
+                .add("fileName", fileName)
+                .add("conversionFormat","pdf")
+                .add("templateName", templateIdentifier)
+                .add("numberOfPages", 1)
+                .add("fileSize", jsonPayloadInBytes.length)
+                .build();
+        return fileStorer.store(metadata, new ByteArrayInputStream(jsonPayloadInBytes));
+    }
+
+    private void storeReportMetadata(final JsonEnvelope envelope,
+                                     final UUID transparencyReportId,
+                                     final List<JsonObject> pendingCases) {
+
+        final JsonEnvelope envelopeToSend = envelopeFrom(
+                metadataFrom(envelope.metadata()).withName("sjp.command.store-transparency-report-data"),
+                createObjectBuilder()
+                        .add("transparencyReportId", transparencyReportId.toString())
                         .add("caseIds", createJsonArrayWithCaseIds(pendingCases))
                         .build());
         sender.send(envelopeToSend);
     }
 
-    private UUID getSystemUser() {
-        return systemUserProvider.getContextSystemUserId()
-                .orElseThrow(() -> new RuntimeException("systemUserProvider.getContextSystemUserId() not available"));
-    }
-
     private JsonArrayBuilder createPendingCasesJsonArrayBuilderFromListOfPendingCases(final List<JsonObject> pendingCases, final Boolean isWelsh, final JsonEnvelope envelope) {
         final JsonArrayBuilder pendingCasesBuilder = createArrayBuilder();
         pendingCases.forEach(pendingCase -> {
-            final JsonObjectBuilder pendingCaseBuilder = createObjectBuilder()
-                    .add("defendantName", pendingCase.getString("defendantName"))
-                    .add("postcode", pendingCase.getString("postcode"))
-                    .add("offenceTitle", buildOffenceTitleFromOffenceArray(pendingCase.getJsonArray("offences"), isWelsh, envelope))
-                    .add("prosecutorName", buildProsecutorName(pendingCase.getString("prosecutorName"), isWelsh, envelope));
+                    final JsonObjectBuilder pendingCaseBuilder = createObjectBuilder()
+                            .add("defendantName", pendingCase.getString("defendantName"))
+                            .add("postcode", pendingCase.getString("postcode"))
+                            .add("offenceTitle", buildOffenceTitleFromOffenceArray(pendingCase.getJsonArray("offences"), isWelsh, envelope))
+                            .add("prosecutorName", buildProsecutorName(pendingCase.getString("prosecutorName"), isWelsh, envelope));
 
-            ofNullable(pendingCase.getString("town", null))
-                    .ifPresent(town -> pendingCaseBuilder.add("town", town));
+                    ofNullable(pendingCase.getString("town", null))
+                            .ifPresent(town -> pendingCaseBuilder.add("town", town));
 
-            ofNullable(pendingCase.getString("county", null))
-                    .ifPresent(county -> pendingCaseBuilder.add("county", county));
+                    ofNullable(pendingCase.getString("county", null))
+                            .ifPresent(county -> pendingCaseBuilder.add("county", county));
 
-            pendingCasesBuilder.add(pendingCaseBuilder);
-        });
+                    pendingCasesBuilder.add(pendingCaseBuilder);
+                });
         return pendingCasesBuilder;
     }
 

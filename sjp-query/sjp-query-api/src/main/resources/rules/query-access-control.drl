@@ -219,11 +219,29 @@ rule "sjp - Query - API - Get Transparency Report Metadata"
     $outcome.setSuccess(true);
 end
 
+rule "sjp - Query - API - Get Press Transparency Report Metadata"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.press-transparency-report-metadata");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAllowedGroupsForPressTransparencyReport()))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "sjp - Query - API - Get Transparency Report Content"
   when
     $outcome: Outcome();
     $action: Action(name == "sjp.query.transparency-report-content");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAllowedGroupsForTransparencyReport()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get Press Transparency Report Content"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.press-transparency-report-content");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAllowedGroupsForPressTransparencyReport()))
   then
     $outcome.setSuccess(true);
 end

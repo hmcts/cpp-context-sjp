@@ -222,6 +222,11 @@ public class SjpQueryApi {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.press-transparency-report-metadata")
+    public JsonEnvelope getPressTransparencyReportMetadata(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
     @Handles("sjp.query.offence-verdicts")
     public JsonEnvelope getOffencesVerdicts(final JsonEnvelope queryEnvelope) {
         return envelopeFrom(

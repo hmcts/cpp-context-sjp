@@ -10,7 +10,25 @@
           "caseId": {
             "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
           },
+          "caseUrn": {
+            "type": "string"
+          },
           "defendantName": {
+            "type": "string"
+          },
+          "firstName" : {
+            "type" : "string"
+          },
+          "lastName" : {
+            "type" : "string"
+          },
+          "defendantDateOfBirth": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+          },
+          "addressLine1": {
+            "type": "string"
+          },
+          "addressLine2": {
             "type": "string"
           },
           "town": {
@@ -30,6 +48,9 @@
               },
               "offenceStartDate": {
                 "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+              },
+              "offenceWording": {
+                "type" : "string"
               }
             }
           },

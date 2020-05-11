@@ -11,6 +11,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+/**
+ * Old event used to signal the generation of the transparency report when
+ * synchronous generation flow was used.
+ * @deprecated
+ */
+@Deprecated
+@SuppressWarnings("squid:S1133")
 @Event(TransparencyReportGenerated.EVENT_NAME)
 public class TransparencyReportGenerated {
 

@@ -171,6 +171,14 @@ rule "sjp.query.transparency-report-metadata"
     $outcome.setSuccess(true);
 end
 
+rule "sjp.query.press-transparency-report-metadata"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.press-transparency-report-metadata");
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "sjp.query.case-court-extract"
   when
     $outcome: Outcome();

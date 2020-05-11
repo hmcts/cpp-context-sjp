@@ -400,6 +400,22 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
             schema: !include json/schema/sjp.query.transparency-report-metadata.json
             example: !include json/sjp.query.transparency-report-metadata.json
 
+/press-transparency-report/metadata:
+  get:
+    description: |
+      fetch the latest press transparency reports metadata
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.press-transparency-report-metadata+json
+          name: sjp.query.press-transparency-report-metadata
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.press-transparency-report-metadata+json:
+            schema: !include json/schema/sjp.query.press-transparency-report-metadata.json
+            example: !include json/sjp.query.press-transparency-report-metadata.json
+
 /cases/{caseId}/documents/court-extract:
   uriParameters:
      caseId:

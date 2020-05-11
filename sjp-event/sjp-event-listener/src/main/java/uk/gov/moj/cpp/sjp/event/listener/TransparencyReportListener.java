@@ -7,7 +7,8 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportGenerated;
+import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportGenerationStarted;
+import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportMetadataAdded;
 import uk.gov.moj.cpp.sjp.persistence.entity.CasePublishStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.TransparencyReportMetadata;
 import uk.gov.moj.cpp.sjp.persistence.repository.CasePublishStatusRepository;
@@ -33,27 +34,48 @@ public class TransparencyReportListener {
     @Inject
     private TransparencyReportMetadataRepository transparencyReportMetadataRepository;
 
+    private static final String ENGLISH = "en";
+    private static final String WELSH = "cy";
+
     @Transactional
-    @Handles(TransparencyReportGenerated.EVENT_NAME)
+    @Handles(TransparencyReportGenerationStarted.EVENT_NAME)
     public void handleCasesArePublished(final JsonEnvelope transparencyReportGeneratedEnvelope) {
         final JsonObject transparencyReportGeneratedPayload = transparencyReportGeneratedEnvelope.payloadAsJsonObject();
         persistReportMetadata(transparencyReportGeneratedPayload);
         incrementCountersForTheExportedCases(transparencyReportGeneratedPayload);
     }
 
-    private void persistReportMetadata(final JsonObject transparencyReportGenerated) {
-        final JsonObject englishReportMetadata = transparencyReportGenerated.getJsonObject("englishReportMetadata");
-        final JsonObject welshReportMetadata = transparencyReportGenerated.getJsonObject("welshReportMetadata");
+    @Transactional
+    @Handles(TransparencyReportMetadataAdded.EVENT_NAME)
+    public void handleReportMetadataIsAdded(final JsonEnvelope transparencyReportMetadataAdded) {
+        final JsonObject metadataAddedPayload = transparencyReportMetadataAdded.payloadAsJsonObject();
+        updateReportMetadata(metadataAddedPayload);
+    }
 
+    private void updateReportMetadata(final JsonObject metadataAddedPayload) {
+        final UUID transparencyReportId = UUID.fromString(metadataAddedPayload.getString("transparencyReportId"));
+        final String language = metadataAddedPayload.getString("language");
+        final JsonObject metadata = metadataAddedPayload.getJsonObject("metadata");
+        final TransparencyReportMetadata transparencyReportMetadata = transparencyReportMetadataRepository.findBy(transparencyReportId);
+        if(transparencyReportMetadata!=null) {
+             if(language.equals(ENGLISH)) {
+                 transparencyReportMetadata.setEnglishFileServiceId(fromString(metadata.getString("fileId")));
+                 transparencyReportMetadata.setEnglishNumberOfPages(metadata.getInt("numberOfPages"));
+                 transparencyReportMetadata.setEnglishSizeInBytes(metadata.getInt("fileSize"));
+             } else if(language.equals(WELSH)) {
+                 transparencyReportMetadata.setWelshFileServiceId(fromString(metadata.getString("fileId")));
+                 transparencyReportMetadata.setWelshNumberOfPages(metadata.getInt("numberOfPages"));
+                 transparencyReportMetadata.setWelshSizeInBytes(metadata.getInt("fileSize"));
+             }
+        }
+    }
+
+    private void persistReportMetadata(final JsonObject transparencyReportGenerationStarted) {
+
+        final UUID transparencyReportId = fromString(transparencyReportGenerationStarted.getString("transparencyReportId"));
         final TransparencyReportMetadata transparencyReportMetadata = new TransparencyReportMetadata(
-                fromString(englishReportMetadata.getString("fileId")),
-                englishReportMetadata.getInt("numberOfPages"),
-                englishReportMetadata.getInt("fileSize"),
-                fromString(welshReportMetadata.getString("fileId")),
-                welshReportMetadata.getInt("numberOfPages"),
-                welshReportMetadata.getInt("fileSize"),
-                LocalDateTime.now()
-        );
+                transparencyReportId, LocalDateTime.now());
+
         transparencyReportMetadataRepository.save(transparencyReportMetadata);
     }
 

@@ -344,7 +344,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
             assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("offenceId"), equalTo(offenceId3.toString()));
             assertThat(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).get("plea"), equalTo(pleaType3.name()));
             assertFalse(defendantsPlea.getJSONArray("onlinePleaDetails").getJSONObject(2).has("mitigation"));
-            assertThat(defendantsPlea.getJSONObject("personalDetails").get("firstName"), equalTo("David"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").get("firstName"), equalTo("Testy"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").get("lastName"), equalTo("LLOYD"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address1"), equalTo("14 Tottenham Court Road"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address2"), equalTo("London"));

@@ -13,6 +13,8 @@
 
     <modules>
         <module>sjp-domain-transformation-anonymise</module>
+        <module>sjp-domain-transformation-postcode</module>
+
     </modules>
 
 </project>

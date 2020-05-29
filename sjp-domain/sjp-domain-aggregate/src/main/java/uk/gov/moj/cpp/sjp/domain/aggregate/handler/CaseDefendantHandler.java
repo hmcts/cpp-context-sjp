@@ -130,9 +130,6 @@ public class CaseDefendantHandler {
 
             ensureFieldIsNotBlankIfWasDefined(defendantAddress.getAddress3(), address.getAddress3(),
                     "town (address3) can not be blank as previous value is: " + defendantAddress.getAddress3());
-
-            ensureFieldIsNotBlankIfWasDefined(defendantAddress.getPostcode(), address.getPostcode(),
-                    "postcode can not be blank as previous value is: " + defendantAddress.getPostcode());
         }
     }
 

@@ -120,6 +120,8 @@ public class OnlinePleaRepositoryTest extends BaseTransactionalTest {
         personalDetails.setNationalInsuranceNumber("national_number");
         personalDetails.setHomeTelephone("123456789");
         personalDetails.setMobile("987654321");
+        personalDetails.setDriverNumber("MORGA753116SM9IJ");
+        personalDetails.setDriverLicenceDetails("driveer_licence_details");
 
         final OnlinePlea.PleaDetails pleaDetails = new OnlinePlea.PleaDetails();
         pleaDetails.setInterpreterLanguage("interpreter");

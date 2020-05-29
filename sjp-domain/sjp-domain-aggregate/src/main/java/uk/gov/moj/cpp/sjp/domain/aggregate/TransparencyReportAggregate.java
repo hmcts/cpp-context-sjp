@@ -92,4 +92,5 @@ public class TransparencyReportAggregate implements Aggregate {
                 fromString(reportMetadata.getString("fileId"))
         );
     }
+
 }

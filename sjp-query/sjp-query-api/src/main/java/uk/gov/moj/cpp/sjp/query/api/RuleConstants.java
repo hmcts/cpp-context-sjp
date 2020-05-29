@@ -125,4 +125,8 @@ public final class RuleConstants {
         return asList(GROUP_SYSTEM_USERS);
     }
 
+    public static List<String> getAllowedGroupsForCasesWithoutDefendantPostcode() {
+        return asList(GROUP_COURT_ADMINISTRATORS);
+    }
+
 }

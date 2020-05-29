@@ -121,6 +121,7 @@
           "enum": [
             "DAY",
             "MONTH",
+            "WEEK",
             "YEAR"
           ]
         }

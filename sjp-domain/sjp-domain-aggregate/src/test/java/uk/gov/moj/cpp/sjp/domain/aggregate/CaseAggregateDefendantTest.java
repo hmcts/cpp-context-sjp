@@ -240,7 +240,7 @@ public class CaseAggregateDefendantTest {
     }
 
     @Test
-    public void rejectsAddressWithMissingPostCode() {
+    public void acceptsAddressWithMissingPostCode() {
         givenCaseWasReceivedWithDefaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
@@ -248,7 +248,15 @@ public class CaseAggregateDefendantTest {
                         "address3", "address4", "address5", ""))
         );
 
-        doRejectAssertions(events, "postcode can not be blank as previous value is: CR02FW");
+        assertThat(events, hasSize(2));
+
+        final DefendantAddressUpdated defendantAddressUpdated = (DefendantAddressUpdated) events.get(0);
+        assertThat(defendantAddressUpdated.getNewAddress().getPostcode(), is(""));
+
+        final DefendantDetailsUpdated defendantDetailsUpdated = (DefendantDetailsUpdated) events.get(1);
+        assertThat(defendantDetailsUpdated.getAddress().getPostcode(), is(""));
+
+
     }
 
     @Test

@@ -249,4 +249,9 @@ public class SjpQueryApi {
     public JsonEnvelope getOutstandingFines(final JsonEnvelope query) {
         return requester.request(query);
     }
+
+    @Handles("sjp.query.cases-without-defendant-postcode")
+    public JsonEnvelope getCasesWithoutDefendantPostcode(final JsonEnvelope query) {
+        return requester.request(query);
+    }
 }

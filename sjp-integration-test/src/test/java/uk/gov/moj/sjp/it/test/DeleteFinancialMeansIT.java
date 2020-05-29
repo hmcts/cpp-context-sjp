@@ -67,7 +67,7 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
         stubNotifications();
         stubQueryOffencesByCode("PS00001");
         stubResultDefinitions();
-        stubAllProsecutorsQuery();
+        stubAllIndividualProsecutorsQueries();
 
         financialMeansHelper = new FinancialMeansHelper();
         this.createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder.withDefaults();

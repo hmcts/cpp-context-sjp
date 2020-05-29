@@ -49,7 +49,6 @@ public class FinancialImpositionValidator {
     }
 
     private static void validateCostsAndSurcharge(final JsonObject payment, final boolean thereExistsConditionalDischarge, final boolean allOffencesAreExcisePenalty) {
-        validateCosts(payment);
         if(!allOffencesAreExcisePenalty) {
             validateVictimSurcharge(payment, thereExistsConditionalDischarge);
         }
@@ -59,13 +58,6 @@ public class FinancialImpositionValidator {
         if (thereExistsConditionalDischarge && payment.getJsonNumber("victimSurcharge").bigDecimalValue().equals(ZERO) &&
                 isBlank(payment.getString("reasonForNoVictimSurcharge", null))) {
             throw new BadRequestException("reasonForNoVictimSurcharge is required");
-        }
-    }
-
-    private static void validateCosts(final JsonObject payment) {
-        if (payment.getJsonNumber("costs").bigDecimalValue().equals(ZERO) &&
-                isBlank(payment.getString("reasonForNoCosts", null))) {
-            throw new BadRequestException("reasonForNoCosts is required");
         }
     }
 

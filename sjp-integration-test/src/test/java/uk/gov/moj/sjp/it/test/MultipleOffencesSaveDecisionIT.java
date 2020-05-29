@@ -31,7 +31,6 @@ import static uk.gov.moj.sjp.it.helper.DecisionHelper.saveDecision;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyAdjournmentNoteAdded;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseAdjourned;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseCompleted;
-import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseIsReadyInViewStore;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseIsReadyInViewStoreAndAssignedTo;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseNotReadyInViewStore;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseQueryWithAdjournDecision;

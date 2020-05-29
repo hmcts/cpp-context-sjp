@@ -156,6 +156,21 @@ public class DefendantUpdatedListenerTest {
         return defendantDetailsUpdated;
     }
 
+    private DefendantDetailsUpdated defendantDriverDetailsUpdated(final boolean updateByOnlinePlea){
+        //WHEN
+        defendantDetailsUpdatedBuilder = defendantDetailsUpdatedBuilder.withUpdateByOnlinePlea(updateByOnlinePlea);
+        if (updateByOnlinePlea) {
+            defendantDetailsUpdatedBuilder.withUpdatedDate(now);
+        }
+        defendantDetailsUpdatedBuilder.withDriverNumber("MORGA753116SM9IJ");
+        defendantDetailsUpdatedBuilder.withDriverLicenceDetails("driver_licence_details");
+
+        final DefendantDetailsUpdated defendantDetailsUpdated = defendantDetailsUpdatedBuilder.build();
+        setupMocks(defendantDetailsUpdated.getCaseId());
+
+        return defendantDetailsUpdated;
+    }
+
     // FIXME commonAssertions to be refactored
     private void commonAssertions(final DefendantDetailsUpdated defendantDetailsUpdated, final boolean updateByOnlinePlea, final boolean nationalInsuranceNumberSupplied) {
         final PersonalDetails expectedPersonalDetails = buildPersonalDetails(defendantDetailsUpdated, updateByOnlinePlea, nationalInsuranceNumberSupplied);
@@ -242,6 +257,18 @@ public class DefendantUpdatedListenerTest {
 
         // THEN
         commonAssertions(defendantDetailsUpdated, updateByOnlinePlea, nationalInsuranceNumberSuppliedInRequest);
+    }
+
+    @Test
+    public void shouldListenerUpdateDefendantUpdatedFromOnlinePleaWithDriverNumber() {
+        // GIVEN
+        final boolean updateByOnlinePlea = true;
+        final DefendantDetailsUpdated defendantDetailsUpdated = defendantDriverDetailsUpdated(updateByOnlinePlea);
+        // WHEN
+        defendantUpdatedListener.defendantDetailsUpdated(command(defendantDetailsUpdated));
+
+        // THEN
+        commonAssertions(defendantDetailsUpdated, updateByOnlinePlea, false);
     }
 
     private JsonEnvelope command(final DefendantsNationalInsuranceNumberUpdated defendantsNationalInsuranceNumberUpdated) {

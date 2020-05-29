@@ -571,6 +571,46 @@ public class CaseDecisionHandlerTest {
         thenTheDecisionIsRejected(decision, rejectionReason, eventStream);
     }
 
+    @Test
+    public void shouldRaiseDecisionRejectedEventWhenDecisionWithFinancialImpositionHasCostsZeroAndNoReason() {
+
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+        final Discharge discharge1 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(10), null, true, null);
+        final Discharge discharge2 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null);
+        final List<OffenceDecision> offenceDecisions = newArrayList(discharge1, discharge2);
+
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser,
+                offenceDecisions, new FinancialImposition(
+                new CostsAndSurcharge(BigDecimal.ZERO, null, new BigDecimal(10), null, null, true),
+                new Payment(new BigDecimal(70), PAY_TO_COURT, null, null, null, null)
+        ), null);
+
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        final List<String> rejectionReason = newArrayList("Reason for no costs is required when costs is zero");
+        thenTheDecisionIsRejected(decision, rejectionReason, eventStream);
+    }
+
+    @Test
+    public void shouldAllowZeroCostsDecisionWhenCaseHasNoProsecutorCosts() {
+
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+        caseAggregateState.setCosts(BigDecimal.ZERO);
+        final Discharge discharge1 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(10), null, true, null);
+        final Discharge discharge2 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null);
+        final List<OffenceDecision> offenceDecisions = newArrayList(discharge1, discharge2);
+
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser,
+                offenceDecisions, new FinancialImposition(
+                new CostsAndSurcharge(BigDecimal.ZERO, null, new BigDecimal(10), null, null, true),
+                new Payment(new BigDecimal(70), PAY_TO_COURT, null, null, null, null)
+        ), null);
+
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        thenTheDecisionIsAccepted(decision, eventStream.collect(toList()));
+    }
+
 
     @Test
     public void shouldRaiseDecisionRejectedEventWhenOffenceHasMoreThanOneDecision() {
@@ -992,6 +1032,7 @@ public class CaseDecisionHandlerTest {
         caseAggregateState.addOffenceIdsForDefendant(defendantId, uuids);
         caseAggregateState.setDefendantId(defendantId);
         caseAggregateState.setAssigneeId(savedByUser);
+        caseAggregateState.setCosts(BigDecimal.valueOf(40));
     }
 
     private void thenTheDecisionIsRejected(final Decision decision, final List<String> expectedRejectionReasons, final Stream<Object> eventStream) {

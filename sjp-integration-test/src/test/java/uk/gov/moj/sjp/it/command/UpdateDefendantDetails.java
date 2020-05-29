@@ -73,15 +73,15 @@ public class UpdateDefendantDetails {
                 .map(ContactDetailsBuilder::getEmail)
                 .ifPresent(email -> defendantDetailsUpdateBuilder.add("email", email));
 
-        ofNullable(payloadBuilder.getAddressBuilder())
-                .ifPresent(address -> defendantDetailsUpdateBuilder.add("address", createObjectBuilder()
-                        .add("address1", address.getAddress1())
-                        .add("address2", address.getAddress2())
-                        .add("address3", address.getAddress3())
-                        .add("address4", address.getAddress4())
-                        .add("address5", address.getAddress5())
-                        .add("postcode", address.getPostcode())
-                ));
+        final JsonObjectBuilder addressBuilder = createObjectBuilder();
+        ofNullable(payloadBuilder.getAddressBuilder().getAddress1()).ifPresent(a1 -> addressBuilder.add("address1", a1));
+        ofNullable(payloadBuilder.getAddressBuilder().getAddress2()).ifPresent(a2 -> addressBuilder.add("address2", a2));
+        ofNullable(payloadBuilder.getAddressBuilder().getAddress3()).ifPresent(a3 -> addressBuilder.add("address3", a3));
+        ofNullable(payloadBuilder.getAddressBuilder().getAddress4()).ifPresent(a4 -> addressBuilder.add("address4", a4));
+        ofNullable(payloadBuilder.getAddressBuilder().getAddress5()).ifPresent(a5 -> addressBuilder.add("address5", a5));
+        ofNullable(payloadBuilder.getAddressBuilder().getPostcode()).ifPresent(p -> addressBuilder.add("postcode", p));
+
+        defendantDetailsUpdateBuilder.add("address", addressBuilder);
 
         ofNullable(payloadBuilder.getContactDetailsBuilder())
                 .ifPresent(contactDetails -> defendantDetailsUpdateBuilder.add("contactNumber", createObjectBuilder()

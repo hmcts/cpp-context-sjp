@@ -1,7 +1,14 @@
 package uk.gov.moj.cpp.sjp.query.view;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.String.format;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
+import static java.util.UUID.fromString;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.sjp.query.view.util.JsonUtility.getString;
+
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.core.annotation.Component;
@@ -31,22 +38,18 @@ import uk.gov.moj.cpp.sjp.query.view.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.query.view.service.TransparencyReportService;
 import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
 
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.persistence.NoResultException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static java.lang.String.format;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.empty;
-import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.moj.cpp.sjp.query.view.util.JsonUtility.getString;
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.persistence.NoResultException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("WeakerAccess")
 @ServiceComponent(Component.QUERY_VIEW)
@@ -69,6 +72,9 @@ public class SjpQueryView {
     private static final String TRANSPARENCY_REPORT_METADATA_RESPONSE_NAME = "sjp.query.transparency-report-metadata";
     private static final String PRESS_TRANSPARENCY_REPORT_METADATA_RESPONSE_NAME = "sjp.query.press-transparency-report-metadata";
     private static final String NOT_GUILTY_PLEA_CASES_RESPONSE_NAME = "sjp.query.not-guilty-plea-cases";
+    private static final String CASES_WITHOUT_DEFENDANT_POSTCODE_RESPONSE_NAME = "sjp.query.cases-without-defendant-postcode";
+
+    private static final int DEFAULT_CASES_PAGE_SIZE = 20;
 
     @Inject
     private CaseService caseService;
@@ -287,7 +293,27 @@ public class SjpQueryView {
 
         final JsonObject result = caseService.buildNotGuiltyPleaCasesView(prosecutingAuthority, pageSize, pageNumber);
 
-        return enveloper.withMetadataFrom(query, NOT_GUILTY_PLEA_CASES_RESPONSE_NAME).apply(result);
+        return envelopeFrom(
+                metadataFrom(query.metadata()).withName(NOT_GUILTY_PLEA_CASES_RESPONSE_NAME),
+                result);
+    }
+
+    @Handles("sjp.query.cases-without-defendant-postcode")
+    public JsonEnvelope getCasesWithoutDefendantPostcode(final JsonEnvelope query) {
+        final JsonObject queryFilters = query.payloadAsJsonObject();
+
+        final int pageSize = queryFilters.getInt("pageSize", DEFAULT_CASES_PAGE_SIZE);
+        final int pageNumber = queryFilters.getInt("pageNumber", 1);
+
+        if(pageNumber <= 0 || pageSize <= 0) {
+            throw new IllegalArgumentException(format("invalid page number (%d) or page size (%d)", pageNumber, pageSize));
+        }
+
+        final JsonObject result = caseService.buildCasesWithoutDefendantPostcodeView(pageSize, pageNumber);
+
+        return envelopeFrom(
+                metadataFrom(query.metadata()).withName(CASES_WITHOUT_DEFENDANT_POSTCODE_RESPONSE_NAME),
+                result);
     }
 
     private static String extract(final JsonEnvelope envelope, final String fieldName) {

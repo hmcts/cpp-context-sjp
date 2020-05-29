@@ -23,7 +23,9 @@ import org.hamcrest.Matchers;
 public class CaseHelper {
 
     private static final String QUERY_READY_CASES_RESOURCE = "/cases/ready-cases";
+    private static final String QUERY_CASES_WITHOUT_DEFENDANT_POSTCODE_RESOURCE = "/cases/without-defendant-postcode";
     private static final String QUERY_READY_CASES = "application/vnd.sjp.query.ready-cases+json";
+    private static final String QUERY_CASES_WITHOUT_DEFENDANT_POSTCODE = "application/vnd.sjp.query.cases-without-defendant-postcode+json";
 
     public static JsonObject pollUntilCaseReady(UUID caseId) {
         final JsonObject readyCases = pollReadyCasesUntilResponseIsJson(withJsonPath("readyCases.*", hasItem(
@@ -45,6 +47,12 @@ public class CaseHelper {
 
     public static JsonObject pollReadyCasesUntilResponseIsJson(final Matcher<? super ReadContext> matcher) {
         final RequestParamsBuilder requestParams = requestParams(getReadUrl(QUERY_READY_CASES_RESOURCE), QUERY_READY_CASES)
+                .withHeader(HeaderConstants.USER_ID, USER_ID);
+        return pollWithDefaultsUntilResponseIsJson(requestParams.build(), matcher);
+    }
+
+    public static JsonObject pollCasesWithoutDefendantPostcodeUntileResponseIsJson(final Matcher<? super ReadContext> matcher) {
+        final RequestParamsBuilder requestParams = requestParams(getReadUrl(QUERY_CASES_WITHOUT_DEFENDANT_POSTCODE_RESOURCE), QUERY_CASES_WITHOUT_DEFENDANT_POSTCODE)
                 .withHeader(HeaderConstants.USER_ID, USER_ID);
         return pollWithDefaultsUntilResponseIsJson(requestParams.build(), matcher);
     }

@@ -24,6 +24,7 @@ import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -69,6 +70,7 @@ public class CaseAggregateState implements AggregateState {
     private boolean caseReceived;
     private List<Plea> pleas = new ArrayList<>();
     private LocalDate postingDate;
+    private BigDecimal costs;
 
     private ZonedDateTime markedReadyForDecision;
 
@@ -777,5 +779,13 @@ public class CaseAggregateState implements AggregateState {
 
     public void setSetAside(final boolean setAside) {
         this.setAside = setAside;
+    }
+
+    public BigDecimal getCosts() {
+        return costs;
+    }
+
+    public void setCosts(final BigDecimal costs) {
+        this.costs = costs;
     }
 }

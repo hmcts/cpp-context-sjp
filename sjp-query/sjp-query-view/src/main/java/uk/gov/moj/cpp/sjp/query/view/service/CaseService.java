@@ -21,6 +21,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseWithoutDefendantPostcode;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
@@ -32,6 +33,7 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseNotGuiltyPleaView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSummaryView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
+import uk.gov.moj.cpp.sjp.query.view.response.CaseWithoutDefendantPostcodeView;
 import uk.gov.moj.cpp.sjp.query.view.response.CasesMissingSjpnView;
 import uk.gov.moj.cpp.sjp.query.view.response.ResultOrdersView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
@@ -87,7 +89,10 @@ public class CaseService {
     private ReferenceDataService referenceDataService;
 
     @Inject
-    private ListToJsonArrayConverter<CaseNotGuiltyPleaView> listToJsonArrayConverter;
+    private ListToJsonArrayConverter<CaseNotGuiltyPleaView> notGuiltyCasesListToJsonArrayConverter;
+
+    @Inject
+    private ListToJsonArrayConverter<CaseWithoutDefendantPostcodeView> noPostcodeCaseListToJsonArrayConverter;
 
     /**
      * Find case by id.
@@ -320,7 +325,18 @@ public class CaseService {
     private JsonObject buildResponsePayload(final List<CaseNotGuiltyPleaView> casesNotGuiltyPlea,
                                             final int totalCount,
                                             final int pageCount) {
-        final JsonArray convertedCases = listToJsonArrayConverter.convert(casesNotGuiltyPlea);
+        final JsonArray convertedCases = notGuiltyCasesListToJsonArrayConverter.convert(casesNotGuiltyPlea);
+        return createObjectBuilder()
+                .add("results", totalCount)
+                .add("pageCount", pageCount)
+                .add("cases", convertedCases)
+                .build();
+    }
+
+    private JsonObject buildCasesWithoutPostcodeResponsePayload(final List<CaseWithoutDefendantPostcodeView> casesWithoutDefendantPostcode,
+                                            final int totalCount,
+                                            final int pageCount) {
+        final JsonArray convertedCases = noPostcodeCaseListToJsonArrayConverter.convert(casesWithoutDefendantPostcode);
         return createObjectBuilder()
                 .add("results", totalCount)
                 .add("pageCount", pageCount)
@@ -410,5 +426,29 @@ public class CaseService {
     private String getPostcode(final PendingCaseToPublishPerOffence pendingCaseToPublishWithAnyOffence) {
         return isNotEmpty(pendingCaseToPublishWithAnyOffence.getPostcode()) && pendingCaseToPublishWithAnyOffence.getPostcode().length() > 2
                 ? pendingCaseToPublishWithAnyOffence.getPostcode().substring(0, 2) : pendingCaseToPublishWithAnyOffence.getPostcode();
+    }
+
+    public JsonObject buildCasesWithoutDefendantPostcodeView(final int pageSize, final int pageNumber) {
+        final Map<String, String> allProsecutors = getAllProsecutorsMap();
+        final List<CaseWithoutDefendantPostcode> results = caseRepository.findCasesWithoutDefendantPostcode();
+
+        final int offset = pageSize * (pageNumber - 1);
+        final int totalCount = results.size();
+        final int pageCount = (int) ceil((double) totalCount / pageSize);
+
+        final List<CaseWithoutDefendantPostcodeView> casesWithoutPostcodeView = results.stream()
+                .skip(offset)
+                .limit(pageSize)
+                .map(caseWithoutPostcode -> new CaseWithoutDefendantPostcodeView(
+                        caseWithoutPostcode.getId(),
+                        caseWithoutPostcode.getUrn(),
+                        caseWithoutPostcode.getPostingDate(),
+                        caseWithoutPostcode.getFirstName(),
+                        caseWithoutPostcode.getLastName(),
+                        allProsecutors.get(caseWithoutPostcode.getProsecutingAuthority())
+                ))
+                .collect(toList());
+
+        return buildCasesWithoutPostcodeResponsePayload(casesWithoutPostcodeView, totalCount, pageCount);
     }
 }

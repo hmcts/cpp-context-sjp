@@ -29,6 +29,8 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
     private static final String ADDRESS_1_UPDATED = "15 Tottenham Court Road";
     private static final String FIRST_NAME_UPDATED = "Mark";
     private static final LocalDate DATE_OF_BIRTH_UPDATED = LocalDate.of(1980, 6, 15);
+    private static final String DRIVER_NUMBER_UPDATED = "MORGA753116SM9IB";
+    private static final String DRIVER_LICENCE_DETAILS_UPDATED = "Updated_Driver_Licence_Details";
 
     private Person person;
     private UUID userId;
@@ -45,6 +47,8 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
         assertThat(person.getAddress().getAddress1(), not(equalTo(ADDRESS_1_UPDATED)));
         assertThat(person.getFirstName(), not(equalTo(FIRST_NAME_UPDATED)));
         assertThat(person.getDateOfBirth(), not(equalTo(DATE_OF_BIRTH_UPDATED)));
+        assertThat(person.getDriverNumber(), not(equalTo(DRIVER_NUMBER_UPDATED)));
+        assertThat(person.getDriverLicenceDetails(), not(equalTo(DRIVER_LICENCE_DETAILS_UPDATED)));
     }
 
     @Test
@@ -78,8 +82,8 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
                 DATE_OF_BIRTH_UPDATED,
                 person.getGender(),
                 person.getNationalInsuranceNumber(),
-                person.getDriverNumber(),
-                person.getDriverLicenceDetails(),
+                DRIVER_NUMBER_UPDATED,
+                DRIVER_LICENCE_DETAILS_UPDATED,
                 new Address(
                         ADDRESS_1_UPDATED,
                         person.getAddress().getAddress2(),
@@ -114,6 +118,12 @@ public class UpdateDefendantDetailsTest extends CaseAggregateBaseTest {
         assertThat(defendantPersonalNameUpdated.getOldPersonalName().getFirstName(), is(person.getFirstName()));
         assertThat(defendantPersonalNameUpdated.getNewPersonalName().getFirstName(), is(FIRST_NAME_UPDATED));
         assertThat(defendantPersonalNameUpdated.getUpdatedAt(), is(updateDate));
+
+        final DefendantDetailsUpdated defendantDetailsUpdated1 = (DefendantDetailsUpdated) events.get(3);
+        assertThat(defendantDetailsUpdated1.getDriverNumber(), is(updatedPerson.getDriverNumber()));
+        assertThat(defendantDetailsUpdated1.getDriverLicenceDetails(), is(updatedPerson.getDriverLicenceDetails()));
+        assertThat(defendantDetailsUpdated1.getUpdatedDate(), is(updateDate));
+
     }
 
     @Test

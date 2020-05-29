@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
 import static java.lang.String.format;
+import static java.math.BigDecimal.ZERO;
 import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
@@ -13,6 +14,7 @@ import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.json.schemas.domains.sjp.Note.note;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.ADJOURNMENT;
@@ -56,6 +58,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.ReferredForFutureSJPSession;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferredToOpenCourt;
 import uk.gov.moj.cpp.sjp.domain.decision.SetAside;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
+import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -68,6 +71,7 @@ import uk.gov.moj.cpp.sjp.event.decision.DecisionSetAside;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSetAsideReset;
 import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -389,6 +393,7 @@ public class CaseDecisionHandler {
         validateDecisionTypesAndVerdict(decision, rejectionReason);
         validateDecisionsWithoutVerdict(decision, state, rejectionReason);
         validateEmployerDetailsAppliedWhenPaymentTypeIsAttachedToEarnings(decision, state, rejectionReason);
+        validateFinancialCosts(decision, state, rejectionReason);
         validateDecisionTypesAndPreviousConvictions(decision, state, rejectionReason);
 
         validateDelegatedPowerCanNotSubmitVerdictForReferToCourtHearing(decision, sessionType, rejectionReason);
@@ -468,6 +473,18 @@ public class CaseDecisionHandler {
         if (decision.getFinancialImposition() != null && decision.getFinancialImposition().getPayment() != null && decision.getFinancialImposition().getPayment().getPaymentType() == PaymentType.ATTACH_TO_EARNINGS && !state.hasEmployerDetailsUpdated()) {
             rejectionReason.add("Decision with payment type attach to earnings requires employer details");
         }
+    }
+
+    private static void validateFinancialCosts(final Decision decision, final CaseAggregateState state, final List<String> rejectionReason) {
+        ofNullable(decision.getFinancialImposition())
+                .map(FinancialImposition::getCostsAndSurcharge)
+                .ifPresent(costsAndSurcharge -> {
+                    final BigDecimal impositionCosts = costsAndSurcharge.getCosts();
+                    final String impositionReasonForNoCosts = ofNullable(costsAndSurcharge.getReasonForNoCosts()).map(String::trim).orElse(null);
+                    if(state.getCosts()!=null && state.getCosts().compareTo(ZERO) > 0 && impositionCosts.compareTo(ZERO) <= 0 && isEmpty(impositionReasonForNoCosts)) {
+                        rejectionReason.add("Reason for no costs is required when costs is zero");
+                    }
+                });
     }
 
     private void validateIfPleaExistsThenVerdictCanNotBeProvedSJPVerdict(Decision decision, CaseAggregateState state, List<String> rejectionReasons) {

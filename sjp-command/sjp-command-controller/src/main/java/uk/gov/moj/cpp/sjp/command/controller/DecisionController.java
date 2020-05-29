@@ -92,7 +92,7 @@ public class DecisionController {
         return ofNullable(caseDetails.getJsonObject("defendant")
                 .getJsonObject("personalDetails"))
                 .map(personalDetails -> personalDetails.getJsonObject("address"))
-                .map(address -> address.getString("postcode"));
+                .map(address -> address.getString("postcode", null));
     }
 
     private JsonArrayBuilder addOffenceDecisionId(JsonArray offenceDecisions) {

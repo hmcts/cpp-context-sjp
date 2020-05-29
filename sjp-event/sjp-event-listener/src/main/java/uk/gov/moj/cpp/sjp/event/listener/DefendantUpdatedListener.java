@@ -95,6 +95,8 @@ public class DefendantUpdatedListener {
         if (newData.isUpdateByOnlinePlea()) {
             ofNullable(newData.getNationalInsuranceNumber()).ifPresent(entity::setNationalInsuranceNumber);
             ofNullable(newData.getDateOfBirth()).ifPresent(entity::setDateOfBirth);
+            ofNullable(newData.getDriverNumber()).ifPresent(entity::setDriverNumber);
+            ofNullable(newData.getDriverLicenceDetails()).ifPresent(entity::setDriverLicenceDetails);
         } else {
             ofNullable(newData.getGender()).ifPresent(entity::setGender);
             // Title can be explicitly set to null from sjp, no title comes from online plea

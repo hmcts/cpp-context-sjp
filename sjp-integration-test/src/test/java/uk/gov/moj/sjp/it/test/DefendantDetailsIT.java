@@ -27,15 +27,18 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostco
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.getReadUrl;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
+import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaultsUntilResponseIsJson;
 
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
+import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
@@ -55,6 +58,8 @@ import javax.ws.rs.core.Response;
 
 import com.google.common.collect.ImmutableList;
 import com.jayway.jsonpath.ReadContext;
+import com.jayway.jsonpath.matchers.JsonPathMatchers;
+import com.jayway.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
@@ -223,6 +228,39 @@ public class DefendantDetailsIT extends BaseIntegrationTest {
         pollWithDefaults(defendantDetailUpdatesRequestParams(Integer.MAX_VALUE, USER_ID))
                 .until(status().is(OK),
                         payload().isJson(allOf(matchers)));
+    }
+
+    @Test
+    public void shouldFindUpdatedDefendantDetailsNullPostCode() {
+        final JsonObject existingUpdatedDefendantDetails = getUpdatedDefendantDetails(USER_ID);
+        final int existingUpdatedDefendantDetailsTotal = existingUpdatedDefendantDetails.getInt("total");
+
+        final UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder = UpdateDefendantDetails.DefendantDetailsPayloadBuilder.withDefaults().withAddress(AddressBuilder.withDefaults().withPostcode(null));
+
+        validateDefendantUpdatedNullPostCode(existingUpdatedDefendantDetailsTotal, payloadBuilder);
+    }
+
+    private void validateDefendantUpdatedNullPostCode(final int existingUpdatedDefendantDetailsTotal, final UpdateDefendantDetails.DefendantDetailsPayloadBuilder payloadBuilder) {
+        final UUID defendantId = UUID.fromString(CasePoller.pollUntilCaseByIdIsOk(caseIdOne).getString("defendant.id"));
+        UpdateDefendantDetails.updateDefendantDetailsForCaseAndPayload(caseIdOne, defendantId, payloadBuilder);
+
+        final List<Matcher<? super ReadContext>> matchers = ImmutableList.<Matcher<? super ReadContext>>builder()
+                .add(withJsonPath("$.total", equalTo(existingUpdatedDefendantDetailsTotal + 1)))
+                .add(withJsonPath(format("$.defendantDetailsUpdates[{0}].firstName", existingUpdatedDefendantDetailsTotal), equalTo(payloadBuilder.getFirstName())))
+                .add(withJsonPath(format("$.defendantDetailsUpdates[{0}].lastName", existingUpdatedDefendantDetailsTotal), equalTo(payloadBuilder.getLastName())))
+                .add(withJsonPath(format("$.defendantDetailsUpdates[{0}].defendantId", existingUpdatedDefendantDetailsTotal), equalTo(defendantId.toString())))
+                .add(withJsonPath(format("$.defendantDetailsUpdates[{0}].caseUrn", existingUpdatedDefendantDetailsTotal), notNullValue()))
+                .add(withJsonPath(format("$.defendantDetailsUpdates[{0}].caseId", existingUpdatedDefendantDetailsTotal), notNullValue()))
+                .add(withJsonPath(format("$.defendantDetailsUpdates[{0}].nameUpdated", existingUpdatedDefendantDetailsTotal), is(true)))
+                .add(withJsonPath(format("$.defendantDetailsUpdates[{0}].dateOfBirthUpdated", existingUpdatedDefendantDetailsTotal), is(true)))
+                .add(withJsonPath(format("$.defendantDetailsUpdates[{0}].addressUpdated", existingUpdatedDefendantDetailsTotal), is(true)))
+                .add(withJsonPath(format("$.defendantDetailsUpdates[{0}].updatedOn", existingUpdatedDefendantDetailsTotal), is(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE))))
+                .build();
+
+        pollWithDefaults(defendantDetailUpdatesRequestParams(Integer.MAX_VALUE, USER_ID))
+                .until(status().is(OK),
+                        payload().isJson(allOf(matchers)));
+
     }
 
     @Test

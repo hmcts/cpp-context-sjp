@@ -59,33 +59,34 @@ public class SjpQueryControllerTest {
     @Test
     public void shouldHandlesQueries() {
         assertThat(SjpQueryController.class, isHandlerClass(Component.QUERY_CONTROLLER)
-                                                     .with(allOf(
-                                                             method("findCaseByUrn").thatHandles("sjp.query.case-by-urn").withRequesterPassThrough(),
-                                                             method("findFinancialMeans").thatHandles("sjp.query.financial-means").withRequesterPassThrough(),
-                                                             method("findEmployer").thatHandles("sjp.query.employer").withRequesterPassThrough(),
-                                                             method("findCaseSearchResults").thatHandles("sjp.query.case-search-results").withRequesterPassThrough(),
-                                                             method("findCasesMissingSjpn").thatHandles("sjp.query.cases-missing-sjpn").withRequesterPassThrough(),
-                                                             method("searchCaseByMaterialId").thatHandles("sjp.query.cases-search-by-material-id").withRequesterPassThrough(),
-                                                             method("getResultOrders").thatHandles("sjp.query.result-orders").withRequesterPassThrough(),
-                                                             method("getReadyCases").thatHandles("sjp.query.ready-cases").withRequesterPassThrough(),
-                                                             method("getCaseAssignment").thatHandles("sjp.query.case-assignment").withRequesterPassThrough(),
-                                                             method("getProsecutingAuthority").thatHandles("sjp.query.case-prosecuting-authority").withRequesterPassThrough(),
-                                                             method("getDefendantDetailsUpdates").thatHandles("sjp.query.defendant-details-updates").withRequesterPassThrough(),
-                                                             method("getCaseNotes").thatHandles("sjp.query.case-notes").withRequesterPassThrough(),
-                                                             method("getTransparencyReportMetadata").thatHandles("sjp.query.transparency-report-metadata").withRequesterPassThrough(),
-                                                             method("getPressTransparencyReportMetadata").thatHandles("sjp.query.press-transparency-report-metadata").withRequesterPassThrough(),
-                                                             method("getCourtExtract").thatHandles("sjp.query.case-court-extract").withRequesterPassThrough()
-                                                     )));
+                .with(allOf(
+                        method("findCaseByUrn").thatHandles("sjp.query.case-by-urn").withRequesterPassThrough(),
+                        method("findFinancialMeans").thatHandles("sjp.query.financial-means").withRequesterPassThrough(),
+                        method("findEmployer").thatHandles("sjp.query.employer").withRequesterPassThrough(),
+                        method("findCaseSearchResults").thatHandles("sjp.query.case-search-results").withRequesterPassThrough(),
+                        method("findCasesMissingSjpn").thatHandles("sjp.query.cases-missing-sjpn").withRequesterPassThrough(),
+                        method("searchCaseByMaterialId").thatHandles("sjp.query.cases-search-by-material-id").withRequesterPassThrough(),
+                        method("getResultOrders").thatHandles("sjp.query.result-orders").withRequesterPassThrough(),
+                        method("getReadyCases").thatHandles("sjp.query.ready-cases").withRequesterPassThrough(),
+                        method("getCaseAssignment").thatHandles("sjp.query.case-assignment").withRequesterPassThrough(),
+                        method("getProsecutingAuthority").thatHandles("sjp.query.case-prosecuting-authority").withRequesterPassThrough(),
+                        method("getDefendantDetailsUpdates").thatHandles("sjp.query.defendant-details-updates").withRequesterPassThrough(),
+                        method("getCaseNotes").thatHandles("sjp.query.case-notes").withRequesterPassThrough(),
+                        method("getTransparencyReportMetadata").thatHandles("sjp.query.transparency-report-metadata").withRequesterPassThrough(),
+                        method("getPressTransparencyReportMetadata").thatHandles("sjp.query.press-transparency-report-metadata").withRequesterPassThrough(),
+                        method("getCourtExtract").thatHandles("sjp.query.case-court-extract").withRequesterPassThrough(),
+                        method("getCasesWithoutDefendantPostcode").thatHandles("sjp.query.cases-without-defendant-postcode").withRequesterPassThrough()
+                )));
     }
 
     @Test
     public void shouldFindDefendantOustandingFines() {
 
         final DefendantProfilingView profilingView = DefendantProfilingView.newBuilder()
-                                                       .withFirstName("firstName")
-                                                       .withLastName("lastName")
-                                                       .withId(randomUUID())
-                                                       .build();
+                .withFirstName("firstName")
+                .withLastName("lastName")
+                .withId(randomUUID())
+                .build();
         testGetOutstandingFines(profilingView);
 
     }
@@ -94,12 +95,12 @@ public class SjpQueryControllerTest {
     public void shouldFindDefendantOustandingFines_withOptionalInputs() {
 
         final DefendantProfilingView profilingView = DefendantProfilingView.newBuilder()
-                                                       .withFirstName("firstName")
-                                                       .withLastName("lastName")
-                                                       .withDateOfBirth(LocalDate.parse("1991-04-05"))
-                                                       .withNationalInsuranceNumber("SS-123213-123")
-                                                       .withId(randomUUID())
-                                                       .build();
+                .withFirstName("firstName")
+                .withLastName("lastName")
+                .withDateOfBirth(LocalDate.parse("1991-04-05"))
+                .withNationalInsuranceNumber("SS-123213-123")
+                .withId(randomUUID())
+                .build();
         testGetOutstandingFines(profilingView);
 
     }
@@ -120,9 +121,9 @@ public class SjpQueryControllerTest {
 
         when(requester.requestAsAdmin(jsonEnvelopeCaptor.capture())).thenReturn(response);
         final JsonObject jsonObject = createObjectBuilder()
-                                        .add("outstandingFines", createArrayBuilder()
-                                                                         .add(createObjectBuilder().add("name", "name")))
-                                        .build();
+                .add("outstandingFines", createArrayBuilder()
+                        .add(createObjectBuilder().add("name", "name")))
+                .build();
         when(response.payloadAsJsonObject()).thenReturn(jsonObject);
 
         final JsonEnvelope result = sjpQueryController.getOutstandingFines(query);

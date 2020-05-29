@@ -300,3 +300,12 @@ rule "sjp - Query - API - sjp.query.defendant-outstanding-fines"
   then
     $outcome.setSuccess(true);
 end
+
+rule "sjp - Query - API - Get Cases without defendant postcode"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.cases-without-defendant-postcode");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAllowedGroupsForCasesWithoutDefendantPostcode()))
+  then
+    $outcome.setSuccess(true);
+end

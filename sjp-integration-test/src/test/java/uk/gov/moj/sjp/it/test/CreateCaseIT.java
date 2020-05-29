@@ -8,8 +8,8 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.blankOrNullString;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -31,6 +31,7 @@ import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
 import uk.gov.moj.sjp.it.command.CreateCase;
+import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.pollingquery.CasePoller;
@@ -199,8 +200,24 @@ public class CreateCaseIT extends BaseIntegrationTest {
 
         with(validationTrace)
                 .assertEquals("$.message", "#/defendant/contactDetails: 2 schema violations found");
-        Assert.assertThat(validationTrace, containsString(format("#/defendant/contactDetails/email2: string [%s] does not match pattern", email2)));
-        Assert.assertThat(validationTrace, containsString(format("#/defendant/contactDetails/email: string [%s] does not match pattern", email)));
+        assertThat(validationTrace, containsString(format("#/defendant/contactDetails/email2: string [%s] does not match pattern", email2)));
+        assertThat(validationTrace, containsString(format("#/defendant/contactDetails/email: string [%s] does not match pattern", email)));
+    }
+
+    @Test
+    public void shouldSchemaValidationFailWhenPostCodeNoSpaceIsInvalid() {
+        final CreateCase.CreateCasePayloadBuilder createCase = createMultiOffenceCase(randomUUID(), TFL, newArrayList("CA03010"));
+        final String postCode = "ML91NQ";
+
+        createCase.getDefendantBuilder().getAddressBuilder().withPostcode(postCode);
+
+        final String response = CreateCase.createCaseForPayloadBuilder(createCase, BAD_REQUEST);
+
+        JsonObject responseJson = responseToJsonObject(response);
+        JsonValue validationErrors = responseJson.get("validationErrors");
+        String validationTrace = validationErrors.toString();
+        assertThat(validationTrace, containsString("#/defendant/address/postcode: string [ML91NQ] does not match pattern ^(([gG][iI][rR] {0,}0[aA]{2})|(([aA][sS][cC][nN]|[sS][tT][hH][lL]|[tT][dD][cC][uU]|[bB][bB][nN][dD]|[bB][iI][qQ][qQ]|[fF][iI][qQ][qQ]|[pP][cC][rR][nN]|[sS][iI][qQ][qQ]|[iT][kK][cC][aA]) {0,}1[zZ]{2})|((([a-pr-uwyzA-PR-UWYZ][a-hk-yxA-HK-XY]?[0-9][0-9]?)|(([a-pr-uwyzA-PR-UWYZ][0-9][a-hjkstuwA-HJKSTUW])|([a-pr-uwyzA-PR-UWYZ][a-hk-yA-HK-Y][0-9][abehmnprv-yABEHMNPRV-Y]))) [0-9][abd-hjlnp-uw-zABD-HJLNP-UW-Z]{2}))$"));
+
     }
 
     @Test
@@ -271,7 +288,46 @@ public class CreateCaseIT extends BaseIntegrationTest {
         assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
         assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
         assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
-        assertThat(jsonResponse.get("defendant.personalDetails.title") , isEmptyOrNullString());
+        assertThat(jsonResponse.get("defendant.personalDetails.title") , blankOrNullString());
+    }
+
+    @Test
+    public void shouldCaseBeCreatedWithoutPostcode(){
+        final UUID caseId = randomUUID();
+        final ProsecutingAuthority prosecutingAuthority = TFL;
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
+        final String offenceCode1 = "CA03010";
+        final String offenceCode2 = "CA03011";
+
+        stubQueryOffencesByCode(offenceCode1);
+        stubQueryOffencesByCode(offenceCode2);
+
+        final int fineLevel = 3;
+        final BigDecimal maxValue = BigDecimal.valueOf(1000);
+
+        stubOffenceFineLevelsQuery(fineLevel, maxValue);
+
+        final CreateCase.CreateCasePayloadBuilder createCase = createMultiOffenceCase(caseId, prosecutingAuthority,
+                newArrayList(offenceCode1, offenceCode2));
+
+        final CreateCase.DefendantBuilder defendant = createCase.getDefendantBuilder();
+        defendant.withTitle(null);
+        AddressBuilder defendantAddress = defendant.getAddressBuilder();
+        defendantAddress.withPostcode(null);
+
+        final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
+                .subscribe(CaseReceived.EVENT_NAME)
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
+                .popEvent(CaseReceived.EVENT_NAME);
+
+        assertTrue(caseReceivedEvent.isPresent());
+
+        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
+        assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
+        assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
+        assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
+        assertThat(jsonResponse.get("defendant.personalDetails.address.postcode") , blankOrNullString());
     }
 
     @Test

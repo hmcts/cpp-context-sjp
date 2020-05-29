@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/cases-without-defendant-postcode.json",
+  "type": "object",
+  "properties": {
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+          },
+          "urn": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "postingDate": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
+          },
+          "prosecutingAuthority": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "urn",
+          "lastName",
+          "postingDate"
+        ]
+      }
+    },
+    "results": {
+      "type": "integer"
+    },
+    "pageCount": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "readyCases"
+  ],
+  "additionalProperties": false
+}

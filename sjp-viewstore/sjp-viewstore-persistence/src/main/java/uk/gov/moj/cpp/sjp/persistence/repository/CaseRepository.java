@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.persistence.repository;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseWithoutDefendantPostcode;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence;
 
@@ -112,6 +113,15 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
             "AND e.caseStatus != 'REFER_FOR_COURT_HEARING' " +
             "ORDER BY o.pleaDate DESC ")
     public abstract List<CaseNotGuiltyPlea> findCasesNotGuiltyPlea();
+
+    @Query(value = "SELECT DISTINCT new uk.gov.moj.cpp.sjp.persistence.entity.CaseWithoutDefendantPostcode" +
+            "(e.id, e.urn, e.postingDate, d.personalDetails.firstName, d.personalDetails.lastName, e.prosecutingAuthority) " +
+            "FROM CaseDetail e " +
+            "JOIN e.defendant d " +
+            "WHERE e.completed = false " +
+            "AND d.personalDetails.address.postcode IS NULL " +
+            "ORDER BY e.postingDate DESC ")
+    public abstract List<CaseWithoutDefendantPostcode> findCasesWithoutDefendantPostcode();
 
     public void updateDatesToAvoid(final UUID caseId, final String datesToAvoid) {
         findBy(caseId).setDatesToAvoid(datesToAvoid);

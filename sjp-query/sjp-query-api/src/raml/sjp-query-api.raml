@@ -371,6 +371,31 @@ baseUri: http://localhost:8080/sjp-query-api/query/api/rest/sjp
             schema: !include json/schema/sjp.query.ready-cases.json
             example: !include json/sjp.query.ready-cases.json
 
+/cases/without-defendant-postcode:
+  get:
+    description: |
+      Get non completed cases without defendant postcode
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.cases-without-defendant-postcode+json
+          name: sjp.query.cases-without-defendant-postcode
+      ...
+    queryParameters:
+          pageSize:
+            description: Number of item per page. Default is 20
+            type: number
+            required: false
+          pageNumber:
+            description: Current page. Could be 1 or 2 or 3, ... Default is 1
+            type: number
+            required: false
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.cases-without-defendant-postcode+json:
+            schema: !include json/schema/sjp.query.cases-without-defendant-postcode.json
+            example: !include json/sjp.query.cases-without-defendant-postcode.json
+
 /sessions/{sessionId}:
   get:
     description: |

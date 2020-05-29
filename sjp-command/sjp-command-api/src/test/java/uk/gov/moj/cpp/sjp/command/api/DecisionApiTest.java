@@ -226,13 +226,6 @@ public class DecisionApiTest {
     }
 
     @Test
-    public void shouldThrowBadRequestWhen_Discharge_With_ZeroCost_Without_ReasonForNoCosts() {
-        expectBadRequestException("reasonForNoCosts is required");
-        final JsonObject costsAndSurcharge = buildCostsAndSurcharge(ZERO, null, ONE, null);
-        saveDecision(buildFinancialImposition(costsAndSurcharge, buildPayment()));
-    }
-
-    @Test
     public void shouldThrowBadRequestWhen_Discharge_With_ZeroVictimSurcharge_NoReasonForNoVictimSurcharge() {
         expectBadRequestException("reasonForNoVictimSurcharge is required");
         final JsonObject costsAndSurcharge = buildCostsAndSurcharge(BigDecimal.TEN, null, ZERO, null);

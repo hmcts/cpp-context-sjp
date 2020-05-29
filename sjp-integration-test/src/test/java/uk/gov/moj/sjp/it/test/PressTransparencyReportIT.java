@@ -19,7 +19,7 @@ import static uk.gov.moj.sjp.it.command.CreateCase.DefendantBuilder.defaultDefen
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
 import static uk.gov.moj.sjp.it.helper.FileServiceDBHelper.createStubFile;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllProsecutorsQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllIndividualProsecutorsQueries;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAnyQueryOffences;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
@@ -68,7 +68,7 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
     public void setUp() throws Exception {
         new SjpDatabaseCleaner().cleanViewStore();
         stubDocGeneratorEndPoint();
-        stubAllProsecutorsQuery();
+        stubAllIndividualProsecutorsQueries();
         stubAnyQueryOffences();
     }
 

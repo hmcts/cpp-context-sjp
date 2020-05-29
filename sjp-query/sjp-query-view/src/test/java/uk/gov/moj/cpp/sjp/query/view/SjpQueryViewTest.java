@@ -644,6 +644,42 @@ public class SjpQueryViewTest {
                         withJsonPath("cases[0].caseManagementStatus", is(IN_PROGRESS.name())))));
     }
 
+    @Test
+    public void shouldGetCasesWithoutDefendantPostcode() {
+        final LocalDate postingDate = LocalDate.parse("2018-03-20");
+
+        final JsonObject casesJson = buildCasesWithoutPostcode(postingDate);
+        final int pageSize = 20;
+        final int pageNumber = 1;
+        final int totalResults = 1;
+        final int pageCount = 1;
+
+        when(caseService.buildCasesWithoutDefendantPostcodeView(pageSize, pageNumber)).thenReturn(casesJson);
+
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataWithRandomUUID("sjp.query.cases-without-defendant-postcode"))
+                .withPayloadOf(pageSize, "pageSize")
+                .withPayloadOf(pageNumber, "pageNumber")
+                .build();
+
+        final JsonEnvelope responseEnvelope = sjpQueryView.getCasesWithoutDefendantPostcode(queryEnvelope);
+
+        assertThat(responseEnvelope.metadata().name(), is("sjp.query.cases-without-defendant-postcode"));
+
+        assertThat(responseEnvelope.payloadAsJsonObject().toString(),
+                isJson(Matchers.allOf(
+                        withJsonPath("results", is(totalResults)),
+                        withJsonPath("pageCount", is(pageCount)),
+                        withJsonPath("cases[0].id", is(CASE_ID.toString())),
+                        withJsonPath("cases[0].urn", is(URN)),
+                        withJsonPath("cases[0].firstName", is("Hakan")),
+                        withJsonPath("cases[0].lastName", is("Kurtulus")),
+                        withJsonPath("cases[0].postingDate", is(postingDate.toString())),
+                        withJsonPath("cases[0].prosecutingAuthority", is("Transport for London"))
+                ))
+        );
+    }
+
     private JsonObject buildNotGuiltyPleaCases(final ZonedDateTime pleaDate) {
         return createObjectBuilder()
                 .add("results", 1)
@@ -656,6 +692,21 @@ public class SjpQueryViewTest {
                         .add("pleaDate", pleaDate.toString())
                         .add("prosecutingAuthority", "Transport for London")
                         .add("caseManagementStatus", IN_PROGRESS.name())))
+                .build();
+    }
+
+    private JsonObject buildCasesWithoutPostcode(final LocalDate postingDate) {
+        return createObjectBuilder()
+                .add("results", 1)
+                .add("pageCount", 1)
+                .add("cases", createArrayBuilder().add(createObjectBuilder()
+                        .add("id", CASE_ID.toString())
+                        .add("urn", URN)
+                        .add("firstName", "Hakan")
+                        .add("lastName", "Kurtulus")
+                        .add("postingDate", postingDate.toString())
+                        .add("prosecutingAuthority", "Transport for London")
+                ))
                 .build();
     }
 

@@ -73,6 +73,8 @@ public class OnlinePleaReceivedListener {
                 personalDetails.setMobile(contactDetails.getMobile());
                 personalDetails.setEmail(contactDetails.getEmail());
             });
+            ofNullable(newPersonalDetails.getDriverNumber()).ifPresent(personalDetails::setDriverNumber);
+            ofNullable(newPersonalDetails.getDriverLicenceDetails()).ifPresent(personalDetails::setDriverLicenceDetails);
         }
         return newOnlinePlea;
     }

@@ -51,8 +51,8 @@ public abstract class RegionAwareController extends BaseController {
     }
 
     JsonObject enrichJsonWithRegion(final JsonObject jsonObject) {
-        if (jsonObject.containsKey(ADDRESS)) {
-            final String defendantPostcode = jsonObject.getJsonObject(ADDRESS).getString(POSTCODE);
+        if (jsonObject.containsKey(ADDRESS) && jsonObject.getJsonObject(ADDRESS).containsKey(POSTCODE)) {
+            final String defendantPostcode = jsonObject.getJsonObject(ADDRESS).getString(POSTCODE, null);
             final String region = getRegionFromDefendantPostCode(defendantPostcode);
             if (nonNull(region)) {
                 return addJsonField(jsonObject, REGION, region);

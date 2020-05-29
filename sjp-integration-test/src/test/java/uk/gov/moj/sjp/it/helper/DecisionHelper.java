@@ -159,6 +159,31 @@ public class DecisionHelper {
         return createCasePayloadBuilder;
     }
 
+    public static CreateCasePayloadBuilder createCaseWithoutDefendantPostcode(
+                                                      final UUID caseId,
+                                                      final UUID offence1Id,
+                                                      final UUID offence2Id,
+                                                      final UUID offence3Id,
+                                                      final LocalDate postingDate) {
+        final CreateCasePayloadBuilder createCasePayloadBuilder = CreateCasePayloadBuilder
+                .withDefaults()
+                .withId(caseId)
+                .withOffenceBuilders(
+                        OffenceBuilder.withDefaults().withId(offence1Id),
+                        OffenceBuilder.withDefaults().withId(offence2Id),
+                        OffenceBuilder.withDefaults().withId(offence3Id))
+                .withPostingDate(postingDate);
+
+        createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().withPostcode(null);
+
+        final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
+        createCaseForPayloadBuilder(createCasePayloadBuilder);
+        pollUntilCaseReady(createCasePayloadBuilder.getId());
+        return createCasePayloadBuilder;
+    }
+
     public static void verifyCaseNotReadyInViewStore(final UUID caseId, final UUID userId) {
         pollReadyCasesUntilResponseIsJson(userId, withJsonPath("readyCases.*", not(CoreMatchers.hasItem(
                 JsonPathMatchers.isJson(withJsonPath("caseId", equalTo(caseId.toString())))

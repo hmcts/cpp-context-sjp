@@ -130,6 +130,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private static final String TEMPLATE_PLEA_MULTI_OFFENCE_CUSTOM_V2 = "raml/json/sjp.command.plead-online__multi_offence_v2.json";
     private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD = "raml/json/sjp.command.plead-online__guilty.json";
     private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD_WITH_DRIVER_LICENCE_DETAILS = "raml/json/sjp.command.plead-online__guilty_with_driver_licence_details.json";
+    private static final String TEMPLATE_PLEA_GUILTY_PAYLOAD_WITH_DRIVER_NUMBER = "raml/json/sjp.command.plead-online__guilty_with_driver_number.json";
     private static final String TEMPLATE_PLEA_GUILTY_REQUEST_HEARING_PAYLOAD = "raml/json/sjp.command.plead-online__guilty_request_hearing.json";
     private static final String TEMPLATE_PLEA_MULTI_OFFENCE_NO_CHANGE_PERSONAL_DETAILS_PAYLOAD = "raml/json/sjp.command.plead-online__david-lloyd.json";
     private static final String TEMPLATE_PLEA_GUILTY_WITH_FINANCIAL_MEANS_RESPONSE = "raml/json/sjp.command.plead-online__guilty_with_finances_response.json";
@@ -489,6 +490,77 @@ public class PleadOnlineIT extends BaseIntegrationTest {
                     ))))));
         }
     }
+
+    @Test
+    public void shouldPleadOnlineWithChangedDriverDetails() {
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+        final PleaType pleaType1 = GUILTY;
+        final PleaType pleaType2 = NOT_GUILTY;
+        final PleaType pleaType3 = GUILTY;
+        final UUID caseId = randomUUID();
+        final CreateCase.DefendantBuilder defendantBuilder = CreateCase.DefendantBuilder.withDefaults();
+        final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
+
+        this.createCasePayloadBuilder = createCase(caseId, defendantBuilder, offenceId1, offenceId2, offenceId3, postingDate);
+
+        try (final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId, defendantBuilder.getId())) {
+            final Map<String, String> values = new HashMap<>();
+            values.put("offenceId1", offenceId1.toString());
+            values.put("offenceId2", offenceId2.toString());
+            values.put("offenceId3", offenceId3.toString());
+            values.put("plea1", pleaType1.name());
+            values.put("plea2", pleaType2.name());
+            values.put("plea3", pleaType3.name());
+            values.put("mitigation", "I was drunk at the time");
+            values.put("notGuiltyBecause", "I was forced to do it");
+            values.put("driverNumber", "MORGA753116SM9IV");
+            values.put("driverLicenceDetails", "update_driver_licence_details");
+
+            //runs plea-online
+            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), false);
+
+            final JsonPath pleadOnlinePayload = JsonPath.from(new StrSubstitutor(values).replace(getPayload(TEMPLATE_PLEA_GUILTY_PAYLOAD_WITH_DRIVER_NUMBER)));
+            pleadOnlineHelper.pleadOnline(pleadOnlinePayload.prettify());
+
+            //verify plea
+            pleadOnlineHelper.verifyInPublicTopic(createCasePayloadBuilder.getId(), offenceId1, pleaType1, null);
+
+            pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaType1, PleaMethod.ONLINE, 0);
+            pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaType2, PleaMethod.ONLINE, 1);
+            pleadOnlineHelper.verifyPleaUpdated(createCasePayloadBuilder.getId(), pleaType3, PleaMethod.ONLINE, 2);
+
+            final CaseSearchResultHelper caseSearchResultHelper = new CaseSearchResultHelper(
+                    createCasePayloadBuilder.getUrn(),
+                    createCasePayloadBuilder.getDefendantBuilder().getLastName(),
+                    createCasePayloadBuilder.getDefendantBuilder().getDateOfBirth());
+            caseSearchResultHelper.verifyPleaReceivedDate();
+
+            //verify online-plea
+            final Response response = getOnlinePlea(caseId.toString(), defendantBuilder.getId().toString(), USER_ID);
+            if (response.getStatus() != OK.getStatusCode()) {
+                fail("Polling interrupted, please fix the error before continue. Status code: " + response.getStatus());
+            }
+
+            verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(createCasePayloadBuilder.getId(), true);
+
+            final JSONObject defendantsPlea = new JSONObject(response.readEntity(String.class));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").get("firstName"), equalTo("David"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").get("lastName"), equalTo("LLOYD"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address1"), equalTo("14 Tottenham Court Road"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address2"), equalTo("London"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address3"), equalTo("England"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address4"), equalTo("UK"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address5"), equalTo("Greater London"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("postcode"), equalTo("W1T 1JY"));
+            assertTrue(defendantsPlea.getJSONObject("pleaDetails").getBoolean("outstandingFines"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").get("driverNumber"), equalTo("MORGA753116SM9IV"));
+            assertThat(defendantsPlea.getJSONObject("personalDetails").get("driverLicenceDetails"), equalTo("update_driver_licence_details"));
+        }
+    }
+
+
 
     @Test
     public void shouldPleadNotGuiltyOnlineThenFailWithSecondPleadAttemptAsNotAllowedTwoPleasAgainstSameOffence() {

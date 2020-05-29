@@ -105,6 +105,18 @@ public class DecisionControllerTest {
                 )
             ).build();
 
+    private final JsonObject caseDetailsWithoutPostcode = createObjectBuilder()
+            .add("id", caseId.toString())
+            .add("urn", "TFL6754")
+            .add("defendant", createObjectBuilder()
+                    .add("id", randomUUID().toString())
+                    .add("personalDetails", createObjectBuilder()
+                            .add("address", createObjectBuilder()
+                                    .add("address1", "1-43 Greenham Cl")
+                            )
+                    )
+            ).build();
+
     private final JsonObject enforcementArea = createObjectBuilder()
             .add("enforcingCourtCode", 2222)
             .add("accountDivisionCode", 1111)
@@ -125,6 +137,16 @@ public class DecisionControllerTest {
         when(userService.getCallingUserDetails(saveDecisionCommand)).thenReturn(userDetails);
         when(caseService.getCaseDetails(caseId.toString())).thenReturn(caseDetails);
         when(referenceDataService.getEnforcementArea(anyString())).thenReturn(of(enforcementArea));
+
+        decisionController.saveDecision(saveDecisionCommand);
+        verifySaveDecisionCommand(saveDecisionCommand);
+    }
+
+    @Test
+    public void shouldHandleDecisionCommandWhenDefendantWithoutPostcode() {
+        final JsonEnvelope saveDecisionCommand = createSaveDecisionCommand();
+        when(userService.getCallingUserDetails(saveDecisionCommand)).thenReturn(userDetails);
+        when(caseService.getCaseDetails(caseId.toString())).thenReturn(caseDetailsWithoutPostcode);
 
         decisionController.saveDecision(saveDecisionCommand);
         verifySaveDecisionCommand(saveDecisionCommand);

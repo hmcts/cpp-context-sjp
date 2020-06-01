@@ -469,30 +469,31 @@ public class CaseServiceTest {
         final UUID caseId3 = randomUUID();
         final UUID caseId4 = randomUUID();
         final UUID caseId5 = randomUUID();
+        final UUID caseId6 = randomUUID();
 
-        final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence1 = new PendingCaseToPublishPerOffence("John", "Doe", LocalDate.of(1980,6,20),
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence1 = new PendingCaseToPublishPerOffence("John", "Doe", LocalDate.of(1980, 6, 20),
                 caseId1, "TVL1", "address line 1", "address line 2", "Lant Street", "London", "Greater London",
-                "SE1 1PJ", "CA03014" , LocalDate.of(2018, 12, 15),"offence wording", "TVL");
+                "SE1 1PJ", "CA03014", LocalDate.of(2018, 12, 15), "offence wording", "TVL");
 
-        final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence2 = new PendingCaseToPublishPerOffence("John", "Doe", LocalDate.of(1980,6,20),
-                caseId1, "TVL1","address line 1", "address line 2", "Lant Street", "London", "Greater London",
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence2 = new PendingCaseToPublishPerOffence("John", "Doe", LocalDate.of(1980, 6, 20),
+                caseId1, "TVL1", "address line 1", "address line 2", "Lant Street", "London", "Greater London",
                 "SE1 1PJ", "CA03014", LocalDate.of(2018, 11, 11), "offence wording", "TVL");
 
         final PendingCaseToPublishPerOffence pendingCaseToPublishWith4LinesOfAddressAndWithoutFirstName = new PendingCaseToPublishPerOffence("", "Doe", null,
                 caseId2, "TVL2", "address line 1", "address line 2", "London", "Greater London", "",
-                "S", "CA03014",  LocalDate.of(2018, 8, 2), "offence wording","TVL");
+                "S", "CA03014", LocalDate.of(2018, 8, 2), "offence wording", "TVL");
 
-        final PendingCaseToPublishPerOffence pendingCaseToPublishWithoutAddress3and4and5 = new PendingCaseToPublishPerOffence("Emma", "White", LocalDate.of(1980,6,20),
-                caseId3, "TVL3", "address line 1", "address line 2",null, null, null,
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWithoutAddress3and4and5 = new PendingCaseToPublishPerOffence("Emma", "White", LocalDate.of(1980, 6, 20),
+                caseId3, "TVL3", "address line 1", "address line 2", null, null, null,
                 "CR0 2GE", "CA03011", LocalDate.of(2018, 8, 2), "offence wording", "TVL");
 
         final PendingCaseToPublishPerOffence pendingCaseToPublishWithSingleLetterFirstName = new PendingCaseToPublishPerOffence("X", "Doe", null,
                 caseId4, "TVL2", "address line 1", "address line 2", "London", "Greater London", "",
-                "S", "CA03014",  LocalDate.of(2018, 8, 2), "offence wording","TVL");
+                "S", "CA03014", LocalDate.of(2018, 8, 2), "offence wording", "TVL");
 
-        final PendingCaseToPublishPerOffence pendingCaseToPublishWithSingleLetterFirstNameNoLastName = new PendingCaseToPublishPerOffence("X", null, null,
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWithSingleLetterFirstNameNoLastNameAndNullPostcode = new PendingCaseToPublishPerOffence("X", null, null,
                 caseId5, "TVL2", "address line 1", "address line 2", "London", "Greater London", "",
-                "S", "CA03014",  LocalDate.of(2018, 8, 2), "offence wording","TVL");
+                null, "CA03014", LocalDate.of(2018, 8, 2), "offence wording", "TVL");
 
         when(caseRepository.findPendingCasesToPublish()).thenReturn(newArrayList(
                 pendingCaseToPublishWith5LinesOfAddressOffence1,
@@ -500,7 +501,7 @@ public class CaseServiceTest {
                 pendingCaseToPublishWith4LinesOfAddressAndWithoutFirstName,
                 pendingCaseToPublishWithoutAddress3and4and5,
                 pendingCaseToPublishWithSingleLetterFirstName,
-                pendingCaseToPublishWithSingleLetterFirstNameNoLastName
+                pendingCaseToPublishWithSingleLetterFirstNameNoLastNameAndNullPostcode
         ));
 
         final JsonObject pendingCasesToPublish = service.findPendingCasesToPublish();
@@ -560,11 +561,10 @@ public class CaseServiceTest {
                 "X",
                 "London",
                 "Greater London",
-                "S",
+                null,
                 "TVL",
                 newArrayList(
                         Pair.of("CA03014", "2018-08-02")));
-
     }
 
     @Test
@@ -729,7 +729,7 @@ public class CaseServiceTest {
         final JsonArray buildNoPostcodeCases = buildWithoutPostcodeCases(postingDate);
         when(noPostcodeCaseListToJsonArrayConverter.convert(any())).thenReturn(buildNoPostcodeCases);
 
-        final JsonObject result = service.buildCasesWithoutDefendantPostcodeView( 1, 1);
+        final JsonObject result = service.buildCasesWithoutDefendantPostcodeView(1, 1);
 
         assertThat(result.getInt("results"), is(1));
         assertThat(result.getInt("pageCount"), is(1));
@@ -834,7 +834,7 @@ public class CaseServiceTest {
         assertThat(pendingCaseToPublish.getString("defendantName"), is(name));
         assertThat(pendingCaseToPublish.getString("town", null), is(town));
         assertThat(pendingCaseToPublish.getString("county", null), is(county));
-        assertThat(pendingCaseToPublish.getString("postcode"), is(postcode));
+        assertThat(pendingCaseToPublish.getString("postcode", null), is(postcode));
         assertThat(pendingCaseToPublish.getString("prosecutorName"), is(prosecutor));
         final List<JsonObject> offenceForPendingCaseToPublish
                 = pendingCaseToPublish.getJsonArray("offences").getValuesAs(JsonObject.class);

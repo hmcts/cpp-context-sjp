@@ -12,6 +12,7 @@ import static java.util.stream.Collectors.toMap;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.length;
 
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -315,7 +316,7 @@ public class CaseService {
                         caseNotGuiltyPlea.getLastName(),
                         allProsecutors.get(caseNotGuiltyPlea.getProsecutingAuthority()),
                         ofNullable(caseNotGuiltyPlea.getCaseManagementStatus()).orElse(CaseManagementStatus.NOT_STARTED)
-                    ))
+                ))
                 .collect(toList());
 
         return buildResponsePayload(casesNotGuiltyPleaView, totalCount, pageCount);
@@ -334,8 +335,8 @@ public class CaseService {
     }
 
     private JsonObject buildCasesWithoutPostcodeResponsePayload(final List<CaseWithoutDefendantPostcodeView> casesWithoutDefendantPostcode,
-                                            final int totalCount,
-                                            final int pageCount) {
+                                                                final int totalCount,
+                                                                final int pageCount) {
         final JsonArray convertedCases = noPostcodeCaseListToJsonArrayConverter.convert(casesWithoutDefendantPostcode);
         return createObjectBuilder()
                 .add("results", totalCount)
@@ -363,13 +364,12 @@ public class CaseService {
     private void populatePendingCasesArrayBuilder(final List<PendingCaseToPublishPerOffence> pendingCaseToPublishPerOffenceList,
                                                   final JsonArrayBuilder pendingCasesArrayBuilder) {
 
-        final PendingCaseToPublishPerOffence pendingCaseToPublishWithAnyOffence = getAnyOffenceForDefendantDetails(pendingCaseToPublishPerOffenceList);
+        final PendingCaseToPublishPerOffence theCase = getAnyOffenceForDefendantDetails(pendingCaseToPublishPerOffenceList);
 
-        final Optional<String> town = getTown(pendingCaseToPublishWithAnyOffence);
-        final Optional<String> county = getCounty(pendingCaseToPublishWithAnyOffence);
-        final Optional<LocalDate> defendantDateOfBirth = getDateOfBirth(pendingCaseToPublishWithAnyOffence);
-        final String postcode = getPostcode(pendingCaseToPublishWithAnyOffence);
-
+        final Optional<String> town = getTown(theCase);
+        final Optional<String> county = getCounty(theCase);
+        final Optional<LocalDate> defendantDateOfBirth = getDateOfBirth(theCase);
+        final Optional<String> postcode = getPostcodePrefix(theCase.getPostcode());
         final JsonArrayBuilder offenceArrayBuilder = createArrayBuilder();
         pendingCaseToPublishPerOffenceList
                 .forEach(casePerOffence -> offenceArrayBuilder.add(createObjectBuilder()
@@ -379,21 +379,20 @@ public class CaseService {
                 ));
 
         final JsonObjectBuilder objectBuilder = createObjectBuilder()
-                .add("caseId", pendingCaseToPublishWithAnyOffence.getCaseId().toString())
-                .add("caseUrn", pendingCaseToPublishWithAnyOffence.getCaseUrn())
-                .add("defendantName", formatName(pendingCaseToPublishWithAnyOffence.getFirstName(), pendingCaseToPublishWithAnyOffence.getLastName()))
-                .add("firstName", ofNullable(pendingCaseToPublishWithAnyOffence.getFirstName()).orElse(""))
-                .add("lastName", ofNullable(pendingCaseToPublishWithAnyOffence.getLastName()).orElse(""))
-                .add("postcode", postcode)
+                .add("caseId", theCase.getCaseId().toString())
+                .add("caseUrn", theCase.getCaseUrn())
+                .add("defendantName", formatName(theCase.getFirstName(), theCase.getLastName()))
+                .add("firstName", ofNullable(theCase.getFirstName()).orElse(""))
+                .add("lastName", ofNullable(theCase.getLastName()).orElse(""))
                 .add("offences", offenceArrayBuilder)
-                .add("prosecutorName", pendingCaseToPublishWithAnyOffence.getProsecutor());
-
+                .add("prosecutorName", theCase.getProsecutor());
 
         town.ifPresent(t -> objectBuilder.add("town", t));
         county.ifPresent(c -> objectBuilder.add("county", c));
-        ofNullable(pendingCaseToPublishWithAnyOffence.getAddressLine1()).ifPresent(line1-> objectBuilder.add("addressLine1", line1));
-        ofNullable(pendingCaseToPublishWithAnyOffence.getAddressLine2()).ifPresent(line2-> objectBuilder.add("addressLine2", line2));
+        ofNullable(theCase.getAddressLine1()).ifPresent(line1 -> objectBuilder.add("addressLine1", line1));
+        ofNullable(theCase.getAddressLine2()).ifPresent(line2 -> objectBuilder.add("addressLine2", line2));
         defendantDateOfBirth.ifPresent(dob -> objectBuilder.add("defendantDateOfBirth", dob.toString()));
+        postcode.ifPresent(p -> objectBuilder.add("postcode", p));
         pendingCasesArrayBuilder.add(objectBuilder);
     }
 
@@ -423,9 +422,9 @@ public class CaseService {
         return ofNullable(pendingCaseToPublishWithAnyOffence.getDefendantDateOfBirth());
     }
 
-    private String getPostcode(final PendingCaseToPublishPerOffence pendingCaseToPublishWithAnyOffence) {
-        return isNotEmpty(pendingCaseToPublishWithAnyOffence.getPostcode()) && pendingCaseToPublishWithAnyOffence.getPostcode().length() > 2
-                ? pendingCaseToPublishWithAnyOffence.getPostcode().substring(0, 2) : pendingCaseToPublishWithAnyOffence.getPostcode();
+    private Optional<String> getPostcodePrefix(final String postcode) {
+        final String result = length(postcode) > 2 ? postcode.substring(0, 2) : postcode;
+        return Optional.ofNullable(result);
     }
 
     public JsonObject buildCasesWithoutDefendantPostcodeView(final int pageSize, final int pageNumber) {

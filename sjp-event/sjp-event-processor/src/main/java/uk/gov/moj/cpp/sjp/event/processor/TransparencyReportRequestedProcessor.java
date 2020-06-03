@@ -195,18 +195,20 @@ public class TransparencyReportRequestedProcessor {
         pendingCases.forEach(pendingCase -> {
                     final JsonObjectBuilder pendingCaseBuilder = createObjectBuilder()
                             .add("defendantName", pendingCase.getString("defendantName"))
-                            .add("postcode", pendingCase.getString("postcode"))
                             .add("offenceTitle", buildOffenceTitleFromOffenceArray(pendingCase.getJsonArray("offences"), isWelsh, envelope))
                             .add("prosecutorName", buildProsecutorName(pendingCase.getString("prosecutorName"), isWelsh, envelope));
 
-                    ofNullable(pendingCase.getString("town", null))
-                            .ifPresent(town -> pendingCaseBuilder.add("town", town));
+            ofNullable(pendingCase.getString("town", null))
+                    .ifPresent(town -> pendingCaseBuilder.add("town", town));
 
-                    ofNullable(pendingCase.getString("county", null))
-                            .ifPresent(county -> pendingCaseBuilder.add("county", county));
+            ofNullable(pendingCase.getString("county", null))
+                    .ifPresent(county -> pendingCaseBuilder.add("county", county));
 
-                    pendingCasesBuilder.add(pendingCaseBuilder);
-                });
+            ofNullable(pendingCase.getString("postcode", null))
+                    .ifPresent(postcode -> pendingCaseBuilder.add("postcode", postcode));
+
+            pendingCasesBuilder.add(pendingCaseBuilder);
+        });
         return pendingCasesBuilder;
     }
 

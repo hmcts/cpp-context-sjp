@@ -62,7 +62,6 @@ public class TransparencyReportRequestedProcessorTest {
     @Mock
     private FileStorer fileStorer;
 
-
     @Mock
     private ReferenceDataOffencesService referenceDataOffencesService;
 
@@ -211,8 +210,6 @@ public class TransparencyReportRequestedProcessorTest {
     private List<JsonObject> pendingCasesList(final List<UUID> caseIds, final List<UUID> youngOffendersCaseIds) {
         final List<JsonObject> pendingCasesList = new LinkedList<>();
 
-
-
         for (int caseNumber = 0; caseNumber < caseIds.size(); caseNumber++) {
             boolean generateFullAddress = caseNumber % 2 == 0;
 
@@ -227,7 +224,6 @@ public class TransparencyReportRequestedProcessorTest {
             final JsonObjectBuilder pendingCase = createObjectBuilder()
                     .add("caseId", caseIds.get(caseNumber).toString())
                     .add("defendantName", "J. Doe" + caseNumber)
-                    .add("postcode", "SE1 1PJ" + caseNumber)
                     .add("offences", offenceArrayBuilder.build())
                     .add("prosecutorName", "TFL");
 

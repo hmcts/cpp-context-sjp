@@ -4,10 +4,9 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.Month.JULY;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
-import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.junit.Assert.assertFalse;
+import static org.hamcrest.Matchers.is;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
@@ -21,7 +20,9 @@ import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
-import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.*;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
@@ -35,10 +36,8 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
-import com.google.common.collect.Sets;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargePeriod;
@@ -51,11 +50,13 @@ import uk.gov.moj.cpp.sjp.domain.decision.imposition.Payment;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentTerms;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
+import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleteDocsStarted;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.DecisionHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.util.builders.DismissBuilder;
@@ -66,6 +67,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.google.common.collect.Sets;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -124,12 +126,23 @@ public class CompleteCaseIT extends BaseIntegrationTest {
 
         dismissCase();
 
-        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn");
+        final Optional<JsonEnvelope> deleteDocsStartedEnvelope = eventListener.popEvent(FinancialMeansDeleteDocsStarted.EVENT_NAME);
+        assertThat(deleteDocsStartedEnvelope.isPresent(), is(true));
+        final JsonEnvelope deleteDocsStarted = deleteDocsStartedEnvelope.get();
+        assertThat(deleteDocsStarted,
+                jsonEnvelope(
+                        metadata().withName(FinancialMeansDeleteDocsStarted.EVENT_NAME),
+                        payload().isJson(allOf(
+                                withJsonPath("$.caseId", CoreMatchers.equalTo(caseId.toString())),
+                                withJsonPath("$.defendantId", CoreMatchers.equalTo(defendantId.toString()))
+                        ))));
 
-        assertTrue(jsonEnvelope.isPresent());
 
-        final JsonEnvelope envelope = jsonEnvelope.get();
-        assertThat((JsonEnvelope) envelope,
+        final Optional<JsonEnvelope> allOffencesDismissedOrWithdrawnEnvelope = eventListener.popEvent("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn");
+        assertThat(allOffencesDismissedOrWithdrawnEnvelope.isPresent(), is(true));
+
+        final JsonEnvelope envelope = allOffencesDismissedOrWithdrawnEnvelope.get();
+        assertThat(envelope,
                 jsonEnvelope(
                         metadata().withName("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn"),
                         payload().isJson(allOf(
@@ -139,7 +152,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
 
         final Optional<JsonEnvelope> jsonEnvelope2 = eventListener.popEvent("public.sjp.case-resulted");
 
-        assertTrue(jsonEnvelope2.isPresent());
+        assertThat(jsonEnvelope2.isPresent(), is(true));
         final JsonEnvelope envelope2 = jsonEnvelope2.get();
         assertThat(envelope2,
                 jsonEnvelope(
@@ -154,13 +167,15 @@ public class CompleteCaseIT extends BaseIntegrationTest {
     public void shouldNotGenerateAllOffencesWithdrawnOrDismissedEvent() {
         discharge();
 
-        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn");
+        final Optional<JsonEnvelope> deleteDocsStartedEnvelope = eventListener.popEvent(FinancialMeansDeleteDocsStarted.EVENT_NAME);
+        assertThat(deleteDocsStartedEnvelope.isPresent(), is(false));
 
-        assertFalse(jsonEnvelope.isPresent());
+        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn");
+        assertThat(jsonEnvelope.isPresent(), is(false));
 
         final Optional<JsonEnvelope> jsonEnvelope2 = eventListener.popEvent("public.sjp.case-resulted");
 
-        assertTrue(jsonEnvelope2.isPresent());
+        assertThat(jsonEnvelope2.isPresent(), is(true));
         final JsonEnvelope envelope = jsonEnvelope2.get();
         assertThat(envelope,
                 jsonEnvelope(
@@ -182,6 +197,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
                 .subscribe(CaseCompleted.EVENT_NAME)
                 .subscribe("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn")
                 .subscribe("public.sjp.case-resulted")
+                .subscribe(FinancialMeansDeleteDocsStarted.EVENT_NAME)
                 .run(() -> DecisionHelper.saveDecision(decision));
     }
 
@@ -197,6 +213,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
                 .subscribe(CaseCompleted.EVENT_NAME)
                 .subscribe("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn")
                 .subscribe("public.sjp.case-resulted")
+                .subscribe(FinancialMeansDeleteDocsStarted.EVENT_NAME)
                 .run(() -> DecisionHelper.saveDecision(decision));
     }
 

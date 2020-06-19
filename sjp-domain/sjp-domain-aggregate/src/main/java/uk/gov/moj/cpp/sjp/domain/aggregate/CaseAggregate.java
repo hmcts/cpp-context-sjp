@@ -29,6 +29,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseNoteHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseReadinessHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ChangeCaseManagementStatusHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CourtReferralHandler;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.DeleteDocsHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.OffenceWithdrawalHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ResolveCaseStatusHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.SetDatesToAvoidRequiredAggregateHandler;
@@ -264,6 +265,10 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> changeCaseManagementStatus(final CaseManagementStatus caseManagementStatus) {
         return apply(ChangeCaseManagementStatusHandler.INSTANCE.changeCaseManagementStatus(state, caseManagementStatus));
+    }
+
+    public Stream<Object> deleteDocs() {
+        return apply(DeleteDocsHandler.INSTANCE.deleteDocs(state));
     }
 
     private Stream<Object> applyAndResolveCaseReadiness(final Supplier<Stream<Object>> streamSupplier) {

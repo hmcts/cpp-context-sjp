@@ -26,6 +26,7 @@ import uk.gov.moj.cpp.sjp.event.DefendantResponseTimerExpired;
 import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
+import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleteDocsStarted;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleted;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
 import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceCancelledForDefendant;
@@ -182,6 +183,9 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
     private static final AggregateStateMutator<DecisionSetAsideReset, CaseAggregateState> DECISION_SET_ASIDE_RESET =
             ((event, state) -> state.setSetAside(false));
 
+    private static final AggregateStateMutator<FinancialMeansDeleteDocsStarted, CaseAggregateState> DELETE_DOCS_STARTED =
+            ((event, state) -> state.setDeleteDocsStarted(true));
+
 
     static final CompositeCaseAggregateStateMutator INSTANCE = new CompositeCaseAggregateStateMutator();
 
@@ -238,6 +242,7 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
                 .put(DatesToAvoidRequired.class, DATES_TO_AVOID_REQUIRED)
                 .put(DecisionSetAside.class, DECISION_SET_ASIDE)
                 .put(DecisionSetAsideReset.class, DECISION_SET_ASIDE_RESET)
+                .put(FinancialMeansDeleteDocsStarted.class, DELETE_DOCS_STARTED)
                 .build();
     }
 

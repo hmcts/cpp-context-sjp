@@ -113,6 +113,7 @@ public class CaseAggregateState implements AggregateState {
     private String defendantDriverNumber;
     private String defendantDriverLicenceDetails;
     private boolean setAside;
+    private boolean deleteDocsStarted;
 
     private final Set<UUID> pressRestrictableOffenceIds = new HashSet<>();
     private final Set<UUID> offencesHavingPreviousPressRestriction = new HashSet<>();
@@ -785,6 +786,10 @@ public class CaseAggregateState implements AggregateState {
         return setAside;
     }
 
+    public boolean isDeleteDocsStarted() {
+        return deleteDocsStarted;
+    }
+
     public void setSetAside(final boolean setAside) {
         this.setAside = setAside;
     }
@@ -807,5 +812,9 @@ public class CaseAggregateState implements AggregateState {
 
     public void setCosts(final BigDecimal costs) {
         this.costs = costs;
+    }
+
+    public void setDeleteDocsStarted(final boolean deleteDocsStarted) {
+        this.deleteDocsStarted = deleteDocsStarted;
     }
 }

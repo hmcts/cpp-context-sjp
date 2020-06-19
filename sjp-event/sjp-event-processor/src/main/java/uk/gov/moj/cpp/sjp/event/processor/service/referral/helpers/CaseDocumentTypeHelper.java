@@ -14,9 +14,13 @@ public class CaseDocumentTypeHelper {
         DOCUMENT_MAPPING_TYPES.put("CITN", "Pre Cons");
         DOCUMENT_MAPPING_TYPES.put("FINANCIAL_MEANS", "Sentence");
         DOCUMENT_MAPPING_TYPES.put("SJPN", "Case Summary");
+        DOCUMENT_MAPPING_TYPES.put("INTENTION_TO_DISQUALIFY_NOTICE", "Sentence");
     }
 
-    public String getDocumentType(final String sjpDocumentType) {
+    private CaseDocumentTypeHelper() {
+    }
+
+    public static String getDocumentType(final String sjpDocumentType) {
         return DOCUMENT_MAPPING_TYPES.getOrDefault(trim(sjpDocumentType), "General correspondence");
     }
 }

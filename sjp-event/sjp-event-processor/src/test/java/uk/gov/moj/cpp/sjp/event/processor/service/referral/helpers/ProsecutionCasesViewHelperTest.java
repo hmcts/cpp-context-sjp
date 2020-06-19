@@ -94,6 +94,7 @@ public class ProsecutionCasesViewHelperTest {
     private static final LocalDate OFFENCE_END_DATE = LocalDate.now().plusDays(20);
     private static final ZonedDateTime PLEA_DATE = ZonedDateTime.now();
     private static final String PROSECUTION_CASE_REFERENCE = "2OknbZ5Xl4";
+    private static final VerdictType NULL_VERDICT = null;
 
     private ProsecutionCasesViewHelper prosecutionCasesViewHelper = new ProsecutionCasesViewHelper();
 
@@ -105,6 +106,11 @@ public class ProsecutionCasesViewHelperTest {
     @Test
     public void shouldCreateProsecutionCaseViewsWithoutConvictionDateWhenNoVerdict() {
         createProsecutionCaseViewsAndVerifyResultCorrect(null, createCaseFileDefendantDetails(), createEmployer(), VerdictType.NO_VERDICT);
+    }
+
+    @Test
+    public void shouldCreateProsecutionCaseViewsWithoutConvictionDateWhenVerdictIsNull() {
+        createProsecutionCaseViewsAndVerifyResultCorrect(null, createCaseFileDefendantDetails(), createEmployer(), NULL_VERDICT);
     }
 
     @Test

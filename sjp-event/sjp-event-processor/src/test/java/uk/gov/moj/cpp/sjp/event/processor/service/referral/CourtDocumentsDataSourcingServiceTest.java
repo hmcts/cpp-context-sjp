@@ -20,7 +20,6 @@ import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.MaterialView;
 import uk.gov.moj.cpp.sjp.event.processor.service.MaterialService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
-import uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.CaseDocumentTypeHelper;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.CourtDocumentsViewHelper;
 
 import java.time.ZonedDateTime;
@@ -39,21 +38,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class CourtDocumentsDataSourcingServiceTest {
 
-    @Mock
-    private MaterialService materialService;
-
-    @Mock
-    private ReferenceDataService referenceDataService;
-
-    @Mock
-    private CaseDocumentTypeHelper caseDocumentTypeHelper;
-
-    @Mock
-    private CourtDocumentsViewHelper courtDocumentsViewHelper;
-
-    @InjectMocks
-    private CourtDocumentsDataSourcingService courtDocumentsDataSourcingService;
-
     private static final UUID MATERIAL_ID = randomUUID();
     private static final UUID DOCUMENT_ID = randomUUID();
     private static final UUID DOCUMENT_TYPE_ID = randomUUID();
@@ -66,6 +50,14 @@ public class CourtDocumentsDataSourcingServiceTest {
     private static final String MIME_TYPE = "Mime Type";
     private static final String SJP_DOCUMENT_TYPE = "SJPN";
     private static final String CC_DOCUMENT_TYPE = "Case Summary";
+    @Mock
+    private MaterialService materialService;
+    @Mock
+    private ReferenceDataService referenceDataService;
+    @Mock
+    private CourtDocumentsViewHelper courtDocumentsViewHelper;
+    @InjectMocks
+    private CourtDocumentsDataSourcingService courtDocumentsDataSourcingService;
 
     @Test
     public void shouldCreateCourtDocumentViews() {
@@ -92,7 +84,6 @@ public class CourtDocumentsDataSourcingServiceTest {
 
         when(materialService.getMaterialMetadata(MATERIAL_ID, emptyEnvelopeWithReferralEventMetadata)).thenReturn(materialDataMock);
         when(referenceDataService.getDocumentTypeAccess(MATERIAL_ADDED_DATE.toLocalDate(), emptyEnvelopeWithReferralEventMetadata)).thenReturn(documentsMetadataMock);
-        when(caseDocumentTypeHelper.getDocumentType(SJP_DOCUMENT_TYPE)).thenReturn(CC_DOCUMENT_TYPE);
 
         courtDocumentsDataSourcingService.createCourtDocumentViews(caseReferredForCourtHearing, caseDetails, emptyEnvelopeWithReferralEventMetadata);
 

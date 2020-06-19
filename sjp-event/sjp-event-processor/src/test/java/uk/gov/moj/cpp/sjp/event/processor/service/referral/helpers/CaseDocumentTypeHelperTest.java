@@ -15,6 +15,7 @@ public class CaseDocumentTypeHelperTest {
     private static final String SJP_FINANCIAL_MEANS = "FINANCIAL_MEANS";
     private static final String SJP_CITN = "CITN";
     private static final String SJP_PLEA_DOCUMENT_TYPE = "PLEA";
+    private static final String SJP_INTENTION_TO_DISQUALIFY_NOTICE = "INTENTION_TO_DISQUALIFY_NOTICE";
 
     private static final String CC_PLEA = "Plea";
     private static final String CC_PRE_CONS = "Pre Cons";
@@ -22,14 +23,13 @@ public class CaseDocumentTypeHelperTest {
     private static final String CC_DOCUMENT_TYPE = "Case Summary";
     private static final String CC_GENERAL_CORRESPONDENCE = "General correspondence";
 
-    private CaseDocumentTypeHelper caseDocumentTypeHelper = new CaseDocumentTypeHelper();
-
     @Test
     public void shouldFindMatchingCriminalCourtDocumentType() {
-        assertThat(caseDocumentTypeHelper.getDocumentType(SJP_DOCUMENT_TYPE), is(CC_DOCUMENT_TYPE));
-        assertThat(caseDocumentTypeHelper.getDocumentType(SJP_FINANCIAL_MEANS), is(CC_SENTENCE));
-        assertThat(caseDocumentTypeHelper.getDocumentType(SJP_CITN), is(CC_PRE_CONS));
-        assertThat(caseDocumentTypeHelper.getDocumentType(SJP_PLEA_DOCUMENT_TYPE), is(CC_PLEA));
-        assertThat(caseDocumentTypeHelper.getDocumentType(SJP_OTHER_TYPE), is(CC_GENERAL_CORRESPONDENCE));
+        assertThat(CaseDocumentTypeHelper.getDocumentType(SJP_DOCUMENT_TYPE), is(CC_DOCUMENT_TYPE));
+        assertThat(CaseDocumentTypeHelper.getDocumentType(SJP_FINANCIAL_MEANS), is(CC_SENTENCE));
+        assertThat(CaseDocumentTypeHelper.getDocumentType(SJP_CITN), is(CC_PRE_CONS));
+        assertThat(CaseDocumentTypeHelper.getDocumentType(SJP_PLEA_DOCUMENT_TYPE), is(CC_PLEA));
+        assertThat(CaseDocumentTypeHelper.getDocumentType(SJP_INTENTION_TO_DISQUALIFY_NOTICE), is(CC_SENTENCE));
+        assertThat(CaseDocumentTypeHelper.getDocumentType(SJP_OTHER_TYPE), is(CC_GENERAL_CORRESPONDENCE));
     }
 }

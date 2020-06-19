@@ -17,6 +17,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.endorsement.PenaltyPointsReason;
 import uk.gov.moj.cpp.sjp.query.view.service.CachedReferenceData;
 import uk.gov.moj.cpp.sjp.query.view.service.ReferenceDataService;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -366,7 +367,7 @@ public class ReferencedDecisionSavedOffenceConverter {
     private List<JsonObject> convertFinancialPenaltyDecision(final JsonObject offenceDecision, CachedReferenceData referenceData) {
         final JsonArrayBuilder results = createArrayBuilder();
 
-        if (offenceDecision.containsKey(FINE)) {
+        if (fineGreaterThanZero(offenceDecision)) {
             results.add(fineResult(offenceDecision, referenceData));
         }
 
@@ -391,6 +392,10 @@ public class ReferencedDecisionSavedOffenceConverter {
                         .add(terminalEntry(1, sjpCostsAndSurcharge.getJsonNumber(COSTS).toString()))
                 )
                 .build();
+    }
+
+    private boolean fineGreaterThanZero(final JsonObject offenceDecision) {
+        return offenceDecision.containsKey(FINE) && offenceDecision.getJsonNumber(FINE).bigDecimalValue().compareTo(BigDecimal.ZERO) > 0;
     }
 
     private boolean hasReasonForNoCosts(JsonObject costsAndSurcharge) {
@@ -498,7 +503,7 @@ public class ReferencedDecisionSavedOffenceConverter {
     private JsonObjectBuilder fineResult(JsonObject offenceDecision, CachedReferenceData referenceData) {
         final JsonArrayBuilder terminalEntries = createArrayBuilder();
 
-        if (offenceDecision.containsKey(FINE)) {
+        if (fineGreaterThanZero(offenceDecision)) {
             terminalEntries.add(terminalEntry(1, offenceDecision.getJsonNumber(FINE).toString()));
         }
 

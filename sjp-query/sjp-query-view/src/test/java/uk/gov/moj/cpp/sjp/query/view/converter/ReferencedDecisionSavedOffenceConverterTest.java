@@ -4,20 +4,26 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.hasItem;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.sjp.query.view.matcher.ResultMatchers.FO;
 import static uk.gov.moj.cpp.sjp.query.view.util.FileUtil.getFileContentAsJson;
 import static uk.gov.moj.cpp.sjp.query.view.util.FileUtil.getFileContentAsJsonArray;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.query.view.service.ReferenceDataService;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonArray;
@@ -78,7 +84,6 @@ public class ReferencedDecisionSavedOffenceConverterTest {
     private static final DateTimeFormatter DATE_FORMAT = ofPattern("yyyy-MM-dd");
     private final UUID OFFENCE1_ID = randomUUID();
     private final UUID OFFENCE2_ID = randomUUID();
-    private final UUID OFFENCE3_ID = randomUUID();
     private final UUID DECISION1_ID = randomUUID();
 
     @InjectMocks
@@ -170,6 +175,89 @@ public class ReferencedDecisionSavedOffenceConverterTest {
         final JsonArray expectedOffenceDecisions = getFileContentAsJsonArray("converter/decision-saved-event.fine.output.json");
 
         assertEquals(expectedOffenceDecisions.toString(), actualPayload.toString(), getCustomComparator());
+    }
+
+    @Test
+    public void shouldNotIncludeFOResultWhenFineIsZeroForFinancialPenalty() {
+        // Given
+        final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
+                getFileContentAsJson("converter/decision-saved-event.fine.input.json",
+                        ImmutableMap.<String, Object>builder()
+                                .put("caseId", CASE_ID)
+                                .put("sessionId", SESSION_ID)
+                                .put("decisionId", DECISION1_ID)
+                                .put("resultedOn", DATE_FORMAT.format(ZonedDateTime.now()))
+                                .put("offence1Id", OFFENCE1_ID)
+                                .put("offence2Id", OFFENCE2_ID)
+                                .put("fine", 0)
+                                .build()));
+
+        when(referenceDataService.getResultIds(decisionSavedEvent)).thenReturn(resultIds);
+
+        // When
+        final JsonArray actualPayload = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
+
+        // Then
+        JsonObject result = getOffenceDecisionByOffenceId(actualPayload, OFFENCE2_ID);
+        assertThat(result.getJsonArray("results"), not(hasItem(FO(BigDecimal.ZERO))));
+    }
+
+    @Test
+    public void shouldNotIncludeFOResultWhenFineIsZeroWithDecimalsForFinancialPenalty() {
+        // Given
+        final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
+                getFileContentAsJson("converter/decision-saved-event.fine.input.json",
+                        ImmutableMap.<String, Object>builder()
+                                .put("caseId", CASE_ID)
+                                .put("sessionId", SESSION_ID)
+                                .put("decisionId", DECISION1_ID)
+                                .put("resultedOn", DATE_FORMAT.format(ZonedDateTime.now()))
+                                .put("offence1Id", OFFENCE1_ID)
+                                .put("offence2Id", OFFENCE2_ID)
+                                .put("fine", new BigDecimal("0.00"))
+                                .build()));
+
+        when(referenceDataService.getResultIds(decisionSavedEvent)).thenReturn(resultIds);
+
+        // When
+        final JsonArray actualPayload = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
+
+        // Then
+        JsonObject result = getOffenceDecisionByOffenceId(actualPayload, OFFENCE2_ID);
+        assertThat(result.getJsonArray("results"), not(hasItem(FO(BigDecimal.ZERO))));
+    }
+
+    @Test
+    public void shouldIncludeFOResultWhenFineIsPresentWithDecimalsForFinancialPenalty() {
+        // Given
+        final JsonEnvelope decisionSavedEvent = envelopeFrom(metadataWithRandomUUID("sjp.events.case-completed"),
+                getFileContentAsJson("converter/decision-saved-event.fine.input.json",
+                        ImmutableMap.<String, Object>builder()
+                                .put("caseId", CASE_ID)
+                                .put("sessionId", SESSION_ID)
+                                .put("decisionId", DECISION1_ID)
+                                .put("resultedOn", DATE_FORMAT.format(ZonedDateTime.now()))
+                                .put("offence1Id", OFFENCE1_ID)
+                                .put("offence2Id", OFFENCE2_ID)
+                                .put("fine", new BigDecimal("0.01"))
+                                .build()));
+        when(referenceDataService.getResultIds(decisionSavedEvent)).thenReturn(resultIds);
+
+        // When
+        final JsonArray actualPayload = referencedDecisionSavedOffenceConverter.convertOffenceDecisions(decisionSavedEvent);
+
+        // Then
+        JsonObject result = getOffenceDecisionByOffenceId(actualPayload, OFFENCE2_ID);
+        assertThat(result.getJsonArray("results"), hasItem(FO(new BigDecimal("0.01"))));
+    }
+
+    private JsonObject getOffenceDecisionByOffenceId(final JsonArray json, final UUID offenceId) {
+        final Optional<JsonObject> offenceDecision = json.getValuesAs(JsonObject.class)
+                .stream()
+                .filter(obj -> obj.getString("id") != null)
+                .filter(obj -> obj.getString("id").equals(offenceId.toString()))
+                .findFirst();
+        return offenceDecision.orElseThrow(() -> new RuntimeException("offenceDecision not present for id: " + offenceId));
     }
 
     @Test

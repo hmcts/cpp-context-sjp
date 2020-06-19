@@ -214,7 +214,7 @@ public class PressTransparencyReportRequestedProcessorTest {
         assertReadyCasesPayloadWithPendingCases(payload, pendingCasesList, "caseUrn");
         assertReadyCasesPayloadWithPendingCases(payload, pendingCasesList, "adress");
         assertReadyCasesPayloadWithPropertyValue(payload, totalNumberOfRecords,"prosecutorName", "Transport For London");
-        assertReadyCasesPayloadWithPropertyValue(payload, totalNumberOfRecords,"dateOfBirth", "12 06 1980 (39)");
+        assertReadyCasesPayloadWithPropertyValue(payload, totalNumberOfRecords,"dateOfBirth", "12 06 1980 (40)");
         assertReadyCasesPayloadWithPropertyValueMatching(payload, "defendantName", "John DOE\\w*");
 
         assertRootValuesOfPayloadForDocumentGenerator(payload, totalNumberOfRecords);

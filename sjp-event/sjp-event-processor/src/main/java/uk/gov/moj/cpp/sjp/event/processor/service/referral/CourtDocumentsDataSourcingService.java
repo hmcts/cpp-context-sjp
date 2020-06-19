@@ -21,6 +21,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -35,9 +36,6 @@ public class CourtDocumentsDataSourcingService {
 
     @Inject
     private CourtDocumentsViewHelper courtDocumentsHelper;
-
-    @Inject
-    private CaseDocumentTypeHelper caseDocumentTypeHelper;
 
     public List<CourtDocumentView> createCourtDocumentViews(
             final CaseReferredForCourtHearing caseReferredForCourtHearing,
@@ -67,11 +65,17 @@ public class CourtDocumentsDataSourcingService {
         return caseDetails
                 .getCaseDocuments()
                 .stream()
-                .collect(
-                        toMap(Document::getId,
-                                document -> documentsMetadata.getOrDefault(
-                                        normalizedDocumentType(caseDocumentTypeHelper.getDocumentType(document.getDocumentType())), null
-                                )));
+                .collect(toMap(
+                        Document::getId,
+                        toDocumentMetadataId(documentsMetadata))
+                );
+    }
+
+    private Function<Document, UUID> toDocumentMetadataId(final Map<String, UUID> documentsMetadata) {
+        return document -> {
+            final String documentType = CaseDocumentTypeHelper.getDocumentType(document.getDocumentType());
+            return documentsMetadata.getOrDefault(normalizedDocumentType(documentType), null);
+        };
     }
 
     private Map<String, UUID> getDocumentsTypes(

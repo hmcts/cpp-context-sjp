@@ -81,7 +81,6 @@
                 <exclusion>
                     <groupId>org.tinyjee.jgraphx</groupId>
                     <artifactId>jgraphx</artifactId>
-                    <!-- OWASP security issue with used dependency version. We probably don't need that, as we are not generating / using activiti diagrams -->
                 </exclusion>
             </exclusions>
         </dependency>
@@ -187,9 +186,9 @@
                         </exclusions>
                     </dependency>
                     <dependency>
-                        <groupId>uk.gov.moj.cpp.usersgroups</groupId>
-                        <artifactId>usersgroups-query-api</artifactId>
-                        <version>${usersgroups.version}</version>
+                        <groupId>uk.gov.moj.cpp.prosecution.casefile</groupId>
+                        <artifactId>prosecutioncasefile-query-api</artifactId>
+                        <version>${prosecutioncasefile.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>
@@ -199,9 +198,9 @@
                         </exclusions>
                     </dependency>
                     <dependency>
-                        <groupId>uk.gov.moj.cpp.prosecution.casefile</groupId>
-                        <artifactId>prosecutioncasefile-query-api</artifactId>
-                        <version>${prosecutioncasefile.version}</version>
+                        <groupId>uk.gov.moj.cpp.usersgroups</groupId>
+                        <artifactId>usersgroups-query-api</artifactId>
+                        <version>${usersgroups.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>

@@ -7,7 +7,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>sjp-domain-transformations</artifactId>
+    <artifactId>sjp-domain-transformation</artifactId>
 
     <packaging>pom</packaging>
 

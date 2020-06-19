@@ -35,6 +35,7 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -258,6 +259,7 @@ public class ProsecutionCasesViewHelper {
                 .stream()
                 .filter(offenceDecisionInformation -> offenceDecisionInformation.getOffenceId().equals(offenceDetails.getId()))
                 .map(OffenceDecisionInformation::getVerdict)
+                .filter(Objects::nonNull)
                 .findFirst()
                 .orElse(NO_VERDICT);
 

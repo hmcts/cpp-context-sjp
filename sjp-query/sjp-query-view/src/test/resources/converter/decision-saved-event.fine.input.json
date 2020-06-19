@@ -39,7 +39,7 @@
     {
       "type": "FINANCIAL_PENALTY",
       "compensation": 15.3,
-      "fine": 40,
+      "fine": ${fine:-40},
       "offenceDecisionInformation": [
         {
           "offenceId": "${offence2Id}",

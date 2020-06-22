@@ -692,3 +692,24 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
       application/vnd.sjp.add-request-for-outstanding-fines+json:
         example: !include json/sjp.add-request-for-outstanding-fines.json
         schema: !include json/schema/sjp.add-request-for-outstanding-fines.json
+
+/cases/{caseId}/request-delete-docs:
+  uriParameters:
+      caseId:
+        description: The ID of the case to resolve
+        type: string
+  post:
+    description: |
+          requests deletion of docs for case.
+          ...
+          (mapping):
+              requestType: application/vnd.sjp.request-delete-docs+json
+              name: sjp.request-delete-docs
+          ...
+    body:
+        application/vnd.sjp.request-delete-docs+json: !!null
+    responses:
+        202:
+          description: Accepted
+        500:
+          description: Internal Server Error

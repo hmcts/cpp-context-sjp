@@ -152,6 +152,11 @@ public class NoActionController {
         send(envelope);
     }
 
+    @Handles("sjp.command.request-delete-docs")
+    public void requestDeleteDocs(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
     private void send(final Envelope<?> envelope) {
         sender.send(envelope);
     }

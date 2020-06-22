@@ -110,6 +110,10 @@ public final class RuleConstants {
         return singletonList(GROUP_SYSTEM_USERS);
     }
 
+    public static List<String> getRequestDeleteDocsGroups() {
+        return singletonList(GROUP_SYSTEM_USERS);
+    }
+
     public static List<String> datesToAvoidRequiredGroups() {
         return singletonList(GROUP_SYSTEM_USERS);
     }

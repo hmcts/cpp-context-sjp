@@ -278,7 +278,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <skip.integration.tests>true</skip.integration.tests>
+                <skip.integration.tests>false</skip.integration.tests>
             </properties>
             <build>
                 <plugins>

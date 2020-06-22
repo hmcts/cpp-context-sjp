@@ -391,4 +391,11 @@ public class CompositeCaseAggregateStateMutatorTest {
         assertThat(caseAggregateState.getSessionIds(), hasSize(1));
         assertThat(caseAggregateState.getSessionIds(), hasItem(sessionId));
     }
+
+    @Test
+    public void shouldMutateStateOnDeleteDocsStarted() {
+        final FinancialMeansDeleteDocsStarted deleteDocsStarted = new FinancialMeansDeleteDocsStarted(caseId, defendantId);
+        compositeCaseAggregateStateMutator.apply(deleteDocsStarted, caseAggregateState);
+        assertThat(caseAggregateState.isDeleteDocsStarted(), is(true));
+    }
 }

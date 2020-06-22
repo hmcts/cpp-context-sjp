@@ -7,7 +7,7 @@ import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.WITHDRAW;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
-import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleteDocsRejected;
+import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleteDocsRequestRejected;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleteDocsStarted;
 
 import java.util.Collection;
@@ -26,7 +26,7 @@ public class DeleteDocsHandler {
     public Stream<Object> deleteDocs(CaseAggregateState caseAggregateState) {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         if(caseAggregateState.isDeleteDocsStarted()){
-            streamBuilder.add(new FinancialMeansDeleteDocsRejected(caseAggregateState.getCaseId()));
+            streamBuilder.add(new FinancialMeansDeleteDocsRequestRejected(caseAggregateState.getCaseId()));
         } else if(offenceDecisionsValidForDeleteDocs(caseAggregateState)){
             streamBuilder.add(new FinancialMeansDeleteDocsStarted(
                     caseAggregateState.getCaseId(),

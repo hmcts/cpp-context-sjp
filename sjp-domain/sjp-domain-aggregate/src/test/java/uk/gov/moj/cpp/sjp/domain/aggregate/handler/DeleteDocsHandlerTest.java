@@ -5,6 +5,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -15,12 +16,13 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
+import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
-import uk.gov.moj.cpp.sjp.domain.testutils.builders.FinancialPenaltyBuilder;
-import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleteDocsRejected;
+import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleteDocsRequestRejected;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleteDocsStarted;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -28,7 +30,7 @@ import java.util.stream.Stream;
 import org.junit.Before;
 import org.junit.Test;
 
-public class RequestDeleteDocsTest {
+public class DeleteDocsHandlerTest {
 
     private CaseAggregateState caseAggregateState;
     private final UUID caseId = randomUUID();
@@ -64,7 +66,7 @@ public class RequestDeleteDocsTest {
     public void shouldNotRaiseDeleteDocsStartedEvent() {
         givenCaseHasWithdrawAndFinancialPenalty();
         final Stream<Object> eventStream = DeleteDocsHandler.INSTANCE.deleteDocs(caseAggregateState);
-        assertThat(eventStream.collect(toList()).isEmpty(), is(true));
+        assertThat(eventStream.collect(toList()), empty());
     }
 
     @Test
@@ -72,7 +74,7 @@ public class RequestDeleteDocsTest {
         givenCaseHasWithdrawAndDismissDecisions();
         caseAggregateState.setDeleteDocsStarted(true);
         final Stream<Object> eventStream = DeleteDocsHandler.INSTANCE.deleteDocs(caseAggregateState);
-        final FinancialMeansDeleteDocsRejected deleteDocsRejected = collectFirstEvent(eventStream, FinancialMeansDeleteDocsRejected.class);
+        final FinancialMeansDeleteDocsRequestRejected deleteDocsRejected = collectFirstEvent(eventStream, FinancialMeansDeleteDocsRequestRejected.class);
 
         assertThat(deleteDocsRejected.getCaseId(), is(caseId));
     }
@@ -90,11 +92,9 @@ public class RequestDeleteDocsTest {
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1),
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId2, NO_VERDICT), withdrawalReasonId2),
-                FinancialPenaltyBuilder.withDefaults()
-                        .id(offenceId3)
-                        .verdict(FOUND_GUILTY)
-                        .build()
-        );
+                new FinancialPenalty(randomUUID(), createOffenceDecisionInformation(offenceId3, FOUND_GUILTY), new BigDecimal(200), new BigDecimal(20),
+                        null,false, null, null, false, null,
+                        null,null, false,null, null, null, null));
         caseAggregateState.updateOffenceDecisions(offenceDecisions, sessionId);
         caseAggregateState.markCaseCompleted();
     }

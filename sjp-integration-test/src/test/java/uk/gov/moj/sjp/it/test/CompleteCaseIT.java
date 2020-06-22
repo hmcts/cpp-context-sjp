@@ -4,6 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.Month.JULY;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
@@ -68,7 +69,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.google.common.collect.Sets;
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -133,8 +133,8 @@ public class CompleteCaseIT extends BaseIntegrationTest {
                 jsonEnvelope(
                         metadata().withName(FinancialMeansDeleteDocsStarted.EVENT_NAME),
                         payload().isJson(allOf(
-                                withJsonPath("$.caseId", CoreMatchers.equalTo(caseId.toString())),
-                                withJsonPath("$.defendantId", CoreMatchers.equalTo(defendantId.toString()))
+                                withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                withJsonPath("$.defendantId", equalTo(defendantId.toString()))
                         ))));
 
 
@@ -146,8 +146,8 @@ public class CompleteCaseIT extends BaseIntegrationTest {
                 jsonEnvelope(
                         metadata().withName("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn"),
                         payload().isJson(allOf(
-                                withJsonPath("$.caseId", CoreMatchers.equalTo(caseId.toString())),
-                                withJsonPath("$.defendantId", CoreMatchers.equalTo(defendantId.toString()))
+                                withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                withJsonPath("$.defendantId", equalTo(defendantId.toString()))
                         ))));
 
         final Optional<JsonEnvelope> jsonEnvelope2 = eventListener.popEvent("public.sjp.case-resulted");
@@ -158,8 +158,8 @@ public class CompleteCaseIT extends BaseIntegrationTest {
                 jsonEnvelope(
                         metadata().withName("public.sjp.case-resulted"),
                         payload().isJson(allOf(
-                                withJsonPath("$.cases[0].caseId", CoreMatchers.equalTo(caseId.toString())),
-                                withJsonPath("$.session.sessionId", CoreMatchers.equalTo(magistrateSessionId.toString()))
+                                withJsonPath("$.cases[0].caseId", equalTo(caseId.toString())),
+                                withJsonPath("$.session.sessionId", equalTo(magistrateSessionId.toString()))
                         ))));
     }
 
@@ -181,8 +181,8 @@ public class CompleteCaseIT extends BaseIntegrationTest {
                 jsonEnvelope(
                         metadata().withName("public.sjp.case-resulted"),
                         payload().isJson(allOf(
-                                withJsonPath("$.cases[0].caseId", CoreMatchers.equalTo(caseId.toString())),
-                                withJsonPath("$.session.sessionId", CoreMatchers.equalTo(magistrateSessionId.toString()))
+                                withJsonPath("$.cases[0].caseId", equalTo(caseId.toString())),
+                                withJsonPath("$.session.sessionId", equalTo(magistrateSessionId.toString()))
                         ))));
     }
 

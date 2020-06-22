@@ -4,12 +4,11 @@ package uk.gov.moj.cpp.sjp.event.processor;
 import static com.google.common.collect.Sets.newHashSet;
 import static javax.json.Json.createObjectBuilder;
 import static javax.json.JsonValue.NULL;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
-import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
-import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.DEFENDANT_ID;
 
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.results.PublicSjpResulted;
@@ -22,7 +21,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
-import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleteDocsStarted;
 import uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
@@ -101,7 +99,7 @@ public class CaseCompletedProcessor {
         }
 
         final JsonArray caseDecisions = payload.getJsonArray(CASE_DECISIONS);
-        if(caseDecisions.isEmpty()) {
+        if(isEmpty(caseDecisions)) {
             throw new IllegalArgumentException("Case results. No case decisions");
         }
 
@@ -143,19 +141,6 @@ public class CaseCompletedProcessor {
     private JsonEnvelope getCaseResults(final JsonEnvelope caseCompletedEnvelope, final JsonObject caseCompletedPayload) {
         final JsonEnvelope caseResultsRequestEnvelope = envelopeFrom(metadataFrom(caseCompletedEnvelope.metadata()).withName(CASE_RESULTS), caseCompletedPayload);
         return requester.request(caseResultsRequestEnvelope);
-    }
-
-    @Handles(FinancialMeansDeleteDocsStarted.EVENT_NAME)
-    public void handleDeleteDocsStarted(final JsonEnvelope deleteDocsStartedEnvelope) {
-        final JsonObject deleteDocsStartedPayload = deleteDocsStartedEnvelope.payloadAsJsonObject();
-        final FinancialMeansDeleteDocsStarted deleteDocsStarted = jsonObjectToObjectConverter.convert(deleteDocsStartedPayload, FinancialMeansDeleteDocsStarted.class);
-        sender.send(envelop(
-                createObjectBuilder()
-                        .add(CASE_ID, deleteDocsStarted.getCaseId().toString())
-                        .add(DEFENDANT_ID, deleteDocsStarted.getDefendantId().toString())
-                        .build())
-                .withName("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn")
-                .withMetadataFrom(deleteDocsStartedEnvelope));
     }
 
     private PublicSjpResulted buildJsonEnvelopeForCCResults(final UUID caseId, final Envelope caseResultsResponse,

@@ -52,14 +52,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class CaseCompletedProcessorTest {
 
     private static final UUID CASE_ID = randomUUID();
-    private static final UUID DEFENDANT_ID = randomUUID();
     private static final UUID SESSION1_ID = randomUUID();
     private static final UUID RESULT_DEFINITION_ID = randomUUID();
     private static final ZonedDateTime DECISION1_SAVED_AT = ZonedDateTime.now();
     private static final UUID OFFENCE1_ID = randomUUID();
     private static final String CASE_RESULTS = "sjp.query.case-results";
     private static final String CASE_COMPLETED = "sjp.events.case-completed";
-    private static final String FINANCIAL_MEANS_DELETE_DOCS_STARTED = "sjp.events.financial-means-delete-docs-started";
 
     @InjectMocks
     private CaseCompletedProcessor caseCompletedProcessor;
@@ -139,27 +137,6 @@ public class CaseCompletedProcessorTest {
         when(sjpService.getCaseDetails(any(), any())).thenReturn(buildCaseDetails());
         when(requester.request(any())).thenReturn(responseEnvelope);
         caseCompletedProcessor.handleCaseCompleted(envelope);
-    }
-
-    @Test
-    public void shouldGenerateAllOffencesWithdrawnOrDismissedEvent() {
-        final JsonObject payload = createObjectBuilder()
-                .add("caseId", CASE_ID.toString())
-                .add("defendantId", DEFENDANT_ID.toString())
-                .build();
-        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(FINANCIAL_MEANS_DELETE_DOCS_STARTED), payload);
-
-
-        caseCompletedProcessor.handleDeleteDocsStarted(envelope);
-
-        verify(sender).send(jsonEnvelopeCaptor.capture());
-
-        final Envelope<JsonValue> publicEventEnvelope = jsonEnvelopeCaptor.getValue();
-
-        assertThat((publicEventEnvelope.metadata().name()), is("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn"));
-        assertThat(publicEventEnvelope.payload(), payloadIsJson(allOf(withJsonPath("caseId", is(CASE_ID.toString())))));
-        assertThat(publicEventEnvelope.payload(), payloadIsJson(allOf(withJsonPath("defendantId", is(DEFENDANT_ID.toString())))));
-
     }
 
     private JsonObject createResponsePayload() {

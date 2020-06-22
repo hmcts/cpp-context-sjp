@@ -8,14 +8,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Event(FinancialMeansDeleteDocsStarted.EVENT_NAME)
-public class FinancialMeansDeleteDocsRejected {
+public class FinancialMeansDeleteDocsRequestRejected {
 
-    public static final String EVENT_NAME = "sjp.events.financial-means-delete-docs-rejected";
+    public static final String EVENT_NAME = "sjp.events.financial-means-delete-docs-request-rejected";
 
     private final UUID caseId;
 
     @JsonCreator
-    public FinancialMeansDeleteDocsRejected(@JsonProperty("caseId") final UUID caseId) {
+    public FinancialMeansDeleteDocsRequestRejected(@JsonProperty("caseId") final UUID caseId) {
         this.caseId = caseId;
     }
 

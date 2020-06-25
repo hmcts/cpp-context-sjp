@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.sjp</groupId>
         <artifactId>sjp-parent</artifactId>
-        <version>6.4.49-SNAPSHOT</version>
+        <version>7.0.0-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -59,7 +59,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.everit.json</groupId>
+            <groupId>com.github.everit-org.json-schema</groupId>
             <artifactId>org.everit.json.schema</artifactId>
             <scope>test</scope>
         </dependency>
@@ -181,7 +181,7 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.unifiedsearch</groupId>
             <artifactId>unifiedsearch-test-utils</artifactId>
-            <version>${unified.search-library.version}</version>
+            <version>${platform-libraries.version}</version>
         </dependency>
 
         <dependency>
@@ -324,9 +324,6 @@
                                     <discovery.type>single-node</discovery.type>
                                 </properties>
                             </instanceSettings>
-                            <!-- TODO: xpack security not implemented:
-                            https://github.com/alexcojocaru/elasticsearch-maven-plugin/issues/42
-                            -->
                         </configuration>
                         <executions>
                             <execution>

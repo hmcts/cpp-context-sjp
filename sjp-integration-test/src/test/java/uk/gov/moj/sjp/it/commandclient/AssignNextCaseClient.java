@@ -22,8 +22,8 @@ import lombok.Builder;
         URI = "/sessions/{sessionId}",
         contentType = "application/vnd.sjp.assign-next-case+json",
         listenerConfigs = {
-                @ListenerConfig(key = CaseAssigned.EVENT_NAME, until = UNTIL_RECEIVAL, timeout = 8000),
-                @ListenerConfig(key = CaseAssignmentRejected.EVENT_NAME, until = UNTIL_TIMEOUT, timeout = 11000)
+                @ListenerConfig(key = CaseAssigned.EVENT_NAME, until = UNTIL_RECEIVAL, timeout = 28000),
+                @ListenerConfig(key = CaseAssignmentRejected.EVENT_NAME, until = UNTIL_TIMEOUT, timeout = 30000)
         }
 )
 public class AssignNextCaseClient {

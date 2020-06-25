@@ -24,8 +24,9 @@ import org.hamcrest.Matcher;
 
 public class RestPollerWithDefaults {
 
-    public static final int DELAY_IN_MILLIS = 0;
-    public static final int INTERVAL_IN_MILLIS = 100;
+    public static final long DELAY_IN_MILLIS = 0L;
+    public static final long INTERVAL_IN_MILLIS = 100L;
+    public static final long TIMEOUT_IN_MILLIS = 30000L;
 
     public static RestPoller pollWithDefaults(final RequestParamsBuilder requestParamsBuilder) {
         return pollWithDefaults(requestParamsBuilder.build());
@@ -37,12 +38,14 @@ public class RestPollerWithDefaults {
 
     public static RestPoller pollWithDefaults(final RequestParams requestParams) {
         return poll(requestParams)
+                .timeout(TIMEOUT_IN_MILLIS, MILLISECONDS)
                 .pollDelay(DELAY_IN_MILLIS, MILLISECONDS)
                 .pollInterval(INTERVAL_IN_MILLIS, MILLISECONDS);
     }
 
     public static RestPoller pollWithTimeParams(final RequestParams requestParams, int delayInMillis, int intervalInMillis) {
         return poll(requestParams)
+                .timeout(TIMEOUT_IN_MILLIS, MILLISECONDS)
                 .pollDelay(delayInMillis, MILLISECONDS)
                 .pollInterval(intervalInMillis, MILLISECONDS);
     }

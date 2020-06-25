@@ -4,18 +4,20 @@ import static com.jayway.awaitility.Awaitility.await;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.getOnlinePlea;
 import static uk.gov.moj.sjp.it.util.TopicUtil.retrieveMessageAsJsonObject;
 
+import uk.gov.justice.services.test.utils.core.messaging.Poller;
 import uk.gov.moj.sjp.it.stub.MaterialStub;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.TopicUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -77,14 +79,27 @@ public class FinancialMeansHelper implements AutoCloseable {
         HttpClientUtil.makePostCall(resource, contentType, payload.toString());
     }
 
-    public static void assertDocumentDeleted(CaseDocumentHelper caseDocumentHelper, UUID userId, List<String> fmiMaterials) {
-        JsonObject caseDocument = caseDocumentHelper.findAllDocumentsForTheUser(userId);
-        String materialIdFromQuery = caseDocument.getString("materialId");
-        fmiMaterials.forEach(materialId -> assertFalse("A deleted materialis present", materialIdFromQuery.equals(materialId)));
+    public static void assertDocumentDeleted(final CaseDocumentHelper caseDocumentHelper, final UUID userId, final List<String> fmiMaterials) {
+
+        final Optional<String> materialIdFromQueryResult = new Poller(10, 1000L)
+                .pollUntilFound(() -> {
+                    final JsonObject caseDocument = caseDocumentHelper.findAllDocumentsForTheUser(userId);
+                    final String materialIdFromQuery = caseDocument.getString("materialId");
+
+                    for (final String materialId : fmiMaterials) {
+                        if (materialIdFromQuery.equals(materialId)) {
+                            return Optional.empty();
+                        }
+                    }
+
+                    return Optional.of(materialIdFromQuery);
+                });
+
+        assertThat("A deleted material is present", materialIdFromQueryResult.isPresent(), is(true));
     }
 
-    public void pleadOnline(final String payload, UUID caseId, String defendantId) {
-        String writeUrl = String.format("/cases/%s/defendants/%s/plead-online", caseId, defendantId);
+    public void pleadOnline(final String payload, final UUID caseId, final String defendantId) {
+        final String writeUrl = String.format("/cases/%s/defendants/%s/plead-online", caseId, defendantId);
         HttpClientUtil.makePostCall(writeUrl, "application/vnd.sjp.plead-online+json", payload, Response.Status.ACCEPTED);
     }
 
@@ -100,7 +115,7 @@ public class FinancialMeansHelper implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        if(null != messageConsumer) {
+        if (null != messageConsumer) {
             try {
                 messageConsumer.close();
             } catch (JMSException e) {

@@ -13,9 +13,11 @@ import static uk.gov.moj.sjp.it.helper.DeleteFinancialMeansMatcherHelper.getSave
 import static uk.gov.moj.sjp.it.helper.FinancialMeansHelper.getOnlinePleaData;
 import static uk.gov.moj.sjp.it.stub.MaterialStub.stubAddCaseMaterial;
 import static uk.gov.moj.sjp.it.stub.NotifyStub.stubNotifications;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.*;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllIndividualProsecutorsQueries;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostcodeQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
@@ -124,13 +126,13 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
         final String defendantId = CasePoller.pollUntilCaseByIdIsOk(caseId).getString("defendant.id");
         final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId);
 
-        List<String> fmiMaterials = financialMeansHelper.associateCaseWithFinancialMeansDocuments(caseId, USER_ID, caseDocumentHelper);
+        final List<String> fmiMaterials = financialMeansHelper.associateCaseWithFinancialMeansDocuments(caseId, USER_ID, caseDocumentHelper);
 
         final JsonObject payload = createObjectBuilder().build();
         financialMeansHelper.deleteFinancialMeans(caseId, defendantId, payload);
 
         FinancialMeansHelper.assertDocumentDeleted(caseDocumentHelper, USER_ID, fmiMaterials);
-        fmiMaterials.forEach(materialId -> MaterialStub.assertMaterialDeleteFMICommandInvoked(materialId));
+        fmiMaterials.forEach(MaterialStub::assertMaterialDeleteFMICommandInvoked);
         fmiMaterials.clear();
         financialMeansHelper.getEventFromPublicTopic(
                 isJson(
@@ -161,7 +163,7 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
 
     private void verifyOnlinePleaDataDeletion(final JSONObject pleaPayload, final UUID caseId, final String defendantId) throws InterruptedException {
         final Matcher<Object> expectedOnlinePleaResultAfterDelete = getSavedOnlinePleaPayloadContentMatcher(pleaPayload, caseId.toString(), defendantId, true);
-        DEFAULT_STUBBED_USER_ID.forEach(userId -> getOnlinePleaData(caseId.toString(),  expectedOnlinePleaResultAfterDelete, userId, defendantId.toString()));
+        DEFAULT_STUBBED_USER_ID.forEach(userId -> getOnlinePleaData(caseId.toString(), expectedOnlinePleaResultAfterDelete, userId, defendantId.toString()));
     }
 
     private void verifyFinancialMeansDataDeletion(final String defendantId) {

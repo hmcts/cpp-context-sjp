@@ -42,7 +42,7 @@
             "type": "object",
             "properties": {
               "id": {
-                "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+                "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
               },
               "prompts": {
                 "type": "array",
@@ -50,7 +50,7 @@
                   "type": "object",
                   "properties": {
                     "id": {
-                      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+                      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
                     },
                     "value": {
                       "type": "string"

@@ -4,22 +4,22 @@
   "type": "object",
   "properties": {
     "caseId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "offenceId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "changedBy": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "changedAt": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/date-time"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/date-time"
     },
     "newWithdrawalRequestReasonId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "oldWithdrawalRequestReasonId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     }
   },
   "additionalProperties": false,

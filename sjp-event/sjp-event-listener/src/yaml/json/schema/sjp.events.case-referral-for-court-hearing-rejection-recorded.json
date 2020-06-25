@@ -4,13 +4,13 @@
   "type": "object",
   "properties": {
     "caseId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "rejectionReason": {
       "type": "string"
     },
     "rejectedAt": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/date-time"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/date-time"
     }
   },
   "required": [

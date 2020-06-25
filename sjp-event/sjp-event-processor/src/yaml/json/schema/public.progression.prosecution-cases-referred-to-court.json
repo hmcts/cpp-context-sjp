@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "prosecutionCaseId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "hearingDays": {
       "type": "array",
@@ -33,7 +33,7 @@
     "type": "object",
     "properties": {
       "id": {
-        "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
       },
       "name": {
         "type": "string"
@@ -42,7 +42,7 @@
         "type": "string"
       },
       "roomId": {
-        "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
       },
       "roomName": {
         "type": "string"

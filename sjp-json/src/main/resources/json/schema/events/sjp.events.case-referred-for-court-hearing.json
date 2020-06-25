@@ -3,13 +3,13 @@
   "id": "http://cpp.moj.gov.uk/sjp/event/case-referred-for-court-hearing.json",
   "properties": {
     "caseId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "decisionId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "referralReasonId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "listingNotes": {
       "type": "string"
@@ -20,12 +20,12 @@
       "maximum": 999
     },
     "referredAt": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/date-time"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/date-time"
     },
     "referredOffenceIds": {
       "type": "array",
       "items": {
-        "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
       }
     },
     "defendantCourtOptions": {

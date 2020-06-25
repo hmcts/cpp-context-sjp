@@ -4,14 +4,14 @@
   "type": "object",
   "properties": {
     "sessionId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "sessionLocation": {
       "description": "As per Libra documentation, for SPI out this has to provide unique reference to court room.",
       "type": "object",
       "properties": {
         "courtId": {
-          "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "courtHouseCode": {
           "type": "string"

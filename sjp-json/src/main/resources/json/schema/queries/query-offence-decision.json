@@ -7,19 +7,19 @@
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date"
     },
     "offenceId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "decisionType": {
       "$ref": "http://cpp.moj.gov.uk/core/sjp/decision/decision-type.json"
     },
     "withdrawalReasonId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "verdict": {
       "$ref": "http://cpp.moj.gov.uk/core/sjp/verdict/verdict-type.json"
     },
     "referralReasonId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "estimatedHearingDuration": {
       "type": "integer",

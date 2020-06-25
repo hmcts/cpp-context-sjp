@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "payloadFileServiceId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "templateIdentifier": {
       "type": "string"
@@ -17,7 +17,7 @@
       "format": "date-time"
     },
     "documentFileServiceId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "generatedTime": {
       "type": "string",
@@ -27,7 +27,7 @@
       "type": "integer"
     },
     "sourceCorrelationId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "originatingSource": {
       "type": "string"

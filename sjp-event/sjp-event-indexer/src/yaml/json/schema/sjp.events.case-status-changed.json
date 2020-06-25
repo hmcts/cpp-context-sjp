@@ -3,7 +3,7 @@
   "id": "http://justice.gov.uk/json/schemas/domains/sjp/event/case-status-changed.json",
   "properties": {
     "caseId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "caseStatus": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/case-status.json"

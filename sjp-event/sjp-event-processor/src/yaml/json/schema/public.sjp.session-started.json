@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "sessionId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "sessionType": {
      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/session-type.json"

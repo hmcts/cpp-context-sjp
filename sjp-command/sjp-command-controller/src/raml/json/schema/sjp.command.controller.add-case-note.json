@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "caseId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "noteText": {
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/note-text.json"
@@ -12,7 +12,7 @@
       "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/note-type.json"
     },
     "decisionId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     }
   },
   "required": [

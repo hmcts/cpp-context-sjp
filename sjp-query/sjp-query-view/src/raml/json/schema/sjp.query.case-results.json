@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "caseId": {
-      "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
     "accountDivisionCode": {
       "type": "integer"
@@ -18,7 +18,7 @@
         "type": "object",
         "properties": {
           "sjpSessionId": {
-            "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
           },
           "resultedOn": {
             "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
@@ -46,7 +46,7 @@
                     "type": "object",
                     "properties": {
                       "resultDefinitionId": {
-                        "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+                        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
                       },
                       "prompts": {
                         "type": "array",
@@ -54,7 +54,7 @@
                           "type": "object",
                           "properties": {
                             "promptDefinitionId": {
-                              "$ref": "http://cpp.moj.gov.uk/core/domain/json/schema/data-types.json#/definitions/uuid"
+                              "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
                             },
                             "value": {
                               "type": "string"

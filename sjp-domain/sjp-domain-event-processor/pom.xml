@@ -25,7 +25,7 @@
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.core.domain</groupId>
-            <artifactId>coredomain-common-definitions-schema</artifactId>
+            <artifactId>common-core-domain</artifactId>
             <version>${coredomain.version}</version>
         </dependency>
     </dependencies>
@@ -125,7 +125,7 @@
                     </dependency>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.core.domain</groupId>
-                        <artifactId>coredomain-common-definitions-schema</artifactId>
+                        <artifactId>common-core-domain</artifactId>
                         <version>${coredomain.version}</version>
                     </dependency>
                     <dependency>

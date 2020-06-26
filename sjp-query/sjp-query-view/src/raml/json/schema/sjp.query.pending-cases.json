@@ -51,6 +51,23 @@
               },
               "offenceWording": {
                 "type" : "string"
+              },
+              "pressRestriction" : {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "requested": {
+                    "type": "boolean"
+                  }
+                },
+                "required" : [
+                  "requested"
+                ]
+              },
+              "completed" : {
+                "type" : "boolean"
               }
             }
           },

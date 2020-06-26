@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toList;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,13 +32,20 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 })
 public abstract class OffenceDecision implements Serializable {
 
-    private UUID id;
+    private final UUID id;
 
-    private DecisionType type;
+    private final DecisionType type;
+
+    private final PressRestriction pressRestriction;
 
     public OffenceDecision(final UUID id, final DecisionType type) {
+        this(id, type, null);
+    }
+
+    public OffenceDecision(final UUID id, final DecisionType type, final PressRestriction pressRestriction) {
         this.id = id;
         this.type = type;
+        this.pressRestriction = pressRestriction;
     }
 
     public UUID getId() {
@@ -46,6 +54,15 @@ public abstract class OffenceDecision implements Serializable {
 
     public DecisionType getType() {
         return type;
+    }
+
+    public PressRestriction getPressRestriction() {
+        return pressRestriction;
+    }
+
+    @JsonIgnore
+    public boolean hasPressRestriction() {
+        return Objects.nonNull(this.pressRestriction);
     }
 
     @JsonIgnore

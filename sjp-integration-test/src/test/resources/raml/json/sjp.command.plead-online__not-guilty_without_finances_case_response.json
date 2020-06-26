@@ -39,7 +39,8 @@
         "chargeDate": "2016-01-01",
         "startDate": "2016-01-01",
         "backDuty": 340.3,
-        "endorsable" : false
+        "endorsable" : false,
+        "pressRestrictable": false
       }
     ],
     "caseId": "${caseId}",

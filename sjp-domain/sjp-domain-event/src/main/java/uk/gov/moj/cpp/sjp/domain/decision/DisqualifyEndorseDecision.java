@@ -30,7 +30,19 @@ public abstract class DisqualifyEndorseDecision extends SingleOffenceDecision {
                                      final PenaltyPointsReason penaltyPointsReason, final String additionalPointsReason,
                                      final Boolean disqualification, final DisqualificationType disqualificationType,
                                      DisqualificationPeriod disqualificationPeriod, final Integer notionalPenaltyPoints) {
-        super(id, type, offenceDecisionInformation);
+        this(id, type, offenceDecisionInformation, licenceEndorsed, penaltyPointsImposed,
+                penaltyPointsReason, additionalPointsReason, disqualification, disqualificationType,
+                disqualificationPeriod, notionalPenaltyPoints, null);
+    }
+
+    public DisqualifyEndorseDecision(final UUID id, final DecisionType type,
+                                     final OffenceDecisionInformation offenceDecisionInformation,
+                                     final Boolean licenceEndorsed, final Integer penaltyPointsImposed,
+                                     final PenaltyPointsReason penaltyPointsReason, final String additionalPointsReason,
+                                     final Boolean disqualification, final DisqualificationType disqualificationType,
+                                     final DisqualificationPeriod disqualificationPeriod, final Integer notionalPenaltyPoints,
+                                     final PressRestriction pressRestriction) {
+        super(id, type, offenceDecisionInformation, pressRestriction);
         this.licenceEndorsed = licenceEndorsed;
         this.penaltyPointsImposed = penaltyPointsImposed;
         this.penaltyPointsReason = penaltyPointsReason;

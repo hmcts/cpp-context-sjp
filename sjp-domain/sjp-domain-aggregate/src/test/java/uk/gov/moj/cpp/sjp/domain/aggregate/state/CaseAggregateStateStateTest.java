@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.domain.aggregate.state;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
@@ -11,14 +12,17 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeThat;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
+import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.SetAside;
+import uk.gov.moj.cpp.sjp.domain.testutils.builders.DismissBuilder;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -277,4 +281,31 @@ public class CaseAggregateStateStateTest {
         assertFalse(state.offenceHasPreviousConviction(offenceId1));
     }
 
+    @Test
+    public void shouldMarkCasesAsHavingPreviousPressRestrictions() {
+        final Dismiss dismiss1 = DismissBuilder.withDefaults().pressRestriction("Ryan").build();
+        final Dismiss dismiss2 = DismissBuilder.withDefaults().pressRestrictionRevoked().build();
+        final Dismiss dismiss3 = DismissBuilder.withDefaults().build();
+        state.markOffenceAsPressRestrictable(dismiss1.getId());
+        state.markOffenceAsPressRestrictable(dismiss2.getId());
+        assumeThat(state.hasPreviousPressRestriction(dismiss1.getId()), is(false));
+        assumeThat(state.hasPreviousPressRestriction(dismiss2.getId()), is(false));
+        assumeThat(state.hasPreviousPressRestriction(dismiss3.getId()), is(false));
+
+        state.updateOffenceDecisions(asList(dismiss1, dismiss2, dismiss3), randomUUID());
+
+        assertThat(state.hasPreviousPressRestriction(dismiss1.getId()), is(true));
+        assertThat(state.hasPreviousPressRestriction(dismiss2.getId()), is(true));
+        assertThat(state.hasPreviousPressRestriction(dismiss3.getId()), is(false));
+    }
+
+    @Test
+    public void shouldMarkCasesAsNotHavingPreviousPressRestrictions() {
+        final DismissBuilder dismiss = DismissBuilder.withDefaults();
+        state.markOffenceAsPressRestrictable(dismiss.getId());
+
+        state.updateOffenceDecisions(singletonList(dismiss.build()), randomUUID());
+
+        assertThat(state.hasPreviousPressRestriction(dismiss.getId()), is(false));
+    }
 }

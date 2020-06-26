@@ -114,6 +114,9 @@ public class CaseAggregateState implements AggregateState {
     private String defendantDriverLicenceDetails;
     private boolean setAside;
 
+    private final Set<UUID> pressRestrictableOffenceIds = new HashSet<>();
+    private final Set<UUID> offencesHavingPreviousPressRestriction = new HashSet<>();
+
     public UUID getCaseId() {
         return caseId;
     }
@@ -495,7 +498,12 @@ public class CaseAggregateState implements AggregateState {
     public void updateOffenceDecisions(final List<OffenceDecision> offenceDecisions, final UUID sessionId) {
         offenceDecisions.forEach(
                 offencesDecision -> offencesDecision.getOffenceIds().forEach(
-                        offenceId -> this.offenceDecisionsByOffenceId.put(offenceId, offencesDecision)
+                        offenceId -> {
+                            this.offenceDecisionsByOffenceId.put(offenceId, offencesDecision);
+                            if (isPressRestrictable(offenceId) && offencesDecision.hasPressRestriction()) {
+                                this.offencesHavingPreviousPressRestriction.add(offenceId);
+                            }
+                        }
                 )
         );
 
@@ -779,6 +787,18 @@ public class CaseAggregateState implements AggregateState {
 
     public void setSetAside(final boolean setAside) {
         this.setAside = setAside;
+    }
+
+    public void markOffenceAsPressRestrictable(final UUID offenceId) {
+        pressRestrictableOffenceIds.add(offenceId);
+    }
+
+    public boolean isPressRestrictable(final UUID offenceId) {
+        return pressRestrictableOffenceIds.contains(offenceId);
+    }
+
+    public boolean hasPreviousPressRestriction(final UUID offenceId) {
+        return offencesHavingPreviousPressRestriction.contains(offenceId);
     }
 
     public BigDecimal getCosts() {

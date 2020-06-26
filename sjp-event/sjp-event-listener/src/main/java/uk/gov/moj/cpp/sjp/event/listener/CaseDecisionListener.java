@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
 import static java.util.Arrays.asList;
+import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.SET_ASIDE;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
@@ -20,7 +21,6 @@ import uk.gov.moj.cpp.sjp.persistence.repository.CaseDecisionRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -44,13 +44,29 @@ public class CaseDecisionListener {
         final CaseDecision caseDecision = eventConverter.convert(envelope.payload());
         final CaseDecision enrichedCaseDecision = enrichOffenceDecision(caseDecision);
         caseDecisionRepository.save(enrichedCaseDecision);
-        updateOffenceConvictionInformation(caseDecision);
+        final CaseDetail caseDetails = caseRepository.findBy(caseDecision.getCaseId());
+        updateOffenceConvictionInformation(caseDetails, caseDecision);
+        updateOffencePressRestriction(caseDetails, caseDecision);
+        updateOffenceCompleted(caseDetails, caseDecision);
+        caseRepository.save(caseDetails);
     }
 
-    private void updateOffenceConvictionInformation(final CaseDecision caseDecision) {
-        final CaseDetail caseDetails = caseRepository.findBy(caseDecision.getCaseId());
+    private void updateOffenceCompleted(final CaseDetail caseDetails, final CaseDecision caseDecision) {
         caseDecision.getOffenceDecisions().stream()
-                .filter(offenceDecision -> Objects.nonNull(offenceDecision.getVerdictType()))
+                .forEach(offenceDecision -> getOffence(caseDetails, offenceDecision)
+                        .ifPresent(offenceDetail -> offenceDetail.setCompleted(offenceDecision.getDecisionType().isFinal())));
+    }
+
+    private void updateOffencePressRestriction(final CaseDetail caseDetails, final CaseDecision caseDecision) {
+        caseDecision.getOffenceDecisions().stream()
+                .filter(offenceDecision -> nonNull(offenceDecision.getPressRestriction()))
+                .forEach(offenceDecision -> getOffence(caseDetails, offenceDecision)
+                        .ifPresent(offenceDetail -> offenceDetail.setPressRestriction(offenceDecision.getPressRestriction())));
+    }
+
+    private void updateOffenceConvictionInformation(final CaseDetail caseDetails,  CaseDecision caseDecision) {
+        caseDecision.getOffenceDecisions().stream()
+                .filter(offenceDecision -> nonNull(offenceDecision.getVerdictType()))
                 .filter(offenceDecision -> CONVICTION_VERDICTS.contains(offenceDecision.getVerdictType()))
                 .forEach(offenceDecision -> getOffence(caseDetails, offenceDecision).ifPresent(offenceDetail -> {
                     offenceDetail.setConviction(offenceDecision.getVerdictType());
@@ -68,7 +84,6 @@ public class CaseDecisionListener {
                         })
                 );
 
-        caseRepository.save(caseDetails);
     }
 
     private CaseDecision enrichOffenceDecision(final CaseDecision caseDecision) {

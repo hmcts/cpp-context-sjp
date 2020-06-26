@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.domain.testutils;
 
 import static java.util.UUID.randomUUID;
 import static uk.gov.moj.cpp.sjp.domain.testutils.OffenceBuilder.createDefaultOffences;
+import static uk.gov.moj.cpp.sjp.domain.testutils.OffenceBuilder.createPressRestrictableOffence;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.Language;
@@ -20,7 +21,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 public class DefendantBuilder {
 
     private UUID id = DefaultTestData.DEFENDANT_ID;
-
     private String title = "Mr";
     private String firstName = "John";
     private String lastName = "Smith";
@@ -32,25 +32,99 @@ public class DefendantBuilder {
     private Address address = new Address("street", "suburb", "town", "county", "address5", "AA1 2BB");
     private ContactDetails contactDetails = new ContactDetails("020734777", "020734888", "020734999", "email1@bbb.ccc", "email2@bbb.ccc");
     private String region = "test region";
-
     private int numPreviousConvictions = 3;
-
     private List<Offence> offences = createDefaultOffences(randomUUID());
-
     private Language hearingLanguage = null;
-
     private String languageNeeds = RandomStringUtils.random(10);
 
-    public DefendantBuilder withOffences(List<Offence> offenses) {
-        this.offences = offenses;
+    public DefendantBuilder addOffence(final UUID offenceId) {
+        this.offences.add(createPressRestrictableOffence(offenceId, false));
+        return this;
+    }
+
+    public DefendantBuilder withOffences(final List<Offence> offences) {
+        this.offences = offences;
+        return this;
+    }
+
+    public DefendantBuilder withOffences(final UUID... offenceIds) {
+        this.offences = OffenceBuilder.createDefaultOffences(offenceIds);
+        return this;
+    }
+
+    public DefendantBuilder withTitle(final String title) {
+        this.title = title;
+        return this;
+    }
+
+    public DefendantBuilder withFirstName(final String firstName) {
+        this.firstName = firstName;
+        return this;
+    }
+
+    public DefendantBuilder withLastName(final String lastName) {
+        this.lastName = lastName;
+        return this;
+    }
+
+    public DefendantBuilder withDateOfBirth(final LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+        return this;
+    }
+
+    public DefendantBuilder withNationalInsuranceNumber(final String nationalInsuranceNumber) {
+        this.nationalInsuranceNumber = nationalInsuranceNumber;
+        return this;
+    }
+
+    public DefendantBuilder withDriverNumber(final String driverNumber) {
+        this.driverNumber = driverNumber;
+        return this;
+    }
+
+    public DefendantBuilder withAddress(final Address address) {
+        this.address = address;
+        return this;
+    }
+
+    public DefendantBuilder withGender(final Gender gender) {
+        this.gender = gender;
+        return this;
+    }
+
+    public DefendantBuilder withDriverLicenceDetails(final String driverLicenceDetails) {
+        this.driverLicenceDetails = driverLicenceDetails;
+        return this;
+    }
+
+    public DefendantBuilder withContactDetails(final ContactDetails contactDetails) {
+        this.contactDetails = contactDetails;
+        return this;
+    }
+
+    public DefendantBuilder withNumberOfConvictions(final int numPreviousConvictions) {
+        this.numPreviousConvictions = numPreviousConvictions;
         return this;
     }
 
     public Defendant build() {
-        return new Defendant(id, title, firstName,
-                lastName, dateOfBirth, gender, nationalInsuranceNumber,
-                driverNumber, driverLicenceDetails, address, contactDetails, numPreviousConvictions,
-                offences, hearingLanguage, languageNeeds, region);
+        return new Defendant(
+                id,
+                title,
+                firstName,
+                lastName,
+                dateOfBirth,
+                gender,
+                nationalInsuranceNumber,
+                driverNumber,
+                driverLicenceDetails,
+                address,
+                contactDetails,
+                numPreviousConvictions,
+                offences,
+                hearingLanguage,
+                languageNeeds,
+                region
+        );
     }
-
 }

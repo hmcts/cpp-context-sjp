@@ -29,9 +29,9 @@ public class NoSeparatePenaltyOffenceDecision extends OffenceDecision {
                                             final VerdictType verdict,
                                             final LocalDate convictionDate,
                                             final Boolean guiltyPleaTakenIntoAccount,
-                                            final Boolean licenceEndorsement) {
+                                            final Boolean licenceEndorsement, final PressRestriction pressRestriction) {
 
-        super(offenceId, caseDecisionId, DecisionType.NO_SEPARATE_PENALTY, verdict, convictionDate);
+        super(offenceId, caseDecisionId, DecisionType.NO_SEPARATE_PENALTY, verdict, convictionDate, pressRestriction);
         this.guiltyPleaTakenIntoAccount = guiltyPleaTakenIntoAccount;
         this.licenceEndorsement = licenceEndorsement;
     }

@@ -21,15 +21,24 @@ public class ReferForCourtHearing extends MultipleOffenceDecision {
     private final DefendantCourtOptions defendantCourtOptions;
     private LocalDate convictionDate;
 
+    public ReferForCourtHearing(final UUID id,
+                                final List<OffenceDecisionInformation> offenceDecisionInformation,
+                                final UUID referralReasonId,
+                                final String listingNotes,
+                                final Integer estimatedHearingDuration,
+                                final DefendantCourtOptions defendantCourtOptions) {
+        this(id, offenceDecisionInformation, referralReasonId, listingNotes, estimatedHearingDuration, defendantCourtOptions, null);
+    }
+
     @JsonCreator
     public ReferForCourtHearing(@JsonProperty("id") final UUID id,
                                 @JsonProperty("offenceDecisionInformation") final List<OffenceDecisionInformation> offenceDecisionInformation,
                                 @JsonProperty("referralReasonId") final UUID referralReasonId,
                                 @JsonProperty("listingNotes") final String listingNotes,
                                 @JsonProperty("estimatedHearingDuration") final Integer estimatedHearingDuration,
-                                @JsonProperty("defendantCourtOptions") final DefendantCourtOptions defendantCourtOptions) {
-
-        super(id, REFER_FOR_COURT_HEARING, offenceDecisionInformation);
+                                @JsonProperty("defendantCourtOptions") final DefendantCourtOptions defendantCourtOptions,
+                                @JsonProperty("pressRestriction") final PressRestriction pressRestriction) {
+        super(id, REFER_FOR_COURT_HEARING, offenceDecisionInformation, pressRestriction);
         this.referralReasonId = referralReasonId;
         this.listingNotes = listingNotes;
         this.estimatedHearingDuration = estimatedHearingDuration;

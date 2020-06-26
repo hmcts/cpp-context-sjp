@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.query.view.response;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
+import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
@@ -11,6 +12,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @SuppressWarnings("WeakerAccess")
@@ -39,6 +41,9 @@ public class OffenceView {
     private VerdictType conviction;
     private LocalDate convictionDate;
     private Boolean endorsable;
+    private Boolean pressRestrictable;
+    private PressRestriction pressRestriction;
+    private Boolean completed;
 
     public OffenceView(final OffenceDetail offence) {
 
@@ -68,6 +73,9 @@ public class OffenceView {
         this.conviction = offence.getConviction();
         this.convictionDate = offence.getConvictionDate();
         this.endorsable = offence.getEndorsable();
+        this.pressRestrictable = offence.getPressRestrictable();
+        this.pressRestriction = mapPressRestriction(offence.getPressRestriction());
+        this.completed = offence.getCompleted();
     }
 
     public UUID getId() {
@@ -158,5 +166,25 @@ public class OffenceView {
 
     public Boolean getEndorsable() {
         return endorsable;
+    }
+
+    public Boolean getPressRestrictable() { return pressRestrictable; }
+
+    public PressRestriction getPressRestriction() {
+        return pressRestriction;
+    }
+
+    public Boolean getCompleted() {
+        return completed;
+    }
+
+    private PressRestriction mapPressRestriction(final uk.gov.moj.cpp.sjp.persistence.entity.PressRestriction pressRestriction) {
+        if (Objects.isNull(pressRestriction)) {
+            return null;
+        }
+        return pressRestriction.getRequested() ?
+                PressRestriction.requested(pressRestriction.getName()) :
+                PressRestriction.revoked();
+
     }
 }

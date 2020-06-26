@@ -48,6 +48,9 @@ import uk.gov.moj.cpp.sjp.persistence.entity.FinancialPenaltyOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.NoSeparatePenaltyOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReferredToOpenCourtDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.PressRestriction;
+
+
 
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
@@ -138,8 +141,21 @@ public class OffenceDecisionView {
 
         addDecisionMadeLine(savedDate);
         addDecisionSetAsideLine(caseDetail, caseStatus);
-    }
+        addPressRestrictions(offenceDecision);
 
+    }
+  private void addPressRestrictions  (OffenceDecision offenceDecision){
+      final PressRestriction pressRestriction =offenceDecision.getPressRestriction();
+      if (nonNull(pressRestriction)){
+          final StringBuilder result = new StringBuilder();
+          if (pressRestriction.getRequested()) {
+              result.append("Direction made under Section 45 of the Youth Justice and Criminal Evidence Act 1999  in respect of "+pressRestriction.getName());
+          } else {
+              result.append("Direction restricting publicity revoked");
+          }
+          addLine("Reporting restriction", result.toString());
+      }
+  }
 
     private void addFineLine() {
         if (isFinancialPenalty()) {

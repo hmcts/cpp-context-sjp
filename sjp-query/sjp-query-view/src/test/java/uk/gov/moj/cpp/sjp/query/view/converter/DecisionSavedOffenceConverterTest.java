@@ -1,20 +1,26 @@
 package uk.gov.moj.cpp.sjp.query.view.converter;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.WITHDRAW;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.persistence.entity.DischargeOffenceDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.FinancialPenaltyOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.WithdrawOffenceDecision;
 import uk.gov.moj.cpp.sjp.query.view.response.OffenceDecisionView;
+import uk.gov.moj.cpp.sjp.query.view.util.builders.FinancialPenaltyOffenceDecisionBuilder;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -25,8 +31,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.runners.MockitoJUnitRunner;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -39,20 +43,20 @@ public class DecisionSavedOffenceConverterTest {
     private final BigDecimal EXCISE_PENALTY = new BigDecimal("3.0");
 
     @InjectMocks
-    private DecisionSavedOffenceConverter decisionSavedOffenceConverter;
+    private DecisionSavedOffenceConverter converter;
 
     @Test
     public void shouldConvertToDecisionSavedEvent() {
-        OffenceDecision offenceDecision = new WithdrawOffenceDecision(OFFENCE_ID, CASE_DECISION_ID, WITHDRAWAL_REASON_ID, NO_VERDICT);
+        final OffenceDecision offenceDecision = new WithdrawOffenceDecision(OFFENCE_ID, CASE_DECISION_ID, WITHDRAWAL_REASON_ID, NO_VERDICT, null);
 
-        final JsonObject decisionSavedPayload = decisionSavedOffenceConverter.convertOffenceDecision(new OffenceDecisionView(offenceDecision));
-        assertThat(decisionSavedPayload,
-                payloadIsJson(allOf(
-                        withJsonPath("type", is(WITHDRAW.toString())),
-                        withJsonPath("withdrawalReasonId", is(WITHDRAWAL_REASON_ID.toString())),
-                        withJsonPath("offenceDecisionInformation[0].offenceId", is(OFFENCE_ID.toString())),
-                        withJsonPath("offenceDecisionInformation[0].verdict", is(NO_VERDICT.toString()))
-                )));
+        final JsonObject actual = converter.convertOffenceDecision(new OffenceDecisionView(offenceDecision));
+
+        assertThat(actual, payloadIsJson(allOf(
+                withJsonPath("type", is(WITHDRAW.toString())),
+                withJsonPath("withdrawalReasonId", is(WITHDRAWAL_REASON_ID.toString())),
+                withJsonPath("offenceDecisionInformation[0].offenceId", is(OFFENCE_ID.toString())),
+                withJsonPath("offenceDecisionInformation[0].verdict", is(NO_VERDICT.toString()))
+        )));
     }
 
     @Test
@@ -62,31 +66,56 @@ public class DecisionSavedOffenceConverterTest {
         when(dischargeOffenceDecision.getDecisionType()).thenReturn(DecisionType.DISCHARGE);
         when(dischargeOffenceDecision.getDisqualificationPeriodValue()).thenReturn(null);
 
-        final JsonObject decisionSavedPayload = decisionSavedOffenceConverter.convertOffenceDecision(new OffenceDecisionView(dischargeOffenceDecision));
+        final JsonObject decisionSavedPayload = converter.convertOffenceDecision(new OffenceDecisionView(dischargeOffenceDecision));
 
-        assertThat(decisionSavedPayload,
-                payloadIsJson(allOf(
-                        withJsonPath("backDuty", is(BACK_DUTY.doubleValue())))));
+        assertThat(decisionSavedPayload, payloadIsJson(withJsonPath("backDuty", is(BACK_DUTY.doubleValue()))));
     }
     @Test
     public void shouldConvertBackDutyAndExcisePenaltyForFinancialPenaltyOffense() {
-        final FinancialPenaltyOffenceDecision financialPenaltyOffenceDecision = mock(FinancialPenaltyOffenceDecision.class);
-        when(financialPenaltyOffenceDecision.getBackDuty()).thenReturn(BACK_DUTY);
-        when(financialPenaltyOffenceDecision.getExcisePenalty()).thenReturn(EXCISE_PENALTY);
-        when(financialPenaltyOffenceDecision.getDecisionType()).thenReturn(DecisionType.FINANCIAL_PENALTY);
-        when(financialPenaltyOffenceDecision.getDisqualificationPeriodValue()).thenReturn(null);
+        final OffenceDecision offenceDecision = FinancialPenaltyOffenceDecisionBuilder.withDefaults()
+                .withBackDuty(BACK_DUTY)
+                .withExcisePenalty(EXCISE_PENALTY)
+                .build();
 
-        final JsonObject financialPenaltySavedPayload = decisionSavedOffenceConverter.convertOffenceDecision(new OffenceDecisionView(financialPenaltyOffenceDecision));
+        final JsonObject actual = converter.convertOffenceDecision(new OffenceDecisionView(offenceDecision));
 
-        assertThat(financialPenaltySavedPayload,
-                payloadIsJson(allOf(
-                        withJsonPath("backDuty", is(BACK_DUTY.doubleValue())),
-                        withJsonPath("excisePenalty", is(EXCISE_PENALTY.doubleValue()))
-                )));
+        assertThat(actual, payloadIsJson(allOf(
+                withJsonPath("backDuty", is(BACK_DUTY.doubleValue())),
+                withJsonPath("excisePenalty", is(EXCISE_PENALTY.doubleValue())),
+                withoutJsonPath("pressRestriction")
+        )));
     }
 
-    //TODO add tests for licence endorsement and disqualification attributes
+    @Test
+    public void shouldConvertPressRestrictionApplied() {
+        final OffenceDecision offenceDecision = FinancialPenaltyOffenceDecisionBuilder.withDefaults()
+                .pressRestrictionApplied("Baby Boy")
+                .build();
 
+        final JsonObject actual = converter.convertOffenceDecision(new OffenceDecisionView(offenceDecision));
+
+        assertThat(actual.toString(), isJson(allOf(
+                withJsonPath("pressRestriction.name", equalTo("Baby Boy")),
+                withJsonPath("pressRestriction.requested", equalTo(true))
+        )));
+    }
+
+    @Test
+    public void shouldConvertPressRestrictionRevoked() {
+        final OffenceDecision offenceDecision = FinancialPenaltyOffenceDecisionBuilder.withDefaults()
+                .pressRestrictionRevoked()
+                .build();
+
+        final JsonObject actual = converter.convertOffenceDecision(new OffenceDecisionView(offenceDecision));
+
+        assertThat(actual.toString(), isJson(allOf(
+                withJsonPath("pressRestriction.name", nullValue()),
+                withJsonPath("pressRestriction.requested", equalTo(false))
+        )));
+    }
+
+
+    //TODO add tests for licence endorsement and disqualification attributes
 
 
 }

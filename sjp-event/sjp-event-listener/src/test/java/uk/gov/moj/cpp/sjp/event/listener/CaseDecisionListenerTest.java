@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
+import static java.time.ZonedDateTime.now;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -8,27 +9,32 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.SET_ASIDE;
+import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.ABSOLUTE;
+import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.MONTH;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 
 import uk.gov.justice.services.messaging.Envelope;
-import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.listener.converter.DecisionSavedToCaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.DischargeOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.DischargePeriod;
 import uk.gov.moj.cpp.sjp.persistence.entity.DismissOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.PressRestriction;
 import uk.gov.moj.cpp.sjp.persistence.entity.SetAsideOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDecisionRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -46,7 +52,7 @@ public class CaseDecisionListenerTest {
     private final UUID offence2Id = randomUUID();
     private final UUID offence3Id = randomUUID();
 
-    private final ZonedDateTime now = ZonedDateTime.now();
+    private final ZonedDateTime now = now();
 
     @InjectMocks
     private CaseDecisionListener listener;
@@ -91,9 +97,9 @@ public class CaseDecisionListenerTest {
         caseDetails.setId(caseId);
         caseDetails.setDefendant(defendantDetails);
 
-        final OffenceDecision offenceDecision1 = new DismissOffenceDecision(offence1Id, decisionId, NO_VERDICT);
-        final OffenceDecision offenceDecision2 = new DismissOffenceDecision(offence2Id, decisionId, NO_VERDICT);
-        final OffenceDecision offenceDecision3 = new DismissOffenceDecision(offence3Id, decisionId, NO_VERDICT);
+        final OffenceDecision offenceDecision1 = new DismissOffenceDecision(offence1Id, decisionId, NO_VERDICT, null);
+        final OffenceDecision offenceDecision2 = new DismissOffenceDecision(offence2Id, decisionId, NO_VERDICT, null);
+        final OffenceDecision offenceDecision3 = new DismissOffenceDecision(offence3Id, decisionId, NO_VERDICT, null);
 
         final CaseDecision caseDecision = new CaseDecision();
         caseDecision.setId(decisionId);
@@ -146,9 +152,9 @@ public class CaseDecisionListenerTest {
         caseDetails.setId(caseId);
         caseDetails.setDefendant(defendantDetails);
 
-        final OffenceDecision offenceDecision1 = new SetAsideOffenceDecision(offence1Id, decisionId);
-        final OffenceDecision offenceDecision2 = new SetAsideOffenceDecision(offence2Id, decisionId);
-        final OffenceDecision offenceDecision3 = new SetAsideOffenceDecision(offence3Id, decisionId);
+        final OffenceDecision offenceDecision1 = new SetAsideOffenceDecision(offence1Id, decisionId, null);
+        final OffenceDecision offenceDecision2 = new SetAsideOffenceDecision(offence2Id, decisionId, null);
+        final OffenceDecision offenceDecision3 = new SetAsideOffenceDecision(offence3Id, decisionId, null);
 
         final CaseDecision caseDecision = new CaseDecision();
         caseDecision.setId(decisionId);
@@ -170,4 +176,62 @@ public class CaseDecisionListenerTest {
 
         verify(caseDecisionRepository).save(caseDecision);
     }
+
+    @Test
+    public void shouldSavePressRestrictionAndCompleted() {
+        final OffenceDetail offence1Details = new OffenceDetail();
+        offence1Details.setId(offence1Id);
+        offence1Details.setSequenceNumber(1);
+
+        final OffenceDetail offence2Details = new OffenceDetail();
+        offence2Details.setId(offence2Id);
+        offence2Details.setSequenceNumber(2);
+
+        final OffenceDetail offence3Details = new OffenceDetail();
+        offence3Details.setId(offence3Id);
+        offence3Details.setSequenceNumber(3);
+
+        final DefendantDetail defendantDetails = new DefendantDetail();
+        defendantDetails.setOffences(asList(offence1Details, offence2Details, offence3Details));
+
+        final CaseDetail caseDetails = new CaseDetail();
+        caseDetails.setId(caseId);
+        caseDetails.setDefendant(defendantDetails);
+
+        final OffenceDecision offenceDecision1 = new DischargeOffenceDecision(offence1Id, decisionId, FOUND_GUILTY, new DischargePeriod(MONTH, 2), false, new BigDecimal(20), null, ABSOLUTE, null,null);
+        offenceDecision1.setPressRestriction(new PressRestriction("Person 1", true));
+        final OffenceDecision offenceDecision2 = new DischargeOffenceDecision(offence2Id, decisionId, FOUND_GUILTY, new DischargePeriod(MONTH, 2), false, new BigDecimal(20), null, ABSOLUTE, null,null);
+        offenceDecision2.setPressRestriction(new PressRestriction("Person 2", true));
+        final OffenceDecision offenceDecision3 = new DischargeOffenceDecision(offence3Id, decisionId, FOUND_GUILTY, new DischargePeriod(MONTH, 2), false, new BigDecimal(20), null, ABSOLUTE, null,null);
+        offenceDecision3.setPressRestriction(new PressRestriction("Person 3", false));
+
+        final CaseDecision caseDecision = new CaseDecision();
+        caseDecision.setId(decisionId);
+        caseDecision.setCaseId(caseId);
+        caseDecision.setSavedAt(now());
+        caseDecision.setOffenceDecisions(asList(offenceDecision1, offenceDecision2, offenceDecision3));
+
+        when(envelope.payload()).thenReturn(decisionSavedEvent);
+        when(eventConverter.convert(decisionSavedEvent)).thenReturn(caseDecision);
+        when(caseRepository.findBy(caseId)).thenReturn(caseDetails);
+
+        listener.handleCaseDecisionSaved(envelope);
+
+        final List<OffenceDetail> offences = caseDetails.getDefendant().getOffences();
+
+        assertThat(offences
+                .stream()
+                .allMatch(offence -> offence.getPressRestriction() != null), is(true));
+
+        assertThat(offences.get(0).getPressRestriction(), is(new PressRestriction("Person 1", true)));
+        assertThat(offences.get(0).getCompleted(), is(true));
+        assertThat(offences.get(1).getPressRestriction(), is(new PressRestriction("Person 2", true)));
+        assertThat(offences.get(1).getCompleted(), is(true));
+        assertThat(offences.get(2).getPressRestriction(), is(new PressRestriction("Person 3", false)));
+        assertThat(offences.get(2).getCompleted(), is(true));
+
+        verify(caseDecisionRepository).save(caseDecision);
+    }
+
+
 }

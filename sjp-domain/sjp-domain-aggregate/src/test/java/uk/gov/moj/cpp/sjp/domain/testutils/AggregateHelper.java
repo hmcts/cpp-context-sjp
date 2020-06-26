@@ -25,7 +25,7 @@ public class AggregateHelper {
 
         final List<OffenceDecision> offenceDecisions = aCase.getDefendant().getOffences().stream()
                 .map(offence -> createOffenceDecisionInformation(offence.getId(), verdictType))
-                .map(offenceDecisionInformation -> new Dismiss(randomUUID(), offenceDecisionInformation))
+                .map(offenceDecisionInformation -> new Dismiss(randomUUID(), offenceDecisionInformation, null))
                 .collect(Collectors.toList());
 
         caseAggregate.saveDecision(new Decision(randomUUID(), randomUUID(), aCase.getId(), "", now(), user, offenceDecisions, null), session);

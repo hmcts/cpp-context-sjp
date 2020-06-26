@@ -222,9 +222,9 @@ public class DecisionHandlerTest {
         final List<OffenceDecision> offenceDecisions = new ArrayList<>();
 
         final OffenceDecision offenceDecision1 = createFinancialPenalty(offenceId1, createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), new BigDecimal(10),
-                new BigDecimal(20), null, true, new BigDecimal(3), new BigDecimal(4));
+                new BigDecimal(20), null, true, new BigDecimal(3), new BigDecimal(4), null);
         final OffenceDecision offenceDecision2 = createDischarge(offenceId2, createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE,
-                null, new BigDecimal(10), null, true, new BigDecimal(3));
+                null, new BigDecimal(10), null, true, new BigDecimal(3), null);
         offenceDecisions.add(offenceDecision1);
         offenceDecisions.add(offenceDecision2);
 

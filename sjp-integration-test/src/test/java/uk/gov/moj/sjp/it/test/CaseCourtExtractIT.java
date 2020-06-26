@@ -22,7 +22,6 @@ import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
-import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
@@ -53,7 +52,6 @@ import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
-import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -67,6 +65,7 @@ import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.JsonHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
+import uk.gov.moj.sjp.it.util.builders.DismissBuilder;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -206,7 +205,7 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
     private void dismissCase() {
         assignCaseInMagistrateSession(magistrateSessionId, user.getUserId());
 
-        final OffenceDecision offenceDecision = new Dismiss(null, new OffenceDecisionInformation(offenceId, FOUND_NOT_GUILTY));
+        final OffenceDecision offenceDecision = DismissBuilder.withDefaults(offenceId).build();
         final DecisionCommand decision = new DecisionCommand(magistrateSessionId, caseId, "Test note", user, asList(offenceDecision), null);
 
         saveDecision(decision);

@@ -52,6 +52,7 @@ import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.VICTIM_SUR
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.WITHDRAW_REASON_ID;
 import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.WITHIN_DAYS;
 
+import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
 import uk.gov.moj.cpp.sjp.persistence.entity.CostsAndSurcharge;
 import uk.gov.moj.cpp.sjp.persistence.entity.CourtDetails;
 import uk.gov.moj.cpp.sjp.persistence.entity.Installments;
@@ -61,8 +62,6 @@ import uk.gov.moj.cpp.sjp.persistence.entity.PaymentTerms;
 import uk.gov.moj.cpp.sjp.query.view.response.DisqualificationPeriodView;
 import uk.gov.moj.cpp.sjp.query.view.response.FinancialImpositionView;
 import uk.gov.moj.cpp.sjp.query.view.response.OffenceDecisionView;
-
-import java.util.Optional;
 
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -76,39 +75,53 @@ public class DecisionSavedOffenceConverter {
         ofNullable(offenceDecisionView.getReferralReasonId())
                 .ifPresent(referralReasonId -> offenceDecisionBuilder.add(REFERRAL_REASON_ID, referralReasonId.toString()));
 
-        if(nonNull(offenceDecisionView.getWithdrawalReasonId())) {
+        if (nonNull(offenceDecisionView.getWithdrawalReasonId())) {
             offenceDecisionBuilder.add(WITHDRAW_REASON_ID, offenceDecisionView.getWithdrawalReasonId().toString());
         }
-        if(nonNull(offenceDecisionView.getAdjournedTo())) {
+        if (nonNull(offenceDecisionView.getAdjournedTo())) {
             offenceDecisionBuilder.add(ADJOURN_TO, offenceDecisionView.getAdjournedTo().toString());
         }
-        if(nonNull(offenceDecisionView.getDischargeType())) {
+        if (nonNull(offenceDecisionView.getDischargeType())) {
             offenceDecisionBuilder.add(DISCHARGE_TYPE, offenceDecisionView.getDischargeType().toString());
         }
-        if(nonNull(offenceDecisionView.getDischargedFor())) {
+        if (nonNull(offenceDecisionView.getDischargedFor())) {
             offenceDecisionBuilder.add(DISCHARGE_FOR, createObjectBuilder()
                     .add("value", offenceDecisionView.getDischargedFor().getValue())
                     .add("unit", offenceDecisionView.getDischargedFor().getUnit().toString()));
         }
-        if(nonNull(offenceDecisionView.getCompensation())) {
+        if (nonNull(offenceDecisionView.getCompensation())) {
             offenceDecisionBuilder.add(COMPENSATION, offenceDecisionView.getCompensation());
         }
         checkForFineAndCompensation(offenceDecisionView, offenceDecisionBuilder);
         checkForBackDutyAndExcisePenalty(offenceDecisionView, offenceDecisionBuilder);
         checkForEndorsementAndDisqualification(offenceDecisionView, offenceDecisionBuilder);
-        if(nonNull(offenceDecisionView.getOffenceId()) || nonNull(offenceDecisionView.getVerdict())) {
+        if (nonNull(offenceDecisionView.getOffenceId()) || nonNull(offenceDecisionView.getVerdict())) {
             offenceDecisionBuilder.add(OFFENCE_DECISION_INFORMATION, createArrayBuilder()
                     .add(covertOffenceDecisionInformation(offenceDecisionView)));
+        }
+
+        if (nonNull(offenceDecisionView.getPressRestriction())) {
+            offenceDecisionBuilder.add("pressRestriction", convertPressRestriction(offenceDecisionView.getPressRestriction()));
         }
         return offenceDecisionBuilder.build();
     }
 
+    private JsonObjectBuilder convertPressRestriction(final PressRestriction pressRestriction) {
+        final JsonObjectBuilder builder = createObjectBuilder().add("requested", pressRestriction.getRequested());
+        if (pressRestriction.getRequested()) {
+            builder.add("name", pressRestriction.getName());
+        } else {
+            builder.addNull("name");
+        }
+        return builder;
+    }
+
     private void checkForEndorsementAndDisqualification(final OffenceDecisionView offenceDecisionView, final JsonObjectBuilder offenceDecisionBuilder) {
-        if(nonNull(offenceDecisionView.getLicenceEndorsement())){
+        if (nonNull(offenceDecisionView.getLicenceEndorsement())) {
             offenceDecisionBuilder.add(LICENCE_ENDORSEMENT, offenceDecisionView.getLicenceEndorsement());
         }
 
-        if(nonNull(offenceDecisionView.getPenaltyPointsImposed())){
+        if (nonNull(offenceDecisionView.getPenaltyPointsImposed())) {
             offenceDecisionBuilder.add(PENALTY_POINTS_IMPOSED, offenceDecisionView.getPenaltyPointsImposed());
         }
 

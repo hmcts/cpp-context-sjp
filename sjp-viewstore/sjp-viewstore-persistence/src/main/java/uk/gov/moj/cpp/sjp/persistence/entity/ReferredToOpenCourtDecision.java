@@ -39,8 +39,9 @@ public class ReferredToOpenCourtDecision extends OffenceDecision {
                                        final Integer referredToRoom,
                                        final ZonedDateTime referredToDateTime,
                                        final String reason,
-                                       final String magistratesCourt) {
-        super(offenceId, caseDecisionId, DecisionType.REFERRED_TO_OPEN_COURT, verdict, null);
+                                       final String magistratesCourt,
+                                       final PressRestriction pressRestriction) {
+        super(offenceId, caseDecisionId, DecisionType.REFERRED_TO_OPEN_COURT, verdict, null, pressRestriction);
         this.referredToCourt = referredToCourt;
         this.referredToRoom = referredToRoom;
         this.referredToDateTime = referredToDateTime;

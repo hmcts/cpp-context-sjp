@@ -88,7 +88,7 @@ public class DischargeOffenceDecision extends OffenceDecision {
                                     final BigDecimal backDuty,
                                     final LocalDate convictionDate) {
 
-        super(offenceId, caseDecisionId, DecisionType.DISCHARGE, verdict, convictionDate);
+        super(offenceId, caseDecisionId, DecisionType.DISCHARGE, verdict, convictionDate, null);
         this.dischargePeriod = dischargePeriod;
         this.guiltyPleaTakenIntoAccount = guiltyPleaTakenIntoAccount;
         this.compensation = compensation;
@@ -115,9 +115,10 @@ public class DischargeOffenceDecision extends OffenceDecision {
                                     final DisqualificationType disqualificationType,
                                     final Integer disqualificationPeriodValue,
                                     final DisqualificationPeriodTimeUnit disqualificationPeriodTimeUnit,
-                                    final Integer notionalPenaltyPoints) {
+                                    final Integer notionalPenaltyPoints,
+                                    final PressRestriction pressRestriction) {
 
-        super(offenceId, caseDecisionId, DecisionType.DISCHARGE, verdict, convictionDate);
+        super(offenceId, caseDecisionId, DecisionType.DISCHARGE, verdict, convictionDate, pressRestriction);
         this.dischargePeriod = dischargePeriod;
         this.guiltyPleaTakenIntoAccount = guiltyPleaTakenIntoAccount;
         this.compensation = compensation;

@@ -1,22 +1,26 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
+import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.persistence.entity.DischargeOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.FinancialPenaltyOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.NoSeparatePenaltyOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
+import uk.gov.moj.cpp.sjp.query.view.util.builders.FinancialPenaltyOffenceDecisionBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.Test;
 
 public class OffenceDecisionViewTest {
 
@@ -61,8 +65,8 @@ public class OffenceDecisionViewTest {
                 verdict,
                 convictionDate,
                 guiltyPleaTakenIntoAccount,
-                licenceEndorsement
-        );
+                licenceEndorsement,
+                null);
 
         final OffenceDecisionView result = new OffenceDecisionView(offenceDecision);
 
@@ -73,6 +77,7 @@ public class OffenceDecisionViewTest {
         assertThat(result.getGuiltyPleaTakenIntoAccount(), equalTo(guiltyPleaTakenIntoAccount));
         assertThat(result.getLicenceEndorsement(), equalTo(licenceEndorsement));
     }
+
     @Test
     public void shouldHaveLicenceEndorsedAndPenalityPointForFinancialPenalty() {
         FinancialPenaltyOffenceDecision financialPenaltyOffenceDecision = mock(FinancialPenaltyOffenceDecision.class);
@@ -88,4 +93,38 @@ public class OffenceDecisionViewTest {
         assertThat("getPenaltyPoint should return a Integer value", underTest.getPenaltyPointsImposed(), is(penaltyPoint));
     }
 
+    @Test
+    public void shouldPopulatePressRestrictionApplied() {
+        final FinancialPenaltyOffenceDecision financialPenalty = FinancialPenaltyOffenceDecisionBuilder
+                .withDefaults()
+                .pressRestrictionApplied("Child's Name")
+                .build();
+
+        final OffenceDecisionView actual = new OffenceDecisionView(financialPenalty);
+
+        assertThat(actual.getPressRestriction(), equalTo(PressRestriction.requested("Child's Name")));
+    }
+
+    @Test
+    public void shouldPopulatePressRestrictionRevoked() {
+        final FinancialPenaltyOffenceDecision financialPenalty = FinancialPenaltyOffenceDecisionBuilder
+                .withDefaults()
+                .pressRestrictionRevoked()
+                .build();
+
+        final OffenceDecisionView actual = new OffenceDecisionView(financialPenalty);
+
+        assertThat(actual.getPressRestriction(), equalTo(PressRestriction.revoked()));
+    }
+
+    @Test
+    public void shouldPopulatePressRestrictionNotApplicable() {
+        final FinancialPenaltyOffenceDecision financialPenalty = FinancialPenaltyOffenceDecisionBuilder
+                .withDefaults()
+                .build();
+
+        final OffenceDecisionView actual = new OffenceDecisionView(financialPenalty);
+
+        assertThat(actual.getPressRestriction(), nullValue());
+    }
 }

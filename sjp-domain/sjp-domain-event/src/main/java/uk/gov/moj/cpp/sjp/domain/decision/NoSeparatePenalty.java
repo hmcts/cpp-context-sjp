@@ -7,6 +7,7 @@ import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.NO_SEPARATE_PENALT
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class NoSeparatePenalty extends SingleOffenceDecision {
@@ -15,11 +16,20 @@ public class NoSeparatePenalty extends SingleOffenceDecision {
     private Boolean licenceEndorsed;
     private LocalDate convictionDate;
 
+    public NoSeparatePenalty(final UUID id,
+                             final OffenceDecisionInformation offenceDecisionInformation,
+                             final Boolean guiltyPleaTakenIntoAccount,
+                             final Boolean licenceEndorsed) {
+        this(id, offenceDecisionInformation, guiltyPleaTakenIntoAccount, licenceEndorsed, null);
+    }
+
+    @JsonCreator
     public NoSeparatePenalty(@JsonProperty("id") final UUID id,
                              @JsonProperty("offenceDecisionInformation") final OffenceDecisionInformation offenceDecisionInformation,
                              @JsonProperty("guiltyPleaTakenIntoAccount") final Boolean guiltyPleaTakenIntoAccount,
-                             @JsonProperty("licenceEndorsed") final Boolean licenceEndorsed) {
-        super(id, NO_SEPARATE_PENALTY, offenceDecisionInformation);
+                             @JsonProperty("licenceEndorsed") final Boolean licenceEndorsed,
+                             @JsonProperty("pressRestriction") final PressRestriction pressRestriction) {
+        super(id, NO_SEPARATE_PENALTY, offenceDecisionInformation, pressRestriction);
         this.guiltyPleaTakenIntoAccount = guiltyPleaTakenIntoAccount;
         this.licenceEndorsed = licenceEndorsed;
     }
@@ -27,8 +37,10 @@ public class NoSeparatePenalty extends SingleOffenceDecision {
     public static NoSeparatePenalty createNoSeparatePenalty(final UUID id,
                                                             final OffenceDecisionInformation offenceDecisionInformation,
                                                             final Boolean guiltyPleaTakenIntoAccount,
-                                                            final Boolean licenceEndorsement) {
-        return new NoSeparatePenalty(id, offenceDecisionInformation, guiltyPleaTakenIntoAccount, licenceEndorsement);
+                                                            final Boolean licenceEndorsement,
+                                                            final PressRestriction pressRestriction) {
+        return new NoSeparatePenalty(id, offenceDecisionInformation, guiltyPleaTakenIntoAccount,
+                licenceEndorsement, pressRestriction);
     }
 
     public Boolean getGuiltyPleaTakenIntoAccount() {

@@ -19,16 +19,27 @@ public class ReferredToOpenCourt extends MultipleOffenceDecision {
     private final String reason;
     private final String magistratesCourt;
 
+    public ReferredToOpenCourt(final UUID id,
+                               final List<OffenceDecisionInformation> offenceDecisionInformation,
+                               final String referredToCourt,
+                               final Integer referredToRoom,
+                               final ZonedDateTime referredToDateTime,
+                               final String reason,
+                               final String magistratesCourt) {
+        this(id, offenceDecisionInformation, referredToCourt, referredToRoom, referredToDateTime, reason, magistratesCourt, null);
+    }
+
     @JsonCreator
     public ReferredToOpenCourt(@JsonProperty("id") final UUID id,
-                                @JsonProperty("offenceDecisionInformation") final List<OffenceDecisionInformation> offenceDecisionInformation,
-                                @JsonProperty("referredToCourt") final String referredToCourt,
-                                @JsonProperty("referredToRoom") final Integer referredToRoom,
-                                @JsonProperty("referredToDateTime") final ZonedDateTime referredToDateTime,
-                                @JsonProperty("reason") final String reason,
-                               @JsonProperty("magistratesCourt") final String magistratesCourt) {
+                               @JsonProperty("offenceDecisionInformation") final List<OffenceDecisionInformation> offenceDecisionInformation,
+                               @JsonProperty("referredToCourt") final String referredToCourt,
+                               @JsonProperty("referredToRoom") final Integer referredToRoom,
+                               @JsonProperty("referredToDateTime") final ZonedDateTime referredToDateTime,
+                               @JsonProperty("reason") final String reason,
+                               @JsonProperty("magistratesCourt") final String magistratesCourt,
+                               @JsonProperty("pressRestriction") final PressRestriction pressRestriction) {
 
-        super(id, REFERRED_TO_OPEN_COURT, offenceDecisionInformation);
+        super(id, REFERRED_TO_OPEN_COURT, offenceDecisionInformation, pressRestriction);
         this.referredToCourt = referredToCourt;
         this.referredToRoom = referredToRoom;
         this.referredToDateTime = referredToDateTime;

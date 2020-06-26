@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.time.LocalTime.now;
+import static java.time.temporal.ChronoUnit.YEARS;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -9,7 +10,6 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -34,11 +34,13 @@ import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -199,25 +201,40 @@ public class PressTransparencyReportRequestedProcessorTest {
         assertPressTransparencyReportEnvelope(storePressTransparencyReportCommandEnvelopeCaptor.getValue(), reportId, caseIds);
     }
 
-    private JsonObject buildFileMetadataJsonObject(final String fileName,
-                                                   final int pdfPageCount,
-                                                   final int fileSize,
-                                                   final UUID englishPdfFileUUID) {
-        return createObjectBuilder()
-                .add("fileName", fileName)
-                .add("numberOfPages", pdfPageCount)
-                .add("fileSize", fileSize)
-                .add("fileId", englishPdfFileUUID.toString()).build();
-    }
-
     private void assertPayloadForDocumentGenerator(final JsonObject payload, final List<JsonObject> pendingCasesList, final Integer totalNumberOfRecords) {
         assertReadyCasesPayloadWithPendingCases(payload, pendingCasesList, "caseUrn");
         assertReadyCasesPayloadWithPendingCases(payload, pendingCasesList, "adress");
-        assertReadyCasesPayloadWithPropertyValue(payload, totalNumberOfRecords,"prosecutorName", "Transport For London");
-        assertReadyCasesPayloadWithPropertyValue(payload, totalNumberOfRecords,"dateOfBirth", "12 06 1980 (40)");
+        assertReadyCasesPayloadWithPropertyValue(payload, totalNumberOfRecords, "prosecutorName", "Transport For London");
+        assertReadyCasesPayloadWithPropertyValue(payload, totalNumberOfRecords, "dateOfBirth", String.format("12 06 1980 (%d)",
+                YEARS.between(LocalDate.of(1980,6,12), LocalDate.now()))
+        );
         assertReadyCasesPayloadWithPropertyValueMatching(payload, "defendantName", "John DOE\\w*");
+        assertPressRestrictionValues(payload, pendingCasesList);
 
         assertRootValuesOfPayloadForDocumentGenerator(payload, totalNumberOfRecords);
+    }
+
+    private void assertPressRestrictionValues(final JsonObject payload, final List<JsonObject> pendingCasesList) {
+
+        final List<JsonObject> payloadOffences = getPropertyFromPayload(payload, "readyCases",
+                payloadCase -> payloadCase.getJsonArray("offences").getValuesAs(JsonObject.class))
+                .stream()
+                .flatMap(Collection::stream)
+                .collect(toList());
+
+        final List<JsonObject> pendingCasesListOffences = getPropertyFromPendingCasesList(pendingCasesList,
+                pendingCase -> pendingCase.getJsonArray("offences").getValuesAs(JsonObject.class))
+                .stream()
+                .flatMap(Collection::stream)
+                .collect(toList());
+
+        final List<Boolean> payloadPressRestrictionRequestedFlags = payloadOffences.stream().map(payloadOffence -> payloadOffence.getBoolean("pressRestrictionRequested")).collect(toList());
+        final List<Boolean> pendingCasesPressRestrictionRequestedFlags = pendingCasesListOffences.stream().map(pendingCaseOffence -> pendingCaseOffence.getJsonObject("pressRestriction").getBoolean("requested")).collect(toList());
+        assertThat(payloadPressRestrictionRequestedFlags, is(pendingCasesPressRestrictionRequestedFlags));
+
+        final List<String> payloadPressRestrictionNames = payloadOffences.stream().map(payloadOffence -> payloadOffence.getString("pressRestrictionName", null)).collect(toList());
+        final List<String> pendingCasesPressRestrictionNames = pendingCasesListOffences.stream().map(pendingCaseOffence -> pendingCaseOffence.getJsonObject("pressRestriction").getString("name", null)).collect(toList());
+        assertThat(payloadPressRestrictionNames, is(pendingCasesPressRestrictionNames));
     }
 
     private void assertRootValuesOfPayloadForDocumentGenerator(final JsonObject payload, final Integer totalNumberOfRecords) {
@@ -235,8 +252,8 @@ public class PressTransparencyReportRequestedProcessorTest {
     }
 
     private void assertReadyCasesPayloadWithPropertyValueMatching(final JsonObject payload,
-                                                          final String jsonField,
-                                                          final String expectedValuePattern) {
+                                                                  final String jsonField,
+                                                                  final String expectedValuePattern) {
         assertTrue(getPropertyFromPayload(payload, "readyCases", jsonField)
                 .stream()
                 .allMatch(fieldValue -> fieldValue.matches(expectedValuePattern)));
@@ -244,22 +261,30 @@ public class PressTransparencyReportRequestedProcessorTest {
 
     private void assertReadyCasesPayloadWithPendingCases(final JsonObject payload, final List<JsonObject> pendingCasesList, final String field) {
         assertThat(getPropertyFromPayload(payload, "readyCases", field),
-                is(getPropertyFromlist(pendingCasesList, field)));
+                is(getPropertyFromPendingCasesList(pendingCasesList, field)));
     }
 
     private List<String> getPropertyFromPayload(final JsonObject payload, final String containerArray, final String jsonField) {
+        return getPropertyFromPayload(payload, containerArray, e -> e.getString(jsonField, null));
+    }
+
+    private <T> List<T> getPropertyFromPayload(final JsonObject payload, final String containerArray, final Function<JsonObject, T> queryFunction) {
         return payload.getJsonArray(containerArray)
                 .getValuesAs(JsonObject.class).stream()
-                .map(e -> e.getString(jsonField, null))
+                .map(queryFunction::apply)
                 .filter(Objects::nonNull)
                 .collect(toList());
     }
 
-    private List<String> getPropertyFromlist(final List<JsonObject> objects, final String jsonField) {
+    private <T> List<T> getPropertyFromPendingCasesList(final List<JsonObject> objects, final Function<JsonObject, T> queryFunction) {
         return objects.stream()
-                .map(e -> e.getString(jsonField, null))
+                .map(queryFunction::apply)
                 .filter(Objects::nonNull)
                 .collect(toList());
+    }
+
+    private List<String> getPropertyFromPendingCasesList(final List<JsonObject> objects, final String jsonField) {
+        return getPropertyFromPendingCasesList(objects, e -> e.getString(jsonField, null));
     }
 
     private void assertPressTransparencyReportEnvelope(final JsonEnvelope storeTransparencyReportCommandEnvelope,
@@ -288,11 +313,20 @@ public class PressTransparencyReportRequestedProcessorTest {
                     .add(createObjectBuilder()
                             .add("offenceCode", "CA03011")
                             .add("offenceStartDate", now().toString())
-                            .add("offenceWording", "offence wording"))
+                            .add("offenceWording", "offence wording")
+                            .add("completed", false)
+                            .add("pressRestriction", createObjectBuilder().add("requested", false))
+                    )
                     .add(createObjectBuilder()
                             .add("offenceCode", "CA03011")
                             .add("offenceStartDate", LocalDateTime.now().minusMonths(1).toLocalDate().toString())
                             .add("offenceWording", "offence wording")
+                            .add("completed", false)
+                            .add("pressRestriction", createObjectBuilder()
+                                    .add("requested", true)
+                                    .add("name", "Michelle Jenner")
+                            )
+
                     );
 
             final String defendantDateOfBirth = (halfNotAdult && caseNumber % 2 == 0) ?
@@ -301,7 +335,7 @@ public class PressTransparencyReportRequestedProcessorTest {
 
             final JsonObjectBuilder pendingCase = createObjectBuilder()
                     .add("caseId", caseIds.get(caseNumber).toString())
-                    .add("caseUrn", "TFL000"+caseNumber)
+                    .add("caseUrn", "TFL000" + caseNumber)
                     .add("defendantName", "J. Doe" + caseNumber)
                     .add("firstName", "John")
                     .add("lastName", "DOE" + caseNumber)

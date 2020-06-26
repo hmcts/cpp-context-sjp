@@ -72,21 +72,21 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1500),
                         null,
-                        BigDecimal.valueOf(2000.600), null, null, null),
+                        BigDecimal.valueOf(2000.600), null, null, null, null),
                 new FinancialPenaltyOffenceDecision(offence1Id,
                         caseDecision.getId(),
                         FOUND_GUILTY,
                         true,
                         BigDecimal.valueOf(1000),
                         null,
-                        null, BigDecimal.valueOf(523), BigDecimal.valueOf(321), null),
+                        null, BigDecimal.valueOf(523), BigDecimal.valueOf(321), null, null),
                 new FinancialPenaltyOffenceDecision(offence1Id,
                         caseDecision.getId(),
                         FOUND_GUILTY,
                         true,
                         BigDecimal.valueOf(1000),
                         null,
-                        null, null, BigDecimal.valueOf(319.31), null)));
+                        null, null, BigDecimal.valueOf(319.31), null, null)));
 
         caseDecision.setFinancialImposition(buildFinancialImposition(PAY_TO_COURT));
         caseDetail.setCaseDecisions(asList(caseDecision));
@@ -156,7 +156,7 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1500),
                         null,
-                        BigDecimal.valueOf(2000.600), null, null, null)));
+                        BigDecimal.valueOf(2000.600), null, null, null, null)));
 
         caseDecision.setFinancialImposition(buildFinancialImposition(ATTACH_TO_EARNINGS));
         caseDetail.setCaseDecisions(asList(caseDecision));
@@ -195,7 +195,7 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1500),
                         null,
-                        BigDecimal.valueOf(2000.600), null, null, null)));
+                        BigDecimal.valueOf(2000.600), null, null, null, null)));
 
         caseDecision.setFinancialImposition(buildFinancialImposition(ATTACH_TO_EARNINGS, new LumpSum(BigDecimal.valueOf(30.34), 0, LocalDate.now())));
         caseDetail.setCaseDecisions(asList(caseDecision));
@@ -274,7 +274,7 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1500),
                         null,
-                        BigDecimal.valueOf(2000.600), null, null, null),
+                        BigDecimal.valueOf(2000.600), null, null, null, null),
                 new WithdrawOffenceDecision(),
                 new DismissOffenceDecision()));
 
@@ -308,7 +308,7 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.ZERO,
                         "Some reason for no compensation",
-                        null, BigDecimal.ZERO, BigDecimal.ZERO, null)));
+                        null, BigDecimal.ZERO, BigDecimal.ZERO, null, null)));
 
         caseDecision.setFinancialImposition(new FinancialImposition(
                 new CostsAndSurcharge(BigDecimal.ZERO, null,

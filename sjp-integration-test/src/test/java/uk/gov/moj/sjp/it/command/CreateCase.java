@@ -14,6 +14,7 @@ import static uk.gov.moj.sjp.it.util.HttpClientUtil.getPostCallResponse;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.Language;
 import uk.gov.justice.services.common.converter.LocalDates;
+import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
 import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 import uk.gov.moj.sjp.it.command.builder.ContactDetailsBuilder;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
@@ -163,6 +164,9 @@ public class CreateCase {
             ofNullable(offenceBuilder.endorsable)
                     .ifPresent(endorsable -> offence.add("endorsable", endorsable));
 
+            ofNullable(offenceBuilder.pressRestrictable)
+                    .ifPresent(pressRestrictable -> offence.add("pressRestrictable", pressRestrictable));
+
             return offence;
         }).forEach(offenceArrayBuilder::add);
 
@@ -178,6 +182,7 @@ public class CreateCase {
         private LocalDate postingDate;
         private DefendantBuilder defendantBuilder;
         private List<OffenceBuilder> offenceBuilders;
+        private PressRestriction pressRestriction;
 
         private CreateCasePayloadBuilder() {
             this.prosecutingAuthority = ProsecutingAuthority.TFL;
@@ -189,6 +194,7 @@ public class CreateCase {
             this.urn = UrnProvider.generate(prosecutingAuthority);
             this.enterpriseId = RandomStringUtils.randomAlphanumeric(12).toUpperCase();
             this.getOffenceBuilder().withId(randomUUID());
+            this.pressRestriction = null;
         }
 
         public static CreateCasePayloadBuilder defaultCaseBuilder() {
@@ -249,6 +255,10 @@ public class CreateCase {
             return offenceBuilders.get(0);
         }
 
+        public OffenceBuilder getOffenceBuilder(final UUID offenceId) {
+            return offenceBuilders.stream().filter(o-> o.getId().equals(offenceId)).findFirst().get();
+        }
+
         public List<OffenceBuilder> getOffenceBuilders() {
             return offenceBuilders;
         }
@@ -299,6 +309,11 @@ public class CreateCase {
 
         public CreateCasePayloadBuilder withOffenceBuilder(final OffenceBuilder offenceBuilder) {
             this.offenceBuilders = newArrayList(offenceBuilder);
+            return this;
+        }
+
+        public CreateCasePayloadBuilder setOffencesPressRestrictable(final boolean pressRestrictable) {
+            this.getOffenceBuilders().stream().forEach(o -> o.withPressRestrictable(pressRestrictable));
             return this;
         }
     }
@@ -480,6 +495,7 @@ public class CreateCase {
         private int fineLevel;
         private BigDecimal maxFineValue;
         private Boolean endorsable;
+        private Boolean pressRestrictable;
 
         private OffenceBuilder() {
 
@@ -508,6 +524,7 @@ public class CreateCase {
             builder.fineLevel = 3;
             builder.maxFineValue = BigDecimal.valueOf(1000);
             builder.endorsable = false;
+            builder.pressRestrictable = false;
 
             return builder;
         }
@@ -570,6 +587,11 @@ public class CreateCase {
 
         public OffenceBuilder withEndorsable(final Boolean endorsable) {
             this.endorsable = endorsable;
+            return this;
+        }
+
+        public OffenceBuilder withPressRestrictable(final Boolean pressRestrictable) {
+            this.pressRestrictable = pressRestrictable;
             return this;
         }
 
@@ -648,6 +670,10 @@ public class CreateCase {
 
         public Boolean getEndorsable() {
             return endorsable;
+        }
+
+        public Boolean getPressRestrictable() {
+            return pressRestrictable;
         }
     }
 }

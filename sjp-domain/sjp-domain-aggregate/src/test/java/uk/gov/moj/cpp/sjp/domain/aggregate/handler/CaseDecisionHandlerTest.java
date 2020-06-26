@@ -9,9 +9,12 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.ADJOURNMENT;
 import static uk.gov.justice.json.schemas.domains.sjp.NoteType.DECISION;
@@ -54,6 +57,11 @@ import uk.gov.moj.cpp.sjp.domain.decision.imposition.Payment;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentTerms;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.domain.testutils.builders.AdjournBuilder;
+import uk.gov.moj.cpp.sjp.domain.testutils.builders.DismissBuilder;
+import uk.gov.moj.cpp.sjp.domain.testutils.builders.FinancialPenaltyBuilder;
+import uk.gov.moj.cpp.sjp.domain.testutils.builders.ReferForCourtHearingBuilder;
+import uk.gov.moj.cpp.sjp.domain.testutils.builders.WithdrawBuilder;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
@@ -314,7 +322,7 @@ public class CaseDecisionHandlerTest {
 
         final List<OffenceDecision> offenceDecisions2 = newArrayList(
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1),
-                new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_NOT_GUILTY))
+                new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_NOT_GUILTY), null)
         );
 
         final Decision decision2 = new Decision(decisionId2, sessionId2, caseId, note, savedAt, legalAdviser, offenceDecisions2, null);
@@ -356,8 +364,8 @@ public class CaseDecisionHandlerTest {
 
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
         final List<OffenceDecision> offenceDecisions = newArrayList(
-                new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_NOT_GUILTY)),
-                new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_NOT_GUILTY)));
+                new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_NOT_GUILTY), null),
+                new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_NOT_GUILTY), null));
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
 
@@ -410,7 +418,7 @@ public class CaseDecisionHandlerTest {
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1),
                 new Adjourn(randomUUID(), createOffenceDecisionInformationList(offenceId2, NO_VERDICT), adjournmentReason, adjournedTo),
-                new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId3, FOUND_NOT_GUILTY)));
+                new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId3, FOUND_NOT_GUILTY), null));
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
 
@@ -446,8 +454,8 @@ public class CaseDecisionHandlerTest {
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
-                createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null),
-                createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, null, "Insufficient means", false, null));
+                createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), DischargeType.CONDITIONAL, null, new BigDecimal(500), null, true, null, null),
+                createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, null, "Insufficient means", false, null, null));
 
         final Defendant defendant = new Defendant(new CourtDetails("1080", "Bedfordshire Magistrates' Court"));
         final FinancialImposition financialImposition = new FinancialImposition(
@@ -478,7 +486,7 @@ public class CaseDecisionHandlerTest {
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1),
                 new ReferForCourtHearing(randomUUID(), createOffenceDecisionInformationList(offenceId2, PROVED_SJP), referralReasonId, "note", 0, courtOptions),
-                new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId3, FOUND_NOT_GUILTY)));
+                new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId3, FOUND_NOT_GUILTY), null));
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
 
@@ -555,8 +563,8 @@ public class CaseDecisionHandlerTest {
     public void shouldRaiseDecisionRejectedEventWhenDecisionWithPaymentTypeOfAttachedToEarningsDoesNotHaveUpdatedEmployerDetails() {
 
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
-        final Discharge discharge1 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(10), null, true, null);
-        final Discharge discharge2 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null);
+        final Discharge discharge1 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(10), null, true, null, null);
+        final Discharge discharge2 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null, null);
         final List<OffenceDecision> offenceDecisions = newArrayList(discharge1, discharge2);
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser,
@@ -575,8 +583,8 @@ public class CaseDecisionHandlerTest {
     public void shouldRaiseDecisionRejectedEventWhenDecisionWithFinancialImpositionHasCostsZeroAndNoReason() {
 
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
-        final Discharge discharge1 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(10), null, true, null);
-        final Discharge discharge2 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null);
+        final Discharge discharge1 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(10), null, true, null, null);
+        final Discharge discharge2 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null, null);
         final List<OffenceDecision> offenceDecisions = newArrayList(discharge1, discharge2);
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser,
@@ -596,8 +604,8 @@ public class CaseDecisionHandlerTest {
 
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
         caseAggregateState.setCosts(BigDecimal.ZERO);
-        final Discharge discharge1 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(10), null, true, null);
-        final Discharge discharge2 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null);
+        final Discharge discharge1 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId1, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(10), null, true, null, null);
+        final Discharge discharge2 = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null, null);
         final List<OffenceDecision> offenceDecisions = newArrayList(discharge1, discharge2);
 
         final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser,
@@ -689,7 +697,7 @@ public class CaseDecisionHandlerTest {
                         false);
 
         final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(randomUUID(), createOffenceDecisionInformationList(offenceId1, NO_VERDICT), referralReasonId, "note", 0, courtOptions);
-        final Discharge discharge = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null);
+        final Discharge discharge = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null, null);
 
         final List<OffenceDecision> offenceDecisions = newArrayList(referForCourtHearing, discharge);
 
@@ -710,7 +718,7 @@ public class CaseDecisionHandlerTest {
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
 
         final Adjourn adjourn = new Adjourn(randomUUID(), createOffenceDecisionInformationList(offenceId1, NO_VERDICT), adjournmentReason, LocalDate.now().plusDays(14));
-        final FinancialPenalty financialPenalty = createFinancialPenalty(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), new BigDecimal(200), new BigDecimal(40), null, true, null, null);
+        final FinancialPenalty financialPenalty = createFinancialPenalty(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), new BigDecimal(200), new BigDecimal(40), null, true, null, null, null);
 
         final List<OffenceDecision> offenceDecisions = newArrayList(adjourn, financialPenalty);
 
@@ -730,7 +738,7 @@ public class CaseDecisionHandlerTest {
 
         givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
         final Adjourn adjourn = new Adjourn(randomUUID(), createOffenceDecisionInformationList(offenceId1, NO_VERDICT), adjournmentReason, LocalDate.now().plusDays(14));
-        final FinancialPenalty financialPenalty = createFinancialPenalty(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), new BigDecimal(200), new BigDecimal(40), null, true, null, null);
+        final FinancialPenalty financialPenalty = createFinancialPenalty(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), new BigDecimal(200), new BigDecimal(40), null, true, null, null, null);
         final List<OffenceDecision> offenceDecisions = newArrayList(adjourn, financialPenalty);
         final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
 
@@ -808,6 +816,146 @@ public class CaseDecisionHandlerTest {
 
         final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
         thenTheDecisionIsRejected(decision, expectedRejectionReasons, eventStream);
+    }
+
+    @Test
+    public void shouldRejectPressRestrictionOnNonPressRestrictableOffence() {
+        final FinancialPenalty financialPenalty = FinancialPenaltyBuilder.withDefaults().pressRestriction("A Name").build();
+        final Dismiss dismiss = DismissBuilder.withDefaults().pressRestriction("A Name").build();
+        givenCaseExistsWithMultipleOffences(newHashSet(financialPenalty.getId(), dismiss.getId()), legalAdviserId);
+        final List<OffenceDecision> offenceDecisions = newArrayList(financialPenalty, dismiss);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, this.note, savedAt, legalAdviser, offenceDecisions, null);
+
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        final List<String> expected = newArrayList(
+                "Press restriction cannot be applied to non-press-restrictable offence: " + financialPenalty.getId(),
+                "Press restriction cannot be applied to non-press-restrictable offence: " + dismiss.getId()
+        );
+        thenTheDecisionIsRejected(decision, expected, eventStream);
+    }
+
+    @Test
+    public void shouldRejectRevokedRestrictionForOffencesWithoutPreviousRestrictionRequested() {
+        final FinancialPenaltyBuilder financialPenaltyBuilder = FinancialPenaltyBuilder.withDefaults().pressRestrictionRevoked();
+        final DismissBuilder dismissBuilder = DismissBuilder.withDefaults().pressRestrictionRevoked();
+        final Withdraw withdraw = WithdrawBuilder.withDefaults().build();
+        final FinancialPenalty financialPenalty = financialPenaltyBuilder.build();
+        final Dismiss dismiss = dismissBuilder.build();
+        final List<OffenceDecision> offenceDecisions = newArrayList(financialPenalty, dismiss, withdraw);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        givenCaseExistsWithMultipleOffences(newHashSet(financialPenalty.getId(), dismiss.getId(), withdraw.getId()), legalAdviserId);
+        caseAggregateState.markOffenceAsPressRestrictable(financialPenalty.getId());
+        caseAggregateState.markOffenceAsPressRestrictable(dismiss.getId());
+
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        final List<String> expected = newArrayList(
+                "Press restriction cannot be revoked on offence that has no previous press restriction requested. Failed offenceId: " + financialPenalty.getId(),
+                "Press restriction cannot be revoked on offence that has no previous press restriction requested. Failed offenceId: " + dismiss.getId()
+        );
+        thenTheDecisionIsRejected(decision, expected, eventStream);
+    }
+
+    @Test
+    public void shouldRejectNullRestrictionForOffencesWithPreviousRestrictionRequested() {
+        // Given a first decision without press restriction
+        final Adjourn adjourn = AdjournBuilder.withDefaults()
+                .addOffenceDecisionInformation(offenceId1, NO_VERDICT)
+                .addOffenceDecisionInformation(offenceId2, NO_VERDICT)
+                .addOffenceDecisionInformation(offenceId3, NO_VERDICT)
+                .pressRestriction("Robert")
+                .build();
+        caseAggregateState.markOffenceAsPressRestrictable(offenceId1);
+        caseAggregateState.markOffenceAsPressRestrictable(offenceId2);
+        caseAggregateState.updateOffenceDecisions(newArrayList(adjourn), sessionId);
+        caseAggregateState.addOffenceIdsForDefendant(defendantId, newHashSet(offenceId1, offenceId2, offenceId3));
+
+        // And a second decision with revoked press restriction
+        final FinancialPenalty financialPenalty = FinancialPenaltyBuilder.withDefaults().id(offenceId1).build();
+        final Dismiss dismiss = DismissBuilder.withDefaults().pressRestrictionRevoked().id(offenceId2).build();
+        final Withdraw withdraw = WithdrawBuilder.withDefaults().id(offenceId3).build();
+        final List<OffenceDecision> offenceDecisions = newArrayList(financialPenalty, dismiss, withdraw);
+
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2), legalAdviserId);
+
+        // When
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        // Then
+        final List<String> expected = newArrayList(
+                String.format("Expected to find press restriction for offence %s but found none", financialPenalty.getId().toString())
+        );
+        thenTheDecisionIsRejected(decision, expected, eventStream);
+    }
+
+    @Test
+    public void shouldAcceptRevokedRestrictionForOffencesWithPreviousRestrictionRequestedWhenAdjourning() {
+        // Given a first decision without press restriction
+        final Adjourn adjourn = AdjournBuilder.withDefaults()
+                .addOffenceDecisionInformation(offenceId1, NO_VERDICT)
+                .addOffenceDecisionInformation(offenceId2, NO_VERDICT)
+                .addOffenceDecisionInformation(offenceId3, NO_VERDICT)
+                .pressRestriction("Robert")
+                .build();
+        caseAggregateState.markOffenceAsPressRestrictable(offenceId1);
+        caseAggregateState.markOffenceAsPressRestrictable(offenceId2);
+        caseAggregateState.updateOffenceDecisions(newArrayList(adjourn), sessionId);
+        caseAggregateState.addOffenceIdsForDefendant(defendantId, newHashSet(offenceId1, offenceId2, offenceId3));
+
+        // And a second decision with revoked press restriction
+        final Adjourn adjourn2 = AdjournBuilder.withDefaults()
+                .addOffenceDecisionInformation(offenceId1, NO_VERDICT)
+                .addOffenceDecisionInformation(offenceId2, NO_VERDICT)
+                .addOffenceDecisionInformation(offenceId3, NO_VERDICT)
+                .reason(adjournmentReason)
+                .pressRestrictionRevoked()
+                .build();
+
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, newArrayList(adjourn2), null);
+        givenCaseExistsWithMultipleOffences(newHashSet(offenceId1, offenceId2, offenceId3), legalAdviserId);
+
+        // When
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        // Then
+        thenTheDecisionIsAcceptedAlongWithCaseAdjournedRecordedEvent(newArrayList(adjourn2), eventStream.collect(toList()),adjourn2.getAdjournTo());
+    }
+
+    @Test
+    public void shouldBypassPressRestrictionValidationForAdjournDecision() {
+        final Adjourn adjourn = AdjournBuilder.withDefaults()
+                .addOffenceDecisionInformation(NO_VERDICT)
+                .addOffenceDecisionInformation(NO_VERDICT)
+                .reason(adjournmentReason)
+                .pressRestriction("A random name")
+                .build();
+        givenCaseExistsWithMultipleOffences(newHashSet(adjourn.getOffenceIds()), legalAdviserId);
+        caseAggregateState.markOffenceAsPressRestrictable(adjourn.getOffenceIds().get(0));
+        final List<OffenceDecision> offenceDecisions = newArrayList(adjourn);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        thenTheDecisionIsAcceptedAlongWithCaseAdjournedRecordedEvent(offenceDecisions, eventStream.collect(toList()), adjourn.getAdjournTo());
+    }
+
+    @Test
+    public void shouldBypassPressRestrictionValidationForReferForCourtHearingDecision() {
+        final ReferForCourtHearing referForCourtHearing = ReferForCourtHearingBuilder.withDefaults()
+                .addOffenceDecisionInformation(NO_VERDICT)
+                .addOffenceDecisionInformation(NO_VERDICT)
+                .pressRestriction("A random name")
+                .build();
+        givenCaseExistsWithMultipleOffences(newHashSet(referForCourtHearing.getOffenceIds()), legalAdviserId);
+        final List<OffenceDecision> offenceDecisions = newArrayList(referForCourtHearing);
+        final Decision decision = new Decision(decisionId, sessionId, caseId, note, savedAt, legalAdviser, offenceDecisions, null);
+        caseAggregateState.markOffenceAsPressRestrictable(referForCourtHearing.getOffenceIds().get(0));
+
+        final Stream<Object> eventStream = CaseDecisionHandler.INSTANCE.saveDecision(decision, caseAggregateState, session);
+
+        thenTheDecisionIsNotRejected(eventStream.collect(toList()));
     }
 
     @Test
@@ -1039,6 +1187,10 @@ public class CaseDecisionHandlerTest {
         final List<Object> eventList = eventStream.collect(toList());
         assertThat(eventList.size(), is(1));
         assertThat(eventList, hasItem(new DecisionRejected(decision, expectedRejectionReasons)));
+    }
+
+    private void thenTheDecisionIsNotRejected(final List<Object> events) {
+        assertThat(events, everyItem(not(instanceOf(DecisionRejected.class))));
     }
 
     private void thenTheDecisionIsAccepted(final Decision decision, final List<Object> eventList) {

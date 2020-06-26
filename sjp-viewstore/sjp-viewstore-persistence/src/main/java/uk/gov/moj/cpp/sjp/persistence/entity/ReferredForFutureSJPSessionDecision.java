@@ -16,7 +16,8 @@ public class ReferredForFutureSJPSessionDecision extends OffenceDecision {
 
     public ReferredForFutureSJPSessionDecision(final UUID offenceId,
                                                final UUID caseDecisionId,
-                                               final VerdictType verdict) {
-        super(offenceId, caseDecisionId, DecisionType.REFERRED_FOR_FUTURE_SJP_SESSION, verdict, null);
+                                               final VerdictType verdict,
+                                               final PressRestriction pressRestriction) {
+        super(offenceId, caseDecisionId, DecisionType.REFERRED_FOR_FUTURE_SJP_SESSION, verdict, null, pressRestriction);
     }
 }

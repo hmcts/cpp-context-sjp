@@ -1,6 +1,9 @@
 package uk.gov.moj.cpp.sjp.domain.decision;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
+import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISCHARGE;
+
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargePeriod;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPeriod;
@@ -11,9 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
-import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode;
-import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISCHARGE;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Discharge extends DisqualifyEndorseDecision {
 
@@ -47,10 +48,11 @@ public class Discharge extends DisqualifyEndorseDecision {
                      @JsonProperty("disqualification") final Boolean disqualification,
                      @JsonProperty("disqualificationType") final DisqualificationType disqualificationType,
                      @JsonProperty("disqualificationPeriod") final DisqualificationPeriod disqualificationPeriod,
-                     @JsonProperty("notionalPenaltyPoints") final Integer notionalPenaltyPoints) {
-        super(id, DISCHARGE, offenceDecisionInformation,licenceEndorsed, penaltyPointsImposed,
+                     @JsonProperty("notionalPenaltyPoints") final Integer notionalPenaltyPoints,
+                     @JsonProperty("pressRestriction") final PressRestriction pressRestriction) {
+        super(id, DISCHARGE, offenceDecisionInformation, licenceEndorsed, penaltyPointsImposed,
                 penaltyPointsReason, additionalPointsReason, disqualification, disqualificationType,
-                disqualificationPeriod, notionalPenaltyPoints);
+                disqualificationPeriod, notionalPenaltyPoints, pressRestriction);
         this.dischargeType = dischargeType;
         this.dischargedFor = dischargedFor;
         this.compensation = compensation;
@@ -60,15 +62,16 @@ public class Discharge extends DisqualifyEndorseDecision {
     }
 
     public static Discharge createDischarge(final UUID id,
-                                            OffenceDecisionInformation offenceDecisionInformation,
+                                            final OffenceDecisionInformation offenceDecisionInformation,
                                             final DischargeType dischargeType,
                                             final DischargePeriod dischargedFor,
                                             final BigDecimal compensation,
                                             final String noCompensationReason,
                                             final Boolean guiltyPleaTakenIntoAccount,
-                                            final BigDecimal backDuty) {
+                                            final BigDecimal backDuty,
+                                            final PressRestriction pressRestriction) {
         return new Discharge(id, offenceDecisionInformation, dischargeType, dischargedFor, compensation, noCompensationReason, guiltyPleaTakenIntoAccount, backDuty, null,
-                null, null, null, null, null, null, null);
+                null, null, null, null, null, null, null, pressRestriction);
     }
 
     public DischargeType getDischargeType() {

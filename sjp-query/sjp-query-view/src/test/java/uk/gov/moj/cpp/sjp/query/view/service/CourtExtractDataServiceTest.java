@@ -385,14 +385,14 @@ public class CourtExtractDataServiceTest {
             case DISMISS:
                 offenceDecision = new DismissOffenceDecision(offenceId,
                         decisionId,
-                        FOUND_NOT_GUILTY);
+                        FOUND_NOT_GUILTY, null);
                 break;
             case ADJOURN:
                 offenceDecision = new AdjournOffenceDecision(offenceId,
                         decisionId,
                         "",
                         now().plusDays(7).toLocalDate(),
-                        NO_VERDICT, null);
+                        NO_VERDICT, null, null);
                 break;
             case REFER_FOR_COURT_HEARING:
                 offenceDecision = new ReferForCourtHearingDecision(offenceId,
@@ -400,13 +400,13 @@ public class CourtExtractDataServiceTest {
                         UUID.fromString("7e2f843e-d639-40b3-8611-8015f3a18957"),
                         10,
                         "",
-                        NO_VERDICT, null);
+                        NO_VERDICT, null, null);
                 break;
             case WITHDRAW:
                 offenceDecision = new WithdrawOffenceDecision(offenceId,
                         decisionId,
                         randomUUID(),
-                        NO_VERDICT);
+                        NO_VERDICT, null);
                 break;
             case DISCHARGE:
                 offenceDecision = new DischargeOffenceDecision(offenceId,
@@ -552,7 +552,7 @@ public class CourtExtractDataServiceTest {
                         true,
                         BigDecimal.valueOf(1000.987),
                         "Limited means of defendant",
-                        BigDecimal.valueOf(2000.236), null, null, null)));
+                        BigDecimal.valueOf(2000.236), null, null, null, null)));
 
         caseDetail.setCaseDecisions(asList(financialDecision));
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
@@ -589,7 +589,7 @@ public class CourtExtractDataServiceTest {
                         true,
                         BigDecimal.valueOf(1000.987),
                         null,
-                        null, BigDecimal.valueOf(123.45), BigDecimal.valueOf(234.56), null)));
+                        null, BigDecimal.valueOf(123.45), BigDecimal.valueOf(234.56), null, null)));
 
         caseDetail.setCaseDecisions(asList(financialDecision));
         when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));

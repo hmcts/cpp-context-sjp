@@ -7,14 +7,21 @@ import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCod
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public abstract class MultipleOffenceDecision extends OffenceDecision {
 
     private final List<OffenceDecisionInformation> offenceDecisionInformation;
 
-    public MultipleOffenceDecision(UUID id, DecisionType type, List<OffenceDecisionInformation> offenceDecisionInformation) {
-        super(id, type);
+    public MultipleOffenceDecision(final UUID id,
+                                   final DecisionType type,
+                                   final List<OffenceDecisionInformation> offenceDecisionInformation) {
+        this(id, type, offenceDecisionInformation, null);
+    }
+
+    public MultipleOffenceDecision(final UUID id,
+                                   final DecisionType type,
+                                   final List<OffenceDecisionInformation> offenceDecisionInformation,
+                                   final PressRestriction pressRestriction) {
+        super(id, type, pressRestriction);
         this.offenceDecisionInformation = offenceDecisionInformation;
     }
 

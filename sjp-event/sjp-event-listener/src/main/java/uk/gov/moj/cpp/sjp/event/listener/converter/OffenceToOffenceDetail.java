@@ -26,6 +26,7 @@ public class OffenceToOffenceDetail implements Converter<Offence, OffenceDetail>
                 .withVehicleMake(offence.getVehicleMake())
                 .withVehicleRegistrationMark(offence.getVehicleRegistrationMark())
                 .withEndorsable(offence.getEndorsable())
+                .withPressRestrictable(offence.getPressRestrictable())
                 .build();
     }
 

@@ -4,12 +4,13 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Objects;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -35,14 +36,15 @@ public class Offence {
     private final String vehicleRegistrationMark;
 
     private final Boolean endorsable;
+    private final Boolean pressRestrictable;
 
     @SuppressWarnings("squid:S00107")
     public Offence(UUID id, int offenceSequenceNo, String libraOffenceCode, LocalDate chargeDate,
                    int libraOffenceDateCode, LocalDate offenceCommittedDate, String offenceWording,
-                   String prosecutionFacts, String witnessStatement, BigDecimal compensation) {
+                   String prosecutionFacts, String witnessStatement, BigDecimal compensation, final Boolean pressRestrictable) {
         this(id, offenceSequenceNo, libraOffenceCode, chargeDate, libraOffenceDateCode, null, offenceCommittedDate,
                 offenceWording, prosecutionFacts, witnessStatement, compensation,
-                null, null, null, null, null, null, null);
+                null, null, null, null, null, null, null, pressRestrictable);
     }
 
     @JsonCreator
@@ -63,7 +65,8 @@ public class Offence {
                    @JsonProperty("backDutyDateTo") LocalDate backDutyDateTo,
                    @JsonProperty("vehicleMake") String vehicleMake,
                    @JsonProperty("vehicleRegistrationMark") String vehicleRegistrationMark,
-                   @JsonProperty("endorsable") Boolean endorsable) {
+                   @JsonProperty("endorsable") Boolean endorsable,
+                   @JsonProperty("pressRestrictable") Boolean pressRestrictable) {
         this.id = id;
         this.offenceSequenceNo = offenceSequenceNo;
         this.libraOffenceCode = libraOffenceCode;
@@ -81,6 +84,7 @@ public class Offence {
         this.vehicleMake = vehicleMake;
         this.vehicleRegistrationMark = vehicleRegistrationMark;
         this.endorsable = endorsable;
+        this.pressRestrictable = pressRestrictable;
     }
 
     public UUID getId() {
@@ -151,42 +155,16 @@ public class Offence {
         return endorsable;
     }
 
+    public Boolean getPressRestrictable() { return pressRestrictable; }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        Offence that = (Offence) o;
-
-        return offenceSequenceNo == that.offenceSequenceNo &&
-                libraOffenceDateCode == that.libraOffenceDateCode &&
-                Objects.equals(id, that.id) &&
-                Objects.equals(libraOffenceCode, that.libraOffenceCode) &&
-                Objects.equals(chargeDate, that.chargeDate) &&
-                Objects.equals(offenceCommittedDate, that.offenceCommittedDate) &&
-                Objects.equals(offenceWording, that.offenceWording) &&
-                Objects.equals(prosecutionFacts, that.prosecutionFacts) &&
-                Objects.equals(witnessStatement, that.witnessStatement) &&
-                Objects.equals(compensation, that.compensation) &&
-                Objects.equals(offenceWordingWelsh, that.offenceWordingWelsh) &&
-                Objects.equals(backDuty, that.backDuty) &&
-                Objects.equals(backDutyDateFrom, that.backDutyDateFrom) &&
-                Objects.equals(backDutyDateTo, that.backDutyDateTo) &&
-                Objects.equals(vehicleMake, that.vehicleMake) &&
-                Objects.equals(vehicleRegistrationMark, that.vehicleRegistrationMark) &&
-                Objects.equals(endorsable, that.endorsable);
+        return EqualsBuilder.reflectionEquals(this, o);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, offenceSequenceNo, libraOffenceCode, chargeDate,
-                libraOffenceDateCode, offenceCommittedDate, offenceWording, prosecutionFacts,
-                witnessStatement, compensation, offenceWordingWelsh, backDuty, backDutyDateFrom,
-                backDutyDateTo, vehicleMake, vehicleRegistrationMark, endorsable);
+        return HashCodeBuilder.reflectionHashCode(this);
     }
 
     @Override

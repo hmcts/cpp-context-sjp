@@ -31,9 +31,10 @@ public class AdjournOffenceDecision extends OffenceDecision {
                                   final String adjournmentReason,
                                   final LocalDate adjournedTo,
                                   final VerdictType verdict,
-                                  final LocalDate convictionDate) {
+                                  final LocalDate convictionDate,
+                                  final PressRestriction pressRestriction) {
 
-        super(offenceId, caseDecisionId, DecisionType.ADJOURN, verdict, convictionDate);
+        super(offenceId, caseDecisionId, DecisionType.ADJOURN, verdict, convictionDate, pressRestriction);
         this.adjournmentReason = adjournmentReason;
         this.adjournedTo = adjournedTo;
     }

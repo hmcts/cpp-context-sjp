@@ -130,6 +130,20 @@
     "notionalPenaltyPoints" : {
       "type" : "integer",
       "minimum" : 1
+    },
+    "pressRestriction" : {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "requested": {
+          "type": "boolean"
+        }
+      },
+      "required" : [
+        "requested"
+      ]
     }
   },
   "required": [

@@ -4,6 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
@@ -24,8 +25,6 @@ import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
-import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
-import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
@@ -51,20 +50,20 @@ import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder;
 import uk.gov.justice.services.test.utils.core.matchers.JsonValueIsJsonMatcher;
-import uk.gov.moj.cpp.sjp.domain.decision.NoSeparatePenalty;
-import uk.gov.moj.cpp.sjp.domain.decision.SetAside;
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
 import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
+import uk.gov.moj.cpp.sjp.domain.decision.NoSeparatePenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
+import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferredForFutureSJPSession;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferredToOpenCourt;
+import uk.gov.moj.cpp.sjp.domain.decision.SetAside;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
 import uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded;
@@ -79,7 +78,10 @@ import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 import uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
 import uk.gov.moj.sjp.it.command.CreateCase.OffenceBuilder;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
+import uk.gov.moj.sjp.it.util.builders.DismissBuilder;
+import uk.gov.moj.sjp.it.util.matchers.OffenceDecisionMatcher;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -118,7 +120,7 @@ public class DecisionHelper {
     }
 
     public static void saveDefaultDecisionInSession(final UUID caseId, final UUID sessionId, final UUID userId, final Collection<UUID> offenceIds) {
-        final List<OffenceDecision> offenceDecisions = offenceIds.stream().map(offenceId -> new Dismiss(null, createOffenceDecisionInformation(offenceId, FOUND_NOT_GUILTY))).collect(toList());
+        final List<OffenceDecision> offenceDecisions = offenceIds.stream().map(offenceId -> DismissBuilder.withDefaults(offenceId).build()).collect(toList());
         final DecisionCommand decisionCommand = new DecisionCommand(sessionId, caseId, "", new User("John", "Smith", userId), offenceDecisions, null);
 
         new EventListener()
@@ -141,14 +143,21 @@ public class DecisionHelper {
                                                       final UUID offence2Id,
                                                       final UUID offence3Id,
                                                       final LocalDate postingDate) {
+        return createCase(caseId, asList(offence1Id, offence2Id, offence3Id), postingDate);
+    }
+
+    public static CreateCasePayloadBuilder createCase(final UUID caseId,
+                                                      final List<UUID> offenceIds,
+                                                      final LocalDate postingDate) {
         final CreateCasePayloadBuilder createCasePayloadBuilder = CreateCasePayloadBuilder
                 .withDefaults()
                 .withId(caseId)
-                .withOffenceBuilders(
-                        OffenceBuilder.withDefaults().withId(offence1Id),
-                        OffenceBuilder.withDefaults().withId(offence2Id),
-                        OffenceBuilder.withDefaults().withId(offence3Id))
                 .withPostingDate(postingDate);
+        final List<OffenceBuilder> offenceBuilders = offenceIds.stream()
+                .map(offenceId -> OffenceBuilder.withDefaults().withId(offenceId))
+                .collect(toList());
+        createCasePayloadBuilder.withOffenceBuilders(offenceBuilders);
+
         final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
         stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
@@ -335,12 +344,10 @@ public class DecisionHelper {
     private static void verifyOffenceDecisions(final List<? extends OffenceDecision> eventDecisions, final List<? extends OffenceDecision> commandOffenceDecisions) {
         assertEquals(commandOffenceDecisions.size(), eventDecisions.size());
 
-        for(OffenceDecision offenceDecision: commandOffenceDecisions){
-
-            Matcher basicOffenceDecisionMatcher = hasProperty("type", CoreMatchers.is(offenceDecision.getType()));
+        for (OffenceDecision offenceDecision : commandOffenceDecisions) {
 
             Matcher decisionTypeSpecificMatcher = null;
-            switch (offenceDecision.getType()){
+            switch (offenceDecision.getType()) {
                 case REFER_FOR_COURT_HEARING:
                     ReferForCourtHearing refer = (ReferForCourtHearing) offenceDecision;
                     decisionTypeSpecificMatcher = allOf(
@@ -398,7 +405,7 @@ public class DecisionHelper {
                     );
                     break;
                 case FINANCIAL_PENALTY:
-                    FinancialPenalty financialPenalty = (FinancialPenalty) offenceDecision;
+                    final FinancialPenalty financialPenalty = (FinancialPenalty) offenceDecision;
                     decisionTypeSpecificMatcher = allOf(
                             isA(FinancialPenalty.class),
                             hasProperty("offenceDecisionInformation", is(financialPenalty.getOffenceDecisionInformation())),
@@ -461,8 +468,9 @@ public class DecisionHelper {
                 decisionTypeSpecificMatcher = allOf(decisionTypeSpecificMatcher, hasProperty("convictionDate"));
             }
 
-            assertThat(eventDecisions, hasItem(
-                    allOf(basicOffenceDecisionMatcher, decisionTypeSpecificMatcher)
+            assertThat(eventDecisions, hasItem(allOf(
+                    OffenceDecisionMatcher.match(offenceDecision),
+                    decisionTypeSpecificMatcher)
             ));
         }
     }
@@ -473,7 +481,6 @@ public class DecisionHelper {
                 .map(OffenceDecisionInformation::getVerdict)
                 .anyMatch(Objects::isNull);
     }
-
 
     public static void verifyDecisionSavedPublicEventEmit(final DecisionSaved decisionSaved, final JsonEnvelope decisionSavedEnvelope) {
         final List<Matcher<? super ReadContext>> matchers = new ArrayList<>();
@@ -490,12 +497,12 @@ public class DecisionHelper {
                     final String firstOffenceIdPath = asList(DecisionType.REFER_FOR_COURT_HEARING, DecisionType.ADJOURN).contains(decisionType) ?
                             "offenceDecisionInformation[0].offenceId" : "offenceDecisionInformation.offenceId";
                     return withJsonPath("$.offenceDecisions.*",
-                        hasItem(JsonPathMatchers.isJson(
-                                allOf(
-                                        withJsonPath("type", is(offenceDecision.getType().toString())),
-                                        withJsonPath(firstOffenceIdPath , is(
-                                                offenceDecision.offenceDecisionInformationAsList().get(0).getOffenceId().toString()))
-                                ))));
+                            hasItem(JsonPathMatchers.isJson(
+                                    allOf(
+                                            withJsonPath("type", is(offenceDecision.getType().toString())),
+                                            withJsonPath(firstOffenceIdPath, is(
+                                                    offenceDecision.offenceDecisionInformationAsList().get(0).getOffenceId().toString()))
+                                    ))));
                 }).collect(toList())));
 
         assertThat(decisionSavedEnvelope, jsonEnvelope(

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.String.format;
 import static java.math.BigDecimal.ZERO;
 import static java.util.Arrays.asList;
@@ -24,6 +25,8 @@ import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISCHARGE;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISMISS;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.FINANCIAL_PENALTY;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFERRED_FOR_FUTURE_SJP_SESSION;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFERRED_TO_OPEN_COURT;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.SET_ASIDE;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.WITHDRAW;
@@ -92,7 +95,9 @@ public class CaseDecisionHandler {
 
     public static final CaseDecisionHandler INSTANCE = new CaseDecisionHandler();
 
-    private final static List<DecisionType> NO_PREVIOUS_CONVICTION_DECISIONS = asList(DISMISS, WITHDRAW);
+    private static final List<DecisionType> NO_PREVIOUS_CONVICTION_DECISIONS = asList(DISMISS, WITHDRAW);
+    private static final Set<DecisionType> MULTIPLE_OFFENCE_DECISION_TYPES = newHashSet(ADJOURN,
+            REFER_FOR_COURT_HEARING, REFERRED_FOR_FUTURE_SJP_SESSION, REFERRED_TO_OPEN_COURT, SET_ASIDE);
 
     private CaseDecisionHandler() {
     }
@@ -390,6 +395,7 @@ public class CaseDecisionHandler {
         validateOffencesHasOnlyOneDecision(decision, rejectionReason);
         validateDecisionsCombinations(decision, rejectionReason);
         validateOffencesDoNotHavePreviousFinalDecision(decision, state, rejectionReason);
+        validatePressRestrictableOffences(decision, state, rejectionReason);
         validateDecisionTypesAndVerdict(decision, rejectionReason);
         validateDecisionsWithoutVerdict(decision, state, rejectionReason);
         validateEmployerDetailsAppliedWhenPaymentTypeIsAttachedToEarnings(decision, state, rejectionReason);
@@ -404,6 +410,32 @@ public class CaseDecisionHandler {
         validateNotGuiltyPleaShouldHaveNoVerdictForReferToCourtHearing(decision, state, rejectionReason);
         validateGuiltyPleaShouldHaveFoundGuiltyVerdictForReferToCourtHearing(decision, state, rejectionReason);
         return rejectionReason;
+    }
+
+    private void validatePressRestrictableOffences(final Decision decision, final CaseAggregateState state, final List<String> rejectionReasons) {
+        decision.getOffenceDecisions()
+                .stream()
+                .filter(OffenceDecision::hasPressRestriction)
+                .filter(offenceDecision -> !MULTIPLE_OFFENCE_DECISION_TYPES.contains(offenceDecision.getType()))
+                .flatMap(offenceDecision -> offenceDecision.getOffenceIds().stream())
+                .filter(offenceId -> !state.isPressRestrictable(offenceId))
+                .forEach(offenceId -> rejectionReasons.add(format("Press restriction cannot be applied to non-press-restrictable offence: %s", offenceId.toString())));
+
+        decision.getOffenceDecisions()
+                .stream()
+                .filter(OffenceDecision::hasPressRestriction)
+                .filter(offenceDecision -> offenceDecision.getPressRestriction().isRevoked())
+                .flatMap(offenceDecision -> offenceDecision.getOffenceIds().stream())
+                .filter(state::isPressRestrictable)
+                .filter(offenceId -> !state.hasPreviousPressRestriction(offenceId))
+                .forEach(offenceId -> rejectionReasons.add(format("Press restriction cannot be revoked on offence that has no previous press restriction requested. Failed offenceId: %s", offenceId.toString())));
+
+        decision.getOffenceDecisions()
+                .stream()
+                .filter(offenceDecision -> !offenceDecision.hasPressRestriction())
+                .flatMap(offenceDecision -> offenceDecision.getOffenceIds().stream())
+                .filter(state::hasPreviousPressRestriction)
+                .forEach(offenceId -> rejectionReasons.add(format("Expected to find press restriction for offence %s but found none", offenceId.toString())));
     }
 
     private void validateDecisionTypesAndPreviousConvictions(final Decision decision, final CaseAggregateState state, final List<String> rejectionReasons) {

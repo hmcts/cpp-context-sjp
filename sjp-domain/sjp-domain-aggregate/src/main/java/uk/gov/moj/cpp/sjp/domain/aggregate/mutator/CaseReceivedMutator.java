@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 
 import uk.gov.justice.json.schemas.domains.sjp.Language;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
@@ -35,7 +36,7 @@ final class CaseReceivedMutator implements AggregateStateMutator<CaseReceived, C
         state.setDefendantAddress(event.getDefendant().getAddress());
         state.setDefendantNationalInsuranceNumber(event.getDefendant().getNationalInsuranceNumber());
         final Language hearingLanguage = event.getDefendant().getHearingLanguage();
-        if (hearingLanguage != null){
+        if (hearingLanguage != null) {
             state.updateDefendantSpeakWelsh(event.getDefendant().getId(), hearingLanguage.equals(Language.W));
         }
         state.setExpectedDateReady(event.getExpectedDateReady());
@@ -44,5 +45,9 @@ final class CaseReceivedMutator implements AggregateStateMutator<CaseReceived, C
         state.setDefendantRegion(event.getDefendant().getRegion());
         state.setDefendantDriverNumber(event.getDefendant().getDriverNumber());
         state.setCosts(event.getCosts());
+
+        event.getDefendant().getOffences().stream()
+                .filter(offence -> isTrue(offence.getPressRestrictable()))
+                .forEach(offence -> state.markOffenceAsPressRestrictable(offence.getId()));
     }
 }

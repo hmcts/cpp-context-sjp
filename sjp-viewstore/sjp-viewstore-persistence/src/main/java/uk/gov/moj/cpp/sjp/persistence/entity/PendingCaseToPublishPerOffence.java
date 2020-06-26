@@ -19,6 +19,9 @@ public class PendingCaseToPublishPerOffence {
     private final String offenceCode;
     private final LocalDate offenceStartDate;
     private final String offenceWording;
+    private final Boolean pressRestrictionRequested;
+    private final String pressRestrictionName;
+    private final Boolean completed;
     private final String prosecutor;
 
     @SuppressWarnings("squid:S00107")
@@ -27,7 +30,8 @@ public class PendingCaseToPublishPerOffence {
                                           final String addressLine1, final String addressLine2,
                                           final String addressLine3, final String addressLine4, final String addressLine5,
                                           final String postcode, final String offenceCode, final LocalDate offenceStartDate,
-                                          final String offenceWording, final String prosecutor) {
+                                          final String offenceWording, final Boolean pressRestrictionRequested,
+                                          final String pressRestrictionName, final Boolean completed, final String prosecutor) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.defendantDateOfBirth = defendantDateOfBirth;
@@ -43,6 +47,9 @@ public class PendingCaseToPublishPerOffence {
         this.offenceStartDate = offenceStartDate;
         this.offenceWording = offenceWording;
         this.prosecutor = prosecutor;
+        this.pressRestrictionRequested = pressRestrictionRequested;
+        this.pressRestrictionName = pressRestrictionName;
+        this.completed = completed;
     }
 
     public String getFirstName() {
@@ -103,5 +110,17 @@ public class PendingCaseToPublishPerOffence {
 
     public String getOffenceWording() {
         return offenceWording;
+    }
+
+    public Boolean getPressRestrictionRequested() {
+        return pressRestrictionRequested;
+    }
+
+    public String getPressRestrictionName() {
+        return pressRestrictionName;
+    }
+
+    public Boolean getCompleted() {
+        return completed;
     }
 }

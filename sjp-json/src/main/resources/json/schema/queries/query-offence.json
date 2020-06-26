@@ -86,6 +86,26 @@
     },
     "endorsable" : {
       "type": "boolean"
+    },
+    "pressRestrictable": {
+      "type": "boolean"
+    },
+    "pressRestriction" : {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "requested": {
+          "type": "boolean"
+        }
+      },
+      "required" : [
+        "requested"
+      ]
+    },
+    "completed" : {
+      "type" : "boolean"
     }
   },
   "additionalProperties": false

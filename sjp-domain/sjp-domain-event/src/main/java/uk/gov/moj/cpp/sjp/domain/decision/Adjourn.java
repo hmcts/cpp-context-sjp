@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 public class Adjourn extends MultipleOffenceDecision {
 
@@ -17,13 +18,20 @@ public class Adjourn extends MultipleOffenceDecision {
     private final LocalDate adjournTo;
     private LocalDate convictionDate;
 
+    public Adjourn(final UUID id,
+                   final List<OffenceDecisionInformation> offenceDecisionInformation,
+                   final String reason,
+                   final LocalDate adjournTo) {
+        this(id, offenceDecisionInformation, reason, adjournTo, null);
+    }
+
     @JsonCreator
     public Adjourn(@JsonProperty("id") final UUID id,
                    @JsonProperty("offenceDecisionInformation") final List<OffenceDecisionInformation> offenceDecisionInformation,
                    @JsonProperty("reason") final String reason,
-                   @JsonProperty("adjournTo") final LocalDate adjournTo) {
-
-        super(id, ADJOURN, offenceDecisionInformation);
+                   @JsonProperty("adjournTo") final LocalDate adjournTo,
+                   @JsonProperty("pressRestriction") final PressRestriction pressRestriction) {
+        super(id, ADJOURN, offenceDecisionInformation, pressRestriction);
         this.reason = reason;
         this.adjournTo = adjournTo;
     }
@@ -57,5 +65,10 @@ public class Adjourn extends MultipleOffenceDecision {
     @Override
     public void accept(final OffenceDecisionVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this);
     }
 }

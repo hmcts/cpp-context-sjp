@@ -1,6 +1,31 @@
 package uk.gov.moj.cpp.sjp.query.view.response.courtextract;
 
-import org.junit.Test;
+import static java.lang.String.format;
+import static java.time.ZonedDateTime.now;
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.Arrays.asList;
+import static java.util.Objects.nonNull;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISCHARGE;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISMISS;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.FINANCIAL_PENALTY;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.NO_SEPARATE_PENALTY;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.WITHDRAW;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.ONLINE;
+import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
+import static uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder.aCase;
+import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
+import static uk.gov.moj.cpp.sjp.query.view.helper.PleaInfo.plea;
+
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
@@ -8,7 +33,21 @@ import uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPeriodTimeUnit;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
-import uk.gov.moj.cpp.sjp.persistence.entity.*;
+import uk.gov.moj.cpp.sjp.persistence.entity.AdjournOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.DischargeOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.DischargePeriod;
+import uk.gov.moj.cpp.sjp.persistence.entity.DismissOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.FinancialPenaltyOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.NoSeparatePenaltyOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.PressRestriction;
+import uk.gov.moj.cpp.sjp.persistence.entity.ReferForCourtHearingDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.Session;
+import uk.gov.moj.cpp.sjp.persistence.entity.WithdrawOffenceDecision;
 import uk.gov.moj.cpp.sjp.query.view.helper.PleaInfo;
 
 import java.math.BigDecimal;
@@ -18,22 +57,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import static java.lang.String.format;
-import static java.time.ZonedDateTime.now;
-import static java.time.format.DateTimeFormatter.ofPattern;
-import static java.util.Arrays.asList;
-import static java.util.Objects.nonNull;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.*;
-import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.*;
-import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.ONLINE;
-import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
-import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
-import static uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder.aCase;
-import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
-import static uk.gov.moj.cpp.sjp.query.view.helper.PleaInfo.plea;
+import org.junit.Test;
 
 public class CaseCourtExtractViewTest {
 
@@ -45,16 +69,15 @@ public class CaseCourtExtractViewTest {
 
     @Test
     public void shouldVerifyCaseDetail() {
-        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, DISMISS, savedAt, null, true);
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, DISMISS, savedAt, null, true, null);
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
         assertThat(courtExtractView.getGenerationDate(), notNullValue());
         assertThat(courtExtractView.getGenerationTime(), notNullValue());
-
-        assertEquals(aCase.getUrn(), courtExtractView.getCaseDetails().getReference());
-        assertEquals("Theresa", courtExtractView.getDefendant().getFirstName());
-        assertEquals("May", courtExtractView.getDefendant().getLastName());
+        assertThat(courtExtractView.getCaseDetails().getReference(), equalTo(aCase.getUrn()));
+        assertThat(courtExtractView.getDefendant().getFirstName(), equalTo("Theresa"));
+        assertThat(courtExtractView.getDefendant().getLastName(), equalTo("May"));
     }
 
     @Test
@@ -66,9 +89,9 @@ public class CaseCourtExtractViewTest {
         defendantDetail.setOffences(asList(buildOffenceDetailEntity(1, offence1Id)));
 
         final CaseDecision adjournedCaseDecision = buildCaseDecisionEntity(caseId, false, adjournedOffenceDecisionSavedAt);
-        adjournedCaseDecision.setOffenceDecisions(asList(buildOffenceDecisionEntity(adjournedCaseDecision.getId(), offence1Id, ADJOURN, null)));
+        adjournedCaseDecision.setOffenceDecisions(asList(buildOffenceDecisionEntity(adjournedCaseDecision.getId(), offence1Id, ADJOURN, null, null)));
         final CaseDecision withdrawnCaseDecision = buildCaseDecisionEntity(caseId, false, withdrawnOffenceDecisionSavedAt);
-        withdrawnCaseDecision.setOffenceDecisions(asList(buildOffenceDecisionEntity(withdrawnCaseDecision.getId(), offence1Id, WITHDRAW, null)));
+        withdrawnCaseDecision.setOffenceDecisions(asList(buildOffenceDecisionEntity(withdrawnCaseDecision.getId(), offence1Id, WITHDRAW, null, null)));
 
         final CaseDetail aCase = aCase()
                 .withCaseId(caseId)
@@ -82,27 +105,29 @@ public class CaseCourtExtractViewTest {
         final OffenceDecisionView withdrawOffenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
         final OffenceDecisionView adjournOffenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(1);
 
-        assertEquals(DATE_FORMAT.format(adjournedOffenceDecisionSavedAt), adjournOffenceDecisionView.getLines()
+        final String actualAdjourn = adjournOffenceDecisionView.getLines()
                 .stream()
                 .filter(offenceDecisionLineView -> "Decision made".equals(offenceDecisionLineView.getLabel()))
                 .findFirst()
-                .get().getValue());
+                .get().getValue();
+        assertThat(actualAdjourn, equalTo(DATE_FORMAT.format(adjournedOffenceDecisionSavedAt)));
 
-        assertEquals(withdrawnOffenceDecisionSavedAt.toLocalDate().format(DATE_FORMAT), withdrawOffenceDecisionView.getLines()
+        String actualWithdraw = withdrawOffenceDecisionView.getLines()
                 .stream()
                 .filter(offenceDecisionLineView -> "Decision made".equals(offenceDecisionLineView.getLabel()))
                 .findFirst()
-                .get().getValue());
+                .get().getValue();
+        assertThat(actualWithdraw, equalTo(withdrawnOffenceDecisionSavedAt.toLocalDate().format(DATE_FORMAT)));
     }
 
     @Test
     public void shouldVerifyDismissCaseWithMagistrateSession() {
-        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, DISMISS, savedAt, null, true);
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, DISMISS, savedAt, null, true, null);
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
         final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
-        assertEquals("Court decision", offenceDecisionView.getHeading());
+        assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
                 new OffenceDecisionLineView("Verdict", "Found not guilty"),
@@ -111,16 +136,50 @@ public class CaseCourtExtractViewTest {
                 new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt))));
     }
 
-
-
     @Test
-    public void shouldVerifyWithdrawCaseWithDelegatedPowers() {
-        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, WITHDRAW, savedAt, null, false);
+    public void shouldVerifyDismissWithPressRestrictionCaseWithMagistrateSession() {
+        final PressRestriction pressRestriction = PressRestriction.requested("child1");
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, DISMISS, savedAt, null, true, pressRestriction);
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
         final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
-        assertEquals("Court decision", offenceDecisionView.getHeading());
+        assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
+        assertThat(offenceDecisionView.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "No plea received"),
+                new OffenceDecisionLineView("Verdict", "Found not guilty"),
+                new OffenceDecisionLineView("Date of verdict", DATE_FORMAT.format(savedAt)),
+                new OffenceDecisionLineView("Result", "Dismissed"),
+                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt)),
+                new OffenceDecisionLineView("Reporting restriction", "Direction made under Section 45 of the Youth Justice and Criminal Evidence Act 1999  in respect of " + pressRestriction.getName())));
+    }
+
+    @Test
+    public void shouldVerifyDismissWithNoPressRestrictionCaseWithMagistrateSession() {
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, DISMISS, savedAt, null, true, PressRestriction.revoked());
+
+        final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
+
+        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
+        assertThat(offenceDecisionView.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "No plea received"),
+                new OffenceDecisionLineView("Verdict", "Found not guilty"),
+                new OffenceDecisionLineView("Date of verdict", DATE_FORMAT.format(savedAt)),
+                new OffenceDecisionLineView("Result", "Dismissed"),
+                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt)),
+                new OffenceDecisionLineView("Reporting restriction", "Direction restricting publicity revoked")));
+    }
+
+
+    @Test
+    public void shouldVerifyWithdrawCaseWithDelegatedPowers() {
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, WITHDRAW, savedAt, null, false, null);
+
+        final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
+
+        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
                 new OffenceDecisionLineView("Result", "Withdrawn"),
@@ -129,12 +188,12 @@ public class CaseCourtExtractViewTest {
 
     @Test
     public void shouldVerifyAdjournCaseWithMagistrateSession() {
-        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, ADJOURN, savedAt, null, true);
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, ADJOURN, savedAt, null, true, null);
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
         final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
-        assertEquals("Court decision", offenceDecisionView.getHeading());
+        assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
                 new OffenceDecisionLineView("Result", format("Adjourn to later SJP hearing.%nOn or after %s",
@@ -144,12 +203,12 @@ public class CaseCourtExtractViewTest {
 
     @Test
     public void shouldVerifyReferForHearingCaseWithDelegatedPowers() {
-        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, REFER_FOR_COURT_HEARING, savedAt, null, false);
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, REFER_FOR_COURT_HEARING, savedAt, null, false, null);
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
         final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
-        assertEquals("Court decision", offenceDecisionView.getHeading());
+        assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
                 new OffenceDecisionLineView("Result", "Referred for court hearing."),
@@ -158,7 +217,7 @@ public class CaseCourtExtractViewTest {
 
     @Test
     public void shouldVerifyReopenedInLibraCaseWithDelegatedPowers() {
-        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, WITHDRAW, savedAt, null, false);
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, WITHDRAW, savedAt, null, false, null);
         aCase.setCaseStatus(CaseStatus.REOPENED_IN_LIBRA);
         aCase.setLibraCaseNumber("12345");
         aCase.setReopenedDate(now().toLocalDate());
@@ -166,7 +225,7 @@ public class CaseCourtExtractViewTest {
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
         final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
-        assertEquals("Court decision (set aside)", offenceDecisionView.getHeading());
+        assertThat(offenceDecisionView.getHeading(), equalTo("Court decision (set aside)"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
                 new OffenceDecisionLineView("Result", "Withdrawn"),
@@ -184,8 +243,8 @@ public class CaseCourtExtractViewTest {
 
         final CaseDecision caseDecision = buildCaseDecisionEntity(caseId, false, savedAt);
         caseDecision.setOffenceDecisions(asList(
-                buildOffenceDecisionEntity(caseDecision.getId(), offence1Id, DISMISS, null),
-                buildOffenceDecisionEntity(caseDecision.getId(), offence2Id, WITHDRAW, null)));
+                buildOffenceDecisionEntity(caseDecision.getId(), offence1Id, DISMISS, null, null),
+                buildOffenceDecisionEntity(caseDecision.getId(), offence2Id, WITHDRAW, null, null)));
 
         final CaseDetail aCase = aCase()
                 .addDefendantDetail(defendantDetail)
@@ -196,7 +255,7 @@ public class CaseCourtExtractViewTest {
 
         final List<OffenceDetailsView> offenceDetailsViews = courtExtractView.getOffences();
 
-        assertEquals(2, offenceDetailsViews.size());
+        assertThat(offenceDetailsViews, hasSize(2));
 
         final OffenceDetailsView dismissOffenceDetailsView = offenceDetailsViews.get(0);
         final OffenceDetailsView withdrawOffenceDetailsView = offenceDetailsViews.get(1);
@@ -205,16 +264,15 @@ public class CaseCourtExtractViewTest {
         final OffenceDecisionView dismissOffenceDecisionView = dismissOffenceDecisionViews.get(0);
         final OffenceDecisionView withdrawOffenceDecisionView = withdrawOffenceDecisionViews.get(0);
 
-        assertEquals(1, dismissOffenceDetailsView.getSequenceNumber());
-        assertEquals(2, withdrawOffenceDetailsView.getSequenceNumber());
+        assertThat(dismissOffenceDetailsView.getSequenceNumber(), equalTo(1));
+        assertThat(withdrawOffenceDetailsView.getSequenceNumber(), equalTo(2));
 
-        assertEquals(1, dismissOffenceDecisionViews.size());
-        assertEquals(1, withdrawOffenceDecisionViews.size());
+        assertThat(dismissOffenceDecisionViews, hasSize(1));
+        assertThat(withdrawOffenceDecisionViews, hasSize(1));
 
-        assertEquals("offence wording", dismissOffenceDetailsView.getWording());
-        assertEquals("offence wording", withdrawOffenceDetailsView.getWording());
-
-        assertEquals("Court decision", dismissOffenceDecisionView.getHeading());
+        assertThat(dismissOffenceDetailsView.getWording(), equalTo("offence wording"));
+        assertThat(withdrawOffenceDetailsView.getWording(), equalTo("offence wording"));
+        assertThat(dismissOffenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(dismissOffenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
                 new OffenceDecisionLineView("Verdict", "Found not guilty"),
@@ -222,7 +280,7 @@ public class CaseCourtExtractViewTest {
                 new OffenceDecisionLineView("Result", "Dismissed"),
                 new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt))));
 
-        assertEquals("Court decision", withdrawOffenceDecisionView.getHeading());
+        assertThat(withdrawOffenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(withdrawOffenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
                 new OffenceDecisionLineView("Result", "Withdrawn"),
@@ -238,12 +296,12 @@ public class CaseCourtExtractViewTest {
 
         final CaseDecision firstDecision = buildCaseDecisionEntity(caseId, false, savedAt);
         firstDecision.setOffenceDecisions(asList(
-                buildOffenceDecisionEntity(firstDecision.getId(), offence1Id, ADJOURN, null),
-                buildOffenceDecisionEntity(firstDecision.getId(), offence2Id, DISMISS, null)));
+                buildOffenceDecisionEntity(firstDecision.getId(), offence1Id, ADJOURN, null, null),
+                buildOffenceDecisionEntity(firstDecision.getId(), offence2Id, DISMISS, null, null)));
 
         final CaseDecision secondDecision = buildCaseDecisionEntity(caseId, false, savedAt);
         secondDecision.setOffenceDecisions(asList(
-                buildOffenceDecisionEntity(secondDecision.getId(), offence1Id, DISMISS, null)));
+                buildOffenceDecisionEntity(secondDecision.getId(), offence1Id, DISMISS, null, null)));
 
 
         final CaseDetail aCase = aCase()
@@ -256,30 +314,30 @@ public class CaseCourtExtractViewTest {
 
         final List<OffenceDetailsView> offenceDetailsViews = courtExtractView.getOffences();
 
-        assertEquals(2, offenceDetailsViews.size());
+        assertThat(offenceDetailsViews, hasSize(2));
 
         final OffenceDetailsView offenceDetailsView1 = offenceDetailsViews.get(0);
         final OffenceDetailsView offenceDetailsView2 = offenceDetailsViews.get(1);
 
-        assertEquals(1, offenceDetailsView1.getSequenceNumber());
-        assertEquals(2, offenceDetailsView2.getSequenceNumber());
+        assertThat(offenceDetailsView1.getSequenceNumber(), equalTo(1));
+        assertThat(offenceDetailsView2.getSequenceNumber(), equalTo(2));
 
-        assertEquals("offence wording", offenceDetailsView1.getWording());
-        assertEquals("offence wording", offenceDetailsView2.getWording());
+        assertThat(offenceDetailsView1.getWording(), equalTo("offence wording"));
+        assertThat(offenceDetailsView2.getWording(), equalTo("offence wording"));
 
         final List<OffenceDecisionView> dismissAndAdjournOffenceDecisionViews = offenceDetailsView1.getOffenceDecisions();
         final List<OffenceDecisionView> dismissOffenceDecisionViews = offenceDetailsView2.getOffenceDecisions();
 
-        assertEquals(2, dismissAndAdjournOffenceDecisionViews.size());
-        assertEquals(1, dismissOffenceDecisionViews.size());
+        assertThat(dismissAndAdjournOffenceDecisionViews, hasSize(2));
+        assertThat(dismissOffenceDecisionViews, hasSize(1));
 
         final OffenceDecisionView dismissDecisionView = dismissAndAdjournOffenceDecisionViews.get(0);
         final OffenceDecisionView adjournOffenceDecisionView = dismissAndAdjournOffenceDecisionViews.get(1);
         final OffenceDecisionView dismissDecisionView2 = dismissOffenceDecisionViews.get(0);
 
-        assertEquals("Court decision", dismissDecisionView.getHeading());
-        assertEquals("Previous court decision", adjournOffenceDecisionView.getHeading());
-        assertEquals("Court decision", dismissDecisionView2.getHeading());
+        assertThat(dismissDecisionView.getHeading(), equalTo("Court decision"));
+        assertThat(adjournOffenceDecisionView.getHeading(), equalTo("Previous court decision"));
+        assertThat(dismissDecisionView2.getHeading(), equalTo("Court decision"));
         assertThat(dismissDecisionView2.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
                 new OffenceDecisionLineView("Verdict", "Found not guilty"),
@@ -295,10 +353,10 @@ public class CaseCourtExtractViewTest {
         defendantDetail.setOffences(asList(buildOffenceDetailEntity(1, offence1Id)));
 
         final CaseDecision adjournedCaseDecision = buildCaseDecisionEntity(caseId, false, now());
-        adjournedCaseDecision.setOffenceDecisions(asList(buildOffenceDecisionEntity(adjournedCaseDecision.getId(), offence1Id, ADJOURN, null)));
+        adjournedCaseDecision.setOffenceDecisions(asList(buildOffenceDecisionEntity(adjournedCaseDecision.getId(), offence1Id, ADJOURN, null, null)));
 
         final CaseDecision withdrawnCaseDecision = buildCaseDecisionEntity(caseId, false, now().plusDays(1));
-        withdrawnCaseDecision.setOffenceDecisions(asList(buildOffenceDecisionEntity(withdrawnCaseDecision.getId(), offence1Id, WITHDRAW, null)));
+        withdrawnCaseDecision.setOffenceDecisions(asList(buildOffenceDecisionEntity(withdrawnCaseDecision.getId(), offence1Id, WITHDRAW, null, null)));
 
         final CaseDetail aCase = aCase()
                 .addDefendantDetail(defendantDetail)
@@ -310,26 +368,26 @@ public class CaseCourtExtractViewTest {
 
         final List<OffenceDetailsView> offenceDetailsViews = courtExtractView.getOffences();
 
-        assertEquals(1, offenceDetailsViews.size());
+        assertThat(offenceDetailsViews, hasSize(1));
 
         final OffenceDetailsView offenceDetailsView = offenceDetailsViews.get(0);
         final List<OffenceDecisionView> offenceDecisionViews = offenceDetailsView.getOffenceDecisions();
         final OffenceDecisionView withdrawOffenceDecisionView = offenceDecisionViews.get(0);
         final OffenceDecisionView adjournOffenceDecisionView = offenceDecisionViews.get(1);
 
-        assertEquals(1, offenceDetailsView.getSequenceNumber());
-        assertEquals("offence wording", offenceDetailsView.getWording());
+        assertThat(offenceDetailsView.getSequenceNumber(), equalTo(1));
+        assertThat(offenceDetailsView.getWording(), equalTo("offence wording"));
 
-        assertEquals(2, offenceDecisionViews.size());
+        assertThat(offenceDecisionViews, hasSize(2));
 
-        assertEquals("Previous court decision", adjournOffenceDecisionView.getHeading());
+        assertThat(adjournOffenceDecisionView.getHeading(), equalTo("Previous court decision"));
         assertThat(adjournOffenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
                 new OffenceDecisionLineView("Result", format("Adjourn to later SJP hearing.%nOn or after %s",
                         DATE_FORMAT.format(((AdjournOffenceDecision) adjournedCaseDecision.getOffenceDecisions().get(0)).getAdjournedTo()))),
                 new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(adjournedCaseDecision.getSavedAt()))));
 
-        assertEquals("Court decision", withdrawOffenceDecisionView.getHeading());
+        assertThat(withdrawOffenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(withdrawOffenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
                 new OffenceDecisionLineView("Result", "Withdrawn"),
@@ -342,10 +400,10 @@ public class CaseCourtExtractViewTest {
         defendantDetail.setOffences(asList(buildOffenceDetailEntity(1, offence1Id)));
 
         final CaseDecision adjournedCaseDecision1 = buildCaseDecisionEntity(caseId, false, now());
-        adjournedCaseDecision1.setOffenceDecisions(asList(buildOffenceDecisionEntity(adjournedCaseDecision1.getId(), offence1Id, ADJOURN, null)));
+        adjournedCaseDecision1.setOffenceDecisions(asList(buildOffenceDecisionEntity(adjournedCaseDecision1.getId(), offence1Id, ADJOURN, null, null)));
 
         final CaseDecision adjournedCaseDecision2 = buildCaseDecisionEntity(caseId, false, now().plusDays(1));
-        adjournedCaseDecision2.setOffenceDecisions(asList(buildOffenceDecisionEntity(adjournedCaseDecision2.getId(), offence1Id, ADJOURN, null)));
+        adjournedCaseDecision2.setOffenceDecisions(asList(buildOffenceDecisionEntity(adjournedCaseDecision2.getId(), offence1Id, ADJOURN, null, null)));
 
         final CaseDetail aCase = aCase()
                 .addDefendantDetail(defendantDetail)
@@ -357,28 +415,28 @@ public class CaseCourtExtractViewTest {
 
         final List<OffenceDetailsView> offenceDetailsViews = courtExtractView.getOffences();
 
-        assertEquals(1, offenceDetailsViews.size());
+        assertThat(offenceDetailsViews, hasSize(1));
 
         final OffenceDetailsView offenceDetailsView = offenceDetailsViews.get(0);
 
-        assertEquals(1, offenceDetailsView.getSequenceNumber());
-        assertEquals("offence wording", offenceDetailsView.getWording());
+        assertThat(offenceDetailsView.getSequenceNumber(), equalTo(1));
+        assertThat(offenceDetailsView.getWording(), equalTo("offence wording"));
 
         final List<OffenceDecisionView> offenceDecisionViews = offenceDetailsView.getOffenceDecisions();
 
-        assertEquals(2, offenceDecisionViews.size());
+        assertThat(offenceDecisionViews, hasSize(2));
 
         final OffenceDecisionView adjournOffenceDecisionView1 = offenceDecisionViews.get(0);
         final OffenceDecisionView adjournOffenceDecisionView2 = offenceDecisionViews.get(1);
 
-        assertEquals("Previous court decision", adjournOffenceDecisionView2.getHeading());
+        assertThat(adjournOffenceDecisionView2.getHeading(), equalTo("Previous court decision"));
         assertThat(adjournOffenceDecisionView2.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
                 new OffenceDecisionLineView("Result", format("Adjourn to later SJP hearing.%nOn or after %s",
                         DATE_FORMAT.format(((AdjournOffenceDecision) adjournedCaseDecision1.getOffenceDecisions().get(0)).getAdjournedTo()))),
                 new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(adjournedCaseDecision1.getSavedAt()))));
 
-        assertEquals("Court decision", adjournOffenceDecisionView1.getHeading());
+        assertThat(adjournOffenceDecisionView1.getHeading(), equalTo("Court decision"));
         assertThat(adjournOffenceDecisionView1.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
                 new OffenceDecisionLineView("Result", format("Adjourn to later SJP hearing.%nOn or after %s",
@@ -405,7 +463,7 @@ public class CaseCourtExtractViewTest {
         final List<OffenceDetailsView> offenceDetailsViews = courtExtractView.getOffences();
         final OffenceDetailsView offenceDetailsView = offenceDetailsViews.get(0);
         final List<OffenceDecisionView> offenceDecisionViews = offenceDetailsView.getOffenceDecisions();
-        final List<OffenceDecisionLineView> lines =  offenceDecisionViews.get(0).getLines();
+        final List<OffenceDecisionLineView> lines = offenceDecisionViews.get(0).getLines();
         assertTrue(lines
                 .stream()
                 .map(OffenceDecisionLineView::getLabel)
@@ -414,18 +472,19 @@ public class CaseCourtExtractViewTest {
                         "Defendant's guilty plea".equalsIgnoreCase(label)));
 
     }
+
     @Test
     public void shouldVerifyCaseWithEndorsmentCaseWithFINANCIAL_PENALTY() {
         final ZonedDateTime pleaDate = now().minusDays(2);
-        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, FINANCIAL_PENALTY, savedAt, plea(GUILTY, pleaDate), true);
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, FINANCIAL_PENALTY, savedAt, plea(GUILTY, pleaDate), true, null);
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
         final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
-        assertEquals("Court decision", offenceDecisionView.getHeading());
+        assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "Guilty"),
-                new OffenceDecisionLineView("Plea date",  DATE_FORMAT.format(pleaDate)),
+                new OffenceDecisionLineView("Plea date", DATE_FORMAT.format(pleaDate)),
                 new OffenceDecisionLineView("Verdict", "Found not guilty"),
                 new OffenceDecisionLineView("Date of verdict", DATE_FORMAT.format(savedAt)),
                 new OffenceDecisionLineView("To pay a fine of", "£30"),
@@ -435,61 +494,132 @@ public class CaseCourtExtractViewTest {
                 new OffenceDecisionLineView("Penalty points", "3"),
                 new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt))));
     }
+
     @Test
-    public void shouldVerifyCaseWithEndorsementCaseWithDischarge() {
+    public void shouldVerifyCaseWithPressRestrictionCaseWithFINANCIAL_PENALTY() {
+        final PressRestriction pressRestriction = PressRestriction.requested("child1");
         final ZonedDateTime pleaDate = now().minusDays(2);
-        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, DISCHARGE, savedAt, plea(GUILTY, pleaDate), true);
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, FINANCIAL_PENALTY, savedAt, plea(GUILTY, pleaDate), true, pressRestriction);
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
         final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
-        assertEquals("Court decision", offenceDecisionView.getHeading());
+        assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "Guilty"),
                 new OffenceDecisionLineView("Plea date", DATE_FORMAT.format(pleaDate)),
                 new OffenceDecisionLineView("Verdict", "Found not guilty"),
                 new OffenceDecisionLineView("Date of verdict", DATE_FORMAT.format(savedAt)),
-                new OffenceDecisionLineView("Result","Discharged conditionally"),
-                new OffenceDecisionLineView("Period","12 days"),
+                new OffenceDecisionLineView("To pay a fine of", "£30"),
+                new OffenceDecisionLineView("To pay compensation of", "£20"),
+                new OffenceDecisionLineView("Defendant's guilty plea", "Taken into account when imposing sentence"),
+                new OffenceDecisionLineView("Driver record endorsed", ""),
+                new OffenceDecisionLineView("Penalty points", "3"),
+                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt)),
+                new OffenceDecisionLineView("Reporting restriction", "Direction made under Section 45 of the Youth Justice and Criminal Evidence Act 1999  in respect of " + pressRestriction.getName())));
+
+    }
+
+    @Test
+    public void shouldVerifyCaseWithNoPressRestrictionCaseWithFINANCIAL_PENALTY() {
+        final PressRestriction pressRestriction = PressRestriction.revoked();
+        final ZonedDateTime pleaDate = now().minusDays(2);
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, FINANCIAL_PENALTY, savedAt, plea(GUILTY, pleaDate), true, pressRestriction);
+
+        final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
+
+        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
+        assertThat(offenceDecisionView.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "Guilty"),
+                new OffenceDecisionLineView("Plea date", DATE_FORMAT.format(pleaDate)),
+                new OffenceDecisionLineView("Verdict", "Found not guilty"),
+                new OffenceDecisionLineView("Date of verdict", DATE_FORMAT.format(savedAt)),
+                new OffenceDecisionLineView("To pay a fine of", "£30"),
+                new OffenceDecisionLineView("To pay compensation of", "£20"),
+                new OffenceDecisionLineView("Defendant's guilty plea", "Taken into account when imposing sentence"),
+                new OffenceDecisionLineView("Driver record endorsed", ""),
+                new OffenceDecisionLineView("Penalty points", "3"),
+                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt)),
+                new OffenceDecisionLineView("Reporting restriction", "Direction restricting publicity revoked")));
+
+    }
+
+    @Test
+    public void shouldVerifyCaseWithEndorsementCaseWithDischarge() {
+        final ZonedDateTime pleaDate = now().minusDays(2);
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, DISCHARGE, savedAt, plea(GUILTY, pleaDate), true, null);
+
+        final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
+
+        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
+        assertThat(offenceDecisionView.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "Guilty"),
+                new OffenceDecisionLineView("Plea date", DATE_FORMAT.format(pleaDate)),
+                new OffenceDecisionLineView("Verdict", "Found not guilty"),
+                new OffenceDecisionLineView("Date of verdict", DATE_FORMAT.format(savedAt)),
+                new OffenceDecisionLineView("Result", "Discharged conditionally"),
+                new OffenceDecisionLineView("Period", "12 days"),
                 new OffenceDecisionLineView("Driver record endorsed", "Section 34(2) Road Traffic Offenders Act 1988"),
                 new OffenceDecisionLineView("Disqualified for", "3 days"),
                 new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt))));
     }
 
     @Test
-    public void shouldVerifyCaseWithEndorsmentCaseWithNoSeperatePenalty() {
+    public void shouldVerifyCaseWithPressRestrictionCaseWithDischarge() {
         final ZonedDateTime pleaDate = now().minusDays(2);
-        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, NO_SEPARATE_PENALTY, savedAt, plea(GUILTY, pleaDate), true);
+        final PressRestriction pressRestriction = PressRestriction.requested("child1");
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, DISCHARGE, savedAt, plea(GUILTY, pleaDate), true, pressRestriction);
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
         final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
-        assertEquals("Court decision", offenceDecisionView.getHeading());
+        assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "Guilty"),
                 new OffenceDecisionLineView("Plea date", DATE_FORMAT.format(pleaDate)),
                 new OffenceDecisionLineView("Verdict", "Found not guilty"),
                 new OffenceDecisionLineView("Date of verdict", DATE_FORMAT.format(savedAt)),
-                new OffenceDecisionLineView("Result","No seperate penalty"),
+                new OffenceDecisionLineView("Result", "Discharged conditionally"),
+                new OffenceDecisionLineView("Period", "12 days"),
+                new OffenceDecisionLineView("Driver record endorsed", "Section 34(2) Road Traffic Offenders Act 1988"),
+                new OffenceDecisionLineView("Disqualified for", "3 days"),
+                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt)),
+                new OffenceDecisionLineView("Reporting restriction", "Direction made under Section 45 of the Youth Justice and Criminal Evidence Act 1999  in respect of " + pressRestriction.getName())));
+    }
+
+    @Test
+    public void shouldVerifyCaseWithEndorsmentCaseWithNoSeperatePenalty() {
+        final ZonedDateTime pleaDate = now().minusDays(2);
+        final CaseDetail aCase = buildSingleOffenceCaseWithSingleDecision(caseId, offence1Id, NO_SEPARATE_PENALTY, savedAt, plea(GUILTY, pleaDate), true, null);
+
+        final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
+
+        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
+        assertThat(offenceDecisionView.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "Guilty"),
+                new OffenceDecisionLineView("Plea date", DATE_FORMAT.format(pleaDate)),
+                new OffenceDecisionLineView("Verdict", "Found not guilty"),
+                new OffenceDecisionLineView("Date of verdict", DATE_FORMAT.format(savedAt)),
+                new OffenceDecisionLineView("Result", "No seperate penalty"),
                 new OffenceDecisionLineView("Driver record endorsed", ""),
                 new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt))));
     }
-
-
-
 
     private static CaseDetail buildSingleOffenceCaseWithSingleDecision(final UUID caseId,
                                                                        final UUID offenceId,
                                                                        final DecisionType decisionType,
                                                                        final ZonedDateTime savedAt,
                                                                        final PleaInfo pleaAtDecisionTime,
-                                                                       boolean magistrate) {
+                                                                       boolean magistrate, PressRestriction pressRestriction) {
         final DefendantDetail defendantDetail = aDefendantDetail().build();
         defendantDetail.setOffences(asList(buildOffenceDetailEntity(1, offenceId)));
 
         final CaseDecision caseDecision = buildCaseDecisionEntity(caseId, magistrate, savedAt);
         caseDecision.setOffenceDecisions(asList(
-                buildOffenceDecisionEntity(caseDecision.getId(), offenceId, decisionType, pleaAtDecisionTime)));
+                buildOffenceDecisionEntity(caseDecision.getId(), offenceId, decisionType, pleaAtDecisionTime, pressRestriction)));
 
         return aCase()
                 .withCaseId(caseId)
@@ -512,12 +642,12 @@ public class CaseCourtExtractViewTest {
     }
 
     private static OffenceDecision buildFinancialPenaltyOffenceDecisionEntity(
-                                                              final UUID offenceId,
-                                                              final PleaInfo pleaAtDecisionTime,
-                                                              final Boolean guiltyPleaTakenIntoAccount,
-                                                              final BigDecimal compensation,
-                                                              final String noCompensationReason,
-                                                              final BigDecimal fine) {
+            final UUID offenceId,
+            final PleaInfo pleaAtDecisionTime,
+            final Boolean guiltyPleaTakenIntoAccount,
+            final BigDecimal compensation,
+            final String noCompensationReason,
+            final BigDecimal fine) {
         final OffenceDecision offenceDecision = new FinancialPenaltyOffenceDecision(offenceId,
                 randomUUID(),
                 PROVED_SJP,
@@ -527,7 +657,7 @@ public class CaseCourtExtractViewTest {
                 fine,
                 null,
                 null,
-                null);
+                null, null);
         if (nonNull(pleaAtDecisionTime)) {
             offenceDecision.setPleaAtDecisionTime(pleaAtDecisionTime.pleaType);
             offenceDecision.setPleaDate(pleaAtDecisionTime.pleaDate);
@@ -538,13 +668,13 @@ public class CaseCourtExtractViewTest {
     private static OffenceDecision buildOffenceDecisionEntity(final UUID decisionId,
                                                               final UUID offenceId,
                                                               final DecisionType type,
-                                                              final PleaInfo pleaAtDecisionTime) {
+                                                              final PleaInfo pleaAtDecisionTime, PressRestriction pressRestriction) {
         OffenceDecision offenceDecision = null;
         switch (type) {
             case DISMISS:
                 offenceDecision = new DismissOffenceDecision(offenceId,
                         decisionId,
-                        VerdictType.FOUND_NOT_GUILTY);
+                        VerdictType.FOUND_NOT_GUILTY, pressRestriction);
                 break;
             case ADJOURN:
                 offenceDecision = new AdjournOffenceDecision(offenceId,
@@ -552,7 +682,7 @@ public class CaseCourtExtractViewTest {
                         "",
                         now().plusDays(7).toLocalDate(),
                         VerdictType.NO_VERDICT,
-                        null);
+                        null, pressRestriction);
                 break;
             case REFER_FOR_COURT_HEARING:
                 offenceDecision = new ReferForCourtHearingDecision(offenceId,
@@ -561,32 +691,34 @@ public class CaseCourtExtractViewTest {
                         10,
                         "",
                         VerdictType.NO_VERDICT,
-                        null);
+                        null, pressRestriction);
                 break;
             case WITHDRAW:
                 offenceDecision = new WithdrawOffenceDecision(offenceId,
                         decisionId,
                         randomUUID(),
-                        VerdictType.NO_VERDICT);
+                        VerdictType.NO_VERDICT, pressRestriction);
                 break;
-            case  FINANCIAL_PENALTY:
-                FinancialPenaltyOffenceDecision financialPenaltyOffenceDecision     = new FinancialPenaltyOffenceDecision(offenceId, randomUUID(), VerdictType.FOUND_NOT_GUILTY, true, BigDecimal.valueOf(20), null, BigDecimal.valueOf(30), null, null, null);
+
+            case FINANCIAL_PENALTY:
+                FinancialPenaltyOffenceDecision financialPenaltyOffenceDecision = new FinancialPenaltyOffenceDecision(offenceId, randomUUID(), VerdictType.FOUND_NOT_GUILTY, true, BigDecimal.valueOf(20), null, BigDecimal.valueOf(30), null, null, null, pressRestriction);
                 financialPenaltyOffenceDecision.setLicenceEndorsement(true);
                 financialPenaltyOffenceDecision.setPenaltyPointsImposed(3);
-                offenceDecision=financialPenaltyOffenceDecision ;
+                offenceDecision = financialPenaltyOffenceDecision;
                 break;
-            case  DISCHARGE:
-                 DischargeOffenceDecision dischargeOffenceDecision     = new DischargeOffenceDecision(offenceId, randomUUID(), VerdictType.FOUND_NOT_GUILTY, new DischargePeriod(PeriodUnit.DAY,12), null, null, null, DischargeType.CONDITIONAL, null, null);
+            case DISCHARGE:
+                DischargeOffenceDecision dischargeOffenceDecision = new DischargeOffenceDecision(offenceId, randomUUID(), VerdictType.FOUND_NOT_GUILTY, new DischargePeriod(PeriodUnit.DAY, 12), null, null, null, DischargeType.CONDITIONAL, null, null, null, null, null, null, null, null, null, null, null, pressRestriction);
+
                 dischargeOffenceDecision.setLicenceEndorsement(true);
                 dischargeOffenceDecision.setDisqualification(true);
                 dischargeOffenceDecision.setDisqualificationPeriodUnit(DisqualificationPeriodTimeUnit.DAY);
                 dischargeOffenceDecision.setDisqualificationPeriodValue(3);
                 dischargeOffenceDecision.setDisqualificationType(DisqualificationType.DISCRETIONARY);
-                offenceDecision=dischargeOffenceDecision ;
+                offenceDecision = dischargeOffenceDecision;
                 break;
-            case NO_SEPARATE_PENALTY :
+            case NO_SEPARATE_PENALTY:
 
-                offenceDecision    = new NoSeparatePenaltyOffenceDecision(offenceId, randomUUID(), VerdictType.FOUND_NOT_GUILTY,null, null,true);
+                offenceDecision = new NoSeparatePenaltyOffenceDecision(offenceId, randomUUID(), VerdictType.FOUND_NOT_GUILTY, null, null, true, pressRestriction);
 
 
         }

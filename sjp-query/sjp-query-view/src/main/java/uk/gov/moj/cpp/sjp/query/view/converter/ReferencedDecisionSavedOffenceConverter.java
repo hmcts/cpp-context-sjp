@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.query.view.converter;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -21,11 +22,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -76,7 +75,7 @@ public class ReferencedDecisionSavedOffenceConverter {
 
         final JsonArrayBuilder decisionArray = offences.getValuesAs(JsonObject.class)
                 .stream()
-                .flatMap(offenceDecision -> convertOffenceDecision(offenceDecision, referenceData).stream())
+                .flatMap(offenceDecision -> convertOffenceDecision(offenceDecision, referenceData, decisionSavedEventPayload).stream())
                 .reduce(createArrayBuilder(), JsonArrayBuilder::add, JsonArrayBuilder::add);
 
         if (nonNull(financialImposition)) {
@@ -91,41 +90,47 @@ public class ReferencedDecisionSavedOffenceConverter {
         return new CachedReferenceData(referenceDataService, envelope);
     }
 
-    private List<JsonObject> convertOffenceDecision(final JsonObject offenceDecision, final CachedReferenceData referenceData) {
+    private List<JsonObject> convertOffenceDecision(final JsonObject offenceDecision,
+                                                    final CachedReferenceData referenceData,
+                                                    final JsonObject decisionSavedEventPayload) {
         final DecisionType decisionType = DecisionType.valueOf(offenceDecision.getString(TYPE));
+        final String resultedOn = decisionSavedEventPayload.getString("resultedOn");
 
         switch (decisionType) {
             case WITHDRAW:
-                return convertWithdrawDecision(offenceDecision, referenceData);
+                return convertWithdrawDecision(offenceDecision, referenceData, resultedOn);
             case DISMISS:
-                return convertDismissDecision(offenceDecision, referenceData);
+                return convertDismissDecision(offenceDecision, referenceData, resultedOn);
             case ADJOURN:
                 return convertAdjournDecision(offenceDecision, referenceData);
             case DISCHARGE:
-                return convertDischargeDecision(offenceDecision, referenceData);
+                return convertDischargeDecision(offenceDecision, referenceData, resultedOn);
             case FINANCIAL_PENALTY:
-                return convertFinancialPenaltyDecision(offenceDecision, referenceData);
+                return convertFinancialPenaltyDecision(offenceDecision, referenceData, resultedOn);
             case REFERRED_TO_OPEN_COURT:
                 return convertReferredToOpenCourtDecision(offenceDecision, referenceData);
             case REFERRED_FOR_FUTURE_SJP_SESSION:
                 return convertReferredForFutureSjpDecision(offenceDecision, referenceData);
             case REFER_FOR_COURT_HEARING:
-                return convertReferredForCourtHearing(offenceDecision, referenceData);
+                return convertReferredForCourtHearing(offenceDecision, referenceData, resultedOn);
             case NO_SEPARATE_PENALTY:
-                return convertNoSeparatePenalty(offenceDecision, referenceData);
+                return convertNoSeparatePenalty(offenceDecision, referenceData, resultedOn);
             default:
                 return emptyList();
         }
     }
 
-    private List<JsonObject> convertNoSeparatePenalty(final JsonObject offenceDecision, final CachedReferenceData referenceData) {
+    private List<JsonObject> convertNoSeparatePenalty(final JsonObject offenceDecision,
+                                                      final CachedReferenceData referenceData,
+                                                      final String resultedOn) {
         final JsonArrayBuilder results = createArrayBuilder().add(noSeparatePenalty(referenceData));
         addEndorsementAndDisqualificationResults(offenceDecision, results, referenceData);
+        addPressRestriction(offenceDecision, results, referenceData, resultedOn);
 
         final String offenceId = offenceDecision.getJsonArray(OFFENCE_DECISION_INFORMATION).getJsonObject(0).getString("offenceId");
         final String verdict = offenceDecision.getJsonArray(OFFENCE_DECISION_INFORMATION).getJsonObject(0).getString("verdict");
 
-        return Collections.singletonList(createObjectBuilder()
+        return singletonList(createObjectBuilder()
                 .add(ID, offenceId)
                 .add(VERDICT, verdict)
                 .add(RESULTS, results)
@@ -181,15 +186,11 @@ public class ReferencedDecisionSavedOffenceConverter {
         return createObjectBuilder().add(RESULTS, resultsArray).build();
     }
 
-    private List<JsonObject> convertWithdrawDecision(final JsonObject offenceDecision, final CachedReferenceData referenceData) {
-        final UUID withdrawalReasonId = UUID.fromString(offenceDecision.getString(WITHDRAW_REASON_ID));
-        final String withdrawalReason = referenceData.getWithdrawalReason(withdrawalReasonId);
-        final JsonObject withdrawalReasonTerminalEntry = terminalEntry(2, withdrawalReason);
-        final JsonObject offenceDecisionInformation = offenceDecision.getJsonArray(OFFENCE_DECISION_INFORMATION).getJsonObject(0);
-
-        final JsonObject convertedWithdrawDecision = convertDecision(offenceDecisionInformation, WITHDRAW_RESULT_CODE, withdrawalReasonTerminalEntry, referenceData);
-
-        return asList(convertedWithdrawDecision);
+    private List<JsonObject> convertWithdrawDecision(final JsonObject offenceDecision,
+                                                     final CachedReferenceData referenceData,
+                                                     final String resultedOn) {
+        final JsonObjectBuilder decision = new WithdrawDecisionResult(offenceDecision, referenceData, resultedOn).toJsonObjectBuilder();
+        return singletonList(decision.build());
     }
 
     private List<JsonObject> convertReferredToOpenCourtDecision(JsonObject offenceDecision, CachedReferenceData referenceData) {
@@ -223,31 +224,51 @@ public class ReferencedDecisionSavedOffenceConverter {
                 .collect(toList());
     }
 
-    private List<JsonObject> convertDismissDecision(final JsonObject offenceDecision, final CachedReferenceData referenceData) {
-        final JsonObject convertedDismissDecision = convertDecision(offenceDecision.getJsonArray(OFFENCE_DECISION_INFORMATION).getJsonObject(0),
-                DISMISS_RESULT_CODE,
-                null,
-                referenceData);
-
-        return asList(convertedDismissDecision);
+    public List<JsonObject> convertDismissDecision(final JsonObject offenceDecision,
+                                                   final CachedReferenceData referenceData,
+                                                   final String resultedOn) {
+        final JsonObjectBuilder decision = new DismissDecisionResult(offenceDecision, referenceData, resultedOn).toJsonObjectBuilder();
+        return singletonList(decision.build());
     }
 
     private List<JsonObject> convertAdjournDecision(final JsonObject offenceDecision, final CachedReferenceData referenceData) {
         return offenceDecision.getJsonArray(OFFENCE_DECISION_INFORMATION).getValuesAs(JsonObject.class).stream()
-                .map(offenceDecisionInformation -> convertDecision(offenceDecisionInformation, ADJOURN, terminalEntry(-1, offenceDecision.getString("adjournTo")), referenceData))
+                .map(offenceDecisionInformation ->
+                        convertDecision(
+                                offenceDecisionInformation,
+                                ADJOURN,
+                                terminalEntry(-1, offenceDecision.getString("adjournTo")),
+                                referenceData
+                        )
+                )
                 .collect(toList());
     }
 
-    private List<JsonObject> convertReferredForCourtHearing(JsonObject offenceDecision, CachedReferenceData referenceData) {
+    private List<JsonObject> convertReferredForCourtHearing(JsonObject offenceDecision, CachedReferenceData referenceData, final String resultedOn) {
+        final String resultTypeId = referenceData.getResultId(REFER_FOR_COURT_HEARING_RESULT_CODE).toString();
+        final JsonObject terminalEntry = terminalEntry(-1, offenceDecision.getString("referralReasonId"));
+
+        final JsonArrayBuilder results = createArrayBuilder().add(createObjectBuilder()
+                .add(CODE, REFER_FOR_COURT_HEARING_RESULT_CODE)
+                .add(RESULT_TYPE_ID, resultTypeId)
+                .add(TERMINAL_ENTRIES, terminalEntries(terminalEntry)));
+
+        addPressRestriction(offenceDecision, results, referenceData, resultedOn);
+
         final JsonObject offenceDecisionInformation = offenceDecision.getJsonArray(OFFENCE_DECISION_INFORMATION).getJsonObject(0);
-        return asList(convertDecision(
-                offenceDecisionInformation, REFER_FOR_COURT_HEARING_RESULT_CODE, terminalEntry(-1, offenceDecision.getString("referralReasonId")), referenceData));
+        return asList(createObjectBuilder()
+                .add(ID, offenceDecisionInformation.getString(OFFENCE_ID))
+                .add(VERDICT, offenceDecisionInformation.getString(VERDICT))
+                .add(RESULTS, results)
+                .build());
     }
 
     private JsonObject convertDecision(JsonObject offenceDecisionInformation, final String decisionType, final JsonObject terminalEntry, final CachedReferenceData referenceData) {
+        final String resultCode = "ADJOURN".equalsIgnoreCase(decisionType) ? "ADJOURNSJP" : decisionType;
+        final String resultTypeId = referenceData.getResultId(resultCode).toString();
         final JsonObjectBuilder result = createObjectBuilder()
                 .add(CODE, decisionType)
-                .add(RESULT_TYPE_ID, referenceData.getResultId("ADJOURN".equalsIgnoreCase(decisionType) ? "ADJOURNSJP" : decisionType).toString());
+                .add(RESULT_TYPE_ID, resultTypeId);
 
         if (nonNull(terminalEntry)) {
             result.add(TERMINAL_ENTRIES, terminalEntries(terminalEntry));
@@ -262,7 +283,9 @@ public class ReferencedDecisionSavedOffenceConverter {
                 .build();
     }
 
-    private List<JsonObject> convertDischargeDecision(final JsonObject offenceDecision, CachedReferenceData referenceData) {
+    private List<JsonObject> convertDischargeDecision(final JsonObject offenceDecision,
+                                                      final CachedReferenceData referenceData,
+                                                      final String resultedOn) {
         final JsonArrayBuilder results = createArrayBuilder().add(dischargeResult(offenceDecision, referenceData));
 
         if (offenceDecision.containsKey(BACK_DUTY)) {
@@ -271,7 +294,7 @@ public class ReferencedDecisionSavedOffenceConverter {
 
         addEndorsementAndDisqualificationResults(offenceDecision, results, referenceData);
 
-        return convertFinancialOffence(offenceDecision, results, referenceData);
+        return convertFinancialOffence(offenceDecision, results, referenceData, resultedOn);
     }
 
     private void addEndorsementAndDisqualificationResults(final JsonObject offenceDecision, final JsonArrayBuilder results, final CachedReferenceData referenceData) {
@@ -347,7 +370,10 @@ public class ReferencedDecisionSavedOffenceConverter {
                 .add(TERMINAL_ENTRIES, terminalEntries);
     }
 
-    private List<JsonObject> convertFinancialOffence(JsonObject offenceDecision, JsonArrayBuilder results, CachedReferenceData referenceData) {
+    private List<JsonObject> convertFinancialOffence(final JsonObject offenceDecision,
+                                                     final JsonArrayBuilder results,
+                                                     final CachedReferenceData referenceData,
+                                                     final String resultedOn) {
         if (offenceDecision.containsKey(COMPENSATION)) {
             final JsonNumber compensation = offenceDecision.getJsonNumber(COMPENSATION);
             if (compensation.doubleValue() > 0) {
@@ -359,12 +385,16 @@ public class ReferencedDecisionSavedOffenceConverter {
             results.add(noCompensationReasonResult(offenceDecision, referenceData));
         }
 
+        addPressRestriction(offenceDecision, results, referenceData, resultedOn);
+
         final JsonObject offenceDecisionInformation = offenceDecision.getJsonArray(OFFENCE_DECISION_INFORMATION).getJsonObject(0);
 
         return asList(createOffence(offenceDecisionInformation, results));
     }
 
-    private List<JsonObject> convertFinancialPenaltyDecision(final JsonObject offenceDecision, CachedReferenceData referenceData) {
+    private List<JsonObject> convertFinancialPenaltyDecision(final JsonObject offenceDecision,
+                                                             final CachedReferenceData referenceData,
+                                                             final String resultedOn) {
         final JsonArrayBuilder results = createArrayBuilder();
 
         if (fineGreaterThanZero(offenceDecision)) {
@@ -381,7 +411,7 @@ public class ReferencedDecisionSavedOffenceConverter {
 
         addEndorsementAndDisqualificationResults(offenceDecision, results, referenceData);
 
-        return convertFinancialOffence(offenceDecision, results, referenceData);
+        return convertFinancialOffence(offenceDecision, results, referenceData, resultedOn);
     }
 
     private JsonObject costsResult(final JsonObject sjpCostsAndSurcharge, CachedReferenceData referenceData) {
@@ -623,6 +653,17 @@ public class ReferencedDecisionSavedOffenceConverter {
                         .add(terminalEntry(97, sjpInstallments.getString(PERIOD).toLowerCase()))
                         .add(terminalEntry(98, asTerminalEntryDate(sjpInstallments.getString(START_DATE))))
                 ).build();
+    }
+
+    private void addPressRestriction(final JsonObject offenceDecision,
+                                     final JsonArrayBuilder results,
+                                     final CachedReferenceData referenceData,
+                                     final String resultedOn) {
+        if (offenceDecision.containsKey("pressRestriction")) {
+            final JsonObject pressRestriction = offenceDecision.getJsonObject("pressRestriction");
+            final PressRestrictionResult result = new PressRestrictionResult(pressRestriction, referenceData, resultedOn);
+            results.add(result.toJsonObjectBuilder());
+        }
     }
 
     private String asTerminalEntryDate(String startDate) {

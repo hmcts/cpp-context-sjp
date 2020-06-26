@@ -1,0 +1,54 @@
+[
+  {
+    "id": "16fe3d8d-ed6c-41a1-9fa2-c331e695f32c",
+    "verdict": "NO_VERDICT",
+    "results": [
+      {
+        "code": "SUMRCC",
+        "resultTypeId": "aa276903-632c-4796-921b-23035fa934ca",
+        "terminalEntries": [
+          {
+            "index": -1,
+            "value": "d10c5cc4-ec2a-41ac-bd6e-a3659c5cfeb1"
+          }
+        ]
+      },
+      {
+        "code": "D45",
+        "resultTypeId": "fcbf777d-1a73-47e7-ab9b-7c51091a022c",
+        "terminalEntries": [
+          {
+            "index": 1,
+            "value": "Ronaldo"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "16fe3d8d-ed6c-41a1-9fa2-c331e695f32c",
+    "verdict": "NO_VERDICT",
+    "results": [
+      {
+        "code": "SUMRCC",
+        "resultTypeId": "aa276903-632c-4796-921b-23035fa934ca",
+        "terminalEntries": [
+          {
+            "index": -1,
+            "value": "d10c5cc4-ec2a-41ac-bd6e-a3659c5cfeb1"
+          }
+        ]
+      },
+      {
+        "code": "DPR",
+        "resultTypeId": "b27b42bf-e20e-46ec-a6e3-5c2e8a076c20",
+        "terminalEntries": [
+          {
+            "index": 1,
+            "value": "${resultedOn}"
+          }
+        ]
+      }
+    ]
+  }
+]

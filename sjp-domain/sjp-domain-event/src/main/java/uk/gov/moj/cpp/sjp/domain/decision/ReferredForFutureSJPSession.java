@@ -10,11 +10,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ReferredForFutureSJPSession extends MultipleOffenceDecision {
 
+    public ReferredForFutureSJPSession(final UUID id,
+                                       final List<OffenceDecisionInformation> offenceDecisionInformation) {
+        this(id, offenceDecisionInformation, null);
+    }
+
     @JsonCreator
     public ReferredForFutureSJPSession(@JsonProperty("id") final UUID id,
-                                       @JsonProperty("offenceDecisionInformation") final List<OffenceDecisionInformation> offenceDecisionInformation) {
+                                       @JsonProperty("offenceDecisionInformation") final List<OffenceDecisionInformation> offenceDecisionInformation,
+                                       @JsonProperty("pressRestriction") final PressRestriction pressRestriction) {
 
-        super(id, REFERRED_FOR_FUTURE_SJP_SESSION, offenceDecisionInformation);
+        super(id, REFERRED_FOR_FUTURE_SJP_SESSION, offenceDecisionInformation, pressRestriction);
     }
 
     @Override

@@ -1,0 +1,109 @@
+[
+  {
+    "id": "8d72daea-8124-4da5-86a7-ae8afa699290",
+    "provedSJP": true,
+    "verdict": "PROVED_SJP",
+    "results": [
+      {
+        "code": "D45",
+        "resultTypeId": "fcbf777d-1a73-47e7-ab9b-7c51091a022c",
+        "terminalEntries": [
+          {
+            "index": 1,
+            "value": "The Child's Name"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2a323985-d85b-46eb-ad00-e1fd22acca4d",
+    "provedSJP": true,
+    "verdict": "PROVED_SJP",
+    "results": [
+      {
+        "code": "AD",
+        "resultTypeId": "ba276903-632c-4796-921b-23035fa934cb",
+        "terminalEntries": []
+      },
+      {
+        "code": "D45",
+        "resultTypeId": "fcbf777d-1a73-47e7-ab9b-7c51091a022c",
+        "terminalEntries": [
+          {
+            "index": 1,
+            "value": "Robert Robertson"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "68299f01-0f12-4330-bf29-ab67f21d6cf9",
+    "verdict": "FOUND_NOT_GUILTY",
+    "results": [
+      {
+        "code": "D",
+        "resultTypeId": "06fd8e99-83af-422a-b0a9-db37188bfa74",
+        "terminalEntries": []
+      },
+      {
+        "code": "D45",
+        "resultTypeId": "fcbf777d-1a73-47e7-ab9b-7c51091a022c",
+        "terminalEntries": [
+          {
+            "index": 1,
+            "value": "Robert Robertson"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fbd035d2-acd6-4479-9df9-30004e9389ee",
+    "verdict": "NO_VERDICT",
+    "results": [
+      {
+        "code": "WDRNNOT",
+        "resultTypeId": "6feb0f2e-8d1e-40c7-af2c-05b28c69e5fc",
+        "terminalEntries": [
+          {
+            "index": 2,
+            "value": "Reason"
+          }
+        ]
+      },
+      {
+        "code": "D45",
+        "resultTypeId": "fcbf777d-1a73-47e7-ab9b-7c51091a022c",
+        "terminalEntries": [
+          {
+            "index": 1,
+            "value": "Robert Robertson"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "617fc9dc-7549-4cb5-a479-2620456a19d5",
+    "verdict": "FOUND_GUILTY",
+    "results": [
+      {
+        "code": "NSP",
+        "resultTypeId": "49939c7c-750f-403e-9ce1-f82e3e568065",
+        "terminalEntries": []
+      },
+      {
+        "code": "D45",
+        "resultTypeId": "fcbf777d-1a73-47e7-ab9b-7c51091a022c",
+        "terminalEntries": [
+          {
+            "index": 1,
+            "value": "Robert Robertson"
+          }
+        ]
+      }
+    ]
+  }
+]

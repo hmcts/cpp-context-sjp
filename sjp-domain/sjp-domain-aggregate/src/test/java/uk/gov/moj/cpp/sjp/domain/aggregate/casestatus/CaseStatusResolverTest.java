@@ -1124,17 +1124,17 @@ public class CaseStatusResolverTest {
                 ? new Adjourn(randomUUID(), singletonList(createOffenceDecisionInformation(offenceId, FOUND_GUILTY)), "reason", LocalDate.now().plusDays(14))
                 : new Adjourn(randomUUID(), singletonList(createOffenceDecisionInformation(offenceId, NO_VERDICT)), "reason", LocalDate.now().plusDays(14));
             case DISMISS:
-                return new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId, FOUND_NOT_GUILTY));
+                return new Dismiss(randomUUID(), createOffenceDecisionInformation(offenceId, FOUND_NOT_GUILTY), null);
             case WITHDRAW:
                 return new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId, NO_VERDICT), randomUUID());
             case REFER_FOR_COURT_HEARING:
                 return new ReferForCourtHearing(randomUUID(), singletonList(createOffenceDecisionInformation(offenceId,NO_VERDICT)), randomUUID(), null, null, null);
             case DISCHARGE:
                 return new Discharge(randomUUID(), createOffenceDecisionInformation(offenceId, FOUND_GUILTY), DischargeType.ABSOLUTE, null,new BigDecimal(10), null, true,null,
-                        null,null, null,null,null,null,null,null);
+                        null,null, null,null,null,null,null,null, null);
             case FINANCIAL_PENALTY:
                 return new FinancialPenalty(randomUUID(), createOffenceDecisionInformation(offenceId, FOUND_GUILTY), new BigDecimal(10), new BigDecimal(20), null, true, null, null,
-                        null, null, null, null, null, null, null, null);
+                        null, null, null, null, null, null, null, null, null);
             case SET_ASIDE:
                 return new SetAside(randomUUID(), singletonList(createOffenceDecisionInformation(offenceId, null)));
 

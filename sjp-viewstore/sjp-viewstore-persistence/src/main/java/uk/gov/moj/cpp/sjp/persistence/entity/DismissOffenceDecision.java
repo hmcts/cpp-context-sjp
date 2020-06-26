@@ -16,7 +16,10 @@ public class DismissOffenceDecision extends OffenceDecision {
         super();
     }
 
-    public DismissOffenceDecision(final UUID offenceId, final UUID caseDecisionId, final VerdictType verdict) {
-        super(offenceId, caseDecisionId, DecisionType.DISMISS, verdict, null);
+    public DismissOffenceDecision(final UUID offenceId,
+                                  final UUID caseDecisionId,
+                                  final VerdictType verdict,
+                                  final PressRestriction pressRestriction) {
+        super(offenceId, caseDecisionId, DecisionType.DISMISS, verdict, null, pressRestriction);
     }
 }

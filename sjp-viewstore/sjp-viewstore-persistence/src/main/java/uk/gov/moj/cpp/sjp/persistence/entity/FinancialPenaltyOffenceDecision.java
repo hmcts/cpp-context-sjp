@@ -81,9 +81,10 @@ public class FinancialPenaltyOffenceDecision extends OffenceDecision {
                                            final BigDecimal fine,
                                            final BigDecimal backDuty,
                                            final BigDecimal excisePenalty,
-                                           final LocalDate convictionDate) {
+                                           final LocalDate convictionDate,
+                                           final PressRestriction pressRestriction) {
 
-        super(offenceId, caseDecisionId, DecisionType.FINANCIAL_PENALTY, verdict, convictionDate);
+        super(offenceId, caseDecisionId, DecisionType.FINANCIAL_PENALTY, verdict, convictionDate, pressRestriction);
         this.guiltyPleaTakenIntoAccount = guiltyPleaTakenIntoAccount;
         this.compensation = compensation;
         this.noCompensationReason = noCompensationReason;
@@ -111,9 +112,10 @@ public class FinancialPenaltyOffenceDecision extends OffenceDecision {
                                            final DisqualificationType disqualificationType,
                                            final Integer disqualificationPeriodValue,
                                            final DisqualificationPeriodTimeUnit disqualificationPeriodTimeUnit,
-                                           final Integer notionalPenaltyPoints) {
+                                           final Integer notionalPenaltyPoints,
+                                           final PressRestriction pressRestriction) {
 
-        super(offenceId, caseDecisionId, DecisionType.FINANCIAL_PENALTY, verdict, convictionDate);
+        super(offenceId, caseDecisionId, DecisionType.FINANCIAL_PENALTY, verdict, convictionDate, pressRestriction);
         this.guiltyPleaTakenIntoAccount = guiltyPleaTakenIntoAccount;
         this.compensation = compensation;
         this.noCompensationReason = noCompensationReason;

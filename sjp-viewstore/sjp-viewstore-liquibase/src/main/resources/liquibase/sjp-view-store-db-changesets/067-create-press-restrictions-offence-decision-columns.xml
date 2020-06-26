@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="66" author="team/ATCM/cesar.zapata">
+        <addColumn tableName="offence_decision">
+            <column name="press_restriction_name" type="text"/>
+            <column name="press_restriction_requested" type="boolean"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="offence_decision">
+                <column name="press_restriction_name"/>
+                <column name="press_restriction_requested"/>
+            </dropColumn>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.query.view.response;
 import static java.util.Optional.ofNullable;
 
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
+import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargePeriod;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
@@ -20,6 +21,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.WithdrawOffenceDecision;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 public class OffenceDecisionView {
@@ -53,6 +55,7 @@ public class OffenceDecisionView {
     private DisqualificationType disqualificationType;
     private DisqualificationPeriodView disqualificationPeriod;
     private Integer notionalPenaltyPoints;
+    private PressRestriction pressRestriction;
 
 
     public OffenceDecisionView(final OffenceDecision offenceDecision) {
@@ -60,6 +63,7 @@ public class OffenceDecisionView {
         this.decisionType = offenceDecision.getDecisionType();
         this.verdict = offenceDecision.getVerdictType();
         this.convictionDate = offenceDecision.getConvictionDate();
+        this.pressRestriction = mapPressRestriction(offenceDecision.getPressRestriction());
         switch (offenceDecision.getDecisionType()) {
             case WITHDRAW:
                 this.withdrawalReasonId = ((WithdrawOffenceDecision) offenceDecision).getWithdrawalReasonId();
@@ -92,6 +96,19 @@ public class OffenceDecisionView {
             default:
                 break;
         }
+    }
+
+    public OffenceDecisionView() {
+    }
+
+    private PressRestriction mapPressRestriction(final uk.gov.moj.cpp.sjp.persistence.entity.PressRestriction pressRestriction) {
+        if (Objects.isNull(pressRestriction)) {
+            return null;
+        }
+        return pressRestriction.getRequested() ?
+                PressRestriction.requested(pressRestriction.getName()) :
+                PressRestriction.revoked();
+
     }
 
     private void setReferredToOpenCourtDecision(ReferredToOpenCourtDecision referredToOpenCourtDecision) {
@@ -256,5 +273,9 @@ public class OffenceDecisionView {
 
     public Integer getNotionalPenaltyPoints() {
         return notionalPenaltyPoints;
+    }
+
+    public PressRestriction getPressRestriction() {
+        return this.pressRestriction;
     }
 }

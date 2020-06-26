@@ -78,6 +78,7 @@ import uk.gov.moj.sjp.it.producer.ReferToCourtHearingProducer;
 import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.FileUtil;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
+import uk.gov.moj.sjp.it.util.builders.DismissBuilder;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -241,7 +242,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
         addCaseDocumentAndUpdateEmployer();
 
         final ReferForCourtHearing referForCourtHearingDecision = buildReferForCourtHearingDecision(W, offenceId1, offenceId2);
-        final Dismiss dismissDecision = new Dismiss(null, createOffenceDecisionInformation(offenceId3, VerdictType.FOUND_NOT_GUILTY));
+        final Dismiss dismissDecision = DismissBuilder.withDefaults(offenceId3).build();
 
         startSessionAndRequestAssignment(sessionId, MAGISTRATE, DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE);
 

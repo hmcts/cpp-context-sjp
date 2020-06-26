@@ -12,7 +12,6 @@ import static java.util.stream.Collectors.toMap;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-import static org.apache.commons.lang3.StringUtils.length;
 
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -369,14 +368,22 @@ public class CaseService {
         final Optional<String> town = getTown(theCase);
         final Optional<String> county = getCounty(theCase);
         final Optional<LocalDate> defendantDateOfBirth = getDateOfBirth(theCase);
-        final Optional<String> postcode = getPostcodePrefix(theCase.getPostcode());
+        final Optional<String> postcode = getPostcode(theCase);
         final JsonArrayBuilder offenceArrayBuilder = createArrayBuilder();
         pendingCaseToPublishPerOffenceList
-                .forEach(casePerOffence -> offenceArrayBuilder.add(createObjectBuilder()
-                        .add("offenceCode", casePerOffence.getOffenceCode())
-                        .add("offenceStartDate", casePerOffence.getOffenceStartDate().toString())
-                        .add("offenceWording", casePerOffence.getOffenceWording())
-                ));
+                .forEach(casePerOffence -> {
+                    final JsonObjectBuilder pressRestrictionBuilder = createObjectBuilder()
+                            .add("requested", ofNullable(casePerOffence.getPressRestrictionRequested()).orElse(false));
+                    ofNullable(casePerOffence.getPressRestrictionName())
+                            .ifPresent(pressRestrictionName -> pressRestrictionBuilder.add("name", pressRestrictionName));
+
+                    offenceArrayBuilder.add(createObjectBuilder()
+                            .add("offenceCode", casePerOffence.getOffenceCode())
+                            .add("offenceStartDate", casePerOffence.getOffenceStartDate().toString())
+                            .add("offenceWording", casePerOffence.getOffenceWording())
+                            .add("completed", ofNullable(casePerOffence.getCompleted()).orElse(false))
+                            .add("pressRestriction", pressRestrictionBuilder));
+                });
 
         final JsonObjectBuilder objectBuilder = createObjectBuilder()
                 .add("caseId", theCase.getCaseId().toString())
@@ -422,10 +429,7 @@ public class CaseService {
         return ofNullable(pendingCaseToPublishWithAnyOffence.getDefendantDateOfBirth());
     }
 
-    private Optional<String> getPostcodePrefix(final String postcode) {
-        final String result = length(postcode) > 2 ? postcode.substring(0, 2) : postcode;
-        return Optional.ofNullable(result);
-    }
+
 
     public JsonObject buildCasesWithoutDefendantPostcodeView(final int pageSize, final int pageNumber) {
         final Map<String, String> allProsecutors = getAllProsecutorsMap();
@@ -449,5 +453,8 @@ public class CaseService {
                 .collect(toList());
 
         return buildCasesWithoutPostcodeResponsePayload(casesWithoutPostcodeView, totalCount, pageCount);
+    }
+    private Optional<String> getPostcode(final PendingCaseToPublishPerOffence pendingCaseToPublishWithAnyOffence) {
+        return  Optional.ofNullable(pendingCaseToPublishWithAnyOffence.getPostcode());
     }
 }

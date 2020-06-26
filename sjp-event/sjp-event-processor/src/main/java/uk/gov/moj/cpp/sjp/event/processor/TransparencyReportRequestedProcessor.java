@@ -8,6 +8,7 @@ import static java.util.UUID.fromString;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.LF;
+import static org.apache.commons.lang3.StringUtils.length;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -58,6 +59,7 @@ public class TransparencyReportRequestedProcessor {
     private static final String TEMPLATE_IDENTIFIER = "PendingCasesEnglish";
     private static final String TEMPLATE_IDENTIFIER_WELSH = "PendingCasesWelsh";
     private static final int DEFENDANT_IS_18 = 18;
+    private static final String OFFENCES = "offences";
 
     private Table<String, String, JsonObject> offenceDataTable;
     private Table<String, Boolean, String> prosecutorDataTable;
@@ -87,15 +89,15 @@ public class TransparencyReportRequestedProcessor {
         final JsonObject eventPayload = envelope.payloadAsJsonObject();
         final UUID transparencyReportId = fromString(eventPayload.getString("transparencyReportId"));
         final List<JsonObject> allPendingCasesFromViewStore = getPendingCasesFromViewStore(envelope);
-        final List<JsonObject> filteredAdultOnlyCases = getFilteredCases(allPendingCasesFromViewStore);
-        storeReportMetadata(envelope, transparencyReportId, filteredAdultOnlyCases);
+        final List<JsonObject> filteredCases = getFilteredCases(allPendingCasesFromViewStore);
+        storeReportMetadata(envelope, transparencyReportId, filteredCases);
         try {
-            final JsonObject payloadForDocumentGenerationEnglish = buildPayloadForDocumentGeneration(filteredAdultOnlyCases, false, envelope);
+            final JsonObject payloadForDocumentGenerationEnglish = buildPayloadForDocumentGeneration(filteredCases, false, envelope);
             final String englishPayloadFileName = String.format("transparency-report-template-parameters.english.%s.json", transparencyReportId.toString());
             final UUID englishPayloadFileId = storeDocumentGeneratorPayload(payloadForDocumentGenerationEnglish, englishPayloadFileName, TEMPLATE_IDENTIFIER);
             requestDocumentGeneration(envelope, transparencyReportId, TEMPLATE_IDENTIFIER, englishPayloadFileId);
 
-            final JsonObject payloadForDocumentGenerationWelsh = buildPayloadForDocumentGeneration(filteredAdultOnlyCases, true, envelope);
+            final JsonObject payloadForDocumentGenerationWelsh = buildPayloadForDocumentGeneration(filteredCases, true, envelope);
             final String welshPayloadFileName = String.format("transparency-report-template-parameters.welsh.%s.json", transparencyReportId.toString());
             final UUID welshPayloadFileId = storeDocumentGeneratorPayload(payloadForDocumentGenerationWelsh, welshPayloadFileName, TEMPLATE_IDENTIFIER_WELSH);
             requestDocumentGeneration(envelope, transparencyReportId, TEMPLATE_IDENTIFIER_WELSH, welshPayloadFileId);
@@ -118,20 +120,24 @@ public class TransparencyReportRequestedProcessor {
 
     private List<JsonObject> getFilteredCases(final List<JsonObject> pendingCases) {
         return pendingCases.stream()
-                .filter(pendingCase -> {
-                    final LocalDate defendantDateOfBirth = Optional.ofNullable(pendingCase.getString("defendantDateOfBirth", null)).map(LocalDate::parse).orElse(null);
-                    final LocalDate earliestOffenceDate = pendingCase.getJsonArray("offences")
-                            .getValuesAs(JsonObject.class).stream()
-                            .map(offence -> offence.getString("offenceStartDate"))
-                            .map(LocalDate::parse)
-                            .min(Comparator.naturalOrder()).orElse(null);
-                    // Remove cases where the offender is younger than 18 years old for one of the offences
-                    if (nonNull(defendantDateOfBirth) && nonNull(earliestOffenceDate)) {
-                        final Period defendantAgeAtOffenceDate = Period.between(defendantDateOfBirth, earliestOffenceDate);
-                        return defendantAgeAtOffenceDate.getYears() >= DEFENDANT_IS_18;
-                    }
-                    return true;
-                }).collect(Collectors.toList());
+                .filter(this::caseIsForAdultDefendant)
+                .filter(this::isCaseWithoutPressRestriction)
+                .collect(Collectors.toList());
+    }
+
+    private boolean caseIsForAdultDefendant(final JsonObject pendingCase) {
+        final LocalDate defendantDateOfBirth = Optional.ofNullable(pendingCase.getString("defendantDateOfBirth", null)).map(LocalDate::parse).orElse(null);
+        final LocalDate earliestOffenceDate = pendingCase.getJsonArray(OFFENCES)
+                .getValuesAs(JsonObject.class).stream()
+                .map(offence -> offence.getString("offenceStartDate"))
+                .map(LocalDate::parse)
+                .min(Comparator.naturalOrder()).orElse(null);
+        // Remove cases where the offender is younger than 18 years old for one of the offences
+        if (nonNull(defendantDateOfBirth) && nonNull(earliestOffenceDate)) {
+            final Period defendantAgeAtOffenceDate = Period.between(defendantDateOfBirth, earliestOffenceDate);
+            return defendantAgeAtOffenceDate.getYears() >= DEFENDANT_IS_18;
+        }
+        return true;
     }
 
     private JsonObject buildPayloadForDocumentGeneration(final List<JsonObject> pendingCases, boolean isWelsh, final JsonEnvelope envelope) {
@@ -192,10 +198,11 @@ public class TransparencyReportRequestedProcessor {
 
     private JsonArrayBuilder createPendingCasesJsonArrayBuilderFromListOfPendingCases(final List<JsonObject> pendingCases, final Boolean isWelsh, final JsonEnvelope envelope) {
         final JsonArrayBuilder pendingCasesBuilder = createArrayBuilder();
-        pendingCases.forEach(pendingCase -> {
+        pendingCases.stream()
+                .forEach(pendingCase -> {
                     final JsonObjectBuilder pendingCaseBuilder = createObjectBuilder()
                             .add("defendantName", pendingCase.getString("defendantName"))
-                            .add("offenceTitle", buildOffenceTitleFromOffenceArray(pendingCase.getJsonArray("offences"), isWelsh, envelope))
+                            .add("offenceTitle", buildOffenceTitleFromOffenceArray(pendingCase.getJsonArray(OFFENCES), isWelsh, envelope))
                             .add("prosecutorName", buildProsecutorName(pendingCase.getString("prosecutorName"), isWelsh, envelope));
 
             ofNullable(pendingCase.getString("town", null))
@@ -204,12 +211,24 @@ public class TransparencyReportRequestedProcessor {
             ofNullable(pendingCase.getString("county", null))
                     .ifPresent(county -> pendingCaseBuilder.add("county", county));
 
-            ofNullable(pendingCase.getString("postcode", null))
-                    .ifPresent(postcode -> pendingCaseBuilder.add("postcode", postcode));
+                     ofNullable(pendingCase.getString("postcode", null))
+                             .ifPresent(postcode -> pendingCaseBuilder.add("postcode",getPostcodePrefix (postcode)));
 
-            pendingCasesBuilder.add(pendingCaseBuilder);
-        });
+                    pendingCasesBuilder.add(pendingCaseBuilder);
+                });
         return pendingCasesBuilder;
+    }
+    private String getPostcodePrefix(final String postcode) {
+        return  length(postcode) > 2 ? postcode.substring(0, 2) : postcode;
+
+    }
+
+    private boolean isCaseWithoutPressRestriction(final JsonObject pendingCase) {
+        return pendingCase.getJsonArray(OFFENCES)
+                .getValuesAs(JsonObject.class).stream()
+                .filter(offence -> !offence.getBoolean("completed", false))
+                .map(offence -> offence.getJsonObject("pressRestriction"))
+                .noneMatch(pressRestriction -> pressRestriction.getBoolean("requested"));
     }
 
     private String buildProsecutorName(final String prosecutorName, final Boolean isWelsh, final JsonEnvelope envelope) {

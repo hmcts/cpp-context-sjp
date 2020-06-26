@@ -87,7 +87,7 @@ public class OffenceDecisionConverterTest {
         final UUID offenceId = UUID.randomUUID();
         LocalDate convictionDate = LocalDate.now();
         final NoSeparatePenalty noSeparatePenalty = createNoSeparatePenalty(null,
-                createOffenceDecisionInformation(offenceId, PROVED_SJP), true, true);
+                createOffenceDecisionInformation(offenceId, PROVED_SJP), true, true, null);
         noSeparatePenalty.setConvictionDate(convictionDate);
 
         final List<OffenceDecision> converter = OffenceDecisionConverter.convert(caseDecisionId, noSeparatePenalty);

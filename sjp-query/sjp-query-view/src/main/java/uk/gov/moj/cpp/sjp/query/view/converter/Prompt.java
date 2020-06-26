@@ -76,7 +76,9 @@ public enum Prompt {
     DDD_DISQUALIFICATION_PERIOD(1, fromString("2bf54447-328c-4c1b-a123-341adbd52172"), PromptConverter::new),
     DDO_DISQUALIFICATION_PERIOD(1, fromString("2bf54447-328c-4c1b-a123-341adbd52172"), PromptConverter::new),
     DDP_DISQUALIFICATION_PERIOD(1, fromString("2bf54447-328c-4c1b-a123-341adbd52172"), PromptConverter::new),
-    DDP_NOTIONAL_PENALTY_POINTS(2, fromString("462d5ba8-7a1c-44a0-a732-6c75601bd6af"), PromptConverter::new);
+    DDP_NOTIONAL_PENALTY_POINTS(2, fromString("462d5ba8-7a1c-44a0-a732-6c75601bd6af"), PromptConverter::new),
+    D45_PRESS_RESTRICTION_APPLIED(1, fromString("03983f51-f937-4dd8-9656-276b1ca86785"), PromptConverter::new),
+    DPR_PRESS_RESTRICTION_REVOKED(1, fromString("1a7da720-a95a-46e4-b2ee-6b8e9db430cc"), PromptConverter::new);
 
     private final Integer index;
     private final UUID id;

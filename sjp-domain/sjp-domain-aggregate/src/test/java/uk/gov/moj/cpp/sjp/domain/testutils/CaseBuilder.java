@@ -2,10 +2,13 @@ package uk.gov.moj.cpp.sjp.domain.testutils;
 
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
+import uk.gov.moj.cpp.sjp.domain.Offence;
 import uk.gov.moj.cpp.sjp.domain.util.DefaultTestData;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class CaseBuilder {
@@ -20,6 +23,7 @@ public class CaseBuilder {
     private String enterpriseId;
     private String prosecutingAuthority;
     private Defendant defendant;
+    private List<Offence> offences;
 
     private CaseBuilder() {
         id = DefaultTestData.CASE_ID;
@@ -27,6 +31,7 @@ public class CaseBuilder {
         enterpriseId = ENTERPRISE_ID;
         prosecutingAuthority = "TFL";
         defendant = new DefendantBuilder().build();
+        offences = new ArrayList<>();
     }
 
     public static CaseBuilder aDefaultSjpCase() {
@@ -40,6 +45,11 @@ public class CaseBuilder {
 
     public CaseBuilder withId(UUID id) {
         this.id = id;
+        return this;
+    }
+
+    public CaseBuilder withOffences(final List<Offence> offences) {
+        this.offences = offences;
         return this;
     }
 

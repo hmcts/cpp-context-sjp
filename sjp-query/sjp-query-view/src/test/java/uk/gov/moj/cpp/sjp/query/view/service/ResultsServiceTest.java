@@ -276,7 +276,7 @@ public class ResultsServiceTest {
         caseDecision.setSavedAt(DECISION_SAVED_AT1);
         caseDecision.setSession(new Session(SESSION_ID1, null, null, null, ljaNationalCourtCode, null, null));
         caseDecision.setCaseId(CASE_ID);
-        OffenceDecision adjournOffenceDecision = new AdjournOffenceDecision(OFFENCE_ID, DECISION_ID1, "No sufficient information yet", LocalDate.of(2020,02,18 ) ,FOUND_NOT_GUILTY, null);
+        OffenceDecision adjournOffenceDecision = new AdjournOffenceDecision(OFFENCE_ID, DECISION_ID1, "No sufficient information yet", LocalDate.of(2020, 02, 18), FOUND_NOT_GUILTY, null, null);
         caseDecision.setOffenceDecisions(asList(adjournOffenceDecision));
         return caseDecision;
     }
@@ -296,7 +296,7 @@ public class ResultsServiceTest {
                 10,
                 "",
                 NO_VERDICT,
-                null);
+                null, null);
         caseDecision.setOffenceDecisions(asList(referredToOpenCourt));
         return caseDecision;
     }
@@ -307,7 +307,7 @@ public class ResultsServiceTest {
         caseDecision.setSavedAt(DECISION_SAVED_AT2);
         caseDecision.setSession(new Session(SESSION_ID2, null, null, null, ljaNationalCourtCode, null, null));
         caseDecision.setCaseId(CASE_ID);
-        final WithdrawOffenceDecision withdrawOffenceDecision = new WithdrawOffenceDecision(OFFENCE_ID, DECISION_ID2, UUID.fromString("030d4335-f9fe-39e0-ad7e-d01a0791ff87"), FOUND_NOT_GUILTY);
+        final WithdrawOffenceDecision withdrawOffenceDecision = new WithdrawOffenceDecision(OFFENCE_ID, DECISION_ID2, UUID.fromString("030d4335-f9fe-39e0-ad7e-d01a0791ff87"), FOUND_NOT_GUILTY, null);
         caseDecision.setOffenceDecisions(asList(withdrawOffenceDecision));
         return caseDecision;
     }

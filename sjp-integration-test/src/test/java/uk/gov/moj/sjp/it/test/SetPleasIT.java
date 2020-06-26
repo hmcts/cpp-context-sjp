@@ -13,7 +13,6 @@ import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.crea
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
-import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 import static uk.gov.moj.sjp.it.Constants.CASE_ADJOURNED_TO_LATER_SJP_EVENT;
@@ -26,7 +25,9 @@ import static uk.gov.moj.sjp.it.helper.SetPleasHelper.requestSetPleas;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyCaseStatus;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyEventEmittedForSetPleas;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyUpdatedOffencesWithPleas;
-import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.*;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
@@ -36,10 +37,8 @@ import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 
-import com.google.common.collect.Sets;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
@@ -60,8 +59,10 @@ import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.helper.DecisionHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
+import uk.gov.moj.sjp.it.util.builders.DismissBuilder;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -71,6 +72,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.tuple.Triple;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
@@ -322,8 +324,9 @@ public class SetPleasIT extends BaseIntegrationTest {
         final User user = new User("John", "Smith", USER_ID);
 
         final Adjourn adjournDecision = new Adjourn(null, singletonList(createOffenceDecisionInformation(offence1Id, NO_VERDICT)), "More info needed", adjournTo);
-        final Dismiss dismiss1 = new Dismiss(null, createOffenceDecisionInformation(offence2Id, FOUND_NOT_GUILTY));
-        final Dismiss dismiss2 = new Dismiss(null, createOffenceDecisionInformation(offence3Id, FOUND_NOT_GUILTY));
+
+        final Dismiss dismiss1 = DismissBuilder.withDefaults(offence2Id).build();
+        final Dismiss dismiss2 = DismissBuilder.withDefaults(offence3Id).build();
         final List<? extends OffenceDecision> offenceDecisions = asList(adjournDecision, dismiss1, dismiss2);
 
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, offenceDecisions, null);
@@ -360,8 +363,8 @@ public class SetPleasIT extends BaseIntegrationTest {
         final User user = new User("John", "Smith", USER_ID);
 
         final Adjourn adjournDecision = new Adjourn(null, singletonList(createOffenceDecisionInformation(offence1Id, PROVED_SJP)), "More info needed", adjournTo);
-        final Dismiss dismiss1 = new Dismiss(null, createOffenceDecisionInformation(offence2Id, FOUND_NOT_GUILTY));
-        final Dismiss dismiss2 = new Dismiss(null, createOffenceDecisionInformation(offence3Id, FOUND_NOT_GUILTY));
+        final Dismiss dismiss1 = DismissBuilder.withDefaults(offence2Id).build();
+        final Dismiss dismiss2 = DismissBuilder.withDefaults(offence3Id).build();
         final List<? extends OffenceDecision> offenceDecisions = asList(adjournDecision, dismiss1, dismiss2);
 
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, offenceDecisions, null);
@@ -398,8 +401,8 @@ public class SetPleasIT extends BaseIntegrationTest {
         final User user = new User("John", "Smith", USER_ID);
 
         final Adjourn adjournDecision = new Adjourn(null, singletonList(createOffenceDecisionInformation(offence1Id, NO_VERDICT)), "More info needed", adjournTo);
-        final Dismiss dismiss1 = new Dismiss(null, createOffenceDecisionInformation(offence2Id, FOUND_NOT_GUILTY));
-        final Dismiss dismiss2 = new Dismiss(null, createOffenceDecisionInformation(offence3Id, FOUND_NOT_GUILTY));
+        final Dismiss dismiss1 = DismissBuilder.withDefaults(offence2Id).build();
+        final Dismiss dismiss2 = DismissBuilder.withDefaults(offence3Id).build();
         final List<? extends OffenceDecision> offenceDecisions = asList(adjournDecision, dismiss1, dismiss2);
 
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, offenceDecisions, null);

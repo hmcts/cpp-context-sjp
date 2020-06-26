@@ -109,11 +109,15 @@ public class TransparencyReportRequestedProcessorTest {
         final List<UUID> youngOffenderCaseIds = range(0, 5)
                 .mapToObj(e -> randomUUID()).collect(toList());
 
+        // create 5 press restricted case ids
+        final List<UUID> pressRestrictionCaseIds = range(0, 5)
+                .mapToObj(e -> randomUUID()).collect(toList());
+
         when(referenceDataService.getProsecutor(eq(prosecutorName), eq(false), any())).thenReturn(prosecutorEnglish);
         when(referenceDataService.getProsecutor(eq(prosecutorName), eq(true), any())).thenReturn(prosecutorWelsh);
         when(referenceDataOffencesService.getOffenceReferenceData(any(), anyString(), anyString())).thenReturn(CA03011_referenceDataPayload);
 
-        final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, youngOffenderCaseIds);
+        final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, youngOffenderCaseIds, pressRestrictionCaseIds);
         when(sjpService.getPendingCases(any())).thenReturn(pendingCasesList);
         when(fileStorer.store(any(), any()))
                 .thenReturn(englishPayloadFileUUID)
@@ -207,61 +211,118 @@ public class TransparencyReportRequestedProcessorTest {
         assertThat(payload.getString("payloadFileServiceId"), is(payloadFileServiceId));
     }
 
-    private List<JsonObject> pendingCasesList(final List<UUID> caseIds, final List<UUID> youngOffendersCaseIds) {
+    private List<JsonObject> pendingCasesList(final List<UUID> caseIds,
+                                              final List<UUID> youngOffendersCaseIds,
+                                              final List<UUID> pressRestrictionCaseIds) {
         final List<JsonObject> pendingCasesList = new LinkedList<>();
 
         for (int caseNumber = 0; caseNumber < caseIds.size(); caseNumber++) {
-            boolean generateFullAddress = caseNumber % 2 == 0;
-
-            final JsonArrayBuilder offenceArrayBuilder = createArrayBuilder()
-                    .add(createObjectBuilder()
-                            .add("offenceCode", "CA03011")
-                            .add("offenceStartDate", LocalDate.now().toString()))
-                    .add(createObjectBuilder()
-                            .add("offenceCode", "CA03011")
-                            .add("offenceStartDate", LocalDate.now().minusMonths(1).toString()));
-
-            final JsonObjectBuilder pendingCase = createObjectBuilder()
-                    .add("caseId", caseIds.get(caseNumber).toString())
-                    .add("defendantName", "J. Doe" + caseNumber)
-                    .add("offences", offenceArrayBuilder.build())
-                    .add("prosecutorName", "TFL");
-
-            if (generateFullAddress) {
-                pendingCase
-                        .add("town", "London" + caseNumber)
-                        .add("county", "Greater London" + caseNumber);
-            }
-
+            final JsonObjectBuilder pendingCase = getStandardPendingCase(caseIds, caseNumber);
             pendingCasesList.add(pendingCase.build());
         }
 
         // Attach cases by young offenders
         for (int caseNumber = 0; caseNumber < youngOffendersCaseIds.size(); caseNumber++) {
+            final JsonObjectBuilder pendingCase = buildPendingCaseYouthDefendant(caseIds, youngOffendersCaseIds, caseNumber);
+            pendingCasesList.add(pendingCase.build());
+        }
 
-            final JsonArrayBuilder offenceArrayBuilder = createArrayBuilder()
-                    .add(createObjectBuilder()
-                            .add("offenceCode", "CA03011")
-                            .add("offenceStartDate", LocalDate.now().toString()))
-                    .add(createObjectBuilder()
-                            .add("offenceCode", "CA03011")
-                            .add("offenceStartDate", LocalDate.now().minusMonths(1).toString()));
-
-            int adjustedCaseNumber = caseIds.size() + caseNumber;
-
-            final JsonObjectBuilder pendingCase = createObjectBuilder()
-                    .add("caseId", youngOffendersCaseIds.get(caseNumber).toString())
-                    .add("defendantName", "J. Doe" + adjustedCaseNumber)
-                    .add("postcode", "SE1 1PJ" + adjustedCaseNumber)
-                    .add("offences", offenceArrayBuilder.build())
-                    // the defendant is 18 years and 10 days now, but is a minor when once of the offences occurred
-                    .add("defendantDateOfBirth", LocalDate.now().minusYears(18).plusDays(10).toString())
-                    .add("prosecutorName", "TFL");
-
+        // Attach cases with press restrictions
+        for (int caseNumber = 0; caseNumber < pressRestrictionCaseIds.size(); caseNumber++) {
+            final JsonObjectBuilder pendingCase = getPendingCaseWithPressRestriction(pressRestrictionCaseIds, caseNumber);
             pendingCasesList.add(pendingCase.build());
         }
 
         return pendingCasesList;
+    }
+
+    private JsonObjectBuilder buildPendingCaseYouthDefendant(final List<UUID> caseIds, final List<UUID> youngOffendersCaseIds, final int caseNumber) {
+        final JsonArrayBuilder offenceArrayBuilder = createArrayBuilder()
+                .add(createObjectBuilder()
+                        .add("offenceCode", "CA03011")
+                        .add("offenceStartDate", LocalDate.now().toString()))
+                .add(createObjectBuilder()
+                        .add("offenceCode", "CA03011")
+                        .add("offenceStartDate", LocalDate.now().minusMonths(1).toString()));
+
+        int adjustedCaseNumber = caseIds.size() + caseNumber;
+
+        return createObjectBuilder()
+                .add("caseId", youngOffendersCaseIds.get(caseNumber).toString())
+                .add("defendantName", "J. Doe" + adjustedCaseNumber)
+                .add("postcode", "SE1 1PJ" + adjustedCaseNumber)
+                .add("offences", offenceArrayBuilder.build())
+                // the defendant is 18 years and 10 days now, but is a minor when once of the offences occurred
+                .add("defendantDateOfBirth", LocalDate.now().minusYears(18).plusDays(10).toString())
+                .add("prosecutorName", "TFL");
+    }
+
+    private JsonObjectBuilder getStandardPendingCase(final List<UUID> caseIds, final int caseNumber) {
+        boolean generateFullAddress = caseNumber % 2 == 0;
+
+        final JsonArrayBuilder offenceArrayBuilder = createArrayBuilder()
+                .add(createObjectBuilder()
+                        .add("offenceCode", "CA03011")
+                        .add("offenceStartDate", LocalDate.now().toString())
+                        .add("completed", false)
+                        .add("pressRestriction", createObjectBuilder()
+                                .add("requested", false)
+                        ))
+                .add(createObjectBuilder()
+                        .add("offenceCode", "CA03011")
+                        .add("offenceStartDate", LocalDate.now().minusMonths(1).toString())
+                        .add("completed", false)
+                        .add("pressRestriction", createObjectBuilder()
+                                .add("requested", false)
+                        ));
+
+        final JsonObjectBuilder pendingCase = createObjectBuilder()
+                .add("caseId", caseIds.get(caseNumber).toString())
+                .add("defendantName", "J. Doe" + caseNumber)
+                .add("postcode", "S" + caseNumber)
+                .add("offences", offenceArrayBuilder.build())
+                .add("prosecutorName", "TFL");
+
+        if (generateFullAddress) {
+            pendingCase
+                    .add("town", "London" + caseNumber)
+                    .add("county", "Greater London" + caseNumber);
+        }
+        return pendingCase;
+    }
+
+    private JsonObjectBuilder getPendingCaseWithPressRestriction(final List<UUID> caseIds, final int caseNumber) {
+
+        final JsonArrayBuilder offenceArrayBuilder = createArrayBuilder()
+                .add(createObjectBuilder()
+                        .add("offenceCode", "CA03011")
+                        .add("offenceStartDate", LocalDate.now().toString())
+                        .add("completed", false)
+                        .add("pressRestriction", createObjectBuilder()
+                                .add("requested", true)
+                                .add("name", "Jaimie")
+                        ))
+                .add(createObjectBuilder()
+                        .add("offenceCode", "CA03011")
+                        .add("offenceStartDate", LocalDate.now().minusMonths(1).toString())
+                        .add("completed", false)
+                        .add("pressRestriction", createObjectBuilder()
+                                .add("requested", false)
+                        ));
+
+        final JsonObjectBuilder pendingCase = createObjectBuilder()
+                .add("caseId", caseIds.get(caseNumber).toString())
+                .add("defendantName", "J. Doe" + caseNumber)
+                .add("postcode", "SE1 1PJ" + caseNumber)
+                .add("offences", offenceArrayBuilder.build())
+                .add("prosecutorName", "TFL");
+
+
+        pendingCase
+                .add("town", "London" + caseNumber)
+                .add("county", "Greater London" + caseNumber);
+
+        return pendingCase;
     }
 
 }

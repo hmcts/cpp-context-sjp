@@ -1,8 +1,13 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
-import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
 
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
@@ -11,6 +16,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -26,7 +32,7 @@ import org.junit.runner.RunWith;
 @RunWith(CdiTestRunner.class)
 public class OffenceRepositoryTest extends BaseTransactionalTest {
 
-    private static final UUID VALID_OFFENCE_DETAIL_ID = UUID.randomUUID();
+    private static final int NUM_PREVIOUS_CONVICTIONS = 1;
 
     @Inject
     private OffenceRepository offenceRepository;
@@ -35,28 +41,32 @@ public class OffenceRepositoryTest extends BaseTransactionalTest {
     private CaseRepository caseRepository;
 
     @Test
-    public void shouldFindOptionalBy() {
-        //given
-        caseRepository.save(getCaseWithDefendantOffences());
+    public void shouldFindOffencesByIds() {
+        final UUID offenceId1 = UUID.randomUUID();
+        final UUID offenceId2 = UUID.randomUUID();
+        final UUID offenceId3 = UUID.randomUUID();
+        final CaseDetail caseDetail = getCaseWithDefendantOffences(asList(offenceId1, offenceId2, offenceId3));
+        caseRepository.save(caseDetail);
 
-        OffenceDetail actual = offenceRepository.findBy(VALID_OFFENCE_DETAIL_ID);
-        assertNotNull("Should not be null", actual);
-        assertEquals(VALID_OFFENCE_DETAIL_ID, actual.getId());
+        final List<OffenceDetail> actual = offenceRepository.findByIds(asList(offenceId1));
+
+        assertThat(actual, hasSize(1));
+        assertThat(actual, contains(allOf(hasProperty("id", equalTo(offenceId1)))));
     }
 
-    private static CaseDetail getCaseWithDefendantOffences() {
+    private CaseDetail getCaseWithDefendantOffences(final List<UUID> offenceIds) {
         final CaseDetail caseDetail = new CaseDetail(UUID.randomUUID());
         caseDetail.setDefendant(new DefendantDetail(
                 UUID.randomUUID(),
                 new PersonalDetails(),
-                singletonList(getOffenceDetail(VALID_OFFENCE_DETAIL_ID)),
-                1
+                offenceIds.stream().map(this::createOffenceDetails).collect(toList()),
+                NUM_PREVIOUS_CONVICTIONS
         ));
 
         return caseDetail;
     }
 
-    private static OffenceDetail getOffenceDetail(final UUID uuid) {
+    private OffenceDetail createOffenceDetails(final UUID uuid) {
         return new OffenceDetail.OffenceDetailBuilder()
                 .setId(uuid)
                 .setChargeDate(LocalDate.now())

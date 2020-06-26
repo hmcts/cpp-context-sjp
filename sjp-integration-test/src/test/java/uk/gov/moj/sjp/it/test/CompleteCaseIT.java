@@ -17,7 +17,6 @@ import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.CONDITI
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.MONTH;
 import static uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType.PAY_TO_COURT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
-import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
@@ -41,9 +40,7 @@ import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
-import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
-import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargePeriod;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.CostsAndSurcharge;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
@@ -61,6 +58,7 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
+import uk.gov.moj.sjp.it.util.builders.DismissBuilder;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -176,7 +174,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
     private void dismissCase() {
         assignCaseInMagistrateSession(magistrateSessionId, user.getUserId());
 
-        final OffenceDecision offenceDecision = new Dismiss(null, new OffenceDecisionInformation(offenceId, FOUND_NOT_GUILTY));
+        final OffenceDecision offenceDecision = DismissBuilder.withDefaults(offenceId).build();
         final DecisionCommand decision = new DecisionCommand(magistrateSessionId, caseId, "Test note", user, asList(offenceDecision), null);
 
         eventListener
@@ -191,7 +189,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
         assignCaseInMagistrateSession(magistrateSessionId, user.getUserId());
 
         final FinancialImposition financialImposition = buildFinancialImposition();
-        final OffenceDecision offenceDecision = Discharge.createDischarge(null, createOffenceDecisionInformation(offenceId, FOUND_GUILTY), CONDITIONAL, new DischargePeriod(2, MONTH), new BigDecimal(230), null, false, null);
+        final OffenceDecision offenceDecision = Discharge.createDischarge(null, createOffenceDecisionInformation(offenceId, FOUND_GUILTY), CONDITIONAL, new DischargePeriod(2, MONTH), new BigDecimal(230), null, false, null, null);
         final DecisionCommand decision = new DecisionCommand(magistrateSessionId, caseId, "Test note", user, asList(offenceDecision), financialImposition);
 
         eventListener

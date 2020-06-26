@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.decision;
 
+import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
+import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.SET_ASIDE;
 
 import java.util.List;
@@ -10,16 +12,31 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SetAside extends MultipleOffenceDecision {
 
+    public SetAside(final UUID id,
+                    final List<OffenceDecisionInformation> offenceDecisionInformation) {
+        this(id, offenceDecisionInformation, null);
+    }
 
     @JsonCreator
     public SetAside(@JsonProperty("id") final UUID id,
-                    @JsonProperty("offenceDecisionInformation") final List<OffenceDecisionInformation> offenceDecisionInformation) {
-        super(id, SET_ASIDE, offenceDecisionInformation);
+                    @JsonProperty("offenceDecisionInformation") final List<OffenceDecisionInformation> offenceDecisionInformation,
+                    @JsonProperty("pressRestriction") final PressRestriction pressRestriction) {
+        super(id, SET_ASIDE, offenceDecisionInformation, pressRestriction);
     }
 
     @Override
     public void accept(final OffenceDecisionVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return reflectionEquals(this, o);
+    }
+
+    @Override
+    public int hashCode() {
+        return reflectionHashCode(this);
     }
 
 }

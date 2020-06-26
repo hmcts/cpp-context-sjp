@@ -473,27 +473,27 @@ public class CaseServiceTest {
 
         final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence1 = new PendingCaseToPublishPerOffence("John", "Doe", LocalDate.of(1980, 6, 20),
                 caseId1, "TVL1", "address line 1", "address line 2", "Lant Street", "London", "Greater London",
-                "SE1 1PJ", "CA03014", LocalDate.of(2018, 12, 15), "offence wording", "TVL");
+                "SE1 1PJ", "CA03014" , LocalDate.of(2018, 12, 15),"offence wording", false, null, false,"TVL");
 
-        final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence2 = new PendingCaseToPublishPerOffence("John", "Doe", LocalDate.of(1980, 6, 20),
-                caseId1, "TVL1", "address line 1", "address line 2", "Lant Street", "London", "Greater London",
-                "SE1 1PJ", "CA03014", LocalDate.of(2018, 11, 11), "offence wording", "TVL");
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence2 = new PendingCaseToPublishPerOffence("John", "Doe", LocalDate.of(1980,6,20),
+                caseId1, "TVL1","address line 1", "address line 2", "Lant Street", "London", "Greater London",
+                "SE1 1PJ", "CA03014", LocalDate.of(2018, 11, 11), "offence wording", false, null, false,"TVL");
 
         final PendingCaseToPublishPerOffence pendingCaseToPublishWith4LinesOfAddressAndWithoutFirstName = new PendingCaseToPublishPerOffence("", "Doe", null,
                 caseId2, "TVL2", "address line 1", "address line 2", "London", "Greater London", "",
-                "S", "CA03014", LocalDate.of(2018, 8, 2), "offence wording", "TVL");
+                "S", "CA03014",  LocalDate.of(2018, 8, 2), "offence wording",true, "Person 1",false, "TVL");
 
-        final PendingCaseToPublishPerOffence pendingCaseToPublishWithoutAddress3and4and5 = new PendingCaseToPublishPerOffence("Emma", "White", LocalDate.of(1980, 6, 20),
-                caseId3, "TVL3", "address line 1", "address line 2", null, null, null,
-                "CR0 2GE", "CA03011", LocalDate.of(2018, 8, 2), "offence wording", "TVL");
+        final PendingCaseToPublishPerOffence pendingCaseToPublishWithoutAddress3and4and5 = new PendingCaseToPublishPerOffence("Emma", "White", LocalDate.of(1980,6,20),
+                caseId3, "TVL3", "address line 1", "address line 2",null, null, null,
+                "CR0 2GE", "CA03011", LocalDate.of(2018, 8, 2), "offence wording", false,null,false, "TVL");
 
         final PendingCaseToPublishPerOffence pendingCaseToPublishWithSingleLetterFirstName = new PendingCaseToPublishPerOffence("X", "Doe", null,
                 caseId4, "TVL2", "address line 1", "address line 2", "London", "Greater London", "",
-                "S", "CA03014", LocalDate.of(2018, 8, 2), "offence wording", "TVL");
+                "S", "CA03014",  LocalDate.of(2018, 8, 2), "offence wording", false, null, false, "TVL");
 
         final PendingCaseToPublishPerOffence pendingCaseToPublishWithSingleLetterFirstNameNoLastNameAndNullPostcode = new PendingCaseToPublishPerOffence("X", null, null,
                 caseId5, "TVL2", "address line 1", "address line 2", "London", "Greater London", "",
-                null, "CA03014", LocalDate.of(2018, 8, 2), "offence wording", "TVL");
+                null, "CA03014",  LocalDate.of(2018, 8, 2), "offence wording", false, null,false, "TVL");
 
         when(caseRepository.findPendingCasesToPublish()).thenReturn(newArrayList(
                 pendingCaseToPublishWith5LinesOfAddressOffence1,
@@ -515,7 +515,7 @@ public class CaseServiceTest {
                 "J Doe",
                 "London",
                 "Greater London",
-                "SE",
+                "SE1 1PJ",
                 "TVL",
                 newArrayList(
                         Pair.of("CA03014", "2018-11-11"),
@@ -538,7 +538,7 @@ public class CaseServiceTest {
                 "E White",
                 null,
                 null,
-                "CR",
+                "CR0 2GE",
                 "TVL",
                 newArrayList(
                         Pair.of("CA03011", "2018-08-02")));

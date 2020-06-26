@@ -52,7 +52,7 @@ public class SjpCaseCreatedToCaseTest {
 
     private static final Offence offence = new Offence(offenceId, offenceSequenceNo, libraOffenceCode, chargeDate,
             libraOffenceDateCode, offenceCommittedDate, offenceWording, prosecutionOfFacts, witnessStatement,
-            compensation);
+            compensation, false);
 
     @SuppressWarnings("deprecation")
     private static final SjpCaseCreated event = new SjpCaseCreated(caseId, urn, "TFL", defendantId,

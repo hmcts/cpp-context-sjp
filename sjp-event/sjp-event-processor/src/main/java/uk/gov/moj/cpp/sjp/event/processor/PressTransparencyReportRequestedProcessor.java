@@ -5,6 +5,7 @@ import static java.time.LocalDate.parse;
 import static java.time.LocalDateTime.now;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.time.temporal.ChronoUnit.YEARS;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
@@ -183,8 +184,6 @@ public class PressTransparencyReportRequestedProcessor {
             final Boolean defendantIsAdultOrUnknownAge = defendantAge.map(this::isAdult).orElse(true);
             if(defendantIsAdultOrUnknownAge) {
                 final JsonObjectBuilder readyCaseItem = createReadyCase(envelope, pendingCase);
-
-
                 readyCasesBuilder.add(readyCaseItem);
             }
         });
@@ -237,10 +236,18 @@ public class PressTransparencyReportRequestedProcessor {
     private JsonArray createReadyCaseOffences(final JsonArray pendingCaseOffences, final JsonEnvelope envelope) {
         final JsonArrayBuilder readyCaseOffences = createArrayBuilder();
         pendingCaseOffences.getValuesAs(JsonObject.class).forEach(pendingCaseOffence -> {
-            final JsonObject readyCaseOffence = createObjectBuilder()
+            final JsonObject pendingCasePressRestriction = pendingCaseOffence.getJsonObject("pressRestriction");
+            final boolean pressRestrictionRequested = pendingCasePressRestriction.getBoolean("requested");
+
+            final JsonObjectBuilder readyCaseOffence = createObjectBuilder()
                     .add("title", mapOffenceIntoOffenceTitleString(pendingCaseOffence,envelope))
                     .add("wording", pendingCaseOffence.getString("offenceWording"))
-                    .build();
+                    .add("pressRestrictionRequested", pressRestrictionRequested);
+
+            if(pressRestrictionRequested) {
+                readyCaseOffence.add("pressRestrictionName", pendingCasePressRestriction.getString("name", ""));
+            }
+
             readyCaseOffences.add(readyCaseOffence);
         });
         return readyCaseOffences.build();
@@ -281,9 +288,14 @@ public class PressTransparencyReportRequestedProcessor {
         final String addressLine1 = pendingCase.containsKey("addressLine1") ? format("%s,", pendingCase.getString("addressLine1")) : "";
         final String addressLine2 = pendingCase.containsKey("addressLine2") ? format(" %s,", pendingCase.getString("addressLine2")) : "";
         final String county = pendingCase.containsKey("county") ? format(" %s,", pendingCase.getString("county")) : "";
-        final String town = pendingCase.containsKey("town") ? format(" %s,", pendingCase.getString("town")) : "";
+        final String town = pendingCase.containsKey("town") ? format(" %s", pendingCase.getString("town")) : "";
         final String postcode = pendingCase.containsKey("postcode") ? format(" %s", pendingCase.getString("postcode")) : "";
-        return format("%s%s%s%s%s", addressLine1, addressLine2, county, town, postcode).trim();
+        if (nonNull(postcode) && ! postcode.isEmpty()) {
+            return format("%s%s%s%s,%s", addressLine1, addressLine2, county, town, postcode).trim();
+        }else {
+            return format("%s%s%s%s", addressLine1, addressLine2, county, town).trim();
+
+        }
     }
 
     private List<JsonObject> getPendingCasesFromViewStore(final JsonEnvelope envelope) {

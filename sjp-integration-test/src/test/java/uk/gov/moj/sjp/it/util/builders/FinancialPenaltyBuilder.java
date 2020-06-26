@@ -6,7 +6,9 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 
 import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
+import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPeriod;
+import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPeriodTimeUnit;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
 import uk.gov.moj.cpp.sjp.domain.decision.endorsement.PenaltyPointsReason;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
@@ -31,6 +33,7 @@ public class FinancialPenaltyBuilder {
     private DisqualificationType disqualificationType;
     private DisqualificationPeriod disqualificationPeriod;
     private Integer notionalPenaltyPoints;
+    private PressRestriction pressRestriction;
 
     public static FinancialPenaltyBuilder withDefaults() {
         final FinancialPenaltyBuilder builder = new FinancialPenaltyBuilder();
@@ -50,6 +53,7 @@ public class FinancialPenaltyBuilder {
         builder.disqualificationType = null;
         builder.disqualificationPeriod = null;
         builder.notionalPenaltyPoints = null;
+        builder.pressRestriction = null;
         return builder;
     }
 
@@ -85,9 +89,20 @@ public class FinancialPenaltyBuilder {
         return this;
     }
 
+    public FinancialPenaltyBuilder disqualificationType(final DisqualificationType disqualificationType) {
+        this.disqualification = true;
+        this.disqualificationType = disqualificationType;
+        return this;
+    }
+
+    public FinancialPenaltyBuilder pressRestriction(final String name) {
+        this.pressRestriction = new PressRestriction(name);
+        return this;
+    }
+
     public FinancialPenalty build() {
         return new FinancialPenalty(
-                null,
+                this.id,
                 this.offenceDecisionInformation = createOffenceDecisionInformation(this.id, PROVED_SJP),
                 this.fine,
                 this.compensation,
@@ -102,7 +117,13 @@ public class FinancialPenaltyBuilder {
                 this.disqualification,
                 this.disqualificationType,
                 this.disqualificationPeriod,
-                this.notionalPenaltyPoints
+                this.notionalPenaltyPoints,
+                this.pressRestriction
         );
+    }
+
+    public FinancialPenaltyBuilder disqualificationPeriodInMonths(final int period) {
+        this.disqualificationPeriod = new DisqualificationPeriod(period, DisqualificationPeriodTimeUnit.MONTH);
+        return this;
     }
 }

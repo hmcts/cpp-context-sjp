@@ -82,7 +82,8 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
             "cd.id, cd.urn," +
             "d.personalDetails.address.address1, d.personalDetails.address.address2," +
             "d.personalDetails.address.address3, d.personalDetails.address.address4, d.personalDetails.address.address5," +
-            "d.personalDetails.address.postcode, o.code, o.startDate, o.wording, cd.prosecutingAuthority) " +
+            "d.personalDetails.address.postcode, o.code, o.startDate, o.wording, " +
+            "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority) " +
             "FROM CaseDetail cd " +
             "LEFT OUTER JOIN cd.defendant d " +
             "LEFT OUTER JOIN d.offences o " +

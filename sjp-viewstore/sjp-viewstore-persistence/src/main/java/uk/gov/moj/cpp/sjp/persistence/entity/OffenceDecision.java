@@ -12,6 +12,7 @@ import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.DiscriminatorColumn;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -55,17 +56,21 @@ public abstract class OffenceDecision {
     @Convert(converter = LocalDatePersistenceConverter.class)
     private LocalDate convictionDate;
 
+    @Embedded
+    private PressRestriction pressRestriction;
+
     protected OffenceDecision() {
     }
 
     protected OffenceDecision(final UUID offenceId, final UUID caseDecisionId,
                               final DecisionType decisionType, final VerdictType verdictType,
-                              final LocalDate convictionDate) {
+                              final LocalDate convictionDate, final PressRestriction pressRestriction) {
         this.offenceId = offenceId;
         this.caseDecisionId = caseDecisionId;
         this.decisionType = decisionType;
         this.verdictType = verdictType;
         this.convictionDate = convictionDate;
+        this.pressRestriction = pressRestriction;
     }
 
     public UUID getOffenceId() {
@@ -106,5 +111,13 @@ public abstract class OffenceDecision {
 
     public void setConvictionDate(final LocalDate convictionDate) {
         this.convictionDate = convictionDate;
+    }
+
+    public PressRestriction getPressRestriction() {
+        return pressRestriction;
+    }
+
+    public void setPressRestriction(final PressRestriction pressRestriction) {
+        this.pressRestriction = pressRestriction;
     }
 }

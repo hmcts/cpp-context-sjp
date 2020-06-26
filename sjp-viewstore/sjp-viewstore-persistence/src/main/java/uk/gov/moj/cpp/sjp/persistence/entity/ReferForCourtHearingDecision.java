@@ -31,9 +31,10 @@ public class ReferForCourtHearingDecision extends OffenceDecision {
                                         final UUID referralReasonId, final Integer estimatedHearingDuration,
                                         final String listingNotes,
                                         final VerdictType verdict,
-                                        final LocalDate convictionDate) {
+                                        final LocalDate convictionDate,
+                                        final PressRestriction pressRestriction) {
 
-        super(offenceId, caseDecisionId, DecisionType.REFER_FOR_COURT_HEARING, verdict, convictionDate);
+        super(offenceId, caseDecisionId, DecisionType.REFER_FOR_COURT_HEARING, verdict, convictionDate, pressRestriction);
         this.referralReasonId = referralReasonId;
         this.estimatedHearingDuration = estimatedHearingDuration;
         this.listingNotes = listingNotes;

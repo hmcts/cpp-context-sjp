@@ -46,10 +46,13 @@ public class FinancialPenalty extends DisqualifyEndorseDecision {
                             @JsonProperty("disqualification") final Boolean disqualification,
                             @JsonProperty("disqualificationType") final DisqualificationType disqualificationType,
                             @JsonProperty("disqualificationPeriod") final DisqualificationPeriod disqualificationPeriod,
-                            @JsonProperty("notionalPenaltyPoints") final Integer notionalPenaltyPoints) {
+                            @JsonProperty("notionalPenaltyPoints") final Integer notionalPenaltyPoints,
+                            @JsonProperty("pressRestriction") final PressRestriction pressRestriction
+                            ) {
         super(id, FINANCIAL_PENALTY, offenceDecisionInformation, licenceEndorsed,
                 penaltyPointsImposed, penaltyPointsReason, additionalPointsReason,
-                disqualification, disqualificationType, disqualificationPeriod, notionalPenaltyPoints);
+                disqualification, disqualificationType, disqualificationPeriod, notionalPenaltyPoints,
+                pressRestriction);
         this.compensation = compensation;
         this.fine = fine;
         this.noCompensationReason = noCompensationReason;
@@ -65,9 +68,10 @@ public class FinancialPenalty extends DisqualifyEndorseDecision {
                                                           final String noCompensationReason,
                                                           final Boolean guiltyPleaTakenIntoAccount,
                                                           final BigDecimal backDuty,
-                                                          final BigDecimal excisePenalty) {
+                                                          final BigDecimal excisePenalty,
+                                                          final PressRestriction pressRestriction) {
         return new FinancialPenalty(id, offenceDecisionInformation, fine, compensation, noCompensationReason, guiltyPleaTakenIntoAccount, backDuty, excisePenalty,
-                null, null, null,null, null, null, null, null);
+                null, null, null,null, null, null, null, null, pressRestriction);
     }
 
     public BigDecimal getCompensation() {

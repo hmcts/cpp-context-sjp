@@ -38,12 +38,12 @@ import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
 import uk.gov.moj.cpp.sjp.domain.Defendant;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
-import uk.gov.moj.cpp.sjp.domain.Offence;
 import uk.gov.moj.cpp.sjp.domain.PersonalName;
-
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.domain.testutils.CaseBuilder;
+import uk.gov.moj.cpp.sjp.domain.testutils.DefendantBuilder;
 import uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder;
 import uk.gov.moj.cpp.sjp.event.CaseExpectedDateReadyChanged;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
@@ -79,7 +79,6 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -723,15 +722,22 @@ public class PleadOnlineTest {
     }
 
     private static Case createTestCase(final String title, final UUID... extraOffenceIds) {
-        final List<Offence> offences = Stream.concat(Stream.of(randomUUID()), Arrays.stream(extraOffenceIds))
-                .map(id -> new Offence(id, 1, null, null,
-                        1, null, null, null, null, null))
-                .collect(toList());
+        final Defendant defendant = new DefendantBuilder()
+                .withTitle(title)
+                .withFirstName(PERSON_FIRST_NAME)
+                .withLastName(PERSON_LAST_NAME)
+                .withDateOfBirth(PERSON_DOB)
+                .withNationalInsuranceNumber(PERSON_NI_NUMBER)
+                .withDriverNumber(PERSON_DRIVER_NUMBER)
+                .withAddress(PERSON_ADDRESS)
+                .withContactDetails(PERSON_CONTACT_DETAILS)
+                .withOffences(extraOffenceIds)
+                .addOffence(randomUUID())
+                .build();
 
-        return new Case(randomUUID(), "TFL123456", RandomStringUtils.randomAlphanumeric(12).toUpperCase(),
-                "TFL", null, LocalDate.now(),
-                new Defendant(randomUUID(), title, PERSON_FIRST_NAME, PERSON_LAST_NAME, PERSON_DOB,
-                        null, PERSON_NI_NUMBER, PERSON_DRIVER_NUMBER, null, PERSON_ADDRESS, PERSON_CONTACT_DETAILS, 1, offences, null, null, null));
+        return CaseBuilder.aDefaultSjpCase()
+                .withDefendant(defendant)
+                .build();
     }
 
 }

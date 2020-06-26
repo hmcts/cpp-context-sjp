@@ -17,8 +17,8 @@ public class SetAsideOffenceDecision extends OffenceDecision {
     }
 
     public SetAsideOffenceDecision(final UUID offenceId,
-                                   final UUID caseDecisionId) {
-        super(offenceId, caseDecisionId, DecisionType.SET_ASIDE, null, null);
+                                   final UUID caseDecisionId,
+                                   final PressRestriction pressRestriction) {
+        super(offenceId, caseDecisionId, DecisionType.SET_ASIDE, null, null, pressRestriction);
     }
-
 }

@@ -95,6 +95,9 @@
     },
     "backDutyOffence": {
       "type": "boolean"
+    },
+    "pressRestrictable": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false

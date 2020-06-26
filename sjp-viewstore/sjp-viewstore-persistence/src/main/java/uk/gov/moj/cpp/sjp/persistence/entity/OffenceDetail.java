@@ -17,6 +17,7 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -115,6 +116,15 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
     @Column(name = "endorsable")
     private Boolean endorsable;
 
+    @Column(name = "press_restrictable")
+    private Boolean pressRestrictable;
+
+    @Embedded
+    private PressRestriction pressRestriction;
+
+    @Column(name = "completed")
+    private Boolean completed;
+
     public OffenceDetail() {
         super();
     }
@@ -142,6 +152,9 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         this.vehicleMake = builder.vehicleMake;
         this.vehicleRegistrationMark = builder.vehicleRegistrationMark;
         this.endorsable = builder.endorsable;
+        this.pressRestrictable = builder.pressRestrictable;
+        this.pressRestriction = builder.pressRestriction;
+        this.completed = builder.completed;
     }
 
     public static OffenceDetailBuilder builder() {
@@ -350,6 +363,30 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         this.endorsable = endorsable;
     }
 
+    public Boolean getPressRestrictable() {
+        return pressRestrictable;
+    }
+
+    public void setPressRestrictable(final Boolean pressRestrictable) {
+        this.pressRestrictable = pressRestrictable;
+    }
+
+    public PressRestriction getPressRestriction() {
+        return pressRestriction;
+    }
+
+    public void setPressRestriction(final PressRestriction pressRestriction) {
+        this.pressRestriction = pressRestriction;
+    }
+
+    public Boolean getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(final Boolean completed) {
+        this.completed = completed;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -373,6 +410,7 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         return isNull(other) ? 1 : sequenceNumber - other.sequenceNumber;
     }
 
+    @SuppressWarnings("pmd:BeanMembersShouldSerialize")
     public static class OffenceDetailBuilder {
 
         private UUID id;
@@ -397,6 +435,9 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         private String vehicleMake;
         private String vehicleRegistrationMark;
         private Boolean endorsable;
+        private Boolean pressRestrictable;
+        private PressRestriction pressRestriction;
+        private Boolean completed;
 
         public OffenceDetail build() {
             return new OffenceDetail(this);
@@ -507,6 +548,21 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
 
         public OffenceDetailBuilder withEndorsable(final Boolean endorsable) {
             this.endorsable = endorsable;
+            return this;
+        }
+
+        public OffenceDetailBuilder withPressRestrictable(final Boolean pressRestrictable) {
+            this.pressRestrictable = pressRestrictable;
+            return this;
+        }
+
+        public OffenceDetailBuilder withPressRestriction(final PressRestriction pressRestriction) {
+            this.pressRestriction = pressRestriction;
+            return this;
+        }
+
+        public OffenceDetailBuilder withCompleted(final Boolean completed) {
+            this.completed = completed;
             return this;
         }
     }

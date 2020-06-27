@@ -3,7 +3,9 @@ package uk.gov.moj.sjp.it.test;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.*;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
@@ -12,15 +14,14 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostco
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 
-import com.google.common.collect.Sets;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.commandclient.AssignNextCaseClient;
 import uk.gov.moj.sjp.it.commandclient.CreateCaseClient;
 import uk.gov.moj.sjp.it.commandclient.StartSessionClient;
 import uk.gov.moj.sjp.it.commandclient.UnassignCaseClient;
 import uk.gov.moj.sjp.it.helper.AssignmentHelper;
 import uk.gov.moj.sjp.it.model.Defendant;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
@@ -31,10 +32,13 @@ import java.util.UUID;
 
 import javax.ws.rs.core.Response;
 
+import com.google.common.collect.Sets;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mortbay.log.Log;
 
+@Ignore("Failing intermittently. Tech debt ticket ATCM-6621")
 public class CaseUnassignmentIT extends BaseIntegrationTest {
 
     private static final UUID CASE_ID = UUID.randomUUID();

@@ -84,8 +84,10 @@ import com.google.common.collect.Sets;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("Temporarily disabled until fixed ATCM-6621")
 public class TransparencyReportIT extends BaseIntegrationTest {
 
     private TransparencyReportHelper transparencyReportHelper = new TransparencyReportHelper();

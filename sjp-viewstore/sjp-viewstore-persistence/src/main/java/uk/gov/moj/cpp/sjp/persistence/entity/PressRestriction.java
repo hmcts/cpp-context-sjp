@@ -15,6 +15,10 @@ public class PressRestriction implements Serializable {
     @Column(name = "press_restriction_requested")
     private final Boolean requested;
 
+    public PressRestriction() {
+        this(null, false);
+    }
+
     public PressRestriction(final String name, final boolean requested) {
         this.name = name;
         this.requested = requested;

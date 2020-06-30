@@ -34,6 +34,7 @@ public class SjpReferralViewHelper {
 
         final ReferringJudicialDecisionView referringJudicialDecisionView = new ReferringJudicialDecisionView(
                 sessionDetails.getString("courtHouseName"),
+                sessionDetails.getString("courtHouseCode"),
                 judiciaries);
 
         return new SjpReferralView(

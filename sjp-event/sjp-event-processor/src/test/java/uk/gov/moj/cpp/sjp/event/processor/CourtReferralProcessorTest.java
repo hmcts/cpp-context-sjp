@@ -222,6 +222,15 @@ public class CourtReferralProcessorTest {
                         )))));
     }
 
+    @Test
+    public void shouldHandleCourtReferralRelatedEvents() {
+        assertThat(CourtReferralProcessor.class, isHandlerClass(EVENT_PROCESSOR)
+                .with(allOf(
+                        method("caseReferredForCourtHearing").thatHandles("sjp.events.case-referred-for-court-hearing"),
+                        method("referToCourtHearingRejected").thatHandles("public.progression.refer-prosecution-cases-to-court-rejected")
+                )));
+    }
+
     private CourtDocumentView createDummyCourtDocumentView() {
         return new CourtDocumentView(
                 randomUUID(),
@@ -258,6 +267,7 @@ public class CourtReferralProcessorTest {
                 LocalDate.now().plusDays(2),
                 new ReferringJudicialDecisionView(
                         "Lavender Hill Magistrates' Court",
+                        "",
                         emptyList()));
     }
 
@@ -273,15 +283,6 @@ public class CourtReferralProcessorTest {
                         "TFL12345","TFL12345"),
                 emptyList(),
                 "TFL");
-    }
-
-    @Test
-    public void shouldHandleCourtReferralRelatedEvents() {
-        assertThat(CourtReferralProcessor.class, isHandlerClass(EVENT_PROCESSOR)
-                .with(allOf(
-                        method("caseReferredForCourtHearing").thatHandles("sjp.events.case-referred-for-court-hearing"),
-                        method("referToCourtHearingRejected").thatHandles("public.progression.refer-prosecution-cases-to-court-rejected")
-                )));
     }
 
 }

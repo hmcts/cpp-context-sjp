@@ -1,10 +1,13 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
+import static java.util.Optional.ofNullable;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
+import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseCourtReferralStatus;
@@ -52,5 +55,17 @@ public class CourtReferralListener {
         caseCourtReferralStatusRepository.save(caseCourtReferralStatus);
 
         caseDetail.setReferredForCourtHearing(true);
+        updateDisabilityNeeds(caseReferredForCourtHearing, caseDetail);
+
+    }
+
+    private void updateDisabilityNeeds(final CaseReferredForCourtHearing caseReferredForCourtHearing, final CaseDetail caseDetail) {
+        ofNullable(caseReferredForCourtHearing.getDefendantCourtOptions())
+                .map(DefendantCourtOptions::getDisabilityNeeds)
+                .map(DisabilityNeeds::getDisabilityNeeds)
+                .ifPresent(disabilityNeeds -> {
+                    caseDetail.getDefendant().setDisabilityNeeds(disabilityNeeds);
+                    caseRepository.save(caseDetail);
+                });
     }
 }

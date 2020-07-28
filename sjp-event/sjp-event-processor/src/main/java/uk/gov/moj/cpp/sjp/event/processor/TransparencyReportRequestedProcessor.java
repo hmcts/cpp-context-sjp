@@ -25,6 +25,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.sjp.event.processor.exception.OffenceNotFoundException;
+import uk.gov.moj.cpp.sjp.event.processor.service.ExportType;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
@@ -115,7 +116,7 @@ public class TransparencyReportRequestedProcessor {
     }
 
     private List<JsonObject> getPendingCasesFromViewStore(final JsonEnvelope envelope) {
-        return sjpService.getPendingCases(envelope);
+        return sjpService.getPendingCases(envelope, ExportType.PUBLIC);
     }
 
     private List<JsonObject> getFilteredCases(final List<JsonObject> pendingCases) {

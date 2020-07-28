@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
@@ -17,6 +18,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.Decision;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
+import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentUploadRejected;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentUploaded;
@@ -104,7 +106,7 @@ public class UploadCaseDocumentTest extends CaseAggregateBaseTest {
         final DefendantCourtOptions courtOptions =
                 new DefendantCourtOptions(
                         new DefendantCourtInterpreter("EN", true),
-                        false);
+                        false, NO_DISABILITY_NEEDS);
 
         final List<OffenceDecisionInformation> offenceDecisionInformation = new ArrayList<>();
         offenceDecisionInformation.add(OffenceDecisionInformation.createOffenceDecisionInformation(offenceId, VerdictType.NO_VERDICT));

@@ -15,7 +15,10 @@
     "comeToCourt": false,
     "speakWelsh": false,
     "outstandingFines": false,
-    "interpreterRequired": false
+    "interpreterRequired": false,
+    "disabilityNeeds": {
+      "needed": false
+    }
   },
   "submittedOn": "${submittedOn}",
   "personalDetails": {

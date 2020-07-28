@@ -1,4 +1,5 @@
 package uk.gov.moj.sjp.it.test;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
@@ -34,6 +35,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REFERRED_FOR_COURT_HEARING;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.sjp.it.Constants.NOTICE_PERIOD_IN_DAYS;
@@ -63,6 +65,7 @@ import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.SJP_PROSECUTORS_GROUP;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
+
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -93,6 +96,7 @@ import uk.gov.moj.sjp.it.util.Defaults;
 import uk.gov.moj.sjp.it.util.HttpClientUtil;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
+
 import java.io.StringReader;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -100,13 +104,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.ws.rs.core.Response;
+
 import com.google.common.collect.Sets;
 import com.jayway.jsonpath.ReadContext;
 import com.jayway.restassured.path.json.JsonPath;
@@ -311,6 +316,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
             assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("address5"), equalTo("Greater London"));
             assertThat(defendantsPlea.getJSONObject("personalDetails").getJSONObject("address").get("postcode"), equalTo("W1T 1JY"));
             assertTrue(defendantsPlea.getJSONObject("pleaDetails").getBoolean("outstandingFines"));
+            assertThat(defendantsPlea.getJSONObject("pleaDetails").getJSONObject("disabilityNeeds").getString("disabilityNeeds"), equalTo("Hearing aid"));
             final JsonObject updatedDefendantDetails = getUpdatedDefendantDetails();
             final boolean resultsContainUpdatedFirstNameValue = updatedDefendantDetails
                     .getJsonArray("defendantDetailsUpdates")
@@ -538,7 +544,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         stubHearingTypesQuery(HEARING_TYPE_ID.toString(), HEARING_CODE, HEARING_DESCRIPTION);
         startSession(sjpSessionId, legalAdviser.getUserId(), DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
         requestCaseAssignment(sjpSessionId, legalAdviser.getUserId());
-        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false);
+        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false, NO_DISABILITY_NEEDS);
         final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(null, singletonList(new OffenceDecisionInformation(offenceId, VerdictType.NO_VERDICT)), referralReasonId, listingNotes, estimatedHearingDuration, defendantCourtOptions);
         final DecisionCommand decision = new DecisionCommand(sjpSessionId, createCasePayloadBuilder.getId(), null, legalAdviser, singletonList(referForCourtHearing), null);
         eventListener

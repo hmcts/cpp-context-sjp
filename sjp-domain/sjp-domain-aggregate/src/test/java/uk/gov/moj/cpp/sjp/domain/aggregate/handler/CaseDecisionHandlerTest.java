@@ -26,6 +26,8 @@ import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.crea
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.ABSOLUTE;
 import static uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType.ATTACH_TO_EARNINGS;
 import static uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType.PAY_TO_COURT;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
@@ -55,6 +57,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.LumpSum;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.Payment;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentTerms;
+import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.testutils.builders.AdjournBuilder;
@@ -112,6 +115,7 @@ public class CaseDecisionHandlerTest {
     private final String courtHouseCode = "1008";
     private final String courtHouseName = "Test court";
     private final String localJusticeAreaNationalCode = "1009";
+    private final  String disabilityNeeds = "Disability_needs";
 
     @Before
     public void onceBeforeEachTest() {
@@ -288,7 +292,8 @@ public class CaseDecisionHandlerTest {
         final DefendantCourtOptions courtOptions =
                 new DefendantCourtOptions(
                         new DefendantCourtInterpreter("EN", true),
-                        false);
+                        false,
+                        NO_DISABILITY_NEEDS);
 
         final List<OffenceDecision> offenceDecisions2 = newArrayList(
                 new ReferForCourtHearing(randomUUID(), asList(
@@ -341,7 +346,8 @@ public class CaseDecisionHandlerTest {
         final DefendantCourtOptions courtOptions =
                 new DefendantCourtOptions(
                         new DefendantCourtInterpreter("EN", true),
-                        false);
+                        false,
+                        NO_DISABILITY_NEEDS);
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 new ReferForCourtHearing(randomUUID(), asList(
@@ -435,7 +441,8 @@ public class CaseDecisionHandlerTest {
         final DefendantCourtOptions courtOptions =
                 new DefendantCourtOptions(
                         new DefendantCourtInterpreter("EN", true),
-                        false);
+                        false,
+                        NO_DISABILITY_NEEDS);
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1),
@@ -481,7 +488,8 @@ public class CaseDecisionHandlerTest {
         final DefendantCourtOptions courtOptions =
                 new DefendantCourtOptions(
                         new DefendantCourtInterpreter("EN", true),
-                        false);
+                        false,
+                        disabilityNeedsOf(disabilityNeeds));
 
         final List<OffenceDecision> offenceDecisions = newArrayList(
                 new Withdraw(randomUUID(), createOffenceDecisionInformation(offenceId1, NO_VERDICT), withdrawalReasonId1),
@@ -672,7 +680,8 @@ public class CaseDecisionHandlerTest {
         final DefendantCourtOptions courtOptions =
                 new DefendantCourtOptions(
                         new DefendantCourtInterpreter("EN", true),
-                        false);
+                        false,
+                        disabilityNeedsOf(disabilityNeeds));
 
         final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(randomUUID(), createOffenceDecisionInformationList(offenceId1, NO_VERDICT), referralReasonId, "note", 0, courtOptions);
         final Adjourn adjourn = new Adjourn(randomUUID(), createOffenceDecisionInformationList(offenceId2, NO_VERDICT), adjournmentReason, adjournedTo);
@@ -694,7 +703,8 @@ public class CaseDecisionHandlerTest {
         final DefendantCourtOptions courtOptions =
                 new DefendantCourtOptions(
                         new DefendantCourtInterpreter("EN", true),
-                        false);
+                        false,
+                        disabilityNeedsOf(disabilityNeeds));
 
         final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(randomUUID(), createOffenceDecisionInformationList(offenceId1, NO_VERDICT), referralReasonId, "note", 0, courtOptions);
         final Discharge discharge = createDischarge(randomUUID(), createOffenceDecisionInformation(offenceId2, FOUND_GUILTY), ABSOLUTE, null, new BigDecimal(20), null, true, null, null);
@@ -1194,7 +1204,8 @@ public class CaseDecisionHandlerTest {
     }
 
     private void thenTheDecisionIsAccepted(final Decision decision, final List<Object> eventList) {
-        assertThat(eventList, hasItem(new DecisionSaved(decisionId, sessionId, caseId, savedAt, decision.getOffenceDecisions(), decision.getFinancialImposition())));
+        assertThat(eventList, hasItem(new DecisionSaved(decisionId, sessionId, caseId, savedAt, decision.getOffenceDecisions(),
+                decision.getFinancialImposition())));
         assertThat(eventList, hasItem(allOf(
                 Matchers.instanceOf(CaseNoteAdded.class),
                 Matchers.<CaseNoteAdded>hasProperty("caseId", is(caseId)),

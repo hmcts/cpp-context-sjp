@@ -6,6 +6,9 @@
     "interpreter": {
       "language": "German",
       "needed": true
+    },
+    "disabilityNeeds" : {
+      "needed": false
     }
   },
 

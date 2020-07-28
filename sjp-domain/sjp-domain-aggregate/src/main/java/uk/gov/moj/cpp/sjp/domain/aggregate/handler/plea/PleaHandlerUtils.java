@@ -67,7 +67,8 @@ final class PleaHandlerUtils {
                                                final PleaMethod pleaMethod) {
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(new PleasSet(caseId, pleasRequested.getDefendantCourtOptions(), pleasRequested.getPleas()));
+        streamBuilder.add(new PleasSet(caseId, pleasRequested.getDefendantCourtOptions(),
+                pleasRequested.getPleas()));
 
         defendantIds(pleasRequested).forEach(defendantId -> {
             final List hearingEvents = updateHearingRequirements(userId, defendantId,

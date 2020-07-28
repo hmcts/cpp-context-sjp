@@ -28,6 +28,7 @@ import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.sjp.event.processor.service.ExportType;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
@@ -118,7 +119,7 @@ public class TransparencyReportRequestedProcessorTest {
         when(referenceDataOffencesService.getOffenceReferenceData(any(), anyString(), anyString())).thenReturn(CA03011_referenceDataPayload);
 
         final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, youngOffenderCaseIds, pressRestrictionCaseIds);
-        when(sjpService.getPendingCases(any())).thenReturn(pendingCasesList);
+        when(sjpService.getPendingCases(any(), any())).thenReturn(pendingCasesList);
         when(fileStorer.store(any(), any()))
                 .thenReturn(englishPayloadFileUUID)
                 .thenReturn(welshPayloadFileUUID);

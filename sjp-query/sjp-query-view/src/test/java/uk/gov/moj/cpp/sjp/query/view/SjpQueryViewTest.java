@@ -299,9 +299,7 @@ public class SjpQueryViewTest {
                         withJsonPath("$.benefits.claimed", is(benefit.getClaimed())),
                         withJsonPath("$.benefits.type", is(benefit.getType())),
                         withJsonPath("$.employmentStatus", is(financialMeans.getEmploymentStatus()))
-                ))
-                )
-//                .thatMatchesSchema() Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648
+                )))
         );
     }
 
@@ -352,10 +350,7 @@ public class SjpQueryViewTest {
                         withJsonPath("$.address.address4", is(address.getAddress4())),
                         withJsonPath("$.address.address5", is(address.getAddress5())),
                         withJsonPath("$.address.postcode", is(address.getPostcode()))
-                ))
-                )
-//                .thatMatchesSchema() Issue with remote refs, reported to Techpod: https://github.com/CJSCommonPlatform/microservice_framework/issues/648
-        );
+                ))));
     }
 
     @Test
@@ -381,12 +376,54 @@ public class SjpQueryViewTest {
         setupExpectations();
         when(envelope.metadata()).thenReturn(metadata);
         final JsonObject payload = createObjectBuilder().build();
-        when(caseService.findPendingCasesToPublish()).thenReturn(payload);
+        when(caseService.findPendingCasesToPublish(ExportType.PUBLIC)).thenReturn(payload);
 
         final JsonEnvelope result = sjpQueryView.getPendingCasesToPublish(envelope);
 
         verify(function).apply(payload);
         assertThat(result, is(outputEnvelope));
+    }
+
+    @Test
+    public void getPendingCasesToPublishShouldExportPublicReportByDefault() {
+        setupExpectations();
+
+        sjpQueryView.getPendingCasesToPublish(envelope);
+
+        verify(caseService).findPendingCasesToPublish(ExportType.PUBLIC);
+    }
+
+    @Test
+    public void getPendingCasesToPublishShouldExportPressReport() {
+        setupExpectations();
+        final JsonObject payload = createObjectBuilder().add("export", "press").build();
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+
+        sjpQueryView.getPendingCasesToPublish(envelope);
+
+        verify(caseService).findPendingCasesToPublish(ExportType.PRESS);
+    }
+
+    @Test
+    public void getPendingCasesToPublishExportParamShouldBeCaseInsensitive() {
+        setupExpectations();
+        final JsonObject payload = createObjectBuilder().add("export", "Public").build();
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+
+        sjpQueryView.getPendingCasesToPublish(envelope);
+
+        verify(caseService).findPendingCasesToPublish(ExportType.PUBLIC);
+    }
+
+    @Test
+    public void getPendingCasesToPublishShouldUseDefaultIfTypeIsUnknown() {
+        setupExpectations();
+        final JsonObject payload = createObjectBuilder().add("export", "UnknownType").build();
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+
+        sjpQueryView.getPendingCasesToPublish(envelope);
+
+        verify(caseService).findPendingCasesToPublish(ExportType.PUBLIC);
     }
 
     @Test
@@ -405,24 +442,6 @@ public class SjpQueryViewTest {
         assertThat(response, jsonEnvelope(metadata().withName("sjp.pending-dates-to-avoid"), payload().isJson(
                 withJsonPath("$.count", equalTo(0))
         )));
-    }
-
-    private JsonEnvelope mockAndVerifyPendingDatesToAvoid(UUID... caseIds) {
-        final JsonEnvelope queryEnvelope = envelope()
-                .with(metadataWithRandomUUID("sjp.query.pending-dates-to-avoid"))
-                .build();
-        final List<PendingDatesToAvoid> pendingDatesToAvoidList = Stream.of(caseIds)
-                .map(CaseDetail::new)
-                .map(PendingDatesToAvoid::new)
-                .collect(toList());
-
-        when(datesToAvoidService.findCasesPendingDatesToAvoid(queryEnvelope)).thenReturn(new CasesPendingDatesToAvoidView(pendingDatesToAvoidList));
-
-        final JsonEnvelope response = sjpQueryView.findPendingDatesToAvoid(queryEnvelope);
-
-        verify(datesToAvoidService).findCasesPendingDatesToAvoid(queryEnvelope);
-
-        return response;
     }
 
     @Test
@@ -511,23 +530,6 @@ public class SjpQueryViewTest {
         ))));
     }
 
-    private List<OnlinePleaDetail> getOnlinePleaDetails(final UUID offenceId) {
-        final List<OnlinePleaDetail> onlinePleaDetails = new ArrayList<>();
-        final OnlinePleaDetail onlinePleaDetailGuilty = new OnlinePleaDetail();
-        onlinePleaDetailGuilty.setOffenceId(offenceId);
-        onlinePleaDetailGuilty.setPlea(GUILTY);
-        onlinePleaDetailGuilty.setMitigation("mitigation");
-        onlinePleaDetails.add(onlinePleaDetailGuilty);
-
-        final OnlinePleaDetail onlinePleaDetailNotGuilty = new OnlinePleaDetail();
-        onlinePleaDetailNotGuilty.setOffenceId(offenceId);
-        onlinePleaDetailNotGuilty.setPlea(NOT_GUILTY);
-        onlinePleaDetailNotGuilty.setNotGuiltyBecause("Not Guilty Because");
-        onlinePleaDetails.add(onlinePleaDetailNotGuilty);
-
-        return onlinePleaDetails;
-    }
-
     @Test
     public void shouldFindDetailDetailUpdates() {
 
@@ -611,6 +613,7 @@ public class SjpQueryViewTest {
                         )));
 
     }
+
     @Test
     public void shouldGetNotGuiltyPleaCases() {
         final String prosecutingAuthority = "TFL";
@@ -643,7 +646,6 @@ public class SjpQueryViewTest {
                         withJsonPath("cases[0].prosecutingAuthority", is("Transport for London")),
                         withJsonPath("cases[0].caseManagementStatus", is(IN_PROGRESS.name())))));
     }
-
     @Test
     public void shouldGetCasesWithoutDefendantPostcode() {
         final LocalDate postingDate = LocalDate.parse("2018-03-20");
@@ -678,6 +680,36 @@ public class SjpQueryViewTest {
                         withJsonPath("cases[0].prosecutingAuthority", is("Transport for London"))
                 ))
         );
+    }
+
+    @Test
+    public void getOutstandingFineRequestsWithNoResults() {
+
+        when(defendantService.getOutstandingFineRequests()).thenThrow(NoResultException.class);
+
+        final JsonEnvelope query = envelopeFrom(metadataWithRandomUUID("sjp.query.outstanding-fine-requests"),
+                createObjectBuilder()
+                        .build());
+
+        final JsonEnvelope result = sjpQueryView.getOutstandingFineRequests(query);
+
+        Assert.assertThat(result.metadata().name(), is("sjp.query.outstanding-fine-requests"));
+        assertTrue(result.payloadAsJsonObject().isEmpty());
+    }
+
+    @Test
+    public void getOutstandingFineRequestsWithResults() {
+
+        when(defendantService.getOutstandingFineRequests()).thenReturn(createDefendantRequestProfile());
+
+        final JsonEnvelope query = envelopeFrom(metadataWithRandomUUID("sjp.query.outstanding-fine-requests"),
+                createObjectBuilder()
+                        .build());
+
+        final JsonEnvelope result = sjpQueryView.getOutstandingFineRequests(query);
+        Assert.assertThat(result.metadata().name(), is("sjp.query.outstanding-fine-requests"));
+        assertTrue(result.payloadAsJsonObject().getJsonArray("defendantDetails").size() == 3);
+
     }
 
     private JsonObject buildNotGuiltyPleaCases(final ZonedDateTime pleaDate) {
@@ -731,36 +763,6 @@ public class SjpQueryViewTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
     }
 
-    @Test
-    public void getOutstandingFineRequestsWithNoResults() {
-
-        when(defendantService.getOutstandingFineRequests()).thenThrow(NoResultException.class);
-
-        final JsonEnvelope query = envelopeFrom(metadataWithRandomUUID("sjp.query.outstanding-fine-requests"),
-                createObjectBuilder()
-                        .build());
-
-        final JsonEnvelope result = sjpQueryView.getOutstandingFineRequests(query);
-
-        Assert.assertThat(result.metadata().name(), is("sjp.query.outstanding-fine-requests"));
-        assertTrue(result.payloadAsJsonObject().isEmpty());
-    }
-
-    @Test
-    public void getOutstandingFineRequestsWithResults() {
-
-        when(defendantService.getOutstandingFineRequests()).thenReturn(createDefendantRequestProfile());
-
-        final JsonEnvelope query = envelopeFrom(metadataWithRandomUUID("sjp.query.outstanding-fine-requests"),
-                createObjectBuilder()
-                        .build());
-
-        final JsonEnvelope result = sjpQueryView.getOutstandingFineRequests(query);
-        Assert.assertThat(result.metadata().name(), is("sjp.query.outstanding-fine-requests"));
-        assertTrue(result.payloadAsJsonObject().getJsonArray("defendantDetails").size() == 3);
-
-    }
-
     private DefendantOutstandingFineRequestsQueryResult createDefendantRequestProfile() {
         return new DefendantOutstandingFineRequestsQueryResult(
                 Arrays.asList(
@@ -769,5 +771,40 @@ public class SjpQueryViewTest {
                         DefendantOutstandingFineRequest.newBuilder().withDefendantId(UUID.randomUUID()).withLegalEntityDefendantName("ACME").build()
                 )
         );
+    }
+
+    private List<OnlinePleaDetail> getOnlinePleaDetails(final UUID offenceId) {
+        final List<OnlinePleaDetail> onlinePleaDetails = new ArrayList<>();
+        final OnlinePleaDetail onlinePleaDetailGuilty = new OnlinePleaDetail();
+        onlinePleaDetailGuilty.setOffenceId(offenceId);
+        onlinePleaDetailGuilty.setPlea(GUILTY);
+        onlinePleaDetailGuilty.setMitigation("mitigation");
+        onlinePleaDetails.add(onlinePleaDetailGuilty);
+
+        final OnlinePleaDetail onlinePleaDetailNotGuilty = new OnlinePleaDetail();
+        onlinePleaDetailNotGuilty.setOffenceId(offenceId);
+        onlinePleaDetailNotGuilty.setPlea(NOT_GUILTY);
+        onlinePleaDetailNotGuilty.setNotGuiltyBecause("Not Guilty Because");
+        onlinePleaDetails.add(onlinePleaDetailNotGuilty);
+
+        return onlinePleaDetails;
+    }
+
+    private JsonEnvelope mockAndVerifyPendingDatesToAvoid(UUID... caseIds) {
+        final JsonEnvelope queryEnvelope = envelope()
+                .with(metadataWithRandomUUID("sjp.query.pending-dates-to-avoid"))
+                .build();
+        final List<PendingDatesToAvoid> pendingDatesToAvoidList = Stream.of(caseIds)
+                .map(CaseDetail::new)
+                .map(PendingDatesToAvoid::new)
+                .collect(toList());
+
+        when(datesToAvoidService.findCasesPendingDatesToAvoid(queryEnvelope)).thenReturn(new CasesPendingDatesToAvoidView(pendingDatesToAvoidList));
+
+        final JsonEnvelope response = sjpQueryView.findPendingDatesToAvoid(queryEnvelope);
+
+        verify(datesToAvoidService).findCasesPendingDatesToAvoid(queryEnvelope);
+
+        return response;
     }
 }

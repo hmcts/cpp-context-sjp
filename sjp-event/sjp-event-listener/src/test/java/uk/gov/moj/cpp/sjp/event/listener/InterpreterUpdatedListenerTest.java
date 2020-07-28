@@ -132,7 +132,6 @@ public class InterpreterUpdatedListenerTest {
         assertThat(captor.getValue().getNeeded(), is(Boolean.TRUE));
         assertThat(onlinePleaCaptor.getValue().getCaseId(), equalTo(caseId));
         assertThat(onlinePleaCaptor.getValue().getPleaDetails().getInterpreterLanguage(), equalTo(language));
-        assertThat(onlinePleaCaptor.getValue().getPleaDetails().isInterpreterRequired(), equalTo(Interpreter.isNeeded(language)));
         assertThat(onlinePleaCaptor.getValue().getSubmittedOn(), equalTo(now));
     }
 

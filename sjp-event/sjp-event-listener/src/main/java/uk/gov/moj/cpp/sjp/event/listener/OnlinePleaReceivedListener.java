@@ -1,10 +1,14 @@
 package uk.gov.moj.cpp.sjp.event.listener;
 
+import static java.time.ZonedDateTime.now;
+import static java.util.Optional.ofNullable;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
+import uk.gov.moj.cpp.sjp.event.OnlinePleaReceived;
 import uk.gov.moj.cpp.sjp.event.listener.converter.AddressToAddressEntity;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -13,16 +17,12 @@ import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaPersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.transaction.Transactional;
-
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import static java.time.ZonedDateTime.now;
-import static java.util.Optional.ofNullable;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import javax.inject.Inject;
+import javax.json.JsonObject;
+import javax.transaction.Transactional;
 
 @ServiceComponent(EVENT_LISTENER)
 public class OnlinePleaReceivedListener {
@@ -46,7 +46,7 @@ public class OnlinePleaReceivedListener {
     public void onlinePleaReceived(final JsonEnvelope event) {
 
         final JsonObject payload = event.payloadAsJsonObject();
-        final PleadOnline pleadOnline = jsonObjectToObjectConverter.convert(payload, PleadOnline.class);
+        final OnlinePleaReceived onlinePleaReceived = jsonObjectToObjectConverter.convert(payload, OnlinePleaReceived.class);
         final UUID caseId = UUID.fromString(payload.getString(CASE_ID_PROPERTY));
 
         CaseDetail caseDetail = caseRepository.findBy(caseId);
@@ -54,12 +54,12 @@ public class OnlinePleaReceivedListener {
         caseRepository.save(caseDetail);
 
         final ZonedDateTime pleaDateTime = event.metadata().createdAt().orElse(now());
-        final OnlinePlea onlinePlea = buildOnlinePlea(caseDetail.getDefendant(), pleadOnline, pleaDateTime);
+        final OnlinePlea onlinePlea = buildOnlinePlea(caseDetail.getDefendant(), onlinePleaReceived, pleaDateTime);
         onlinePleaRepository.saveOnlinePlea(onlinePlea);
     }
 
-    private OnlinePlea buildOnlinePlea(final DefendantDetail defendantDetail, final PleadOnline newData, final ZonedDateTime pleaDateTime) {
-        final OnlinePlea newOnlinePlea = new OnlinePlea(defendantDetail, pleaDateTime);
+    private OnlinePlea buildOnlinePlea(final DefendantDetail defendantDetail, final OnlinePleaReceived newData, final ZonedDateTime pleaDateTime) {
+        final OnlinePlea newOnlinePlea = new OnlinePlea(defendantDetail, newData.getDisabilityNeeds(), pleaDateTime);
         final OnlinePleaPersonalDetails personalDetails = newOnlinePlea.getPersonalDetails();
         final uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails newPersonalDetails = newData.getPersonalDetails();
         if (newPersonalDetails !=null) {
@@ -76,6 +76,7 @@ public class OnlinePleaReceivedListener {
             ofNullable(newPersonalDetails.getDriverNumber()).ifPresent(personalDetails::setDriverNumber);
             ofNullable(newPersonalDetails.getDriverLicenceDetails()).ifPresent(personalDetails::setDriverLicenceDetails);
         }
+
         return newOnlinePlea;
     }
 }

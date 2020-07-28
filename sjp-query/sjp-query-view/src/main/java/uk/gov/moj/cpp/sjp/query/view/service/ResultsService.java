@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
@@ -28,6 +29,9 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseDecisionView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.FinancialImpositionView;
 import uk.gov.moj.cpp.sjp.query.view.response.SessionView;
+import uk.gov.moj.cpp.sjp.query.view.response.OffenceDecisionView ;
+import uk.gov.moj.cpp.sjp.query.view.response.OffenceView ;
+
 
 import java.util.UUID;
 
@@ -81,7 +85,11 @@ public class ResultsService {
         final CaseView aCase = caseService.findCase(caseId);
 
         final JsonArrayBuilder decisions = createArrayBuilder();
+
         aCase.getCaseDecisions().forEach(caseDecision -> {
+           // enrich with verdict information in case
+            caseDecision.getOffenceDecisions().forEach(offenceDecision -> enrichOffenceDecision(aCase,offenceDecision));
+
             // query the view and covert to the event payload structure
             final JsonEnvelope decisionSavedEvent = convertToDecisionSavedEvent(envelope, caseDecision);
 
@@ -182,4 +190,19 @@ public class ResultsService {
                         .orElseThrow(() -> new EnforcementAreaNotFoundException(defendantPostcode, localJusticeAreaNationalCourtCode)));
 
     }
+
+    private  void enrichOffenceDecision(final CaseView aCase, final OffenceDecisionView offenceDecision) {
+         aCase.getDefendant().getOffences().stream()
+                .filter(offence -> offence.getId().equals(offenceDecision.getOffenceId()))
+                .findFirst().ifPresent(offence  -> addVerdictToOffenceDecision(offenceDecision,offence));
+    }
+
+    private  void addVerdictToOffenceDecision(final OffenceDecisionView offenceDecision, final OffenceView offence) {
+        if (isNull(offenceDecision.getVerdict())){
+            offenceDecision.setVerdict(offence.getConviction());
+        }
+
+    }
+
 }
+

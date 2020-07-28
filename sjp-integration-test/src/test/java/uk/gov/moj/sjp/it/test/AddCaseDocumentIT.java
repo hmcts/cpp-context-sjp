@@ -6,22 +6,23 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
-import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.*;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.MaterialStub.stubAddCaseMaterial;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAnyQueryOffences;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 
-import com.google.common.collect.Sets;
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
@@ -32,6 +33,7 @@ import uk.gov.moj.sjp.it.helper.CaseDocumentHelper;
 import uk.gov.moj.sjp.it.helper.DecisionHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.stub.MaterialStub;
 import uk.gov.moj.sjp.it.stub.ProgressionServiceStub;
 import uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub;
@@ -42,6 +44,7 @@ import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 
 import java.util.UUID;
 
+import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -185,7 +188,7 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
         startSession(sessionId, USER_ID, DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
         requestCaseAssignment(sessionId, USER_ID);
 
-        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false);
+        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false, NO_DISABILITY_NEEDS);
         final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(null, asList(new OffenceDecisionInformation(offenceId, VerdictType.PROVED_SJP)), referralReasonId, listingNotes, estimatedHearingDuration, defendantCourtOptions);
 
         final DecisionCommand decision = new DecisionCommand(sessionId, createCasePayloadBuilder.getId(), null, legalAdviser, asList(referForCourtHearing), null);

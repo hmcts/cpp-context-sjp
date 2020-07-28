@@ -16,6 +16,8 @@ import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.crea
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.ABSOLUTE;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.CONDITIONAL;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.MONTH;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
@@ -33,6 +35,7 @@ import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseCompleted;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseIsReadyInViewStoreAndAssignedTo;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseNotReadyInViewStore;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseQueryWithAdjournDecision;
+import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseQueryWithDisabilityNeeds;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseQueryWithDismissDecision;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseQueryWithReferForCourtHearingDecision;
 import static uk.gov.moj.sjp.it.helper.DecisionHelper.verifyCaseQueryWithWithdrawnDecision;
@@ -89,6 +92,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPerio
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
 import uk.gov.moj.cpp.sjp.domain.decision.endorsement.PenaltyPointsReason;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
+import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.CaseAdjournedToLaterSjpHearingRecorded;
 import uk.gov.moj.cpp.sjp.event.CaseCompleted;
@@ -546,7 +550,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
         // save a new decision
         final List<OffenceDecisionInformation> offenceDecisionInformations = asList(createOffenceDecisionInformation(offence1Id, NO_VERDICT), createOffenceDecisionInformation(offence2Id, NO_VERDICT), createOffenceDecisionInformation(offence3Id, NO_VERDICT));
-        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false);
+        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false, NO_DISABILITY_NEEDS);
         final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(randomUUID(), offenceDecisionInformations, referralReasonId, "listing notes", 10, defendantCourtOptions);
 
 
@@ -623,7 +627,8 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
         final JsonObject session = startSessionAndRequestAssignment(sessionId, MAGISTRATE);
 
-        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false);
+        final DisabilityNeeds disabilityNeeds = disabilityNeedsOf("Hearing aid");
+        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false, disabilityNeeds);
         final List<OffenceDecisionInformation> offenceDecisionInformationList = asList(new OffenceDecisionInformation(offence1Id, PROVED_SJP), new OffenceDecisionInformation(offence2Id, PROVED_SJP), new OffenceDecisionInformation(offence3Id, PROVED_SJP));
         final ReferForCourtHearing referForCourtHearing = new ReferForCourtHearing(
                 null,
@@ -663,6 +668,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         verifyCaseNotReadyInViewStore(caseId, USER_ID);
 
         verifyCaseQueryWithReferForCourtHearingDecision(decision, decisionSaved, session, referralReason, referForCourtHearing);
+        verifyCaseQueryWithDisabilityNeeds(caseId, disabilityNeeds.getDisabilityNeeds());
     }
 
     @Test
@@ -803,7 +809,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         stubHearingTypesQuery(hearingTypeId.toString(), hearingCode, hearingDescription);
         stubWithdrawalReasonsQuery(withdrawalReasonId, withdrawalReason);
 
-        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false);
+        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false, NO_DISABILITY_NEEDS);
         final List<OffenceDecisionInformation> offenceDecisionInformationList = asList(new OffenceDecisionInformation(offence1Id, PROVED_SJP));
         final ReferForCourtHearing referForCourtHearingDecision = new ReferForCourtHearing(null, asList(createOffenceDecisionInformation(offence1Id, PROVED_SJP)), referralReasonId, "listing notes", 30, defendantCourtOptions);
         final Withdraw withdrawDecision = new Withdraw(null, createOffenceDecisionInformation(offence2Id, NO_VERDICT), withdrawalReasonId);
@@ -863,7 +869,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         stubHearingTypesQuery(hearingTypeId.toString(), hearingCode, hearingDescription);
 
 
-        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false);
+        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), false, NO_DISABILITY_NEEDS);
         final ReferForCourtHearing referForCourtHearingDecisions = new ReferForCourtHearing(null, asList(createOffenceDecisionInformation(offence1Id, PROVED_SJP)), referralReasonId, "listing notes", 30, defendantCourtOptions);
         final Adjourn adjournDecisions = new Adjourn(null, asList(createOffenceDecisionInformation(offence2Id, FOUND_NOT_GUILTY), createOffenceDecisionInformation(offence3Id, FOUND_NOT_GUILTY)), ADJOURN_REASON, adjournTo);
 

@@ -155,6 +155,8 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         this.pressRestrictable = builder.pressRestrictable;
         this.pressRestriction = builder.pressRestriction;
         this.completed = builder.completed;
+        this.conviction = builder.conviction;
+
     }
 
     public static OffenceDetailBuilder builder() {
@@ -438,6 +440,9 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
         private Boolean pressRestrictable;
         private PressRestriction pressRestriction;
         private Boolean completed;
+        private VerdictType conviction;
+
+
 
         public OffenceDetail build() {
             return new OffenceDetail(this);
@@ -493,6 +498,10 @@ public class OffenceDetail implements Serializable, Comparable<OffenceDetail> {
 
         public OffenceDetailBuilder setChargeDate(LocalDate chargeDate) {
             this.chargeDate = chargeDate;
+            return this;
+        }
+        public OffenceDetailBuilder setConviction(final VerdictType conviction) {
+            this.conviction = conviction;
             return this;
         }
 

@@ -29,7 +29,8 @@ public class SjpDatabaseCleaner {
                 "session",
                 "case_details",
                 "ready_cases",
-                "case_assignment_restriction"
+                "case_assignment_restriction",
+                "case_publish_status"
         );
     }
 

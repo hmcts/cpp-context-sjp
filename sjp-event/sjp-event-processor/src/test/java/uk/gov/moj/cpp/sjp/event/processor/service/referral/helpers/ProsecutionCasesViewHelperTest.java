@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.nullValue;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails.caseDetails;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.Defendant.defendant;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
 import uk.gov.justice.json.schemas.domains.sjp.Address;
@@ -95,6 +96,7 @@ public class ProsecutionCasesViewHelperTest {
     private static final ZonedDateTime PLEA_DATE = ZonedDateTime.now();
     private static final String PROSECUTION_CASE_REFERENCE = "2OknbZ5Xl4";
     private static final VerdictType NULL_VERDICT = null;
+    private static final String DISABILITY_NEEDS = "Hearing aid";
 
     private ProsecutionCasesViewHelper prosecutionCasesViewHelper = new ProsecutionCasesViewHelper();
 
@@ -192,7 +194,7 @@ public class ProsecutionCasesViewHelperTest {
         final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
                 .withReferredAt(DECISION_DATE)
                 .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
-                .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true),null))
+                .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true),null, disabilityNeedsOf(DISABILITY_NEEDS)))
                 .build();
 
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
@@ -216,6 +218,7 @@ public class ProsecutionCasesViewHelperTest {
 
         assertThat(defendantView.getPersonDefendant().getPersonDetails().getDocumentationLanguageNeeds(), is(LANGUAGE_W));
         assertThat(defendantView.getPersonDefendant().getPersonDetails().getInterpreterLanguageNeeds(), is(LANGUAGE_X));
+        assertThat(defendantView.getPersonDefendant().getPersonDetails().getDisabilityStatus(), is(DISABILITY_NEEDS));
     }
 
     @Test

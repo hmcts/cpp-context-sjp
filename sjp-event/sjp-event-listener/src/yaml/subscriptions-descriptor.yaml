@@ -20,6 +20,9 @@ subscriptions_descriptor:
         - name: sjp.events.case-status-changed
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.case-status-changed.json
 
+        - name: sjp.events.pleas-set
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/pleas-set.json
+
         - name: sjp.events.pleaded-guilty
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/pleaded-guilty.json
 
@@ -186,9 +189,12 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/case-assignment-restriction-added.json
 
         - name: sjp.events.press-transparency-report-generation-started
-          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.press-transparency-report-generation-started.json
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.press-transparency-report-generation-started.json
 
         - name: sjp.events.press-transparency-report-metadata-added
-          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.press-transparency-report-metadata-added.json
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.press-transparency-report-metadata-added.json
+
+        - name: sjp.events.transparency-report-generation-failed
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.transparency-report-generation-failed.json
 
       event_source_name: sjp

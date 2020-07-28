@@ -33,18 +33,19 @@ public class SysDocGeneratorProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SysDocGeneratorProcessor.class);
 
+    private static final String COMMAND_TRANSPARENCY_REPORT_FAILED = "sjp.command.transparency-report-failed";
+    private static final String COMMAND_PRESS_TRANSPARENCY_REPORT_FAILED = "sjp.command.press-transparency-report-failed";
     private static final String DOCUMENT_AVAILABLE_EVENT_NAME = "public.systemdocgenerator.events.document-available";
-
     private static final String DOCUMENT_GENERATION_FAILED_EVENT_NAME = "public.systemdocgenerator.events.generation-failed";
-
     private static final String TRANSPARENCY_TEMPLATE_IDENTIFIER = "PendingCasesEnglish";
     private static final String TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH = "PendingCasesWelsh";
     private static final String PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER = "PressPendingCasesEnglish";
-
     private static final Locale ENGLISH = new Locale("en", "GB");
     private static final Locale WELSH = new Locale("cy", "GB");
     private static final String SJP_SOURCE = "sjp";
     private static final String FILE_NAME = "fileName";
+    private static final String SOURCE_CORRELATION_ID = "sourceCorrelationId";
+    private static final String TEMPLATE_IDENTIFIER = "templateIdentifier";
 
     @Inject
     @FrameworkComponent(EVENT_PROCESSOR)
@@ -60,13 +61,13 @@ public class SysDocGeneratorProcessor {
     @Handles(DOCUMENT_AVAILABLE_EVENT_NAME)
     public void handleDocumentAvailableEvent(final JsonEnvelope documentAvailableEvent) {
         final JsonObject documentAvailablePayload = documentAvailableEvent.payloadAsJsonObject();
-        final String originatingSource = documentAvailablePayload.getString("originatingSource","");
-        if(SJP_SOURCE.equalsIgnoreCase(originatingSource)) {
+
+        if (isSjpSource(documentAvailablePayload)) {
             try {
                 final Optional<JsonObjectBuilder> documentMetadata = getDocumentMetadata(documentAvailablePayload);
-                final String reportId = documentAvailablePayload.getString("sourceCorrelationId");
+                final String reportId = documentAvailablePayload.getString(SOURCE_CORRELATION_ID);
                 documentMetadata.ifPresent(docMetadata -> {
-                    final String templateIdentifier = documentAvailablePayload.getString("templateIdentifier");
+                    final String templateIdentifier = documentAvailablePayload.getString(TEMPLATE_IDENTIFIER);
                     switch (templateIdentifier) {
                         case TRANSPARENCY_TEMPLATE_IDENTIFIER:
                             docMetadata.add(FILE_NAME, "transparency-report-english.pdf");
@@ -92,7 +93,74 @@ public class SysDocGeneratorProcessor {
         }
     }
 
-    private Optional<JsonObjectBuilder> getDocumentMetadata(final JsonObject documentAvailablePayload) throws FileServiceException {
+    @Handles(DOCUMENT_GENERATION_FAILED_EVENT_NAME)
+    public void handleDocumentGenerationFailedEvent(final JsonEnvelope envelope) {
+        final JsonObject payload = envelope.payloadAsJsonObject();
+
+        if (isSjpSource(payload)) {
+            // call command
+            final String templateIdentifier = payload.getString(TEMPLATE_IDENTIFIER, "");
+
+            if (isPressTransparencyReport(templateIdentifier)) {
+                sendPressTransparencyReportFailedCommand(envelope);
+            }
+
+            if (isTransparencyReport(templateIdentifier)) {
+                sendTransparencyReportFailedCommand(envelope);
+            }
+
+            LOGGER.error("error generating document for report {} {}.  {}",
+                    payload.getString(SOURCE_CORRELATION_ID),
+                    templateIdentifier,
+                    payload.getString("reason")
+            );
+        }
+    }
+
+    private void sendTransparencyReportFailedCommand(final JsonEnvelope envelope) {
+        final String transparencyReportId = envelope.payloadAsJsonObject().getString(SOURCE_CORRELATION_ID);
+        final String templateIdentifier = envelope.payloadAsJsonObject().getString(TEMPLATE_IDENTIFIER);
+        final JsonObject commandPayload = createObjectBuilder()
+                .add("transparencyReportId", transparencyReportId)
+                .add(TEMPLATE_IDENTIFIER, templateIdentifier)
+                .build();
+
+        final JsonEnvelope envelopeToSend = envelopeFrom(
+                metadataFrom(envelope.metadata()).withName(COMMAND_TRANSPARENCY_REPORT_FAILED),
+                commandPayload
+        );
+        sender.send(envelopeToSend);
+    }
+
+    private void sendPressTransparencyReportFailedCommand(final JsonEnvelope envelope) {
+        final String pressTransparencyReportId = envelope.payloadAsJsonObject().getString(SOURCE_CORRELATION_ID);
+        final JsonObject commandPayload = createObjectBuilder()
+                .add("pressTransparencyReportId", pressTransparencyReportId)
+                .build();
+
+        final JsonEnvelope envelopeToSend = envelopeFrom(
+                metadataFrom(envelope.metadata()).withName(COMMAND_PRESS_TRANSPARENCY_REPORT_FAILED),
+                commandPayload
+        );
+        sender.send(envelopeToSend);
+    }
+
+    private boolean isTransparencyReport(final String templateIdentifier) {
+        return TRANSPARENCY_TEMPLATE_IDENTIFIER.equalsIgnoreCase(templateIdentifier) ||
+                TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH.equalsIgnoreCase(templateIdentifier);
+    }
+
+    private boolean isPressTransparencyReport(final String templateIdentifier) {
+        return PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER.equalsIgnoreCase(templateIdentifier);
+    }
+
+    private boolean isSjpSource(final JsonObject payload) {
+        final String source = payload.getString("originatingSource", "");
+        return SJP_SOURCE.equalsIgnoreCase(source);
+    }
+
+    private Optional<JsonObjectBuilder> getDocumentMetadata(
+            final JsonObject documentAvailablePayload) throws FileServiceException {
         final String fileId = documentAvailablePayload.getString("documentFileServiceId");
         final Optional<FileReference> documentFileReference = fileRetriever.retrieve(fromString(fileId));
         return documentFileReference.
@@ -102,25 +170,25 @@ public class SysDocGeneratorProcessor {
 
     @SuppressWarnings("squid:S2674")
     private byte[] toDocumentBytes(final FileReference fileReference) {
+        try {
+            final InputStream contentStream = fileReference.getContentStream();
+            final byte[] docBytes = new byte[contentStream.available()];
+            contentStream.read(docBytes);
+            return docBytes;
+        } catch (IOException e) {
+            LOGGER.error("error accessing document content for file " + fileReference.getFileId().toString(), e);
+            return new byte[0];
+        } finally {
             try {
-                final InputStream contentStream = fileReference.getContentStream();
-                final byte[] docBytes = new byte[contentStream.available()];
-                contentStream.read(docBytes);
-                return docBytes;
-            } catch (IOException e) {
-                LOGGER.error("error accessing document content for file " + fileReference.getFileId().toString(), e);
-                return new byte[0];
-            } finally {
-                try {
-                    fileReference.close();
-                } catch (Exception e) {
-                    LOGGER.error("error disposing file reference",e);
-                }
+                fileReference.close();
+            } catch (Exception e) {
+                LOGGER.error("error disposing file reference", e);
             }
+        }
     }
 
     private JsonObjectBuilder toDocumentMetadata(final String fileId,
-                                          final byte[] documentBytes) {
+                                                 final byte[] documentBytes) {
         try {
             return createObjectBuilder()
                     .add("numberOfPages", pdfHelper.getDocumentPageCount(documentBytes))
@@ -148,8 +216,8 @@ public class SysDocGeneratorProcessor {
     }
 
     private void updatePressTransparencyReportMetadata(final JsonEnvelope envelope,
-                                                  final String reportId,
-                                                  final JsonObject documentMetadata) {
+                                                       final String reportId,
+                                                       final JsonObject documentMetadata) {
 
         final JsonEnvelope envelopeToSend = envelopeFrom(
                 metadataFrom(envelope.metadata()).withName("sjp.command.update-press-transparency-report-data"),
@@ -158,18 +226,5 @@ public class SysDocGeneratorProcessor {
                         .add("metadata", documentMetadata)
                         .build());
         sender.send(envelopeToSend);
-    }
-
-    @Handles(DOCUMENT_GENERATION_FAILED_EVENT_NAME)
-    public void handleDocumentGenerationFailedEvent(final JsonEnvelope documentGenerationFailedEvent) {
-        final JsonObject documentGenerationFailedPayload = documentGenerationFailedEvent.payloadAsJsonObject();
-        final String source = documentGenerationFailedPayload.getString("originatingSource", "");
-        if(SJP_SOURCE.equalsIgnoreCase(source)) {
-            LOGGER.error("error generating document for report {} {}.  {}",
-                    documentGenerationFailedPayload.getString("sourceCorrelationId"),
-                    documentGenerationFailedPayload.getString("templateIdentifier"),
-                    documentGenerationFailedPayload.getString("reason")
-            );
-        }
     }
 }

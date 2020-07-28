@@ -281,6 +281,11 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
           responseType: application/vnd.sjp.query.pending-cases+json
           name: sjp.query.pending-cases
       ...
+    queryParameters:
+      export:
+        description: Type of export, public (default) or press
+        type: string
+        required: false
     responses:
       200:
         body:

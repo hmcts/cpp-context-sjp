@@ -58,6 +58,9 @@ public class DefendantDetail implements Serializable {
     @JoinColumn(name = "case_id", nullable = false)
     private CaseDetail caseDetail;
 
+    @Column(name="disability_needs")
+    private String disabilityNeeds;
+
     public DefendantDetail() {
         this(UUID.randomUUID());
     }
@@ -181,5 +184,13 @@ public class DefendantDetail implements Serializable {
 
     public void acknowledgeDetailsUpdates(ZonedDateTime acknowledgedAt) {
         personalDetails.acknowledgeUpdates(acknowledgedAt);
+    }
+
+    public String getDisabilityNeeds() {
+        return disabilityNeeds;
+    }
+
+    public void setDisabilityNeeds(final String disabilityNeeds) {
+        this.disabilityNeeds = disabilityNeeds;
     }
 }

@@ -7,5 +7,9 @@
   "referralReasonId": "8cda35cc-8073-41d7-a160-609bfe362f47",
   "estimatedHearingDuration": 30,
   "referredAt": "2018-06-01T09:00:00.000Z",
-  "listingNotes": "wheelchair access required"
+  "listingNotes": "wheelchair access required",
+  "disabilityNeeds" : {
+    "disabilityNeeds" : "Wheelchair access",
+    "needed" : true
+  }
 }

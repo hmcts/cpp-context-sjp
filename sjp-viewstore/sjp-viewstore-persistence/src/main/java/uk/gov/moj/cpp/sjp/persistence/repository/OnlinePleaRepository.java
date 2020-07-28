@@ -5,6 +5,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.CASE_ID;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.COME_TO_COURT;
+import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.DISABILITY_NEEDS;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_ADDRESS_1;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_ADDRESS_2;
 import static uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository.FIELDS.EMPLOYER_ADDRESS_3;
@@ -163,9 +164,11 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
         PERSON_ADDRESS_5(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getAddress5).orElse(null), "personalDetails", "address", "address5"),
         PERSON_POSTCODE(o -> ofNullable(o.getPersonalDetails().getAddress()).map(Address::getPostcode).orElse(null), "personalDetails", "address", "postcode"),
 
-        COME_TO_COURT(o -> o.getPleaDetails().getComeToCourt(), "pleaDetails", "comeToCourt"),
+        COME_TO_COURT(o -> ofNullable(o.getPleaDetails()).map(OnlinePlea.PleaDetails::getComeToCourt).orElse(null), "pleaDetails", "comeToCourt"),
 
-        OUTSTANDING_FINES(o -> o.getPleaDetails().getOutstandingFines(), "pleaDetails", "outstandingFines");
+        OUTSTANDING_FINES(o -> ofNullable(o.getPleaDetails()).map(OnlinePlea.PleaDetails::getOutstandingFines).orElse(null), "pleaDetails", "outstandingFines"),
+
+        DISABILITY_NEEDS(o -> ofNullable(o.getPleaDetails()).map(OnlinePlea.PleaDetails::getDisabilityNeeds).orElse(null), "pleaDetails", "disabilityNeeds");
 
         private String[] fieldPath;
         private Function<OnlinePlea, Object> fieldGetter;
@@ -271,7 +274,8 @@ public abstract class OnlinePleaRepository implements EntityRepository<OnlinePle
                     PERSON_ADDRESS_5,
                     PERSON_POSTCODE,
                     PERSON_DRIVER_NUMBER,
-                    PERSON_DRIVER_LICENCE_DETAILS
+                    PERSON_DRIVER_LICENCE_DETAILS,
+                    DISABILITY_NEEDS
             );
         }
     }

@@ -24,7 +24,7 @@ import static uk.gov.moj.sjp.it.helper.SetPleasHelper.createCase;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.requestSetPleas;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyCaseStatus;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyEventEmittedForSetPleas;
-import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyUpdatedOffencesWithPleas;
+import static uk.gov.moj.sjp.it.helper.SetPleasHelper.verifyCaseDefendantUpdated;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
@@ -96,6 +96,7 @@ public class SetPleasIT extends BaseIntegrationTest {
 
     private Map<UUID, PleaType> pleaTypesByOffence = new HashMap<>();
     private CreateCase.CreateCasePayloadBuilder aCase;
+    private static final String DISABILITY_NEEDS = "Hearing aid";
 
     @Before
     public void setUp() throws Exception {
@@ -136,6 +137,7 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
+                DISABILITY_NEEDS,
                 asList(Triple.of(offence1Id, defendantId, GUILTY),
                         Triple.of(offence2Id, defendantId, NOT_GUILTY),
                         Triple.of(offence3Id, defendantId, GUILTY_REQUEST_HEARING)),
@@ -147,10 +149,11 @@ public class SetPleasIT extends BaseIntegrationTest {
                 false,
                 null,
                 false,
+                DISABILITY_NEEDS,
                 pleaTypesByOffence,
                 PleasSet.EVENT_NAME, PleadedNotGuilty.EVENT_NAME, PleadedGuilty.EVENT_NAME, PleadedGuiltyCourtHearingRequested.EVENT_NAME, PUBLIC_EVENT_SET_PLEAS);
 
-        verifyUpdatedOffencesWithPleas(caseId, pleaTypesByOffence);
+        verifyCaseDefendantUpdated(caseId, pleaTypesByOffence, DISABILITY_NEEDS);
 
         // verify case readiness state
         verifyCaseStatus(caseId, PLEA_RECEIVED_READY_FOR_DECISION);
@@ -165,6 +168,7 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
+                null,
                 asList(Triple.of(offence1Id, defendantId, GUILTY),
                         Triple.of(offence2Id, defendantId, NOT_GUILTY),
                         Triple.of(offence3Id, defendantId, GUILTY_REQUEST_HEARING)),
@@ -176,6 +180,7 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
+                null,
                 pleaTypesByOffence,
                 PleasSet.EVENT_NAME, HearingLanguagePreferenceUpdatedForDefendant.EVENT_NAME);
 
@@ -187,6 +192,7 @@ public class SetPleasIT extends BaseIntegrationTest {
                 false,
                 null,
                 false,
+                null,
                 asList(Triple.of(offence1Id, defendantId, GUILTY),
                         Triple.of(offence2Id, defendantId, GUILTY),
                         Triple.of(offence3Id, defendantId, GUILTY)),
@@ -202,9 +208,10 @@ public class SetPleasIT extends BaseIntegrationTest {
                 null,
                 null,
                 null,
+                null,
                 pleaTypesByOffence,
                 PleasSet.EVENT_NAME, HearingLanguagePreferenceCancelledForDefendant.EVENT_NAME);
-        verifyUpdatedOffencesWithPleas(caseId, pleaTypesByOffence);
+        verifyCaseDefendantUpdated(caseId, pleaTypesByOffence, null);
 
         // verify case readiness state
         verifyCaseStatus(caseId, PLEA_RECEIVED_READY_FOR_DECISION);
@@ -219,6 +226,7 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
+                null,
                 asList(Triple.of(offence1Id, defendantId, GUILTY),
                         Triple.of(offence2Id, defendantId, NOT_GUILTY),
                         Triple.of(offence3Id, defendantId, GUILTY_REQUEST_HEARING)),
@@ -230,6 +238,7 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
+                null,
                 pleaTypesByOffence,
                 PleasSet.EVENT_NAME);
 
@@ -241,6 +250,7 @@ public class SetPleasIT extends BaseIntegrationTest {
                 false,
                 null,
                 false,
+                null,
                 asList(Triple.of(offence1Id, defendantId, null),
                         Triple.of(offence2Id, defendantId, GUILTY),
                         Triple.of(offence3Id, defendantId, GUILTY)),
@@ -256,10 +266,11 @@ public class SetPleasIT extends BaseIntegrationTest {
                 null,
                 null,
                 null,
+                null,
                 pleaTypesByOffence,
                 PleaCancelled.EVENT_NAME);
 
-        verifyUpdatedOffencesWithPleas(caseId, pleaTypesByOffence);
+        verifyCaseDefendantUpdated(caseId, pleaTypesByOffence, null);
     }
 
     @Test
@@ -272,6 +283,7 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 "GERMAN",
                 true,
+                null,
                 asList(Triple.of(offence1Id, defendantId, GUILTY),
                         Triple.of(offence2Id, defendantId, NOT_GUILTY),
                         Triple.of(offence3Id, defendantId, GUILTY_REQUEST_HEARING)),
@@ -283,6 +295,7 @@ public class SetPleasIT extends BaseIntegrationTest {
                 false,
                 "GERMAN",
                 true,
+                null,
                 pleaTypesByOffence,
                 PleasSet.EVENT_NAME, InterpreterUpdatedForDefendant.EVENT_NAME);
 
@@ -294,6 +307,7 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
+                null,
                 asList(Triple.of(offence1Id, defendantId, GUILTY),
                         Triple.of(offence2Id, defendantId, NOT_GUILTY),
                         Triple.of(offence3Id, defendantId, GUILTY_REQUEST_HEARING)),
@@ -304,10 +318,11 @@ public class SetPleasIT extends BaseIntegrationTest {
                 false,
                 null,
                 false,
+                null,
                 pleaTypesByOffence,
                 PleasSet.EVENT_NAME, InterpreterCancelledForDefendant.EVENT_NAME);
 
-        verifyUpdatedOffencesWithPleas(caseId, pleaTypesByOffence);
+        verifyCaseDefendantUpdated(caseId, pleaTypesByOffence, null);
     }
 
     /**
@@ -346,6 +361,7 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
+                null,
                 singletonList(Triple.of(offence2Id, defendantId, GUILTY)),
                 PleasSet.EVENT_NAME, InterpreterUpdatedForDefendant.EVENT_NAME);
 
@@ -384,6 +400,7 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
+                null,
                 singletonList(Triple.of(offence1Id, defendantId, GUILTY)),
                 PleasSet.EVENT_NAME, InterpreterUpdatedForDefendant.EVENT_NAME);
 
@@ -422,6 +439,7 @@ public class SetPleasIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
+                null,
                 singletonList(Triple.of(offence1Id, defendantId, GUILTY)),
                 PleasSet.EVENT_NAME, PleadedGuilty.EVENT_NAME, CaseStatusChanged.EVENT_NAME);
 

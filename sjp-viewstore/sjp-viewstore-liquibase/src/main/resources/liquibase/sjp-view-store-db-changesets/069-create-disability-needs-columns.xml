@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="69" author="team/ATCM/gustavo.rojas">
+        <addColumn tableName="defendant">
+            <column name="disability_needs" type="text"/>
+        </addColumn>
+        <addColumn tableName="online_plea">
+            <column name="disability_needs" type="text"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="defendant">
+                <column name="disability_needs"/>
+            </dropColumn>
+            <dropColumn tableName="online_plea">
+                <column name="disability_needs" type="text"/>
+            </dropColumn>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

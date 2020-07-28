@@ -73,6 +73,9 @@
     "interpreter": {
       "needed": false
     },
+    "disabilityNeeds" : {
+      "needed": false
+    },
     "id": "${defendantId}",
     "speakWelsh": false
   },

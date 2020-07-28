@@ -1,11 +1,13 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
 import static java.util.Arrays.asList;
+import static java.util.Optional.ofNullable;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 
 import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
+import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated;
 import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
 import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
@@ -21,10 +23,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -38,7 +37,6 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 @Entity
 @Table(name = "online_plea")
@@ -52,9 +50,6 @@ public class OnlinePlea {
 
     @Column(name = "submitted_on", updatable = false, nullable = false)
     private ZonedDateTime submittedOn;
-
-    @Transient
-    private List<OnlinePleaDetail> onlinePleaDetails = new ArrayList<>();
 
     @Embedded
     private OnlinePleaPersonalDetails personalDetails;
@@ -123,9 +118,16 @@ public class OnlinePlea {
         this(outstandingFinesUpdated.getCaseId(), new PleaDetails(outstandingFinesUpdated), outstandingFinesUpdated.getUpdatedDate());
     }
 
-    public OnlinePlea(final DefendantDetail defendantDetail, final ZonedDateTime updatedDate) {
+    public OnlinePlea(final DefendantDetail defendantDetail, final DisabilityNeeds disabilityNeeds, final ZonedDateTime updatedDate) {
         this(defendantDetail.getCaseDetail().getId(), defendantDetail.getId(), updatedDate);
         this.personalDetails = new OnlinePleaPersonalDetails(defendantDetail);
+        this.pleaDetails = ofNullable(disabilityNeeds).map(dsNeeds -> {
+              if(dsNeeds.isNeeded()) {
+                  return new PleaDetails(dsNeeds);
+              }  else {
+                  return null;
+              }
+        }).orElse(null);
     }
 
     /**
@@ -172,14 +174,6 @@ public class OnlinePlea {
 
     public void setSubmittedOn(final ZonedDateTime submittedOn) {
         this.submittedOn = submittedOn;
-    }
-
-    public List<OnlinePleaDetail> getOnlinePleaDetails() {
-        return onlinePleaDetails;
-    }
-
-    public void setOnlinePleaDetails(final List<OnlinePleaDetail> onlinePleaDetails) {
-        this.onlinePleaDetails = onlinePleaDetails;
     }
 
     public OnlinePleaPersonalDetails getPersonalDetails() {
@@ -239,6 +233,8 @@ public class OnlinePlea {
         private Boolean speakWelsh;
         @Column(name = "outstanding_fines")
         private Boolean outstandingFines;
+        @Column(name = "disability_needs")
+        private String disabilityNeeds;
 
         public PleaDetails() {
         }
@@ -248,7 +244,7 @@ public class OnlinePlea {
         }
 
         public PleaDetails(final InterpreterUpdatedForDefendant interpreterUpdatedForDefendant) {
-            this.interpreterLanguage = Optional.ofNullable(interpreterUpdatedForDefendant.getInterpreter())
+            this.interpreterLanguage = ofNullable(interpreterUpdatedForDefendant.getInterpreter())
                     .map(Interpreter::getLanguage)
                     .orElse(null);
         }
@@ -271,6 +267,10 @@ public class OnlinePlea {
             this.comeToCourt = comeToCourt;
         }
 
+        public PleaDetails(final DisabilityNeeds disabilityNeeds) {
+            this.disabilityNeeds = disabilityNeeds.getDisabilityNeeds();
+        }
+
         public Boolean getComeToCourt() {
             return comeToCourt;
         }
@@ -281,11 +281,6 @@ public class OnlinePlea {
 
         public void setInterpreterLanguage(final String interpreterLanguage) {
             this.interpreterLanguage = interpreterLanguage;
-        }
-
-        @Transient
-        public boolean isInterpreterRequired() {
-            return Interpreter.isNeeded(interpreterLanguage);
         }
 
         public Boolean getSpeakWelsh() {
@@ -326,6 +321,14 @@ public class OnlinePlea {
 
         public void setOutstandingFines(Boolean outstandingFines) {
             this.outstandingFines = outstandingFines;
+        }
+
+        public String getDisabilityNeeds() {
+            return disabilityNeeds;
+        }
+
+        public void setDisabilityNeeds(final String disabilityNeeds) {
+            this.disabilityNeeds = disabilityNeeds;
         }
     }
 
@@ -443,7 +446,7 @@ public class OnlinePlea {
             this.employeeReference = employerUpdated.getEmployeeReference();
             this.name = employerUpdated.getName();
             this.phone = employerUpdated.getPhone();
-            this.address = Optional.ofNullable(employerUpdated.getAddress())
+            this.address = ofNullable(employerUpdated.getAddress())
                     .map(employerAddress -> new Address(
                             employerAddress.getAddress1(),
                             employerAddress.getAddress2(),

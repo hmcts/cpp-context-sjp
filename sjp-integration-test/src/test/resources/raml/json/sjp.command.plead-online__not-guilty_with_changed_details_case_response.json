@@ -45,6 +45,9 @@
     ],
     "caseId": "${caseId}",
     "numPreviousConvictions": 2,
+    "disabilityNeeds": {
+      "needed": false
+    },
     "personalDetails": {
       "driverNumber": "MORGA753116SM9IJ",
       "driverLicenceDetails": "test",

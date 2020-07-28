@@ -123,7 +123,7 @@ public class SjpServiceTest {
 
         when(requestPendingCasesList()).thenReturn(responseEnvolope);
 
-        final List<JsonObject> result = sjpService.getPendingCases(envelope);
+        final List<JsonObject> result = sjpService.getPendingCases(envelope, ExportType.PUBLIC);
 
         assertThat(result, is(createArrayBuilder().build()));
     }

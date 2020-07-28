@@ -188,6 +188,9 @@
         },
         "additionalProperties": false
       }
+    },
+    "disabilityNeeds" : {
+      "$ref": "http://cpp.moj.gov.uk/core/sjp/disability-needs.json"
     }
   },
   "required": [

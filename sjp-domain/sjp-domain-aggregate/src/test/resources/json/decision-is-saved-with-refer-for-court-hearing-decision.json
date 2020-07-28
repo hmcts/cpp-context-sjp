@@ -27,7 +27,11 @@
           "language": "French",
           "needed": true
         },
-        "welshHearing": false
+        "welshHearing": false,
+        "disabilityNeeds": {
+          "needed" : true ,
+          "disabilityNeeds" : "Hearing aid"
+        }
       }
     }
   ]

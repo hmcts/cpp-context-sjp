@@ -126,6 +126,6 @@ public class PleaNotificationProcessorTest {
                 "JH41 1269B", "london", "TESTYJKZAAA09", null);
         return new OnlinePleaReceived(urn, UUID.randomUUID(), UUID.randomUUID(),
                 "6th March 2018", "French", TRUE, "Joe Cornish", "He was not there", outstandingFines,
-                personalDetails, null, null, emptyList());
+                personalDetails, null, null, emptyList(), null);
     }
 }

@@ -11,6 +11,7 @@ import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -26,6 +27,7 @@ import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.exception.OffenceNotFoundException;
+import uk.gov.moj.cpp.sjp.event.processor.service.ExportType;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
@@ -63,6 +65,8 @@ public class PressTransparencyReportRequestedProcessor {
     private static final DateTimeFormatter DATE_FORMAT = ofPattern("dd MM yyyy");
 
     private static final int ADULT_AGE = 18;
+    private static final String DEFENDANT_DATE_OF_BIRTH = "defendantDateOfBirth";
+
 
     @Inject
     private FileStorer fileStorer;
@@ -179,8 +183,13 @@ public class PressTransparencyReportRequestedProcessor {
     private JsonArrayBuilder createReadyCases(final List<JsonObject> pendingCases,
                                               final JsonEnvelope envelope) {
         final JsonArrayBuilder readyCasesBuilder = createArrayBuilder();
+
         pendingCases.forEach(pendingCase -> {
-            final Optional<Long> defendantAge = getAge(pendingCase.getString("defendantDateOfBirth",""));
+            Optional<Long> defendantAge = empty();
+            if (!isEmpty(pendingCase.getString(DEFENDANT_DATE_OF_BIRTH, ""))) {
+                defendantAge = getAge(pendingCase.getString(DEFENDANT_DATE_OF_BIRTH));
+            }
+
             final Boolean defendantIsAdultOrUnknownAge = defendantAge.map(this::isAdult).orElse(true);
             if(defendantIsAdultOrUnknownAge) {
                 final JsonObjectBuilder readyCaseItem = createReadyCase(envelope, pendingCase);
@@ -198,8 +207,8 @@ public class PressTransparencyReportRequestedProcessor {
                 .add("offences", createReadyCaseOffences(pendingCase.getJsonArray("offences"), envelope))
                 .add("prosecutorName", buildProsecutorName(pendingCase.getString("prosecutorName"), envelope));
 
-        if (pendingCase.containsKey("defendantDateOfBirth")) {
-            readyCase.add("dateOfBirth", createDateOfBirth(pendingCase.getString("defendantDateOfBirth")));
+        if (hasDefendantDateOfBirth(pendingCase)) {
+            readyCase.add("dateOfBirth", createDateOfBirth(pendingCase.getString(DEFENDANT_DATE_OF_BIRTH)));
         }
 
         return readyCase;
@@ -299,6 +308,9 @@ public class PressTransparencyReportRequestedProcessor {
     }
 
     private List<JsonObject> getPendingCasesFromViewStore(final JsonEnvelope envelope) {
-        return sjpService.getPendingCases(envelope);
+        return sjpService.getPendingCases(envelope, ExportType.PRESS);
+    }
+    private boolean hasDefendantDateOfBirth(final JsonObject pendingCase) {
+        return pendingCase.containsKey(DEFENDANT_DATE_OF_BIRTH) && !isEmpty(pendingCase.getString(DEFENDANT_DATE_OF_BIRTH));
     }
 }

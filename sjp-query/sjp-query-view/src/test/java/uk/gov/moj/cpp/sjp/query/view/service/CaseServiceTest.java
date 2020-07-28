@@ -49,6 +49,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
+import uk.gov.moj.cpp.sjp.query.view.ExportType;
 import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
@@ -463,13 +464,12 @@ public class CaseServiceTest {
     }
 
     @Test
-    public void shouldFindPendingCasesToPublish() {
+    public void shouldFindPublicTransparencyReportPendingCases() {
         final UUID caseId1 = randomUUID();
         final UUID caseId2 = randomUUID();
         final UUID caseId3 = randomUUID();
         final UUID caseId4 = randomUUID();
         final UUID caseId5 = randomUUID();
-        final UUID caseId6 = randomUUID();
 
         final PendingCaseToPublishPerOffence pendingCaseToPublishWith5LinesOfAddressOffence1 = new PendingCaseToPublishPerOffence("John", "Doe", LocalDate.of(1980, 6, 20),
                 caseId1, "TVL1", "address line 1", "address line 2", "Lant Street", "London", "Greater London",
@@ -495,7 +495,7 @@ public class CaseServiceTest {
                 caseId5, "TVL2", "address line 1", "address line 2", "London", "Greater London", "",
                 null, "CA03014",  LocalDate.of(2018, 8, 2), "offence wording", false, null,false, "TVL");
 
-        when(caseRepository.findPendingCasesToPublish()).thenReturn(newArrayList(
+        when(caseRepository.findPublicTransparencyReportPendingCases()).thenReturn(newArrayList(
                 pendingCaseToPublishWith5LinesOfAddressOffence1,
                 pendingCaseToPublishWith5LinesOfAddressOffence2,
                 pendingCaseToPublishWith4LinesOfAddressAndWithoutFirstName,
@@ -504,7 +504,7 @@ public class CaseServiceTest {
                 pendingCaseToPublishWithSingleLetterFirstNameNoLastNameAndNullPostcode
         ));
 
-        final JsonObject pendingCasesToPublish = service.findPendingCasesToPublish();
+        final JsonObject pendingCasesToPublish = service.findPendingCasesToPublish(ExportType.PUBLIC);
 
         final List<JsonObject> pendingCaseToPublish = pendingCasesToPublish.getJsonArray("pendingCases")
                 .getValuesAs(JsonObject.class);
@@ -565,6 +565,13 @@ public class CaseServiceTest {
                 "TVL",
                 newArrayList(
                         Pair.of("CA03014", "2018-08-02")));
+    }
+
+    @Test
+    public void shouldFindPressTransparencyReportPendingCases() {
+        service.findPendingCasesToPublish(ExportType.PRESS);
+
+        verify(caseRepository).findPressTransparencyReportPendingCases();
     }
 
     @Test

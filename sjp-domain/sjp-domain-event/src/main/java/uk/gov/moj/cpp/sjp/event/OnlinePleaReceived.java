@@ -4,6 +4,7 @@ import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Outgoing;
+import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 
 import java.util.List;
@@ -28,6 +29,7 @@ public class OnlinePleaReceived {
     private final FinancialMeans financialMeans;
     private final Employer employer;
     private final List<Outgoing> outgoings;
+    private DisabilityNeeds disabilityNeeds;
 
     @JsonCreator
     public OnlinePleaReceived(@JsonProperty("urn") final String urn,
@@ -42,7 +44,8 @@ public class OnlinePleaReceived {
                               @JsonProperty("personalDetails") final PersonalDetails personalDetails,
                               @JsonProperty("financialMeans") final FinancialMeans financialMeans,
                               @JsonProperty("employer") final Employer employer,
-                              @JsonProperty("outgoings") final List<Outgoing> outgoings) {
+                              @JsonProperty("outgoings") final List<Outgoing> outgoings,
+                              @JsonProperty("disabilityNeeds") final DisabilityNeeds disabilityNeeds) {
         this.urn = urn;
         this.caseId = caseId;
         this.defendantId = defendantId;
@@ -56,6 +59,7 @@ public class OnlinePleaReceived {
         this.employer = employer;
         this.outgoings = outgoings;
         this.outstandingFines = outstandingFines;
+        this.disabilityNeeds = disabilityNeeds;
     }
 
     public String getUrn() {
@@ -110,4 +114,7 @@ public class OnlinePleaReceived {
         return outgoings;
     }
 
+    public DisabilityNeeds getDisabilityNeeds() {
+        return disabilityNeeds;
+    }
 }

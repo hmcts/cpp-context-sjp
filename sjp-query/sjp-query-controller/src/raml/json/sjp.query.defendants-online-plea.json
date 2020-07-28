@@ -46,7 +46,10 @@
     "unavailability": "Available",
     "speakWelsh": false,
     "outstandingFines": true,
-    "interpreterRequired": true
+    "interpreterRequired": true,
+    "disabilityNeeds": {
+      "needed": false
+    }
   },
   "employment": {
     "incomePaymentFrequency": "MONTHLY",

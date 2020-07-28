@@ -262,7 +262,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     private void updatePleaToNotGuiltyAndConfirmPleasSet(final UUID caseId, final UUID offenceId, final UUID defendantId) {
         requestSetPleas(caseId, eventListener, true, false,
                 true, null,
-                false, singletonList(Triple.of(offenceId, defendantId, NOT_GUILTY)),
+                false, null, singletonList(Triple.of(offenceId, defendantId, NOT_GUILTY)),
                 PleasSet.EVENT_NAME, PleadedNotGuilty.EVENT_NAME, DatesToAvoidRequired.EVENT_NAME);
 
         final Map pleaTypeByOffence = ImmutableMap.of(offenceId, NOT_GUILTY);
@@ -272,7 +272,7 @@ public class DatesToAvoidIT extends BaseIntegrationTest {
     private void cancelPlea(final UUID caseId, final UUID offenceId, final UUID defendantId) {
         requestSetPleas(caseId, eventListener, false, false,
                 false, null,
-                false, singletonList(Triple.of(offenceId, defendantId, null)),
+                false, null, singletonList(Triple.of(offenceId, defendantId, null)),
                 PleasSet.EVENT_NAME, PleaCancelled.EVENT_NAME);
         final Map<UUID, PleaType> pleaTypeByOffence = new HashMap<>();
         verifySetPleasEventEmitted(eventListener, caseId, defendantId, pleaTypeByOffence);

@@ -18,11 +18,14 @@ import static uk.gov.justice.json.schemas.domains.sjp.Language.W;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.CaseReferralHelper.findReferralStatusForCase;
 import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
-import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.*;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.MaterialStub.stubMaterialMetadata;
 import static uk.gov.moj.sjp.it.stub.ProgressionServiceStub.stubReferCaseToCourtCommand;
@@ -47,14 +50,12 @@ import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_COURT_HOUSE_OU_
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
-import com.google.common.collect.Sets;
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.justice.json.schemas.domains.sjp.Language;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
@@ -74,6 +75,7 @@ import uk.gov.moj.sjp.it.helper.EmployerHelper;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.producer.ReferToCourtHearingProducer;
 import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.FileUtil;
@@ -89,6 +91,7 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -382,7 +385,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
     }
 
     private ReferForCourtHearing buildReferForCourtHearingDecision(Language language, final UUID... offenceIds) {
-        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), language.equals(W));
+        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), language.equals(W), NO_DISABILITY_NEEDS);
         List<OffenceDecisionInformation> offenceDecisionInformations = of(offenceIds).map(offenceId -> createOffenceDecisionInformation(offenceId, VerdictType.NO_VERDICT)).collect(toList());
         return new ReferForCourtHearing(null, offenceDecisionInformations, REFERRAL_REASON_ID, "listing notes", 10, defendantCourtOptions);
     }

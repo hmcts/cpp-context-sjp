@@ -193,7 +193,6 @@ public class CaseDecisionHandler {
 
     private static void handleReferToCriminalCourtDecision(final Decision decision, final CaseAggregateState state, final Stream.Builder<Object> streamBuilder) {
         final Optional<ReferForCourtHearing> referForCourtHearingDecision = getDecisions(decision, ReferForCourtHearing.class).findFirst();
-        //TODO ATCM-4695 use offenceDecisionInformation from decision
         if (referForCourtHearingDecision.isPresent()) {
             final ReferForCourtHearing referForCourtHearing = referForCourtHearingDecision.get();
             final List<OffenceDecisionInformation> offenceDecisionInformationList = referForCourtHearing.getOffenceDecisionInformation();

@@ -275,6 +275,10 @@ public class OffenceDecisionView {
         return notionalPenaltyPoints;
     }
 
+    public void setVerdict(VerdictType verdict) {
+        this.verdict = verdict;
+    }
+
     public PressRestriction getPressRestriction() {
         return this.pressRestriction;
     }

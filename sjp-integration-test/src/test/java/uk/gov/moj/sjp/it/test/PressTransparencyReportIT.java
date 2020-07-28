@@ -91,7 +91,10 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
 
         final EventListener eventListener = new EventListener()
                 .withMaxWaitTime(50000)
-                .subscribe(SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_REQUESTED, SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_GENERATION_STARTED)
+                .subscribe(
+                        SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_REQUESTED,
+                        SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_GENERATION_STARTED
+                )
                 .run(pressTransparencyReportHelper::requestToGeneratePressTransparencyReport);
 
         final Optional<JsonEnvelope> transparencyReportRequestedEvent = eventListener.popEvent(SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_REQUESTED);

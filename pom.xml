@@ -20,30 +20,30 @@
         <assignment.version>6.0.0</assignment.version>
         <material.version>6.4.3</material.version>
         <notification.notify.version>7.0.1</notification.notify.version>
-        <referencedata.version>7.0.5</referencedata.version>
-        <referencedata.offences.version>6.4.2</referencedata.offences.version>
+        <referencedata.version>7.0.6</referencedata.version>
+        <referencedata.offences.version>7.0.0</referencedata.offences.version>
         <scheduling.version>6.0.0</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
-        <usersgroups.version>7.0.6</usersgroups.version>
-        <progression.version>7.0.10</progression.version>
+        <usersgroups.version>7.0.8</usersgroups.version>
+        <progression.version>7.0.26</progression.version>
         <prosecutioncasefile.version>6.4.19</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
-        <coredomain.version>1.0.95</coredomain.version>
+        <coredomain.version>1.0.102</coredomain.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>
         <lombok.version>1.18.2</lombok.version>
         <activiti.library.version>1.3.0</activiti.library.version>
         <pojo-generation.version>1.6.0-M1</pojo-generation.version>
         <document-generator-client.version>1.0.4</document-generator-client.version>
-        <systemdocgenerator.version>6.4.6</systemdocgenerator.version>
+        <systemdocgenerator.version>7.0.7</systemdocgenerator.version>
         <apache.pdfbox.version>2.0.11</apache.pdfbox.version>
         <jvm.options>-Djava.locale.providers=CLDR</jvm.options>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
-        <stagingenforcement.version>7.0.4</stagingenforcement.version>
+        <stagingenforcement.version>7.0.6</stagingenforcement.version>
     </properties>
 
     <modules>
@@ -110,5 +110,4 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
 </project>

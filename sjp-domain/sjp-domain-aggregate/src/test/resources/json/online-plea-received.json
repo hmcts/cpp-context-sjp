@@ -74,5 +74,8 @@
       "description": "Other",
       "amount": 500.4
     }
-  ]
+  ],
+  "disabilityNeeds" : {
+    "needed" : false
+  }
 }

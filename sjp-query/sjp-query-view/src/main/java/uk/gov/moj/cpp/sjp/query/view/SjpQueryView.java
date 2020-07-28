@@ -28,6 +28,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseNotGuiltyPleaView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantProfilingView;
+import uk.gov.moj.cpp.sjp.query.view.response.onlineplea.OnlinePleaView;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
 import uk.gov.moj.cpp.sjp.query.view.service.DefendantService;
@@ -62,7 +63,6 @@ public class SjpQueryView {
     static final String FIELD_DEFENDANT_ID = "defendantId";
     static final String FIELD_DAYS_SINCE_POSTING = "daysSincePosting";
 
-    static final String FIELD_HEARING_DATE = "hearingDate";
     private static final Logger LOGGER = LoggerFactory.getLogger(SjpQueryView.class);
     private static final String NAME_RESPONSE_CASE = "sjp.query.case-response";
     private static final String NAME_RESPONSE_CASES_SEARCH = "sjp.query.cases-search-response";
@@ -201,8 +201,9 @@ public class SjpQueryView {
 
     @Handles("sjp.query.pending-cases")
     public JsonEnvelope getPendingCasesToPublish(final JsonEnvelope envelope) {
+        final ExportType exportType = getExportType(envelope);
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_PENDING_CASES).apply(
-                caseService.findPendingCasesToPublish());
+                caseService.findPendingCasesToPublish(exportType));
     }
 
     @Handles("sjp.query.result-orders")
@@ -226,22 +227,22 @@ public class SjpQueryView {
             onlinePlea = onlinePleaRepository.findOnlinePleaWithoutFinances(caseId);
         }
 
+        final OnlinePleaView onlinePleaView = new OnlinePleaView(onlinePlea);
         final List<OnlinePleaDetail> onlinePleaDetails = onlinePleaDetailRepository.findByCaseIdAndDefendantId(caseId, defendantId);
+        onlinePleaView.setOnlinePleaDetails(onlinePleaDetails);
 
-        onlinePleaDetails
+
+        onlinePleaView.getOnlinePleaDetails()
                 .stream()
                 .forEach(onlinePleaDetail -> {
                     final OffenceDetail offenceDetail = offenceRepository.findBy(onlinePleaDetail.getOffenceId());
-                    referenceDataService.getOffenceData(offenceDetail.getCode()).
-                                                                                        ifPresent(offenceRefData -> {
-                                                                                            final String title = nonNull(offenceRefData.getString("title", null)) ? offenceRefData.getString("title") : offenceRefData.getString("titleWelsh", null);
-                                                                                            onlinePleaDetail.setOffenceTitle(title);
-                                                                                        });
+                    referenceDataService.getOffenceData(offenceDetail.getCode()).ifPresent(offenceRefData -> {
+                        final String title = nonNull(offenceRefData.getString("title", null)) ? offenceRefData.getString("title") : offenceRefData.getString("titleWelsh", null);
+                        onlinePleaDetail.setOffenceTitle(title);
+                    });
                 });
 
-        onlinePlea.setOnlinePleaDetails(onlinePleaDetails);
-
-        return enveloper.withMetadataFrom(envelope, "sjp.query.defendants-online-plea").apply(onlinePlea);
+        return enveloper.withMetadataFrom(envelope, "sjp.query.defendants-online-plea").apply(onlinePleaView);
     }
 
     @Handles("sjp.query.pending-dates-to-avoid")
@@ -316,10 +317,6 @@ public class SjpQueryView {
                 result);
     }
 
-    private static String extract(final JsonEnvelope envelope, final String fieldName) {
-        return envelope.payloadAsJsonObject().getString(fieldName);
-    }
-
     @Handles("sjp.query.defendant-profile")
     public JsonEnvelope getDefendantProfile(final JsonEnvelope envelope) {
         final UUID defendantId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_DEFENDANT_ID));
@@ -337,5 +334,16 @@ public class SjpQueryView {
             LOGGER.error("### No defendant found ");
             return envelopeFrom(envelope.metadata(), Json.createObjectBuilder().build());
         }
+    }
+
+    private String extract(final JsonEnvelope envelope, final String fieldName) {
+        return envelope.payloadAsJsonObject().getString(fieldName);
+    }
+
+    private ExportType getExportType(final JsonEnvelope envelope) {
+        if (envelope.payloadAsJsonObject().containsKey("export")) {
+            return ExportType.of(envelope.payloadAsJsonObject().getString("export"));
+        }
+        return ExportType.PUBLIC;
     }
 }

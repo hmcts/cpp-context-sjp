@@ -18,7 +18,10 @@
     "interpreterLanguage": "French",
     "interpreterRequired": true,
     "witnessDispute": "They are lying",
-    "unavailability": "I'm on holiday November 17 to 19"
+    "unavailability": "I'm on holiday November 17 to 19",
+    "disabilityNeeds": {
+      "needed": false
+    }
   },
   "submittedOn": "${submittedOn}",
   "personalDetails": {

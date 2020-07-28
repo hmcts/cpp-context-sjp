@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.domain.onlineplea;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Outgoing;
+import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +28,7 @@ public class PleadOnline {
     private final Employer employer;
     private final List<Outgoing> outgoings;
     private final Boolean comeToCourt;
+    private final DisabilityNeeds disabilityNeeds;
 
     @JsonCreator
     public PleadOnline(@JsonProperty("defendantId") final UUID defendantId,
@@ -41,7 +43,8 @@ public class PleadOnline {
                        @JsonProperty("financialMeans") final FinancialMeans financialMeans,
                        @JsonProperty("employer") final Employer employer,
                        @JsonProperty("outgoings") final List<Outgoing> outgoings,
-                       @JsonProperty("comeToCourt") final Boolean comeToCourt) {
+                       @JsonProperty("comeToCourt") final Boolean comeToCourt,
+                       @JsonProperty("disabilityNeeds") final DisabilityNeeds disabilityNeeds) {
         this.defendantId = defendantId;
         this.offences = offences;
         this.unavailability = unavailability;
@@ -55,6 +58,7 @@ public class PleadOnline {
         this.outgoings = outgoings;
         this.comeToCourt = comeToCourt;
         this.outstandingFines = outstandingFines;
+        this.disabilityNeeds = disabilityNeeds;
     }
 
     public UUID getDefendantId() {
@@ -109,4 +113,7 @@ public class PleadOnline {
         return comeToCourt;
     }
 
+    public DisabilityNeeds getDisabilityNeeds() {
+        return disabilityNeeds;
+    }
 }

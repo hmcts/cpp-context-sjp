@@ -4,31 +4,7 @@
   "type": "object",
   "properties": {
     "defendantCourtOptions": {
-      "type": "object",
-      "properties" : {
-        "welshHearing": {
-          "type": "boolean"
-        },
-        "interpreter": {
-          "type": "object",
-          "properties" : {
-            "language": {
-              "type": "string"
-            },
-            "needed": {
-              "type": "boolean"
-            }
-          },
-          "required": [
-            "needed"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "required": [
-        "welshHearing"
-      ],
-      "additionalProperties": false
+       "$ref" : "http://cpp.moj.gov.uk/core/sjp/defendant-court-options.json"
     },
     "pleas" : {
       "type": "array",

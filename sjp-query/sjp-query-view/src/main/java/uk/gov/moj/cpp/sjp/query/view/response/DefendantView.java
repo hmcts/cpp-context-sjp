@@ -3,8 +3,10 @@ package uk.gov.moj.cpp.sjp.query.view.response;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
 
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
+import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.InterpreterDetail;
 
@@ -21,6 +23,7 @@ public class DefendantView {
     private final Boolean speakWelsh;
     private final Integer numPreviousConvictions;
     private final PersonalDetailsView personalDetails;
+    private final DisabilityNeeds disabilityNeeds;
 
     public DefendantView(DefendantDetail defendant) {
         this.id = defendant.getId();
@@ -33,6 +36,7 @@ public class DefendantView {
                         .orElse(null));
         this.speakWelsh = defendant.getSpeakWelsh() != null ? defendant.getSpeakWelsh() : false;
         this.numPreviousConvictions = defendant.getNumPreviousConvictions();
+        this.disabilityNeeds = disabilityNeedsOf(defendant.getDisabilityNeeds());
     }
 
     public List<OffenceView> getOffences() {
@@ -61,6 +65,10 @@ public class DefendantView {
 
     public Integer getNumPreviousConvictions() {
         return numPreviousConvictions;
+    }
+
+    public DisabilityNeeds getDisabilityNeeds() {
+        return disabilityNeeds;
     }
 
     private static List<OffenceView> constructDefendantChargeView(final DefendantDetail defendant) {

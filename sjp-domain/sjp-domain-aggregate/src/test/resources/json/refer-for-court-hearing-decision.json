@@ -30,6 +30,10 @@
           "interpreter": {
             "language": "French",
             "needed": true
+          },
+          "disabilityNeeds": {
+            "needed" : true ,
+            "disabilityNeeds" : "Hearing aid"
           }
         }
       }

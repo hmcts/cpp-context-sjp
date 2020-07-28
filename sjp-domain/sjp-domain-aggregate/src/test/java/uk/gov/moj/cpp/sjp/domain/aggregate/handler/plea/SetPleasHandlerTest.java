@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 import static uk.gov.justice.json.schemas.domains.sjp.User.user;
 import static uk.gov.moj.cpp.sjp.domain.DomainConstants.NUMBER_DAYS_WAITING_FOR_DATES_TO_AVOID;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.POSTAL;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
@@ -72,7 +73,8 @@ public class SetPleasHandlerTest {
     public void testSetMultipleNotGuiltyPleasWithoutInterpreter() {
         final ZonedDateTime now = clock.now();
         final SetPleas setPleas = createSetPleas(null, false,
-                newArrayList(NOT_GUILTY, NOT_GUILTY, NOT_GUILTY));
+                newArrayList(NOT_GUILTY, NOT_GUILTY, NOT_GUILTY),
+                null);
 
         caseAggregateState.addOffenceIdsForDefendant(defendantId, setPleas.getPleas().stream()
                 .map(Plea::getOffenceId)
@@ -95,8 +97,9 @@ public class SetPleasHandlerTest {
     @Test
     public void testSetTheSamePleasAgain() {
         final ZonedDateTime now = clock.now();
+        final String disabilityNeeds = "needs hearing aid";
         final SetPleas setPleas = createSetPleas(null, false,
-                newArrayList(NOT_GUILTY, GUILTY, GUILTY_REQUEST_HEARING));
+                newArrayList(NOT_GUILTY, GUILTY, GUILTY_REQUEST_HEARING), disabilityNeeds);
 
         caseAggregateState.updateDefendantSpeakWelsh(defendantId, false);
         caseAggregateState.addOffenceIdsForDefendant(defendantId, setPleas.getPleas().stream()
@@ -117,7 +120,7 @@ public class SetPleasHandlerTest {
     public void testSetPleasWithInterpreter() {
         final ZonedDateTime now = clock.now();
         final SetPleas setPleas = createSetPleas("ES", false,
-                newArrayList(NOT_GUILTY, GUILTY, GUILTY_REQUEST_HEARING));
+                newArrayList(NOT_GUILTY, GUILTY, GUILTY_REQUEST_HEARING), null);
 
         caseAggregateState.addOffenceIdsForDefendant(defendantId, setPleas.getPleas().stream()
                 .map(Plea::getOffenceId)
@@ -140,7 +143,7 @@ public class SetPleasHandlerTest {
     public void testSetPleasWithoutCourtOptionsAndDatesToAvoidPreviouslyAdded() {
         final ZonedDateTime now = clock.now();
         final SetPleas setPleas = createSetPleas(null, null,
-                newArrayList(NOT_GUILTY, GUILTY, GUILTY_REQUEST_HEARING));
+                newArrayList(NOT_GUILTY, GUILTY, GUILTY_REQUEST_HEARING), null);
 
         caseAggregateState.addOffenceIdsForDefendant(defendantId, setPleas.getPleas().stream()
                 .map(Plea::getOffenceId)
@@ -163,14 +166,15 @@ public class SetPleasHandlerTest {
                 new PleadedGuiltyCourtHearingRequested(caseId, defendantId, setPleas.getPleas().get(2).getOffenceId(), POSTAL, now)));
     }
 
-    private SetPleas createSetPleas(final String interpreterLanguage, final Boolean welshHearing, final List<PleaType> pleaTypes) {
+    private SetPleas createSetPleas(final String interpreterLanguage, final Boolean welshHearing, final List<PleaType> pleaTypes, final String disabilityNeeds) {
 
         DefendantCourtOptions defendantCourtOptions = null;
 
         if (interpreterLanguage != null || welshHearing != null) {
             defendantCourtOptions = new DefendantCourtOptions(
                     Optional.ofNullable(interpreterLanguage).map(lang -> new DefendantCourtInterpreter(interpreterLanguage, true)).orElse(null),
-                    welshHearing);
+                    welshHearing,
+                    disabilityNeedsOf(disabilityNeeds));
         }
 
         final List<Plea> pleas = pleaTypes.stream()

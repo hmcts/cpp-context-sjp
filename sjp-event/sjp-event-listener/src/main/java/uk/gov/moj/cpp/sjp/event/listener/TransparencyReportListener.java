@@ -7,6 +7,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportGenerationFailed;
 import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportGenerationStarted;
 import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportMetadataAdded;
 import uk.gov.moj.cpp.sjp.persistence.entity.CasePublishStatus;
@@ -52,6 +53,13 @@ public class TransparencyReportListener {
         updateReportMetadata(metadataAddedPayload);
     }
 
+    @Transactional
+    @Handles(TransparencyReportGenerationFailed.EVENT_NAME)
+    public void handleTransparencyReportGenerationFailed(final JsonEnvelope transparencyReportGenerationFailed) {
+        final JsonObject transparencyReportGenerationFailedPayload = transparencyReportGenerationFailed.payloadAsJsonObject();
+        decrementCountersForTheExportedCases(transparencyReportGenerationFailedPayload);
+    }
+
     private void updateReportMetadata(final JsonObject metadataAddedPayload) {
         final UUID transparencyReportId = UUID.fromString(metadataAddedPayload.getString("transparencyReportId"));
         final String language = metadataAddedPayload.getString("language");
@@ -92,8 +100,29 @@ public class TransparencyReportListener {
         }
     }
 
+    private void decrementCountersForTheExportedCases(final JsonObject transparencyReportGenerationFailed) {
+        final boolean reportGenerationPrevioulsyFailed = transparencyReportGenerationFailed.getBoolean("reportGenerationPreviouslyFailed", false);
+        if(!reportGenerationPrevioulsyFailed) {
+            final List<UUID> caseIds = transparencyReportGenerationFailed.getJsonArray("caseIds")
+                    .getValuesAs(JsonString.class)
+                    .stream()
+                    .map(e -> fromString(e.getString()))
+                    .collect(toList());
+
+            if (CollectionUtils.isNotEmpty(caseIds)) {
+                casePublishStatusRepository.findByCaseIds(caseIds)
+                        .forEach(this::decrementCaseCounters);
+            }
+        }
+    }
+
     private void incrementCaseCounters(final CasePublishStatus casePublishStatus) {
         casePublishStatus.incrementPublishedCounters();
+        casePublishStatusRepository.save(casePublishStatus);
+    }
+
+    private void decrementCaseCounters(final CasePublishStatus casePublishStatus) {
+        casePublishStatus.decrementPublishedCounters();
         casePublishStatusRepository.save(casePublishStatus);
     }
 }

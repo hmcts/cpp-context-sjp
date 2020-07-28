@@ -158,6 +158,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
+                null,
                 asList(Triple.of(tflPleadedGuiltyCasePayloadBuilder.getOffenceId(),
                         tflPleadedGuiltyCasePayloadBuilder.getDefendantBuilder().getId(), GUILTY)),
                 PUBLIC_EVENT_SET_PLEAS);
@@ -170,6 +171,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
+                null,
                 asList(Triple.of(tflPleadedNotGuiltyCasePayloadBuilder.getOffenceId(),
                         tflPleadedNotGuiltyCasePayloadBuilder.getDefendantBuilder().getId(), NOT_GUILTY)),
                 PUBLIC_EVENT_SET_PLEAS);
@@ -182,6 +184,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
+                null,
                 asList(Triple.of(tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getOffenceId(),
                         tvlPleadedGuiltyRequestHearingCasePayloadBuilder.getDefendantBuilder().getId(), GUILTY_REQUEST_HEARING)),
                 PUBLIC_EVENT_SET_PLEAS);
@@ -194,6 +197,7 @@ public class AssignmentRulesIT extends BaseIntegrationTest {
                 true,
                 null,
                 false,
+                null,
                 asList(Triple.of(dvlaPleadedNotGuiltyCasePayloadBuilder.getOffenceId(), dvlaPleadedNotGuiltyCasePayloadBuilder.getDefendantBuilder().getId(), NOT_GUILTY)),
                 PUBLIC_EVENT_SET_PLEAS);
 

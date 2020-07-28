@@ -278,7 +278,7 @@ public class ReferencedDecisionSavedOffenceConverter {
 
         return createObjectBuilder()
                 .add(ID, offenceDecisionInformation.getString(OFFENCE_ID))
-                .add(VERDICT, offenceDecisionInformation.getString(VERDICT))
+                .add(VERDICT, offenceDecisionInformation.getString(VERDICT,null))
                 .add(RESULTS, createArrayBuilder().add(result))
                 .build();
     }

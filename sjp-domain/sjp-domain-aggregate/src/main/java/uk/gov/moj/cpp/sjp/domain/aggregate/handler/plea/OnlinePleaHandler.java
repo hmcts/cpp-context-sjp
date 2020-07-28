@@ -9,6 +9,7 @@ import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.HandlerUtils.createRejectionEvents;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.PleaHandlerUtils.createSetPleasEvents;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.ONLINE;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY_REQUEST_HEARING;
@@ -119,7 +120,11 @@ public class OnlinePleaHandler {
         final Interpreter interpreter = Interpreter.of(pleadOnline.getInterpreterLanguage());
         final DefendantCourtInterpreter defendantCourtInterpreter = new DefendantCourtInterpreter(interpreter.getLanguage(), interpreter.isNeeded());
         final Boolean welshHearing = pleadOnline.getSpeakWelsh();
-        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(defendantCourtInterpreter, isTrue(welshHearing));
+        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(
+                defendantCourtInterpreter,
+                isTrue(welshHearing),
+                pleadOnline.getDisabilityNeeds());
+
         final List<Plea> pleas = pleadOnline.getOffences().stream().map( offence ->
         {
             PleaType type = offence.getPlea();
@@ -181,8 +186,8 @@ public class OnlinePleaHandler {
         streamBuilder.add(new OnlinePleaReceived(state.getUrn(), state.getCaseId(), defendantId,
                 pleadOnline.getUnavailability(), pleadOnline.getInterpreterLanguage(), pleadOnline.getSpeakWelsh(),
                 pleadOnline.getWitnessDetails(), pleadOnline.getWitnessDispute(), pleadOnline.getOutstandingFines(), personalDetails,
-                pleadOnline.getFinancialMeans(), pleadOnline.getEmployer(), pleadOnline.getOutgoings()
-        ));
+                pleadOnline.getFinancialMeans(), pleadOnline.getEmployer(), pleadOnline.getOutgoings(),
+                ofNullable(pleadOnline.getDisabilityNeeds()).orElse(NO_DISABILITY_NEEDS)));
         return streamBuilder.build();
     }
 

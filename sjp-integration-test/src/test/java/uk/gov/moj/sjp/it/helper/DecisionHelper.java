@@ -4,7 +4,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
@@ -59,7 +58,6 @@ import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.NoSeparatePenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
-import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferredForFutureSJPSession;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferredToOpenCourt;
@@ -219,6 +217,21 @@ public class DecisionHelper {
         final JsonObject decision = queryDecision(decisionSaved);
         verifySession(decision, session, decisionCommand.getSavedBy());
         verifyWithdrawDecision(decision, withdrawDecisions, withdrawalReason);
+    }
+
+    public static void verifyCaseQueryWithDisabilityNeeds(final UUID caseId, final String disabilityNeeds) {
+
+        Matcher disabilityNeedsMatcher;
+        if(disabilityNeeds!=null) {
+            disabilityNeedsMatcher = allOf(
+                    withJsonPath("$.defendant.disabilityNeeds.needed", is(true)),
+                    withJsonPath("$.defendant.disabilityNeeds.disabilityNeeds", equalTo(disabilityNeeds))
+            );
+        } else {
+            disabilityNeedsMatcher = withJsonPath("$.defendant.disabilityNeeds.needed", is(false));
+        }
+
+        final JsonObject aCase = getCase(caseId, disabilityNeedsMatcher);
     }
 
     public static void verifyCaseQueryWithAdjournDecision(final DecisionCommand decisionCommand,
@@ -538,6 +551,7 @@ public class DecisionHelper {
         assertThat(caseReferredForCourtHearing.getListingNotes(), is(referForCourtHearing.getListingNotes()));
         assertThat(caseReferredForCourtHearing.getReferredOffences(), is(offenceDecisionInformationList));
         assertThat(caseReferredForCourtHearing.getReferredAt(), is(decisionSaved.getSavedAt()));
+        assertThat(caseReferredForCourtHearing.getDefendantCourtOptions(), is(referForCourtHearing.getDefendantCourtOptions()));
     }
 
     public static void verifyCaseAdjourned(final DecisionSaved decisionSaved, final Adjourn adjourn, final CaseAdjournedToLaterSjpHearingRecorded caseAdjourned) {

@@ -14,6 +14,8 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
+
 import static uk.gov.moj.cpp.sjp.query.view.util.FileUtil.getFileContentAsJson;
 import static uk.gov.moj.cpp.sjp.query.view.util.FileUtil.getFileContentAsJsonArray;
 
@@ -77,6 +79,8 @@ public class ResultsServiceTest {
     private static final ZonedDateTime DECISION_SAVED_AT2 = ZonedDateTime.now();
 
     private final UUID OFFENCE_ID = randomUUID();
+    private final UUID OFFENCE_ID2 = randomUUID();
+
 
     private final UUID DECISION_ID1 = randomUUID();
     private final UUID DECISION_ID2 = randomUUID();
@@ -203,6 +207,7 @@ public class ResultsServiceTest {
                         ImmutableMap.<String, Object>builder()
                                 .put("resultedOn", DECISION_SAVED_AT1)
                                 .put("offenceId", OFFENCE_ID)
+                                .put("offenceId2", OFFENCE_ID2)
                                 .build()));
     }
 
@@ -219,6 +224,20 @@ public class ResultsServiceTest {
                 .setCode("PS90010")
                 .setSequenceNumber(1)
                 .setPlea(NOT_GUILTY)
+                .setConviction(PROVED_SJP)
+                .setWording("On 02/07/2015 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction ")
+                .setWordingWelsh("Welsh wording: On 02/07/2015 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction ")
+                .setStartDate(LocalDate.now().minusDays(1))
+                .setChargeDate(LocalDate.now().plusDays(1))
+                .withCompensation(BigDecimal.valueOf(10))
+                .withProsecutionFacts("An incident took place at GREEN PARK station whereby you were spoken to by a member of London Underground staff regarding your train journey and the associated fare.The facts of this incidents are now being considered and I must advise you that legal proceedings may be initiated against you regarding this matter in accordance with the LU prosecution policy")
+                .build();
+        final OffenceDetail offenceDetail2 = OffenceDetail.builder()
+                .setId(OFFENCE_ID2)
+                .setCode("PS90011")
+                .setSequenceNumber(2)
+                .setPlea(NOT_GUILTY)
+                .setConviction(PROVED_SJP)
                 .setWording("On 02/07/2015 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction ")
                 .setWordingWelsh("Welsh wording: On 02/07/2015 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction ")
                 .setStartDate(LocalDate.now().minusDays(1))
@@ -243,7 +262,7 @@ public class ResultsServiceTest {
         DefendantDetail defendantDetail = new DefendantDetail(defendantId);
         defendantDetail.setPersonalDetails(personalDetails);
 
-        defendantDetail.setOffences(asList(offenceDetail1));
+        defendantDetail.setOffences(asList(offenceDetail1,offenceDetail2));
 
         CaseDetail caseDetail = new CaseDetail(CASE_ID);
         caseDetail.setUrn("TFL75947ZQ8UE");
@@ -297,7 +316,15 @@ public class ResultsServiceTest {
                 "",
                 NO_VERDICT,
                 null, null);
-        caseDecision.setOffenceDecisions(asList(referredToOpenCourt));
+        final OffenceDecision referredToOpenCourt2 = new ReferForCourtHearingDecision(
+                OFFENCE_ID2,
+                DECISION_ID2,
+                UUID.fromString("809f7aac-d285-43a5-9fb1-3a894db71530"),
+                10,
+                "",
+                null,
+                null, null);
+        caseDecision.setOffenceDecisions(asList(referredToOpenCourt,referredToOpenCourt2));
         return caseDecision;
     }
 

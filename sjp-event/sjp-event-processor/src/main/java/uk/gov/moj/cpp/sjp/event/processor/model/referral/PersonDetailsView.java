@@ -11,6 +11,7 @@ public class PersonDetailsView {
     private final LocalDate dateOfBirth;
     private final String gender;
     private final String interpreterLanguageNeeds;
+    private final String disabilityStatus;
     private final String nationalityId;
     private final String ethnicityId;
     private final String documentationLanguageNeeds;
@@ -28,6 +29,7 @@ public class PersonDetailsView {
                              final LocalDate dateOfBirth,
                              final String gender,
                              final String interpreterLanguageNeeds,
+                             final String disabilityStatus,
                              final String nationalityId,
                              final String ethnicityId,
                              final String documentationLanguageNeeds,
@@ -44,6 +46,7 @@ public class PersonDetailsView {
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
         this.interpreterLanguageNeeds = interpreterLanguageNeeds;
+        this.disabilityStatus = disabilityStatus;
         this.nationalityId = nationalityId;
         this.ethnicityId = ethnicityId;
         this.documentationLanguageNeeds = documentationLanguageNeeds;
@@ -99,6 +102,10 @@ public class PersonDetailsView {
         return interpreterLanguageNeeds;
     }
 
+    public String getDisabilityStatus() {
+        return disabilityStatus;
+    }
+
     public AddressView getAddress() {
         return address;
     }
@@ -127,6 +134,7 @@ public class PersonDetailsView {
         private LocalDate dateOfBirth;
         private String gender;
         private String interpreterLanguageNeeds;
+        private String disabilityStatus;
         private String nationalityId;
         private String ethnicityId;
         private String documentationLanguageNeeds;
@@ -164,6 +172,11 @@ public class PersonDetailsView {
 
         public Builder withInterpreterLanguageNeeds(final String interpreterLanguageNeeds) {
             this.interpreterLanguageNeeds = interpreterLanguageNeeds;
+            return this;
+        }
+
+        public Builder withDisabilityStatus(final String disabilityStatus) {
+            this.disabilityStatus = disabilityStatus;
             return this;
         }
 
@@ -220,6 +233,7 @@ public class PersonDetailsView {
                     dateOfBirth,
                     gender,
                     interpreterLanguageNeeds,
+                    disabilityStatus,
                     nationalityId,
                     ethnicityId,
                     documentationLanguageNeeds,

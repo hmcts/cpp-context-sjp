@@ -81,4 +81,11 @@ public class CasePublishStatus implements Serializable {
         this.numberOfPublishes++;
         this.totalNumberOfPublishes++;
     }
+
+    public void decrementPublishedCounters() {
+        if(this.numberOfPublishes > 0 && this.totalNumberOfPublishes > 0) {
+            this.numberOfPublishes--;
+            this.totalNumberOfPublishes--;
+        }
+    }
 }

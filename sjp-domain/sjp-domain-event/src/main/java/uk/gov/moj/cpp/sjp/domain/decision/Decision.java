@@ -1,8 +1,9 @@
 package uk.gov.moj.cpp.sjp.domain.decision;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
+import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode;
+
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
 
@@ -12,9 +13,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
-import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @SuppressWarnings("squid:S00107")
 public class Decision implements Serializable {
@@ -50,6 +51,7 @@ public class Decision implements Serializable {
         this.defendant = defendant;
     }
 
+    @SuppressWarnings("pmd:NullAssignment")
     public Decision(final UUID decisionId,
                     final UUID sessionId,
                     final UUID caseId,
@@ -103,6 +105,7 @@ public class Decision implements Serializable {
     public Defendant getDefendant() {
         return defendant;
     }
+
 
     @JsonIgnore
     public Set<UUID> getOffenceIds() {

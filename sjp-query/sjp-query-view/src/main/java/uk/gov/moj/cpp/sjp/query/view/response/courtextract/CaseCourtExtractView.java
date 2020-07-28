@@ -11,7 +11,8 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 
-import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
@@ -23,6 +24,7 @@ import org.apache.commons.lang3.tuple.Pair;
 public class CaseCourtExtractView {
     private static final DateTimeFormatter DATE_FORMAT = ofPattern("dd MMMM yyyy");
     private static final DateTimeFormatter TIME_FORMAT = ofPattern("h:mma");
+    private static final String LONDON_ZONE_ID = "Europe/London";
 
     private final String generationDate;
 
@@ -39,8 +41,8 @@ public class CaseCourtExtractView {
     private final boolean hasFinancialImposition;
 
     public CaseCourtExtractView(final CaseDetail caseDetail) {
-        this.generationDate = now().format(DATE_FORMAT);
-        this.generationTime = LocalTime.now().format(TIME_FORMAT).toLowerCase();
+        this.generationDate = ZonedDateTime.now(ZoneId.of(LONDON_ZONE_ID)).format(DATE_FORMAT);
+        this.generationTime = ZonedDateTime.now(ZoneId.of(LONDON_ZONE_ID)).format(TIME_FORMAT).toLowerCase();
         this.defendant = new DefendantDetailsView(caseDetail.getDefendant());
         this.caseDetails = new CaseDetailsView(caseDetail);
         this.offences = caseDetail.getDefendant().getOffences().stream()

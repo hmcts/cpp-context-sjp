@@ -19,6 +19,7 @@ import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.aggregate.domain.DocumentCountByDocumentType;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
+import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PersonalDetails;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -117,6 +118,7 @@ public class CaseAggregateState implements AggregateState {
 
     private final Set<UUID> pressRestrictableOffenceIds = new HashSet<>();
     private final Set<UUID> offencesHavingPreviousPressRestriction = new HashSet<>();
+    private final Map<UUID, DisabilityNeeds> defendantsDisabilityNeeds = new HashMap<>();
 
     public UUID getCaseId() {
         return caseId;
@@ -390,6 +392,14 @@ public class CaseAggregateState implements AggregateState {
         return defendantsInterpreterLanguages.get(defendantID);
     }
 
+    public DisabilityNeeds getDefendantDisabilityNeeds(final UUID defendantID) {
+        return defendantsDisabilityNeeds.get(defendantID);
+    }
+
+    public Map<UUID, DisabilityNeeds> getDefendantsDisabilityNeeds() {
+        return unmodifiableMap(defendantsDisabilityNeeds);
+    }
+
     public Boolean defendantSpeakWelsh(final UUID defendantID) {
         return defendantsSpeakWelsh.get(defendantID);
     }
@@ -412,6 +422,10 @@ public class CaseAggregateState implements AggregateState {
                 (defendant, previousValue) -> ofNullable(interpreter)
                         .map(Interpreter::getLanguage)
                         .orElse(null));
+    }
+
+    public void updateDefendantDisabilityNeeds(final UUID defendantId, final DisabilityNeeds disabilityNeeds) {
+        defendantsDisabilityNeeds.put(defendantId, disabilityNeeds);
     }
 
     public void updateDefendantSpeakWelsh(final UUID defendantId, final Boolean speakWelsh) {

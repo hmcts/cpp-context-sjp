@@ -1,6 +1,12 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.lang.String.format;
+import static java.time.LocalDate.parse;
 import static java.time.LocalTime.now;
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.time.temporal.ChronoUnit.YEARS;
 import static java.time.temporal.ChronoUnit.YEARS;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
@@ -8,6 +14,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -15,12 +22,13 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.streamToJsonObject;
-
+import org.junit.Before;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
@@ -29,7 +37,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
-
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -89,117 +96,131 @@ public class PressTransparencyReportRequestedProcessorTest {
 
     private static final String EXPECTED_TEMPLATE_NAME = "PressPendingCasesEnglish";
 
+    private static final DateTimeFormatter DATE_FORMAT = ofPattern("dd MM yyyy");
+    private static final String OFFENCE_TITLE = "OffenceTitle";
+    private static final String PROSECUTOR_NAME = "TFL";
+    private static final String PROSECUTOR = "Transport For London";
+    private static final UUID REPORT_ID = randomUUID();
+    private static final UUID PAYLOAD_DOCUMENT_GENERATOR_FILE_ID = randomUUID();
+    private static final int NUMBER_OF_PENDING_CASES_FOR_EXPORT = 9;
+    private static final List<UUID> CASE_IDS = range(0, NUMBER_OF_PENDING_CASES_FOR_EXPORT)
+            .mapToObj(e -> randomUUID()).collect(toList());
+    private static final Optional<JsonObject> CA_03011_REFERENCE_DATA_PAYLOAD = Optional.of(createObjectBuilder()
+            .add("title", OFFENCE_TITLE)
+            .build());
+    private static final JsonEnvelope PRIVATE_EVENT_ENVELOPE = envelopeFrom(
+            metadataWithRandomUUID("sjp.events.press-transparency-report-requested"),
+            createObjectBuilder()
+                    .add("pressTransparencyReportId", REPORT_ID.toString())
+                    .build()
+    );
+    private static final JsonObject EXPECTED_DOC_GENERATION_PAYLOAD = createObjectBuilder()
+            .add("originatingSource", "sjp")
+            .add("templateIdentifier", EXPECTED_TEMPLATE_NAME)
+            .add("conversionFormat", "pdf")
+            .add("sourceCorrelationId", REPORT_ID.toString())
+            .add("payloadFileServiceId", PAYLOAD_DOCUMENT_GENERATOR_FILE_ID.toString())
+            .build();
+
+    @Before
+    public void setUp() throws Exception {
+        mockReferenceData();
+        mockFileStore();
+    }
+
 
     @Test
     public void shouldCreatePressTransparencyReport() throws FileServiceException {
-        final UUID payloadDocumentGeneratorFileId = randomUUID();
-        final UUID reportId = randomUUID();
 
-        final String offenceTitle = "OffenceTitle";
-        final String prosecutorName = "TFL";
-        final String prosecutor = "Transport For London";
-        final int numberOfPendingCasesForExport = 9;
-        final List<UUID> caseIds = range(0, numberOfPendingCasesForExport)
-                .mapToObj(e -> randomUUID()).collect(toList());
+        final String defendantDateOfBirth = "1980-06-12";
 
-        final Optional<JsonObject> CA03011_referenceDataPayload = Optional.of(createObjectBuilder()
-                .add("title", offenceTitle)
-                .build());
+        final List<JsonObject> pendingCasesList = pendingCasesList(CASE_IDS, false, defendantDateOfBirth);
 
-        when(referenceDataService.getProsecutor(eq(prosecutorName), eq(false), any())).thenReturn(prosecutor);
-        when(referenceDataOffencesService.getOffenceReferenceData(any(), anyString(), anyString())).thenReturn(CA03011_referenceDataPayload);
+        mockSjpService(pendingCasesList);
 
-        final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, false);
-        when(sjpService.getPendingCases(any())).thenReturn(pendingCasesList);
-        when(fileStorer.store(any(), any())).thenReturn(payloadDocumentGeneratorFileId);
+        processor.handlePressTransparencyRequest(PRIVATE_EVENT_ENVELOPE);
 
+        final JsonObject actual = getDocumentGeneratorPayloadFromFileStorer();
 
-        final JsonEnvelope privateEventEnvelope = envelopeFrom(
-                metadataWithRandomUUID("sjp.events.press-transparency-report-requested"),
-                createObjectBuilder()
-                        .add("pressTransparencyReportId", reportId.toString())
-                        .build()
-        );
-        processor.handlePressTransparencyRequest(privateEventEnvelope);
+        actual.getJsonArray("readyCases").forEach(rc ->
+                assertThat(rc.toString(), isJson(withJsonPath("$.dateOfBirth", equalTo("1980-06-12 (%s)".format(getAge(defendantDateOfBirth)))))));
 
-        verify(fileStorer).store(any(JsonObject.class), payloadForDocumentGenerationCaptor.capture());
+        assertPayloadForDocumentGenerator(actual, pendingCasesList, NUMBER_OF_PENDING_CASES_FOR_EXPORT);
 
-        final InputStream payloadBytes = payloadForDocumentGenerationCaptor.getValue();
-        final JsonObject payloadForDocumentGenerator = streamToJsonObject(payloadBytes);
-
-        assertPayloadForDocumentGenerator(payloadForDocumentGenerator, pendingCasesList, numberOfPendingCasesForExport);
-        verify(referenceDataService).getProsecutor(eq(prosecutorName), eq(false), any());
+        verify(referenceDataService).getProsecutor(eq(PROSECUTOR_NAME), eq(false), any());
 
 
         verify(sender).sendAsAdmin(documentGenerationRequestCaptor.capture());
 
-        final JsonObject expectedDocGenerationPayload = createObjectBuilder()
-                .add("originatingSource", "sjp")
-                .add("templateIdentifier", EXPECTED_TEMPLATE_NAME)
-                .add("conversionFormat", "pdf")
-                .add("sourceCorrelationId", reportId.toString())
-                .add("payloadFileServiceId", payloadDocumentGeneratorFileId.toString())
-                .build();
-
-        assertDocumentGenerationRequest(documentGenerationRequestCaptor.getValue(), expectedDocGenerationPayload);
+        assertDocumentGenerationRequest(documentGenerationRequestCaptor.getValue(), EXPECTED_DOC_GENERATION_PAYLOAD);
 
         verify(sender).send(storePressTransparencyReportCommandEnvelopeCaptor.capture());
-        assertPressTransparencyReportEnvelope(storePressTransparencyReportCommandEnvelopeCaptor.getValue(), reportId, caseIds);
+        assertPressTransparencyReportEnvelope(storePressTransparencyReportCommandEnvelopeCaptor.getValue(), REPORT_ID, CASE_IDS);
+    }
+
+    private void mockFileStore() throws FileServiceException {
+        when(fileStorer.store(any(), any())).thenReturn(PAYLOAD_DOCUMENT_GENERATOR_FILE_ID);
+    }
+
+    private void mockSjpService(List<JsonObject> pendingCasesList) {
+        when(sjpService.getPendingCases(any(), any())).thenReturn(pendingCasesList);
+    }
+
+    private void mockReferenceData() {
+        when(referenceDataService.getProsecutor(eq(PROSECUTOR_NAME), eq(false), any())).thenReturn(PROSECUTOR);
+        when(referenceDataOffencesService.getOffenceReferenceData(any(), anyString(), anyString())).thenReturn(CA_03011_REFERENCE_DATA_PAYLOAD);
+    }
+
+    private JsonObject getDocumentGeneratorPayloadFromFileStorer() throws FileServiceException {
+        verify(fileStorer).store(any(JsonObject.class), payloadForDocumentGenerationCaptor.capture());
+
+        final InputStream payloadBytes = payloadForDocumentGenerationCaptor.getValue();
+        return streamToJsonObject(payloadBytes);
+    }
+
+    @Test
+    public void shouldCreatePressTransparencyWhenNoDateOfBirthReport() throws FileServiceException {
+
+        final String defendantDateOfBirth = "";
+
+        final List<JsonObject> pendingCasesList = pendingCasesList(CASE_IDS, false, defendantDateOfBirth);
+
+        mockSjpService(pendingCasesList);
+
+        processor.handlePressTransparencyRequest(PRIVATE_EVENT_ENVELOPE);
+
+        final JsonObject actual = getDocumentGeneratorPayloadFromFileStorer();
+
+        assertThat(actual.containsKey("dateOfBirth"), is(false));
+
+
     }
 
     @Test
     public void shouldExcludeYouthDefendants() throws FileServiceException {
-        final UUID payloadDocumentGeneratorFileId = randomUUID();
-        final UUID reportId = randomUUID();
 
-        final String offenceTitle = "OffenceTitle";
-        final String prosecutorName = "TFL";
-        final String prosecutor = "Transport For London";
-        final int numberOfPendingCasesForExport = 9;
-        final List<UUID> caseIds = range(0, numberOfPendingCasesForExport)
-                .mapToObj(e -> randomUUID()).collect(toList());
+        final String defendantDateOfBirth = "1980-06-12";
 
-        final Optional<JsonObject> CA03011_referenceDataPayload = Optional.of(createObjectBuilder()
-                .add("title", offenceTitle)
-                .build());
+        final List<JsonObject> pendingCasesList = pendingCasesList(CASE_IDS, true, defendantDateOfBirth);
+        mockSjpService(pendingCasesList);
 
-        when(referenceDataService.getProsecutor(eq(prosecutorName), eq(false), any())).thenReturn(prosecutor);
-        when(referenceDataOffencesService.getOffenceReferenceData(any(), anyString(), anyString())).thenReturn(CA03011_referenceDataPayload);
-
-        final List<JsonObject> pendingCasesList = pendingCasesList(caseIds, true);
-        when(sjpService.getPendingCases(any())).thenReturn(pendingCasesList);
-        when(fileStorer.store(any(), any())).thenReturn(payloadDocumentGeneratorFileId);
-
-        final JsonEnvelope privateEventEnvelope = envelopeFrom(
-                metadataWithRandomUUID("sjp.events.press-transparency-report-requested"),
-                createObjectBuilder()
-                        .add("pressTransparencyReportId", reportId.toString())
-                        .build()
-        );
-        processor.handlePressTransparencyRequest(privateEventEnvelope);
+        processor.handlePressTransparencyRequest(PRIVATE_EVENT_ENVELOPE);
 
         verify(fileStorer).store(any(JsonObject.class), payloadForDocumentGenerationCaptor.capture());
 
         final InputStream payloadBytes = payloadForDocumentGenerationCaptor.getValue();
         final JsonObject payloadForDocumentGenerator = streamToJsonObject(payloadBytes);
 
-        assertRootValuesOfPayloadForDocumentGenerator(payloadForDocumentGenerator, numberOfPendingCasesForExport / 2);
-        verify(referenceDataService).getProsecutor(eq(prosecutorName), eq(false), any());
-
-        final JsonObject expectedDocGenerationPayload = createObjectBuilder()
-                .add("originatingSource", "sjp")
-                .add("templateIdentifier", EXPECTED_TEMPLATE_NAME)
-                .add("conversionFormat", "pdf")
-                .add("sourceCorrelationId", reportId.toString())
-                .add("payloadFileServiceId", payloadDocumentGeneratorFileId.toString())
-                .build();
+        assertRootValuesOfPayloadForDocumentGenerator(payloadForDocumentGenerator, NUMBER_OF_PENDING_CASES_FOR_EXPORT / 2);
+        verify(referenceDataService).getProsecutor(eq(PROSECUTOR_NAME), eq(false), any());
 
         verify(sender).sendAsAdmin(documentGenerationRequestCaptor.capture());
-        assertDocumentGenerationRequest(documentGenerationRequestCaptor.getValue(), expectedDocGenerationPayload);
+        assertDocumentGenerationRequest(documentGenerationRequestCaptor.getValue(), EXPECTED_DOC_GENERATION_PAYLOAD);
 
         verify(sender).send(storePressTransparencyReportCommandEnvelopeCaptor.capture());
-        assertPressTransparencyReportEnvelope(storePressTransparencyReportCommandEnvelopeCaptor.getValue(), reportId, caseIds);
+        assertPressTransparencyReportEnvelope(storePressTransparencyReportCommandEnvelopeCaptor.getValue(), REPORT_ID, CASE_IDS);
     }
+
 
     private void assertPayloadForDocumentGenerator(final JsonObject payload, final List<JsonObject> pendingCasesList, final Integer totalNumberOfRecords) {
         assertReadyCasesPayloadWithPendingCases(payload, pendingCasesList, "caseUrn");
@@ -212,6 +233,13 @@ public class PressTransparencyReportRequestedProcessorTest {
         assertPressRestrictionValues(payload, pendingCasesList);
 
         assertRootValuesOfPayloadForDocumentGenerator(payload, totalNumberOfRecords);
+    }
+
+
+    private String getAge(String defendantDateOfBirth) {
+        final LocalDate defendantDob = parse(defendantDateOfBirth);
+        final Optional<Long> defendantAge = Optional.of(YEARS.between(defendantDob, LocalDate.now()));
+        return format("%s (%d)", DATE_FORMAT.format(defendantDob), defendantAge.get());
     }
 
     private void assertPressRestrictionValues(final JsonObject payload, final List<JsonObject> pendingCasesList) {
@@ -303,7 +331,7 @@ public class PressTransparencyReportRequestedProcessorTest {
         assertThat(documentGenerationEnvelope.payload(), is(expectedPayloadForDocumentGeneration));
     }
 
-    private List<JsonObject> pendingCasesList(final List<UUID> caseIds, final boolean halfNotAdult) {
+    private List<JsonObject> pendingCasesList(final List<UUID> caseIds, final boolean halfNotAdult, final String dateOfBirth) {
         final List<JsonObject> pendingCasesList = new LinkedList<>();
 
         for (int caseNumber = 0; caseNumber < caseIds.size(); caseNumber++) {
@@ -330,8 +358,7 @@ public class PressTransparencyReportRequestedProcessorTest {
                     );
 
             final String defendantDateOfBirth = (halfNotAdult && caseNumber % 2 == 0) ?
-                    LocalDate.now().minusYears(15).format(DOB_FORMAT) :
-                    "1980-06-12";
+                    LocalDate.now().minusYears(15).format(DOB_FORMAT) : dateOfBirth;
 
             final JsonObjectBuilder pendingCase = createObjectBuilder()
                     .add("caseId", caseIds.get(caseNumber).toString())

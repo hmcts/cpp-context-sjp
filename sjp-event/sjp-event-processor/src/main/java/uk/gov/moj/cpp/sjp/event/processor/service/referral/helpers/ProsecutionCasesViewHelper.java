@@ -17,6 +17,7 @@ import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
 import uk.gov.justice.json.schemas.domains.sjp.query.EmployerDetails;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
+import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.AddressView;
@@ -209,6 +210,10 @@ public class ProsecutionCasesViewHelper {
                         .withDateOfBirth(defendantPersonalDetails.getDateOfBirth())
                         .withGender(defendantPersonalDetails.getGender().name())
                         .withInterpreterLanguageNeeds(interpreter)
+                        .withDisabilityStatus(ofNullable(defendantCourtOptions)
+                                .map(DefendantCourtOptions::getDisabilityNeeds)
+                                .map(DisabilityNeeds::getDisabilityNeeds)
+                                .orElse(null))
                         .withNationalityId(nationalityId)
                         .withDocumentationLanguageNeeds(ofNullable(caseFileDefendantDetails)
                                 .map(defendantDetails -> defendantDetails.getString("documentationLanguage", null))

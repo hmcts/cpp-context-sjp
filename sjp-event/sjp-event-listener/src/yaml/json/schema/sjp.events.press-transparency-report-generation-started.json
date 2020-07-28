@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.press-transparency-report-generation-started.json",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.press-transparency-report-generation-started.json",
   "type": "object",
   "properties": {
     "pressTransparencyReportId": {

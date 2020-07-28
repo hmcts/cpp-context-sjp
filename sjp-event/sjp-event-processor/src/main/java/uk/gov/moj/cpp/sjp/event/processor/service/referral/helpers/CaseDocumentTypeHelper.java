@@ -8,13 +8,15 @@ import java.util.Map;
 public class CaseDocumentTypeHelper {
 
     private static final Map<String, String> DOCUMENT_MAPPING_TYPES = new HashMap<>();
+    private static final String DOCUMENT_MAPPING_TYPES_SENTENCE = "Sentence";
 
     static {
         DOCUMENT_MAPPING_TYPES.put("PLEA", "Plea");
         DOCUMENT_MAPPING_TYPES.put("CITN", "Pre Cons");
-        DOCUMENT_MAPPING_TYPES.put("FINANCIAL_MEANS", "Sentence");
+        DOCUMENT_MAPPING_TYPES.put("FINANCIAL_MEANS", DOCUMENT_MAPPING_TYPES_SENTENCE);
         DOCUMENT_MAPPING_TYPES.put("SJPN", "Case Summary");
-        DOCUMENT_MAPPING_TYPES.put("INTENTION_TO_DISQUALIFY_NOTICE", "Sentence");
+        DOCUMENT_MAPPING_TYPES.put("INTENTION_TO_DISQUALIFY_NOTICE", DOCUMENT_MAPPING_TYPES_SENTENCE);
+        DOCUMENT_MAPPING_TYPES.put("DISQUALIFICATION_REPLY_SLIP", DOCUMENT_MAPPING_TYPES_SENTENCE);
     }
 
     private CaseDocumentTypeHelper() {

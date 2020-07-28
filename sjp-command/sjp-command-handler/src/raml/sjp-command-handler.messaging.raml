@@ -138,6 +138,10 @@ version: v1
 
       application/vnd.sjp.command.request-press-transparency-report+json: !!null
 
+      application/vnd.sjp.command.transparency-report-failed+json:
+        schema: !include json/schema/sjp.command.transparency-report-failed.json
+        example: !include json/sjp.command.transparency-report-failed.json
+
       application/vnd.sjp.command.add-case-note+json:
         example: !include json/sjp.command.add-case-note.json
         schema:  !include json/schema/sjp.command.add-case-note.json

@@ -64,12 +64,14 @@ public class SjpService {
         return defendantsOnlinePleaEnvelope.payload();
     }
 
-    public List<JsonObject> getPendingCases(final JsonEnvelope envelope) {
+    public List<JsonObject> getPendingCases(final JsonEnvelope envelope, final ExportType exportType) {
         return requester.request(
                 envelopeFrom(
                         metadataFrom(envelope.metadata())
                                 .withName("sjp.query.pending-cases").build(),
-                        createObjectBuilder().build()
+                        createObjectBuilder()
+                                .add("export", exportType.name().toLowerCase())
+                                .build()
                 ))
                 .payloadAsJsonObject()
                 .getJsonArray("pendingCases")

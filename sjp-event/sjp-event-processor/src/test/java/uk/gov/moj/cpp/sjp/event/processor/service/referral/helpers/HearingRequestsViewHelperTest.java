@@ -1,6 +1,14 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers;
 
-import org.junit.Test;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
+import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
+
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
@@ -13,17 +21,12 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingRequestView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingTypeView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReferralReasonView;
 
-import javax.json.JsonObject;
 import java.util.List;
 import java.util.UUID;
 
-import static java.util.Collections.singletonList;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
+import javax.json.JsonObject;
+
+import org.junit.Test;
 
 public class HearingRequestsViewHelperTest {
 
@@ -40,6 +43,7 @@ public class HearingRequestsViewHelperTest {
     private static final String DEFENDANT_UNAVAILABILITY = "defendant unavailability";
     private static final String PROSECUTOR_DATES_TO_AVOID = "prosecutor dates to avoid";
     private static final String HEARING_CODE = "APL";
+    private static final String HEARING_AID = "Hearing aid";
 
     private HearingRequestsViewHelper hearingRequestsViewHelper = new HearingRequestsViewHelper();
 
@@ -154,7 +158,7 @@ public class HearingRequestsViewHelperTest {
                 .withDecisionId(DECISION_ID)
                 .withEstimatedHearingDuration(ESTIMATED_HEARING_DURATION)
                 .withListingNotes(LISTING_NOTES)
-                .withDefendantCourtOptions(new DefendantCourtOptions(null, welsh))
+                .withDefendantCourtOptions(new DefendantCourtOptions(null, welsh, disabilityNeedsOf(HEARING_AID)))
                 .build();
     }
 }

@@ -1,27 +1,5 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
-import org.apache.commons.lang.NotImplementedException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import uk.gov.justice.json.schemas.domains.sjp.User;
-import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
-import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
-import uk.gov.moj.cpp.sjp.domain.SessionType;
-import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
-import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
-import uk.gov.moj.cpp.sjp.domain.decision.*;
-import uk.gov.moj.cpp.sjp.domain.plea.Plea;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
-import uk.gov.moj.cpp.sjp.event.decision.DecisionRejected;
-
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.*;
-import java.util.stream.Stream;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.time.ZonedDateTime.now;
@@ -34,9 +12,42 @@ import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
+
+import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
+import uk.gov.moj.cpp.sjp.domain.SessionType;
+import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
+import uk.gov.moj.cpp.sjp.domain.decision.Decision;
+import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
+import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
+import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
+import uk.gov.moj.cpp.sjp.domain.plea.Plea;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
+import uk.gov.moj.cpp.sjp.event.decision.DecisionRejected;
+
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang.NotImplementedException;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
 public class CaseDecisionHandlerInValidVerdictPleaCasesTest {
@@ -150,7 +161,8 @@ public class CaseDecisionHandlerInValidVerdictPleaCasesTest {
         courtOptions =
                 new DefendantCourtOptions(
                         new DefendantCourtInterpreter("EN", true),
-                        false);
+                        false,
+                        disabilityNeedsOf("disability needs"));
     }
 
     @Test

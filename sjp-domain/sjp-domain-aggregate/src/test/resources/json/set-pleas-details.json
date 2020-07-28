@@ -8,6 +8,9 @@
       "interpreter": {
         "language": "French",
         "needed": true
+      },
+      "disabilityNeeds": {
+        "needed" : false
       }
     },
     "pleas": [

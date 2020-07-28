@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain;
 
+import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,11 +18,15 @@ public class DefendantCourtOptions implements Serializable {
 
     private final Boolean welshHearing;
 
+    private final DisabilityNeeds disabilityNeeds;
+
     @JsonCreator
     public DefendantCourtOptions(@JsonProperty("interpreter") final DefendantCourtInterpreter interpreter,
-                                 @JsonProperty("welshHearing") final Boolean welshHearing) {
+                                 @JsonProperty("welshHearing") final Boolean welshHearing,
+                                 @JsonProperty("disabilityNeeds") final DisabilityNeeds disabilityNeeds) {
         this.interpreter = interpreter;
         this.welshHearing = welshHearing;
+        this.disabilityNeeds = disabilityNeeds;
     }
 
     public DefendantCourtInterpreter getInterpreter() {
@@ -29,6 +35,10 @@ public class DefendantCourtOptions implements Serializable {
 
     public Boolean getWelshHearing() {
         return welshHearing;
+    }
+
+    public DisabilityNeeds getDisabilityNeeds() {
+        return disabilityNeeds;
     }
 
     @Override
@@ -42,11 +52,12 @@ public class DefendantCourtOptions implements Serializable {
         }
         final DefendantCourtOptions that = (DefendantCourtOptions) o;
         return interpreter.equals(that.interpreter) &&
-                welshHearing.equals(that.welshHearing);
+                welshHearing.equals(that.welshHearing) &&
+                Objects.equals(disabilityNeeds, that.disabilityNeeds);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(interpreter, welshHearing);
+        return Objects.hash(interpreter, welshHearing, disabilityNeeds);
     }
 }

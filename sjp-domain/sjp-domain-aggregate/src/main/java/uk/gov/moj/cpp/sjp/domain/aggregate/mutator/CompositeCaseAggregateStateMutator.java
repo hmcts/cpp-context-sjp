@@ -1,7 +1,12 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
+import static java.util.Optional.ofNullable;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
+
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
+import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
 import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
@@ -55,7 +60,6 @@ import uk.gov.moj.cpp.sjp.event.session.CaseUnassigned;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -108,7 +112,13 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
     private static final AggregateStateMutator<AllOffencesWithdrawalRequestCancelled, CaseAggregateState> ALL_OFFENCES_CANCELLED_MUTATOR =
             (event, state) -> state.setWithdrawalAllOffencesRequested(false);
     private static final AggregateStateMutator<CaseReferredForCourtHearing, CaseAggregateState> CASE_REFERRED_FOR_COURT_HEARING_MUTATOR =
-            (event, state) -> state.markCaseReferredForCourtHearing();
+            (event, state) -> {
+        state.markCaseReferredForCourtHearing();
+        final DisabilityNeeds disabilityNeeds = ofNullable(event.getDefendantCourtOptions())
+                .map(DefendantCourtOptions::getDisabilityNeeds)
+                .orElse(NO_DISABILITY_NEEDS);
+        state.updateDefendantDisabilityNeeds(state.getDefendantId(), disabilityNeeds);
+    };
     private static final AggregateStateMutator<CaseReopenedUpdated, CaseAggregateState> CASE_REOPENED_UPDATED_MUTATOR =
             (event, state) -> state.setCaseReopenedDate(event.getCaseReopenDetails().getReopenedDate());
     private static final AggregateStateMutator<EmploymentStatusUpdated, CaseAggregateState> DEFENDANT_EMPLOYMENT_STATUS_MUTATOR =
@@ -157,7 +167,13 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
             });
 
     private static final AggregateStateMutator<PleasSet, CaseAggregateState> PLEAS_SET_MUTATOR =
-            ((event, state) -> state.setPleas(event.getPleas()));
+            ((event, state) -> {
+                state.setPleas(event.getPleas());
+                final DisabilityNeeds disabilityNeeds = ofNullable(event.getDefendantCourtOptions())
+                        .map(DefendantCourtOptions::getDisabilityNeeds)
+                        .orElse(NO_DISABILITY_NEEDS);
+                state.updateDefendantDisabilityNeeds(state.getDefendantId(), disabilityNeeds);
+            });
 
     private static final AggregateStateMutator<CaseAdjournedToLaterSjpHearingRecorded, CaseAggregateState> CASE_ADJOURNED_TO_LATER_HEARING_RECORDED_MUTATOR =
             ((event, state) -> state.setAdjournedTo(event.getAdjournedTo()));
@@ -248,7 +264,7 @@ final class CompositeCaseAggregateStateMutator implements AggregateStateMutator<
 
     @Override
     public void apply(final Object event, final CaseAggregateState aggregateState) {
-        Optional.ofNullable(eventToStateMutator.get(event.getClass()))
+        ofNullable(eventToStateMutator.get(event.getClass()))
                 .ifPresent(stateMutator -> stateMutator.apply(event, aggregateState));
     }
 

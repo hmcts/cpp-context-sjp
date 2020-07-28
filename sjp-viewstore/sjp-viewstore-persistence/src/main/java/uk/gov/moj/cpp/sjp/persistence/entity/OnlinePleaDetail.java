@@ -12,7 +12,6 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 @Entity
 @Table(name = "online_plea_detail")
@@ -40,9 +39,6 @@ public class OnlinePleaDetail {
 
     @Column(name = "not_guilty_because")
     private String notGuiltyBecause;
-
-    @Transient
-    private String offenceTitle;
 
     // for JPA
     public OnlinePleaDetail() {
@@ -112,13 +108,5 @@ public class OnlinePleaDetail {
 
     public void setNotGuiltyBecause(final String notGuiltyBecause) {
         this.notGuiltyBecause = notGuiltyBecause;
-    }
-
-    public String getOffenceTitle() {
-        return offenceTitle;
-    }
-
-    public void setOffenceTitle(String offenceTitle) {
-        this.offenceTitle = offenceTitle;
     }
 }

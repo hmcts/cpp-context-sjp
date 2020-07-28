@@ -74,5 +74,9 @@
       "description": "Child maintenance",
       "amount": 50
     }
-  ]
+  ],
+  "disabilityNeeds" : {
+    "disabilityNeeds" : "Hearing aid",
+    "needed" : true
+  }
 }

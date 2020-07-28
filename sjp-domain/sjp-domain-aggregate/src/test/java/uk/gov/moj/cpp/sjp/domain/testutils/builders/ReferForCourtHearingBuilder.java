@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.domain.testutils.builders;
 
 import static java.util.UUID.randomUUID;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
 
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
@@ -18,7 +19,7 @@ public class ReferForCourtHearingBuilder {
 
     private static final int TEN_MINUTES = 10;
     private static final DefendantCourtOptions ENGLISH_NO_INTERPRETER = new DefendantCourtOptions(
-            new DefendantCourtInterpreter("EN", true), false);
+            new DefendantCourtInterpreter("EN", true), false, NO_DISABILITY_NEEDS);
 
     private UUID id;
     private PressRestriction pressRestriction;

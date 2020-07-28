@@ -163,6 +163,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
                     true,
                     null,
                     false,
+                    null,
                     singletonList(Triple.of(createCasePayloadBuilder.getOffenceId(),
                             createCasePayloadBuilder.getDefendantBuilder().getId(),
                             GUILTY)),
@@ -212,6 +213,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
                     true,
                     null,
                     false,
+                    null,
                     singletonList(Triple.of(createCasePayloadBuilder.getOffenceId(),
                             createCasePayloadBuilder.getDefendantBuilder().getId(),
                             GUILTY)),
@@ -232,6 +234,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
                     true,
                     null,
                     false,
+                    null,
                     singletonList(Triple.of(createCasePayloadBuilder.getOffenceId(), createCasePayloadBuilder.getDefendantBuilder().getId(), NOT_GUILTY)),
                     PUBLIC_EVENT_SET_PLEAS);
 
@@ -247,6 +250,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
                     true,
                     null,
                     false,
+                    null,
                     singletonList(Triple.of(createCasePayloadBuilder.getOffenceId(), createCasePayloadBuilder.getDefendantBuilder().getId(), GUILTY)),
                     PUBLIC_EVENT_SET_PLEAS);
 
@@ -262,6 +266,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
                     true,
                     null,
                     false,
+                    null,
                     singletonList(Triple.of(createCasePayloadBuilder.getOffenceId(), createCasePayloadBuilder.getDefendantBuilder().getId(), null)),
                     PUBLIC_EVENT_SET_PLEAS);
             pollUntilCaseNotReady(caseId);
@@ -286,6 +291,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
                     true,
                     null,
                     false,
+                    null,
                     singletonList(Triple.of(createCasePayloadBuilder.getOffenceId(),
                             createCasePayloadBuilder.getDefendantBuilder().getId(),
                             GUILTY)),

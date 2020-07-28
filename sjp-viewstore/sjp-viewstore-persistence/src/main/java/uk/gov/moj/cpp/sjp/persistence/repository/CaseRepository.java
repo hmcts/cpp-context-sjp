@@ -90,7 +90,21 @@ public abstract class CaseRepository extends AbstractEntityRepository<CaseDetail
             "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc) " +
             "AND cd.id IN (SELECT cps.caseId FROM CasePublishStatus cps WHERE cps.numberOfPublishes < 5)" +
             "ORDER BY cd.postingDate")
-    public abstract List<PendingCaseToPublishPerOffence> findPendingCasesToPublish();
+    public abstract List<PendingCaseToPublishPerOffence> findPublicTransparencyReportPendingCases();
+
+    @Query(value = "SELECT new uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence" +
+            "(d.personalDetails.firstName, d.personalDetails.lastName, d.personalDetails.dateOfBirth," +
+            "cd.id, cd.urn," +
+            "d.personalDetails.address.address1, d.personalDetails.address.address2," +
+            "d.personalDetails.address.address3, d.personalDetails.address.address4, d.personalDetails.address.address5," +
+            "d.personalDetails.address.postcode, o.code, o.startDate, o.wording," +
+            "o.pressRestriction.requested, o.pressRestriction.name, o.completed, cd.prosecutingAuthority) " +
+            "FROM CaseDetail cd " +
+            "LEFT OUTER JOIN cd.defendant d " +
+            "LEFT OUTER JOIN d.offences o " +
+            "WHERE cd.id IN (SELECT rc.id FROM ReadyCase rc) " +
+            "ORDER BY cd.postingDate")
+    public abstract List<PendingCaseToPublishPerOffence> findPressTransparencyReportPendingCases();
 
     @Query(value = "SELECT DISTINCT new uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea" +
             "(e.id, e.urn, o.pleaDate, d.personalDetails.firstName, d.personalDetails.lastName, e.prosecutingAuthority, e.caseManagementStatus) " +

@@ -57,6 +57,10 @@ import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.PressRestriction;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
+import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportGenerationFailed;
+import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportGenerationStarted;
+import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportMetadataAdded;
+import uk.gov.moj.cpp.sjp.event.transparency.TransparencyReportRequested;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.CreateCase.DefendantBuilder;
 import uk.gov.moj.sjp.it.helper.CaseHelper;
@@ -75,6 +79,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -90,13 +95,15 @@ import org.junit.Test;
 @Ignore("Temporarily disabled until fixed ATCM-6621")
 public class TransparencyReportIT extends BaseIntegrationTest {
 
+    private static final String DOCUMENT_GENERATION_FAILED_EVENT_NAME = "public.systemdocgenerator.events.generation-failed";
+    private static final String DOCUMENT_AVAILABLE_EVENT_NAME = "public.systemdocgenerator.events.document-available";
+
     private TransparencyReportHelper transparencyReportHelper = new TransparencyReportHelper();
     private final UUID caseId1 = randomUUID(), caseId2 = randomUUID();
     private final UUID offenceId1 = randomUUID(), offenceId2 = randomUUID();
 
     private static final String SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED = "sjp.events.transparency-report-requested";
     private static final String SJP_EVENTS_TRANSPARENCY_REPORT_GENERATION_STARTED = "sjp.events.transparency-report-generation-started";
-    private static final String SJP_EVENTS_TRANSPARENCY_REPORT_METADATA_ADDED = "sjp.events.transparency-report-metadata-added";
 
     @Before
     public void setUp() throws Exception {
@@ -124,11 +131,12 @@ public class TransparencyReportIT extends BaseIntegrationTest {
 
         final EventListener eventListener = new EventListener()
                 .withMaxWaitTime(50000)
-                .subscribe(SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED, SJP_EVENTS_TRANSPARENCY_REPORT_GENERATION_STARTED)
+                .subscribe(TransparencyReportRequested.EVENT_NAME)
+                .subscribe(TransparencyReportGenerationStarted.EVENT_NAME)
                 .run(transparencyReportHelper::requestToGenerateTransparencyReport);
 
-        final Optional<JsonEnvelope> transparencyReportRequestedEvent = eventListener.popEvent(SJP_EVENTS_TRANSPARENCY_REPORT_REQUESTED);
-        final Optional<JsonEnvelope> transparencyReportGenerationStarted = eventListener.popEvent(SJP_EVENTS_TRANSPARENCY_REPORT_GENERATION_STARTED);
+        final Optional<JsonEnvelope> transparencyReportRequestedEvent = eventListener.popEvent(TransparencyReportRequested.EVENT_NAME);
+        final Optional<JsonEnvelope> transparencyReportGenerationStarted = eventListener.popEvent(TransparencyReportGenerationStarted.EVENT_NAME);
 
         assertThat(transparencyReportRequestedEvent.isPresent(), is(true));
         assertThat(transparencyReportGenerationStarted.isPresent(), is(true));
@@ -167,10 +175,10 @@ public class TransparencyReportIT extends BaseIntegrationTest {
 
         final EventListener metadataAddedEventListener = new EventListener()
                 .withMaxWaitTime(50000)
-                .subscribe(SJP_EVENTS_TRANSPARENCY_REPORT_METADATA_ADDED)
+                .subscribe(TransparencyReportMetadataAdded.EVENT_NAME)
                 .run(() -> publishSysDocPublicEvents(transparencyReportId, generatedDocumentEnglishId, generatedDocumentWelshId));
 
-        final Optional<JsonEnvelope> englishMetadataAdded = metadataAddedEventListener.popEvent(SJP_EVENTS_TRANSPARENCY_REPORT_METADATA_ADDED);
+        final Optional<JsonEnvelope> englishMetadataAdded = metadataAddedEventListener.popEvent(TransparencyReportMetadataAdded.EVENT_NAME);
 
         assertThat(englishMetadataAdded.isPresent(), is(true));
 
@@ -201,6 +209,71 @@ public class TransparencyReportIT extends BaseIntegrationTest {
 
         final String welshContent = transparencyReportHelper.requestToGetTransparencyReportContent(generatedDocumentWelshId.toString());
         validateThePdfContent(welshContent);
+    }
+
+    @Test
+    public void shouldRollbackErrorCountWhenReportGenerationHasFailed() throws IOException {
+        // Creates cases to be shown in the report
+        final CreateCase.DefendantBuilder defendant1 = defaultDefendant().withRandomLastName();
+        final CreateCase.DefendantBuilder defendant2 = defaultDefendant().withRandomLastName().withDefaultShortAddress();
+        stubEnforcementAreaByPostcode(defendant1.getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode("1080", "TestRegion");
+        createCase(caseId1, offenceId1, defendant1);
+        createCase(caseId2, offenceId2, defendant2);
+
+        // Request report generation
+        final EventListener eventListener = new EventListener()
+                .withMaxWaitTime(50000)
+                .subscribe(TransparencyReportRequested.EVENT_NAME)
+                .subscribe(TransparencyReportGenerationStarted.EVENT_NAME)
+                .run(transparencyReportHelper::requestToGenerateTransparencyReport);
+        final Optional<JsonEnvelope> transparencyReportRequestedEvent = eventListener.popEvent(TransparencyReportRequested.EVENT_NAME);
+        final Optional<JsonEnvelope> transparencyReportGenerationStarted = eventListener.popEvent(TransparencyReportGenerationStarted.EVENT_NAME);
+        assertThat(transparencyReportRequestedEvent.isPresent(), is(true));
+        assertThat(transparencyReportGenerationStarted.isPresent(), is(true));
+        final String transparencyReportId = transparencyReportRequestedEvent
+                .map(requestedEvent -> requestedEvent.payloadAsJsonObject().getString("transparencyReportId"))
+                .orElse("");
+
+
+        final JsonEnvelope transparencyReportStartedEnvelope = transparencyReportGenerationStarted.get();
+        final JsonObject transparencyReportStartedPayload = transparencyReportStartedEnvelope.payloadAsJsonObject();
+
+        final JsonArray caseIds = transparencyReportStartedPayload.getJsonArray("caseIds");
+        final String startedTransparencyReportId = transparencyReportStartedPayload.getString("transparencyReportId");
+        final Set<String> savedCaseIds = Sets.newHashSet(caseId1.toString(), caseId2.toString());
+
+        // check the cases that are created are in the transparency report generated event payload
+        final List filteredCaseIDs = caseIds.getValuesAs(JsonString.class)
+                .stream()
+                .map(JsonString::getString)
+                .filter(savedCaseIds::contains)
+                .collect(toList());
+
+        assertThat(filteredCaseIDs.size(), is(2));
+        assertThat(startedTransparencyReportId, is(transparencyReportId));
+
+        final EventListener metadataAddedEventListener = new EventListener()
+                .withMaxWaitTime(50000)
+                .subscribe(TransparencyReportMetadataAdded.EVENT_NAME)
+                .subscribe(TransparencyReportGenerationFailed.EVENT_NAME)
+                .subscribe(DOCUMENT_GENERATION_FAILED_EVENT_NAME)
+                .run(() -> publishSysDocPublicFailedEvents(transparencyReportId, randomUUID(), randomUUID()));
+
+        final Optional<JsonEnvelope> transparencyReportFailed = metadataAddedEventListener.popEvent(TransparencyReportGenerationFailed.EVENT_NAME);
+        assertThat(transparencyReportFailed.isPresent(), is(true));
+        transparencyReportFailed.ifPresent(transparencyReportFailedEvent -> {
+            final JsonObject failedEventPayload = transparencyReportFailedEvent.payloadAsJsonObject();
+            final JsonArray failedCaseIds = failedEventPayload.getJsonArray("caseIds");
+            final Set<String> failedCaseIdsSet = failedCaseIds.getValuesAs(JsonString.class)
+                    .stream()
+                    .map(JsonString::getString)
+                    .collect(Collectors.toSet());
+            assertThat(savedCaseIds, equalTo(failedCaseIdsSet));
+            assertThat(failedEventPayload.getString("templateIdentifier"), equalTo("PendingCasesEnglish"));
+            assertThat(failedEventPayload.getBoolean("reportGenerationPreviouslyFailed"), equalTo(false));
+        });
+
     }
 
     private static JsonObject startSessionAndRequestAssignment(final UUID sessionId, final SessionType sessionType) {
@@ -310,10 +383,20 @@ public class TransparencyReportIT extends BaseIntegrationTest {
     private void publishSysDocPublicEvents(final String transparencyReportId, final UUID generatedDocumentEnglishId, final UUID generatedDocumentWelshId) {
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
             producerClient.startProducer("public.event");
-            producerClient.sendMessage("public.systemdocgenerator.events.document-available",
+            producerClient.sendMessage(DOCUMENT_AVAILABLE_EVENT_NAME,
                     documentAvailablePayload(randomUUID(), "PendingCasesEnglish", transparencyReportId, generatedDocumentEnglishId));
-            producerClient.sendMessage("public.systemdocgenerator.events.document-available",
+            producerClient.sendMessage(DOCUMENT_AVAILABLE_EVENT_NAME,
                     documentAvailablePayload(randomUUID(), "PendingCasesWelsh", transparencyReportId, generatedDocumentWelshId));
+        }
+    }
+
+    private void publishSysDocPublicFailedEvents(final String transparencyReportId, final UUID generatedDocumentEnglishId, final UUID generatedDocumentWelshId) {
+        try (final MessageProducerClient producerClient = new MessageProducerClient()) {
+            producerClient.startProducer("public.event");
+            producerClient.sendMessage(DOCUMENT_GENERATION_FAILED_EVENT_NAME,
+                    generationFailedPayload(randomUUID(), "PendingCasesEnglish", transparencyReportId));
+            producerClient.sendMessage(DOCUMENT_GENERATION_FAILED_EVENT_NAME,
+                    generationFailedPayload(randomUUID(), "PendingCasesWelsh", transparencyReportId));
         }
     }
 
@@ -328,6 +411,19 @@ public class TransparencyReportIT extends BaseIntegrationTest {
                 .add("documentFileServiceId", generatedDocumentId.toString())
                 .add("generatedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
                 .add("generateVersion", 1)
+                .build();
+    }
+
+    private JsonObject generationFailedPayload(final UUID templatePayloadId, final String templateIdentifier, final String reportId) {
+        return createObjectBuilder()
+                .add("payloadFileServiceId", templatePayloadId.toString())
+                .add("templateIdentifier", templateIdentifier)
+                .add("conversionFormat", "pdf")
+                .add("requestedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
+                .add("failedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
+                .add("sourceCorrelationId", reportId)
+                .add("originatingSource", "sjp")
+                .add("reason", "The file was too large")
                 .build();
     }
 

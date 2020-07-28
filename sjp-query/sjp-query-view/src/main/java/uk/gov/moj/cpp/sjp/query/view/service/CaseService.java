@@ -12,6 +12,7 @@ import static java.util.stream.Collectors.toMap;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.length;
 
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -26,6 +27,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
+import uk.gov.moj.cpp.sjp.query.view.ExportType;
 import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
@@ -48,6 +50,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -252,16 +255,13 @@ public class CaseService {
         return new CaseSearchResultsView(searchResults);
     }
 
-    public JsonObject findPendingCasesToPublish() {
-        final Map<String, List<PendingCaseToPublishPerOffence>> pendingCasesToPublishPerOffenceGroupedByCaseIdMap =
-                caseRepository.findPendingCasesToPublish().stream()
-                        .collect(groupingBy(pendingCaseToPublish -> pendingCaseToPublish.getCaseId().toString()));
+    public JsonObject findPendingCasesToPublish(final ExportType exportType) {
+        final Map<String, List<PendingCaseToPublishPerOffence>> pendingCasesGroupedByCaseId = getPendingCases(exportType);
 
-        final JsonArrayBuilder pendingCasesArrayBuilder = createArrayBuilder();
-        pendingCasesToPublishPerOffenceGroupedByCaseIdMap
-                .forEach((key, value) -> populatePendingCasesArrayBuilder(value, pendingCasesArrayBuilder));
+        final JsonArrayBuilder pendingCases = createArrayBuilder();
+        pendingCasesGroupedByCaseId.forEach((key, value) -> populatePendingCasesArrayBuilder(value, pendingCases));
 
-        return createObjectBuilder().add("pendingCases", pendingCasesArrayBuilder).build();
+        return createObjectBuilder().add("pendingCases", pendingCases).build();
     }
 
     public ResultOrdersView findResultOrders(LocalDate fromDate, LocalDate toDate) {
@@ -456,5 +456,21 @@ public class CaseService {
     }
     private Optional<String> getPostcode(final PendingCaseToPublishPerOffence pendingCaseToPublishWithAnyOffence) {
         return  Optional.ofNullable(pendingCaseToPublishWithAnyOffence.getPostcode());
+    }
+
+    private Function<PendingCaseToPublishPerOffence, String> caseIdPredicate() {
+        return pendingCaseToPublish -> pendingCaseToPublish.getCaseId().toString();
+    }
+
+    private Map<String, List<PendingCaseToPublishPerOffence>> getPendingCases(final ExportType exportType) {
+        List<PendingCaseToPublishPerOffence> pendingCases;
+
+        if (exportType == ExportType.PUBLIC) {
+            pendingCases = caseRepository.findPublicTransparencyReportPendingCases();
+        } else {
+            pendingCases = caseRepository.findPressTransparencyReportPendingCases();
+        }
+
+        return pendingCases.stream().collect(groupingBy(caseIdPredicate()));
     }
 }

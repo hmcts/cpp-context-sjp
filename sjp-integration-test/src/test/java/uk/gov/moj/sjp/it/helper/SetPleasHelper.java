@@ -105,6 +105,7 @@ public class SetPleasHelper {
                                                      final Boolean welshHearing,
                                                      final String language,
                                                      final Boolean interpreter,
+                                                     final String disabilityNeeds,
                                                      final Map<UUID, PleaType> pleaTypeByOffence,
                                                      final String... eventsToBeEmitted) {
 
@@ -125,6 +126,13 @@ public class SetPleasHelper {
                             matchers.add(withJsonPath("defendantCourtOptions.interpreter.language", is(language)));
                         }
                         matchers.add(withJsonPath("defendantCourtOptions.interpreter.needed", is(interpreter)));
+                    }
+
+                    if(disabilityNeeds !=null) {
+                        matchers.add(withJsonPath("disabilityNeeds.needed", is(true)));
+                        matchers.add(withJsonPath("disabilityNeeds.disabilityNeeds", is(disabilityNeeds)));
+                    } else {
+                        matchers.add(withJsonPath("disabilityNeeds.needed", is(false)));
                     }
                     matchers.add(allOf(
                             pleaTypeByOffence.entrySet().stream()
@@ -227,7 +235,9 @@ public class SetPleasHelper {
         ));
     }
 
-    public static JsonPath verifyUpdatedOffencesWithPleas(final UUID caseId, final Map<UUID, PleaType> pleaTypeByOffence) {
+    public static JsonPath verifyCaseDefendantUpdated(final UUID caseId,
+                                                      final Map<UUID, PleaType> pleaTypeByOffence,
+                                                      final String disabilityNeeds) {
         final List<Matcher<? super ReadContext>> matchers = new ArrayList<>();
         matchers.add(withJsonPath("onlinePleaReceived", is(false)));
         matchers.add(allOf(
@@ -242,6 +252,13 @@ public class SetPleasHelper {
                                         )
                                 )))
                         .collect(toList())));
+
+        if(disabilityNeeds!=null){
+            matchers.add(withJsonPath("$.defendant.disabilityNeeds.needed", is(true)));
+            matchers.add(withJsonPath("$.defendant.disabilityNeeds.disabilityNeeds", is(disabilityNeeds)));
+        } else {
+            matchers.add(withJsonPath("$.defendant.disabilityNeeds.needed", is(false)));
+        }
         return CasePoller.pollUntilCaseByIdIsOk(caseId, allOf(matchers));
     }
 
@@ -304,6 +321,11 @@ public class SetPleasHelper {
             return this;
         }
 
+        public SetPleasPayloadBuilder disabilityNeeds(final String disabilityNeeds) {
+            rootPayloadBuilder.add("disabilityNeeds", disabilityNeeds);
+            return this;
+        }
+
         public JsonObject build() {
             if (defendantCourtOptionsBuilder != null) {
                 rootPayloadBuilder.add("defendantCourtOptions", defendantCourtOptionsBuilder.build());
@@ -359,14 +381,15 @@ public class SetPleasHelper {
     }
 
     public static void requestSetPleas(
-            UUID caseId,
-            EventListener eventListener,
-            boolean welshHearingEnabled,
-            boolean welshHearing,
-            boolean interpreterEnabled,
-            String language,
-            boolean needed,
-            List<Triple<UUID, UUID, PleaType>> pleaInfoList,
+            final UUID caseId,
+            final EventListener eventListener,
+            final boolean welshHearingEnabled,
+            final boolean welshHearing,
+            final boolean interpreterEnabled,
+            final String language,
+            final boolean needed,
+            final String disabilityNeeds,
+            final List<Triple<UUID, UUID, PleaType>> pleaInfoList,
             final String... eventNames
     ) {
         final SetPleasHelper.SetPleasPayloadBuilder setPleasPayloadBuilder = SetPleasHelper.setPleasPayloadBuilder();
@@ -375,6 +398,10 @@ public class SetPleasHelper {
         }
         if (interpreterEnabled) {
             setPleasPayloadBuilder.withInterpreter(language, needed);
+        }
+
+        if(disabilityNeeds!=null){
+            setPleasPayloadBuilder.disabilityNeeds(disabilityNeeds);
         }
 
         pleaInfoList.forEach(pleaInfo -> setPleasPayloadBuilder

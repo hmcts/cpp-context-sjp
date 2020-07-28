@@ -58,7 +58,8 @@ public class PleadOnlineHandlerTest extends CaseCommandHandlerTest {
                 ),
                 new Employer(defendantId, "employer", "employeeReference", "phone", address),
                 emptyList(),
-                FALSE
+                FALSE,
+                null
         );
 
         when(converter.convert(jsonObject, PleadOnline.class)).thenReturn(pleadOnline);

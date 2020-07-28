@@ -4,16 +4,20 @@ package uk.gov.moj.cpp.sjp.event.decision;
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode;
 import static org.apache.commons.lang3.builder.ToStringBuilder.reflectionToString;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
 
 import uk.gov.justice.domain.annotation.Event;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
+import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 
@@ -78,6 +82,15 @@ public class DecisionSaved {
 
     public FinancialImposition getFinancialImposition() {
         return financialImposition;
+    }
+
+    @JsonIgnore
+    public Optional<ReferForCourtHearing> getReferForCourtHearing() {
+        return offenceDecisions
+                .stream()
+                .filter(offenceDecision -> offenceDecision.getType().equals(REFER_FOR_COURT_HEARING))
+                .map(offenceDecision -> (ReferForCourtHearing) offenceDecision)
+                .findFirst();
     }
 
     @Override

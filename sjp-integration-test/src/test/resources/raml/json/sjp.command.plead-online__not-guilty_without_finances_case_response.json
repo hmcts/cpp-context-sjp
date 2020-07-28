@@ -75,7 +75,10 @@
       "needed": true,
       "language": "French"
     },
-    "id": "${defendantId}"
+    "id": "${defendantId}",
+    "disabilityNeeds" : {
+      "needed" : false
+    }
   },
   "caseDocuments": [
   ],

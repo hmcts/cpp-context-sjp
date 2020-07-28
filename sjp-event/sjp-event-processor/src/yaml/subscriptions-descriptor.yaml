@@ -138,7 +138,7 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-completed.json
 
         - name: sjp.events.pleas-set
-          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.command.set-pleas.json
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/pleas-set.json
 
         - name: sjp.events.decision-saved
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/decision-saved.json

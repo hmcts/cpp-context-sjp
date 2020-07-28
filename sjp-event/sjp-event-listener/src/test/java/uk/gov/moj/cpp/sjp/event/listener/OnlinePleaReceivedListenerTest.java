@@ -70,7 +70,7 @@ public class OnlinePleaReceivedListenerTest {
         final PleadOnline pleadOnline = new PleadOnline(caseDetail.getDefendant().getId(), null,
                 null, null, null, null,
                 null, null, null, null,
-                null, null, null);
+                null, null, null, null);
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), PleadOnline.class)).thenReturn(pleadOnline);
 
         onlinePleaReceivedListener.onlinePleaReceived(event);

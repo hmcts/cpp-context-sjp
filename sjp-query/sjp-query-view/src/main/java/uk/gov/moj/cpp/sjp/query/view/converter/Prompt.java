@@ -26,7 +26,7 @@ public enum Prompt {
 
     FCOMP_MAJOR_CREDITOR(1, fromString("af921cf4-06e7-4f6b-a4ea-dcb58aab0dbe"), MajorCreditorPromptConverter::new),
     AMOUNT_OF_COMPENSATION(1, fromString("26985e5b-fe1f-4d7d-a21a-57207c5966e7"), PromptConverter::new),
-    FCOST_MAJOR_CREDITOR(1, fromString("22ebf965-8a1c-4229-9894-0df7f8117753"), MajorCreditorPromptConverter::new),
+    FCOST_MAJOR_CREDITOR(1, fromString("af921cf4-06e7-4f6b-a4ea-dcb58aab0dbe"), MajorCreditorPromptConverter::new),
     AMOUNT_OF_COSTS(1, fromString("db261fd9-c6bb-4e10-b93f-9fd98418f7b0"), PromptConverter::new),
     AMOUNT_OF_SURCHARGE(1, fromString("629a971e-9d7a-4526-838d-0a4cb922b5cb"), PromptConverter::new),
     DURATION_VALUE_OF_CONDITIONAL_DISCHARGE(1, fromString("d3205319-84cf-4c5b-9d7a-7e4bb1865054"), NoActionPromptConverter::new),

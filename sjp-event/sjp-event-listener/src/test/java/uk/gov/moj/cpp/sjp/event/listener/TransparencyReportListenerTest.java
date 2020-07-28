@@ -7,6 +7,8 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,7 +26,6 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -97,6 +98,57 @@ public class TransparencyReportListenerTest {
 
     }
 
+    @Test
+    public void shouldDecrementCasePublishCountersWhenGenerationFailed() {
+        final UUID transparencyReportId = randomUUID();
+        final List<UUID> caseIds = newArrayList(randomUUID(), randomUUID());
+        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.transparency-report-generation-failed"),
+                createObjectBuilder()
+                        .add("transparencyReportId", transparencyReportId.toString())
+                        .add("templateIdentifier", "PendingCasesEnglish")
+                        .add("caseIds", createArrayBuilder()
+                                .add(caseIds.get(0).toString())
+                                .add(caseIds.get(1).toString())
+                        )
+                        .add("reportGenerationPreviouslyFailed", false)
+                        .build());
+
+        final List<CasePublishStatus> publishedCases = createPublishedCases();
+        when(casePublishStatusRepository.findByCaseIds(caseIds)).thenReturn(publishedCases);
+        transparencyReportListener.handleTransparencyReportGenerationFailed(eventEnvelope);
+        final ArgumentCaptor<CasePublishStatus> argument = ArgumentCaptor.forClass(CasePublishStatus.class);
+        verify(casePublishStatusRepository, times(2)).save(argument.capture());
+        publishedCases.forEach(e -> assertThatDecremented(e, argument.getAllValues()));
+    }
+
+    @Test
+    public void shouldNotDecrementCasePublishCountersWhenGenerationFailedPrevioulsy() {
+        final UUID transparencyReportId = randomUUID();
+        final List<UUID> caseIds = newArrayList(randomUUID(), randomUUID());
+        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("sjp.events.transparency-report-generation-failed"),
+                createObjectBuilder()
+                        .add("transparencyReportId", transparencyReportId.toString())
+                        .add("templateIdentifier", "PendingCasesWelsh")
+                        .add("caseIds", createArrayBuilder()
+                                .add(caseIds.get(0).toString())
+                                .add(caseIds.get(1).toString())
+                        )
+                        .add("reportGenerationPreviouslyFailed", true)
+                        .build());
+
+        final List<CasePublishStatus> publishedCases = createPublishedCases();
+        when(casePublishStatusRepository.findByCaseIds(caseIds)).thenReturn(publishedCases);
+        transparencyReportListener.handleTransparencyReportGenerationFailed(eventEnvelope);
+        verify(casePublishStatusRepository, never()).save(any(CasePublishStatus.class));
+    }
+
+    private void assertThatDecremented(final CasePublishStatus casePublishStatus, final List<CasePublishStatus> decrementedCasePublishStatuses) {
+        assertThat(decrementedCasePublishStatuses.stream()
+                .anyMatch(e -> (casePublishStatus.getNumberOfPublishes() == 0 ? e.getNumberOfPublishes().equals(0) : e.getNumberOfPublishes().equals(casePublishStatus.getNumberOfPublishes() -1)
+                        && (casePublishStatus.getTotalNumberOfPublishes() == 0 ? e.getTotalNumberOfPublishes().equals(0) : e.getNumberOfPublishes().equals(casePublishStatus.getTotalNumberOfPublishes() -1)))
+                ), is(TRUE));
+    }
+
     private void assertThatIncremented(final CasePublishStatus casePublishStatus, final List<CasePublishStatus> incrementedCasePublishStatuses) {
         assertThat(incrementedCasePublishStatuses.stream()
                 .anyMatch(e -> e.getNumberOfPublishes().equals(casePublishStatus.getNumberOfPublishes() + 1)
@@ -119,17 +171,6 @@ public class TransparencyReportListenerTest {
         final JsonArrayBuilder pendingCasesBuilder = createArrayBuilder();
         caseIds.forEach(caseId -> pendingCasesBuilder.add(caseId.toString()));
         return pendingCasesBuilder;
-    }
-
-    private JsonObject buildFileMetadataJsonObject(final String fileName,
-                                                   final int pdfPageCount,
-                                                   final int fileSize,
-                                                   final UUID englishPdfFileUUID) {
-        return createObjectBuilder()
-                .add("fileName", fileName)
-                .add("numberOfPages", pdfPageCount)
-                .add("fileSize", fileSize)
-                .add("fileId", englishPdfFileUUID.toString()).build();
     }
 
 }

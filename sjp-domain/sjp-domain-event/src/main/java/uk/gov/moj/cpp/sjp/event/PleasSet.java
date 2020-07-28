@@ -59,7 +59,6 @@ public class PleasSet {
                 .findFirst();
     }
 
-
     public static class PleaKey {
 
         private UUID defendantId;

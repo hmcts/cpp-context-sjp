@@ -166,4 +166,26 @@ public class DefendantServiceTest {
 
     }
 
+    @Test
+    public void shouldFindDefendantListByReadyCasesWithOnlyRequiredFields() {
+
+        final DefendantDetail defendantDetail = new DefendantDetail(UUID.randomUUID(),
+                new PersonalDetails(null, null, "Dant",
+                        null, Gender.MALE,
+                        "54321", null, null,null,null ,null),
+                null, 2);
+        final CaseDetail caseDetail = CaseDetailBuilder.aCase().withCaseId(UUID.randomUUID()).build();
+        defendantDetail.setCaseDetail(caseDetail);
+
+
+        when(defendantRepository.findByReadyCases()).thenReturn(asList(defendantDetail));
+
+        final DefendantOutstandingFineRequestsQueryResult outstandingFineRequests = defendantService.getOutstandingFineRequests();
+
+        assertThat(outstandingFineRequests.getDefendantDetails().size() , greaterThan(0));
+        assertThat(outstandingFineRequests.getDefendantDetails().get(0).getCaseId(), is(caseDetail.getId()));
+        assertThat(outstandingFineRequests.getDefendantDetails().get(0).getLastName(), is("Dant"));
+
+    }
+
 }

@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toList;
+
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.DefendantOutstandingFineRequest;
@@ -11,13 +14,11 @@ import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterC
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantDetailsUpdatesView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantProfilingView;
 
-import javax.inject.Inject;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.toList;
+import javax.inject.Inject;
 
 public class DefendantService {
 
@@ -35,8 +36,8 @@ public class DefendantService {
 
     public DefendantDetailsUpdatesView findDefendantDetailUpdates(final JsonEnvelope envelope) {
         final String prosecutingAuthorityFilterValue = prosecutingAuthorityAccessFilterConverter
-                                                               .convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityProvider
-                                                                                                                  .getCurrentUsersProsecutingAuthorityAccess(envelope));
+                .convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityProvider
+                        .getCurrentUsersProsecutingAuthorityAccess(envelope));
 
         final List<UpdatedDefendantDetails> updatedDefendantDetails = defendantRepository.findUpdatedByCaseProsecutingAuthority(
                 prosecutingAuthorityFilterValue,
@@ -44,9 +45,9 @@ public class DefendantService {
                 ZonedDateTime.now());
 
         final List<UpdatedDefendantDetails> sortedDefendantDetails = updatedDefendantDetails.stream()
-                                                                             .sorted(comparing(defendantDetails -> defendantDetails.getMostRecentUpdateDate().get()))
-                                                                             .limit(envelope.payloadAsJsonObject().getInt(LIMIT_QUERY_PARAM))
-                                                                             .collect(toList());
+                .sorted(comparing(defendantDetails -> defendantDetails.getMostRecentUpdateDate().get()))
+                .limit(envelope.payloadAsJsonObject().getInt(LIMIT_QUERY_PARAM))
+                .collect(toList());
 
         return DefendantDetailsUpdatesView.of(
                 updatedDefendantDetails.size(),
@@ -59,12 +60,12 @@ public class DefendantService {
             return null;
         } else {
             return DefendantProfilingView.newBuilder()
-                           .withId(defendantId)
-                           .withFirstName(defendant.getPersonalDetails().getFirstName())
-                           .withLastName(defendant.getPersonalDetails().getLastName())
-                           .withDateOfBirth(defendant.getPersonalDetails().getDateOfBirth())
-                           .withNationalInsuranceNumber(defendant.getPersonalDetails().getNationalInsuranceNumber())
-                           .build();
+                    .withId(defendantId)
+                    .withFirstName(defendant.getPersonalDetails().getFirstName())
+                    .withLastName(defendant.getPersonalDetails().getLastName())
+                    .withDateOfBirth(defendant.getPersonalDetails().getDateOfBirth())
+                    .withNationalInsuranceNumber(defendant.getPersonalDetails().getNationalInsuranceNumber())
+                    .build();
         }
     }
 
@@ -74,17 +75,18 @@ public class DefendantService {
             return new DefendantOutstandingFineRequestsQueryResult();
         }
         final List<DefendantOutstandingFineRequest> defendantDetails = byCaseDetails.stream()
-                                                                               .map(
-                                                                                       defendantDetail -> DefendantOutstandingFineRequest.newBuilder()
-                                                                                                                  .withDefendantId(defendantDetail.getId())
-                                                                                                                  .withCaseId(defendantDetail.getCaseDetail().getId())
-                                                                                                                  .withFirstName(defendantDetail.getPersonalDetails().getFirstName())
-                                                                                                                  .withLastName(defendantDetail.getPersonalDetails().getLastName())
-                                                                                                                  .withDateOfBirth(defendantDetail.getPersonalDetails().getDateOfBirth().toString())
-                                                                                                                  .withNationalInsuranceNumber(defendantDetail.getPersonalDetails().getNationalInsuranceNumber())
-                                                                                                                  .build()
-                                                                               )
-                                                                               .collect(toList());
+                .map(
+                        defendantDetail -> DefendantOutstandingFineRequest.newBuilder()
+                                .withDefendantId(defendantDetail.getId())
+                                .withCaseId(defendantDetail.getCaseDetail().getId())
+                                .withFirstName(defendantDetail.getPersonalDetails().getFirstName())
+                                .withLastName(defendantDetail.getPersonalDetails().getLastName())
+                                .withDateOfBirth(defendantDetail.getPersonalDetails().getDateOfBirth() != null ?
+                                        defendantDetail.getPersonalDetails().getDateOfBirth().toString() : null)
+                                .withNationalInsuranceNumber(defendantDetail.getPersonalDetails().getNationalInsuranceNumber())
+                                .build()
+                )
+                .collect(toList());
         return new DefendantOutstandingFineRequestsQueryResult(defendantDetails);
     }
 }

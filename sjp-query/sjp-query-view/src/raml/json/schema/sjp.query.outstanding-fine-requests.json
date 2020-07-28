@@ -62,10 +62,7 @@
           "required": [
             "defendantId",
             "caseId",
-            "firstName",
-            "lastName",
-            "dateOfBirth",
-            "nationalInsuranceNumber"
+            "lastName"
           ]
         },
         {

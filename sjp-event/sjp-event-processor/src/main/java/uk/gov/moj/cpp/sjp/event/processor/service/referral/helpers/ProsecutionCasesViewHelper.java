@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers;
 
 import static java.util.Collections.singletonList;
+import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -224,9 +225,7 @@ public class ProsecutionCasesViewHelper {
                         .withOccupationCode(defendantPersonalInformationOptional.map(personalInformation -> personalInformation.getInt("occupationCode", 0))
                                 .map(String::valueOf)
                                 .orElse(null))
-                        .withSpecificRequirements(ofNullable(caseFileDefendantDetails)
-                                .map(defendantDetails -> defendantDetails.getString("specificRequirements", null))
-                                .orElse(null))
+                        .withSpecificRequirements(createSpecialRequirement(caseFileDefendantDetails, defendantCourtOptions))
                         .withAddress(createAddressView(defendantPersonalDetails.getAddress()))
                         .withContact(createDefendantContactView(defendantPersonalDetails, caseFileDefendantDetails))
                         .build(),
@@ -334,6 +333,20 @@ public class ProsecutionCasesViewHelper {
                 defendantContactDetails.getMobile(),
                 defendantContactDetails.getEmail(),
                 caseFileDefendantPersonalInformation.map(personalInformation -> personalInformation.getString("secondaryEmail", null)).orElse(null));
+    }
+
+    private static String createSpecialRequirement(final JsonObject caseFileDefendantDetails, final DefendantCourtOptions defendantCourtOptions) {
+        final Optional<String> disabiltyStatus = ofNullable(defendantCourtOptions)
+                .map(DefendantCourtOptions::getDisabilityNeeds)
+                .map(DisabilityNeeds::getDisabilityNeeds) ;
+
+        final String specificRequirements = ofNullable(caseFileDefendantDetails)
+                .map(defendantDetails -> defendantDetails.getString("specificRequirements", null))
+                .orElse(null);
+
+      return   disabiltyStatus.orElse(specificRequirements);
+
+
     }
 
     private static Optional<String> getProsecutionFacts(final List<Offence> offences) {

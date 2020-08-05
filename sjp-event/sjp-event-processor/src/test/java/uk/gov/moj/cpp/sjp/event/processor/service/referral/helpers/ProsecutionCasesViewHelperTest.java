@@ -1,22 +1,10 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers;
 
-import static java.lang.String.valueOf;
-import static java.time.LocalDate.now;
-import static java.util.Collections.singletonList;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.iterableWithSize;
-import static org.hamcrest.Matchers.nullValue;
-import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails.caseDetails;
-import static uk.gov.justice.json.schemas.domains.sjp.queries.Defendant.defendant;
-import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
-import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
-
+import com.google.common.collect.ImmutableMap;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
@@ -42,6 +30,7 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.PersonDetailsView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseIdentifierView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
 
+import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -51,13 +40,24 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.JsonObject;
-
-import com.google.common.collect.ImmutableMap;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.lang.String.valueOf;
+import static java.time.LocalDate.now;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.iterableWithSize;
+import static org.hamcrest.Matchers.nullValue;
+import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails.caseDetails;
+import static uk.gov.justice.json.schemas.domains.sjp.queries.Defendant.defendant;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
+import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProsecutionCasesViewHelperTest {
@@ -219,6 +219,136 @@ public class ProsecutionCasesViewHelperTest {
         assertThat(defendantView.getPersonDefendant().getPersonDetails().getDocumentationLanguageNeeds(), is(LANGUAGE_W));
         assertThat(defendantView.getPersonDefendant().getPersonDetails().getInterpreterLanguageNeeds(), is(LANGUAGE_X));
         assertThat(defendantView.getPersonDefendant().getPersonDetails().getDisabilityStatus(), is(DISABILITY_NEEDS));
+
+    }
+
+    @Test
+    public void shouldSendDisabilityStatusToProgression() {
+
+        final List<Offence> offences = singletonList(createOffence(OFFENCE_CJS_CODE1, OFFENCE_ID1, null, 1));
+
+        final PersonalDetails defendantPersonalDetails = createDefendantPersonalDetails().build();
+        final CaseDetails caseDetails = createCaseDetails(defendantPersonalDetails, offences);
+
+        final JsonObject prosecutor = createProsecutor();
+        final EmployerDetails employer = createEmployer();
+        final JsonObject caseFileDefendantDetails = createCaseFileDefendantDetails();
+
+        final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
+                .withReferredAt(DECISION_DATE)
+                .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
+                .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, disabilityNeedsOf(DISABILITY_NEEDS)))
+                .build();
+
+        final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
+                caseDetails,
+                prosecutor,
+                null,
+                caseFileDefendantDetails,
+                employer,
+                DEFENDANT_NATIONALITY_ID,
+                DEFENDANT_ETHNICITY_ID,
+                caseReferredForCourtHearing,
+                OFFENCE_MITIGATION,
+                mockCJSOffenceCodeToOffenceDefinitionId(),
+                offences);
+
+        assertThat(prosecutionCaseViews, hasSize(1));
+
+
+        final ProsecutionCaseView prosecutionCaseView = prosecutionCaseViews.get(0);
+
+        final DefendantView defendantView = prosecutionCaseView.getDefendants().get(0);
+
+
+        assertThat(defendantView.getPersonDefendant().getPersonDetails().getDisabilityStatus(), is(DISABILITY_NEEDS));
+        assertThat(defendantView.getPersonDefendant().getPersonDetails().getSpecificRequirements(), is("Hearing aid"));
+
+    }
+
+    @Test
+    public void shouldPopulateSpecialRequirementWhenisabiltyStatusIsNull() {
+
+        final List<Offence> offences = singletonList(createOffence(OFFENCE_CJS_CODE1, OFFENCE_ID1, null, 1));
+
+        final PersonalDetails defendantPersonalDetails = createDefendantPersonalDetails().build();
+        final CaseDetails caseDetails = createCaseDetails(defendantPersonalDetails, offences);
+
+        final JsonObject prosecutor = createProsecutor();
+        final EmployerDetails employer = createEmployer();
+        final JsonObject caseFileDefendantDetails = createCaseFileDefendantDetails();
+
+        final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
+                .withReferredAt(DECISION_DATE)
+                .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
+                .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, null))
+                .build();
+
+        final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
+                caseDetails,
+                prosecutor,
+                null,
+                caseFileDefendantDetails,
+                employer,
+                DEFENDANT_NATIONALITY_ID,
+                DEFENDANT_ETHNICITY_ID,
+                caseReferredForCourtHearing,
+                OFFENCE_MITIGATION,
+                mockCJSOffenceCodeToOffenceDefinitionId(),
+                singletonList(offences.get(0)));
+
+        assertThat(prosecutionCaseViews, hasSize(1));
+
+
+        final ProsecutionCaseView prosecutionCaseView = prosecutionCaseViews.get(0);
+
+        final DefendantView defendantView = prosecutionCaseView.getDefendants().get(0);
+
+        assertThat(defendantView.getPersonDefendant().getPersonDetails().getDisabilityStatus(), is(nullValue()));
+        assertThat(defendantView.getPersonDefendant().getPersonDetails().getSpecificRequirements(), is("defendantSpecificRequirements"));
+
+    }
+
+    @Test
+    public void shouldSendDisabilityStatusWhenSpecialrequiremntIsNull() {
+
+        final List<Offence> offences = singletonList(createOffence(OFFENCE_CJS_CODE1, OFFENCE_ID1, null, 1));
+
+        final PersonalDetails defendantPersonalDetails = createDefendantPersonalDetails().build();
+        final CaseDetails caseDetails = createCaseDetails(defendantPersonalDetails, offences);
+
+        final JsonObject prosecutor = createProsecutor();
+        final EmployerDetails employer = createEmployer();
+        final JsonObject caseFileDefendantDetails = createCaseFileDefendantDetailsWithSpecialRequirementNull();
+
+        final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
+                .withReferredAt(DECISION_DATE)
+                .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
+                .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, disabilityNeedsOf(DISABILITY_NEEDS)))
+                .build();
+
+        final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
+                caseDetails,
+                prosecutor,
+                null,
+                caseFileDefendantDetails,
+                employer,
+                DEFENDANT_NATIONALITY_ID,
+                DEFENDANT_ETHNICITY_ID,
+                caseReferredForCourtHearing,
+                OFFENCE_MITIGATION,
+                mockCJSOffenceCodeToOffenceDefinitionId(),
+                singletonList(offences.get(0)));
+
+        assertThat(prosecutionCaseViews, hasSize(1));
+
+        final ProsecutionCaseView prosecutionCaseView = prosecutionCaseViews.get(0);
+
+        final DefendantView defendantView = prosecutionCaseView.getDefendants().get(0);
+
+        assertThat(defendantView.getPersonDefendant().getPersonDetails().getDisabilityStatus(), is(DISABILITY_NEEDS));
+        assertThat(defendantView.getPersonDefendant().getPersonDetails().getSpecificRequirements(), is("Hearing aid"));
+
     }
 
     @Test
@@ -261,9 +391,10 @@ public class ProsecutionCasesViewHelperTest {
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
                 mockCJSOffenceCodeToOffenceDefinitionId(),
-                Arrays.asList(offences.get(0), offences.get(1)));
+                asList(offences.get(0), offences.get(1)));
 
-        assertThat(prosecutionCaseViews.size(), is(1));
+        assertThat(prosecutionCaseViews, hasSize(1));
+
 
         final ProsecutionCaseView prosecutionCaseView = prosecutionCaseViews.get(0);
         assertProsecutionView(prosecutionCaseView, nonReferredOffence, prosecutionCaseFile, caseFileDefendantDetails);
@@ -344,9 +475,9 @@ public class ProsecutionCasesViewHelperTest {
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
                 mockCJSOffenceCodeToOffenceDefinitionId(),
-                Arrays.asList(offences.get(0), offences.get(1)));
+                asList(offences.get(0), offences.get(1)));
 
-        assertThat(prosecutionCaseViews.size(), is(1));
+        assertThat(prosecutionCaseViews, hasSize(1));
 
         final ProsecutionCaseView prosecutionCaseView = prosecutionCaseViews.get(0);
         assertProsecutionView(prosecutionCaseView, nonReferredOffence, prosecutionCaseFile, caseFileDefendantDetails);
@@ -401,7 +532,7 @@ public class ProsecutionCasesViewHelperTest {
                 mockCJSOffenceCodeToOffenceDefinitionId(),
                 singletonList(offence));
 
-        assertThat(prosecutionCaseViews.size(), is(1));
+        assertThat(prosecutionCaseViews, hasSize(1));
 
         final ProsecutionCaseView prosecutionCaseView = prosecutionCaseViews.get(0);
         assertProsecutionView(prosecutionCaseView, offence, null, caseFileDefendantDetails);
@@ -604,7 +735,31 @@ public class ProsecutionCasesViewHelperTest {
                 .build();
     }
 
-    private JsonObject createCaseFileDetails(){
+    private JsonObject createCaseFileDefendantDetailsWithSpecialRequirementNull() {
+        return createObjectBuilder()
+                .add(
+                        "selfDefinedInformation",
+                        createObjectBuilder()
+                                .add("nationality", DEFENDANT_NATIONALITY_CODE)
+                                .add("ethnicity", DEFENDANT_ETHNICITY))
+                .add(
+                        "personalInformation",
+                        createObjectBuilder()
+                                .add("occupation", DEFENDANT_OCCUPATION)
+                                .add("occupationCode", DEFENDANT_OCCUPATION_CODE)
+                                .add("work", DEFENDANT_WORK_PHONE)
+                                .add("secondaryEmail", DEFENDANT_SECONDARY_EMAIL))
+                .add("nationalInsuranceNumber", NATIONAL_INSURANCE_NUMBER)
+                .add("documentationLanguage", "W")
+                .add("offences", createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("offenceId", OFFENCE_ID1.toString())
+                                .add("statementOfFactsWelsh", STATEMENT_OF_FACTS_WELSH)
+                                .add("offenceCommittedEndDate", OFFENCE_END_DATE.toString())))
+                .build();
+    }
+
+    private JsonObject createCaseFileDetails() {
         return createObjectBuilder()
                 .add("caseId", "709f6cd8-b371-41bc-be6b-841d42b7fbfd")
                 .add("prosecutorInformant", "Adam")
@@ -630,6 +785,7 @@ public class ProsecutionCasesViewHelperTest {
                 .withOffenceSequenceNumber(sequenceNumber)
                 .build();
     }
+
     private static List<Offence> createOffences(final UUID... ids) {
         return Arrays.stream(ids)
                 .map(id ->

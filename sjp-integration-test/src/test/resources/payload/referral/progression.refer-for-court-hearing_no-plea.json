@@ -97,6 +97,7 @@
       "referralDate": "${REFERRAL_DATE}",
       "referringJudicialDecision": {
         "location": "court house name",
+        "courtHouseCode": "B01OK",
         "judiciary": [
           {
             "judicialRoleTypeSJP": "LEGAL_ADVISER",

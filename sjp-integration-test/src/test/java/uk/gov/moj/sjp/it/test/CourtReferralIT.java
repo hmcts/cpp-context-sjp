@@ -19,6 +19,7 @@ import static uk.gov.moj.cpp.sjp.domain.SessionType.DELEGATED_POWERS;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
 import static uk.gov.moj.sjp.it.helper.AssignmentHelper.requestCaseAssignment;
 import static uk.gov.moj.sjp.it.helper.CaseReferralHelper.findReferralStatusForCase;
 import static uk.gov.moj.sjp.it.helper.PleadOnlineHelper.verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag;
@@ -41,9 +42,12 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesB
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralDocumentMetadataQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReasonsQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
+import static uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions;
 import static uk.gov.moj.sjp.it.util.DateUtils.CPP_ZONED_DATE_TIME_FORMATTER;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_COURT_HOUSE_OU_CODE;
@@ -77,7 +81,6 @@ import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.producer.ReferToCourtHearingProducer;
-import uk.gov.moj.sjp.it.util.CaseAssignmentRestrictionHelper;
 import uk.gov.moj.sjp.it.util.FileUtil;
 import uk.gov.moj.sjp.it.util.SjpDatabaseCleaner;
 import uk.gov.moj.sjp.it.util.builders.DismissBuilder;
@@ -124,6 +127,8 @@ public class CourtReferralIT extends BaseIntegrationTest {
     private static final JsonObject EMPLOYER_DETAILS = createEmployerDetails();
 
     private static final User user = new User("John", "Smith", USER_ID);
+    private static final String DISABILITY_NEEDS = "Hearing aid";
+
 
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private UUID defendantId;
@@ -158,10 +163,13 @@ public class CourtReferralIT extends BaseIntegrationTest {
         stubReferralDocumentMetadataQuery(DOCUMENT_TYPE_ID.toString(), REFERENCE_DATA_DOCUMENT_TYPE);
         stubMaterialMetadata(MATERIAL_ID, FILE_NAME, MIME_TYPE, ADDED_AT);
         stubReferCaseToCourtCommand();
+        stubResultDefinitions();
+        stubResultIds();
+
 
         new SjpDatabaseCleaner().cleanViewStore();
 
-        CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
+        provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
     }
 
@@ -224,7 +232,7 @@ public class CourtReferralIT extends BaseIntegrationTest {
     @Test
     public void shouldSendReferToCourtHearingCommandToProgressionContext_WithPlea() {
         stubCaseDetails(caseId, "stub-data/prosecutioncasefile.query.case-details.json");
-        createCaseWithSingleOffence(E);
+        createCaseWithSingleOffence(W);
         addCaseDocumentAndUpdateEmployer();
 
         final PleadOnlineHelper pleadOnlineHelper = new PleadOnlineHelper(caseId);
@@ -235,7 +243,25 @@ public class CourtReferralIT extends BaseIntegrationTest {
         verifyOnlinePleaReceivedAndUpdatedCaseDetailsFlag(caseId, true);
 
         startSessionAndRequestAssignment(sessionId, DELEGATED_POWERS, DEFAULT_LONDON_COURT_HOUSE_OU_CODE);
-        referCaseToCourtAndVerifyCommandSendToProgressionMatchesExpected("payload/referral/progression.refer-for-court-hearing_plea-present.json", E);
+        referCaseToCourtAndVerifyCommandSendToProgressionMatchesExpected("payload/referral/progression.refer-for-court-hearing_plea-present.json", W);
+    }
+    @Test
+    public void shouldSendReferToCourtHearingCommandToProgressionContext_withDisabiltyStatus() {
+        stubCaseDetails(caseId, "stub-data/prosecutioncasefile.query.case-details.json");
+        createCaseWithSingleOffence(W);
+        addCaseDocumentAndUpdateEmployer();
+
+        startSessionAndRequestAssignment(sessionId, MAGISTRATE, DEFAULT_LONDON_COURT_HOUSE_OU_CODE);
+        referCaseToCourtAndVerifyCommandSendToProgressionMatchesExpectedWithDisaNeeded("payload/referral/progression.refer-for-court-hearing-with-disability-needed.json", W);
+    }
+    @Test
+    public void shouldSendReferToCourtHearingCommandToProgressionContext_withDisabiltyStatusWHENNoSpecialRequirment() {
+        stubCaseDetails(caseId, "stub-data/prosecutioncasefile.query.case-details-without-specialRequirement.json");
+        createCaseWithSingleOffence(W);
+        addCaseDocumentAndUpdateEmployer();
+
+        startSessionAndRequestAssignment(sessionId, MAGISTRATE, DEFAULT_LONDON_COURT_HOUSE_OU_CODE);
+        referCaseToCourtAndVerifyCommandSendToProgressionMatchesExpectedWithDisaNeeded("payload/referral/progression.refer-for-court-hearing-with-disability-needed.json", W);
     }
 
     @Test
@@ -266,6 +292,19 @@ public class CourtReferralIT extends BaseIntegrationTest {
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, asList(referForCourtHearingDecision), null);
 
         new EventListener()
+                .subscribe(CaseReferredForCourtHearing.EVENT_NAME)
+                .run(() -> DecisionHelper.saveDecision(decision));
+
+        final JsonObject expectedCommandPayload = prepareExpectedCommandPayload(expectedCommandPayloadFile, language);
+
+        verifyReferToCourtCommandSent(expectedCommandPayload);
+    }
+    private void referCaseToCourtAndVerifyCommandSendToProgressionMatchesExpectedWithDisaNeeded(String expectedCommandPayloadFile, Language language) {
+        final ReferForCourtHearing referForCourtHearingDecision = buildReferForCourtHearingWithDisaNeededDecision(language, offenceId1);
+        final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, asList(referForCourtHearingDecision), null);
+
+        new EventListener(
+        )
                 .subscribe(CaseReferredForCourtHearing.EVENT_NAME)
                 .run(() -> DecisionHelper.saveDecision(decision));
 
@@ -395,5 +434,10 @@ public class CourtReferralIT extends BaseIntegrationTest {
                 .subscribe(CaseDocumentAdded.EVENT_NAME, EmployerUpdated.EVENT_NAME)
                 .run(() -> new CaseDocumentHelper(caseId).addCaseDocument(USER_ID, DOCUMENT_ID, MATERIAL_ID, DOCUMENT_TYPE))
                 .run(() -> new EmployerHelper().updateEmployer(caseId, defendantId.toString(), EMPLOYER_DETAILS));
+    }
+    private ReferForCourtHearing buildReferForCourtHearingWithDisaNeededDecision(Language language, final UUID... offenceIds) {
+        final DefendantCourtOptions defendantCourtOptions = new DefendantCourtOptions(new DefendantCourtInterpreter("French", true), language.equals(W),  disabilityNeedsOf(DISABILITY_NEEDS));
+        List<OffenceDecisionInformation> offenceDecisionInformations = of(offenceIds).map(offenceId -> createOffenceDecisionInformation(offenceId, VerdictType.NO_VERDICT)).collect(toList());
+        return new ReferForCourtHearing(null, offenceDecisionInformations, REFERRAL_REASON_ID, "listing notes", 10, defendantCourtOptions);
     }
 }

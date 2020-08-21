@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.sjp.it.helper.CasesMissingSjpnHelper.getCasesMissingSjpn;
 import static uk.gov.moj.sjp.it.helper.CasesMissingSjpnHelper.getCasesMissingSjpnPostedDaysAgo;
-import static uk.gov.moj.sjp.it.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 
@@ -43,7 +42,6 @@ public class FindCasesMissingSjpnIT extends BaseIntegrationTest {
 
     @Before
     public void init() {
-        stubEnableAllCapabilities();
         final LocalDate now = LocalDate.now();
         final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
                 .withDefaults();

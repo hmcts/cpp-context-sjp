@@ -37,6 +37,7 @@
         <dependency>
             <groupId>uk.gov.justice.framework-generators</groupId>
             <artifactId>rest-adapter-file-service</artifactId>
+            <version>${cpp.framework.version}</version>
         </dependency>
 
         <dependency>

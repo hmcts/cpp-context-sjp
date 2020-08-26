@@ -40,7 +40,8 @@
         "startDate": "2016-01-01",
         "backDuty": 340.3,
         "endorsable" : false,
-        "pressRestrictable": false
+        "pressRestrictable": false,
+        "offenceDateCode": 1
       }
     ],
     "caseId": "${caseId}",

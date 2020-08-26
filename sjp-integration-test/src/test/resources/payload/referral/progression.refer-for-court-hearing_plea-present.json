@@ -18,6 +18,7 @@
                 "chargeDate": "2016-01-01",
                 "offenceDefinitionId": "9efdbffa-08f0-4cb5-905d-139511ddcadc",
                 "startDate": "2016-01-01",
+                "offenceDateCode": 1,
                 "notifiedPlea": {
                   "offenceId": "${OFFENCE_ID1}",
                   "notifiedPleaValue": "NOTIFIED_GUILTY",

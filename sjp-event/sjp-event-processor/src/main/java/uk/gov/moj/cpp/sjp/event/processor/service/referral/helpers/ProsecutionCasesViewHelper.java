@@ -283,6 +283,7 @@ public class ProsecutionCasesViewHelper {
                         .map(LocalDate::parse)
                         .orElse(null))
                 .withOffenceFacts(createOffenceFactsView(offenceDetails, caseFileOffenceDetailsOptional))
+                .withOffenceDateCode(offenceDetails.getOffenceDateCode())
                 .build();
 
     }

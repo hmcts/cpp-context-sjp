@@ -98,6 +98,12 @@
     },
     "pressRestrictable": {
       "type": "boolean"
+    },
+    "offenceDateCode": {
+      "description": "The code for the offence date to be used within the offence wording, 1 = on or in, 2 = before, 3 = after, 4 = between, 5 = on or about and 6 = on or before",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 6
     }
   },
   "additionalProperties": false

@@ -18,6 +18,7 @@ public class OffenceView {
     private final Integer orderIndex;
     private final NotifiedPleaView notifiedPlea;
     private final OffenceFactsView offenceFacts;
+    private final Integer offenceDateCode;
 
     @SuppressWarnings("squid:S00107")
     public OffenceView(final UUID id,
@@ -30,7 +31,7 @@ public class OffenceView {
                        final LocalDate endDate,
                        final Integer orderIndex,
                        final NotifiedPleaView notifiedPlea,
-                       final OffenceFactsView offenceFacts) {
+                       final OffenceFactsView offenceFacts, final Integer offenceDateCode) {
 
         this.id = id;
         this.offenceDefinitionId = offenceDefinitionId;
@@ -43,6 +44,7 @@ public class OffenceView {
         this.orderIndex = orderIndex;
         this.notifiedPlea = notifiedPlea;
         this.offenceFacts = offenceFacts;
+        this.offenceDateCode = offenceDateCode;
     }
 
 
@@ -98,6 +100,11 @@ public class OffenceView {
         return new Builder();
     }
 
+
+    public Integer getOffenceDateCode() {
+        return offenceDateCode;
+    }
+
     public static class Builder {
         private UUID id;
         private UUID offenceDefinitionId;
@@ -110,6 +117,7 @@ public class OffenceView {
         private Integer orderIndex;
         private NotifiedPleaView notifiedPlea;
         private OffenceFactsView offenceFacts;
+        private Integer offenceDateCode;
 
         public Builder withId(final UUID id) {
             this.id = id;
@@ -166,6 +174,10 @@ public class OffenceView {
             return this;
         }
 
+        public Builder withOffenceDateCode(final Integer offenceDateCode) {
+            this.offenceDateCode = offenceDateCode;
+            return this;
+        }
 
         public OffenceView build() {
             return new OffenceView(
@@ -179,7 +191,7 @@ public class OffenceView {
                     endDate,
                     orderIndex,
                     notifiedPlea,
-                    offenceFacts);
+                    offenceFacts, offenceDateCode);
         }
     }
 }

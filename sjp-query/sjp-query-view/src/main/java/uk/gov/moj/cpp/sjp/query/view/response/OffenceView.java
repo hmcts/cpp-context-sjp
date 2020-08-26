@@ -44,6 +44,7 @@ public class OffenceView {
     private Boolean pressRestrictable;
     private PressRestriction pressRestriction;
     private Boolean completed;
+    private Integer offenceDateCode;
 
     public OffenceView(final OffenceDetail offence) {
 
@@ -76,6 +77,7 @@ public class OffenceView {
         this.pressRestrictable = offence.getPressRestrictable();
         this.pressRestriction = mapPressRestriction(offence.getPressRestriction());
         this.completed = offence.getCompleted();
+        this.offenceDateCode = offence.getLibraOffenceDateCode();
     }
 
     public UUID getId() {
@@ -186,5 +188,9 @@ public class OffenceView {
                 PressRestriction.requested(pressRestriction.getName()) :
                 PressRestriction.revoked();
 
+    }
+
+    public Integer getOffenceDateCode() {
+        return offenceDateCode;
     }
 }

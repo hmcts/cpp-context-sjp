@@ -1,6 +1,7 @@
 package uk.gov.moj.sjp.it.test;
 
 
+import static com.github.tomakehurst.wiremock.client.WireMock.resetAllRequests;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.LocalDate.now;
@@ -49,6 +50,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -68,6 +70,7 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
+        resetAllRequests();
         new SjpDatabaseCleaner().cleanViewStore();
         stubDocGeneratorEndPoint();
         stubAllIndividualProsecutorsQueries();

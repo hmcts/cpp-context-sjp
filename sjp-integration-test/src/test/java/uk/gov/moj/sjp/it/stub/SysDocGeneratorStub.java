@@ -6,11 +6,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.findAll;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
@@ -49,7 +49,7 @@ public class SysDocGeneratorStub {
 
     public static List<JSONObject> pollSysDocGenerationRequests(final Matcher<Collection<?>> matcher) {
         try {
-            final List<JSONObject> postRequests = await().until(() ->
+            final List<JSONObject> postRequests = await().atMost(30, SECONDS).until(() ->
                     findAll(postRequestedFor(urlPathMatching(SYS_DOC_GENERATOR_URL)))
                             .stream()
                             .map(LoggedRequest::getBodyAsString)

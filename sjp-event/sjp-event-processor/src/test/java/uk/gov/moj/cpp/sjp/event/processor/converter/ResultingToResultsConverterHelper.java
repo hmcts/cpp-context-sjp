@@ -262,6 +262,7 @@ public class ResultingToResultsConverterHelper {
                 .withPlea(PleaType.GUILTY)
                 .withPleaMethod(PleaMethod.ONLINE)
                 .withPleaDate(PLEA_DATE)
+                .withOffenceDateCode(1)
                 .build();
         final Offence offence2 = Offence.offence()
                 .withId(OFFENCE_ID_2)
@@ -274,6 +275,7 @@ public class ResultingToResultsConverterHelper {
                 .withPlea(PleaType.GUILTY)
                 .withPleaMethod(PleaMethod.ONLINE)
                 .withPleaDate(PLEA_DATE)
+                .withOffenceDateCode(1)
                 .build();
         offences.add(offence1);
         offences.add(offence2);

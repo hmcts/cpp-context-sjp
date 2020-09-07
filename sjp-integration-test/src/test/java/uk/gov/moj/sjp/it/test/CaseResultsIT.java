@@ -1,6 +1,7 @@
 package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.Month.JULY;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
@@ -32,6 +33,13 @@ import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_USER_ID;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makeGetCall;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
+import static uk.gov.moj.sjp.it.Constants.OFFENCE_DATE_CODE_FOR_BETWEEN;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import java.util.Optional;
+import org.hamcrest.Matchers;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
@@ -84,7 +92,6 @@ public class CaseResultsIT extends BaseIntegrationTest {
     private final UUID offenceId = randomUUID();
     private final UUID defendantId = randomUUID();
 
-
     @Before
     public void beforeEveryTest() throws SQLException {
         databaseCleaner.cleanViewStore();
@@ -110,6 +117,7 @@ public class CaseResultsIT extends BaseIntegrationTest {
                 .withDefendantDateOfBirth(defendantDateOfBirth)
                 .withOffenceId(offenceId)
                 .withOffenceCode(DEFAULT_OFFENCE_CODE)
+                .withLibraOffenceDateCode(OFFENCE_DATE_CODE_FOR_BETWEEN)
                 .withUrn(urn);
 
         stubEnforcementAreaByPostcode(caseBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
@@ -136,11 +144,25 @@ public class CaseResultsIT extends BaseIntegrationTest {
         eventListener
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
+                .subscribe("public.sjp.case-resulted")
                 .run(() -> DecisionHelper.saveDecision(decision));
 
         // Then
         final JsonObject results = getCaseResults();
         assertThat(results.toString(), matchCaseResults());
+
+
+        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.sjp.case-resulted");
+
+        assertThat(jsonEnvelope.isPresent(), Matchers.is(true));
+        final JsonEnvelope envelope = jsonEnvelope.get();
+        assertThat(envelope,
+                jsonEnvelope(
+                        metadata().withName("public.sjp.case-resulted"),
+                        payload().isJson(Matchers.allOf(
+                                withJsonPath("$.cases[0].caseId", equalTo(caseId.toString())),
+                                withJsonPath("$.cases[0].defendants[0].offences[0].baseOffenceDetails.offenceDateCode", equalTo(OFFENCE_DATE_CODE_FOR_BETWEEN))
+                        ))));
     }
 
     @Test

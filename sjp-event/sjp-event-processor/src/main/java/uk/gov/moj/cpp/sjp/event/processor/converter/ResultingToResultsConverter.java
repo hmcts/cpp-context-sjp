@@ -57,7 +57,6 @@ import javax.json.JsonObject;
 public class ResultingToResultsConverter {
 
     private static final String DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE = "0800NP0100000000001H";
-    private static final int DEFAULT_OFFENCE_DATE_CODE = 1;
     private static final String UNKNOWN = "0";
     private static final String OFFENCES_KEY = "offences";
     private static final String ADDRESS1_KEY = "address1";
@@ -262,7 +261,7 @@ public class ResultingToResultsConverter {
                 .withOffenceSequenceNumber(o.getOffenceSequenceNumber())
                 .withOffenceCode(o.getCjsCode())
                 .withOffenceWording(o.getWording())
-                .withOffenceDateCode(DEFAULT_OFFENCE_DATE_CODE)
+                .withOffenceDateCode(o.getOffenceDateCode())
                 .withOffenceStartDate(null != o.getStartDate() ? LocalDate.parse(o.getStartDate()) : null)
                 .withOffenceEndDate(null != o.getEndDate() ? LocalDate.parse(o.getEndDate()) : null)
                 .withChargeDate(null != o.getChargeDate() ? LocalDate.parse(o.getChargeDate()) : null)

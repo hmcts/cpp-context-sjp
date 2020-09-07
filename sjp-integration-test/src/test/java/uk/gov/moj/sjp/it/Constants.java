@@ -56,6 +56,7 @@ public class Constants {
     public static final int NOTICE_PERIOD_IN_DAYS = 28;
     public static final String DEFAULT_OFFENCE_CODE = "PS00001";
     public static final String DEFAULT_OFFENCE_TITLE = "Postal service - convey a letter without a licence";
+    public static final Integer OFFENCE_DATE_CODE_FOR_BETWEEN = 4;
 
     public static final String PUBLIC_CASE_DECISION_SAVED_EVENT = "public.sjp.case-decision-saved";
 }

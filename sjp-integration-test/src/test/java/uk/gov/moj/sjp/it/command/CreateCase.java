@@ -235,6 +235,11 @@ public class CreateCase {
             return this;
         }
 
+        public CreateCasePayloadBuilder withLibraOffenceDateCode(final Integer offenceDateCode) {
+            this.offenceBuilders.get(0).withLibraOffenceDateCode(offenceDateCode);
+            return this;
+        }
+
         public CreateCasePayloadBuilder withProsecutingAuthority(final ProsecutingAuthority prosecutingAuthority) {
             this.prosecutingAuthority = prosecutingAuthority;
             this.urn = UrnProvider.generate(prosecutingAuthority);
@@ -536,6 +541,11 @@ public class CreateCase {
 
         public OffenceBuilder withLibraOffenceCode(final String libraOffenceCode) {
             this.libraOffenceCode = libraOffenceCode;
+            return this;
+        }
+
+        public OffenceBuilder withLibraOffenceDateCode(final Integer libraOffenceDateCode) {
+            this.libraOffenceDateCode = libraOffenceDateCode;
             return this;
         }
 

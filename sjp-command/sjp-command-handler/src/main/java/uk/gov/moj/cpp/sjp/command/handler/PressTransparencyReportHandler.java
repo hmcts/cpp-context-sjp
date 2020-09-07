@@ -22,11 +22,14 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class PressTransparencyReportHandler {
+
+    private static final String PRESS_TRANSPARENCY_REPORT_ID = "pressTransparencyReportId";
 
     @Inject
     private AggregateService aggregateService;
@@ -65,9 +68,9 @@ public class PressTransparencyReportHandler {
 
     @Handles("sjp.command.store-press-transparency-report-data")
     public void storePressTransparencyReportMetadata(final JsonEnvelope storePressTransparencyCommand) throws EventStreamException {
-        final JsonObject storePressTransparencyReportPayload = storePressTransparencyCommand.payloadAsJsonObject();
-        final UUID reportId = fromString(storePressTransparencyReportPayload.getString("pressTransparencyReportId"));
-        final List<UUID> caseIds = storePressTransparencyReportPayload.getJsonArray("caseIds")
+        final JsonObject payload = storePressTransparencyCommand.payloadAsJsonObject();
+        final UUID reportId = getReportId(payload);
+        final List<UUID> caseIds = getCaseIds(payload)
                 .getValuesAs(JsonString.class)
                 .stream()
                 .map(JsonString::getString)
@@ -80,15 +83,33 @@ public class PressTransparencyReportHandler {
                 pressTransparencyReportAggregate -> pressTransparencyReportAggregate.startTransparencyReportGeneration(caseIds));
     }
 
+    private JsonArray getCaseIds(final JsonObject payload) {
+        return payload.getJsonArray("caseIds");
+    }
+
+    private UUID getReportId(final JsonObject payload) {
+        return fromString(payload.getString(PRESS_TRANSPARENCY_REPORT_ID));
+    }
+
     @Handles("sjp.command.update-press-transparency-report-data")
     public void updatePressTransparencyReportData(final JsonEnvelope updateTransparencyReportCommand) throws EventStreamException {
         final JsonObject commandPayload = updateTransparencyReportCommand.payloadAsJsonObject();
-        final UUID pressTransparencyReportId = fromString(commandPayload.getString("pressTransparencyReportId"));
+        final UUID pressTransparencyReportId = getReportId(commandPayload);
         final JsonObject metadata = commandPayload.getJsonObject("metadata");
         applyToPressTransparencyReportAggregate(
                 pressTransparencyReportId,
                 updateTransparencyReportCommand,
                 transparencyReportAggregate -> transparencyReportAggregate.updateMetadata(metadata));
+    }
+
+    @Handles("sjp.command.press-transparency-report-failed")
+    public void pressTransparencyReportFailed(final JsonEnvelope envelope) throws EventStreamException {
+        final JsonObject payload = envelope.payloadAsJsonObject();
+        final UUID pressTransparencyReportId = getReportId(payload);
+        applyToPressTransparencyReportAggregate(
+                pressTransparencyReportId,
+                envelope,
+                PressTransparencyReportAggregate::pressTransparencyReportFailed);
     }
 
 

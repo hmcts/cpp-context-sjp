@@ -19,6 +19,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;
@@ -143,10 +145,41 @@ public class ReferenceDataService {
 
         final JsonObject queryParams = createObjectBuilder().add(FIELD_ON, QUERY_DATE).build();
 
-        final JsonEnvelope requestEnvelope = envelopeFrom(metadataFrom(sourceEvent.metadata()).withName("referencedata.get-all-fixed-list"), queryParams);
+        final JsonEnvelope requestEnvelope = envelopeFrom(metadataFrom(sourceEvent.metadata())
+                .withName("referencedata.get-all-fixed-list"), queryParams);
 
         final JsonValue fixedList = requester.request(requestEnvelope).payload();
 
         return JsonValue.NULL.equals(fixedList) ? Optional.empty() : of((JsonObject) fixedList);
+    }
+
+    public List<RegionalOrganisation> getRegionalOrganisations(final JsonEnvelope source) {
+        final JsonEnvelope requestEnvelope = envelopeFrom(
+                metadataFrom(source.metadata()).withName("referencedata.query.regional-organisations"),
+                createObjectBuilder()
+        );
+
+        final JsonEnvelope response = requester.request(requestEnvelope);
+
+        return JsonValue.NULL.equals(response.payload()) ?
+                emptyList() :
+                mapRegionalOrganisations(response);
+    }
+
+    private List<RegionalOrganisation> mapRegionalOrganisations(final JsonEnvelope response) {
+        if (!response.payloadAsJsonObject().containsKey("regionalOrganisations")) {
+            return emptyList();
+        }
+
+        return response.payloadAsJsonObject().getJsonArray("regionalOrganisations")
+                .getValuesAs(JsonObject.class)
+                .stream()
+                .map(jsonObject -> new RegionalOrganisation(
+                        UUID.fromString(jsonObject.getString("id")),
+                        jsonObject.getString("regionName"),
+                        jsonObject.containsKey("seqNum") ? jsonObject.getInt("seqNum") : null,
+                        jsonObject.containsKey("cbwaEnforcerEmail") ? jsonObject.getString("cbwaEnforcerEmail") : null
+                ))
+                .collect(Collectors.toList());
     }
 }

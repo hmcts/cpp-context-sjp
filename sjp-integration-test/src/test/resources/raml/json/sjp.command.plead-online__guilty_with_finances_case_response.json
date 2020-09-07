@@ -78,7 +78,9 @@
       "needed": false
     },
     "id": "${defendantId}",
-    "speakWelsh": false
+    "speakWelsh": false,
+    "asn": "asn",
+    "pncIdentifier": "pncId"
   },
   "caseDocuments": [
   ],

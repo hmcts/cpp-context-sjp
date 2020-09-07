@@ -129,4 +129,7 @@ public final class RuleConstants {
         return asList(GROUP_COURT_ADMINISTRATORS);
     }
 
+    public static List<String> prosecutorsOnly() {
+        return asList(GROUP_SJP_PROSECUTORS);
+    }
 }

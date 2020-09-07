@@ -29,6 +29,13 @@
     },
     "disabilityNeeds": {
       "$ref": "http://cpp.moj.gov.uk/core/sjp/disability-needs.json"
+    },
+    "asn": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "pncIdentifier": {
+      "type": "string"
     }
   },
   "additionalProperties": false

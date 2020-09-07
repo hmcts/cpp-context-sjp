@@ -67,6 +67,17 @@
       "pressRestriction": {
         "requested": false
       }
+    },
+    {
+      "type": "SET_ASIDE",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence6Id}"
+        }
+      ],
+      "pressRestriction": {
+        "requested": false
+      }
     }
   ]
 }

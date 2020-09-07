@@ -34,6 +34,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.aggregate.PressTransparencyReportAggregate;
 import uk.gov.moj.cpp.sjp.domain.transparency.ReportMetadata;
+import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyReportGenerationFailed;
 import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyReportGenerationStarted;
 import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyReportMetadataAdded;
 import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyReportRequested;
@@ -62,6 +63,8 @@ public class PressTransparencyReportHandlerTest {
     private static final String REQUEST_PRESS_TRANSPARENCY_REPORT_COMMAND = "sjp.command.request-press-transparency-report";
     private static final String STORE_PRESS_TRANSPARENCY_REPORT_DATA_COMMAND = "sjp.command.store-press-transparency-report-data";
     private static final String UPDATE_PRESS_TRANSPARENCY_REPORT_DATA_COMMAND = "sjp.command.update-press-transparency-report-data";
+    private static final String PRESS_TRANSPARENCY_REPORT_FAILED_COMMAND = "sjp.command.press-transparency-report-failed";
+    private static final String PRESS_TRANSPARENCY_REPORT_ID = "pressTransparencyReportId";
 
     @InjectMocks
     private PressTransparencyReportHandler pressTransparencyReportHandler;
@@ -92,7 +95,8 @@ public class PressTransparencyReportHandlerTest {
     private Enveloper enveloper = createEnveloperWithEvents(
             PressTransparencyReportRequested.class,
             PressTransparencyReportGenerationStarted.class,
-            PressTransparencyReportMetadataAdded.class);
+            PressTransparencyReportMetadataAdded.class,
+            PressTransparencyReportGenerationFailed.class);
 
     @Before
     public void setUp() {
@@ -155,7 +159,7 @@ public class PressTransparencyReportHandlerTest {
                 metadataWithRandomUUID(STORE_PRESS_TRANSPARENCY_REPORT_DATA_COMMAND),
                 createObjectBuilder()
                         .add("caseIds", caseIdArrayBuilder)
-                        .add("pressTransparencyReportId", reportId.toString()));
+                        .add(PRESS_TRANSPARENCY_REPORT_ID, reportId.toString()));
 
         final PressTransparencyReportGenerationStarted generationStarted = new PressTransparencyReportGenerationStarted(reportId, caseIds);
         when(eventSource.getStreamById(reportId)).thenReturn(pressTransparencyReportEventStream);
@@ -194,7 +198,7 @@ public class PressTransparencyReportHandlerTest {
         final JsonEnvelope updateReportDataCommandJsonEnvelope = envelopeFrom(
                 metadataWithRandomUUID(UPDATE_PRESS_TRANSPARENCY_REPORT_DATA_COMMAND),
                 createObjectBuilder()
-                        .add("pressTransparencyReportId", reportId.toString())
+                        .add(PRESS_TRANSPARENCY_REPORT_ID, reportId.toString())
                         .add("metadata", reportMetadataJsonObject)
         );
 
@@ -223,7 +227,38 @@ public class PressTransparencyReportHandlerTest {
         ));
     }
 
+    @Test
+    public void shouldHandleUpdatePressTransparencyReportFailedCommand() {
+        assertThat(pressTransparencyReportHandler, isHandler(COMMAND_HANDLER)
+                .with(method("pressTransparencyReportFailed")
+                        .thatHandles(PRESS_TRANSPARENCY_REPORT_FAILED_COMMAND)
+                ));
+    }
 
+    @Test
+    public void shouldRecordPressTransparencyReportFailure() throws EventStreamException {
+        final UUID pressTransparencyReportId = randomUUID();
+        final JsonEnvelope generationFailedEnvelope = envelopeFrom(
+                metadataWithRandomUUID(PRESS_TRANSPARENCY_REPORT_FAILED_COMMAND),
+                createObjectBuilder()
+                        .add(PRESS_TRANSPARENCY_REPORT_ID, pressTransparencyReportId.toString())
+        );
+
+        final PressTransparencyReportGenerationFailed generationFailedEvent = new PressTransparencyReportGenerationFailed(pressTransparencyReportId);
+        when(eventSource.getStreamById(pressTransparencyReportId)).thenReturn(pressTransparencyReportEventStream);
+        when(aggregateService.get(pressTransparencyReportEventStream, PressTransparencyReportAggregate.class)).thenReturn(pressTransparencyReportAggregate);
+        when(pressTransparencyReportAggregate.pressTransparencyReportFailed()).thenReturn(Stream.of(generationFailedEvent));
+
+        pressTransparencyReportHandler.pressTransparencyReportFailed(generationFailedEnvelope);
+        assertThat(pressTransparencyReportEventStream, eventStreamAppendedWith(
+                streamContaining(
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(generationFailedEnvelope)
+                                        .withName(PressTransparencyReportGenerationFailed.EVENT_NAME),
+                                payloadIsJson(allOf(
+                                        withJsonPath("$.pressTransparencyReportId", equalTo(pressTransparencyReportId.toString()))
+                                ))))));
+    }
 
     private JsonObject buildFileMetadataJsonObject(final ReportMetadata reportMetadata) {
         return createObjectBuilder()

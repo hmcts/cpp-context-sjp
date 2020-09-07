@@ -31,6 +31,9 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -123,6 +126,30 @@ public class SessionApiTest {
                 payloadIsJson(withJsonPath("$.sessionId", equalTo(sessionId.toString()))))));
     }
 
+    @Test
+    public void endSessionShouldValidateSessionIdIsNotNull() {
+        final JsonObject payload = Json.createObjectBuilder().addNull("sessionId").build();
+        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID("sjp.end-session"))
+                .withPayloadFrom(payload)
+                .build();
+
+        thrown.expect(BadRequestException.class);
+        thrown.expectMessage("Invalid sessionId provided");
+
+        sessionApi.endSession(envelope);
+    }
+
+    @Test
+    public void endSessionShouldValidateSessionIdIsNotInTheWrongFormat() {
+        final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID("sjp.end-session"))
+                .withPayloadOf("invalid UUID", "sessionId")
+                .build();
+
+        thrown.expect(BadRequestException.class);
+        thrown.expectMessage("Invalid sessionId provided");
+
+        sessionApi.endSession(envelope);
+    }
 
     @Test
     public void shouldRenameAssignNextCaseCommand() {

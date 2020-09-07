@@ -90,6 +90,7 @@ public class ReferencedDecisionSavedOffenceConverter {
         return new CachedReferenceData(referenceDataService, envelope);
     }
 
+    @SuppressWarnings("squid:MethodCyclomaticComplexity")
     private List<JsonObject> convertOffenceDecision(final JsonObject offenceDecision,
                                                     final CachedReferenceData referenceData,
                                                     final JsonObject decisionSavedEventPayload) {
@@ -115,9 +116,16 @@ public class ReferencedDecisionSavedOffenceConverter {
                 return convertReferredForCourtHearing(offenceDecision, referenceData, resultedOn);
             case NO_SEPARATE_PENALTY:
                 return convertNoSeparatePenalty(offenceDecision, referenceData, resultedOn);
+            case SET_ASIDE:
+                return convertSetAside(offenceDecision, referenceData, resultedOn);
             default:
                 return emptyList();
         }
+    }
+
+    private List<JsonObject> convertSetAside(final JsonObject offenceDecision, final CachedReferenceData referenceData, final String resultedOn) {
+        final JsonObjectBuilder results = new SetAsideDecisionResult(offenceDecision, referenceData, resultedOn).toJsonObjectBuilder();
+        return singletonList(results.build());
     }
 
     private List<JsonObject> convertNoSeparatePenalty(final JsonObject offenceDecision,

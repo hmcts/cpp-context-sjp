@@ -79,7 +79,9 @@
                 },
                 "name": "Test Org"
               },
-              "driverNumber": "${DRIVER_NUMBER}"
+              "driverNumber": "${DRIVER_NUMBER}",
+              "arrestSummonsNumber": "asn",
+              "pncId": "pncId"
             },
             "mitigation":"I was drunk at the time"
           }

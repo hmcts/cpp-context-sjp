@@ -17,7 +17,7 @@ final class CaseCreatedMutator implements AggregateStateMutator<SjpCaseCreated, 
         state.setCaseId(event.getId());
         state.setUrn(event.getUrn());
         state.setProsecutingAuthority(event.getProsecutingAuthority());
-
+        state.setDefendantId(event.getDefendantId());
         state.addOffenceIdsForDefendant(
                 event.getDefendantId(),
                 event.getOffences().stream()

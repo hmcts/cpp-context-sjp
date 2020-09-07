@@ -6,7 +6,8 @@
   "referredOffences": [
     {
       "offenceId": "b6c0eb95-e27d-42b8-8f42-e8765860a46c",
-      "verdict": "PROVED_SJP"
+      "verdict": "PROVED_SJP",
+      "pressRestrictable": false
     }
   ],
   "estimatedHearingDuration": 30,

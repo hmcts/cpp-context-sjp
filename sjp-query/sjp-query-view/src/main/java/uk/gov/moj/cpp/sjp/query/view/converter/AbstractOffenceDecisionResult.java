@@ -2,11 +2,6 @@ package uk.gov.moj.cpp.sjp.query.view.converter;
 
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.ID;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.OFFENCE_DECISION_INFORMATION;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.OFFENCE_ID;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.RESULTS;
-import static uk.gov.moj.cpp.sjp.query.view.util.CaseResultsConstants.VERDICT;
 
 import uk.gov.moj.cpp.sjp.query.view.service.CachedReferenceData;
 
@@ -15,6 +10,8 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 public abstract class AbstractOffenceDecisionResult {
+
+    private static final String VERDICT = "verdict";
 
     private final JsonObject offenceDecision;
     private final CachedReferenceData referenceData;
@@ -49,16 +46,16 @@ public abstract class AbstractOffenceDecisionResult {
 
     protected JsonObjectBuilder createOffenceDecision() {
         addPressRestriction();
-        return createObjectBuilder()
-                .add(ID, getOffenceId())
-                .add(VERDICT, getVerdict())
-                .add(RESULTS, results);
-    }
 
-    private void addPressRestriction() {
-        if (hasPressRestriction()) {
-            results.add(new PressRestrictionResult(getPressRestriction(), referenceData, resultedOn).toJsonObjectBuilder());
+        final JsonObjectBuilder decision = createObjectBuilder()
+                .add("id", getOffenceId())
+                .add("results", results);
+
+        if (hasVerdict()) {
+            decision.add(VERDICT, getVerdict());
         }
+
+        return decision;
     }
 
     public JsonObject getOffenceDecision() {
@@ -70,11 +67,11 @@ public abstract class AbstractOffenceDecisionResult {
     }
 
     public String getVerdict() {
-        return offenceDecision.getJsonArray(OFFENCE_DECISION_INFORMATION).getJsonObject(0).getString(VERDICT);
+        return getOffenceDecisionInformation().getString(VERDICT);
     }
 
     public String getOffenceId() {
-        return offenceDecision.getJsonArray(OFFENCE_DECISION_INFORMATION).getJsonObject(0).getString(OFFENCE_ID);
+        return getOffenceDecisionInformation().getString("offenceId");
     }
 
     public boolean hasPressRestriction() {
@@ -87,5 +84,19 @@ public abstract class AbstractOffenceDecisionResult {
 
     public String getResultTypeId(final ResultCode resultCode) {
         return referenceData.getResultId(resultCode.name()).toString();
+    }
+
+    private JsonObject getOffenceDecisionInformation() {
+        return offenceDecision.getJsonArray("offenceDecisionInformation").getJsonObject(0);
+    }
+
+    private void addPressRestriction() {
+        if (hasPressRestriction()) {
+            results.add(new PressRestrictionResult(getPressRestriction(), referenceData, resultedOn).toJsonObjectBuilder());
+        }
+    }
+
+    private boolean hasVerdict() {
+        return getOffenceDecisionInformation().containsKey(VERDICT);
     }
 }

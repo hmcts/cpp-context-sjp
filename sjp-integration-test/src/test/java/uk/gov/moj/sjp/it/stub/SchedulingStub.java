@@ -121,6 +121,7 @@ public class SchedulingStub {
     }
 
     private static void verifySessionStarted(final Predicate<JSONObject> commandPayloadPredicate) {
+
         await("scheduling.command.start-sjp-session command sent").until(() ->
                 findAll(postRequestedFor(urlPathEqualTo(START_SJP_SESSION_URL)))
                         .stream()

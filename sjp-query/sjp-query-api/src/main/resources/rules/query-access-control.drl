@@ -309,3 +309,12 @@ rule "sjp - Query - API - Get Cases without defendant postcode"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Regions - API - Get all regions"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.regions");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.prosecutorsOnly()))
+  then
+    $outcome.setSuccess(true);
+end

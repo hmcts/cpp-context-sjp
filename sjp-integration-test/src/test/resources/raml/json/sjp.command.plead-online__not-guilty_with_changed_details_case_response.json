@@ -79,7 +79,9 @@
       "needed": true,
       "language": "French"
     },
-    "id": "${defendantId}"
+    "id": "${defendantId}",
+    "asn": "asn",
+    "pncIdentifier": "pncId"
   },
   "caseDocuments": [
   ],

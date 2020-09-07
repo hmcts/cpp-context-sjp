@@ -10,19 +10,22 @@ public class PersonDefendantView {
     private final String driverNumber;
     private final List<String> aliases;
     private final String arrestSummonsNumber;
+    private final String pncId;
 
     public PersonDefendantView(final PersonDetailsView personDetails,
                                final EmployerOrganisationView employerOrganisation,
                                final String selfDefinedEthnicityId,
                                final String driverNumber,
                                final List<String> aliases,
-                               final String arrestSummonsNumber) {
+                               final String arrestSummonsNumber,
+                               final String pncId) {
         this.personDetails = personDetails;
         this.employerOrganisation = employerOrganisation;
         this.selfDefinedEthnicityId = selfDefinedEthnicityId;
         this.driverNumber = driverNumber;
         this.aliases = aliases;
         this.arrestSummonsNumber = arrestSummonsNumber;
+        this.pncId = pncId;
     }
 
     public PersonDetailsView getPersonDetails() {
@@ -45,5 +48,9 @@ public class PersonDefendantView {
 
     public String getArrestSummonsNumber() {
         return arrestSummonsNumber;
+    }
+
+    public String getPncId() {
+        return pncId;
     }
 }

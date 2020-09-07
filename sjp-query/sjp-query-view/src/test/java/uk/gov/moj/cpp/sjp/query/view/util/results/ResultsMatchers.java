@@ -11,18 +11,27 @@ import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.D;
 import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.D45;
 import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.DPR;
+import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.SETASIDE;
 import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.WDRNNOT;
 
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 
 import java.util.UUID;
 
+import com.jayway.jsonpath.matchers.JsonPathMatchers;
 import org.hamcrest.Matcher;
 
 public class ResultsMatchers {
 
     private ResultsMatchers() {
         // Utils class should have private ctor
+    }
+
+    public static Matcher isOffenceDecision(final UUID offenceId) {
+        return isJson(allOf(
+                withJsonPath("$.id", equalTo(offenceId.toString())),
+                JsonPathMatchers.withoutJsonPath("$.verdict")
+        ));
     }
 
     public static Matcher isOffenceDecision(final UUID offenceId, final VerdictType verdict) {
@@ -71,6 +80,14 @@ public class ResultsMatchers {
         return isJson(allOf(
                 withJsonPath("code", equalTo(D.name())),
                 withJsonPath("resultTypeId", equalTo(D.getResultDefinitionId().toString())),
+                withJsonPath("terminalEntries[*]", empty())
+        ));
+    }
+
+    public static Matcher SETASIDE() {
+        return isJson(allOf(
+                withJsonPath("code", equalTo(SETASIDE.name())),
+                withJsonPath("resultTypeId", equalTo(SETASIDE.getResultDefinitionId().toString())),
                 withJsonPath("terminalEntries[*]", empty())
         ));
     }

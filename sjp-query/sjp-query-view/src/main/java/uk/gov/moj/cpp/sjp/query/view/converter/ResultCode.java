@@ -39,6 +39,7 @@ import uk.gov.moj.cpp.sjp.query.view.converter.results.RLSUMIResultCodeConverter
 import uk.gov.moj.cpp.sjp.query.view.converter.results.RLSUMResultCodeConverter;
 import uk.gov.moj.cpp.sjp.query.view.converter.results.RSJPResultCodeConverter;
 import uk.gov.moj.cpp.sjp.query.view.converter.results.ResultCodeConverter;
+import uk.gov.moj.cpp.sjp.query.view.converter.results.SETASIDEResultCodeConverter;
 import uk.gov.moj.cpp.sjp.query.view.converter.results.SUMRCCResultCodeConverter;
 import uk.gov.moj.cpp.sjp.query.view.converter.results.SUMRTOResultCodeConverter;
 import uk.gov.moj.cpp.sjp.query.view.converter.results.TFOOUTResultCodeConverter;
@@ -94,7 +95,8 @@ public enum ResultCode {
     SUMRTO(fromString("3d2c05b3-fcd6-49c2-b5a9-52855be7f90a"), SUMRTOResultCodeConverter::new),
     SJPR(fromString("0149ab92-5466-11e8-9c2d-fa7ae01bbebc"), RSJPResultCodeConverter::new),
     D45(fromString("fcbf777d-1a73-47e7-ab9b-7c51091a022c"), D45ResultCodeConverter::new),
-    DPR(fromString("b27b42bf-e20e-46ec-a6e3-5c2e8a076c20"), DPRResultCodeConverter::new);
+    DPR(fromString("b27b42bf-e20e-46ec-a6e3-5c2e8a076c20"), DPRResultCodeConverter::new),
+    SETASIDE(fromString("af590f98-21cb-43e7-b992-2a9d444acb2b"), SETASIDEResultCodeConverter::new);
 
 
     private static final Logger LOGGER = getLogger(ResultCode.class);

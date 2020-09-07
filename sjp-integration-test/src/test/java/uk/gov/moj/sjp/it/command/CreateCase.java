@@ -115,7 +115,9 @@ public class CreateCase {
                         .add("email", payloadBuilder.defendantBuilder.contactDetailsBuilder.getEmail())
                         .add("email2", payloadBuilder.defendantBuilder.contactDetailsBuilder.getEmail2())
                 )
-                .add("offences", createOffencesBuilder());
+                .add("offences", createOffencesBuilder())
+                .add("asn", payloadBuilder.defendantBuilder.getAsn())
+                .add("pncIdentifier", payloadBuilder.defendantBuilder.getPncIdentifier());
 
         if(nonNull(payloadBuilder.defendantBuilder.title))
             defendantBuilder.add("title", payloadBuilder.defendantBuilder.title);
@@ -339,6 +341,8 @@ public class CreateCase {
         ContactDetailsBuilder contactDetailsBuilder;
 
         Language hearingLanguage;
+        String asn;
+        String pncIdentifier;
 
         private DefendantBuilder() {
 
@@ -364,6 +368,8 @@ public class CreateCase {
             builder.addressBuilder = AddressBuilder.withDefaults();
             builder.contactDetailsBuilder = ContactDetailsBuilder.withDefaults();
             builder.hearingLanguage = null;
+            builder.asn = "asn";
+            builder.pncIdentifier = "pncId";
 
             return builder;
         }
@@ -428,6 +434,16 @@ public class CreateCase {
             return this;
         }
 
+        public DefendantBuilder withAsn(final String asn) {
+            this.asn = asn;
+            return this;
+        }
+
+        public DefendantBuilder withPncIdentifier(final String pncIdentifier) {
+            this.pncIdentifier = pncIdentifier;
+            return this;
+        }
+
         public UUID getId() {
             return id;
         }
@@ -478,6 +494,14 @@ public class CreateCase {
 
         public String getDriverLicenceDetails() {
             return driverLicenceDetails;
+        }
+
+        public String getAsn() {
+            return asn;
+        }
+
+        public String getPncIdentifier() {
+            return pncIdentifier;
         }
     }
 

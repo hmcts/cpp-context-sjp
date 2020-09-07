@@ -10,6 +10,7 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.moj.cpp.sjp.domain.transparency.ReportMetadata;
+import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyReportGenerationFailed;
 import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyReportGenerationStarted;
 import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyReportMetadataAdded;
 import uk.gov.moj.cpp.sjp.event.transparency.PressTransparencyReportRequested;
@@ -39,6 +40,7 @@ public class PressTransparencyReportAggregate implements Aggregate {
                 when(PressTransparencyReportRequested.class).apply(e -> this.pressTransparencyReportId = e.getPressTransparencyReportId()),
                 when(PressTransparencyReportGenerationStarted.class).apply(e -> doNothing()),
                 when(PressTransparencyReportMetadataAdded.class).apply(e -> this.reportMetadata = e.getMetadata()),
+                when(PressTransparencyReportGenerationFailed.class).apply(e -> doNothing()),
                 otherwiseDoNothing()
         );
     }
@@ -68,5 +70,11 @@ public class PressTransparencyReportAggregate implements Aggregate {
                 reportMetadata.getInt("fileSize"),
                 fromString(reportMetadata.getString("fileId"))
         );
+    }
+
+    public Stream<Object> pressTransparencyReportFailed() {
+        final Stream.Builder<Object> sb = Stream.builder();
+        sb.add(new PressTransparencyReportGenerationFailed(pressTransparencyReportId));
+        return apply(sb.build());
     }
 }

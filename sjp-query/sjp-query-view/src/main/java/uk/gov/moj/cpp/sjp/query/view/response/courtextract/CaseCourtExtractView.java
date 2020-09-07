@@ -1,10 +1,9 @@
 package uk.gov.moj.cpp.sjp.query.view.response.courtextract;
 
-import static java.time.LocalDate.now;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Comparator.comparing;
-import static java.util.Objects.*;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;

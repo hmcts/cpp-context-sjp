@@ -11,9 +11,9 @@ public class CasesPendingDatesToAvoidView {
 
     private final int count;
 
-    public CasesPendingDatesToAvoidView(final List<PendingDatesToAvoid> cases) {
+    public CasesPendingDatesToAvoidView(final List<PendingDatesToAvoid> cases, final int count) {
         this.cases = cases.stream().map(CasePendingDatesToAvoidView::new).collect(Collectors.toList());
-        this.count = this.cases.size();
+        this.count = count;
     }
 
     public List<CasePendingDatesToAvoidView> getCases() {

@@ -50,7 +50,7 @@ public class DefendantToDefendantDetailsTest {
                 RandomStringUtils.random(16), RandomStringUtils.random(50),
                 new uk.gov.moj.cpp.sjp.domain.Address("l1", "l2", "l3", "l4", "l5", "p"),
                 new uk.gov.moj.cpp.sjp.domain.ContactDetails("home", "mobile", "business" , "email1@abc.com", "email2@abc.com"),
-                3, asList(mock(Offence.class), mock(Offence.class)), Language.W, "languageNeeds", "region");
+                3, asList(mock(Offence.class), mock(Offence.class)), Language.W, "languageNeeds", "region", "asn", "pncId");
 
         final PersonalDetails mockedPersonalDetails = mock(PersonalDetails.class);
         when(personToPersonalDetailsEntity.convert(inputDefendant)).thenReturn(mockedPersonalDetails);
@@ -73,7 +73,9 @@ public class DefendantToDefendantDetailsTest {
                 mockedPersonalDetails,
                 mockedOffenceDetails,
                 inputDefendant.getNumPreviousConvictions(),
-                true);
+                true,
+                "asn",
+                "pncId");
 
         assertTrue(reflectionEquals(outputDefendant, expectedDefendant));
     }

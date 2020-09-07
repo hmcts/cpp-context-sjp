@@ -1,7 +1,9 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
 import static java.util.Comparator.comparing;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
@@ -17,6 +19,7 @@ import uk.gov.moj.cpp.sjp.query.view.response.DefendantProfilingView;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -34,6 +37,9 @@ public class DefendantService {
     @Inject
     private ProsecutingAuthorityAccessFilterConverter prosecutingAuthorityAccessFilterConverter;
 
+    @Inject
+    private ReferenceDataService referenceDataService;
+
     public DefendantDetailsUpdatesView findDefendantDetailUpdates(final JsonEnvelope envelope) {
         final String prosecutingAuthorityFilterValue = prosecutingAuthorityAccessFilterConverter
                 .convertToProsecutingAuthorityAccessFilter(prosecutingAuthorityProvider
@@ -44,14 +50,70 @@ public class DefendantService {
                 ZonedDateTime.now().minusDays(UPDATES_DAYS_HISTORY),
                 ZonedDateTime.now());
 
-        final List<UpdatedDefendantDetails> sortedDefendantDetails = updatedDefendantDetails.stream()
+        List<UpdatedDefendantDetails> results = updatedDefendantDetails;
+
+        final String filterCriteria = getRegionFilterCriteria(envelope);
+
+        if (isFilterByUnknownRegion(filterCriteria)) {
+            results = filterByUnknownRegion(updatedDefendantDetails);
+        }
+
+        if (isFilterByRegionId(filterCriteria)) {
+            results = filterByRegionId(envelope, updatedDefendantDetails, filterCriteria);
+        }
+
+        return DefendantDetailsUpdatesView.of(updatedDefendantDetails.size(), sortByMostRecentUpdated(envelope, results));
+    }
+
+    private List<UpdatedDefendantDetails> filterByRegionId(final JsonEnvelope envelope, final List<UpdatedDefendantDetails> updatedDefendantDetails, final String filterCriteria) {
+        final List<UpdatedDefendantDetails> sortedDefendantDetailsResult;
+        final List<RegionalOrganisation> regions = referenceDataService.getRegionalOrganisations(envelope);
+        final String RegionValue = getRegionNameById(filterCriteria, regions);
+
+        sortedDefendantDetailsResult = updatedDefendantDetails
+                .stream()
+                .filter(line -> RegionValue.equalsIgnoreCase(line.getRegion()))
+                .collect(Collectors.toList());
+        return sortedDefendantDetailsResult;
+    }
+
+    private boolean isFilterByRegionId(final String filterCriteria) {
+        return !isBlankRegion(filterCriteria) && nonNull(filterCriteria);
+    }
+
+    private List<UpdatedDefendantDetails> filterByUnknownRegion(final List<UpdatedDefendantDetails> updatedDefendantDetails) {
+        return updatedDefendantDetails
+                .stream()
+                .filter(line -> isBlank(line.getRegion()))
+                .collect(Collectors.toList());
+    }
+
+    private boolean isFilterByUnknownRegion(final String filterCriteria) {
+        return nonNull(filterCriteria) && isBlankRegion(filterCriteria);
+    }
+
+    private String getRegionFilterCriteria(final JsonEnvelope envelope) {
+        return envelope.payloadAsJsonObject().getString("regionId", null);
+    }
+
+    private List<UpdatedDefendantDetails> sortByMostRecentUpdated(final JsonEnvelope envelope, final List<UpdatedDefendantDetails> updatedDefendantDetails) {
+        return updatedDefendantDetails.stream()
                 .sorted(comparing(defendantDetails -> defendantDetails.getMostRecentUpdateDate().get()))
                 .limit(envelope.payloadAsJsonObject().getInt(LIMIT_QUERY_PARAM))
                 .collect(toList());
+    }
 
-        return DefendantDetailsUpdatesView.of(
-                updatedDefendantDetails.size(),
-                sortedDefendantDetails);
+    private String getRegionNameById(String regionId, List<RegionalOrganisation> regions) {
+        return regions
+                .stream()
+                .filter(region -> regionId.equalsIgnoreCase(region.getId().toString()))
+                .findAny()
+                .orElseThrow(IllegalArgumentException::new)
+                .getRegionName();
+    }
+
+    private boolean isBlankRegion(String regionId) {
+        return "UNKNOWN".equalsIgnoreCase(regionId) || isBlank(regionId);
     }
 
     public DefendantProfilingView getDefendantProfilingView(final UUID defendantId) {

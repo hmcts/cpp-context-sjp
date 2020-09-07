@@ -79,7 +79,9 @@
     "id": "${defendantId}",
     "disabilityNeeds" : {
       "needed" : false
-    }
+    },
+    "asn": "asn",
+    "pncIdentifier": "pncId"
   },
   "caseDocuments": [
   ],

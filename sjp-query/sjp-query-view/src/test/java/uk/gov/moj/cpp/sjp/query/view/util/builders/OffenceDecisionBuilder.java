@@ -28,10 +28,14 @@ public class OffenceDecisionBuilder {
     }
 
     public JsonObject build() {
+        final JsonObjectBuilder offenceDecision = createObjectBuilder()
+                .add("offenceId", this.offenceId.toString());
+        if (nonNull(this.verdict)) {
+            offenceDecision.add("verdict", this.verdict.toString());
+        }
+
         final JsonObjectBuilder result = createObjectBuilder()
-                .add("offenceDecisionInformation", createArrayBuilder().add(createObjectBuilder()
-                        .add("offenceId", this.offenceId.toString())
-                        .add("verdict", this.verdict.toString())));
+                .add("offenceDecisionInformation", createArrayBuilder().add(offenceDecision));
 
         if (nonNull(pressRestriction)) {
             result.add("pressRestriction", pressRestriction);
@@ -60,6 +64,11 @@ public class OffenceDecisionBuilder {
 
     public OffenceDecisionBuilder withWithdrawalReasonId(final UUID withdrawReasonId) {
         this.withdrawalReasonId = withdrawReasonId;
+        return this;
+    }
+
+    public OffenceDecisionBuilder setAside() {
+        this.verdict = null;
         return this;
     }
 

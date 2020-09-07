@@ -29,7 +29,9 @@ public class DefendantToDefendantDetails implements Converter<Defendant, Defenda
                 personalDetails,
                 defendant.getOffences().stream().map(offenceToOffenceDetailConverter::convert).collect(toList()),
                 defendant.getNumPreviousConvictions(),
-                speaksWelshConverter.convert(defendant.getHearingLanguage()));
+                speaksWelshConverter.convert(defendant.getHearingLanguage()),
+                defendant.getAsn(),
+                defendant.getPncIdentifier());
     }
 
 }

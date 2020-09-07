@@ -28,7 +28,6 @@ import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_NON_LONDON_LJA_NATIONAL_CO
 import static uk.gov.moj.sjp.it.util.FileUtil.getFileContentAsJson;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 
@@ -52,7 +51,10 @@ import org.apache.commons.io.IOUtils;
 
 public class ReferenceDataServiceStub {
 
-    public static final String QUERY_PROSECUTORS_MIME_TYPE = "application/vnd.referencedata.query.prosecutors+json";
+    private static final String REFERENCEDATA_SERVICE = "referencedata-service";
+    private static final String QUERY_API_PATH = "/referencedata-service/query/api/rest/referencedata";
+    private static final String QUERY_PROSECUTORS_MIME_TYPE = "application/vnd.referencedata.query.prosecutors+json";
+    private static final String REFERENCEDATAOFFENCES_SERVICE = "referencedataoffences-service";
 
     public static JsonObject stubQueryOffencesByCode(final String code) {
         return stubQueryOffencesByCode(code, equalTo(code));
@@ -63,7 +65,7 @@ public class ReferenceDataServiceStub {
     }
 
     public static void stubQueryOffenceById(final UUID offenceId) {
-        stubPingFor("referencedataoffences-service");
+        stubPingFor(REFERENCEDATAOFFENCES_SERVICE);
         final JsonObject offence = createObjectBuilder()
                 .add("offenceId", offenceId.toString())
                 .add("cjsOffenceCode", "1")
@@ -84,8 +86,9 @@ public class ReferenceDataServiceStub {
     }
 
     public static void stubQueryForAllProsecutors() {
-        stubPingFor("referencedata-service");
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/prosecutors";
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/prosecutors";
+
         stubFor(get(urlPathEqualTo(urlPath))
                 .withHeader(ACCEPT, equalTo(QUERY_PROSECUTORS_MIME_TYPE))
                 .willReturn(aResponse().withStatus(SC_OK)
@@ -101,9 +104,9 @@ public class ReferenceDataServiceStub {
     }
 
     public static void stubProsecutorQuery(final String prosecutingAuthorityCode, final String prosecutingAuthorityFullName, final UUID prosecutorId, final boolean policeFlag) {
-        stubPingFor("referencedata-service");
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/prosecutors";
 
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/prosecutors";
         stubFor(get(urlPathEqualTo(urlPath))
                 .withQueryParam("prosecutorCode", matching(prosecutingAuthorityCode))
                 .willReturn(aResponse().withStatus(SC_OK)
@@ -125,9 +128,9 @@ public class ReferenceDataServiceStub {
     }
 
     public static void stubHearingTypesQuery(final String hearingTypeId, final String hearingCode, final String hearingDescription) {
-        stubPingFor("referencedata-service");
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/hearing-types";
 
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/hearing-types";
         stubFor(get(urlPathEqualTo(urlPath))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader(ID, randomUUID().toString())
@@ -143,9 +146,8 @@ public class ReferenceDataServiceStub {
     }
 
     public static void stubReferralDocumentMetadataQuery(final String id, final String documentType) {
-        stubPingFor("referencedata-service");
-
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/documents-type-access/.*";
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/documents-type-access/.*";
 
         stubFor(get(urlPathMatching(urlPath))
                 .willReturn(aResponse().withStatus(SC_OK)
@@ -174,7 +176,9 @@ public class ReferenceDataServiceStub {
     }
 
     public static void stubReferralReasonsQuery(final UUID referralReasonId, final String hearingCode, final String referralReason) {
-        stubPingFor("referencedata-service");
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/referral-reasons";
+        final String mediaType = "application/vnd.reference-data.referral-reasons+json";
 
         final JsonObject response = createObjectBuilder().add("referralReasons", createArrayBuilder()
                 .add(createObjectBuilder()
@@ -182,9 +186,6 @@ public class ReferenceDataServiceStub {
                         .add("hearingCode", hearingCode)
                         .add("reason", referralReason)))
                 .build();
-
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/referral-reasons";
-        final String mediaType = "application/vnd.reference-data.referral-reasons+json";
 
         stubFor(get(urlPathEqualTo(urlPath))
                 .willReturn(aResponse().withStatus(SC_OK)
@@ -194,16 +195,15 @@ public class ReferenceDataServiceStub {
     }
 
     public static void stubOffenceFineLevelsQuery(final int fineLevel, final BigDecimal maxValue) {
-        stubPingFor("referencedata-service");
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/offence-fine-levels";
+        final String mediaType = "application/vnd.reference-data.offence-fine-levels+json";
 
         final JsonObject response = createObjectBuilder().add("fineLevels", createArrayBuilder()
                 .add(createObjectBuilder()
                         .add("fineLevel", fineLevel)
                         .add("maxValue", maxValue)))
                 .build();
-
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/offence-fine-levels";
-        final String mediaType = "application/vnd.reference-data.offence-fine-levels+json";
 
         stubFor(get(urlPathEqualTo(urlPath))
                 .willReturn(aResponse().withStatus(SC_OK)
@@ -217,7 +217,7 @@ public class ReferenceDataServiceStub {
     }
 
     public static void stubWithdrawalReasonsQuery(final Map<UUID, String> withdrawalReasons) {
-        stubPingFor("referencedata-service");
+        stubPingFor(REFERENCEDATA_SERVICE);
 
         final JsonArray withdrawalReasonsArray = withdrawalReasons.entrySet().stream()
                 .map(e -> createObjectBuilder().add("id", e.getKey().toString()).add("reasonCodeDescription", e.getValue()))
@@ -225,7 +225,7 @@ public class ReferenceDataServiceStub {
 
         final JsonObject response = createObjectBuilder().add("offenceWithdrawRequestReasons", withdrawalReasonsArray).build();
 
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/offence-withdraw-request-reason";
+        final String urlPath = QUERY_API_PATH + "/offence-withdraw-request-reason";
         final String mediaType = "application/vnd.reference-data.offence-withdrawal-request-reason+json";
 
         stubFor(get(urlPathEqualTo(urlPath))
@@ -236,9 +236,9 @@ public class ReferenceDataServiceStub {
     }
 
     private static void stubCourt(final String courtHouseOUCode, final String responseBody) {
-        stubPingFor("referencedata-service");
+        stubPingFor(REFERENCEDATA_SERVICE);
 
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/organisationunits";
+        final String urlPath = QUERY_API_PATH + "/organisationunits";
         stubFor(get(urlPathEqualTo(urlPath))
                 .withQueryParam("oucode", equalTo(courtHouseOUCode))
                 .willReturn(aResponse().withStatus(SC_OK)
@@ -248,8 +248,8 @@ public class ReferenceDataServiceStub {
     }
 
     public static void stubEnforcementAreaByPostcode(final String postCode, final String nationalCourtCode, final String nationalCourtName) {
-        stubPingFor("referencedata-service");
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/enforcement-area";
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/enforcement-area";
 
         final JsonObject enforcementAreaJson = getFileContentAsJson("stub-data/referencedata.query.enforcement-area.json");
         final JsonObjectBuilder localJusticeArea = createObjectBuilder(enforcementAreaJson.getJsonObject("localJusticeArea"));
@@ -272,8 +272,8 @@ public class ReferenceDataServiceStub {
     }
 
     public static void stubRegionByPostcode(final String nationalCourtCode, final String region) {
-        stubPingFor("referencedata-service");
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/local-justice-areas";
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/local-justice-areas";
 
         final JsonObject localJusticeArea = createObjectBuilder()
                 .add("nationalCourtCode", nationalCourtCode)
@@ -301,9 +301,9 @@ public class ReferenceDataServiceStub {
     }
 
     public static void stubCountryByPostcodeQuery(final String postcode, final String country) {
-        stubPingFor("referencedata-service");
+        stubPingFor(REFERENCEDATA_SERVICE);
 
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/country-by-postcode";
+        final String urlPath = QUERY_API_PATH + "/country-by-postcode";
 
         final String encodedPostcode;
         try {
@@ -321,9 +321,9 @@ public class ReferenceDataServiceStub {
     }
 
     public static void stubCountryNationalities(final String resourceName) {
-        stubPingFor("referencedata-service");
+        stubPingFor(REFERENCEDATA_SERVICE);
 
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/country-nationality";
+        final String urlPath = QUERY_API_PATH + "/country-nationality";
 
         stubFor(get(urlPathEqualTo(urlPath))
                 .willReturn(aResponse().withStatus(SC_OK)
@@ -333,10 +333,10 @@ public class ReferenceDataServiceStub {
     }
 
     public static void stubEthnicities(final String resourceName) {
-        stubPingFor("referencedata-service");
+        stubPingFor(REFERENCEDATA_SERVICE);
 
         final String query = "application/vnd.reference-data.ethnicities+json";
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/ethnicities";
+        final String urlPath = QUERY_API_PATH + "/ethnicities";
 
         stubFor(get(urlPathEqualTo(urlPath))
                 .withHeader(ACCEPT, equalTo(query))
@@ -347,7 +347,7 @@ public class ReferenceDataServiceStub {
     }
 
     private static JsonObject stubQueryOffencesByCode(final String code, final ValueMatchingStrategy offenceCodeMatcher) {
-        stubPingFor("referencedataoffences-service");
+        stubPingFor(REFERENCEDATAOFFENCES_SERVICE);
 
         final String urlPath = "/referencedataoffences-service/query/api/rest/referencedataoffences/offences";
         final JsonObject offenceDefinition = getFileContentAsJson(format("stub-data/offences/%s.json", code));
@@ -375,10 +375,8 @@ public class ReferenceDataServiceStub {
     }
 
     public static void stubResultDefinitions() {
-        stubPingFor("referencedata-service");
-
-        final String query = "application/vnd.referencedata.get-all-result-definitions+json";
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/result-definitions";
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/result-definitions";
 
         stubFor(get(urlPathEqualTo(urlPath))
                 .willReturn(aResponse().withStatus(SC_OK)
@@ -388,8 +386,8 @@ public class ReferenceDataServiceStub {
     }
 
     public static void stubResultIds() {
-        stubPingFor("referencedata-service");
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/results";
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/results";
 
         stubFor(get(urlPathEqualTo(urlPath))
                 .willReturn(aResponse().withStatus(SC_OK)
@@ -398,4 +396,20 @@ public class ReferenceDataServiceStub {
                         .withBody(getPayload("stub-data/referencedata.query.results.json"))));
     }
 
+    public static void stubRegionalOrganisations() {
+        final String urlPath = pathFor("/regional-organisations");
+        final String mediaType = "application/vnd.referencedata.query.regional-organisations+json";
+
+        stubFor(get(urlPathEqualTo(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withHeader(ACCEPT, mediaType)
+                        .withBody(getPayload("stub-data/referencedata.regional-organisations.json"))));
+    }
+
+    private static String pathFor(final String endpoint) {
+        stubPingFor(REFERENCEDATA_SERVICE);
+        return QUERY_API_PATH + endpoint;
+    }
 }

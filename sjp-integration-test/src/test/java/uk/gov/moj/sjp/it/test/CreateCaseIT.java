@@ -331,6 +331,45 @@ public class CreateCaseIT extends BaseIntegrationTest {
     }
 
     @Test
+    public void shouldCaseBeCreatedWithAsnAndPncIdentifier(){
+        final UUID caseId = randomUUID();
+        final ProsecutingAuthority prosecutingAuthority = TFL;
+        stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+
+        final String offenceCode1 = "CA03010";
+        final String offenceCode2 = "CA03011";
+
+        stubQueryOffencesByCode(offenceCode1);
+        stubQueryOffencesByCode(offenceCode2);
+
+        final int fineLevel = 3;
+        final BigDecimal maxValue = BigDecimal.valueOf(1000);
+
+        stubOffenceFineLevelsQuery(fineLevel, maxValue);
+
+        final CreateCase.CreateCasePayloadBuilder createCase = createMultiOffenceCase(caseId, prosecutingAuthority,
+                newArrayList(offenceCode1, offenceCode2));
+
+        final CreateCase.DefendantBuilder defendant = createCase.getDefendantBuilder();
+        defendant.withAsn("12345");
+        defendant.withPncIdentifier("6789");
+
+        final Optional<JsonEnvelope> caseReceivedEvent = new EventListener()
+                .subscribe(CaseReceived.EVENT_NAME)
+                .run(() -> CreateCase.createCaseForPayloadBuilder(createCase))
+                .popEvent(CaseReceived.EVENT_NAME);
+
+        assertTrue(caseReceivedEvent.isPresent());
+
+        final JsonPath jsonResponse = CasePoller.pollUntilCaseByIdIsOk(caseId, JsonPathMatchers.withJsonPath("$.status", equalTo(CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION.name())));
+        assertThat(jsonResponse.get("id"), equalTo(caseId.toString()));
+        assertThat(jsonResponse.get("urn"), equalTo(createCase.getUrn()));
+        assertThat(jsonResponse.get("prosecutingAuthorityName"), equalTo(TFL.getFullName()));
+        assertThat(jsonResponse.get("defendant.asn") , equalTo(defendant.getAsn()));
+        assertThat(jsonResponse.get("defendant.pncIdentifier") , equalTo(defendant.getPncIdentifier()));
+    }
+
+    @Test
     public void shouldCaseBeCreatedWithEndorsableOffences(){
         final UUID caseId = randomUUID();
         final ProsecutingAuthority prosecutingAuthority = TVL;

@@ -357,7 +357,9 @@ public class CaseAggregateDefendantTest {
                                 defendantData.offences,
                                 defendantData.hearingLanguage,
                                 defendantData.languageNeeds,
-                                defendantData.region
+                                defendantData.region,
+                                defendantData.asn,
+                                defendantData.pncIdentifier
                         )).build(),
                 clock.now()
         ).findFirst().get();
@@ -405,6 +407,8 @@ public class CaseAggregateDefendantTest {
         private LocalDate dateOfBirth = CaseAggregateDefendantTest.this.dateOfBirth;
         private Address address = CaseAggregateDefendantTest.this.address;
         private final String region = "testregion";
+        private final String asn = "asn";
+        private final String pncIdentifier = "pncId";
 
         private DefendantData withNewTitle(final String newTitle) {
             this.title = newTitle;

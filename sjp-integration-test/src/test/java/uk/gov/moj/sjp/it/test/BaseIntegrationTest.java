@@ -3,10 +3,6 @@ package uk.gov.moj.sjp.it.test;
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
-import static uk.gov.moj.sjp.it.Constants.DEFAULT_OFFENCE_CODE;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryNationalities;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubAllGroupsForUser;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.DELAY_IN_MILLIS;
@@ -31,9 +27,7 @@ import org.slf4j.LoggerFactory;
 public abstract class BaseIntegrationTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseIntegrationTest.class);
-
     private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
-
     public static final UUID USER_ID = Defaults.DEFAULT_USER_ID;
 
     protected static ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = null;

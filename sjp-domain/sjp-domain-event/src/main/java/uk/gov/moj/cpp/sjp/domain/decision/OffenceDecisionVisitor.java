@@ -12,7 +12,7 @@ public interface OffenceDecisionVisitor {
 
     void visit(Discharge discharge);
 
-    void visit(FinancialPenalty discharge);
+    void visit(FinancialPenalty financialPenalty);
 
     void visit(ReferredToOpenCourt referredToOpenCourt);
 

@@ -21,7 +21,6 @@ public class DefendantDetailBuilder {
     private static final String DEFAULT_POSTCODE = "CR0 1AB";
 
     private DefendantDetail defendantDetail;
-
     private OffenceDetail.OffenceDetailBuilder offenceBuilder;
 
     private DefendantDetailBuilder() {
@@ -111,5 +110,10 @@ public class DefendantDetailBuilder {
                 .withWitnessStatement("witness statement")
                 .withProsecutionFacts("prosecution facts")
                 .setWording("");
+    }
+
+    public DefendantDetailBuilder withFirstName(final String firstName) {
+        this.defendantDetail.getPersonalDetails().setFirstName(firstName);
+        return this;
     }
 }

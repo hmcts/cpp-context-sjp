@@ -142,6 +142,10 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
 
         //after saving the decision the transfer of fine element is attached
         financialImposition.getPayment().setFineTransferredTo(COURT_DETAILS);
+        //also the pressRestrictable flag is attached to all press restrictable OffenceDecisionInformation
+        offenceDecisions.stream()
+                .flatMap(offenceDecision -> offenceDecision.offenceDecisionInformationAsList().stream())
+                .forEach(offenceDecisionInformation -> offenceDecisionInformation.setPressRestrictable(true));
 
         verifyDecisionSaved(decision, decisionSaved);
         verifyCaseUnassigned(caseId, caseUnassigned);

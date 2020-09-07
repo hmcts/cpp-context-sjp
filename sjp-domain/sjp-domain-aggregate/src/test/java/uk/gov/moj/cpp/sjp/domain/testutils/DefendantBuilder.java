@@ -36,6 +36,8 @@ public class DefendantBuilder {
     private List<Offence> offences = createDefaultOffences(randomUUID());
     private Language hearingLanguage = null;
     private String languageNeeds = RandomStringUtils.random(10);
+    private String asn = "asn";
+    private String pncIdentifier = "pncId";
 
     public DefendantBuilder addOffence(final UUID offenceId) {
         this.offences.add(createPressRestrictableOffence(offenceId, false));
@@ -107,6 +109,16 @@ public class DefendantBuilder {
         return this;
     }
 
+    public DefendantBuilder withAsn(final String asn) {
+        this.asn = asn;
+        return this;
+    }
+
+    public DefendantBuilder withPncIdentifier(final String pncIdentifier) {
+        this.pncIdentifier = pncIdentifier;
+        return this;
+    }
+
     public Defendant build() {
         return new Defendant(
                 id,
@@ -124,7 +136,9 @@ public class DefendantBuilder {
                 offences,
                 hearingLanguage,
                 languageNeeds,
-                region
+                region,
+                asn,
+                pncIdentifier
         );
     }
 }

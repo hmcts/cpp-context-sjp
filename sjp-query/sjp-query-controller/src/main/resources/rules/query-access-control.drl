@@ -226,3 +226,11 @@ rule "sjp.query.cases-without-defendant-postcode"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Regions - API - Get all regions"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.regions");
+  then
+    $outcome.setSuccess(true);
+end

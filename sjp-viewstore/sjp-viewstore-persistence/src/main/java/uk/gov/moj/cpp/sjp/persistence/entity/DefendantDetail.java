@@ -61,12 +61,18 @@ public class DefendantDetail implements Serializable {
     @Column(name="disability_needs")
     private String disabilityNeeds;
 
+    @Column(name="asn")
+    private String asn;
+
+    @Column(name="pnc_identifier")
+    private String pncIdentifier;
+
     public DefendantDetail() {
         this(UUID.randomUUID());
     }
 
     public DefendantDetail(final UUID id) {
-        this(id, null, null, 0, null);
+        this(id, null, null, 0, null, null, null);
     }
 
     public DefendantDetail(final UUID id,
@@ -83,10 +89,14 @@ public class DefendantDetail implements Serializable {
                            final PersonalDetails personalDetails,
                            final List<OffenceDetail> offences,
                            final Integer numPreviousConvictions,
-                           final Boolean speakWelsh) {
+                           final Boolean speakWelsh,
+                           final String asn,
+                           final String pncIdentifier) {
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
         this.speakWelsh = speakWelsh;
+        this.asn = asn;
+        this.pncIdentifier = pncIdentifier;
         setOffences(offences);
         setPersonalDetails(personalDetails);
     }
@@ -192,5 +202,21 @@ public class DefendantDetail implements Serializable {
 
     public void setDisabilityNeeds(final String disabilityNeeds) {
         this.disabilityNeeds = disabilityNeeds;
+    }
+
+    public String getAsn() {
+        return asn;
+    }
+
+    public void setAsn(final String asn) {
+        this.asn = asn;
+    }
+
+    public String getPncIdentifier() {
+        return pncIdentifier;
+    }
+
+    public void setPncIdentifier(final String pncIdentifier) {
+        this.pncIdentifier = pncIdentifier;
     }
 }

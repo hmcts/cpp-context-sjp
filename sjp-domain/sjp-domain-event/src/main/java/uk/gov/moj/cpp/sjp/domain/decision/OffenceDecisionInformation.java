@@ -22,11 +22,19 @@ public class OffenceDecisionInformation implements Serializable {
 
     private final UUID offenceId;
     private final VerdictType verdict;
+    private Boolean pressRestrictable;
 
     @JsonCreator
     public OffenceDecisionInformation(
             @JsonProperty("offenceId") final UUID offenceId,
-            @JsonProperty("verdict") final VerdictType verdict) {
+            @JsonProperty("verdict") final VerdictType verdict,
+            @JsonProperty("pressRestrictable") final Boolean pressRestrictable) {
+        this.offenceId = offenceId;
+        this.verdict = verdict;
+        this.pressRestrictable = pressRestrictable;
+    }
+
+    public OffenceDecisionInformation(final UUID offenceId, final VerdictType verdict) {
         this.offenceId = offenceId;
         this.verdict = verdict;
     }
@@ -34,7 +42,7 @@ public class OffenceDecisionInformation implements Serializable {
     public static OffenceDecisionInformation createOffenceDecisionInformation(
             final UUID offenceId,
             final VerdictType verdict) {
-        return new OffenceDecisionInformation(offenceId, verdict);
+        return new OffenceDecisionInformation(offenceId, verdict, null);
     }
 
     public UUID getOffenceId() {
@@ -43,6 +51,14 @@ public class OffenceDecisionInformation implements Serializable {
 
     public VerdictType getVerdict() {
         return verdict;
+    }
+
+    public Boolean getPressRestrictable() {
+        return pressRestrictable;
+    }
+
+    public void setPressRestrictable(final Boolean pressRestrictable) {
+        this.pressRestrictable = pressRestrictable;
     }
 
     /**

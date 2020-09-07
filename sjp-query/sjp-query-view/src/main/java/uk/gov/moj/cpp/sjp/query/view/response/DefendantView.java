@@ -24,6 +24,8 @@ public class DefendantView {
     private final Integer numPreviousConvictions;
     private final PersonalDetailsView personalDetails;
     private final DisabilityNeeds disabilityNeeds;
+    private final String asn;
+    private final String pncIdentifier;
 
     public DefendantView(DefendantDetail defendant) {
         this.id = defendant.getId();
@@ -37,6 +39,8 @@ public class DefendantView {
         this.speakWelsh = defendant.getSpeakWelsh() != null ? defendant.getSpeakWelsh() : false;
         this.numPreviousConvictions = defendant.getNumPreviousConvictions();
         this.disabilityNeeds = disabilityNeedsOf(defendant.getDisabilityNeeds());
+        this.asn = defendant.getAsn();
+        this.pncIdentifier = defendant.getPncIdentifier();
     }
 
     public List<OffenceView> getOffences() {
@@ -69,6 +73,14 @@ public class DefendantView {
 
     public DisabilityNeeds getDisabilityNeeds() {
         return disabilityNeeds;
+    }
+
+    public String getAsn() {
+        return asn;
+    }
+
+    public String getPncIdentifier() {
+        return pncIdentifier;
     }
 
     private static List<OffenceView> constructDefendantChargeView(final DefendantDetail defendant) {

@@ -54,6 +54,13 @@
     },
     "region": {
       "type": "string"
+    },
+    "asn": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "pncIdentifier": {
+      "type": "string"
     }
   },
   "additionalProperties": false,

@@ -91,6 +91,9 @@ public class DecisionOnCasesWithoutDefendantPostcodeIT extends BaseIntegrationTe
         final DecisionSaved decisionSaved = eventListener.popEventPayload(DecisionSaved.class);
         final CaseUnassigned caseUnassigned = eventListener.popEventPayload(CaseUnassigned.class);
 
+        decision.getOffenceDecisions().stream()
+                .flatMap(offenceDecision -> offenceDecision.offenceDecisionInformationAsList().stream())
+                .forEach(offDcnInfo -> offDcnInfo.setPressRestrictable(false));
         verifyDecisionSaved(decision, decisionSaved);
         verifyCaseUnassigned(caseId, caseUnassigned);
 

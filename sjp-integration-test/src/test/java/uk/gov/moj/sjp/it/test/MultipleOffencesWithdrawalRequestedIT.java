@@ -215,6 +215,9 @@ public class MultipleOffencesWithdrawalRequestedIT extends BaseIntegrationTest {
         final CaseUnassigned caseUnassigned = eventListener.popEventPayload(CaseUnassigned.class);
         final CaseUnmarkedReadyForDecision caseUnmarkedReadyForDecision = eventListener.popEventPayload(CaseUnmarkedReadyForDecision.class);
 
+        decision.getOffenceDecisions().stream()
+                .flatMap(offenceDecision -> offenceDecision.offenceDecisionInformationAsList().stream())
+                .forEach(offDcnInfo -> offDcnInfo.setPressRestrictable(false));
         verifyDecisionSaved(decision, decisionSaved);
         verifyCaseUnassigned(caseId, caseUnassigned);
         verifyCaseUnmarkedReady(caseId, adjournDecision, caseUnmarkedReadyForDecision);

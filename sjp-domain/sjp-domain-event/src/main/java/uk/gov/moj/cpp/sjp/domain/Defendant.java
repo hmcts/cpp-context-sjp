@@ -28,6 +28,10 @@ public class Defendant extends Person {
 
     private final String languageNeeds;
 
+    private final String asn;
+
+    private final String pncIdentifier;
+
     @JsonCreator
     public Defendant(@JsonProperty("id") final UUID id,
                      @JsonProperty("title") final String title,
@@ -44,13 +48,17 @@ public class Defendant extends Person {
                      @JsonProperty("offences") final List<Offence> offences,
                      @JsonProperty("hearingLanguage") final Language hearingLanguage,
                      @JsonProperty("languageNeeds") final String languageNeeds,
-                     @JsonProperty("region") final String region) {
+                     @JsonProperty("region") final String region,
+                     @JsonProperty("asn") final String asn,
+                     @JsonProperty("pncIdentifier") final String pncIdentifier) {
         super(title, firstName, lastName, dateOfBirth, gender, nationalInsuranceNumber, driverNumber, driverLicenceDetails, address, contactDetails, region);
         this.id = id;
         this.numPreviousConvictions = numPreviousConvictions;
         this.offences = Optional.ofNullable(offences).map(Collections::unmodifiableList).orElseGet(Collections::emptyList);
         this.hearingLanguage = hearingLanguage;
         this.languageNeeds = languageNeeds;
+        this.asn = asn;
+        this.pncIdentifier = pncIdentifier;
     }
 
     public UUID getId() {
@@ -73,6 +81,14 @@ public class Defendant extends Person {
         return languageNeeds;
     }
 
+    public String getAsn() {
+        return asn;
+    }
+
+    public String getPncIdentifier() {
+        return pncIdentifier;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -90,12 +106,14 @@ public class Defendant extends Person {
                 .append(offences, defendant.offences)
                 .append(hearingLanguage, defendant.hearingLanguage)
                 .append(languageNeeds, defendant.languageNeeds)
+                .append(asn, defendant.getAsn())
+                .append(pncIdentifier, defendant.getPncIdentifier())
                 .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id, numPreviousConvictions, offences, hearingLanguage, languageNeeds);
+        return Objects.hash(super.hashCode(), id, numPreviousConvictions, offences, hearingLanguage, languageNeeds, asn, pncIdentifier);
     }
 
     public static class DefendantBuilder {
@@ -127,7 +145,9 @@ public class Defendant extends Person {
                     defendant.getOffences(),
                     defendant.getHearingLanguage(),
                     defendant.getLanguageNeeds(),
-                    defendant.getRegion());
+                    defendant.getRegion(),
+                    defendant.getAsn(),
+                    defendant.getPncIdentifier());
         }
 
     }

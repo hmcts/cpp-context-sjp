@@ -31,7 +31,7 @@ public enum Prompt {
     AMOUNT_OF_SURCHARGE(1, fromString("629a971e-9d7a-4526-838d-0a4cb922b5cb"), PromptConverter::new),
     DURATION_VALUE_OF_CONDITIONAL_DISCHARGE(1, fromString("d3205319-84cf-4c5b-9d7a-7e4bb1865054"), NoActionPromptConverter::new),
     DURATION_UNIT_OF_CONDITIONAL_DISCHARGE(2, fromString("d3205319-84cf-4c5b-9d7a-7e4bb1865054"), NoActionPromptConverter::new),
-    WDRNNOT_REASONS(2, fromString("1d20aad5-9dc2-42a2-9498-5687f3e5ce33"), PromptConverter::new),
+    WDRNNOT_REASONS(2, fromString("318c9eb2-cf3c-4592-a353-1b2166c15f81"), PromptConverter::new),
     PAY_WITHIN_DAYS(6, fromString("c131cab0-5dd6-11e8-9c2d-fa7ae01bbebc"), () -> new FixedListPromptConverter(FixedList.PAY_WITHIN_DAYS)),
     RLSUMI_LUMP_SUM_AMOUNT(96, fromString("8e235a65-5ea2-4fff-ba3b-6cdb74195436"), PromptConverter::new),
     RLSUMI_INSTALMENT_AMOUNT(98, fromString("1393acda-7a35-4d65-859d-6298e1470cf1"), PromptConverter::new),

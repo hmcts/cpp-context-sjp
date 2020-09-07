@@ -72,6 +72,18 @@
         "name": "Robert Robertson",
         "requested": true
       }
+    },
+    {
+      "type": "SET_ASIDE",
+      "offenceDecisionInformation": [
+        {
+          "offenceId": "${offence6Id}"
+        }
+      ],
+      "pressRestriction": {
+        "name": "Robert Set Aside",
+        "requested": true
+      }
     }
   ]
 }

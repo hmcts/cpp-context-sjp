@@ -1,40 +1,22 @@
 package uk.gov.moj.cpp.sjp.query.view.converter;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
-import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.D;
-import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.D45;
-import static uk.gov.moj.cpp.sjp.query.view.converter.ResultCode.DPR;
 import static uk.gov.moj.cpp.sjp.query.view.util.results.ResultsMatchers.D;
 import static uk.gov.moj.cpp.sjp.query.view.util.results.ResultsMatchers.D45;
 import static uk.gov.moj.cpp.sjp.query.view.util.results.ResultsMatchers.DPR;
 import static uk.gov.moj.cpp.sjp.query.view.util.results.ResultsMatchers.hasResults;
 import static uk.gov.moj.cpp.sjp.query.view.util.results.ResultsMatchers.isOffenceDecision;
 
-import uk.gov.moj.cpp.sjp.query.view.service.CachedReferenceData;
 import uk.gov.moj.cpp.sjp.query.view.util.builders.OffenceDecisionBuilder;
+import uk.gov.moj.cpp.sjp.query.view.util.fakes.FakeCachedReferenceData;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
 public class DismissDecisionResultTest {
 
-    @Mock
-    private CachedReferenceData referenceData;
-
-    @Before
-    public void setUp() {
-        when(referenceData.getResultId(D.name())).thenReturn(D.getResultDefinitionId());
-        when(referenceData.getResultId(D45.name())).thenReturn(D45.getResultDefinitionId());
-        when(referenceData.getResultId(DPR.name())).thenReturn(DPR.getResultDefinitionId());
-    }
+    private FakeCachedReferenceData referenceData = new FakeCachedReferenceData();
 
     @Test
     public void shouldConvertDismissDecisionResults() {

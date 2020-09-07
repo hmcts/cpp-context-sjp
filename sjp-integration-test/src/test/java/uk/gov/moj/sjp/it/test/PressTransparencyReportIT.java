@@ -4,6 +4,7 @@ package uk.gov.moj.sjp.it.test;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.LocalDate.now;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
@@ -63,6 +64,7 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
     private static final String SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_REQUESTED = "sjp.events.press-transparency-report-requested";
     private static final String SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_GENERATION_STARTED = "sjp.events.press-transparency-report-generation-started";
     private static final String SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_METADATA_ADDED = "sjp.events.press-transparency-report-metadata-added";
+    private static final String SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_GENERATION_FAILED = "sjp.events.press-transparency-report-generation-failed";
 
     @Before
     public void setUp() throws Exception {
@@ -150,11 +152,70 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
         validateThePdfContent(pressReportContent);
     }
 
+    @Test
+    public void shouldHandlePressTransparencyReportFailure() throws IOException {
+
+        final CreateCase.DefendantBuilder defendant1 = defaultDefendant()
+                .withRandomLastName();
+
+        final CreateCase.DefendantBuilder defendant2 = defaultDefendant()
+                .withRandomLastName()
+                .withDefaultShortAddress();
+
+        stubEnforcementAreaByPostcode(defendant1.getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        stubEnforcementAreaByPostcode(defendant2.getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
+        stubRegionByPostcode("1080", "TestRegion");
+
+        createCase(caseId1, offenceId1, defendant1);
+        createCase(caseId2, offenceId2, defendant2);
+
+        final EventListener eventListener = new EventListener()
+                .withMaxWaitTime(50000)
+                .subscribe(
+                        SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_REQUESTED,
+                        SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_GENERATION_STARTED
+                )
+                .run(pressTransparencyReportHelper::requestToGeneratePressTransparencyReport);
+
+        final Optional<JsonEnvelope> transparencyReportRequestedEvent = eventListener.popEvent(SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_REQUESTED);
+        final Optional<JsonEnvelope> transparencyReportStartedEvent = eventListener.popEvent(SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_GENERATION_STARTED);
+
+        assertThat(transparencyReportRequestedEvent.isPresent(), is(true));
+        assertThat(transparencyReportStartedEvent.isPresent(), is(true));
+
+        final String pressTransparencyReportId = transparencyReportRequestedEvent
+                .map(requestedEvent -> requestedEvent.payloadAsJsonObject().getString("pressTransparencyReportId"))
+                .orElse("");
+
+
+        final EventListener generationFailedEventListener = new EventListener()
+                .withMaxWaitTime(50000)
+                .subscribe(SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_GENERATION_FAILED)
+                .run(() -> publishSysDocPublicFailureEvent(fromString(pressTransparencyReportId)));
+
+
+        final Optional<JsonEnvelope> generationFailed = generationFailedEventListener.popEvent(SJP_EVENTS_PRESS_TRANSPARENCY_REPORT_GENERATION_FAILED);
+        assertThat(generationFailed.isPresent(), is(true));
+
+        // get the report metadata
+        assertThat(generationFailed.get().payloadAsJsonObject().getString("pressTransparencyReportId"),
+                equalTo(pressTransparencyReportId));
+
+    }
+
     private void publishSysDocPublicEvent(final String pressTransparencyReportId, final UUID generatedDocumentId) {
         try (final MessageProducerClient producerClient = new MessageProducerClient()) {
             producerClient.startProducer("public.event");
             producerClient.sendMessage("public.systemdocgenerator.events.document-available",
                     documentAvailablePayload(randomUUID(), pressTransparencyReportId, generatedDocumentId));
+        }
+    }
+
+    private void publishSysDocPublicFailureEvent(final UUID pressTransparencyReportId) {
+        try (final MessageProducerClient producerClient = new MessageProducerClient()) {
+            producerClient.startProducer("public.event");
+            producerClient.sendMessage("public.systemdocgenerator.events.generation-failed",
+                    documentFailurePayload(randomUUID(), pressTransparencyReportId));
         }
     }
 
@@ -169,6 +230,20 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
                 .add("documentFileServiceId", generatedDocumentId.toString())
                 .add("generatedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
                 .add("generateVersion", 1)
+                .build();
+    }
+
+    private JsonObject documentFailurePayload(final UUID templatePayloadId, final UUID sourceCorrelationId) {
+        final ZonedDateTime requestedTime = ZonedDateTime.now().minusSeconds(4);
+        return createObjectBuilder()
+                .add("payloadFileServiceId", templatePayloadId.toString())
+                .add("templateIdentifier", TEMPLATE_NAME)
+                .add("originatingSource", "sjp")
+                .add("conversionFormat", "pdf")
+                .add("requestedTime", requestedTime.format(DateTimeFormatter.ISO_INSTANT))
+                .add("failedTime", requestedTime.plusMinutes(4).format(DateTimeFormatter.ISO_INSTANT))
+                .add("sourceCorrelationId", sourceCorrelationId.toString())
+                .add("reason", "mock failure")
                 .build();
     }
 

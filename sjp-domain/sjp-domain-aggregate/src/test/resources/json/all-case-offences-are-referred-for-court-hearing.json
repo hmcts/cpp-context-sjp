@@ -6,11 +6,13 @@
   "referredOffences": [
     {
       "offenceId": "042c541a-55b5-4f66-98f0-46b9e560f1b5",
-      "verdict": "PROVED_SJP"
+      "verdict": "PROVED_SJP",
+      "pressRestrictable": false
     },
     {
       "offenceId": "b6c0eb95-e27d-42b8-8f42-e8765860a46c",
-      "verdict": "PROVED_SJP"
+      "verdict": "PROVED_SJP",
+      "pressRestrictable": false
     }
   ],
   "estimatedHearingDuration": 30,

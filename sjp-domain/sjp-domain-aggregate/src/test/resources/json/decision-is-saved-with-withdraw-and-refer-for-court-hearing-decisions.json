@@ -12,7 +12,8 @@
       "offenceDecisionInformation": [
         {
           "offenceId": "b6c0eb95-e27d-42b8-8f42-e8765860a46c",
-          "verdict": "PROVED_SJP"
+          "verdict": "PROVED_SJP",
+          "pressRestrictable": false
         }
       ],
       "referralReasonId": "809f7aac-d285-43a5-9fb1-3a894db71530",
@@ -24,7 +25,8 @@
       "withdrawalReasonId": "f89302ea-9ad4-44e7-8e5d-5c4ef1171ca6",
       "offenceDecisionInformation": {
         "offenceId": "042c541a-55b5-4f66-98f0-46b9e560f1b5",
-        "verdict": "NO_VERDICT"
+        "verdict": "NO_VERDICT",
+        "pressRestrictable": false
       }
     }
   ]

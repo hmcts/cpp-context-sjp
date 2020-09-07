@@ -238,10 +238,26 @@ public class ProsecutionCasesViewHelper {
                 ethnicityId,
                 defendantPersonalDetails.getDriverNumber(),
                 null,
-                ofNullable(caseFileDefendantDetails)
-                        .map(defendantDetails -> defendantDetails.getString("asn", null))
-                        .orElse(null));
+                ofNullable(defendant)
+                        .map(Defendant::getAsn)
+                        .orElse(caseFileDefendantDetailsAsn(caseFileDefendantDetails)),
+                ofNullable(defendant)
+                        .map(Defendant::getPncIdentifier)
+                        .orElse(caseFileDefendantDetailsPncIdentifier(caseFileDefendantDetails))
+        );
 
+    }
+
+    private static String caseFileDefendantDetailsAsn(final JsonObject caseFileDefendantDetails) {
+        return ofNullable(caseFileDefendantDetails)
+                .map(defendantDetails -> defendantDetails.getString("asn", null))
+                .orElse(null);
+    }
+
+    private static String caseFileDefendantDetailsPncIdentifier(final JsonObject caseFileDefendantDetails) {
+        return ofNullable(caseFileDefendantDetails)
+                .map(defendantDetails -> defendantDetails.getString("pncIdentifier", null))
+                .orElse(null);
     }
 
     private static OffenceView createOffenceView(

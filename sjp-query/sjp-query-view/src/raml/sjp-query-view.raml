@@ -122,6 +122,10 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
           Defines the number of updates to be returned.
         type: integer
         required: true
+      regionId:
+        description: The defendant's region.
+        type: string
+        required: false
 
     responses:
         200:
@@ -368,6 +372,10 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
           name: sjp.query.pending-dates-to-avoid
       ...
     queryParameters:
+     regionId:
+            description: The defendant's region id.
+            type: string
+            required: false
     responses:
         200:
           description: OK
@@ -631,3 +639,19 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
                   application/vnd.sjp.query.outstanding-fine-requests+json:
                     example:  !include json/sjp.query.outstanding-fine-requests.json
                     schema:  !include  json/schema/sjp.query.outstanding-fine-requests.json
+
+/regions:
+  get:
+    description: |
+      Get a list of all regions from the Reference Data API
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.regions+json
+          name: sjp.query.regions
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.regions+json:
+            schema: !include json/schema/sjp.query.regions.json
+            example: !include json/sjp.query.regions.json

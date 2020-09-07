@@ -5,7 +5,7 @@
     "results": [
       {
         "code": "D",
-        "resultTypeId": "06fd8e99-83af-422a-b0a9-db37188bfa74",
+        "resultTypeId": "14d66587-8fbe-424f-a369-b1144f1684e3",
         "terminalEntries": []
       }
     ]
@@ -17,7 +17,7 @@
     "results": [
       {
         "code": "FO",
-        "resultTypeId": "c054d9fa-8595-4b0b-81fc-5bfdc1d7266b",
+        "resultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
         "terminalEntries": [
           {
             "index": 1,
@@ -27,7 +27,7 @@
       },
       {
         "code": "FCOMP",
-        "resultTypeId": "9383d0ff-15a7-47ac-a471-97fce0135e94",
+        "resultTypeId": "ae89b99c-e0e3-47b5-b218-24d4fca3ca53",
         "terminalEntries": [
           {
             "index": 1,
@@ -41,7 +41,7 @@
     "results": [
       {
         "code": "FCOST",
-        "resultTypeId": "80673cfd-f40b-4088-9aa0-d192fb877e16",
+        "resultTypeId": "76d43772-0660-4a33-b5c6-8f8ccaf6b4e3",
         "terminalEntries": [
           {
             "index": 1,
@@ -51,7 +51,7 @@
       },
       {
         "code": "FVS",
-        "resultTypeId": "3f464288-fb5b-4e6e-adb0-7133bc562cda",
+        "resultTypeId": "e866cd11-6073-4fdf-a229-51c9d694e1d0",
         "terminalEntries": [
           {
             "index": 1,
@@ -61,7 +61,7 @@
       },
       {
         "code": "LSUM",
-        "resultTypeId": "49a84ca7-d5af-4292-b39e-777a478ca182",
+        "resultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
         "terminalEntries": [
           {
             "index": 5,

@@ -23,7 +23,7 @@
     "results": [
       {
         "code": "AD",
-        "resultTypeId": "ba276903-632c-4796-921b-23035fa934cb",
+        "resultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
         "terminalEntries": []
       },
       {
@@ -44,7 +44,7 @@
     "results": [
       {
         "code": "D",
-        "resultTypeId": "06fd8e99-83af-422a-b0a9-db37188bfa74",
+        "resultTypeId": "14d66587-8fbe-424f-a369-b1144f1684e3",
         "terminalEntries": []
       },
       {
@@ -92,6 +92,26 @@
       {
         "code": "NSP",
         "resultTypeId": "49939c7c-750f-403e-9ce1-f82e3e568065",
+        "terminalEntries": []
+      },
+      {
+        "code": "DPR",
+        "resultTypeId": "b27b42bf-e20e-46ec-a6e3-5c2e8a076c20",
+        "terminalEntries": [
+          {
+            "index": 1,
+            "value": "${revokedOn}"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "617fc9dc-7549-4cb5-a479-2620456a19d5",
+    "results": [
+      {
+        "code": "SETASIDE",
+        "resultTypeId": "af590f98-21cb-43e7-b992-2a9d444acb2b",
         "terminalEntries": []
       },
       {

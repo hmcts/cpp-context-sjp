@@ -35,7 +35,7 @@ public class WDRNOTResultCodeConverterTest extends ResultCodeConverterTest {
     protected JsonArray getExpectedPrompts() {
         return  createArrayBuilder()
                 .add(createObjectBuilder()
-                        .add("promptDefinitionId", "1d20aad5-9dc2-42a2-9498-5687f3e5ce33")
+                        .add("promptDefinitionId", "318c9eb2-cf3c-4592-a353-1b2166c15f81")
                         .add("value", "Prosecutor's request")
                 )
                 .build();

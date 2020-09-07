@@ -11,7 +11,8 @@
       "type": "WITHDRAW",
       "offenceDecisionInformation": {
         "offenceId": "b6c0eb95-e27d-42b8-8f42-e8765860a46c",
-        "verdict": "NO_VERDICT"
+        "verdict": "NO_VERDICT",
+        "pressRestrictable": false
       },
       "withdrawalReasonId": "f89302ea-9ad4-44e7-8e5d-5c4ef1171ca6"
     }

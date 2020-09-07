@@ -2,9 +2,15 @@ package uk.gov.moj.cpp.sjp.query.view.service;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
 import static javax.json.Json.createReader;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
@@ -19,10 +25,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -120,6 +128,76 @@ public class ReferenceDataServiceTest {
         assertEquals("Sections 135", referralReasons.getJsonObject(0).getString("reason"));
     }
 
+    @Test
+    public void shouldRequestRegionalOrganisations() {
+        final JsonObject payload = createObjectBuilder().add("regionalOrganisations", createArrayBuilder()
+                .add(createObjectBuilder()
+                        .add("id", randomUUID().toString())
+                        .add("seqNum", 10)
+                        .add("regionName", "London")
+                        .add("cbwaEnforcerEmail", "lccccpbw@justice.gov.uk;")
+                )).build();
+        final JsonEnvelope response = regionalOrganisationsEnvelope(payload);
+        when(requester.request(any())).thenReturn(response);
+
+        final List<RegionalOrganisation> regionalOrganisations = referenceDataService.getRegionalOrganisations(regionsEnvelope());
+
+        assertThat(regionalOrganisations, hasSize(1));
+        assertThat(regionalOrganisations.get(0).getId(), notNullValue());
+        assertThat(regionalOrganisations.get(0).getSeqNum(), equalTo(10));
+        assertThat(regionalOrganisations.get(0).getRegionName(), equalTo("London"));
+        assertThat(regionalOrganisations.get(0).getCbwaEnforcerEmail(), equalTo("lccccpbw@justice.gov.uk;"));
+    }
+
+    @Test
+    public void shouldRequestRegionalOrganisationsAndHandleEmptyRegionalOrganisations() {
+        final JsonObject payload = createObjectBuilder().add("regionalOrganisations", createArrayBuilder()).build();
+        final JsonEnvelope response = regionalOrganisationsEnvelope(payload);
+        when(requester.request(any())).thenReturn(response);
+
+        final List<RegionalOrganisation> regionalOrganisations = referenceDataService.getRegionalOrganisations(regionsEnvelope());
+
+        assertThat(regionalOrganisations, empty());
+    }
+
+    @Test
+    public void shouldRequestRegionalOrganisationsAndHandleNullResponse() {
+        final JsonEnvelope response = regionalOrganisationsEnvelope(JsonValue.NULL);
+        when(requester.request(any())).thenReturn(response);
+
+        final List<RegionalOrganisation> regionalOrganisations = referenceDataService.getRegionalOrganisations(regionsEnvelope());
+
+        assertThat(regionalOrganisations, empty());
+    }
+
+    @Test
+    public void shouldRequestRegionalOrganisationsAndHandleEmptyResponse() {
+        final JsonObject payload = createObjectBuilder().build();
+        final JsonEnvelope response = regionalOrganisationsEnvelope(payload);
+        when(requester.request(any())).thenReturn(response);
+
+        final List<RegionalOrganisation> regionalOrganisations = referenceDataService.getRegionalOrganisations(regionsEnvelope());
+
+        assertThat(regionalOrganisations, empty());
+    }
+
+    @Test
+    public void shouldRequestRegionalOrganisationsAndHandleOptionalFields() {
+        final JsonObject payload = createObjectBuilder().add("regionalOrganisations", createArrayBuilder()
+                .add(createObjectBuilder()
+                        .add("id", randomUUID().toString())
+                        .add("regionName", "North West")
+                )).build();
+        final JsonEnvelope response = regionalOrganisationsEnvelope(payload);
+        when(requester.request(any())).thenReturn(response);
+
+        final List<RegionalOrganisation> regionalOrganisations = referenceDataService.getRegionalOrganisations(regionsEnvelope());
+
+        assertThat(regionalOrganisations, hasSize(1));
+        assertThat(regionalOrganisations.get(0).getId(), notNullValue());
+        assertThat(regionalOrganisations.get(0).getRegionName(), equalTo("North West"));
+    }
+
     private JsonEnvelope prosecutorsResponseEnvelope() {
         return envelopeFrom(
                 metadataBuilder().
@@ -153,4 +231,23 @@ public class ReferenceDataServiceTest {
         );
     }
 
+    private JsonEnvelope regionalOrganisationsEnvelope(final JsonObject payload) {
+        return regionalOrganisationsEnvelope((JsonValue) payload);
+    }
+
+    private JsonEnvelope regionalOrganisationsEnvelope(final JsonValue payload) {
+        return envelopeFrom(metadataBuilder().
+                        withName("referencedata.query.regional-organisations").
+                        withId(randomUUID()),
+                payload
+        );
+    }
+
+    private JsonEnvelope regionsEnvelope() {
+        return envelopeFrom(metadataBuilder()
+                        .withName("referencedata.query.regional-organisations")
+                        .withId(randomUUID()),
+                createObjectBuilder()
+        );
+    }
 }

@@ -109,6 +109,7 @@ public class CaseDecisionHandler {
         }
 
         addOffencesConvictionDate(decision, state);
+        addOffencesPressRestrictable(decision, state);
 
         streamBuilder.add(new DecisionSaved(
                 decision.getDecisionId(),
@@ -117,6 +118,11 @@ public class CaseDecisionHandler {
                 decision.getSavedAt(),
                 decision.getOffenceDecisions(),
                 decision.getFinancialImposition()));
+    }
+
+    private static void addOffencesPressRestrictable(final Decision decision, final CaseAggregateState state) {
+        final PressRestrictableOffenceDecisionVistor pressRestrictableOffenceDecisionVistor = new PressRestrictableOffenceDecisionVistor(state);
+        decision.getOffenceDecisions().forEach(offenceDecision -> offenceDecision.accept(pressRestrictableOffenceDecisionVistor));
     }
 
     private static void addOffencesConvictionDate(final Decision decision, final CaseAggregateState state) {
@@ -695,6 +701,72 @@ public class CaseDecisionHandler {
             //No conviction as the decision should be discarded
         }
 
+    }
+
+    private static class PressRestrictableOffenceDecisionVistor implements OffenceDecisionVisitor {
+
+        private final CaseAggregateState state;
+
+        public PressRestrictableOffenceDecisionVistor(final CaseAggregateState state) {
+            this.state = state;
+        }
+
+        @Override
+        public void visit(final Dismiss dismiss) {
+            visitOffenceDecision(dismiss);
+        }
+
+        @Override
+        public void visit(final Withdraw withdraw) {
+            visitOffenceDecision(withdraw);
+        }
+
+        @Override
+        public void visit(final Adjourn adjourn) {
+            visitOffenceDecision(adjourn);
+        }
+
+        @Override
+        public void visit(final ReferForCourtHearing referForCourtHearing) {
+            visitOffenceDecision(referForCourtHearing);
+        }
+
+        @Override
+        public void visit(final Discharge discharge) {
+            visitOffenceDecision(discharge);
+        }
+
+        @Override
+        public void visit(final FinancialPenalty financialPenalty) {
+            visitOffenceDecision(financialPenalty);
+        }
+
+        @Override
+        public void visit(final ReferredToOpenCourt referredToOpenCourt) {
+            visitOffenceDecision(referredToOpenCourt);
+        }
+
+        @Override
+        public void visit(final ReferredForFutureSJPSession referredForFutureSJPSession) {
+            visitOffenceDecision(referredForFutureSJPSession);
+        }
+
+        @Override
+        public void visit(final NoSeparatePenalty noSeparatePenalty) {
+            visitOffenceDecision(noSeparatePenalty);
+        }
+
+        @Override
+        public void visit(final SetAside setAside) {
+            visitOffenceDecision(setAside);
+        }
+
+        private void visitOffenceDecision(final OffenceDecision offenceDecision) {
+            offenceDecision.offenceDecisionInformationAsList().forEach(offDecInfo -> {
+                final UUID offenceId = offDecInfo.getOffenceId();
+                offDecInfo.setPressRestrictable(state.isPressRestrictable(offenceId));
+            });
+        }
     }
 
 }

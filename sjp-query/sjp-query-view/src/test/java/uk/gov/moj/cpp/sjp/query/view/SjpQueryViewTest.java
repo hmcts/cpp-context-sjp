@@ -799,7 +799,8 @@ public class SjpQueryViewTest {
                 .map(PendingDatesToAvoid::new)
                 .collect(toList());
 
-        when(datesToAvoidService.findCasesPendingDatesToAvoid(queryEnvelope)).thenReturn(new CasesPendingDatesToAvoidView(pendingDatesToAvoidList));
+        when(datesToAvoidService.findCasesPendingDatesToAvoid(queryEnvelope)).thenReturn(
+                new CasesPendingDatesToAvoidView(pendingDatesToAvoidList, pendingDatesToAvoidList.size()));
 
         final JsonEnvelope response = sjpQueryView.findPendingDatesToAvoid(queryEnvelope);
 

@@ -56,6 +56,12 @@
     },
     "pressRestrictable" : {
       "type": "boolean"
+    },
+    "offenceTitle": {
+      "type": "string"
+    },
+    "offenceTitleWelsh": {
+      "type": "string"
     }
   },
   "required": [

@@ -37,6 +37,8 @@ public class Offence {
 
     private final Boolean endorsable;
     private final Boolean pressRestrictable;
+    private final String offenceTitle;
+    private final String offenceTitleWelsh;
 
     @SuppressWarnings("squid:S00107")
     public Offence(UUID id, int offenceSequenceNo, String libraOffenceCode, LocalDate chargeDate,
@@ -44,7 +46,7 @@ public class Offence {
                    String prosecutionFacts, String witnessStatement, BigDecimal compensation, final Boolean pressRestrictable) {
         this(id, offenceSequenceNo, libraOffenceCode, chargeDate, libraOffenceDateCode, null, offenceCommittedDate,
                 offenceWording, prosecutionFacts, witnessStatement, compensation,
-                null, null, null, null, null, null, null, pressRestrictable);
+                null, null, null, null, null, null, null, pressRestrictable, null, null);
     }
 
     @JsonCreator
@@ -66,7 +68,9 @@ public class Offence {
                    @JsonProperty("vehicleMake") String vehicleMake,
                    @JsonProperty("vehicleRegistrationMark") String vehicleRegistrationMark,
                    @JsonProperty("endorsable") Boolean endorsable,
-                   @JsonProperty("pressRestrictable") Boolean pressRestrictable) {
+                   @JsonProperty("pressRestrictable") Boolean pressRestrictable,
+                   @JsonProperty("offenceTitle") String offenceTitle,
+                   @JsonProperty("offenceTitleWelsh") String offenceTitleWelsh) {
         this.id = id;
         this.offenceSequenceNo = offenceSequenceNo;
         this.libraOffenceCode = libraOffenceCode;
@@ -85,6 +89,8 @@ public class Offence {
         this.vehicleRegistrationMark = vehicleRegistrationMark;
         this.endorsable = endorsable;
         this.pressRestrictable = pressRestrictable;
+        this.offenceTitle = offenceTitle;
+        this.offenceTitleWelsh = offenceTitleWelsh;
     }
 
     public UUID getId() {
@@ -156,6 +162,10 @@ public class Offence {
     }
 
     public Boolean getPressRestrictable() { return pressRestrictable; }
+
+    public String getOffenceTitle() { return offenceTitle; }
+
+    public String getOffenceTitleWelsh() { return offenceTitleWelsh; }
 
     @Override
     public boolean equals(Object o) {

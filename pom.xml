@@ -20,18 +20,19 @@
         <assignment.version>6.0.0</assignment.version>
         <material.version>6.4.3</material.version>
         <notification.notify.version>7.0.1</notification.notify.version>
-        <referencedata.version>7.0.9</referencedata.version>
+        <referencedata.version>7.0.12</referencedata.version>
+        <referencedata.version>7.0.12</referencedata.version>
         <referencedata.offences.version>7.0.2</referencedata.offences.version>
         <scheduling.version>6.0.0</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>7.0.10</usersgroups.version>
         <progression.version>7.0.26</progression.version>
-        <prosecutioncasefile.version>7.0.3</prosecutioncasefile.version>
+        <prosecutioncasefile.version>7.0.13</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
-        <coredomain.version>1.0.108</coredomain.version>
+        <coredomain.version>1.0.113</coredomain.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>
         <lombok.version>1.18.2</lombok.version>
@@ -43,7 +44,7 @@
         <jvm.options>-Djava.locale.providers=CLDR</jvm.options>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
-        <stagingenforcement.version>7.0.7</stagingenforcement.version>
+        <stagingenforcement.version>7.0.8</stagingenforcement.version>
     </properties>
 
     <modules>

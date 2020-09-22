@@ -26,7 +26,7 @@ import org.apache.commons.lang3.tuple.Pair;
 public class OffenceHelper {
 
     private static final List<String> nonImprisonableModeOfTrials = asList("STRAFF", "SNONIMP");
-    private static final List<String> unLimitedFineLevels = asList("U", "S");
+    private static final List<String> unLimitedFineLevels = asList("U", "S", "O");
 
     public String getEnglishTitle(final JsonObject offenceDefinition) {
         return offenceDefinition.getString("title");

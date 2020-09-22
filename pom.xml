@@ -20,7 +20,7 @@
         <assignment.version>6.0.0</assignment.version>
         <material.version>6.4.3</material.version>
         <notification.notify.version>7.0.1</notification.notify.version>
-        <referencedata.version>7.0.16</referencedata.version>
+        <referencedata.version>7.0.17</referencedata.version>
         <referencedata.offences.version>7.0.2</referencedata.offences.version>
         <scheduling.version>6.0.0</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
@@ -31,7 +31,7 @@
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
-        <coredomain.version>1.0.113</coredomain.version>
+        <coredomain.version>1.0.118</coredomain.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>
         <lombok.version>1.18.2</lombok.version>

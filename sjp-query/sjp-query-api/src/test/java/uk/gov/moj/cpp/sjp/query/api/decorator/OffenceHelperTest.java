@@ -10,8 +10,12 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.moj.cpp.sjp.query.api.util.FileUtil.getFileContentAsJson;
 
+import uk.gov.moj.cpp.sjp.query.service.OffenceFineLevels;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonArray;
@@ -44,6 +48,22 @@ public class OffenceHelperTest {
 
         final JsonObject offenceDefinition2 =  getFileContentAsJson(format("offence-reference-data/%s.json",offence2Code));
         assertThat("", Matchers.equalTo(offenceHelper.getMaxFineLevel(offenceDefinition2)));
+
+    }
+
+    @Test
+    public void shouldReturnEmptyMaxFineValueForUnlimitedFine() {
+        final String offence1Code = "MT03001";
+        final String offence2Code = "PS00001";
+        final OffenceFineLevels offenceFineLevels = null;
+
+        final JsonObject offenceDefinition1 =  getFileContentAsJson(format("offence-reference-data/%s.json",offence1Code));
+        Optional<BigDecimal> maxFineValue1 = offenceHelper.getMaxFineValue(offenceDefinition1, offenceFineLevels);
+        assertFalse(maxFineValue1.isPresent());
+
+        final JsonObject offenceDefinition2 =  getFileContentAsJson(format("offence-reference-data/%s.json",offence2Code));
+        Optional<BigDecimal> maxFineValue2 = offenceHelper.getMaxFineValue(offenceDefinition2, offenceFineLevels);
+        assertFalse(maxFineValue2.isPresent());
 
     }
 

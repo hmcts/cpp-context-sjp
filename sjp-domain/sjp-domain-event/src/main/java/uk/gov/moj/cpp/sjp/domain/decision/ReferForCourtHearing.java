@@ -16,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ReferForCourtHearing extends MultipleOffenceDecision {
 
     private final UUID referralReasonId;
+    private final String referralReason;
     private final String listingNotes;
     private final Integer estimatedHearingDuration;
     private final DefendantCourtOptions defendantCourtOptions;
@@ -27,19 +28,21 @@ public class ReferForCourtHearing extends MultipleOffenceDecision {
                                 final String listingNotes,
                                 final Integer estimatedHearingDuration,
                                 final DefendantCourtOptions defendantCourtOptions) {
-        this(id, offenceDecisionInformation, referralReasonId, listingNotes, estimatedHearingDuration, defendantCourtOptions, null);
+        this(id, offenceDecisionInformation, referralReasonId, null, listingNotes, estimatedHearingDuration, defendantCourtOptions, null);
     }
 
     @JsonCreator
     public ReferForCourtHearing(@JsonProperty("id") final UUID id,
                                 @JsonProperty("offenceDecisionInformation") final List<OffenceDecisionInformation> offenceDecisionInformation,
                                 @JsonProperty("referralReasonId") final UUID referralReasonId,
+                                @JsonProperty("referralReason") final String referralReason,
                                 @JsonProperty("listingNotes") final String listingNotes,
                                 @JsonProperty("estimatedHearingDuration") final Integer estimatedHearingDuration,
                                 @JsonProperty("defendantCourtOptions") final DefendantCourtOptions defendantCourtOptions,
                                 @JsonProperty("pressRestriction") final PressRestriction pressRestriction) {
         super(id, REFER_FOR_COURT_HEARING, offenceDecisionInformation, pressRestriction);
         this.referralReasonId = referralReasonId;
+        this.referralReason = referralReason;
         this.listingNotes = listingNotes;
         this.estimatedHearingDuration = estimatedHearingDuration;
         this.defendantCourtOptions = defendantCourtOptions;
@@ -47,6 +50,10 @@ public class ReferForCourtHearing extends MultipleOffenceDecision {
 
     public UUID getReferralReasonId() {
         return referralReasonId;
+    }
+
+    public String getReferralReason() {
+        return referralReason;
     }
 
     public String getListingNotes() {

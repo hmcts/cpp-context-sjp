@@ -39,6 +39,8 @@ public class DecisionController {
     @Inject
     private ReferenceDataService referenceDataService;
 
+    private static final String REFER_FOR_COURT_HEARING = "REFER_FOR_COURT_HEARING";
+
     @Handles("sjp.command.controller.save-decision")
     public void saveDecision(final JsonEnvelope caseDecisionCommand) {
         final JsonObject payload = caseDecisionCommand.payloadAsJsonObject();
@@ -53,10 +55,11 @@ public class DecisionController {
                         .add("firstName", userDetails.getString("firstName"))
                         .add("lastName", userDetails.getString("lastName")));
 
-        if(payload.containsKey("offenceDecisions")){
+        if (payload.containsKey("offenceDecisions")) {
             final JsonArray offenceDecisions = payload.getJsonArray("offenceDecisions");
             final JsonArray offenceDecisionsWithId = addOffenceDecisionId(offenceDecisions).build();
-            enrichedPayload.add("offenceDecisions", offenceDecisionsWithId);
+            final JsonArray offenceDecisionsWithReferralReason = addReferralReason(offenceDecisionsWithId).build();
+            enrichedPayload.add("offenceDecisions", offenceDecisionsWithReferralReason);
         }
 
         addDefendantCourtDetails(payload, enrichedPayload);
@@ -82,9 +85,9 @@ public class DecisionController {
         return enforcementArea
                 .map(value -> value.getJsonObject("localJusticeArea"))
                 .map(localJusticeArea -> createObjectBuilder()
-                            .add("nationalCourtCode", localJusticeArea.getString("nationalCourtCode"))
-                            .add("nationalCourtName", localJusticeArea.getString("name"))
-                            .build())
+                        .add("nationalCourtCode", localJusticeArea.getString("nationalCourtCode"))
+                        .add("nationalCourtName", localJusticeArea.getString("name"))
+                        .build())
                 .orElse(null);
     }
 
@@ -99,9 +102,29 @@ public class DecisionController {
         final JsonArrayBuilder decisionsWithIdBuilder = createArrayBuilder();
         offenceDecisions.getValuesAs(JsonObject.class).forEach(offenceDecision ->
                 decisionsWithIdBuilder.add(createObjectBuilder(offenceDecision)
-                    .add("id", randomUUID().toString())
-                    .build()
-        ));
+                        .add("id", randomUUID().toString())
+                        .build()
+                ));
         return decisionsWithIdBuilder;
+    }
+
+    private JsonArrayBuilder addReferralReason(final JsonArray offenceDecisions) {
+        final JsonArrayBuilder decisionsBuilder = createArrayBuilder();
+        offenceDecisions.getValuesAs(JsonObject.class)
+                .forEach(offenceDecision -> {
+                    final String type = offenceDecision.getString("type");
+                    if (type.equals(REFER_FOR_COURT_HEARING)) {
+                        final JsonObjectBuilder referralDecisionWithReason = createObjectBuilder(offenceDecision);
+                        final String referralReasonId = offenceDecision.getString("referralReasonId");
+                        referenceDataService.getReferralReason(referralReasonId)
+                                .map(referralReasonRefData -> referralReasonRefData.getString("reason"))
+                                .ifPresent(reason -> referralDecisionWithReason.add("referralReason", reason));
+                        decisionsBuilder.add(referralDecisionWithReason.build());
+                    } else {
+                        decisionsBuilder.add(offenceDecision);
+                    }
+                });
+
+        return decisionsBuilder;
     }
 }

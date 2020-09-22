@@ -544,9 +544,14 @@ public class DecisionHelper {
         assertThat(caseUnassigned.getCaseId(), is(caseId));
     }
 
-    public static void verifyCaseReferredForCourtHearing(final DecisionSaved decisionSaved, final ReferForCourtHearing referForCourtHearing, final CaseReferredForCourtHearing caseReferredForCourtHearing, final List<OffenceDecisionInformation> offenceDecisionInformationList) {
+    public static void verifyCaseReferredForCourtHearing(final DecisionSaved decisionSaved,
+                                                         final ReferForCourtHearing referForCourtHearing,
+                                                         final CaseReferredForCourtHearing caseReferredForCourtHearing,
+                                                         final List<OffenceDecisionInformation> offenceDecisionInformationList,
+                                                         final String referralReason) {
         assertThat(caseReferredForCourtHearing.getCaseId(), is(decisionSaved.getCaseId()));
         assertThat(caseReferredForCourtHearing.getReferralReasonId(), is(referForCourtHearing.getReferralReasonId()));
+        assertThat(caseReferredForCourtHearing.getReferralReason(), is(referralReason));
         assertThat(caseReferredForCourtHearing.getEstimatedHearingDuration(), is(referForCourtHearing.getEstimatedHearingDuration()));
         assertThat(caseReferredForCourtHearing.getListingNotes(), is(referForCourtHearing.getListingNotes()));
         assertThat(caseReferredForCourtHearing.getReferredOffences(), is(offenceDecisionInformationList));

@@ -55,6 +55,7 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtBy
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubHearingTypesQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReason;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReasonsQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
@@ -541,6 +542,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubForUserDetails(legalAdviser);
         stubReferralReasonsQuery(REFERRAL_REASON_ID, HEARING_CODE, REFERRAL_REASON);
+        stubReferralReason(referralReasonId.toString(), "stub-data/referencedata.referral-reason.json");
         stubHearingTypesQuery(HEARING_TYPE_ID.toString(), HEARING_CODE, HEARING_DESCRIPTION);
         startSession(sjpSessionId, legalAdviser.getUserId(), DEFAULT_LONDON_COURT_HOUSE_OU_CODE, MAGISTRATE);
         requestCaseAssignment(sjpSessionId, legalAdviser.getUserId());

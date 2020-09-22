@@ -29,9 +29,7 @@ public class ReferenceDataService {
         final JsonEnvelope query = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("referencedata.query.enforcement-area"), queryParams);
 
         final JsonEnvelope response = requester.requestAsAdmin(query);
-        return response.payload() != JsonValue.NULL
-                ? ofNullable(response.payloadAsJsonObject())
-                : empty();
+        return getNullablePayload(response);
     }
 
     public Optional<JsonObject> getLocalJusticeAreas(final String nationalCourtCode){
@@ -39,6 +37,18 @@ public class ReferenceDataService {
         final JsonEnvelope query = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("referencedata.query.local-justice-areas"), queryParams);
 
         final JsonEnvelope response = requester.requestAsAdmin(query);
+        return getNullablePayload(response);
+    }
+
+    public Optional<JsonObject> getReferralReason(final String referralReasonId) {
+        final JsonObject queryParams = createObjectBuilder().add("id", referralReasonId).build();
+        final JsonEnvelope query = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("reference-data.query.get-referral-reason"), queryParams);
+
+        final JsonEnvelope response = requester.requestAsAdmin(query);
+        return getNullablePayload(response);
+    }
+
+    private Optional<JsonObject> getNullablePayload(final JsonEnvelope response) {
         return response.payload() != JsonValue.NULL
                 ? ofNullable(response.payloadAsJsonObject())
                 : empty();

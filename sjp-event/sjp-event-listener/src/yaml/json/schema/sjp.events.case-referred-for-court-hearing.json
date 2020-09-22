@@ -11,6 +11,9 @@
     "referralReasonId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
+    "referralReason": {
+      "type": "string"
+    },
     "listingNotes": {
       "type": "string"
     },

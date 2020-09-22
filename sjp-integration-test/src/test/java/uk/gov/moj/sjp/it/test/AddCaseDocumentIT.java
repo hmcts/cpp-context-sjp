@@ -16,6 +16,7 @@ import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.MaterialStub.stubAddCaseMaterial;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAnyQueryOffences;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReason;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 
@@ -156,13 +157,14 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
 
     @Test
     public void addCaseDocumentRejectsWhenCaseIsInReferToCourtHearingStatus() throws Exception {
+        final UUID referralReasonId = randomUUID();
         stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
         databaseCleanup();
         createCaseAndWaitUntilReady();
 
         final UUID sessionId = randomUUID();
         final UUID prosecutorId = randomUUID();
-        final UUID referralReasonId = randomUUID();
+
         final UUID hearingTypeId = randomUUID();
         final String listingNotes = randomAlphanumeric(20);
         final int estimatedHearingDuration = nextInt(1, 999);
@@ -175,6 +177,7 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
 
         ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery();
         ReferenceDataServiceStub.stubReferralReasonsQuery(referralReasonId, hearingCode, "");
+        stubReferralReason(referralReasonId.toString(), "stub-data/referencedata.referral-reason.json");
         ReferenceDataServiceStub.stubHearingTypesQuery(hearingTypeId.toString(), hearingCode, "");
         final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
         ReferenceDataServiceStub.stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), prosecutorId);

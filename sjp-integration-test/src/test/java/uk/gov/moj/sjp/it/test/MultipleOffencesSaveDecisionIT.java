@@ -59,6 +59,7 @@ import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubHearingTypesQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReason;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubReferralReasonsQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubWithdrawalReasonsQuery;
@@ -462,6 +463,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         final LocalDate adjournTo = now().plusDays(10);
         stubWithdrawalReasonsQuery(withdrawalReasonId, withdrawalReason);
         stubReferralReasonsQuery(referralReasonId, hearingCode, referralReason);
+        stubReferralReason(referralReasonId.toString(), "stub-data/referencedata.referral-reason.json");
 
         final Adjourn adjournDecision = new Adjourn(null, asList(
                 createOffenceDecisionInformation(offence1Id, FOUND_GUILTY),
@@ -576,7 +578,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
         verifyDecisionSaved(newDecisionCommand, newDecisionSaved);
         verifyListingNotesAdded(decision, newDecisionSaved, referForCourtHearing, caseNoteAdded2);
-        verifyCaseReferredForCourtHearing(newDecisionSaved, referForCourtHearing, caseReferredForCourtHearing, offenceDecisionInformations);
+        verifyCaseReferredForCourtHearing(newDecisionSaved, referForCourtHearing, caseReferredForCourtHearing, offenceDecisionInformations, "Critical");
         verifyInterpreterUpdated(newDecisionSaved, referForCourtHearing, interpreterUpdatedForDefendant);
         verifyCaseUnassigned(caseId, newCaseUnassigned);
         verifyCaseNotReadyInViewStore(caseId, USER_ID);
@@ -623,6 +625,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         final String hearingDescription = "PLE";
 
         stubReferralReasonsQuery(referralReasonId, hearingCode, referralReason);
+        stubReferralReason(referralReasonId.toString(), "stub-data/referencedata.referral-reason.json");
         stubHearingTypesQuery(hearingTypeId.toString(), hearingCode, hearingDescription);
 
         final JsonObject session = startSessionAndRequestAssignment(sessionId, MAGISTRATE);
@@ -659,7 +662,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
 
         verifyDecisionSaved(decision, decisionSaved);
         verifyListingNotesAdded(decision, decisionSaved, referForCourtHearing, caseNoteAdded);
-        verifyCaseReferredForCourtHearing(decisionSaved, referForCourtHearing, caseReferredForCourtHearing, offenceDecisionInformationList);
+        verifyCaseReferredForCourtHearing(decisionSaved, referForCourtHearing, caseReferredForCourtHearing, offenceDecisionInformationList, "Critical");
         verifyInterpreterUpdated(decisionSaved, referForCourtHearing, interpreterUpdatedForDefendant);
         verifyHearingLanguagePreferenceUpdated(decisionSaved, referForCourtHearing, hearingLanguagePreferenceUpdatedForDefendant);
         verifyCaseUnassigned(caseId, caseUnassigned);
@@ -806,6 +809,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         final String hearingDescription = "PLE";
 
         stubReferralReasonsQuery(referralReasonId, hearingCode, referralReason);
+        stubReferralReason(referralReasonId.toString(), "stub-data/referencedata.referral-reason.json");
         stubHearingTypesQuery(hearingTypeId.toString(), hearingCode, hearingDescription);
         stubWithdrawalReasonsQuery(withdrawalReasonId, withdrawalReason);
 
@@ -844,7 +848,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         verifyCaseUnassigned(caseId, caseUnassigned);
         verifyCaseNotReadyInViewStore(caseId, USER_ID);
         verifyListingNotesAdded(decisionCommand, decisionSaved, referForCourtHearingDecision, caseNoteAdded);
-        verifyCaseReferredForCourtHearing(decisionSaved, referForCourtHearingDecision, caseReferredForCourtHearing, offenceDecisionInformationList);
+        verifyCaseReferredForCourtHearing(decisionSaved, referForCourtHearingDecision, caseReferredForCourtHearing, offenceDecisionInformationList, "Critical");
         verifyInterpreterUpdated(decisionSaved, referForCourtHearingDecision, interpreterUpdatedForDefendant);
         verifyHearingLanguagePreferenceUpdated(decisionSaved, referForCourtHearingDecision, hearingLanguagePreferenceUpdatedForDefendant);
         verifyCaseCompleted(caseId, caseCompleted);
@@ -866,6 +870,7 @@ public class MultipleOffencesSaveDecisionIT extends BaseIntegrationTest {
         final String hearingDescription = "PLE";
 
         stubReferralReasonsQuery(referralReasonId, hearingCode, referralReason);
+        stubReferralReason(referralReasonId.toString(), "stub-data/referencedata.referral-reason.json");
         stubHearingTypesQuery(hearingTypeId.toString(), hearingCode, hearingDescription);
 
 

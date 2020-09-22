@@ -408,6 +408,18 @@ public class ReferenceDataServiceStub {
                         .withBody(getPayload("stub-data/referencedata.regional-organisations.json"))));
     }
 
+    public static void stubReferralReason(final String id, final String payload) {
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/referral-reasons/" + id;
+
+        stubFor(get(urlPathMatching(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, "application/vnd.reference-data.query.get-referral-reason+json")
+                        .withBody(getPayload(payload)))
+        );
+    }
+
     private static String pathFor(final String endpoint) {
         stubPingFor(REFERENCEDATA_SERVICE);
         return QUERY_API_PATH + endpoint;

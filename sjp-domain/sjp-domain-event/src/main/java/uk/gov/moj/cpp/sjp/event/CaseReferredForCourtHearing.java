@@ -25,6 +25,8 @@ public class CaseReferredForCourtHearing {
 
     private final UUID referralReasonId;
 
+    private final String referralReason;
+
     private final ZonedDateTime referredAt;
 
     private final UUID decisionId;
@@ -33,12 +35,14 @@ public class CaseReferredForCourtHearing {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public CaseReferredForCourtHearing(final UUID caseId, final List<OffenceDecisionInformation> referredOffences,
-                                       final UUID referralReasonId, final Integer estimatedHearingDuration,
-                                       final String listingNotes, final ZonedDateTime referredAt, final UUID decisionId,
+                                       final UUID referralReasonId, final String referralReason,
+                                       final Integer estimatedHearingDuration, final String listingNotes,
+                                       final ZonedDateTime referredAt, final UUID decisionId,
                                        final DefendantCourtOptions defendantCourtOptions) {
         this.caseId = caseId;
         this.estimatedHearingDuration = estimatedHearingDuration;
         this.listingNotes = listingNotes;
+        this.referralReason = referralReason;
         this.referralReasonId = referralReasonId;
         this.referredAt = referredAt;
         this.decisionId = decisionId;
@@ -60,6 +64,10 @@ public class CaseReferredForCourtHearing {
 
     public String getListingNotes() {
         return listingNotes;
+    }
+
+    public String getReferralReason() {
+        return referralReason;
     }
 
     public UUID getReferralReasonId() {
@@ -87,6 +95,7 @@ public class CaseReferredForCourtHearing {
         private UUID decisionId;
         private List<OffenceDecisionInformation> referredOffences = new ArrayList<>();
         private UUID referralReasonId;
+        private String referralReason;
         private Integer estimatedHearingDuration;
         private String listingNotes;
         private ZonedDateTime referredAt;
@@ -117,6 +126,11 @@ public class CaseReferredForCourtHearing {
             return this;
         }
 
+        public Builder withReferralReason(final String referralReason) {
+            this.referralReason = referralReason;
+            return this;
+        }
+
         public Builder withReferralReasonId(final UUID referralReasonId) {
             this.referralReasonId = referralReasonId;
             return this;
@@ -133,8 +147,8 @@ public class CaseReferredForCourtHearing {
         }
 
         public CaseReferredForCourtHearing build() {
-            return new CaseReferredForCourtHearing(caseId, referredOffences, referralReasonId, estimatedHearingDuration,
-                    listingNotes, referredAt, decisionId, defendantCourtOptions);
+            return new CaseReferredForCourtHearing(caseId, referredOffences, referralReasonId, referralReason,
+                    estimatedHearingDuration, listingNotes, referredAt, decisionId, defendantCourtOptions);
         }
 
     }

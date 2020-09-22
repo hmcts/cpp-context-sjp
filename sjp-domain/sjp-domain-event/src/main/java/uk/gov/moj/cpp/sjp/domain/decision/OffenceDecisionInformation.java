@@ -72,7 +72,7 @@ public class OffenceDecisionInformation implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        return EqualsBuilder.reflectionEquals(this, o);
+        return EqualsBuilder.reflectionEquals(this, o, "pressRestrictable");
     }
 
     @Override

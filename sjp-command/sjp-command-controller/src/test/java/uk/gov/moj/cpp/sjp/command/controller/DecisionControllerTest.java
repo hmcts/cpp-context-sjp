@@ -20,6 +20,7 @@ import static uk.gov.justice.services.core.annotation.Component.COMMAND_CONTROLL
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -65,6 +66,8 @@ public class DecisionControllerTest {
     private static final UUID WITHDRAWAL_REASON_ID_1 = randomUUID();
 
     private static final UUID WITHDRAWAL_REASON_ID_2 = randomUUID();
+
+    private static final UUID REFERRAL_REASON_ID = randomUUID();
 
     @Mock
     private Sender sender;
@@ -125,6 +128,19 @@ public class DecisionControllerTest {
                 .add("name", "Bedfordshire Magistrates' Court")
             ).build();
 
+    private final JsonObject referralReason = createObjectBuilder()
+            .add("id", REFERRAL_REASON_ID.toString())
+            .add("seqId", 1)
+            .add("reason", "Critical")
+            .add("reasonCode", "PLR")
+            .add("welshReason", "Ple amhendant")
+            .add("subReason","Defendant has to attend")
+            .add("welshSubReason","Diffynnydd i fynychu i gadarnhau ple")
+            .add("hearingCode","CTL")
+            .add("validFrom","2017-08-01")
+            .add("validTo","2017-08-01")
+            .build();
+
     @Test
     public void shouldHandleDecisionCommands() {
         assertThat(DecisionController.class, isHandlerClass(COMMAND_CONTROLLER)
@@ -152,11 +168,48 @@ public class DecisionControllerTest {
         verifySaveDecisionCommand(saveDecisionCommand);
     }
 
+    @Test
+    public void shouldEnrichSaveDecisionCommandWithReferralReason() {
+        final JsonEnvelope saveDecisionCommand = createReferralSaveDecisionCommand();
+        when(userService.getCallingUserDetails(saveDecisionCommand)).thenReturn(userDetails);
+        when(caseService.getCaseDetails(caseId.toString())).thenReturn(caseDetails);
+        when(referenceDataService.getReferralReason(REFERRAL_REASON_ID.toString())).thenReturn(of(referralReason));
+
+        decisionController.saveDecision(saveDecisionCommand);
+        verifyReferralSaveDecisionCommand(saveDecisionCommand);
+    }
+
+    private void verifyReferralSaveDecisionCommand(final JsonEnvelope envelope) {
+        verify(sender).send(envelopeCaptor.capture());
+        final Envelope<JsonValue> commandSent = envelopeCaptor.getValue();
+
+        assertThat(commandSent.metadata(), withMetadataEnvelopedFrom(envelope).withName("sjp.command.save-decision"));
+
+        assertThat(commandSent.payload(), JsonEnvelopePayloadMatcher.payloadIsJson(anyOf(
+                withJsonPath("$.caseId", equalTo(envelope.payloadAsJsonObject().getString("caseId"))),
+                withJsonPath("$.decisionId", notNullValue()),
+                withJsonPath("$.sessionId", equalTo(sessionId.toString())),
+                withJsonPath("$.note", equalTo("case referred to court for review")),
+                withJsonPath("$.savedAt", equalTo(savedAt.toString())),
+                withJsonPath("$.savedBy", isJson(allOf(
+                        withJsonPath("userId", equalTo(userId.toString())),
+                        withJsonPath("firstName", is("John")),
+                        withJsonPath("lastName", is("Smith"))
+                ))),
+                withJsonPath("$.offenceDecisions", hasSize(1)),
+                withJsonPath("$.offenceDecisions[0].offenceDecisionId", notNullValue()),
+                withJsonPath("$.offenceDecisions[0].type", equalTo("REFER_FOR_COURT_HEARING")),
+                withJsonPath("$.offenceDecisions[0].referralReasonId", equalTo(REFERRAL_REASON_ID.toString())),
+                withJsonPath("$.offenceDecisions[1].referralReason", equalTo(referralReason.getString("reason")))
+
+        )));
+    }
+
     private void verifySaveDecisionCommand(final JsonEnvelope envelope) {
         verify(sender).send(envelopeCaptor.capture());
         final Envelope<JsonValue> commandSent = envelopeCaptor.getValue();
 
-        assertThat(commandSent.metadata(), JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom(envelope).withName("sjp.command.save-decision"));
+        assertThat(commandSent.metadata(), withMetadataEnvelopedFrom(envelope).withName("sjp.command.save-decision"));
 
         assertThat(commandSent.payload(), JsonEnvelopePayloadMatcher.payloadIsJson(anyOf(
                 withJsonPath("$.caseId", equalTo(envelope.payloadAsJsonObject().getString("caseId"))),
@@ -189,7 +242,26 @@ public class DecisionControllerTest {
                 .add("savedAt", savedAt.toString())
                 .add("offenceDecisions", createOffenceDecision());
 
-        return envelopeFrom(metadataWithRandomUUID("sjp.command.controller.save-decision").withUserId(userId.toString()), caseDecisionCommandBuilder.build());
+        return envelopeFrom(
+                metadataWithRandomUUID("sjp.command.controller.save-decision")
+                        .withUserId(userId.toString())
+                , caseDecisionCommandBuilder.build()
+        );
+    }
+
+    private JsonEnvelope createReferralSaveDecisionCommand() {
+        final JsonObjectBuilder caseDecisionCommandBuilder = createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .add("sessionId", sessionId.toString())
+                .add("note", "case referred to court for review")
+                .add("savedAt", savedAt.toString())
+                .add("offenceDecisions", createReferToCourtOffenceDecision());
+
+        return envelopeFrom(
+                metadataWithRandomUUID("sjp.command.controller.save-decision")
+                        .withUserId(userId.toString())
+                , caseDecisionCommandBuilder.build()
+        );
     }
 
     private static JsonArray createOffenceDecision() {
@@ -205,6 +277,18 @@ public class DecisionControllerTest {
         offenceBuilder2.add("type", "WITHDRAWN");
         offenceBuilder2.add("withdrawalReasonId", WITHDRAWAL_REASON_ID_2.toString());
         offenceDecisionBuilderArray.add(offenceBuilder2);
+
+        return offenceDecisionBuilderArray.build();
+    }
+
+    private static JsonArray createReferToCourtOffenceDecision() {
+        final JsonArrayBuilder offenceDecisionBuilderArray = createArrayBuilder();
+        final JsonObjectBuilder offenceBuilder = createObjectBuilder();
+        offenceBuilder.add("offenceId", randomUUID().toString());
+        offenceBuilder.add("type", "REFER_FOR_COURT_HEARING");
+        offenceBuilder.add("referralReasonId", REFERRAL_REASON_ID.toString());
+        offenceDecisionBuilderArray.add(offenceBuilder);
+
 
         return offenceDecisionBuilderArray.build();
     }

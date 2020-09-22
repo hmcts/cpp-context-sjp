@@ -50,6 +50,7 @@ public class ReferForCourtHearingBuilder {
                 id,
                 offenceDecisionInformation,
                 referralReasonId,
+                null,
                 listingNotes,
                 estimatedHearingDuration,
                 defendantCourtOptions,

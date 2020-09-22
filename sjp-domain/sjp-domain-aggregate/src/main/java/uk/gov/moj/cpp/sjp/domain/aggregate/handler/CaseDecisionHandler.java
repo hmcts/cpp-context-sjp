@@ -208,6 +208,7 @@ public class CaseDecisionHandler {
                     .withDecisionId(decision.getDecisionId())
                     .withReferredAt(decision.getSavedAt())
                     .withReferralReasonId(referForCourtHearing.getReferralReasonId())
+                    .withReferralReason(referForCourtHearing.getReferralReason())
                     .withEstimatedHearingDuration(referForCourtHearing.getEstimatedHearingDuration())
                     .withListingNotes(referForCourtHearing.getListingNotes())
                     .withReferredOffences(offenceDecisionInformationList)

@@ -12,10 +12,12 @@ import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsCon
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.buildPersonalDetails;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.buildSjpSession;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCaseFileDefendantDetails;
+import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCaseFileDefendantDetailsWithASN;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCaseId;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCaseResults;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCountryIsoCode;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getCountryNationality;
+import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getNullCountryNationality;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.getSJPSessionJsonObject;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.verifyCases;
 import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.verifyDefendants;
@@ -65,6 +67,8 @@ public class ResultingToResultsConverterTest {
     private ProsecutionCaseFileService prosecutionCaseFileService;
     @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
+    private static final String DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE = "0800NP0100000000001H";
 
     @Test
     public void shouldConvertResult() {
@@ -128,9 +132,24 @@ public class ResultingToResultsConverterTest {
         when(referenceDataService.getNationality(any(), any())).thenReturn(getCountryNationality());
         final List<CaseDefendant> defendants = converter.buildDefendants(buildCaseDetails(), caseResults.payload(), buildSjpSession(), caseResults.metadata());
         verifyDefendants(defendants, caseResults);
+        assertEquals(DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE, defendants.get(0).getProsecutorReference());
         verify(prosecutionCaseFileService).getCaseFileDefendantDetails(any(), any());
         verify(referenceDataService).getNationality(any(), any());
     }
+
+
+    @Test
+    public void shouldBuildDefendantWithoutNationalityAndWithProsecutorReference() {
+        final Envelope<CaseResults> caseResults = getCaseResults();
+        when(prosecutionCaseFileService.getCaseFileDefendantDetails(any(), any())).thenReturn(getCaseFileDefendantDetailsWithASN());
+        when(referenceDataService.getNationality(any(), any())).thenReturn(getNullCountryNationality());
+        final List<CaseDefendant> defendants = converter.buildDefendants(buildCaseDetails(), caseResults.payload(), buildSjpSession(), caseResults.metadata());
+        verifyDefendants(defendants, caseResults);
+        assertEquals(null, defendants.get(0).getIndividualDefendant().getPersonStatedNationality());
+        assertEquals("2044NRPR00000000106K", defendants.get(0).getProsecutorReference());
+        verify(prosecutionCaseFileService).getCaseFileDefendantDetails(any(), any());
+    }
+
 
     @Test
     public void shouldBuildIndividualDefendant() {

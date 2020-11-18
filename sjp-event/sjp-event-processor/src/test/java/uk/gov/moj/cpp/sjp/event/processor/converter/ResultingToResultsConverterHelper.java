@@ -55,10 +55,11 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 public class ResultingToResultsConverterHelper {
 
-    private static final String DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE = "0800NP0100000000001H";
+
     private static final Integer DEFAULT_OFFENCE_DATE_CODE = 1;
     private static final String ADDRESS1_KEY = "address1";
     private static final String ADDRESS2_KEY = "address2";
@@ -146,7 +147,7 @@ public class ResultingToResultsConverterHelper {
         final CaseOffence offence = offences.get(0);
 
         assertEquals(DEFENDANT_ID, defendant.getDefendantId());
-        assertEquals(DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE, defendant.getProsecutorReference());
+
         assertEquals(DEFAULT_BAIL_STATUS, individualDefendant.getBailStatus());
         assertEquals(false, individualDefendant.getPresentAtHearing());
         verifyPerson(person);
@@ -408,9 +409,33 @@ public class ResultingToResultsConverterHelper {
                 .build());
     }
 
+    public static Optional<JsonObject> getCaseFileDefendantDetailsWithASN() {
+        return Optional.of(createObjectBuilder()
+                .add("id", DEFENDANT_ID.toString())
+                .add("asn", "2044NRPR00000000106K")
+                .add("selfDefinedInformation", createObjectBuilder()
+                        .add("gender", SOURCE_GENDER.toString()))
+                .add("offences", createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("offenceId", OFFENCE_ID_1.toString())
+                                .add("offenceLocation", OFFENCE_LOCATION))
+                        .add(createObjectBuilder()
+                                .add("offenceId", OFFENCE_ID_2.toString())
+                                .add("offenceLocation", OFFENCE_LOCATION)))
+
+                .build());
+
+    }
+
     public static Optional<JsonObject> getCountryNationality() {
         return Optional.of(createObjectBuilder()
                 .add("isoCode", COUNTRY_ISO_CODE)
+                .build());
+    }
+
+    public static Optional<JsonObject> getNullCountryNationality() {
+        return Optional.of(createObjectBuilder()
+                .add("isoCode", JsonValue.NULL)
                 .build());
     }
 

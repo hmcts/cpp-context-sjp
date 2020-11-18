@@ -57,7 +57,6 @@ import javax.json.JsonObject;
 public class ResultingToResultsConverter {
 
     private static final String DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE = "0800NP0100000000001H";
-    private static final String UNKNOWN = "0";
     private static final String OFFENCES_KEY = "offences";
     private static final String ADDRESS1_KEY = "address1";
     private static final String ADDRESS2_KEY = "address2";
@@ -155,11 +154,15 @@ public class ResultingToResultsConverter {
                     .map(selfDefinedInformation -> selfDefinedInformation.getString("nationality", null))
                     .flatMap(selfDefinedNationality -> referenceDataService.getNationality(selfDefinedNationality, emptyEnvelope))
                     .map(referenceDataNationality -> referenceDataNationality.getString("isoCode", null))
-                    .orElse(UNKNOWN);
+                    .orElse(null);
+            String prosecutorReference  = DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE;
+            if(caseFileDefendantDetails != null) {
+                prosecutorReference = caseFileDefendantDetails.getString("asn",null) != null ? caseFileDefendantDetails.getString("asn",null) : DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE;
+            }
 
             arrayBuilder.add(CaseDefendant.caseDefendant()
                     .withDefendantId(defendant.getId())
-                    .withProsecutorReference(DEFAULT_NON_POLICE_PROSECUTOR_REFERENCE)
+                    .withProsecutorReference(prosecutorReference)
                     .withIndividualDefendant(buildIndividualDefendant(defendant, countryCJSCode))
                     .withOffences(buildOffences(caseDetails, caseResults, sjpSession, caseFileDefendantOffencesOptional))
                     .build());

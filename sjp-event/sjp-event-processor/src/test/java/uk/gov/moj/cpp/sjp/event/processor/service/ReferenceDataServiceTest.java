@@ -170,6 +170,15 @@ public class ReferenceDataServiceTest {
     }
 
     @Test
+    public void shouldReturnProsecutorOucode() {
+        when(requestProsecutor(TFL)).thenReturn(responseProsecutor());
+
+        final String prosecutorOucode = referenceDataService.getProsecutorOucode(TFL, envelope);
+
+        assertThat(prosecutorOucode, equalTo("TFL_OUCODE"));
+    }
+
+    @Test
     public void shouldReturnReferralReasons() {
         final JsonObject responsePayload = createObjectBuilder().add("referralReasons", Json.createArrayBuilder()).build();
         final JsonEnvelope queryResponse = envelopeFrom(
@@ -271,7 +280,10 @@ public class ReferenceDataServiceTest {
                 .add("prosecutors", createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add("nameWelsh", "Transport For London - Welsh")
-                                .add("fullName", "Transport For London")))
+                                .add("fullName", "Transport For London")
+                                .add("oucode", "TFL_OUCODE")
+                        )
+                )
                 .build();
         return envelopeFrom(
                 metadataWithRandomUUID("referencedata.query.prosecutors"),

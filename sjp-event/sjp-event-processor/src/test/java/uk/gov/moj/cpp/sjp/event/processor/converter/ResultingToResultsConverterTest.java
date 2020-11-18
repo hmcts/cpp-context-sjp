@@ -1,6 +1,9 @@
 package uk.gov.moj.cpp.sjp.event.processor.converter;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -57,6 +60,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ResultingToResultsConverterTest {
 
+    private static final String PROSECUTING_AUTHORITY = "TFL";
+    private static final String PROSECUTOR_OUCODE = "ProsecutorOUCODE";
+
     @Mock
     private ReferenceDataService referenceDataService;
     @Mock
@@ -83,7 +89,7 @@ public class ResultingToResultsConverterTest {
         final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
         setField(objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
         setField(jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
-        
+
         final JsonObject jsonObject = objectToJsonObjectConverter.convert(caseResults.payload());
         final Envelope<JsonObject> caseResults2 = Envelope.envelopeFrom(caseResults.metadata(), jsonObject);
         final PublicSjpResulted publicSjpResulted = converter.convert(getCaseId(), caseResults2, buildCaseDetails(), getSJPSessionJsonObject());
@@ -116,13 +122,25 @@ public class ResultingToResultsConverterTest {
     @Test
     public void shouldBuildCases() {
         final Envelope<CaseResults> caseResults = getCaseResults();
-
         when(prosecutionCaseFileService.getCaseFileDefendantDetails(any(), any())).thenReturn(getCaseFileDefendantDetails());
         when(referenceDataService.getNationality(any(), any())).thenReturn(getCountryNationality());
-        final List<BaseCaseDetails> cases = converter.buildCases(getCaseId(), buildCaseDetails(), caseResults.payload(), buildSjpSession(), caseResults.metadata());
+
+        final List<BaseCaseDetails> cases = converter.buildCases(getCaseId(), buildCaseDetails(), caseResults.payload(), buildSjpSession(), caseResults);
+
         verifyCases(cases, caseResults);
-        verify(prosecutionCaseFileService).getCaseFileDefendantDetails(any(), any());
-        verify(referenceDataService).getNationality(any(), any());
+    }
+
+    @Test
+    public void shouldSetOriginatingOrganisation() {
+        final Envelope<CaseResults> envelope = getCaseResults();
+        when(prosecutionCaseFileService.getCaseFileDefendantDetails(any(), any())).thenReturn(getCaseFileDefendantDetails());
+        when(referenceDataService.getNationality(any(), any())).thenReturn(getCountryNationality());
+        when(referenceDataService.getProsecutorOucode(PROSECUTING_AUTHORITY, envelope)).thenReturn(PROSECUTOR_OUCODE);
+
+        final List<BaseCaseDetails> cases = converter.buildCases(getCaseId(), buildCaseDetails(), envelope.payload(), buildSjpSession(), envelope);
+
+        assertThat(cases, hasSize(1));
+        assertThat(cases.get(0).getOriginatingOrganisation(), equalTo(PROSECUTOR_OUCODE));
     }
 
     @Test
@@ -157,7 +175,6 @@ public class ResultingToResultsConverterTest {
         final BasePersonDetail person = individualDefendant.getBasePersonDetails();
         assertEquals(getCountryIsoCode(), individualDefendant.getPersonStatedNationality());
         verifyPerson(person);
-
     }
 
     @Test

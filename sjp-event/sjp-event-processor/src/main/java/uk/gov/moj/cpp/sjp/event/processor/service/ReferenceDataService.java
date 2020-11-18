@@ -91,6 +91,17 @@ public class ReferenceDataService {
                 : prosecutor.getString("fullName", prosecutingAuthority);
     }
 
+    public String getProsecutorOucode(final String prosecutingAuthority, final Envelope envelope) {
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), createObjectBuilder().build());
+        return getProsecutor(prosecutingAuthority, jsonEnvelope)
+                .getJsonArray("prosecutors")
+                .getValuesAs(JsonObject.class)
+                .stream()
+                .findFirst()
+                .map(p -> p.getString("oucode", null))
+                .orElse(null);
+    }
+
     public JsonObject getReferralReasons(final JsonEnvelope envelope) {
         final JsonEnvelope request = enveloper.withMetadataFrom(
                 envelope,

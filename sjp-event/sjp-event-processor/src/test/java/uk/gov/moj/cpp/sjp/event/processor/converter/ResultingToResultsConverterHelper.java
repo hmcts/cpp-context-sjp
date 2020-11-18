@@ -9,12 +9,20 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static uk.gov.justice.json.schemas.domains.sjp.Gender.NOT_SPECIFIED;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 
-import uk.gov.justice.json.schemas.domains.sjp.*;
+import uk.gov.justice.json.schemas.domains.sjp.Address;
+import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
+import uk.gov.justice.json.schemas.domains.sjp.CourtsGender;
+import uk.gov.justice.json.schemas.domains.sjp.Gender;
+import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
+import uk.gov.justice.json.schemas.domains.sjp.PleaMethod;
+import uk.gov.justice.json.schemas.domains.sjp.PleaType;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
@@ -31,7 +39,6 @@ import uk.gov.justice.json.schemas.domains.sjp.results.Prompts;
 import uk.gov.justice.json.schemas.domains.sjp.results.SessionLocation;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.Envelope;
-
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.resulting.CaseDecision;
 import uk.gov.moj.cpp.sjp.domain.resulting.CaseResults;
@@ -136,6 +143,7 @@ public class ResultingToResultsConverterHelper {
         assertEquals(CASE_ID, case1.getCaseId());
         assertEquals(URN, case1.getUrn());
         assertEquals(PROSECUTING_AUTHORITY, case1.getProsecutionAuthorityCode());
+        assertThat(case1.getOriginatingOrganisation(), nullValue());
         verifyDefendants(defendants, caseResults);
     }
 
@@ -236,7 +244,7 @@ public class ResultingToResultsConverterHelper {
         final CaseDetails caseDetails = CaseDetails.caseDetails()
                 .withId(CASE_ID)
                 .withUrn(URN)
-                .withProsecutingAuthority("TFL")
+                .withProsecutingAuthority(PROSECUTING_AUTHORITY)
                 .withDefendant(buildDefendant())
                 .build();
         return caseDetails;

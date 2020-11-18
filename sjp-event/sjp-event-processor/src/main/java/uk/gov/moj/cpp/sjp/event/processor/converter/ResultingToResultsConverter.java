@@ -11,8 +11,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
 import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
-import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
 import uk.gov.justice.json.schemas.domains.sjp.CourtsGender;
+import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.json.schemas.domains.sjp.results.BaseCaseDetails;
@@ -93,17 +93,18 @@ public class ResultingToResultsConverter {
 
         return PublicSjpResulted.publicSjpResulted()
                 .withSession(buildSession(sjpSession, court))
-                .withCases(buildCases(caseId, caseDetails, caseResults, sjpSession, envelope.metadata()))
+                .withCases(buildCases(caseId, caseDetails, caseResults, sjpSession, envelope))
                 .build();
     }
 
-    protected List<BaseCaseDetails> buildCases(final UUID caseId, final CaseDetails caseDetails, final CaseResults caseResults, final SJPSession sjpSession, final Metadata metadata) {
+    protected List<BaseCaseDetails> buildCases(final UUID caseId, final CaseDetails caseDetails, final CaseResults caseResults, final SJPSession sjpSession, final Envelope envelope) {
         final List<BaseCaseDetails> baseCaseDetailsList = new ArrayList<>();
         baseCaseDetailsList.add(BaseCaseDetails.baseCaseDetails()
                 .withCaseId(caseId)
                 .withUrn(caseDetails.getUrn())
-                .withProsecutionAuthorityCode(caseDetails.getProsecutingAuthority().toString())
-                .withDefendants(buildDefendants(caseDetails, caseResults, sjpSession, metadata)).build());
+                .withProsecutionAuthorityCode(caseDetails.getProsecutingAuthority())
+                .withOriginatingOrganisation(referenceDataService.getProsecutorOucode(caseDetails.getProsecutingAuthority(), envelope))
+                .withDefendants(buildDefendants(caseDetails, caseResults, sjpSession, envelope.metadata())).build());
         return baseCaseDetailsList;
     }
 
@@ -208,7 +209,7 @@ public class ResultingToResultsConverter {
         if (null != personalDetails.getGender()) {
             person.withGender(CourtsGender.valueOf(personalDetails.getGender().toString()
                     .toUpperCase()
-                    .replace(' ','_')));
+                    .replace(' ', '_')));
         }
 
         return person.build();

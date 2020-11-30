@@ -256,11 +256,11 @@
               "value": "fortnightly"
             },
             {
-              "promptDefinitionId": "e091af2e-43d0-495d-b3b0-432010358a45",
+              "promptDefinitionId": "b487696e-dfc9-4c89-80d3-337a4319e925",
               "value": "2016-06-15"
             },
             {
-              "promptDefinitionId": "11ba492a-e2ad-11e8-9f32-f2801f1b9fd1",
+              "promptDefinitionId": "8e235a65-5ea2-4fff-ba3b-6cdb74195436",
               "value": "20.00"
             }
           ]
@@ -282,7 +282,7 @@
               "value": "weekly"
             },
             {
-              "promptDefinitionId": "e091af2e-43d0-495d-b3b0-432010358a45",
+              "promptDefinitionId": "b487696e-dfc9-4c89-80d3-337a4319e925",
               "value": "2016-06-15"
             }
           ]

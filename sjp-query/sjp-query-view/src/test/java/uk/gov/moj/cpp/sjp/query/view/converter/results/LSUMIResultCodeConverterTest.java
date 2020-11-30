@@ -78,7 +78,7 @@ public class LSUMIResultCodeConverterTest extends ResultCodeConverterTest {
     protected JsonArray getExpectedPrompts() {
         return  createArrayBuilder()
                 .add(createObjectBuilder()
-                        .add("promptDefinitionId", "11ba492a-e2ad-11e8-9f32-f2801f1b9fd1")
+                        .add("promptDefinitionId", "8e235a65-5ea2-4fff-ba3b-6cdb74195436")
                         .add("value", lumpSumAmountTerminalEntry)
                 )
                 .add(createObjectBuilder()
@@ -90,7 +90,7 @@ public class LSUMIResultCodeConverterTest extends ResultCodeConverterTest {
                         .add("value", frequencyTerminalEntry)
                 )
                 .add(createObjectBuilder()
-                        .add("promptDefinitionId", "e091af2e-43d0-495d-b3b0-432010358a45")
+                        .add("promptDefinitionId", "b487696e-dfc9-4c89-80d3-337a4319e925")
                         .add("value", startDateTerminalEntry)
                 )
                 .build();

@@ -80,7 +80,7 @@ public class INSTLResultCodeConverterTest extends ResultCodeConverterTest {
                         .add("value", frequencyTerminalEntry)
                 )
                 .add(createObjectBuilder()
-                        .add("promptDefinitionId", "e091af2e-43d0-495d-b3b0-432010358a45")
+                        .add("promptDefinitionId", "b487696e-dfc9-4c89-80d3-337a4319e925")
                         .add("value", startDateTerminalEntry)
                 )
                 .build();

@@ -1,6 +1,5 @@
 # SJP
 
-
 ## Installation
 
 TBA

@@ -15,8 +15,10 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
+import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
+import uk.gov.justice.json.schemas.domains.sjp.queries.Session;
 import uk.gov.justice.json.schemas.domains.sjp.query.DefendantsOnlinePlea;
 import uk.gov.justice.json.schemas.domains.sjp.query.EmployerDetails;
 import uk.gov.justice.json.schemas.domains.sjp.query.PleaDetails;
@@ -70,6 +72,11 @@ public class ProsecutionCasesDataSourcingServiceTest {
                     .withOffences(offences)
                     .build())
             .build();
+
+    private static final CaseDecision CASE_DECISION = createCaseDecision();
+    private static final String COURT_HOUSE_NAME = "Court house name";
+    private static final String COURT_HOUSE_CODE = "Court house code";
+    private static final String MAGISTRATE_NAME = "magistrate name";
     private static final CaseReferredForCourtHearing REFERRAL_EVEN_PAYLOAD = caseReferredForCourtHearing()
             .withReferredAt(DECISION_DATE)
             .withReferredOffences(createDecisionInformationList(OFFENCE_ID1, OFFENCE_ID2))
@@ -118,6 +125,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
                 .build();
         prosecutionCasesDataSourcingService.createProsecutionCaseViews(
                 CASE_DETAILS,
+                CASE_DECISION,
                 REFERRAL_EVEN_PAYLOAD,
                 defendantPlea,
                 CASE_FILE_DETAILS,
@@ -127,6 +135,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
         verify(prosecutionCasesViewHelper)
                 .createProsecutionCaseViews(
                         CASE_DETAILS,
+                        CASE_DECISION,
                         PROSECUTOR,
                         CASE_FILE_DETAILS,
                         CASE_FILE_DEFENDANT_DETAILS,
@@ -143,6 +152,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
     public void shouldUseNullForMitigationIfPleaNotPresent() {
         prosecutionCasesDataSourcingService.createProsecutionCaseViews(
                 CASE_DETAILS,
+                CASE_DECISION,
                 REFERRAL_EVEN_PAYLOAD,
                 null,
                 CASE_FILE_DETAILS,
@@ -151,6 +161,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
 
         verify(prosecutionCasesViewHelper).createProsecutionCaseViews(
                 CASE_DETAILS,
+                CASE_DECISION,
                 PROSECUTOR,
                 CASE_FILE_DETAILS,
                 CASE_FILE_DEFENDANT_DETAILS,
@@ -167,6 +178,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
     public void shouldNotGetEthnicityAndNationalityWhenCaseFileDetailsNotPresent() {
         prosecutionCasesDataSourcingService.createProsecutionCaseViews(
                 CASE_DETAILS,
+                CASE_DECISION,
                 REFERRAL_EVEN_PAYLOAD,
                 null,
                 CASE_FILE_DETAILS,
@@ -177,6 +189,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
         verify(referenceDataService, never()).getEthnicity(any(), any());
         verify(prosecutionCasesViewHelper).createProsecutionCaseViews(
                 CASE_DETAILS,
+                CASE_DECISION,
                 PROSECUTOR,
                 CASE_FILE_DETAILS,
                 null,
@@ -221,5 +234,15 @@ public class ProsecutionCasesDataSourcingServiceTest {
 
     private static Set<String> mockOffenceCodes() {
         return Sets.newHashSet(OFFENCE_CJS_CODE);
+    }
+
+    private static CaseDecision createCaseDecision() {
+        return CaseDecision.caseDecision()
+                .withSession(Session.session()
+                        .withCourtHouseName(COURT_HOUSE_NAME)
+                        .withCourtHouseCode(COURT_HOUSE_CODE)
+                        .withMagistrate(MAGISTRATE_NAME)
+                        .build())
+                .build();
     }
 }

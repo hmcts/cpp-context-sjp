@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.event.processor.service.referral;
 import static java.util.Collections.emptyList;
 import static javax.json.Json.createObjectBuilder;
 
+import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
 import uk.gov.justice.json.schemas.domains.sjp.queries.OnlinePleaDetail;
@@ -44,6 +45,7 @@ public class ProsecutionCasesDataSourcingService {
 
     public List<ProsecutionCaseView> createProsecutionCaseViews(
             final CaseDetails caseDetails,
+            final CaseDecision caseDecision,
             final CaseReferredForCourtHearing caseReferredForCourtHearing,
             final DefendantsOnlinePlea defendantPleaDetails,
             final JsonObject prosecutionCaseFile,
@@ -92,6 +94,7 @@ public class ProsecutionCasesDataSourcingService {
 
         return prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
+                caseDecision,
                 prosecutor,
                 prosecutionCaseFile,
                 caseFileDefendantDetails,

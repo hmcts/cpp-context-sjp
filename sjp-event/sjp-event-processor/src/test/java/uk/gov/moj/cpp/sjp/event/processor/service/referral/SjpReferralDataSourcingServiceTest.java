@@ -79,6 +79,7 @@ public class SjpReferralDataSourcingServiceTest {
         sjpReferralDataSourcingService.createSjpReferralView(
                 caseReferredForCourtHearing,
                 caseDetails,
+                caseDetails.getCaseDecisions().get(0),
                 emptyEnvelopeWithReferralEventMetadata);
 
         verify(sjpReferralViewHelper).createSjpReferralView(caseDetails, sessionDetails, legalAdviserDetails, caseReferredForCourtHearing.getReferredAt());
@@ -95,7 +96,11 @@ public class SjpReferralDataSourcingServiceTest {
 
     private List<CaseDecision> mockCaseDecisions() {
         List<CaseDecision> casedDecisions = new ArrayList<>();
-        casedDecisions.add(new CaseDecision(null, DECISION_ID, null,  REFERRAL_DATE_TIME, mockSessionDetails()));
+        casedDecisions.add(CaseDecision.caseDecision()
+                .withId(DECISION_ID)
+                .withSavedAt(REFERRAL_DATE_TIME)
+                .withSession(mockSessionDetails()).build()
+        );
         return casedDecisions;
     }
 

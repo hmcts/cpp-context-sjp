@@ -1,6 +1,11 @@
 package uk.gov.moj.cpp.sjp.event.processor.model.referral;
 
+import static java.util.Collections.unmodifiableList;
+import static java.util.Optional.ofNullable;
+
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class OffenceView {
@@ -19,6 +24,7 @@ public class OffenceView {
     private final NotifiedPleaView notifiedPlea;
     private final OffenceFactsView offenceFacts;
     private final Integer offenceDateCode;
+    private final List<ReportingRestrictionView> reportingRestrictions;
 
     @SuppressWarnings("squid:S00107")
     public OffenceView(final UUID id,
@@ -31,7 +37,9 @@ public class OffenceView {
                        final LocalDate endDate,
                        final Integer orderIndex,
                        final NotifiedPleaView notifiedPlea,
-                       final OffenceFactsView offenceFacts, final Integer offenceDateCode) {
+                       final OffenceFactsView offenceFacts,
+                       final Integer offenceDateCode,
+                       final List<ReportingRestrictionView> reportingRestrictions) {
 
         this.id = id;
         this.offenceDefinitionId = offenceDefinitionId;
@@ -45,6 +53,10 @@ public class OffenceView {
         this.notifiedPlea = notifiedPlea;
         this.offenceFacts = offenceFacts;
         this.offenceDateCode = offenceDateCode;
+        this.reportingRestrictions = ofNullable(reportingRestrictions)
+                .filter(reportingRes -> !reportingRes.isEmpty())
+                .map(ArrayList::new)
+                .orElse(null);
     }
 
 
@@ -96,6 +108,10 @@ public class OffenceView {
         return offenceFacts;
     }
 
+    public List<ReportingRestrictionView> getReportingRestrictions() {
+        return reportingRestrictions != null ? unmodifiableList(reportingRestrictions) : null;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -118,6 +134,7 @@ public class OffenceView {
         private NotifiedPleaView notifiedPlea;
         private OffenceFactsView offenceFacts;
         private Integer offenceDateCode;
+        private List<ReportingRestrictionView> reportingRestrictions;
 
         public Builder withId(final UUID id) {
             this.id = id;
@@ -179,6 +196,14 @@ public class OffenceView {
             return this;
         }
 
+        public Builder withReportingRestrictions(final List<ReportingRestrictionView> reportingRestrictions) {
+            this.reportingRestrictions = ofNullable(reportingRestrictions)
+                    .filter(reportingRes -> !reportingRes.isEmpty())
+                    .map(ArrayList::new)
+                    .orElse(null);
+            return this;
+        }
+
         public OffenceView build() {
             return new OffenceView(
                     id,
@@ -191,7 +216,9 @@ public class OffenceView {
                     endDate,
                     orderIndex,
                     notifiedPlea,
-                    offenceFacts, offenceDateCode);
+                    offenceFacts,
+                    offenceDateCode,
+                    reportingRestrictions);
         }
     }
 }

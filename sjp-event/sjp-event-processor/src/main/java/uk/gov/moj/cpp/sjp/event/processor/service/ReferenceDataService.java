@@ -2,7 +2,11 @@ package uk.gov.moj.cpp.sjp.event.processor.service;
 
 
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -19,9 +23,12 @@ import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
+@SuppressWarnings("squid:CallToDeprecatedMethod")
 public class ReferenceDataService {
 
     private static final String ON_QUERY_PARAMETER = "on";
+    private static final String SHORT_CODE_PARAMETER = "shortCode";
+    private static final String RESULT_DEFINITIONS = "resultDefinitions";
 
     @Inject
     private Enveloper enveloper;
@@ -123,7 +130,25 @@ public class ReferenceDataService {
 
         return requester.request(request)
                 .payloadAsJsonObject()
-                .getJsonArray("resultDefinitions");
+                .getJsonArray(RESULT_DEFINITIONS);
+    }
+
+    public Optional<JsonObject> getResultDefinition(final String shortCode, final LocalDate onDate) {
+        final JsonObject payload = createObjectBuilder()
+                .add(ON_QUERY_PARAMETER, onDate.toString())
+                .add(SHORT_CODE_PARAMETER, shortCode)
+                .build();
+        
+        final JsonEnvelope request = envelopeFrom(
+                metadataBuilder()
+                        .withId(randomUUID())
+                        .withName("referencedata.query-result-definitions").build(),
+                payload);
+
+        return ofNullable(requester.requestAsAdmin(request).payloadAsJsonObject()
+                .getJsonArray(RESULT_DEFINITIONS))
+                .filter(resultDefinitions -> !resultDefinitions.isEmpty())
+                .map(resultDefinitions -> resultDefinitions.getJsonObject(0));
     }
 
     public Optional<JsonObject> getCourtByCourtHouseOUCode(final String courtHouseOUCode, final JsonEnvelope envelope) {
@@ -149,6 +174,6 @@ public class ReferenceDataService {
 
         return requester.request(request)
                 .payloadAsJsonObject()
-                .getJsonArray("resultDefinitions");
+                .getJsonArray(RESULT_DEFINITIONS);
     }
 }

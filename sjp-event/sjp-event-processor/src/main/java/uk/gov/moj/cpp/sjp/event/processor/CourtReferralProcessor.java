@@ -1,11 +1,13 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
+import static java.lang.String.format;
 import static javax.json.JsonValue.NULL;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.sjp.RecordCaseReferralForCourtHearingRejection.recordCaseReferralForCourtHearingRejection;
 
+import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.query.DefendantsOnlinePlea;
 import uk.gov.justice.services.common.util.Clock;
@@ -106,6 +108,13 @@ public class CourtReferralProcessor {
         final JsonEnvelope emptyEnvelope = envelopeFrom(metadataFrom(event.metadata()), NULL);
         final CaseReferredForCourtHearing caseReferredForCourtHearing = event.payload();
         final CaseDetails caseDetails = sjpService.getCaseDetails(caseReferredForCourtHearing.getCaseId(), emptyEnvelope);
+        final CaseDecision caseDecision = getReferralDecisionFromCaseDecisions(
+                caseReferredForCourtHearing.getDecisionId(),
+                caseDetails)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        format("Referral decision not found for case %s",
+                                caseDetails.getId()))
+                );
 
         final DefendantsOnlinePlea defendantOnlinePleaDetails = Optional.of(caseDetails.getOnlinePleaReceived())
                 .filter(Boolean::booleanValue)
@@ -123,9 +132,11 @@ public class CourtReferralProcessor {
         final SjpReferralView sjpReferral = sjpReferralDataSourcingService.createSjpReferralView(
                 caseReferredForCourtHearing,
                 caseDetails,
+                caseDecision,
                 emptyEnvelope);
         final List<ProsecutionCaseView> prosecutionCasesView = prosecutionCasesDataSourcingService.createProsecutionCaseViews(
                 caseDetails,
+                caseDecision,
                 caseReferredForCourtHearing,
                 defendantOnlinePleaDetails,
                 prosecutionCaseFileOptional.orElse(null),
@@ -150,6 +161,16 @@ public class CourtReferralProcessor {
 
     private JsonObject getCaseFileDefendant(final JsonObject caseFile) {
         return caseFile.getJsonArray("defendants").getJsonObject(0);
+    }
+
+    private Optional<CaseDecision> getReferralDecisionFromCaseDecisions(
+            final UUID decisionId,
+            final CaseDetails caseDetails) {
+
+        return caseDetails.getCaseDecisions()
+                .stream()
+                .filter(caseDecision -> caseDecision.getId().equals(decisionId))
+                .findFirst();
     }
 
 }

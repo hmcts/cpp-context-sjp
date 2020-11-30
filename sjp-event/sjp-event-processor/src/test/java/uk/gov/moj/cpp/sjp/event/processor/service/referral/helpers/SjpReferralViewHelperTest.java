@@ -7,7 +7,9 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
+import uk.gov.justice.json.schemas.domains.sjp.queries.Session;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.JudiciaryView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReferringJudicialDecisionView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.SjpReferralView;
@@ -47,8 +49,7 @@ public class SjpReferralViewHelperTest {
                 .build();
 
         final SjpReferralView sjpReferralView = sjpReferralViewHelper.createSjpReferralView(
-                CASE_DETAILS,
-                sessionDetails,
+                CASE_DETAILS, sessionDetails,
                 LEGAL_ADVISER_DETAILS,
                 CASE_DECISION_CREATION_DATE);
 
@@ -100,6 +101,16 @@ public class SjpReferralViewHelperTest {
     private static CaseDetails createCaseDetails() {
         return CaseDetails.caseDetails()
                 .withPostingDate(CASE_POSTING_DATE)
+                .build();
+    }
+
+    private static CaseDecision createCaseDecision() {
+        return CaseDecision.caseDecision()
+                .withSession(Session.session()
+                        .withCourtHouseName(COURT_HOUSE_NAME)
+                        .withCourtHouseCode(COURT_HOUSE_CODE)
+                        .withMagistrate(MAGISTRATE_NAME)
+                        .build())
                 .build();
     }
 

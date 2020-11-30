@@ -1,19 +1,44 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers;
 
-import com.google.common.collect.ImmutableMap;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.lang.String.valueOf;
+import static java.time.LocalDate.now;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.iterableWithSize;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision.caseDecision;
+import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails.caseDetails;
+import static uk.gov.justice.json.schemas.domains.sjp.queries.Defendant.defendant;
+import static uk.gov.justice.json.schemas.domains.sjp.queries.PressRestriction.pressRestriction;
+import static uk.gov.justice.json.schemas.domains.sjp.queries.QueryOffenceDecision.queryOffenceDecision;
+import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
+import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
+
 import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.Interpreter;
 import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
 import uk.gov.justice.json.schemas.domains.sjp.PleaType;
+import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
+import uk.gov.justice.json.schemas.domains.sjp.queries.QueryOffenceDecision;
+import uk.gov.justice.json.schemas.domains.sjp.queries.Session;
 import uk.gov.justice.json.schemas.domains.sjp.query.EmployerDetails;
+import uk.gov.moj.cpp.core.sjp.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
@@ -29,35 +54,28 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.OffenceView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.PersonDetailsView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseIdentifierView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReportingRestrictionView;
+import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
-import javax.json.JsonObject;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static java.lang.String.valueOf;
-import static java.time.LocalDate.now;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.iterableWithSize;
-import static org.hamcrest.Matchers.nullValue;
-import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails.caseDetails;
-import static uk.gov.justice.json.schemas.domains.sjp.queries.Defendant.defendant;
-import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
-import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
+import javax.json.JsonObject;
+
+import com.google.common.collect.ImmutableMap;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProsecutionCasesViewHelperTest {
@@ -97,8 +115,16 @@ public class ProsecutionCasesViewHelperTest {
     private static final String PROSECUTION_CASE_REFERENCE = "2OknbZ5Xl4";
     private static final VerdictType NULL_VERDICT = null;
     private static final String DISABILITY_NEEDS = "Hearing aid";
+    private static final String COURT_HOUSE_NAME = "Court house name";
+    private static final String COURT_HOUSE_CODE = "Court house code";
+    private static final String MAGISTRATE_NAME = "magistrate name";
+    private static final String D45_RESULT_LABEL = "Direction made under Section 45 of the Youth Justice and Criminal Evidence Act 1999";
 
-    private ProsecutionCasesViewHelper prosecutionCasesViewHelper = new ProsecutionCasesViewHelper();
+    @Mock
+    private ReferenceDataService referenceDataService;
+
+    @InjectMocks
+    private ProsecutionCasesViewHelper prosecutionCasesViewHelper;
 
     @Test
     public void shouldCreateProsecutionCaseViewsWithoutConvictionDateWhenVerdictNotPresent() {
@@ -197,8 +223,11 @@ public class ProsecutionCasesViewHelperTest {
                 .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true),null, disabilityNeedsOf(DISABILITY_NEEDS)))
                 .build();
 
+        final CaseDecision caseDecision = createCaseDecision(caseReferredForCourtHearing);
+
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
+                caseDecision,
                 prosecutor,
                 null,
                 caseFileDefendantDetails,
@@ -240,8 +269,11 @@ public class ProsecutionCasesViewHelperTest {
                 .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, disabilityNeedsOf(DISABILITY_NEEDS)))
                 .build();
 
+        final CaseDecision caseDecision = createCaseDecision(caseReferredForCourtHearing);
+
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
+                caseDecision,
                 prosecutor,
                 null,
                 caseFileDefendantDetails,
@@ -284,8 +316,10 @@ public class ProsecutionCasesViewHelperTest {
                 .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, null))
                 .build();
 
+        final CaseDecision caseDecision = createCaseDecision(caseReferredForCourtHearing);
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
+                caseDecision,
                 prosecutor,
                 null,
                 caseFileDefendantDetails,
@@ -310,7 +344,7 @@ public class ProsecutionCasesViewHelperTest {
     }
 
     @Test
-    public void shouldSendDisabilityStatusWhenSpecialrequiremntIsNull() {
+    public void shouldSendDisabilityStatusWhenSpecialRequirementIsNull() {
 
         final List<Offence> offences = singletonList(createOffence(OFFENCE_CJS_CODE1, OFFENCE_ID1, null, 1));
 
@@ -319,7 +353,7 @@ public class ProsecutionCasesViewHelperTest {
 
         final JsonObject prosecutor = createProsecutor();
         final EmployerDetails employer = createEmployer();
-        final JsonObject caseFileDefendantDetails = createCaseFileDefendantDetailsWithSpecialRequirementNull();
+        final JsonObject caseFileDefendantDetails = createCaseFileDefendantDetails();
 
         final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
                 .withReferredAt(DECISION_DATE)
@@ -327,8 +361,11 @@ public class ProsecutionCasesViewHelperTest {
                 .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, disabilityNeedsOf(DISABILITY_NEEDS)))
                 .build();
 
+
+        final CaseDecision caseDecision = createCaseDecision(caseReferredForCourtHearing);
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
+                caseDecision,
                 prosecutor,
                 null,
                 caseFileDefendantDetails,
@@ -349,6 +386,66 @@ public class ProsecutionCasesViewHelperTest {
         assertThat(defendantView.getPersonDefendant().getPersonDetails().getDisabilityStatus(), is(DISABILITY_NEEDS));
         assertThat(defendantView.getPersonDefendant().getPersonDetails().getSpecificRequirements(), is("Hearing aid"));
 
+    }
+
+    @Test
+    public void shouldSendReportingRestrictionsWhenPressRestrictionsIsNotNull() {
+
+        final List<Offence> offences = singletonList(createOffence(OFFENCE_CJS_CODE1, OFFENCE_ID1, null, 1));
+
+        final PersonalDetails defendantPersonalDetails = createDefendantPersonalDetails().build();
+        final CaseDetails caseDetails = createCaseDetails(defendantPersonalDetails, offences);
+
+        final JsonObject prosecutor = createProsecutor();
+        final EmployerDetails employer = createEmployer();
+        final JsonObject caseFileDefendantDetails = createCaseFileDefendantDetailsWithSpecialRequirementNull();
+
+        final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
+                .withReferredAt(DECISION_DATE)
+                .withReferredOffences(getReferredOffencesWithVerdict(VerdictType.PROVED_SJP))
+                .withDefendantCourtOptions(new DefendantCourtOptions(new DefendantCourtInterpreter(LANGUAGE_X, true), null, disabilityNeedsOf(DISABILITY_NEEDS)))
+                .build();
+
+        final NotifiedPleaView notifiedPleaView = new NotifiedPleaView(
+                OFFENCE_ID1,
+                now(),
+                "NOTIFIED_GUILTY");
+
+
+        final CaseDecision caseDecision = createCaseDecisionWithPressRestriction(caseReferredForCourtHearing);
+        when(referenceDataService.getResultDefinition(any(), any())).thenReturn(Optional.of(createObjectBuilder()
+                .add("id", randomUUID().toString())
+                .add("label", D45_RESULT_LABEL)
+                .build()
+        ));
+
+        final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
+                caseDetails,
+                caseDecision,
+                prosecutor,
+                null,
+                caseFileDefendantDetails,
+                employer,
+                DEFENDANT_NATIONALITY_ID,
+                DEFENDANT_ETHNICITY_ID,
+                caseReferredForCourtHearing,
+                OFFENCE_MITIGATION,
+                mockCJSOffenceCodeToOffenceDefinitionId(),
+                singletonList(offences.get(0)));
+
+        assertThat(prosecutionCaseViews, hasSize(1));
+
+        final ProsecutionCaseView prosecutionCaseView = prosecutionCaseViews.get(0);
+
+        final DefendantView defendantView = prosecutionCaseView.getDefendants().get(0);
+
+        final OffenceView offenceView1 = defendantView.getOffences().get(0);
+        assetOffenceView(offenceView1, offences.get(0), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
+        assertThat(offenceView1.getReportingRestrictions(), notNullValue());
+        final ReportingRestrictionView reportingRestrictionView = offenceView1.getReportingRestrictions().get(0);
+        assertThat(reportingRestrictionView.getId(), notNullValue());
+        assertThat(reportingRestrictionView.getLabel(), equalTo(D45_RESULT_LABEL));
+        assertThat(reportingRestrictionView.getOrderedDate(), notNullValue());
     }
 
     @Test
@@ -374,6 +471,7 @@ public class ProsecutionCasesViewHelperTest {
 
         final PersonalDetails defendantPersonalDetails = createDefendantPersonalDetails().build();
         final CaseDetails caseDetails = createCaseDetails(defendantPersonalDetails, offences);
+        final CaseDecision caseDecision = createCaseDecision(caseReferredForCourtHearing);
 
         final JsonObject prosecutor = createProsecutor();
         final EmployerDetails employer = createEmployer();
@@ -382,6 +480,7 @@ public class ProsecutionCasesViewHelperTest {
 
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
+                caseDecision,
                 prosecutor,
                 prosecutionCaseFile,
                 caseFileDefendantDetails,
@@ -458,6 +557,7 @@ public class ProsecutionCasesViewHelperTest {
 
         final PersonalDetails defendantPersonalDetails = createDefendantPersonalDetails().build();
         final CaseDetails caseDetails = createCaseDetails(defendantPersonalDetails, offences);
+        final CaseDecision caseDecision = createCaseDecision(caseReferredForCourtHearing);
 
         final JsonObject prosecutor = createProsecutor();
         final EmployerDetails employer = createEmployer();
@@ -466,7 +566,7 @@ public class ProsecutionCasesViewHelperTest {
 
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
-                prosecutor,
+                caseDecision, prosecutor,
                 prosecutionCaseFile,
                 caseFileDefendantDetails,
                 employer,
@@ -516,11 +616,13 @@ public class ProsecutionCasesViewHelperTest {
                 "NOTIFIED_GUILTY");
         final PersonalDetails defendantPersonalDetails = personalDetailsBuilder.build();
         final CaseDetails caseDetails = createCaseDetails(defendantPersonalDetails, offences);
+        final CaseDecision caseDecision = createCaseDecision(caseReferredForCourtHearing);
 
         final JsonObject prosecutor = createProsecutor();
 
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
+                caseDecision,
                 prosecutor,
                 null,
                 caseFileDefendantDetails,
@@ -665,6 +767,53 @@ public class ProsecutionCasesViewHelperTest {
                         .withNumPreviousConvictions(DEFENDANT_NUM_PREVIOUS_CONVICTIONS)
                         .withPersonalDetails(defendantPersonalDetails)
                         .withOffences(offences)
+                        .build())
+                .build();
+    }
+
+    private CaseDecision createCaseDecision(final CaseReferredForCourtHearing caseReferredForCourtHearing) {
+
+        final List<QueryOffenceDecision> offenceDecisions = caseReferredForCourtHearing.getReferredOffences()
+                .stream().map(referredOffence -> queryOffenceDecision()
+                        .withDecisionType(DecisionType.REFER_FOR_COURT_HEARING)
+                        .withEstimatedHearingDuration(30)
+                        .withOffenceId(referredOffence.getOffenceId())
+                        .withReferralReasonId(caseReferredForCourtHearing.getReferralReasonId())
+                        .build()
+                ).collect(Collectors.toList());
+
+
+        return caseDecision()
+                .withOffenceDecisions(offenceDecisions)
+                .withSession(Session.session()
+                        .withCourtHouseName(COURT_HOUSE_NAME)
+                        .withCourtHouseCode(COURT_HOUSE_CODE)
+                        .withMagistrate(MAGISTRATE_NAME)
+                        .build())
+                .build();
+    }
+
+    private CaseDecision createCaseDecisionWithPressRestriction(final CaseReferredForCourtHearing caseReferredForCourtHearing) {
+        final List<QueryOffenceDecision> offenceDecisions = caseReferredForCourtHearing.getReferredOffences()
+                .stream().map(referredOffence -> queryOffenceDecision()
+                        .withDecisionType(DecisionType.REFER_FOR_COURT_HEARING)
+                        .withEstimatedHearingDuration(30)
+                        .withPressRestriction(pressRestriction()
+                                .withRequested(true)
+                                .withName("a name")
+                                .build())
+                        .withOffenceId(referredOffence.getOffenceId())
+                        .withReferralReasonId(caseReferredForCourtHearing.getReferralReasonId())
+                        .build()
+                ).collect(Collectors.toList());
+
+
+        return caseDecision()
+                .withOffenceDecisions(offenceDecisions)
+                .withSession(Session.session()
+                        .withCourtHouseName(COURT_HOUSE_NAME)
+                        .withCourtHouseCode(COURT_HOUSE_CODE)
+                        .withMagistrate(MAGISTRATE_NAME)
                         .build())
                 .build();
     }

@@ -2,9 +2,12 @@ package uk.gov.moj.cpp.sjp.query.view;
 
 
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonObjects.toJsonArray;
 
 import uk.gov.justice.json.schemas.domains.sjp.NoteType;
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -38,7 +41,7 @@ public class CaseNotesQueryView {
         builder.add("noteId", caseNote.getNoteId().toString())
                 .add("noteType", caseNote.getNoteType().name())
                 .add("noteText", caseNote.getNoteText())
-                .add("addedAt", caseNote.getAddedAt().toString())
+                .add("addedAt", ZonedDateTimes.toString(caseNote.getAddedAt()))
                 .add("authorFirstName", caseNote.getAuthorFirstName())
                 .add("authorLastName", caseNote.getAuthorLastName());
         caseNote.getDecisionId().ifPresent(decisionId -> builder.add("decisionId", decisionId.toString()));
@@ -64,10 +67,9 @@ public class CaseNotesQueryView {
         }
 
 
-        return enveloper.withMetadataFrom(query, "sjp.query.case-notes")
-                .apply(createObjectBuilder()
+        return envelopeFrom(metadataFrom(query.metadata()).withName("sjp.query.case-notes"),
+                createObjectBuilder()
                         .add("caseId", caseId.toString())
-                        .add("notes", caseNotes).build()
-                );
+                        .add("notes", caseNotes).build());
     }
 }

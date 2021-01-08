@@ -27,7 +27,7 @@ public class CaseNoteListener {
         caseNote.setNoteId(caseNoteAdded.getNote().getId());
         caseNote.setNoteType(caseNoteAdded.getNote().getType());
         caseNote.setNoteText(caseNoteAdded.getNote().getText());
-        caseNote.setAddedAt(caseNoteAdded.getNote().getAddedAt().toLocalDateTime());
+        caseNote.setAddedAt(caseNoteAdded.getNote().getAddedAt());
         caseNote.setAuthorUserId(caseNoteAdded.getAuthor().getUserId());
         caseNote.setAuthorFirstName(caseNoteAdded.getAuthor().getFirstName());
         caseNote.setAuthorLastName(caseNoteAdded.getAuthor().getLastName());

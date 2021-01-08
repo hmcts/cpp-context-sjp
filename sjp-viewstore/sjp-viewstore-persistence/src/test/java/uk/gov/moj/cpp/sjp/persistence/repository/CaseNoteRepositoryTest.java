@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.sjp.persistence.repository;
 
-import static java.time.LocalDateTime.now;
+import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -10,7 +10,7 @@ import uk.gov.justice.json.schemas.domains.sjp.NoteType;
 import uk.gov.justice.services.test.utils.persistence.BaseTransactionalTest;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseNote;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,7 +44,7 @@ public class CaseNoteRepositoryTest extends BaseTransactionalTest {
         assertThat(orderedCaseNotes, contains(secondCaseNot, firstCaseNot));
     }
 
-    private static CaseNote createCaseNote(final UUID caseId, final LocalDateTime addedAt) {
+    private static CaseNote createCaseNote(final UUID caseId, final ZonedDateTime addedAt) {
         final CaseNote caseNote = new CaseNote();
         caseNote.setCaseId(caseId);
         caseNote.setDecisionId(randomUUID());

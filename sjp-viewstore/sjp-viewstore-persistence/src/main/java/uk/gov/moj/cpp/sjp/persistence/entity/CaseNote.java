@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.sjp.persistence.entity;
 
 import uk.gov.justice.json.schemas.domains.sjp.NoteType;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,7 +46,7 @@ public class CaseNote {
     private NoteType noteType;
 
     @Column(name = "added_at")
-    private LocalDateTime addedAt;
+    private ZonedDateTime addedAt;
 
     @Column(name = "decision_id")
     private UUID decisionId;
@@ -107,11 +107,11 @@ public class CaseNote {
         this.noteType = noteType;
     }
 
-    public LocalDateTime getAddedAt() {
+    public ZonedDateTime getAddedAt() {
         return addedAt;
     }
 
-    public void setAddedAt(LocalDateTime addedAt) {
+    public void setAddedAt(ZonedDateTime addedAt) {
         this.addedAt = addedAt;
     }
 

@@ -3,14 +3,12 @@ package uk.gov.moj.cpp.sjp.query.view;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
-import static java.time.LocalDateTime.now;
+import static java.time.ZonedDateTime.now;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,6 +21,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuil
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.json.schemas.domains.sjp.NoteType;
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -147,7 +146,7 @@ public class CaseNotesQueryViewTest {
                 withJsonPath("noteType", is(caseNote.getNoteType().name())),
                 withJsonPath("authorFirstName", is(caseNote.getAuthorFirstName())),
                 withJsonPath("authorLastName", is(caseNote.getAuthorLastName())),
-                withJsonPath("addedAt", is(caseNote.getAddedAt().toString())),
+                withJsonPath("addedAt", is(ZonedDateTimes.toString(caseNote.getAddedAt()))),
                 decisionIdMatcher
         ));
     }

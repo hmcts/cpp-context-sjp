@@ -78,7 +78,7 @@ public class CaseNoteListenerTest {
         assertThat(caseNote.getNoteId(), is(caseNoteAdded.getNote().getId()));
         assertThat(caseNote.getNoteText(), is(caseNoteAdded.getNote().getText()));
         assertThat(caseNote.getNoteType(), is(caseNoteAdded.getNote().getType()));
-        assertThat(caseNote.getAddedAt(), is(caseNoteAdded.getNote().getAddedAt().toLocalDateTime()));
+        assertThat(caseNote.getAddedAt(), is(caseNoteAdded.getNote().getAddedAt()));
         assertThat(caseNote.getAuthorUserId(), is(caseNoteAdded.getAuthor().getUserId()));
         assertThat(caseNote.getAuthorFirstName(), is(caseNoteAdded.getAuthor().getFirstName()));
         assertThat(caseNote.getAuthorLastName(), is(caseNoteAdded.getAuthor().getLastName()));

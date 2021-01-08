@@ -149,7 +149,7 @@
                                         uk.gov.justice.generation.pojo.plugin.classmodifying.AddToStringMethodToClassPlugin
                                     </plugin>
                                     <!--
-                                     //TODO this needs to be disabled because of pojo generation problems with the optional
+                                     //this needs to be disabled because of pojo generation problems with the optional
                                     <plugin>uk.gov.justice.generation.pojo.plugin.typemodifying.SupportJavaOptionalsPlugin</plugin>
                                     -->
                                 </plugins>

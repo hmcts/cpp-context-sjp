@@ -204,6 +204,7 @@ public class PaymentView {
                 .stream()
                 .flatMap(a -> a.getOffenceDecisions().stream())
                 .map(this::getCompensation)
+                .map(compensation -> nonNull(compensation) ? compensation : ZERO)
                 .reduce(ZERO, BigDecimal::add);
 
         return calcTotalFine()
@@ -298,6 +299,7 @@ public class PaymentView {
                 .filter(a -> a instanceof FinancialPenaltyOffenceDecision)
                 .map(a -> (FinancialPenaltyOffenceDecision) a)
                 .map(FinancialPenaltyOffenceDecision::getCompensation)
+                .map(compensation -> nonNull(compensation) ? compensation : ZERO)
                 .reduce(ZERO, BigDecimal::add);
     }
 
@@ -309,6 +311,7 @@ public class PaymentView {
                 .filter(a -> a instanceof DischargeOffenceDecision)
                 .map(a -> (DischargeOffenceDecision) a)
                 .map(DischargeOffenceDecision::getCompensation)
+                .map(compensation -> nonNull(compensation) ? compensation : ZERO)
                 .reduce(ZERO, BigDecimal::add);
     }
 

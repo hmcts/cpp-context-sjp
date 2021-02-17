@@ -20,11 +20,11 @@
         <assignment.version>6.0.0</assignment.version>
         <material.version>6.4.3</material.version>
         <notification.notify.version>7.0.1</notification.notify.version>
-        <referencedata.version>7.0.27</referencedata.version>
+        <referencedata.version>7.0.33</referencedata.version>
         <referencedata.offences.version>7.0.4</referencedata.offences.version>
         <scheduling.version>6.0.0</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
-        <usersgroups.version>7.0.17</usersgroups.version>
+        <usersgroups.version>7.0.20</usersgroups.version>
         <progression.version>7.0.87</progression.version>
         <prosecutioncasefile.version>7.0.13</prosecutioncasefile.version>
         <access-control-sjp-providers.version>4.1.4-ATCM</access-control-sjp-providers.version>

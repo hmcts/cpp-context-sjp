@@ -297,6 +297,55 @@ public class PaymentViewTest {
     }
 
     @Test
+    public void shouldVerifyWithFinancialPenaltyAndWithAbsoluteDischargeAndWithWithdrawalAndWithDismissDecisionsWithNullCompensation() {
+        final CaseDetail caseDetail = buildCaseDetailWithOneOffence();
+        final CaseDecision caseDecision = buildCaseDecisionEntity(caseDetail.getId(), false, now());
+        caseDecision.setOffenceDecisions(asList(
+                new DischargeOffenceDecision(offence1Id,
+                        caseDecision.getId(),
+                        FOUND_GUILTY,
+                        null,
+                        true,
+                        null,
+                        "Limited means of defendant",
+                        ABSOLUTE, null,null),
+                new DischargeOffenceDecision(offence1Id,
+                        caseDecision.getId(),
+                        FOUND_GUILTY,
+                        null,
+                        true,
+                        null,
+                        "Limited means of defendant",
+                        ABSOLUTE, null, null),
+                new FinancialPenaltyOffenceDecision(offence1Id,
+                        caseDecision.getId(),
+                        FOUND_GUILTY,
+                        true,
+                        null,
+                        null,
+                        BigDecimal.valueOf(2000.600), null, null, null, null),
+                new WithdrawOffenceDecision(),
+                new DismissOffenceDecision()));
+
+        caseDecision.setFinancialImposition(buildFinancialImposition(PAY_TO_COURT));
+        caseDetail.setCaseDecisions(asList(caseDecision));
+
+        PaymentView payment = PaymentView.getPayment(caseDetail);
+        assertEquals("£2,500.83", payment.getTotalToPay());
+        assertEquals("£2,000.60", payment.getTotalFine());
+        assertNull(payment.getNoVictimSurchargeReason());
+        assertNull(payment.getReasonForReducedVictimSurcharge());
+        assertEquals("Pay directly to court", payment.getPaymentMethod());
+        assertEquals("some reason", payment.getPaymentMethodReason());
+        assertEquals("£200.23", payment.getProsecutionCosts());
+        assertNull(payment.getReasonForNoCosts());
+        assertEquals("To be paid as a lump sum in 20 days", payment.getPaymentTerms());
+        assertNull(payment.getReserveTerms());
+        assertEquals("£300", payment.getVictimSurcharge());
+        assertEquals(null, payment.getTotalCompensation());
+    }
+
+    @Test
     public void shouldSendTotalToPayNullWhenZero() {
         final CaseDetail caseDetail = buildCaseDetailWithOneOffence();
         final CaseDecision caseDecision = buildCaseDecisionEntity(caseDetail.getId(), false, now());

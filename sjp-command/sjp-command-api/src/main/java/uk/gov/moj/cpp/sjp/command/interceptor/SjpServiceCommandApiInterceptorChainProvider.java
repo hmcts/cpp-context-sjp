@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.command.interceptor;
 
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 
-import uk.gov.justice.services.adapter.rest.interceptor.InputStreamFileInterceptor;
 import uk.gov.justice.services.core.interceptor.InterceptorChainEntry;
 import uk.gov.justice.services.core.interceptor.InterceptorChainEntryProvider;
 
@@ -19,7 +18,7 @@ public class SjpServiceCommandApiInterceptorChainProvider implements Interceptor
     @Override
     public List<InterceptorChainEntry> interceptorChainTypes() {
         final List<InterceptorChainEntry> interceptorChainEntries = new ArrayList<>();
-        interceptorChainEntries.add(new InterceptorChainEntry(6000, InputStreamFileInterceptor.class));
+        interceptorChainEntries.add(new InterceptorChainEntry(6000, SjpServiceFileInterceptor.class));
         return interceptorChainEntries;
     }
 }

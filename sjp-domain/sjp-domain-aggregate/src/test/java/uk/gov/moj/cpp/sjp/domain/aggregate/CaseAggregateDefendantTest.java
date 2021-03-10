@@ -208,7 +208,7 @@ public class CaseAggregateDefendantTest {
     }
 
     @Test
-    public void rejectsAddressWithMissingTown() {
+    public void acceptAddressWithMissingTown() {
         givenCaseWasReceivedWithDefaultDefendantData();
 
         final List<Object> events = whenTheDefendantIsUpdated(
@@ -216,7 +216,16 @@ public class CaseAggregateDefendantTest {
                         "", "address4", "", "CR02FW"))
         );
 
-        doRejectAssertions(events, "town (address3) can not be blank as previous value is: address3");
+        assertThat(events, hasSize(2));
+
+        final DefendantAddressUpdated defendantAddressUpdated = (DefendantAddressUpdated) events.get(0);
+        assertThat(defendantAddressUpdated.getCaseId(), is(caseId));
+        assertThat(defendantAddressUpdated.getNewAddress().getAddress1(), is("address1"));
+        assertThat(defendantAddressUpdated.getNewAddress().getAddress2(), is("address2"));
+        assertThat(defendantAddressUpdated.getNewAddress().getAddress3(), is(""));
+        assertThat(defendantAddressUpdated.getNewAddress().getAddress4(), is("address4"));
+        assertThat(defendantAddressUpdated.getNewAddress().getAddress5(), is(""));
+        assertThat(defendantAddressUpdated.getNewAddress().getPostcode(), is("CR02FW"));
     }
 
     @Test

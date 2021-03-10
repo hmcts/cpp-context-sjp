@@ -127,9 +127,6 @@ public class CaseDefendantHandler {
         if (defendantAddress != null) {
             ensureFieldIsNotBlankIfWasDefined(defendantAddress.getAddress1(), address.getAddress1(),
                     "street (address1) can not be blank as previous value is: " + defendantAddress.getAddress1());
-
-            ensureFieldIsNotBlankIfWasDefined(defendantAddress.getAddress3(), address.getAddress3(),
-                    "town (address3) can not be blank as previous value is: " + defendantAddress.getAddress3());
         }
     }
 

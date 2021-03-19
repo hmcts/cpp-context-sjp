@@ -7,7 +7,6 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.activemq.artemis.utils.JsonLoader.createArrayBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.is;
@@ -28,7 +27,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.sjp.command.service.CaseService;
 import uk.gov.moj.cpp.sjp.command.service.ReferenceDataService;
@@ -128,18 +126,16 @@ public class DecisionControllerTest {
                 .add("name", "Bedfordshire Magistrates' Court")
             ).build();
 
-    private final JsonObject referralReason = createObjectBuilder()
+    private final JsonObjectBuilder referralReasonBuilder = createObjectBuilder()
             .add("id", REFERRAL_REASON_ID.toString())
             .add("seqId", 1)
             .add("reason", "Critical")
             .add("reasonCode", "PLR")
             .add("welshReason", "Ple amhendant")
-            .add("subReason","Defendant has to attend")
             .add("welshSubReason","Diffynnydd i fynychu i gadarnhau ple")
             .add("hearingCode","CTL")
             .add("validFrom","2017-08-01")
-            .add("validTo","2017-08-01")
-            .build();
+            .add("validTo","2017-08-01");
 
     @Test
     public void shouldHandleDecisionCommands() {
@@ -169,23 +165,36 @@ public class DecisionControllerTest {
     }
 
     @Test
-    public void shouldEnrichSaveDecisionCommandWithReferralReason() {
+    public void shouldEnrichSaveDecisionCommandWithReferralReasonAndSubReason() {
+        final JsonEnvelope saveDecisionCommand = createReferralSaveDecisionCommand();
+        referralReasonBuilder.add("subReason","Defendant has to attend");
+        when(userService.getCallingUserDetails(saveDecisionCommand)).thenReturn(userDetails);
+        when(caseService.getCaseDetails(caseId.toString())).thenReturn(caseDetails);
+        when(referenceDataService.getReferralReason(REFERRAL_REASON_ID.toString())).thenReturn(of(referralReasonBuilder.build()));
+
+        decisionController.saveDecision(saveDecisionCommand);
+        verifyReferralSaveDecisionCommand(saveDecisionCommand, "Critical (Defendant has to attend)");
+    }
+
+    @Test
+    public void shouldEnrichSaveDecisionCommandWithReferralReasonOnly() {
         final JsonEnvelope saveDecisionCommand = createReferralSaveDecisionCommand();
         when(userService.getCallingUserDetails(saveDecisionCommand)).thenReturn(userDetails);
         when(caseService.getCaseDetails(caseId.toString())).thenReturn(caseDetails);
-        when(referenceDataService.getReferralReason(REFERRAL_REASON_ID.toString())).thenReturn(of(referralReason));
+        when(referenceDataService.getReferralReason(REFERRAL_REASON_ID.toString())).thenReturn(of(referralReasonBuilder.build()));
 
         decisionController.saveDecision(saveDecisionCommand);
-        verifyReferralSaveDecisionCommand(saveDecisionCommand);
+        verifyReferralSaveDecisionCommand(saveDecisionCommand, "Critical");
     }
 
-    private void verifyReferralSaveDecisionCommand(final JsonEnvelope envelope) {
+
+    private void verifyReferralSaveDecisionCommand(final JsonEnvelope envelope, final String reasonForReferral) {
         verify(sender).send(envelopeCaptor.capture());
         final Envelope<JsonValue> commandSent = envelopeCaptor.getValue();
 
         assertThat(commandSent.metadata(), withMetadataEnvelopedFrom(envelope).withName("sjp.command.save-decision"));
 
-        assertThat(commandSent.payload(), JsonEnvelopePayloadMatcher.payloadIsJson(anyOf(
+        assertThat(commandSent.payload(), JsonEnvelopePayloadMatcher.payloadIsJson(allOf(
                 withJsonPath("$.caseId", equalTo(envelope.payloadAsJsonObject().getString("caseId"))),
                 withJsonPath("$.decisionId", notNullValue()),
                 withJsonPath("$.sessionId", equalTo(sessionId.toString())),
@@ -197,12 +206,12 @@ public class DecisionControllerTest {
                         withJsonPath("lastName", is("Smith"))
                 ))),
                 withJsonPath("$.offenceDecisions", hasSize(1)),
-                withJsonPath("$.offenceDecisions[0].offenceDecisionId", notNullValue()),
+                withJsonPath("$.offenceDecisions[0].id", notNullValue()),
                 withJsonPath("$.offenceDecisions[0].type", equalTo("REFER_FOR_COURT_HEARING")),
                 withJsonPath("$.offenceDecisions[0].referralReasonId", equalTo(REFERRAL_REASON_ID.toString())),
-                withJsonPath("$.offenceDecisions[1].referralReason", equalTo(referralReason.getString("reason")))
+                withJsonPath("$.offenceDecisions[0].referralReason", equalTo(reasonForReferral)
 
-        )));
+        ))));
     }
 
     private void verifySaveDecisionCommand(final JsonEnvelope envelope) {
@@ -211,7 +220,7 @@ public class DecisionControllerTest {
 
         assertThat(commandSent.metadata(), withMetadataEnvelopedFrom(envelope).withName("sjp.command.save-decision"));
 
-        assertThat(commandSent.payload(), JsonEnvelopePayloadMatcher.payloadIsJson(anyOf(
+        assertThat(commandSent.payload(), JsonEnvelopePayloadMatcher.payloadIsJson(allOf(
                 withJsonPath("$.caseId", equalTo(envelope.payloadAsJsonObject().getString("caseId"))),
                 withJsonPath("$.decisionId", notNullValue()),
                 withJsonPath("$.sessionId", equalTo(sessionId.toString())),
@@ -223,11 +232,11 @@ public class DecisionControllerTest {
                         withJsonPath("lastName", is("Smith"))
                 ))),
                 withJsonPath("$.offenceDecisions", hasSize(2)),
-                withJsonPath("$.offenceDecisions[0].offenceDecisionId", notNullValue()),
+                withJsonPath("$.offenceDecisions[0].id", notNullValue()),
                 withJsonPath("$.offenceDecisions[0].offenceId", notNullValue()),
                 withJsonPath("$.offenceDecisions[0].type", equalTo("WITHDRAWN")),
                 withJsonPath("$.offenceDecisions[0].withdrawalReasonId", equalTo(WITHDRAWAL_REASON_ID_1.toString())),
-                withJsonPath("$.offenceDecisions[1].offenceDecisionId", notNullValue()),
+                withJsonPath("$.offenceDecisions[1].id", notNullValue()),
                 withJsonPath("$.offenceDecisions[1].offenceId", notNullValue()),
                 withJsonPath("$.offenceDecisions[1].type", equalTo("WITHDRAWN")),
                 withJsonPath("$.offenceDecisions[1].withdrawalReasonId", equalTo(WITHDRAWAL_REASON_ID_2.toString()))

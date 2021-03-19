@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.command.controller;
 
+import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
@@ -117,8 +118,12 @@ public class DecisionController {
                         final JsonObjectBuilder referralDecisionWithReason = createObjectBuilder(offenceDecision);
                         final String referralReasonId = offenceDecision.getString("referralReasonId");
                         referenceDataService.getReferralReason(referralReasonId)
-                                .map(referralReasonRefData -> referralReasonRefData.getString("reason"))
-                                .ifPresent(reason -> referralDecisionWithReason.add("referralReason", reason));
+                                .map(referralReasonRefData ->
+                                        ofNullable(referralReasonRefData.getString("subReason", null))
+                                                .map(subReason -> format("%s (%s)", referralReasonRefData.getString("reason"), subReason))
+                                                .orElse(referralReasonRefData.getString("reason"))
+                                ).ifPresent(reason -> referralDecisionWithReason.add("referralReason", reason));
+
                         decisionsBuilder.add(referralDecisionWithReason.build());
                     } else {
                         decisionsBuilder.add(offenceDecision);

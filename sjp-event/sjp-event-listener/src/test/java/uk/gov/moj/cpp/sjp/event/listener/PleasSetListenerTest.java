@@ -11,6 +11,7 @@ import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.disabilityNeedsOf;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
@@ -52,7 +53,10 @@ public class PleasSetListenerTest {
 
     @Spy
     @InjectMocks
-    private JsonObjectToObjectConverter converter = new JsonObjectToObjectConverter();
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    @Spy
+    @InjectMocks
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
     private final static String DISABILITY_NEEDS = "Hearing aid";
 

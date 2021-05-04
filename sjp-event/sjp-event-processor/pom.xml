@@ -56,7 +56,7 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.common</groupId>
             <artifactId>system-users-library</artifactId>
-            <version>${platform-libraries.version}</version>
+            <version>${cpp.platform-libraries.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.system.authorisation</groupId>

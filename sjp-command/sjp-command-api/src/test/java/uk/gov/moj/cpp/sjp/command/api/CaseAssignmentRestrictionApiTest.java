@@ -46,13 +46,13 @@ public class CaseAssignmentRestrictionApiTest {
             new ObjectToJsonValueConverter(new ObjectMapperProducer().objectMapper());
 
     @Spy
-    @InjectMocks
-    @SuppressWarnings("unused")
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
+    private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
     @Spy
-    @SuppressWarnings("unused")
-    private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    @InjectMocks
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+
+
 
     @InjectMocks
     private CaseAssignmentRestrictionApi caseAssignmentRestrictionApi;

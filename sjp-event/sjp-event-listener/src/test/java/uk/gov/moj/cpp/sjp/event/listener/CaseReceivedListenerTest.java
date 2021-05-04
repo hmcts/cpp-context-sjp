@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.LocalDates;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -95,7 +96,10 @@ public class CaseReceivedListenerTest {
 
     @Spy
     @InjectMocks
-    private JsonObjectToObjectConverter converter = new JsonObjectToObjectConverter();
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    @Spy
+    @InjectMocks
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
     private static final UUID caseId = UUID.randomUUID();
     private static final String prosecutingAuthority = "TFL";

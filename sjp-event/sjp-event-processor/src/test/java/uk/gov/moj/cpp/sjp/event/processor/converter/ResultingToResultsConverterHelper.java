@@ -143,7 +143,6 @@ public class ResultingToResultsConverterHelper {
         assertEquals(CASE_ID, case1.getCaseId());
         assertEquals(URN, case1.getUrn());
         assertEquals(PROSECUTING_AUTHORITY, case1.getProsecutionAuthorityCode());
-        assertThat(case1.getOriginatingOrganisation(), nullValue());
         verifyDefendants(defendants, caseResults);
     }
 

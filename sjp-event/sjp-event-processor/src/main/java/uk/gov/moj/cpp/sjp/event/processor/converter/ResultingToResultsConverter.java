@@ -103,7 +103,6 @@ public class ResultingToResultsConverter {
                 .withCaseId(caseId)
                 .withUrn(caseDetails.getUrn())
                 .withProsecutionAuthorityCode(caseDetails.getProsecutingAuthority())
-                .withOriginatingOrganisation(referenceDataService.getProsecutorOucode(caseDetails.getProsecutingAuthority(), envelope))
                 .withDefendants(buildDefendants(caseDetails, caseResults, sjpSession, envelope.metadata())).build());
         return baseCaseDetailsList;
     }
@@ -117,6 +116,7 @@ public class ResultingToResultsConverter {
                 .build();
     }
 
+    @SuppressWarnings("pmd:NullAssignment")
     protected SessionLocation buildSessionLocation(final SJPSession sjpSession, final Optional<JsonObject> courtOptional) {
         final SessionLocation.Builder builder = SessionLocation.sessionLocation();
 

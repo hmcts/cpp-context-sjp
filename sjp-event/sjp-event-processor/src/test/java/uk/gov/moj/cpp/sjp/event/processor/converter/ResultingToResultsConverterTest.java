@@ -60,9 +60,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ResultingToResultsConverterTest {
 
-    private static final String PROSECUTING_AUTHORITY = "TFL";
-    private static final String PROSECUTOR_OUCODE = "ProsecutorOUCODE";
-
     @Mock
     private ReferenceDataService referenceDataService;
     @Mock
@@ -128,19 +125,6 @@ public class ResultingToResultsConverterTest {
         final List<BaseCaseDetails> cases = converter.buildCases(getCaseId(), buildCaseDetails(), caseResults.payload(), buildSjpSession(), caseResults);
 
         verifyCases(cases, caseResults);
-    }
-
-    @Test
-    public void shouldSetOriginatingOrganisation() {
-        final Envelope<CaseResults> envelope = getCaseResults();
-        when(prosecutionCaseFileService.getCaseFileDefendantDetails(any(), any())).thenReturn(getCaseFileDefendantDetails());
-        when(referenceDataService.getNationality(any(), any())).thenReturn(getCountryNationality());
-        when(referenceDataService.getProsecutorOucode(PROSECUTING_AUTHORITY, envelope)).thenReturn(PROSECUTOR_OUCODE);
-
-        final List<BaseCaseDetails> cases = converter.buildCases(getCaseId(), buildCaseDetails(), envelope.payload(), buildSjpSession(), envelope);
-
-        assertThat(cases, hasSize(1));
-        assertThat(cases.get(0).getOriginatingOrganisation(), equalTo(PROSECUTOR_OUCODE));
     }
 
     @Test

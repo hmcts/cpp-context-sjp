@@ -38,12 +38,14 @@ import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.FIELD_CASE_ID;
 import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.FIELD_QUERY;
 import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.FIELD_URN;
 
+import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.DefendantOutstandingFineRequest;
@@ -162,20 +164,43 @@ public class SjpQueryViewTest {
     @Mock
     private ReferenceDataService referenceDataService;
 
+    @Mock
+    private ProsecutingAuthorityProvider prosecutingAuthorityProvider;
+
     @InjectMocks
     private SjpQueryView sjpQueryView;
 
     @Test
     public void shouldFindCase() {
         setupCaseExpectations();
+        final String prosecutingAuthorityFilterValue = "TFL";
         final CaseView caseView = Mockito.mock(CaseView.class);
         when(caseService.findCase(CASE_ID)).thenReturn(caseView);
+        when(envelope.metadata()).thenReturn(metadata);
+        when(metadata.userId()).thenReturn(Optional.of(randomUUID().toString()));
+        when(caseView.getProsecutingAuthority()).thenReturn(prosecutingAuthorityFilterValue);
+
+        when(prosecutingAuthorityProvider.userHasProsecutingAuthorityAccess(envelope, prosecutingAuthorityFilterValue)).thenReturn(true);
 
         final JsonEnvelope result = sjpQueryView.findCase(envelope);
 
         assertEquals(result, outputEnvelope);
         verify(caseService).findCase(CASE_ID);
         verify(function).apply(caseView);
+    }
+
+    @Test(expected = ForbiddenRequestException.class)
+    public void shouldNotFindCaseWhenProsecutionAuthorityHasNoAccess() {
+        setupCaseExpectations();
+        final String prosecutingAuthorityFilterValue = "TFL";
+        final CaseView caseView = Mockito.mock(CaseView.class);
+        when(caseService.findCase(CASE_ID)).thenReturn(caseView);
+        when(envelope.metadata()).thenReturn(metadata);
+        when(metadata.userId()).thenReturn(Optional.of(randomUUID().toString()));
+        when(caseView.getProsecutingAuthority()).thenReturn(prosecutingAuthorityFilterValue);
+
+        when(prosecutingAuthorityProvider.userHasProsecutingAuthorityAccess(envelope, prosecutingAuthorityFilterValue)).thenReturn(false);
+        sjpQueryView.findCase(envelope);
     }
 
     @Test
@@ -597,8 +622,8 @@ public class SjpQueryViewTest {
                         .build());
 
         DefendantProfilingView defendantProfilingView = DefendantProfilingView.newBuilder()
-                                                                .withFirstName("name")
-                                                                .build();
+                .withFirstName("name")
+                .build();
         when(defendantService.getDefendantProfilingView(defendantId)).thenReturn(
                 defendantProfilingView
         );
@@ -646,6 +671,7 @@ public class SjpQueryViewTest {
                         withJsonPath("cases[0].prosecutingAuthority", is("Transport for London")),
                         withJsonPath("cases[0].caseManagementStatus", is(IN_PROGRESS.name())))));
     }
+
     @Test
     public void shouldGetCasesWithoutDefendantPostcode() {
         final LocalDate postingDate = LocalDate.parse("2018-03-20");

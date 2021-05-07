@@ -159,6 +159,11 @@ public class PleadOnlineIT extends BaseIntegrationTest {
     private PersonInfoVerifier personInfoVerifier;
     private CreateCase.CreateCasePayloadBuilder createCasePayloadBuilder;
     private UUID offenceId;
+    final User legalAdviser = user()
+            .withUserId(UUID.fromString("1ac91935-4f82-4a4f-bd17-fb50397e42dd"))
+            .withFirstName("John")
+            .withLastName("Smith")
+            .build();
     @Before
     @SuppressWarnings("squid:S2925")
     public void setUp() throws Exception {
@@ -174,6 +179,7 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         CreateCase.createCaseForPayloadBuilder(this.createCasePayloadBuilder);
         final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+        stubForUserDetails(legalAdviser, "ALL");
         pollUntilCaseByIdIsOk(createCasePayloadBuilder.getId());
         employerHelper = new EmployerHelper();
         financialMeansHelper = new FinancialMeansHelper();
@@ -533,14 +539,8 @@ public class PleadOnlineIT extends BaseIntegrationTest {
         final UUID referralReasonId = randomUUID();
         final Integer estimatedHearingDuration = nextInt(1, 999);
         final String listingNotes = randomAlphanumeric(100);
-        final User legalAdviser = user()
-                .withUserId(randomUUID())
-                .withFirstName("John")
-                .withLastName("Smith")
-                .build();
         stubStartSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();
-        stubForUserDetails(legalAdviser);
         stubReferralReasonsQuery(REFERRAL_REASON_ID, HEARING_CODE, REFERRAL_REASON);
         stubReferralReason(referralReasonId.toString(), "stub-data/referencedata.referral-reason.json");
         stubHearingTypesQuery(HEARING_TYPE_ID.toString(), HEARING_CODE, HEARING_DESCRIPTION);

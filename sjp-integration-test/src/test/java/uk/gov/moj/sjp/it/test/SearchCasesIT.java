@@ -3,28 +3,33 @@ package uk.gov.moj.sjp.it.test;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.AllOf.allOf;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
-import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
-
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
+import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.searchCases;
 import static uk.gov.moj.sjp.it.util.RestPollerWithDefaults.pollWithDefaults;
 
-import com.google.common.collect.Sets;
 import uk.gov.moj.sjp.it.command.CreateCase;
 import uk.gov.moj.sjp.it.command.UpdateDefendantDetails;
 import uk.gov.moj.sjp.it.helper.CaseSearchResultHelper;
@@ -37,6 +42,9 @@ import uk.gov.moj.sjp.it.verifier.PersonInfoVerifier;
 import java.sql.SQLException;
 import java.util.UUID;
 
+import com.google.common.collect.Sets;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -55,6 +63,7 @@ public class SearchCasesIT extends BaseIntegrationTest {
 
         stubResultDefinitions();
         stubProsecutorQuery(TFL.name(), TFL.getFullName(), randomUUID());
+        stubForUserDetails(USER_ID, "ALL");
         stubEnforcementAreaByPostcode(defendantBuilder.getAddressBuilder().getPostcode(), "1080", "Bedfordshire Magistrates' Court");
         stubRegionByPostcode("1080", "TestRegion");
 
@@ -81,6 +90,16 @@ public class SearchCasesIT extends BaseIntegrationTest {
 
         final PersonInfoVerifier personInfoVerifier = PersonInfoVerifier.personInfoVerifierForDefendantUpdatedPayload(caseId, updatedDefendantPayload);
         personInfoVerifier.verifyPersonInfo(true);
+    }
+
+    @Test
+    public void verifyCaseThrowForbiddenExceptionIfUserBelongsToDifferentProsecutionAuthority() {
+        stubForUserDetails(USER_ID, DVLA.name());
+        final CreateCase.CreateCasePayloadBuilder createCasePayloadBuilderForTFL = withDefaults().withDefendantBuilder(defendantBuilder);
+
+        createCaseForPayloadBuilder(createCasePayloadBuilderForTFL);
+        pollWithDefaults(getCaseById(createCasePayloadBuilderForTFL.getId()))
+                .until(anyOf(status().is(FORBIDDEN)));
     }
 
     @Test

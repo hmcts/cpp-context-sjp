@@ -101,7 +101,7 @@ public class CompleteCaseIT extends BaseIntegrationTest {
         stubResultDefinitions();
         stubResultIds();
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
-        stubForUserDetails(user);
+        stubForUserDetails(user, "ALL");
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 

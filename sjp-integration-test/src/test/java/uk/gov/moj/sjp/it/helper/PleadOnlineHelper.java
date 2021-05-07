@@ -90,7 +90,6 @@ public class PleadOnlineHelper implements AutoCloseable {
     }
 
     public String pleadOnline(final String payload, final Response.Status httpStatus) {
-        LOGGER.info("Request payload: {}", new JsonPath(payload).prettify());
         return HttpClientUtil.getPostCallResponse(writeUrl, "application/vnd.sjp.plead-online+json", payload, httpStatus);
     }
 

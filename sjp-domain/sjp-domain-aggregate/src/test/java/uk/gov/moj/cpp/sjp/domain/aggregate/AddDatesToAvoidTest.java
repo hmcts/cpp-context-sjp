@@ -27,11 +27,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
     private static final String DATES_TO_AVOID = "12th July 2018";
     private static final String DATES_TO_AVOID_UPDATED = "13th August 2018";
+    public static final String ALL = "ALL";
 
     @Test
     public void datesToAvoidAddedEvent() {
         //when
-        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID).collect(toList());
+        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID, ALL).collect(toList());
         final DatesToAvoidAdded datesToAvoidAdded = (DatesToAvoidAdded) events.get(0);
 
         //then
@@ -44,7 +45,7 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
         datesToAvoidAddedEvent(DATES_TO_AVOID);
 
         //when
-        final List<Object> datesToAvoidUpdatedEvents = caseAggregate.addDatesToAvoid(DATES_TO_AVOID_UPDATED).collect(toList());
+        final List<Object> datesToAvoidUpdatedEvents = caseAggregate.addDatesToAvoid(DATES_TO_AVOID_UPDATED, ALL).collect(toList());
         final DatesToAvoidUpdated datesToAvoidUpdated = (DatesToAvoidUpdated) datesToAvoidUpdatedEvents.get(0);
 
         //then
@@ -64,7 +65,7 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
     }
 
     private DatesToAvoidAdded datesToAvoidAddedEvent(final String datesToAvoid) {
-        final List<Object> datesToAvoidAddedEvents = caseAggregate.addDatesToAvoid(datesToAvoid).collect(toList());
+        final List<Object> datesToAvoidAddedEvents = caseAggregate.addDatesToAvoid(datesToAvoid, ALL).collect(toList());
         return (DatesToAvoidAdded) datesToAvoidAddedEvents.get(0);
     }
 
@@ -75,7 +76,7 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
         AggregateHelper.saveDecision(caseAggregate, aCase, session, VerdictType.FOUND_NOT_GUILTY);
 
         //when
-        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID).collect(toList());
+        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID, ALL).collect(toList());
 
         //then
         assertThat(events, hasSize(1));
@@ -90,7 +91,7 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
         caseAggregate.assignCase(randomUUID(), clock.now(), CaseAssignmentType.DELEGATED_POWERS_DECISION);
 
         //when
-        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID).collect(toList());
+        final List<Object> events = caseAggregate.addDatesToAvoid(DATES_TO_AVOID, ALL).collect(toList());
 
         //then
         assertThat(events, hasSize(1));
@@ -102,7 +103,7 @@ public class AddDatesToAvoidTest extends CaseAggregateBaseTest {
     @Test
     public void caseNotFound() {
         //when
-        final List<Object> events = new CaseAggregate().addDatesToAvoid(DATES_TO_AVOID).collect(toList());
+        final List<Object> events = new CaseAggregate().addDatesToAvoid(DATES_TO_AVOID, ALL).collect(toList());
 
         //then
         assertThat(events, hasSize(1));

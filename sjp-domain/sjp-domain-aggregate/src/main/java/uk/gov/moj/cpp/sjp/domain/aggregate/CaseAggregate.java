@@ -158,8 +158,8 @@ public class CaseAggregate implements Aggregate {
         return apply(CaseLanguageHandler.INSTANCE.updateHearingRequirements(userId, defendantId, interpreterLanguage, speakWelsh, state, pleaMethod, createdOn));
     }
 
-    public Stream<Object> addDatesToAvoid(final String datesToAvoid) {
-        return applyAndResolveCaseReadiness(() -> CaseCoreHandler.INSTANCE.addDatesToAvoid(datesToAvoid, state));
+    public Stream<Object> addDatesToAvoid(final String datesToAvoid, final String userProsecutingAuthority) {
+            return applyAndResolveCaseReadiness(() -> CaseCoreHandler.INSTANCE.addDatesToAvoid(datesToAvoid, state, userProsecutingAuthority));
     }
 
     public Stream<Object> expireDefendantResponseTimer() {
@@ -180,9 +180,10 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> acknowledgeDefendantDetailsUpdates(
             final UUID defendantId,
-            final ZonedDateTime acknowledgedAt) {
+            final ZonedDateTime acknowledgedAt,
+            final String userProsecutingAuthority) {
 
-        return apply(CaseDefendantHandler.INSTANCE.acknowledgeDefendantDetailsUpdates(defendantId, acknowledgedAt, state));
+        return apply(CaseDefendantHandler.INSTANCE.acknowledgeDefendantDetailsUpdates(defendantId, acknowledgedAt, state, userProsecutingAuthority));
     }
 
     public Stream<Object> updateDefendantDetails(final UUID userId,
@@ -233,8 +234,8 @@ public class CaseAggregate implements Aggregate {
                 state));
     }
 
-    public Stream<Object> requestForOffenceWithdrawal(final UUID caseId, final UUID setBy, final ZonedDateTime setAt, final List<WithdrawalRequestsStatus> withdrawalRequestsStatus) {
-        return applyAndResolveCaseReadiness(() -> OffenceWithdrawalHandler.INSTANCE.requestOffenceWithdrawal(caseId, setBy, setAt, withdrawalRequestsStatus, state));
+    public Stream<Object> requestForOffenceWithdrawal(final UUID caseId, final UUID setBy, final ZonedDateTime setAt, final List<WithdrawalRequestsStatus> withdrawalRequestsStatus, final String prosecutionAuthority) {
+        return applyAndResolveCaseReadiness(() -> OffenceWithdrawalHandler.INSTANCE.requestOffenceWithdrawal(caseId, setBy, setAt, withdrawalRequestsStatus, state, prosecutionAuthority));
     }
 
     public Stream<Object> setPleas(final UUID caseId, final SetPleas pleas, final UUID userId, final ZonedDateTime pleadAt) {

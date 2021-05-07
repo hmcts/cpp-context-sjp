@@ -11,11 +11,13 @@ import static uk.gov.moj.cpp.sjp.query.view.util.JsonUtility.getString;
 
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.LocalDates;
+import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.DefendantOutstandingFineRequestsQueryResult;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
@@ -27,6 +29,7 @@ import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseNotGuiltyPleaView;
+import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantProfilingView;
 import uk.gov.moj.cpp.sjp.query.view.response.onlineplea.OnlinePleaView;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
@@ -121,16 +124,54 @@ public class SjpQueryView {
     @Inject
     private ListToJsonArrayConverter<CaseNotGuiltyPleaView> listToJsonArrayConverter;
 
+    @Inject
+    private ProsecutingAuthorityProvider prosecutingAuthorityProvider;
+
+    @SuppressWarnings("squid:CallToDeprecatedMethod")
     @Handles("sjp.query.case")
     public JsonEnvelope findCase(final JsonEnvelope envelope) {
-        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(
-                caseService.findCase(fromString(extract(envelope, FIELD_CASE_ID))));
+
+        final CaseView caseView = caseService.findCase(fromString(extract(envelope, FIELD_CASE_ID)));
+        if (caseView != null) {
+            final String prosecutingAuthority = caseView.getProsecutingAuthority();
+            final Optional<String> userId = envelope.metadata().userId();
+            if(userId.isPresent()) {
+                final boolean userHasProsecutingAuthorityAccess = prosecutingAuthorityProvider.userHasProsecutingAuthorityAccess(envelope, prosecutingAuthority);
+                if (userHasProsecutingAuthorityAccess) {
+                    return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
+                } else {
+                    throw new ForbiddenRequestException("User is not authorize to view this case");
+                }
+            }  else {
+                return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
+            }
+        } else {
+            return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
+        }
     }
 
+    @SuppressWarnings("squid:CallToDeprecatedMethod")
     @Handles("sjp.query.case-filter-other-and-financial-means-documents")
     public JsonEnvelope findCaseAndFilterOtherAndFinancialMeansDocuments(final JsonEnvelope envelope) {
-        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE)
-                       .apply(caseService.findCaseAndFilterOtherAndFinancialMeansDocuments(extract(envelope, FIELD_CASE_ID)));
+        final CaseView caseView = caseService.findCaseAndFilterOtherAndFinancialMeansDocuments(extract(envelope, FIELD_CASE_ID));
+        if (caseView != null) {
+            final String prosecutingAuthority = caseView.getProsecutingAuthority();
+            final Optional<String> userId = envelope.metadata().userId();
+            if(userId.isPresent()) {
+                final boolean userHasProsecutingAuthorityAccess = prosecutingAuthorityProvider.userHasProsecutingAuthorityAccess(envelope, prosecutingAuthority);
+                if (userHasProsecutingAuthorityAccess) {
+                    LOGGER.info("User {} has valid prosecution authority to access this case", userId);
+                    return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
+                } else {
+                    LOGGER.info("User {} has no prosecution authority to access this case", userId);
+                    throw new ForbiddenRequestException("User is not authorize to view this case");
+                }
+            }  else {
+                return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
+            }
+        } else {
+            return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
+        }
     }
 
     @Handles("sjp.query.case-by-urn")

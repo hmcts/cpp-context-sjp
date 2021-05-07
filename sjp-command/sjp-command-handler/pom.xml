@@ -78,6 +78,12 @@
             <artifactId>test-utils-enveloper-provider</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.access-control</groupId>
+            <artifactId>access-control-sjp-providers</artifactId>
+            <version>4.1.4-ATCM</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

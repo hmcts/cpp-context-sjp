@@ -50,7 +50,7 @@ public class CaseReadinessTest {
         aCase.receiveCase(caseBuilder.build(), ZonedDateTime.now());
         aCase.setPleas(CASE_ID, prepareSetPleas(offences, PleaType.GUILTY), randomUUID(), ZonedDateTime.now());
         aCase.setPleas(CASE_ID, prepareSetPleas(offences, PleaType.NOT_GUILTY), randomUUID(), ZonedDateTime.now());
-        aCase.addDatesToAvoid("not today");
+        aCase.addDatesToAvoid("not today", "ALL");
 
         final Stream<Object> eventsAfterGuiltYPlea = aCase.setPleas(CASE_ID, prepareSetPleas(offences, PleaType.GUILTY), randomUUID(), ZonedDateTime.now());
         final List<Object> listOfEventsAfterGuiltyPlea = eventsAfterGuiltYPlea

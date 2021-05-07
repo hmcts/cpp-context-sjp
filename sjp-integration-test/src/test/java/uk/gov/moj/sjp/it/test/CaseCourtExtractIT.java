@@ -112,7 +112,7 @@ public class CaseCourtExtractIT extends BaseIntegrationTest {
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubDocumentGeneratorEndPoint(courtExtract.getBytes());
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
-        stubForUserDetails(user);
+        stubForUserDetails(user, "ALL");
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 

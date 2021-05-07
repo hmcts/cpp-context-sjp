@@ -16,6 +16,7 @@ import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdatesAcknowledged;
 import uk.gov.moj.cpp.sjp.event.DefendantNotFound;
 import uk.gov.moj.cpp.sjp.event.DefendantPersonalNameUpdated;
 import uk.gov.moj.cpp.sjp.event.DefendantsNationalInsuranceNumberUpdated;
+import uk.gov.moj.cpp.sjp.event.ProsecutionAuthorityAccessDenied;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -51,7 +52,8 @@ public class CaseDefendantHandler {
     public Stream<Object> acknowledgeDefendantDetailsUpdates(
             final UUID defendantId,
             final ZonedDateTime acknowledgedAt,
-            final CaseAggregateState state) {
+            final CaseAggregateState state,
+            final String userProsecutingAuthority) {
 
         Object event;
         if (state.getCaseId() == null) {
@@ -60,6 +62,8 @@ public class CaseDefendantHandler {
         } else if (defendantId != null && !state.hasDefendant(defendantId)) {
             LOGGER.warn("Defendant not found: {}", defendantId);
             event = new DefendantNotFound(defendantId, "Acknowledge defendant details updates");
+        } else if (!(state.getProsecutingAuthority().toUpperCase().startsWith(userProsecutingAuthority) || "ALL".equalsIgnoreCase(userProsecutingAuthority))) {
+            event = new ProsecutionAuthorityAccessDenied(userProsecutingAuthority, state.getProsecutingAuthority());
         } else {
             event = new DefendantDetailsUpdatesAcknowledged(state.getCaseId(), defendantId, acknowledgedAt);
         }

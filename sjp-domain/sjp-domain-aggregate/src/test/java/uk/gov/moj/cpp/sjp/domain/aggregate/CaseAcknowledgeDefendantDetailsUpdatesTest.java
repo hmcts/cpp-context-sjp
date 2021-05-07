@@ -16,16 +16,18 @@ import org.junit.Test;
  */
 public class CaseAcknowledgeDefendantDetailsUpdatesTest extends CaseAggregateBaseTest {
 
+    public static final String ALL = "ALL";
+
     @Test
     public void shouldAcknowledgeDefendantDetailsUpdates() {
-        when(caseAggregate.acknowledgeDefendantDetailsUpdates(defendantId, clock.now()))
+        when(caseAggregate.acknowledgeDefendantDetailsUpdates(defendantId, clock.now(), ALL))
                 .thenExpect(new DefendantDetailsUpdatesAcknowledged(caseId, defendantId, clock.now()));
     }
 
     @Test
     public void shouldNotAcknowledgeDefendantDetailsUpdatesWhenDefendantNotFound() {
         final UUID anotherDefendantId = randomUUID();
-        when(caseAggregate.acknowledgeDefendantDetailsUpdates(anotherDefendantId, clock.now()))
+        when(caseAggregate.acknowledgeDefendantDetailsUpdates(anotherDefendantId, clock.now(), ALL))
                 .thenExpect(new DefendantNotFound(anotherDefendantId, "Acknowledge defendant details updates"));
     }
 
@@ -35,7 +37,7 @@ public class CaseAcknowledgeDefendantDetailsUpdatesTest extends CaseAggregateBas
 
         defendantId = randomUUID();
 
-        when(caseAggregate.acknowledgeDefendantDetailsUpdates(defendantId, clock.now()))
+        when(caseAggregate.acknowledgeDefendantDetailsUpdates(defendantId, clock.now(), ALL))
                 .thenExpect(new CaseNotFound(caseId, "Acknowledge defendant details updates"));
     }
 

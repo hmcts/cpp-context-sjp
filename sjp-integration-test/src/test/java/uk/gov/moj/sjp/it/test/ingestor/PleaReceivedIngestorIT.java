@@ -1,10 +1,7 @@
 package uk.gov.moj.sjp.it.test.ingestor;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertThat;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
@@ -13,11 +10,10 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostc
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
+import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.test.ingestor.helper.ElasticSearchQueryHelper.getCaseFromElasticSearch;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.event.PleasSet;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 import uk.gov.moj.sjp.it.command.CreateCase;
@@ -25,6 +21,7 @@ import uk.gov.moj.sjp.it.command.builder.AddressBuilder;
 import uk.gov.moj.sjp.it.framework.util.ViewStoreCleaner;
 import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.PleadOnlineHelper;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.test.BaseIntegrationTest;
 
 import java.io.IOException;
@@ -72,6 +69,7 @@ public class PleaReceivedIngestorIT extends BaseIntegrationTest {
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
         stubEnforcementAreaByPostcode(addressBuilder.getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, "TestRegion");
+        stubForUserDetails(UUID.fromString("1ac91935-4f82-4a4f-bd17-fb50397e42dd"), prosecutingAuthority.name());
 
         createCaseForPayloadBuilder(this.casePayloadBuilder);
 

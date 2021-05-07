@@ -24,6 +24,8 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregateBaseTest;
 import uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdatesAcknowledged;
@@ -63,6 +65,9 @@ public class AcknowledgeDefendantDetailsUpdatesHandlerTest extends CaseAggregate
     @Mock
     private EventStream eventStream;
 
+    @Mock
+    private ProsecutingAuthorityProvider prosecutingAuthorityProvider;
+
     @Test
     public void shouldAcknowledgeDefendantDetailsUpdates() throws EventStreamException {
         final JsonEnvelope command = envelopeFrom(
@@ -71,6 +76,7 @@ public class AcknowledgeDefendantDetailsUpdatesHandlerTest extends CaseAggregate
                         .add("caseId", caseId.toString())
                         .add("defendantId", defendantId.toString()));
 
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(command)).thenReturn(ProsecutingAuthorityAccess.ALL);
         when(clock.now()).thenReturn(NOW);
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);

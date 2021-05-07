@@ -10,6 +10,8 @@ import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 
 import java.util.UUID;
@@ -33,6 +35,9 @@ public class AcknowledgeDefendantDetailsUpdatesHandler {
     @Inject
     private Clock clock;
 
+    @Inject
+    private ProsecutingAuthorityProvider prosecutingAuthorityProvider;
+
     @Handles("sjp.command.acknowledge-defendant-details-updates")
     public void acknowledgeDefendantDetailsUpdates(
             final JsonEnvelope command) throws EventStreamException {
@@ -45,8 +50,10 @@ public class AcknowledgeDefendantDetailsUpdatesHandler {
         final EventStream eventStream = eventSource.getStreamById(caseId);
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
 
+        final ProsecutingAuthorityAccess currentUsersProsecutingAuthorityAccess = prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(command);
+
         final Stream<Object> events = caseAggregate
-                .acknowledgeDefendantDetailsUpdates(defendantId, clock.now());
+                .acknowledgeDefendantDetailsUpdates(defendantId, clock.now(), currentUsersProsecutingAuthorityAccess.getProsecutingAuthority());
 
         eventStream.append(events.map(enveloper.withMetadataFrom(command)));
     }

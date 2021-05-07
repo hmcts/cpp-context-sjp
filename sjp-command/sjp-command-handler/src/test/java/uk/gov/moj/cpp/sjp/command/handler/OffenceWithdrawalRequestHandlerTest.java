@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,6 +25,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 
 import uk.gov.justice.json.schemas.domains.sjp.command.SetOffencesWithdrawalRequestsStatus;
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
+import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -34,8 +36,11 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
+import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.json.schemas.domains.sjp.event.OffencesWithdrawalRequestsStatusSet;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequested;
 
 import java.time.ZonedDateTime;
@@ -70,6 +75,18 @@ public class OffenceWithdrawalRequestHandlerTest {
     @Mock
     private CaseAggregate caseAggregate;
 
+    @Mock
+    private CaseAggregateState state;
+
+    @Mock
+    private ProsecutingAuthorityProvider prosecutingAuthorityProvider;
+
+    @Mock
+    private ProsecutingAuthorityAccess prosecutingAuthorityAccess;
+
+    @Mock
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
     @Captor
     private ArgumentCaptor<Stream<JsonEnvelope>> argumentCaptor;
 
@@ -95,6 +112,7 @@ public class OffenceWithdrawalRequestHandlerTest {
         final UUID offenceId_1 = randomUUID();
         final UUID offenceId_2 = randomUUID();
         final ZonedDateTime setAt = clock.now();
+        final String prosecutionAuthority = "ALL";
 
         final SetOffencesWithdrawalRequestsStatus requestsStatus = new SetOffencesWithdrawalRequestsStatus(caseId, requestPayload(offenceId_1, offenceId_2));
         final UUID userId = randomUUID();
@@ -102,7 +120,9 @@ public class OffenceWithdrawalRequestHandlerTest {
 
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-        when(caseAggregate.requestForOffenceWithdrawal(eq(requestsStatus.getCaseId()), eq(userId), eq(setAt), eq(requestsStatus.getWithdrawalRequestsStatus())))
+        when(prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(any())).thenReturn(prosecutingAuthorityAccess);
+        when(prosecutingAuthorityAccess.getProsecutingAuthority()).thenReturn(prosecutionAuthority);
+        when(caseAggregate.requestForOffenceWithdrawal(eq(requestsStatus.getCaseId()), eq(userId), eq(setAt), eq(requestsStatus.getWithdrawalRequestsStatus()), eq(prosecutionAuthority)))
                 .thenReturn(Stream.of(new OffencesWithdrawalRequestsStatusSet(caseId, setAt, userId, requestPayload(offenceId_1, offenceId_2)),
                         new OffenceWithdrawalRequested(caseId, offenceId_1, withdrawalRequestReasonId, userId, setAt),
                         new OffenceWithdrawalRequested(caseId, offenceId_2, withdrawalRequestReasonId, userId, setAt)));

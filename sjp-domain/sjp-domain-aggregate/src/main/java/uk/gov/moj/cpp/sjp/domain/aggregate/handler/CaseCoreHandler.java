@@ -93,13 +93,14 @@ public class CaseCoreHandler {
     }
 
     public Stream<Object> addDatesToAvoid(final String datesToAvoid,
-                                          final CaseAggregateState state) {
+                                          final CaseAggregateState state, final String userProsecutingAuthority) {
 
         return createRejectionEvents(
                 null,
                 "Add dates to avoid",
                 null,
-                state
+                state,
+                userProsecutingAuthority
         ).orElse(Stream.of(state.getDatesToAvoid() == null ?
                 new DatesToAvoidAdded(state.getCaseId(), datesToAvoid) :
                 new DatesToAvoidUpdated(state.getCaseId(), datesToAvoid)));

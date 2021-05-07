@@ -351,7 +351,7 @@ public class PleadOnlineTest {
         final UUID userId = randomUUID();
         final UUID withdrawalRequestReasonId = randomUUID();
         caseAggregate.requestForOffenceWithdrawal(caseId, userId, ZonedDateTime.now(),
-                singletonList(new WithdrawalRequestsStatus(offenceId, withdrawalRequestReasonId)));
+                singletonList(new WithdrawalRequestsStatus(offenceId, withdrawalRequestReasonId)), "ALL");
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId);
@@ -378,9 +378,9 @@ public class PleadOnlineTest {
         final UUID userId = randomUUID();
         final UUID withdrawalRandomId = randomUUID();
         caseAggregate.requestForOffenceWithdrawal(caseId, userId, ZonedDateTime.now(),
-                singletonList(new WithdrawalRequestsStatus(offenceId, withdrawalRandomId)));
+                singletonList(new WithdrawalRequestsStatus(offenceId, withdrawalRandomId)), "ALL");
         //cancel withdrawal request
-        caseAggregate.requestForOffenceWithdrawal(caseId, userId, ZonedDateTime.now(), emptyList());
+        caseAggregate.requestForOffenceWithdrawal(caseId, userId, ZonedDateTime.now(), emptyList(), "ALL");
 
         //when
         final PleadOnline pleadOnline = StoreOnlinePleaBuilder.defaultStoreOnlinePleaWithGuiltyPlea(offenceId, defendantId);

@@ -39,6 +39,7 @@ public class CitizenHelper {
                                 withJsonPath("$.defendant.offences[0].legislation", equalTo(offence(expected).getString("legislation"))),
                                 withJsonPath("$.defendant.offences[0].pendingWithdrawal", equalTo(offence(expected).getBoolean("pendingWithdrawal"))),
                                 withJsonPath("$.defendant.offences[0].wording", equalTo(offence(expected).getString("wording"))),
+                                withJsonPath("$.defendant.offences[0].endorsable", equalTo(offence(expected).getBoolean("endorsable"))),
                                 offence(expected).containsKey("wordingWelsh") ?
                                         withJsonPath("$.defendant.offences[0].wordingWelsh", equalTo(offence(expected).getString("wordingWelsh")))
                                         : withoutJsonPath("$.defendant.offences[0].wordingWelsh"),

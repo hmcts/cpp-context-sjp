@@ -32,7 +32,8 @@
         "legislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
         "wording": "Committed some offence",
         "pendingWithdrawal": false,
-        "plea": ""
+        "plea": "",
+        "endorsable": false
       }
     ]
   }

@@ -20,7 +20,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatc
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.buildCaseDetails;
+import static uk.gov.moj.cpp.sjp.event.processor.results.converter.ResultingToResultsConverterHelper.buildCaseDetails;
 
 import uk.gov.justice.json.schemas.domains.sjp.results.PublicSjpResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -29,7 +29,6 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverter;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
 import java.time.ZonedDateTime;
@@ -47,6 +46,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseCompletedProcessorTest {
@@ -72,20 +72,20 @@ public class CaseCompletedProcessorTest {
     private SjpService sjpService;
 
     @Captor
-    private ArgumentCaptor<Envelope<JsonValue>> jsonEnvelopeCaptor;
+    private ArgumentCaptor<Envelope<JsonValue>> envelopeArgumentCaptor;
 
-    @Mock
-    private ResultingToResultsConverter resultingToResultsConverter;
+    @Captor
+    private ArgumentCaptor<Envelope<PublicSjpResulted>> publicSjpResultedEnvelope;
+
     @Mock
     private PublicSjpResulted publicSjpResulted;
 
     @Before
     public void setUp() {
         initMocks(this);
-        final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter();
+        JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter();
         setField(jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(caseCompletedProcessor, "jsonObjectToObjectConverter", jsonObjectToObjectConverter);
-        when(resultingToResultsConverter.convert(any(), any(), any(), any())).thenReturn(publicSjpResulted);
     }
 
     @Test
@@ -106,37 +106,14 @@ public class CaseCompletedProcessorTest {
 
         caseCompletedProcessor.handleCaseCompleted(envelope);
 
-        verify(sender, times(2)).send(jsonEnvelopeCaptor.capture());
+        verify(sender, times(1)).send(envelopeArgumentCaptor.capture());
 
-        final List<Envelope<JsonValue>> allSenderEnvelopes = jsonEnvelopeCaptor.getAllValues();
+        final List<Envelope<JsonValue>> allSenderEnvelopes = envelopeArgumentCaptor.getAllValues();
         final Envelope<JsonValue> requestDeleteDocs = allSenderEnvelopes.get(0);
         assertThat(requestDeleteDocs.payload(),
                 payloadIsJson(allOf(withJsonPath("caseId", is(CASE_ID.toString())))));
         assertThat(requestDeleteDocs.metadata().name(), is("sjp.command.request-delete-docs"));
 
-        final Envelope<JsonValue> caseResultedEnvelope = allSenderEnvelopes.get(1);
-        assertThat((caseResultedEnvelope.metadata().name()), is("public.sjp.case-resulted"));
-        assertThat(caseResultedEnvelope.payload(), is(publicSjpResulted));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldErrorIfNoOffencesReceived() {
-        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(CASE_COMPLETED), createObjectBuilder().add("caseId", CASE_ID.toString()).build());
-        final JsonObject responsePayload = createResponsePayloadForNoOffences();
-        final JsonEnvelope responseEnvelope = envelopeFrom(metadataFrom(envelope.metadata()).withName(CASE_RESULTS), responsePayload);
-        when(sjpService.getCaseDetails(any(), any())).thenReturn(buildCaseDetails());
-        when(requester.request(any())).thenReturn(responseEnvelope);
-        caseCompletedProcessor.handleCaseCompleted(envelope);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldErrorIfNoResultsReceived() {
-        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUID(CASE_COMPLETED), createObjectBuilder().add("caseId", CASE_ID.toString()).build());
-        final JsonObject responsePayload = createResponsePayloadForNoResults();
-        final JsonEnvelope responseEnvelope = envelopeFrom(metadataFrom(envelope.metadata()).withName(CASE_RESULTS), responsePayload);
-        when(sjpService.getCaseDetails(any(), any())).thenReturn(buildCaseDetails());
-        when(requester.request(any())).thenReturn(responseEnvelope);
-        caseCompletedProcessor.handleCaseCompleted(envelope);
     }
 
     private JsonObject createResponsePayload() {

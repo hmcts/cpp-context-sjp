@@ -1,24 +1,21 @@
-package uk.gov.moj.cpp.sjp.event.processor.converter;
+package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.now;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static uk.gov.justice.json.schemas.domains.sjp.Gender.NOT_SPECIFIED;
+import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails.caseDetails;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 
 import uk.gov.justice.json.schemas.domains.sjp.Address;
 import uk.gov.justice.json.schemas.domains.sjp.ContactDetails;
-import uk.gov.justice.json.schemas.domains.sjp.CourtsGender;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.justice.json.schemas.domains.sjp.PersonalDetails;
 import uk.gov.justice.json.schemas.domains.sjp.PleaMethod;
@@ -26,16 +23,7 @@ import uk.gov.justice.json.schemas.domains.sjp.PleaType;
 import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Defendant;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
-import uk.gov.justice.json.schemas.domains.sjp.results.BaseCaseDetails;
-import uk.gov.justice.json.schemas.domains.sjp.results.BaseOffence;
-import uk.gov.justice.json.schemas.domains.sjp.results.BasePersonDetail;
-import uk.gov.justice.json.schemas.domains.sjp.results.BaseResult;
 import uk.gov.justice.json.schemas.domains.sjp.results.BaseSessionStructure;
-import uk.gov.justice.json.schemas.domains.sjp.results.CaseDefendant;
-import uk.gov.justice.json.schemas.domains.sjp.results.CaseOffence;
-import uk.gov.justice.json.schemas.domains.sjp.results.IndividualDefendant;
-import uk.gov.justice.json.schemas.domains.sjp.results.Plea;
-import uk.gov.justice.json.schemas.domains.sjp.results.Prompts;
 import uk.gov.justice.json.schemas.domains.sjp.results.SessionLocation;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.messaging.Envelope;
@@ -47,13 +35,11 @@ import uk.gov.moj.cpp.sjp.domain.resulting.Prompt;
 import uk.gov.moj.cpp.sjp.domain.resulting.ReferencedDecisionsSaved;
 import uk.gov.moj.cpp.sjp.domain.resulting.Result;
 import uk.gov.moj.cpp.sjp.domain.resulting.SJPSession;
-import uk.gov.moj.cpp.sjp.event.processor.utils.GenericEnveloper;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -66,8 +52,6 @@ import javax.json.JsonValue;
 
 public class ResultingToResultsConverterHelper {
 
-
-    private static final Integer DEFAULT_OFFENCE_DATE_CODE = 1;
     private static final String ADDRESS1_KEY = "address1";
     private static final String ADDRESS2_KEY = "address2";
     private static final String ADDRESS3_KEY = "address3";
@@ -75,7 +59,6 @@ public class ResultingToResultsConverterHelper {
     private static final String ADDRESS5_KEY = "address5";
     private static final String POSTCODE_KEY = "postcode";
     private static final String ROOM_NAME = "00";
-    private static final String DEFAULT_BAIL_STATUS = "A";
 
     private static final Integer COURT_HOUSE_CODE = 1022;
     private static final String COURT_HOUSE_NAME = "Cardiff Magistrates' Court";
@@ -94,7 +77,6 @@ public class ResultingToResultsConverterHelper {
     private static final String ADDRESS4 = "addressline4";
     private static final String ADDRESS5 = "addressline5";
     private static final Gender SOURCE_GENDER = NOT_SPECIFIED;
-    private static final CourtsGender TARGET_GENDER = CourtsGender.NOT_SPECIFIED;
     private static final UUID OFFENCE_ID_1 = randomUUID();
     private static final UUID OFFENCE_ID_2 = randomUUID();
     private static final UUID SJP_SESSION_ID = randomUUID();
@@ -116,7 +98,6 @@ public class ResultingToResultsConverterHelper {
     private static final ZonedDateTime RESULTED_ON = now(UTC).minusHours(5);
     private static final ZonedDateTime SESSION_START_DATE = now(UTC).minusHours(7);
     private static final ZonedDateTime SESSION_END_DATE = now(UTC).minusHours(6);
-    private static final String VERDICT = "PSJ";
     private static final Integer accountDivisionCode = nextInt(1, 100);
     private static final Integer enforcingCourtCode = nextInt(100, 200);
     private static final String COUNTRY_ISO_CODE = "1";
@@ -124,7 +105,6 @@ public class ResultingToResultsConverterHelper {
     private static final String LJA_VALUE = "1022";
     private static final String OFFENCE_LOCATION = "Cardiff";
     private static final UUID RESULT_ID = randomUUID();
-    private static final UUID WITHDRAWN_RESULT_ID = UUID.fromString("6feb0f2e-8d1e-40c7-af2c-05b28c69e5fc");
     private static final UUID REFERRAL_REASON_ID = randomUUID();
     private static final UUID HEARING_TYPE = randomUUID();
     private static final Integer ESTIMATED_HEARING_DURATION = nextInt(0, 999);
@@ -133,102 +113,7 @@ public class ResultingToResultsConverterHelper {
     private static final UUID PROMPT2_ID = randomUUID();
     private static final UUID PROMPT3_ID = randomUUID();
     private static final UUID PROMPT4_ID = randomUUID();
-    private static final GenericEnveloper genericEnveloper = new GenericEnveloper();
     private static final Envelope emptyEnvelope = createEnvelope("...", Json.createObjectBuilder().build());
-
-    public static void verifyCases(final List<BaseCaseDetails> cases, final Envelope<CaseResults> caseResults) {
-        final BaseCaseDetails case1 = cases.get(0);
-        final List<CaseDefendant> defendants = case1.getDefendants();
-
-        assertEquals(CASE_ID, case1.getCaseId());
-        assertEquals(URN, case1.getUrn());
-        assertEquals(PROSECUTING_AUTHORITY, case1.getProsecutionAuthorityCode());
-        verifyDefendants(defendants, caseResults);
-    }
-
-    public static void verifyDefendants(final List<CaseDefendant> defendants, final Envelope<CaseResults> caseResults) {
-        final CaseDefendant defendant = defendants.get(0);
-        final IndividualDefendant individualDefendant = defendant.getIndividualDefendant();
-        final BasePersonDetail person = individualDefendant.getBasePersonDetails();
-        final List<CaseOffence> offences = defendant.getOffences();
-        final CaseOffence offence = offences.get(0);
-
-        assertEquals(DEFENDANT_ID, defendant.getDefendantId());
-
-        assertEquals(DEFAULT_BAIL_STATUS, individualDefendant.getBailStatus());
-        assertEquals(false, individualDefendant.getPresentAtHearing());
-        verifyPerson(person);
-        verifyOffence(offence, caseResults);
-    }
-
-    public static void verifyOffence(final CaseOffence offence, final Envelope<CaseResults> caseResults) {
-        final BaseOffence baseOffenceDetails = offence.getBaseOffenceDetails();
-        final Plea plea = offence.getPlea();
-        final List<BaseResult> results = offence.getResults();
-        final BaseResult result = results.get(0);
-
-        assertEquals(COURT_HOUSE_CODE, offence.getConvictingCourt());
-        assertEquals(OFFENCE_ID_1, baseOffenceDetails.getOffenceId());
-        assertEquals(OFFENCE_SEQUENCE_NUMBER, baseOffenceDetails.getOffenceSequenceNumber());
-        assertEquals(CJS_CODE, baseOffenceDetails.getOffenceCode());
-        assertEquals(WORDING, baseOffenceDetails.getOffenceWording());
-        assertEquals(DEFAULT_OFFENCE_DATE_CODE, baseOffenceDetails.getOffenceDateCode());
-        assertEquals(OFFENCE_START_DATE, baseOffenceDetails.getOffenceStartDate());
-        assertEquals(OFFENCE_END_DATE, baseOffenceDetails.getOffenceEndDate());
-        assertEquals(CHARGE_DATE, baseOffenceDetails.getChargeDate());
-        assertEquals(OFFENCE_LOCATION, baseOffenceDetails.getLocationOfOffence());
-        assertEquals(PleaType.GUILTY, plea.getPleaType());
-        assertEquals(PleaMethod.ONLINE, plea.getPleaMethod());
-        assertEquals(PLEA_DATE, plea.getPleaDate());
-        verifyResult(result, caseResults);
-    }
-
-    private static void verifyResult(final BaseResult result, final Envelope<CaseResults> caseResults) {
-        final CaseResults caseResultsObject = caseResults.payload();
-        final List<Prompts> terminalEntries = result.getPrompts();
-        final Prompts referralReasonPrompt = getPrompt(terminalEntries, PROMPT1_ID);
-        final Prompts hearingTypePrompt = getPrompt(terminalEntries, PROMPT2_ID);
-        final Prompts estimatedHearingDurationPrompt = getPrompt(terminalEntries, PROMPT3_ID);
-        final Prompts listingNotesPrompt = getPrompt(terminalEntries, PROMPT4_ID);
-
-        final List<uk.gov.moj.cpp.sjp.domain.resulting.Offence> offences = caseResultsObject
-                .getCaseDecisions()
-                .stream()
-                .map(d -> d.getOffences())
-                .flatMap(Collection::stream)
-                .collect(toList());
-
-        assertEquals(2, offences.size());
-        assertEquals(RESULT_ID, result.getId());
-        verifyPrompt(referralReasonPrompt, PROMPT1_ID, REFERRAL_REASON_ID.toString());
-        verifyPrompt(hearingTypePrompt, PROMPT2_ID, HEARING_TYPE.toString());
-        verifyPrompt(estimatedHearingDurationPrompt, PROMPT3_ID, ESTIMATED_HEARING_DURATION.toString());
-        verifyPrompt(listingNotesPrompt, PROMPT4_ID, LISTING_NOTES);
-
-    }
-
-    private static void verifyPrompt(final Prompts prompt, final UUID expectedId, final String expectedValue) {
-        assertEquals(expectedId, prompt.getId());
-        assertEquals(expectedValue, prompt.getValue());
-    }
-
-    private static Prompts getPrompt(final List<Prompts> prompts, final UUID id) {
-        return prompts.stream().filter(p -> p.getId().equals(id)).findFirst().get();
-    }
-
-    public static void verifyPerson(final BasePersonDetail person) {
-        assertEquals(TITLE, person.getPersonTitle());
-        assertEquals(FIRST_NAME, person.getFirstName());
-        assertEquals(LAST_NAME, person.getLastName());
-        assertEquals(DATE_OF_BIRTH.toLocalDate(), person.getBirthDate().toLocalDate());
-        assertEquals(TARGET_GENDER.toString(), person.getGender().toString());
-        assertEquals(BUSINESS_NUMBER, person.getTelephoneNumberBusiness());
-        assertEquals(HOME_NUMBER, person.getTelephoneNumberHome());
-        assertEquals(MOBILE, person.getTelephoneNumberMobile());
-        assertEquals(EMAIL, person.getEmailAddress1());
-        assertEquals(EMAIL_2, person.getEmailAddress2());
-        assertAddress(person.getAddress());
-    }
 
     public static PersonalDetails buildPersonalDetails() {
         return PersonalDetails.personalDetails()
@@ -240,13 +125,12 @@ public class ResultingToResultsConverterHelper {
     }
 
     public static CaseDetails buildCaseDetails() {
-        final CaseDetails caseDetails = CaseDetails.caseDetails()
+        return caseDetails()
                 .withId(CASE_ID)
                 .withUrn(URN)
                 .withProsecutingAuthority(PROSECUTING_AUTHORITY)
                 .withDefendant(buildDefendant())
                 .build();
-        return caseDetails;
     }
 
     public static Defendant buildDefendant() {

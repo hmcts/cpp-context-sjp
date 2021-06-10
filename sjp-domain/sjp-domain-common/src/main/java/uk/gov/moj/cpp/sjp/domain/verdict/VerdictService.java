@@ -1,13 +1,13 @@
 package uk.gov.moj.cpp.sjp.domain.verdict;
 
-import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
-import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
-
 import static java.util.Objects.isNull;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
+
+import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 
 
 public class VerdictService {
@@ -19,6 +19,7 @@ public class VerdictService {
             case ADJOURN:
                 return calculateVerdictForAdjourn(pleaType, convictionType);
             case WITHDRAW:
+            case SET_ASIDE:
                 return NO_VERDICT;
             case REFER_FOR_COURT_HEARING:
                 return calculateVerdictForReferToCourtDecision(pleaType);

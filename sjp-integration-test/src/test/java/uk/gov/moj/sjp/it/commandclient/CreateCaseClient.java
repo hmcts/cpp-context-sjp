@@ -1,14 +1,14 @@
 package uk.gov.moj.sjp.it.commandclient;
 
 import uk.gov.justice.services.common.converter.LocalDates;
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
 import uk.gov.moj.cpp.sjp.event.CaseReceived;
+import uk.gov.moj.sjp.it.model.Defendant;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
+import uk.gov.moj.sjp.it.util.UrnProvider;
 import uk.gov.moj.sjp.it.util.commandclient.CommandClient;
 import uk.gov.moj.sjp.it.util.commandclient.CommandExecutor;
 import uk.gov.moj.sjp.it.util.commandclient.EventHandler;
-import uk.gov.moj.sjp.it.model.Defendant;
-import uk.gov.moj.sjp.it.util.UrnProvider;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

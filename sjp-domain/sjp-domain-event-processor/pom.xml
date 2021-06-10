@@ -62,6 +62,8 @@
                                 <include>json/schema/results/corporateDefendant.json</include>
                                 <include>json/schema/results/individualDefendant.json</include>
                                 <include>json/schema/results/publicSjpResulted.json</include>
+                                <include>json/schema/results/publicHearingResulted.json</include>
+                                <include>json/schema/results/publicEventsHearingResultedEvent.json</include>
 
                                 <include>raml/json/schema/public.resulting.decision-to-refer-case-for-court-hearing-saved.json</include>
                                 <include>raml/json/schema/sjp.command.refer-case-for-court-hearing.json</include>

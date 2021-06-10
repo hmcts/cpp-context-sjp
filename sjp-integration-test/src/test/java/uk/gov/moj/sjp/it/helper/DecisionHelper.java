@@ -337,7 +337,7 @@ public class DecisionHelper {
         assertThat(decisionRejected.getDecision().getCaseId(), is(decisionCommand.getCaseId()));
         assertThat(decisionRejected.getDecision().getSessionId(), is(decisionCommand.getSessionId()));
         assertThat(decisionRejected.getDecision().getSavedAt(), notNullValue());
-        verifyOffenceDecisions(decisionRejected.getDecision().getOffenceDecisions(), decisionCommand.getOffenceDecisions());
+        verifyOffenceDecisions(decisionRejected.getDecision().getOffenceDecisions(), decisionCommand.getOffenceDecisions(), null);
         assertThat(decisionRejected.getRejectionReasons(), containsInAnyOrder(reasons));
     }
 
@@ -348,13 +348,13 @@ public class DecisionHelper {
 
         List<? extends OffenceDecision> commandOffenceDecisions = decisionCommand.getOffenceDecisions();
 
-        verifyOffenceDecisions(decisionSaved.getOffenceDecisions(), commandOffenceDecisions);
+        verifyOffenceDecisions(decisionSaved.getOffenceDecisions(), commandOffenceDecisions, decisionSaved);
         if (decisionCommand.getFinancialImposition() != null) {
             assertThat(decisionSaved.getFinancialImposition(), is(decisionCommand.getFinancialImposition()));
         }
     }
 
-    private static void verifyOffenceDecisions(final List<? extends OffenceDecision> eventDecisions, final List<? extends OffenceDecision> commandOffenceDecisions) {
+        private static void verifyOffenceDecisions(final List<? extends OffenceDecision> eventDecisions, final List<? extends OffenceDecision> commandOffenceDecisions, final DecisionSaved decisionSaved) {
         assertEquals(commandOffenceDecisions.size(), eventDecisions.size());
 
         for (OffenceDecision offenceDecision : commandOffenceDecisions) {
@@ -369,7 +369,8 @@ public class DecisionHelper {
                             hasProperty("referralReasonId", is(refer.getReferralReasonId())),
                             hasProperty("listingNotes", is(refer.getListingNotes())),
                             hasProperty("estimatedHearingDuration", is(refer.getEstimatedHearingDuration())),
-                            hasProperty("defendantCourtOptions", is(refer.getDefendantCourtOptions()))
+                            hasProperty("defendantCourtOptions", is(refer.getDefendantCourtOptions())),
+                            hasProperty("convictionDate", equalTo(decisionSaved != null ? decisionSaved.getSavedAt().toLocalDate() : null))
                     );
                     break;
                 case DISMISS:
@@ -414,7 +415,8 @@ public class DecisionHelper {
                             hasProperty("disqualification", is(discharge.getDisqualification())),
                             hasProperty("disqualificationType", is(discharge.getDisqualificationType())),
                             hasProperty("disqualificationPeriod", is(discharge.getDisqualificationPeriod())),
-                            hasProperty("notionalPenaltyPoints", is(discharge.getNotionalPenaltyPoints()))
+                            hasProperty("notionalPenaltyPoints", is(discharge.getNotionalPenaltyPoints())),
+                            hasProperty("convictionDate", equalTo(decisionSaved != null ? decisionSaved.getSavedAt().toLocalDate() : null))
                     );
                     break;
                 case FINANCIAL_PENALTY:
@@ -435,7 +437,8 @@ public class DecisionHelper {
                             hasProperty("disqualification", is(financialPenalty.getDisqualification())),
                             hasProperty("disqualificationType", is(financialPenalty.getDisqualificationType())),
                             hasProperty("disqualificationPeriod", is(financialPenalty.getDisqualificationPeriod())),
-                            hasProperty("notionalPenaltyPoints", is(financialPenalty.getNotionalPenaltyPoints()))
+                            hasProperty("notionalPenaltyPoints", is(financialPenalty.getNotionalPenaltyPoints())),
+                            hasProperty("convictionDate", equalTo(decisionSaved != null ? decisionSaved.getSavedAt().toLocalDate() : null))
                     );
                     break;
                 case NO_SEPARATE_PENALTY:
@@ -445,7 +448,7 @@ public class DecisionHelper {
                             hasProperty("offenceDecisionInformation", is(noSeparatePenalty.getOffenceDecisionInformation())),
                             hasProperty("guiltyPleaTakenIntoAccount", is(noSeparatePenalty.getGuiltyPleaTakenIntoAccount())),
                             hasProperty("licenceEndorsed", is(noSeparatePenalty.getLicenceEndorsed())),
-                            hasProperty("convictionDate", equalTo(noSeparatePenalty.getConvictionDate()))
+                            hasProperty("convictionDate", equalTo(decisionSaved != null ? decisionSaved.getSavedAt().toLocalDate() : null))
                     );
                     break;
                 case REFERRED_FOR_FUTURE_SJP_SESSION: // legacy decision type

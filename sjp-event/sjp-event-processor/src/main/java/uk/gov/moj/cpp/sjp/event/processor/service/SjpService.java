@@ -24,6 +24,7 @@ import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 
+@SuppressWarnings("squid:CallToDeprecatedMethod")
 public class SjpService {
 
     @Inject
@@ -43,6 +44,12 @@ public class SjpService {
         final JsonEnvelope request = envelopeFrom(metadataFrom(envelope.metadata()).withName( "sjp.query.session"), payload);
         final JsonEnvelope response = requester.requestAsAdmin(request);
         return response.payloadAsJsonObject();
+    }
+
+    public JsonEnvelope getSessionInformation(final UUID sessionId, final JsonEnvelope envelope) {
+        final JsonObject payload = createObjectBuilder().add(SESSION_ID, sessionId.toString()).build();
+        final JsonEnvelope request = envelopeFrom(metadataFrom(envelope.metadata()).withName("sjp.query.session"), payload);
+        return requester.requestAsAdmin(request);
     }
 
     public DefendantsOnlinePlea getDefendantPleaDetails(final UUID caseId, final UUID defendantId, final JsonEnvelope envelope) {

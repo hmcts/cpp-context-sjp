@@ -25,8 +25,11 @@ import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseNotReady;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
 import static uk.gov.moj.sjp.it.helper.SessionHelper.startSession;
 import static uk.gov.moj.sjp.it.helper.SetPleasHelper.requestSetPleas;
-import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.*;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllReferenceData;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
@@ -35,11 +38,9 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubWithdrawalReas
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
 
-import com.google.common.collect.Sets;
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
@@ -51,6 +52,7 @@ import uk.gov.moj.sjp.it.helper.EventListener;
 import uk.gov.moj.sjp.it.helper.OffencesWithdrawalRequestHelper;
 import uk.gov.moj.sjp.it.helper.ReadyCaseHelper;
 import uk.gov.moj.sjp.it.model.DecisionCommand;
+import uk.gov.moj.sjp.it.model.ProsecutingAuthority;
 import uk.gov.moj.sjp.it.stub.AssignmentStub;
 import uk.gov.moj.sjp.it.stub.SchedulingStub;
 import uk.gov.moj.sjp.it.util.ActivitiHelper;
@@ -66,14 +68,13 @@ import java.util.UUID;
 
 import javax.jms.JMSException;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.tuple.Triple;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("Enable this when merging to master")
 public class CaseAdjournmentIT extends BaseIntegrationTest {
 
     private static final String TIMER_TIMEOUT_PROCESS_NAME = "timerTimeout";
@@ -100,6 +101,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
         AssignmentStub.stubAssignmentReplicationCommands();
         SchedulingStub.stubStartSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();
+        stubAllReferenceData();
 
         stubWithdrawalReasonsQuery(withdrawalRequestReasonId, "Insufficient Evidence");
         stubForUserDetails(user, "ALL");

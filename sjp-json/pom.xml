@@ -24,15 +24,14 @@
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.core.domain</groupId>
-            <artifactId>common-core-domain</artifactId>
+            <artifactId>sjp-public-model</artifactId>
             <version>${coredomain.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.core.domain</groupId>
-            <artifactId>sjp-public-model</artifactId>
-            <version>${coredomain.version}</version>
-            <scope>compile</scope>
+            <artifactId>criminal-court-public-model</artifactId>
+            <version>${criminal-court-public-model.version}</version>
         </dependency>
     </dependencies>
 

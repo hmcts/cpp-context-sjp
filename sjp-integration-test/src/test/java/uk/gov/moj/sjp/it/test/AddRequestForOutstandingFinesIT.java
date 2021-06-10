@@ -1,20 +1,5 @@
 package uk.gov.moj.sjp.it.test;
 
-import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
-import com.jayway.restassured.path.json.JsonPath;
-import org.junit.Before;
-import org.junit.Test;
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
-import uk.gov.moj.cpp.sjp.event.CaseReceived;
-import uk.gov.moj.sjp.it.helper.CaseHelper;
-import uk.gov.moj.sjp.it.helper.EventListener;
-import uk.gov.moj.sjp.it.pollingquery.CasePoller;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
@@ -33,8 +18,25 @@ import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static uk.gov.moj.sjp.it.command.CreateCase.CreateCasePayloadBuilder.withDefaults;
 import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllReferenceData;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
+
+import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
+import uk.gov.moj.cpp.sjp.event.CaseReceived;
+import uk.gov.moj.sjp.it.helper.CaseHelper;
+import uk.gov.moj.sjp.it.helper.EventListener;
+import uk.gov.moj.sjp.it.pollingquery.CasePoller;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
+import com.jayway.restassured.path.json.JsonPath;
+import org.junit.Before;
+import org.junit.Test;
 
 @SuppressWarnings("unchecked")
 public class AddRequestForOutstandingFinesIT extends BaseIntegrationTest {
@@ -66,6 +68,7 @@ public class AddRequestForOutstandingFinesIT extends BaseIntegrationTest {
                 .subscribe(CaseReceived.EVENT_NAME)
                 .run(() -> createCaseForPayloadBuilder(withDefaults().withId(caseIdOne).withDefendantId(defendantIdOne)));
         stubStagingenforcementOutstandingFines();
+        stubAllReferenceData();
     }
 
     @Test

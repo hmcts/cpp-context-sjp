@@ -20,11 +20,15 @@ import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllResultDefinitions;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubBailStatuses;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubFixedLists;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForAllProsecutors;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForVerdictTypes;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
@@ -39,9 +43,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.util.Optional;
+
+import com.google.common.collect.ImmutableMap;
 import org.hamcrest.Matchers;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
 import uk.gov.moj.cpp.sjp.domain.decision.endorsement.PenaltyPointsReason;
@@ -100,10 +107,17 @@ public class CaseResultsIT extends BaseIntegrationTest {
         stubEndSjpSessionCommand();
         stubAssignmentReplicationCommands();
         stubDefaultCourtByCourtHouseOUCodeQuery();
-        stubResultDefinitions();
-        stubResultIds();
+        stubFixedLists();
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
-        stubForUserDetails(user, prosecutingAuthority.name());
+        stubForUserDetails(user, "ALL");
+        stubAllResultDefinitions();
+        stubQueryForVerdictTypes();
+        stubQueryForAllProsecutors();
+        stubBailStatuses();
+        stubResultIds();
+
+        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", false);
+        FeatureStubber.stubFeaturesFor("sjp", features);
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
@@ -144,25 +158,11 @@ public class CaseResultsIT extends BaseIntegrationTest {
         eventListener
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
-                .subscribe("public.sjp.case-resulted")
+                .subscribe("public.hearing.resulted")
                 .run(() -> DecisionHelper.saveDecision(decision));
 
-        // Then
-        final JsonObject results = getCaseResults();
-        assertThat(results.toString(), matchCaseResults());
-
-
-        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.sjp.case-resulted");
-
+        final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.hearing.resulted");
         assertThat(jsonEnvelope.isPresent(), Matchers.is(true));
-        final JsonEnvelope envelope = jsonEnvelope.get();
-        assertThat(envelope,
-                jsonEnvelope(
-                        metadata().withName("public.sjp.case-resulted"),
-                        payload().isJson(Matchers.allOf(
-                                withJsonPath("$.cases[0].caseId", equalTo(caseId.toString())),
-                                withJsonPath("$.cases[0].defendants[0].offences[0].baseOffenceDetails.offenceDateCode", equalTo(OFFENCE_DATE_CODE_FOR_BETWEEN))
-                        ))));
     }
 
     @Test

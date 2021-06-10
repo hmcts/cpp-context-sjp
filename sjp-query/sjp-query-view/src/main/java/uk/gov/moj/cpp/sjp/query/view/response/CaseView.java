@@ -57,7 +57,7 @@ public class CaseView {
 
         this.prosecutingAuthority = caseDetail.getProsecutingAuthority();
         this.prosecutingAuthorityName = prosecutor.getString("fullName");
-        this.policeFlag = prosecutor.getBoolean("policeFlag");
+        this.policeFlag = prosecutor.getBoolean("policeFlag", false);
 
         this.defendant = new DefendantView(caseDetail.getDefendant());
         this.caseDecisions = new ArrayList<>();

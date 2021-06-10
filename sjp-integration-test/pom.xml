@@ -206,6 +206,12 @@
             <artifactId>jboss-logging</artifactId>
             <version>${jboss-logging.version}</version>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.common.library.utils</groupId>
+            <artifactId>cpp-platform-test-utils</artifactId>
+            <version>7.2.8</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

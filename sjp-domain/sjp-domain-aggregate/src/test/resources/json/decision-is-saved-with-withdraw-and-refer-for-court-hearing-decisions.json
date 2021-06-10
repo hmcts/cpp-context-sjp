@@ -18,7 +18,8 @@
       ],
       "referralReasonId": "809f7aac-d285-43a5-9fb1-3a894db71530",
       "listingNotes": "Wheelchair access needed",
-      "estimatedHearingDuration": 30
+      "estimatedHearingDuration": 30,
+      "convictionDate": "2019-05-01"
     },
     {
       "type": "WITHDRAW",

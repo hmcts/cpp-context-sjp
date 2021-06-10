@@ -126,7 +126,7 @@ public class CaseDecisionHandler {
     }
 
     private static void addOffencesConvictionDate(final Decision decision, final CaseAggregateState state) {
-        final ConvictionDateOffenceVisitor convictionDateOffenceVisitor = new ConvictionDateOffenceVisitor(state);
+        final ConvictionDateOffenceVisitor convictionDateOffenceVisitor = new ConvictionDateOffenceVisitor(state, decision.getSavedAt());
         decision.getOffenceDecisions()
                 .forEach(offenceDecision -> offenceDecision.accept(convictionDateOffenceVisitor));
     }
@@ -483,7 +483,7 @@ public class CaseDecisionHandler {
             rejectionReasons.add(format(message, "Dismiss", "FOUND_NOT_GUILTY"));
         }
 
-        if (unmatchedDecisionTypeAndVerdicts.apply(a -> a == SET_ASIDE, verdict -> Objects.isNull(verdict)) > 0) {
+        if (unmatchedDecisionTypeAndVerdicts.apply(a -> a == SET_ASIDE, Objects::isNull) > 0) {
             rejectionReasons.add(format(message, "SetAside", "null"));
         }
     }
@@ -614,9 +614,11 @@ public class CaseDecisionHandler {
     private static class ConvictionDateOffenceVisitor implements OffenceDecisionVisitor {
 
         private final CaseAggregateState state;
+        private final ZonedDateTime decisionSavedAt;
 
-        public ConvictionDateOffenceVisitor(final CaseAggregateState state) {
+        public ConvictionDateOffenceVisitor(final CaseAggregateState state, final ZonedDateTime decisionSavedAt) {
             this.state = state;
+            this.decisionSavedAt = decisionSavedAt;
         }
 
         @Override
@@ -645,6 +647,13 @@ public class CaseDecisionHandler {
                         .findFirst()
                         .ifPresent(convictionDate ->
                                 adjourn.setConvictionDate(convictionDate.toLocalDate()));
+            } else {
+                adjourn.setConvictionDate(adjourn
+                        .getOffenceDecisionInformation()
+                        .stream()
+                        .filter(OffenceDecisionInformation::isConviction)
+                        .findFirst()
+                        .map(e -> decisionSavedAt.toLocalDate()).orElse(null));
             }
         }
 
@@ -657,6 +666,13 @@ public class CaseDecisionHandler {
                         .findFirst()
                         .ifPresent(convictionDate ->
                                 referForCourtHearing.setConvictionDate(convictionDate.toLocalDate()));
+            } else {
+                referForCourtHearing.setConvictionDate(referForCourtHearing
+                        .getOffenceDecisionInformation()
+                        .stream()
+                        .filter(OffenceDecisionInformation::isConviction)
+                        .findFirst()
+                        .map(e -> decisionSavedAt.toLocalDate()).orElse(null));
             }
         }
 
@@ -666,6 +682,8 @@ public class CaseDecisionHandler {
                 final UUID offenceId = discharge.getOffenceDecisionInformation().getOffenceId();
                 final ZonedDateTime convictionDate = state.getOffencePreviousConvictionDate(offenceId);
                 discharge.setConvictionDate(convictionDate.toLocalDate());
+            } else {
+                discharge.setConvictionDate(decisionSavedAt.toLocalDate());
             }
         }
 
@@ -675,6 +693,8 @@ public class CaseDecisionHandler {
                 final UUID offenceId = financialPenalty.getOffenceDecisionInformation().getOffenceId();
                 final ZonedDateTime convictionDate = state.getOffencePreviousConvictionDate(offenceId);
                 financialPenalty.setConvictionDate(convictionDate.toLocalDate());
+            } else {
+                financialPenalty.setConvictionDate(decisionSavedAt.toLocalDate());
             }
         }
 
@@ -694,6 +714,8 @@ public class CaseDecisionHandler {
                 final UUID offenceId = noSeparatePenalty.getOffenceDecisionInformation().getOffenceId();
                 final ZonedDateTime convictionDate = state.getOffencePreviousConvictionDate(offenceId);
                 noSeparatePenalty.setConvictionDate(convictionDate.toLocalDate());
+            }  else {
+                noSeparatePenalty.setConvictionDate(decisionSavedAt.toLocalDate());
             }
         }
 

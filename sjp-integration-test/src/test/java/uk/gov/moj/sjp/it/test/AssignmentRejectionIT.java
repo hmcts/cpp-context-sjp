@@ -42,10 +42,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("Enable this when merging to master")
 public class AssignmentRejectionIT extends BaseIntegrationTest {
 
     private static final String LONDON_LJA_NATIONAL_COURT_CODE = "2572";

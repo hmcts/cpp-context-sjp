@@ -69,7 +69,7 @@ public class ReferenceDataOffencesServiceTest {
     }
 
     private Object requestOffenceDefinitionIds(final String cjsCode, final LocalDate referredAt) {
-        return requester.request(argThat(jsonEnvelope(
+        return requester.requestAsAdmin(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("referencedataoffences.query.offences-list"),
                 payloadIsJson(allOf(withJsonPath("$.cjsoffencecode", equalTo(cjsCode)),
                         withJsonPath("$.date", equalTo(referredAt.toString())))))));

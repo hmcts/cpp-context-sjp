@@ -34,6 +34,7 @@ public class ReferenceDataOffencesService {
 
     }
 
+    @SuppressWarnings("squid:CallToDeprecatedMethod")
     public Optional<JsonObject> getOffenceReferenceData(final JsonEnvelope envelope, final String offenceCode, final String date) {
         final JsonEnvelope request = enveloper
                 .withMetadataFrom(envelope, "referencedataoffences.query.offences-list")
@@ -41,7 +42,7 @@ public class ReferenceDataOffencesService {
                         .add("cjsoffencecode", offenceCode)
                         .add("date", date)
                         .build());
-        final JsonEnvelope response = requester.request(request);
+        final JsonEnvelope response = requester.requestAsAdmin(request);
         return response.payloadAsJsonObject().getJsonArray("offences").getValuesAs(JsonObject.class).stream().findFirst();
     }
 

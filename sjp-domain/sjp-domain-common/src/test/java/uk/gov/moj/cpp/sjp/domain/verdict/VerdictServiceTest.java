@@ -47,7 +47,8 @@ public class VerdictServiceTest {
                 // FINANCIAL_PENALTY
                 {PleaType.GUILTY, DecisionType.FINANCIAL_PENALTY, ConvictionType.POST, VerdictType.FOUND_GUILTY},
                 {PleaType.NOT_GUILTY, DecisionType.FINANCIAL_PENALTY, ConvictionType.POST, VerdictType.PROVED_SJP},
-                {null, DecisionType.FINANCIAL_PENALTY, ConvictionType.POST, VerdictType.PROVED_SJP}
+                {null, DecisionType.FINANCIAL_PENALTY, ConvictionType.POST, VerdictType.PROVED_SJP},
+                {null, DecisionType.SET_ASIDE, null, VerdictType.NO_VERDICT}
         });
     }
 

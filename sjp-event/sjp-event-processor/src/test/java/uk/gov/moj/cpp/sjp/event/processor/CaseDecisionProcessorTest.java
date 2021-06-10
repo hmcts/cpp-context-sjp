@@ -15,15 +15,20 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnvelopeFactory.createEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
-import static uk.gov.moj.cpp.sjp.event.processor.converter.ResultingToResultsConverterHelper.buildCaseDetails;
+import static uk.gov.moj.cpp.sjp.event.processor.results.converter.ResultingToResultsConverterHelper.buildCaseDetails;
 
+
+import uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.SjpToHearingConverter;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -55,6 +60,15 @@ public class CaseDecisionProcessorTest {
     @Mock
     protected Function function;
 
+    @Mock
+    private SjpToHearingConverter sjpToHearingConverter;
+
+    @Mock
+    private PublicHearingResulted publicHearingResultedPayload;
+
+    @Mock
+    private FeatureControlGuard featureControlGuard;
+
     @InjectMocks
     private CaseDecisionProcessor caseDecisionProcessor;
 
@@ -62,6 +76,7 @@ public class CaseDecisionProcessorTest {
     private ArgumentCaptor<JsonEnvelope> jsonEnvelopeCaptor;
 
     private static final String PUBLIC_CASE_DECISION_SAVED_EVENT = "public.sjp.case-decision-saved";
+    private static final String PUBLIC_HEARING_RESULTED_EVENT = "public.hearing.resulted";
     private static final String PRIVATE_CASE_DECISION_SAVED_EVENT = "sjp.events.decision-saved";
 
     @Before
@@ -103,17 +118,20 @@ public class CaseDecisionProcessorTest {
                                                 .add("verdict", verdict))
                         ).build());
 
+        when(sjpToHearingConverter.convertCaseDecision(privateEvent)).thenReturn(publicHearingResultedPayload);
+
         caseDecisionProcessor.handleCaseDecisionSaved(privateEvent);
 
-        verify(sender).send(jsonEnvelopeCaptor.capture());
+        verify(sender, times(2)).send(jsonEnvelopeCaptor.capture());
 
-        final Envelope<JsonValue> sentEnvelope = jsonEnvelopeCaptor.getValue();
+        final List<JsonEnvelope> eventEnvelopes = jsonEnvelopeCaptor.getAllValues();
+        final Envelope<JsonValue> decisionSavedPublicEvent = eventEnvelopes.get(0);
 
-        assertThat(sentEnvelope.metadata(),
+        assertThat(decisionSavedPublicEvent.metadata(),
                 withMetadataEnvelopedFrom(privateEvent)
                         .withName(PUBLIC_CASE_DECISION_SAVED_EVENT));
 
-        assertThat(sentEnvelope.payload(),
+        assertThat(decisionSavedPublicEvent.payload(),
                 payloadIsJson(allOf(
                         withJsonPath("caseId", is(caseId.toString())),
                         withJsonPath("decisionId", is(decisionId.toString())),
@@ -128,6 +146,14 @@ public class CaseDecisionProcessorTest {
                         withJsonPath("offenceDecisions[1].withdrawalReasonId", is(withdrawalReasonId.toString())),
                         withJsonPath("offenceDecisions[1].verdict", is(verdict))
                 )));
+
+        final Envelope<JsonValue> hearingResultedPublicEvent = eventEnvelopes.get(1);
+
+        assertThat(hearingResultedPublicEvent.metadata(),
+                withMetadataEnvelopedFrom(privateEvent)
+                        .withName(PUBLIC_HEARING_RESULTED_EVENT));
+
+        assertThat(hearingResultedPublicEvent.payload(), is(publicHearingResultedPayload));
     }
 
     @Test
@@ -158,8 +184,11 @@ public class CaseDecisionProcessorTest {
                                                 .add("offenceId", offence2Id.toString()))
                         ).build());
 
+        when(sjpToHearingConverter.convertCaseDecision(privateEvent)).thenReturn(publicHearingResultedPayload);
+
         caseDecisionProcessor.handleCaseDecisionSaved(privateEvent);
-        verify(sender, times(2)).send(jsonEnvelopeCaptor.capture());
+
+        verify(sender, times(3)).send(jsonEnvelopeCaptor.capture());
         final Envelope<JsonValue> sentEnvelope = jsonEnvelopeCaptor.getAllValues().get(0);
 
         assertThat(sentEnvelope, is(jsonEnvelope));

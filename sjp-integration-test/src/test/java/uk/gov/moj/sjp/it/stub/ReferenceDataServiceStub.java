@@ -55,6 +55,72 @@ public class ReferenceDataServiceStub {
     private static final String QUERY_API_PATH = "/referencedata-service/query/api/rest/referencedata";
     private static final String QUERY_PROSECUTORS_MIME_TYPE = "application/vnd.referencedata.query.prosecutors+json";
     private static final String REFERENCEDATAOFFENCES_SERVICE = "referencedataoffences-service";
+    private static final String QUERY_PROSECUTOR_MIME_TYPE = "application/vnd.referencedata.query.get.prosecutor.by.oucode+json";
+    private static final String QUERY_PROSECUTOR_PTIURN_PATH = "/referencedata-query-api/query/api/rest/referencedata/prosecutor?ptiurn=TFL";
+    private static final String QUERY_PROSECUTOR_PTIURN_MEDIA_TYPE = "application/vnd.referencedata.query.prosecutor.by.ptiurn+json";
+    private static final String QUERY_VERDICT_TYPES_MIME_TYPE = "application/vnd.reference-data.verdict-types+json";
+    private static final String QUERY_BAIL_STATUSES_MIME_TYPE = "application/vnd.referencedata.bail-statuses+json";
+    private static final String QUERY_ALL_RESULT_DEFINITIONS_MIME_TYPE = "application/vnd.referencedata.get-all-result-definitions+json";
+    private static final String QUERY_PROSECUTOR_BY_PTI_URN_MIME_TYPE = "application/vnd.referencedata.query.prosecutor.by.ptiurn+json";
+    private static final String QUERY_ALL_FIXED_LIST_MIME_TYPE = "application/vnd.referencedata.get-all-fixed-list+json";
+
+
+    public static void stubAllReferenceData() {
+        stubFixedLists();
+        stubAllResultDefinitions();
+        stubQueryForVerdictTypes();
+        stubQueryForAllProsecutors();
+    }
+
+    public static void stubAllResultDefinitions() {
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/result-definitions";
+
+        stubFor(get(urlPathEqualTo(urlPath))
+                .withHeader(ACCEPT, equalTo(QUERY_ALL_RESULT_DEFINITIONS_MIME_TYPE))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(getPayload("stub-data/referencedata.all-result-definitions.json"))));
+    }
+
+    public static void stubFixedLists() {
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/fixed-list";
+
+        stubFor(get(urlPathEqualTo(urlPath))
+                .withHeader(ACCEPT, equalTo(QUERY_ALL_FIXED_LIST_MIME_TYPE))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(getPayload("stub-data/referencedata.query.get-all-fixed-list.json"))));
+    }
+
+    public static void stubBailStatuses() {
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/bail-statuses";
+
+        stubFor(get(urlPathEqualTo(urlPath))
+                .withHeader(ACCEPT, equalTo(QUERY_BAIL_STATUSES_MIME_TYPE))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(getPayload("stub-data/referencedata.query.bailstatuses.json"))));
+    }
+
+    public static void stubQueryForVerdictTypes() {
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/verdict-types";
+
+        stubFor(get(urlPathEqualTo(urlPath))
+                .withHeader(ACCEPT, equalTo(QUERY_VERDICT_TYPES_MIME_TYPE))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(
+                                getPayload("stub-data/referencedata.verdict-types.json")
+                        )));
+    }
 
     public static JsonObject stubQueryOffencesByCode(final String code) {
         return stubQueryOffencesByCode(code, equalTo(code));
@@ -259,16 +325,43 @@ public class ReferenceDataServiceStub {
                 .add("localJusticeArea", localJusticeArea.build())
                 .build();
 
-        try {
-            stubFor(get(urlPathEqualTo(urlPath))
-                    .withQueryParam("postcode", equalTo(encode(postCode, UTF_8.name())))
-                    .willReturn(aResponse().withStatus(SC_OK)
-                            .withHeader(ID, randomUUID().toString())
-                            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                            .withBody(stubbedResponse.toString())));
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalArgumentException(format("Not able to URL encode postcode: %s", postCode), e);
-        }
+        stubFor(get(urlPathEqualTo(urlPath))
+                .withQueryParam("postcode", equalTo(encoded(postCode)))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(stubbedResponse.toString())));
+    }
+    public static void stubEnforcementAreaByLocalLJACode(final String nationalCourtCode, final String nationalCourtName) {
+        stubPingFor(REFERENCEDATA_SERVICE);
+        final String urlPath = QUERY_API_PATH + "/enforcement-area";
+
+        final JsonObject enforcementAreaJson = getFileContentAsJson("stub-data/referencedata.query.enforcement-area.json");
+        final JsonObjectBuilder localJusticeArea = createObjectBuilder(enforcementAreaJson.getJsonObject("localJusticeArea"));
+        localJusticeArea.add("nationalCourtCode", nationalCourtCode);
+        localJusticeArea.add("name", nationalCourtName);
+        final JsonObject stubbedResponse = createObjectBuilder(enforcementAreaJson)
+                .add("localJusticeArea", localJusticeArea.build())
+                .build();
+
+        stubFor(get(urlPathEqualTo(urlPath))
+                .withQueryParam("localJusticeAreaNationalCourtCode", equalTo(encoded(nationalCourtCode)))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(stubbedResponse.toString())));
+    }
+
+    public static void stubEnforcementAreaByLjaCode() {
+        final String urlPath = pathFor("/enforcement-area");
+        final JsonObject enforcementAreaJson = getFileContentAsJson("stub-data/referencedata.query.enforcement-area.json");
+
+        stubFor(get(urlPathEqualTo(urlPath))
+                .withQueryParam("localJusticeAreaNationalCourtCode", equalTo(encoded(DEFAULT_LONDON_LJA_NATIONAL_COURT_CODE)))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(enforcementAreaJson.toString())));
     }
 
     public static void stubRegionByPostcode(final String nationalCourtCode, final String region) {
@@ -288,36 +381,24 @@ public class ReferenceDataServiceStub {
                 .add("localJusticeAreas", localJusticeAreaArray)
                 .build();
 
-        try {
-            stubFor(get(urlPathEqualTo(urlPath))
-                    .withQueryParam("nationalCourtCode", equalTo(encode(nationalCourtCode, UTF_8.name())))
-                    .willReturn(aResponse().withStatus(SC_OK)
-                            .withHeader(ID, randomUUID().toString())
-                            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                            .withBody(stubbedResponse.toString())));
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalArgumentException(format("Not able to URL encode nationalCourtCode: %s", nationalCourtCode), e);
-        }
+        stubFor(get(urlPathEqualTo(urlPath))
+                .withQueryParam("nationalCourtCode", equalTo(encoded(nationalCourtCode)))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(stubbedResponse.toString())));
     }
 
     public static void stubCountryByPostcodeQuery(final String postcode, final String country) {
         stubPingFor(REFERENCEDATA_SERVICE);
-
         final String urlPath = QUERY_API_PATH + "/country-by-postcode";
 
-        final String encodedPostcode;
-        try {
-            encodedPostcode = encode(postcode, UTF_8.name());
-
-            stubFor(get(urlPathEqualTo(urlPath))
-                    .withQueryParam("postCode", equalTo(encodedPostcode))
-                    .willReturn(aResponse().withStatus(SC_OK)
-                            .withHeader(ID, randomUUID().toString())
-                            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                            .withBody(createObjectBuilder().add("country", country).build().toString())));
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalArgumentException(format("Not able to URL encode postcode: %s", postcode), e);
-        }
+        stubFor(get(urlPathEqualTo(urlPath))
+                .withQueryParam("postCode", equalTo(encoded(postcode)))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(createObjectBuilder().add("country", country).build().toString())));
     }
 
     public static void stubCountryNationalities(final String resourceName) {
@@ -374,17 +455,6 @@ public class ReferenceDataServiceStub {
         }
     }
 
-    public static void stubResultDefinitions() {
-        stubPingFor(REFERENCEDATA_SERVICE);
-        final String urlPath = QUERY_API_PATH + "/result-definitions";
-
-        stubFor(get(urlPathEqualTo(urlPath))
-                .willReturn(aResponse().withStatus(SC_OK)
-                        .withHeader(ID, randomUUID().toString())
-                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                        .withBody(getPayload("stub-data/referencedata.result-definitions.json"))));
-    }
-
     public static void stubResultIds() {
         stubPingFor(REFERENCEDATA_SERVICE);
         final String urlPath = QUERY_API_PATH + "/results";
@@ -398,7 +468,7 @@ public class ReferenceDataServiceStub {
 
     public static void stubRegionalOrganisations() {
         final String urlPath = pathFor("/regional-organisations");
-        final String mediaType = "application/vnd.referencedata.query.regional-organisations+json";
+        final String mediaType = "application/vnd.referencedata.query.regional-organisations-except-region-name-police+json";
 
         stubFor(get(urlPathEqualTo(urlPath))
                 .willReturn(aResponse().withStatus(SC_OK)
@@ -418,6 +488,37 @@ public class ReferenceDataServiceStub {
                         .withHeader(CONTENT_TYPE, "application/vnd.reference-data.query.get-referral-reason+json")
                         .withBody(getPayload(payload)))
         );
+    }
+
+    public static String stubDvlaPenaltyPointNotificationEmailAddress() {
+        final String urlPath = pathFor("/organisation");
+        final String dvlaEmailAddress = "rehab@dvla.gov.uk";
+
+        stubFor(get(urlPathEqualTo(urlPath))
+                .withQueryParam("orgName", equalTo(encoded("DVLA Penalty Point Notification")))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(
+                                createObjectBuilder()
+                                        .add("id", randomUUID().toString())
+                                        .add("seqNum", 10010)
+                                        .add("orgName", "DVLA Penalty Point Notification")
+                                        .add("orgType", "DVLA")
+                                        .add("startDate", "2020-05-01")
+                                        .add("emailAddress", dvlaEmailAddress)
+                                        .build()
+                                        .toString()
+                        )));
+        return dvlaEmailAddress;
+    }
+
+    private static String encoded(final String value) {
+        try {
+            return encode(value, UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Unable to encode value", e);
+        }
     }
 
     private static String pathFor(final String endpoint) {

@@ -22,6 +22,7 @@ import static uk.gov.moj.sjp.it.command.CreateCase.createCaseForPayloadBuilder;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
 import static uk.gov.moj.sjp.it.helper.FileServiceDBHelper.createStubFile;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllIndividualProsecutorsQueries;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllReferenceData;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAnyQueryOffences;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
@@ -50,7 +51,6 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import org.hamcrest.Matcher;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -75,6 +75,7 @@ public class PressTransparencyReportIT extends BaseIntegrationTest {
         stubDocGeneratorEndPoint();
         stubAllIndividualProsecutorsQueries();
         stubAnyQueryOffences();
+        stubAllReferenceData();
     }
 
     @Test

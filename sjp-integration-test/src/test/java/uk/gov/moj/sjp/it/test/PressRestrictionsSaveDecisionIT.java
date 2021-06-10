@@ -29,6 +29,7 @@ import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
@@ -109,6 +110,7 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
         stubStartSjpSessionCommand();
         stubEndSjpSessionCommand();
         stubAssignmentReplicationCommands();
+        stubAllResultDefinitions();
         stubDefaultCourtByCourtHouseOUCodeQuery();
         stubForUserDetails(user, "ALL");
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
@@ -122,6 +124,7 @@ public class PressRestrictionsSaveDecisionIT extends BaseIntegrationTest {
         final Discharge discharge = DischargeBuilder.withDefaults().pressRestriction("Robert Robertson").build();
         final Dismiss dismiss = DismissBuilder.withDefaults().pressRestriction("Robert Robertson").build();
         final Withdraw withdraw = WithdrawBuilder.withDefaults().pressRestriction("Robert Robertson").build();
+        stubWithdrawalReasonsQuery(withdraw.getWithdrawalReasonId(), WITHDRAWAL_REASON);
         final NoSeparatePenalty noSeparatePenalty = NoSeparatePenaltyBuilder.withDefaults().pressRestriction("Robert Robertson").build();
         final List<OffenceDecision> offenceDecisions = asList(financialPenalty, discharge, dismiss, withdraw, noSeparatePenalty);
         final FinancialImposition financialImposition = FinancialImpositionBuilder.withDefaults();

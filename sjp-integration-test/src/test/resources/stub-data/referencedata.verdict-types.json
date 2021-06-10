@@ -1,0 +1,30 @@
+{
+  "verdictTypes": [
+    {
+      "id": "7e2f843e-d639-40b3-8611-8015f3a18958",
+      "description": "Guilty, by jury on judge's direction",
+      "category": "Guilty",
+      "categoryType": "GUILTY",
+      "sequence": 3,
+      "validFrom": "2017-08-01",
+      "validTo": "2017-08-01",
+      "jurisdiction": "crown",
+      "verdictCode" : "G",
+      "jurySplitAvailable": "No",
+      "cjsVerdictCode": "G"
+    },
+    {
+      "id": "7e2f843e-d639-40b3-8611-8015f3a18958",
+      "description": "Not Guilty, by jury on judge's direction",
+      "category": "Not Guilty",
+      "categoryType": "NOT_GUILTY",
+      "sequence": 4,
+      "validFrom": "2017-08-01",
+      "validTo": "2017-08-01",
+      "jurisdiction": "magistrates",
+      "verdictCode" : "NV",
+      "jurySplitAvailable": "Yes",
+      "cjsVerdictCode": "N"
+    }
+  ]
+}

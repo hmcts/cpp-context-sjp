@@ -18,7 +18,6 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostc
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryOffencesByCode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.util.FileUtil.getPayload;
 
 import uk.gov.moj.cpp.sjp.domain.Income;
@@ -68,7 +67,6 @@ public class DeleteFinancialMeansIT extends BaseIntegrationTest {
         stubCountryByPostcodeQuery("W1T 1JY", "England");
         stubNotifications();
         stubQueryOffencesByCode("PS00001");
-        stubResultDefinitions();
         stubAllIndividualProsecutorsQueries();
 
         financialMeansHelper = new FinancialMeansHelper();

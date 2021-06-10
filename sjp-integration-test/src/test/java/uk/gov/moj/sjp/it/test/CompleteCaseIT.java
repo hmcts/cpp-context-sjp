@@ -2,7 +2,7 @@ package uk.gov.moj.sjp.it.test;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.time.Month.JULY;
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -25,20 +25,26 @@ import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.stub.AssignmentStub.stubAssignmentReplicationCommands;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllResultDefinitions;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubBailStatuses;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubFixedLists;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForAllProsecutors;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForVerdictTypes;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubResultIds;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_USER_ID;
 import static uk.gov.moj.sjp.it.util.UrnProvider.generate;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargePeriod;
@@ -68,14 +74,14 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
 public class CompleteCaseIT extends BaseIntegrationTest {
 
-    private static final UUID DISMISSED_RESULT_ID = UUID.fromString("14d66587-8fbe-424f-a369-b1144f1684e3");
-    private static final UUID PAY_COSTS_RESULT_ID = UUID.fromString("b786ce8a-ce7a-4fa1-94ce-a3d9777574e4");
     private final ProsecutingAuthority prosecutingAuthority = TFL;
     private final User user = new User("John", "Smith", USER_ID);
     private final LocalDate defendantDateOfBirth = LocalDate.of(1980, JULY, 15);
@@ -95,13 +101,21 @@ public class CompleteCaseIT extends BaseIntegrationTest {
         databaseCleaner.cleanViewStore();
 
         stubStartSjpSessionCommand();
+        stubForUserDetails(user, prosecutingAuthority.name());
         stubEndSjpSessionCommand();
         stubAssignmentReplicationCommands();
         stubDefaultCourtByCourtHouseOUCodeQuery();
-        stubResultDefinitions();
+        stubAllResultDefinitions();
+        stubQueryForAllProsecutors();
         stubResultIds();
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
         stubForUserDetails(user, "ALL");
+        stubQueryForVerdictTypes();
+        stubBailStatuses();
+        stubFixedLists();
+
+        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", false);
+        FeatureStubber.stubFeaturesFor("sjp", features);
 
         CaseAssignmentRestrictionHelper.provisionCaseAssignmentRestrictions(Sets.newHashSet(TFL, TVL, DVLA));
 
@@ -150,17 +164,8 @@ public class CompleteCaseIT extends BaseIntegrationTest {
                                 withJsonPath("$.defendantId", equalTo(defendantId.toString()))
                         ))));
 
-        final Optional<JsonEnvelope> jsonEnvelope2 = eventListener.popEvent("public.sjp.case-resulted");
-
-        assertThat(jsonEnvelope2.isPresent(), is(true));
-        final JsonEnvelope envelope2 = jsonEnvelope2.get();
-        assertThat(envelope2,
-                jsonEnvelope(
-                        metadata().withName("public.sjp.case-resulted"),
-                        payload().isJson(allOf(
-                                withJsonPath("$.cases[0].caseId", equalTo(caseId.toString())),
-                                withJsonPath("$.session.sessionId", equalTo(magistrateSessionId.toString()))
-                        ))));
+        final Optional<JsonEnvelope> jsonEnvelopePublicHearingResulted = eventListener.popEvent("public.hearing.resulted");
+        assertThat(jsonEnvelopePublicHearingResulted.isPresent(), is(true));
     }
 
     @Test
@@ -173,16 +178,16 @@ public class CompleteCaseIT extends BaseIntegrationTest {
         final Optional<JsonEnvelope> jsonEnvelope = eventListener.popEvent("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn");
         assertThat(jsonEnvelope.isPresent(), is(false));
 
-        final Optional<JsonEnvelope> jsonEnvelope2 = eventListener.popEvent("public.sjp.case-resulted");
+        final Optional<JsonEnvelope> jsonEnvelope2 = eventListener.popEvent("public.hearing.resulted");
 
         assertThat(jsonEnvelope2.isPresent(), is(true));
         final JsonEnvelope envelope = jsonEnvelope2.get();
         assertThat(envelope,
                 jsonEnvelope(
-                        metadata().withName("public.sjp.case-resulted"),
+                        metadata().withName("public.hearing.resulted"),
                         payload().isJson(allOf(
-                                withJsonPath("$.cases[0].caseId", equalTo(caseId.toString())),
-                                withJsonPath("$.session.sessionId", equalTo(magistrateSessionId.toString()))
+                                withJsonPath("$.hearing", Matchers.notNullValue()),
+                                withJsonPath("$.sharedTime", is(Matchers.notNullValue()))
                         ))));
     }
 
@@ -190,13 +195,13 @@ public class CompleteCaseIT extends BaseIntegrationTest {
         assignCaseInMagistrateSession(magistrateSessionId, user.getUserId());
 
         final OffenceDecision offenceDecision = DismissBuilder.withDefaults(offenceId).build();
-        final DecisionCommand decision = new DecisionCommand(magistrateSessionId, caseId, "Test note", user, asList(offenceDecision), null);
+        final DecisionCommand decision = new DecisionCommand(magistrateSessionId, caseId, "Test note", user, singletonList(offenceDecision), null);
 
         eventListener
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
                 .subscribe("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn")
-                .subscribe("public.sjp.case-resulted")
+                .subscribe("public.hearing.resulted")
                 .subscribe(FinancialMeansDeleteDocsStarted.EVENT_NAME)
                 .run(() -> DecisionHelper.saveDecision(decision));
     }
@@ -206,13 +211,13 @@ public class CompleteCaseIT extends BaseIntegrationTest {
 
         final FinancialImposition financialImposition = buildFinancialImposition();
         final OffenceDecision offenceDecision = Discharge.createDischarge(null, createOffenceDecisionInformation(offenceId, FOUND_GUILTY), CONDITIONAL, new DischargePeriod(2, MONTH), new BigDecimal(230), null, false, null, null);
-        final DecisionCommand decision = new DecisionCommand(magistrateSessionId, caseId, "Test note", user, asList(offenceDecision), financialImposition);
+        final DecisionCommand decision = new DecisionCommand(magistrateSessionId, caseId, "Test note", user, singletonList(offenceDecision), financialImposition);
 
         eventListener
                 .subscribe(DecisionSaved.EVENT_NAME)
                 .subscribe(CaseCompleted.EVENT_NAME)
                 .subscribe("public.sjp.all-offences-for-defendant-dismissed-or-withdrawn")
-                .subscribe("public.sjp.case-resulted")
+                .subscribe("public.hearing.resulted")
                 .subscribe(FinancialMeansDeleteDocsStarted.EVENT_NAME)
                 .run(() -> DecisionHelper.saveDecision(decision));
     }

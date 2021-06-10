@@ -20,8 +20,8 @@
         <assignment.version>6.0.0</assignment.version>
         <material.version>6.4.3</material.version>
         <notification.notify.version>7.0.1</notification.notify.version>
-        <referencedata.version>7.0.48</referencedata.version>
-        <referencedata.offences.version>7.0.4</referencedata.offences.version>
+        <referencedata.version>7.0.52</referencedata.version>
+        <referencedata.offences.version>7.0.5</referencedata.offences.version>
         <scheduling.version>6.0.0</scheduling.version>
         <authorisation.service.version>0.1.49</authorisation.service.version>
         <usersgroups.version>7.0.25</usersgroups.version>
@@ -31,7 +31,7 @@
         <cpp.framework.action.mapping.enabled>true</cpp.framework.action.mapping.enabled>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <file.alfresco.version>2.3.0</file.alfresco.version>
-        <coredomain.version>1.0.153</coredomain.version>
+        <coredomain.version>1.0.157</coredomain.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <joda-time.version>2.10</joda-time.version>
         <lombok.version>1.18.2</lombok.version>
@@ -44,6 +44,7 @@
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <elasticsearch.embedded.version>7.4.0</elasticsearch.embedded.version>
         <stagingenforcement.version>7.0.17</stagingenforcement.version>
+        <criminal-court-public-model.version>1.0.157</criminal-court-public-model.version>
     </properties>
 
     <modules>

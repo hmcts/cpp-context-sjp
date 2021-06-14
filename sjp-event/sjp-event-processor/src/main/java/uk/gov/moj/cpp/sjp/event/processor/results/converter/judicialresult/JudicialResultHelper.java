@@ -57,6 +57,7 @@ public class JudicialResultHelper {
     private static final String POST_HEARING_CUSTODY_STATUS = "postHearingCustodyStatus";
     private static final String RESULT_DEFINITION_GROUP = "resultDefinitionGroup";
     private static final String RANK = "rank";
+    public static final String DVLA_CODE = "dvlaCode";
 
     public static final Map<String, String> categoryMap = ImmutableMap.of(
             "A", "ANCILLARY",
@@ -171,7 +172,8 @@ public class JudicialResultHelper {
                 .withAlwaysPublished(resultDefinition.getBoolean(ALWAYS_PUBLISHED, false))
                 .withUrgent(resultDefinition.getBoolean(URGENT, false))
                 .withPointsDisqualificationCode(resultDefinition.getString(POINTS_DISQUALIFICATION_CODE, null))
-                .withD20(resultDefinition.getBoolean(D_20, false));
+                .withD20(resultDefinition.getBoolean(D_20, false))
+                .withDvlaCode(resultDefinition.getString(DVLA_CODE, null));
     }
 
 

@@ -122,7 +122,22 @@ public class OffencesConverter {
                 .withOffenceTitle(ofNullable(offenceObject).map(e -> e.getString(TITLE, null)).orElse(null))
                 .withOffenceLegislation(ofNullable(offenceObject).map(e -> e.getString("legislation", null)).orElse(null))
                 .withOffenceTitleWelsh(ofNullable(offenceObject).map(e -> e.getString("welshoffencetitle", null)).orElse(null))
-                .withOffenceLegislationWelsh(ofNullable(offenceObject).map(e -> e.getString("welshlegislation", null)).orElse(null));
+                .withOffenceLegislationWelsh(ofNullable(offenceObject).map(e -> e.getString("welshlegislation", null)).orElse(null))
+                .withDvlaOffenceCode(getDVLAOffenceCode(offenceObject));
+    }
+
+
+    public String getDVLAOffenceCode(final JsonObject offenceReferenceData) {
+        final Optional<JsonObject> document =
+                ofNullable(offenceReferenceData.getJsonObject("details"))
+                        .map(details -> details.getJsonObject("document"));
+
+        if (document.isPresent()) {
+            return ofNullable(document.get().getJsonObject("codes"))
+                    .map(codes -> codes.getJsonObject("dvlacode"))
+                    .map(dvlaCode -> dvlaCode.getString("code")).orElse(null);
+        }
+        return null;
     }
 
 

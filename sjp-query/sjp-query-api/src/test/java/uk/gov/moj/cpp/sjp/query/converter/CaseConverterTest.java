@@ -103,6 +103,7 @@ public class CaseConverterTest {
                                         .add("pendingWithdrawal", pendingWithdrawal)
                                         .add("wording", wording)
                                         .add("wordingWelsh", wordingWelsh)
+                                        .add("endorsable", true)
                                 )
                         )
                 ).build();
@@ -150,6 +151,7 @@ public class CaseConverterTest {
                                         .add("titleWelsh", titleWelsh)
                                         .add("legislationWelsh", legislationWelsh)
                                         .add("plea", plea)
+                                        .add("endorsable", true)
                                 )
                         )
                 ).build();

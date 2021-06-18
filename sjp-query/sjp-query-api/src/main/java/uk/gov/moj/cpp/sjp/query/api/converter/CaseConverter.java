@@ -69,7 +69,8 @@ public class CaseConverter {
                 .add("wording", offence.getString("wording"))
                 .add("pendingWithdrawal", offence.getBoolean("pendingWithdrawal", false))
                 .add("title", offenceReferenceData.getString("title"))
-                .add("legislation", offenceReferenceData.getString("legislation"));
+                .add("legislation", offenceReferenceData.getString("legislation"))
+                .add("endorsable", offence.getBoolean("endorsable", false));
 
         Optional.ofNullable(offence.getString("wordingWelsh", null))
                 .ifPresent(wordingWelsh -> builder.add("wordingWelsh", wordingWelsh));

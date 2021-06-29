@@ -75,6 +75,18 @@
     {
       "id": "49939c7c-750f-403e-9ce1-f82e3e568065",
       "code": "NSP"
+    },
+    {
+      "id": "ea1ee5a4-be13-48dc-8411-78f22e01c236",
+      "code": "LPC"
+    },
+    {
+      "id": "5c5a693f-c26c-4352-bbb3-ac72dd141e88",
+      "code": "DNP"
+    },
+    {
+      "id": "c3a39c2f-b056-442f-8dfc-604b5434f956",
+      "code": "NONE"
     }
   ]
 }

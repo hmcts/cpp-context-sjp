@@ -4894,6 +4894,178 @@
       "libraCode": "RFSD",
       "isAvailableForCourtExtract": true,
       "isBooleanResult": false
+    },
+    {
+      "id": "ea1ee5a4-be13-48dc-8411-78f22e01c236",
+      "version": "2021-04-30T18:20:44.459Z",
+      "startDate": "2021-05-01",
+      "label": "Licence produced in court",
+      "shortCode": "LPC",
+      "level": "O",
+      "rank": 25000,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "LPC"
+          ]
+        },
+        {
+          "wordGroup": [
+            "Licence",
+            "produced",
+            "court"
+          ]
+        }
+      ],
+      "userGroups": [
+        "CPS",
+        "Defence",
+        "Judiciary",
+        "NCES",
+        "Probation",
+        "Prosecuting Authorities",
+        "YOTs"
+      ],
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "A",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": false,
+      "publishedForNows": false,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": true,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "resultDefinitionRules": [
+        {
+          "childResultDefinitionId": "c3a39c2f-b056-442f-8dfc-604b5434f956",
+          "ruleType": "oneOf"
+        },
+        {
+          "childResultDefinitionId": "4b850aa9-984c-4a15-a1ae-b2f861cfcbe8",
+          "ruleType": "oneOf"
+        },
+        {
+          "childResultDefinitionId": "c83def9d-9a92-4ea0-8923-87fdd7601077",
+          "ruleType": "oneOf"
+        },
+        {
+          "childResultDefinitionId": "b3c7a167-72fa-46d2-b59c-8cda04fc9729",
+          "ruleType": "oneOf"
+        },
+        {
+          "childResultDefinitionId": "5c5a693f-c26c-4352-bbb3-ac72dd141e88",
+          "ruleType": "oneOf"
+        }
+      ],
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "isAvailableForCourtExtract": false,
+      "isBooleanResult": false
+    },
+    {
+      "id": "c3a39c2f-b056-442f-8dfc-604b5434f956",
+      "version": "2021-04-28T13:07:42.655Z",
+      "startDate": "2021-04-29",
+      "label": "0: None or unknown",
+      "shortCode": "NONE",
+      "level": "O",
+      "rank": 24100,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "none",
+            "unkown"
+          ]
+        }
+      ],
+      "userGroups": [
+        "CPS",
+        "Defence",
+        "Judiciary",
+        "NCES",
+        "Probation",
+        "Prosecuting Authorities",
+        "YOTs"
+      ],
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "A",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": false,
+      "publishedForNows": true,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "isAvailableForCourtExtract": false,
+      "isBooleanResult": false
+    },
+    {
+      "id": "5c5a693f-c26c-4352-bbb3-ac72dd141e88",
+      "version": "2021-04-30T18:20:44.037Z",
+      "startDate": "2021-05-01",
+      "label": "5: DVLA held not produced",
+      "shortCode": "DNP",
+      "level": "O",
+      "rank": 24800,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "DNP"
+          ]
+        },
+        {
+          "wordGroup": [
+            "Licence",
+            "produced",
+            "Not"
+          ]
+        }
+      ],
+      "userGroups": [
+        "CPS",
+        "Defence",
+        "Judiciary",
+        "NCES",
+        "Probation",
+        "Prosecuting Authorities",
+        "YOTs"
+      ],
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "A",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": false,
+      "publishedForNows": true,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "isAvailableForCourtExtract": false,
+      "isBooleanResult": false
     }
   ]
 }

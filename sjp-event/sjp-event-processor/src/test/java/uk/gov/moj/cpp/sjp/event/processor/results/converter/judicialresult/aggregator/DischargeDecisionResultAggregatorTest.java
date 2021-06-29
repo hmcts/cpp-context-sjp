@@ -51,14 +51,24 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
 
         aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, resultedOn, "drivernumber", "TVL");
 
-        assertThat(resultsAggregate.getResults(offence1Id).size(), is(4));
+        assertThat(resultsAggregate.getResults(offence1Id).size(), is(6));
 
         assertThat(resultsAggregate.getResults(offence1Id), allOf(
                 hasItem(allOf(
                         hasProperty("judicialResultId", Matchers.is(fromString("b9c6047b-fb84-4b12-97a1-2175e4b8bbac"))),
                         hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
                         hasProperty("resultText", Matchers.is("Absolute discharge")),
-                        hasProperty("judicialResultPrompts", is(nullValue()))))));
+                        hasProperty("judicialResultPrompts", is(nullValue())))),
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("ea1ee5a4-be13-48dc-8411-78f22e01c236"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("Licence produced in court"))
+                )),
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("5c5a693f-c26c-4352-bbb3-ac72dd141e88"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("5: DVLA held not produced"))
+                ))));
     }
 
     @Test
@@ -71,7 +81,7 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
 
         aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, resultedOn, "drivernumber", "TVL");
 
-        assertThat(resultsAggregate.getResults(offence1Id).size(), is(4));
+        assertThat(resultsAggregate.getResults(offence1Id).size(), is(6));
 
         assertThat(resultsAggregate.getResults(offence1Id), allOf(
                 hasItem(allOf(
@@ -95,7 +105,7 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
 
         aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, resultedOn, "drivernumber", "TVL");
 
-        assertThat(resultsAggregate.getResults(offence1Id).size(), is(4));
+        assertThat(resultsAggregate.getResults(offence1Id).size(), is(6));
 
         assertThat(resultsAggregate.getResults(offence1Id), allOf(
                 hasItem(allOf(
@@ -106,7 +116,17 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
                         hasProperty("judicialResultPrompts", allOf(hasItem(allOf(
                                 hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("f7c7c088-f88e-4c28-917c-78571517aca1"))),
                                 hasProperty("value", Matchers.is("£25.00")))
-                        )))))));
+                        ))))),
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("ea1ee5a4-be13-48dc-8411-78f22e01c236"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("Licence produced in court"))
+                )),
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("5c5a693f-c26c-4352-bbb3-ac72dd141e88"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("5: DVLA held not produced"))
+                ))));
     }
 
     @Test
@@ -118,7 +138,7 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
 
         aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, resultedOn, "drivernumber", "TVL");
 
-        assertThat(resultsAggregate.getResults(offence1Id).size(), is(5));
+        assertThat(resultsAggregate.getResults(offence1Id).size(), is(7));
         assertThat(resultsAggregate.getResults(offence1Id), allOf(
                 hasItem(allOf(
                         hasProperty("judicialResultId", Matchers.is(fromString("cee54856-4450-4f28-a8a9-72b688726201"))),
@@ -134,7 +154,17 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
                                 hasItem(allOf(
                                         hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("a593ae4a-9d69-45b9-9585-c11aeed28404"))),
                                         hasProperty("value", Matchers.is("drivernumber")))
-                                )))))));
+                                ))))),
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("ea1ee5a4-be13-48dc-8411-78f22e01c236"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("Licence produced in court"))
+                )),
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("5c5a693f-c26c-4352-bbb3-ac72dd141e88"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("5: DVLA held not produced"))
+                ))));
     }
 
     @Test
@@ -146,7 +176,7 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
 
         aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, resultedOn, "drivernumber", "TVL");
 
-        assertThat(resultsAggregate.getResults(offence1Id).size(), is(5));
+        assertThat(resultsAggregate.getResults(offence1Id).size(), is(7));
         assertThat(resultsAggregate.getResults(offence1Id), allOf(
                 hasItem(allOf(
                         hasProperty("judicialResultId", Matchers.is(fromString("3fa139cc-efe0-422b-93d6-190a5be50953"))),
@@ -168,7 +198,17 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
                                 hasItem(allOf(
                                         hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("bbbb47bb-3418-463c-bfc3-43c6f72bb7c9"))),
                                         hasProperty("value", Matchers.is("DIFFERENT_OCCASIONS")))
-                                )))))));
+                                ))))),
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("ea1ee5a4-be13-48dc-8411-78f22e01c236"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("Licence produced in court"))
+                )),
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("5c5a693f-c26c-4352-bbb3-ac72dd141e88"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("5: DVLA held not produced"))
+                ))));
     }
 
 
@@ -181,13 +221,23 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
 
         aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, resultedOn, "drivernumber", "TVL");
 
-        assertThat(resultsAggregate.getResults(offence1Id).size(), is(5));
+        assertThat(resultsAggregate.getResults(offence1Id).size(), is(7));
         assertThat(resultsAggregate.getResults(offence1Id), allOf(
                 hasItem(allOf(
                         hasProperty("judicialResultId", Matchers.is(fromString("b0aeb4fc-df63-4e2f-af88-97e3f23e847f"))),
                         hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
                         hasProperty("resultText", Matchers.is("Driving record endorsed (no points)")),
-                        hasProperty("judicialResultPrompts", is(nullValue()))))));
+                        hasProperty("judicialResultPrompts", is(nullValue())))),
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("ea1ee5a4-be13-48dc-8411-78f22e01c236"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("Licence produced in court"))
+                )),
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("5c5a693f-c26c-4352-bbb3-ac72dd141e88"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("5: DVLA held not produced"))
+                ))));
     }
 
     @Test
@@ -199,7 +249,7 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
 
         aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, resultedOn, "drivernumber", "TVL");
 
-        assertThat(resultsAggregate.getResults(offence1Id).size(), is(5));
+        assertThat(resultsAggregate.getResults(offence1Id).size(), is(7));
         assertThat(resultsAggregate.getResults(offence1Id), allOf(
                 hasItem(allOf(
                         hasProperty("judicialResultId", Matchers.is(fromString("ae89b99c-e0e3-47b5-b218-24d4fca3ca53"))),
@@ -208,7 +258,17 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
                         hasProperty("judicialResultPrompts", allOf(hasItem(allOf(
                                 hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("26985e5b-fe1f-4d7d-a21a-57207c5966e7"))),
                                 hasProperty("value", Matchers.is("£10.00")))
-                        )))))));
+                        ))))),
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("ea1ee5a4-be13-48dc-8411-78f22e01c236"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("Licence produced in court"))
+                )),
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("5c5a693f-c26c-4352-bbb3-ac72dd141e88"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("5: DVLA held not produced"))
+                ))));
     }
 
     @Test
@@ -220,7 +280,7 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
 
         aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, resultedOn, "drivernumber", "TVL");
 
-        assertThat(resultsAggregate.getResults(offence1Id).size(), is(6));
+        assertThat(resultsAggregate.getResults(offence1Id).size(), is(8));
         assertThat(resultsAggregate.getResults(offence1Id), allOf(
                 hasItem(allOf(
                         hasProperty("judicialResultId", Matchers.is(fromString("29e02fa1-42ce-4eec-914e-e62508397a16"))),
@@ -229,7 +289,48 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
                         hasProperty("judicialResultPrompts", allOf(hasItem(allOf(
                                 hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("e263de82-47ca-433a-bb41-cad2e1c5bb72"))),
                                 hasProperty("value", Matchers.is("no compensation reason")))
-                        )))))));
+                        ))))),
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("ea1ee5a4-be13-48dc-8411-78f22e01c236"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("Licence produced in court"))
+                )),
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("5c5a693f-c26c-4352-bbb3-ac72dd141e88"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("5: DVLA held not produced"))
+                ))));
+    }
+
+    @Test
+    public void shouldPopulateNoCompensationReasonResultWithoutDriverNumber() {
+        final Discharge offenceDecision = new Discharge(null,
+                createOffenceDecisionInformation(offence1Id, PROVED_SJP), ABSOLUTE, null, BigDecimal.TEN,
+                "no compensation reason", false, new BigDecimal(25), true, null, null, null,
+                true, DisqualificationType.DISCRETIONARY, new DisqualificationPeriod(2, DisqualificationPeriodTimeUnit.MONTH), null, null);
+
+        aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, resultedOn, null, "TVL");
+
+        assertThat(resultsAggregate.getResults(offence1Id).size(), is(8));
+        assertThat(resultsAggregate.getResults(offence1Id), allOf(
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("29e02fa1-42ce-4eec-914e-e62508397a16"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("No compensation reason\nReason for no compensation no compensation reason")),
+                        hasProperty("judicialResultPrompts", allOf(hasItem(allOf(
+                                hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("e263de82-47ca-433a-bb41-cad2e1c5bb72"))),
+                                hasProperty("value", Matchers.is("no compensation reason")))
+                        ))))),
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("ea1ee5a4-be13-48dc-8411-78f22e01c236"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("Licence produced in court"))
+                )),
+                hasItem(allOf(
+                        hasProperty("judicialResultId", Matchers.is(fromString("c3a39c2f-b056-442f-8dfc-604b5434f956"))),
+                        hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
+                        hasProperty("resultText", Matchers.is("0: None or unknown"))
+                ))));
     }
 
 }

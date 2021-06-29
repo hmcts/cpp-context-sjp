@@ -47,6 +47,9 @@ public enum JResultCode {
     D45(fromString("fcbf777d-1a73-47e7-ab9b-7c51091a022c")),
     DPR(fromString("b27b42bf-e20e-46ec-a6e3-5c2e8a076c20")),
     SETASIDE(fromString("af590f98-21cb-43e7-b992-2a9d444acb2b")),
+    LPC(fromString("ea1ee5a4-be13-48dc-8411-78f22e01c236")),
+    NONE(fromString("c3a39c2f-b056-442f-8dfc-604b5434f956")),
+    DNP(fromString("5c5a693f-c26c-4352-bbb3-ac72dd141e88")),
 
     // application result codes
     STDEC(fromString("e2f6e11b-c3a2-4e76-8d29-fbede4174988")),

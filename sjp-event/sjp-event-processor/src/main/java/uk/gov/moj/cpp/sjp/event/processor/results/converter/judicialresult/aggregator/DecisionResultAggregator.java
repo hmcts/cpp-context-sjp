@@ -25,13 +25,16 @@ import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresul
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.DDD;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.DDO;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.DDP;
+import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.DNP;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.DPR;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.FCOMP;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.FVEBD;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.LEA;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.LEN;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.LEP;
+import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.LPC;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.NCR;
+import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.NONE;
 
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
@@ -160,14 +163,48 @@ public class DecisionResultAggregator {
                                                                          final ZonedDateTime resultedOn,
                                                                          final String driverNumber) {
         final List<JudicialResult> judicialResults = new ArrayList<>();
-        if (Boolean.TRUE.equals(endorsementDecision.getLicenceEndorsed())) {
+
+        final boolean endorsed = Boolean.TRUE.equals(endorsementDecision.getLicenceEndorsed());
+        final boolean disqualification = Boolean.TRUE.equals(endorsementDecision.getDisqualification());
+
+        if (endorsed) {
             judicialResults.addAll(licenceEndorsementResult(endorsementDecision, sjpSessionEnvelope, resultedOn, driverNumber));
         }
 
-        if (Boolean.TRUE.equals(endorsementDecision.getDisqualification())) {
+        if (disqualification) {
             judicialResults.addAll(disqualificationResult(endorsementDecision, sjpSessionEnvelope, resultedOn, driverNumber));
         }
+
+        if(endorsed || disqualification) {
+            addDriversLicenseResults(sjpSessionEnvelope, resultedOn, driverNumber, judicialResults);
+        }
+
         return judicialResults;
+    }
+
+    private void addDriversLicenseResults(final JsonEnvelope sjpSessionEnvelope, final ZonedDateTime resultedOn, final String driverNumber, final List<JudicialResult> judicialResults) {
+        final UUID lpcResultId = LPC.getResultDefinitionId();
+        final JsonObject lpcResultDefinition = getResultDefinition(sjpSessionEnvelope, lpcResultId);
+        judicialResults.add(populateResultDefinitionAttributes(lpcResultId, sjpSessionEnvelope)
+                .withOrderedDate(resultedOn.format(DATE_FORMAT))
+                .withResultText(lpcResultDefinition.getString(LABEL))
+                .build());
+
+        if (isNotBlank(driverNumber)) {
+            final UUID dnpResultId = DNP.getResultDefinitionId();
+            final JsonObject dnpResultDefinition = getResultDefinition(sjpSessionEnvelope, dnpResultId);
+            judicialResults.add(populateResultDefinitionAttributes(dnpResultId, sjpSessionEnvelope)
+                    .withOrderedDate(resultedOn.format(DATE_FORMAT))
+                    .withResultText(dnpResultDefinition.getString(LABEL))
+                    .build());
+        } else {
+            final UUID noneResultId = NONE.getResultDefinitionId();
+            final JsonObject noneResultDefinition = getResultDefinition(sjpSessionEnvelope, noneResultId);
+            judicialResults.add(populateResultDefinitionAttributes(noneResultId, sjpSessionEnvelope)
+                    .withOrderedDate(resultedOn.format(DATE_FORMAT))
+                    .withResultText(noneResultDefinition.getString(LABEL))
+                    .build());
+        }
     }
 
     protected List<JudicialResult> licenceEndorsementResult(final DisqualifyEndorseDecision disqualifyEndorseDecision,

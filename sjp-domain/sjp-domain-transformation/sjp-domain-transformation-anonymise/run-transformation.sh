@@ -4,7 +4,7 @@ TRANSFORMATION_JAR=$(echo target/sjp-domain-transformation-anonymise*.jar)
 
 # for framework 5 services, use 5.3.1
 # for framework 6 services, use 6.0.1
-EVENT_TOOL_VERSION=6.0.1
+EVENT_TOOL_VERSION=6.4.5
 EVENT_TOOL_JAR=target/dependency/event-tool-${EVENT_TOOL_VERSION}-swarm.jar
 
 PROCESS_FILE=target/processFile

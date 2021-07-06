@@ -26,7 +26,8 @@
                 "offenceFacts" : {
                   "vehicleRegistration" : "FG59 4FD",
                   "vehicleMake" : "Ford"
-                }
+                },
+                "maxPenalty": "Max Penalty"
               },
               {
                 "endDate": "2019-01-10",
@@ -46,7 +47,8 @@
                 "offenceFacts" : {
                   "vehicleRegistration" : "FG59 4FD",
                   "vehicleMake" : "Ford"
-                }
+                },
+                "maxPenalty": "Max Penalty"
               }
             ],
             "numberOfPreviousConvictionsCited": 2,

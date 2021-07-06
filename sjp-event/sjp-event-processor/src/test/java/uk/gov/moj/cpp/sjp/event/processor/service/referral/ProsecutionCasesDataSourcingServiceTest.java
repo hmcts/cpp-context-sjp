@@ -92,6 +92,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
     private static final String DEFENDANT_ETHNICITY_ID = "defendant ethnicity id";
     private static final JsonObject ETHNICITY = createObjectBuilder().add("id", DEFENDANT_ETHNICITY_ID).build();
     private static final String OFFENCE_CJS_CODE = "offence CJS code";
+    private static final String OFFENCE_MAX_PENALTY = "max penalty";
     private static final UUID OFFENCE_DEFINITION_ID = randomUUID();
 
     @Mock
@@ -109,7 +110,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
     @Before
     public void setUp() {
         when(referenceDataService.getProsecutor(TFL, EMPTY_ENVELOPE)).thenReturn(PROSECUTOR);
-        when(referenceDataOffencesService.getOffenceDefinitionIdByOffenceCode(mockOffenceCodes(), DECISION_DATE.toLocalDate(), EMPTY_ENVELOPE)).thenReturn(mockCJSOffenceCodeToOffenceDefinitionId());
+        when(referenceDataOffencesService.getOffenceDefinitionByOffenceCode(mockOffenceCodes(), DECISION_DATE.toLocalDate(), EMPTY_ENVELOPE)).thenReturn(mockCJSOffenceCodeToOffenceDefinition());
         when(sjpService.getEmployerDetails(CASE_DETAILS.getDefendant().getId(), EMPTY_ENVELOPE)).thenReturn(EMPLOYER);
         when(referenceDataService.getEthnicity(DEFENDANT_ETHNICITY_CODE, EMPTY_ENVELOPE)).thenReturn(ofNullable(ETHNICITY));
         when(referenceDataService.getNationality(DEFENDANT_NATIONALITY_CODE, EMPTY_ENVELOPE))
@@ -144,7 +145,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
                         DEFENDANT_ETHNICITY_ID,
                         REFERRAL_EVEN_PAYLOAD,
                         PLEA_MITIGATION,
-                        mockCJSOffenceCodeToOffenceDefinitionId(),
+                        mockCJSOffenceCodeToOffenceDefinition(),
                         createOffences(OFFENCE_ID1, OFFENCE_ID2));
     }
 
@@ -170,7 +171,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
                 DEFENDANT_ETHNICITY_ID,
                 REFERRAL_EVEN_PAYLOAD,
                 null,
-                mockCJSOffenceCodeToOffenceDefinitionId(),
+                mockCJSOffenceCodeToOffenceDefinition(),
                 createOffences(OFFENCE_ID1, OFFENCE_ID2));
     }
 
@@ -198,7 +199,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
                 null,
                 REFERRAL_EVEN_PAYLOAD,
                 null,
-                mockCJSOffenceCodeToOffenceDefinitionId(),
+                mockCJSOffenceCodeToOffenceDefinition(),
                 createOffences(OFFENCE_ID1, OFFENCE_ID2));
     }
 
@@ -228,8 +229,14 @@ public class ProsecutionCasesDataSourcingServiceTest {
                 .collect(Collectors.toList());
     }
 
-    private static Map<String, UUID> mockCJSOffenceCodeToOffenceDefinitionId() {
-        return ImmutableMap.of(OFFENCE_CJS_CODE, OFFENCE_DEFINITION_ID);
+    private static Map<String, JsonObject> mockCJSOffenceCodeToOffenceDefinition() {
+        JsonObject offenceDefinition = createObjectBuilder().add("offences", createArrayBuilder()
+                .add(createObjectBuilder()
+                        .add("cjsoffencecode", OFFENCE_CJS_CODE)
+                        .add("offenceId", OFFENCE_DEFINITION_ID.toString())
+                        .add("maxPenalty", OFFENCE_MAX_PENALTY
+                        ))).build();
+        return ImmutableMap.of(OFFENCE_CJS_CODE, offenceDefinition);
     }
 
     private static Set<String> mockOffenceCodes() {

@@ -26,7 +26,8 @@
                 "offenceFacts" : {
                   "vehicleRegistration" : "FG59 4FD",
                   "vehicleMake" : "Ford"
-                }
+                },
+                "maxPenalty": "Max Penalty"
               }
             ],
             "numberOfPreviousConvictionsCited": 2,

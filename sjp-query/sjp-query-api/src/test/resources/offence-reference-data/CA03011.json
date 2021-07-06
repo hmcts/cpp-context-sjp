@@ -40,7 +40,8 @@
           "code": "N",
           "description": "NO"
         },
-        "pndissuedbylocalauthorities": 0.0
+        "pndissuedbylocalauthorities": 0.0,
+        "maxPenalty": "Max Penalty"
       },
       "libra": {
         "miscode": {

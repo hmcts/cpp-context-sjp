@@ -55,6 +55,7 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.PersonDetailsView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseIdentifierView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReportingRestrictionView;
+import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
 import java.time.LocalDate;
@@ -85,6 +86,7 @@ public class ProsecutionCasesViewHelperTest {
     private static final UUID DEFENDANT_ID = randomUUID();
     private static final UUID PROSECUTOR_ID = randomUUID();
     private static final UUID OFFENCE_DEFINITION_ID = randomUUID();
+    private static final String OFFENCE_MAX_PENALTY = "max penalty";
     private static final UUID OFFENCE_ID1 = randomUUID();
     private static final UUID OFFENCE_ID2 = randomUUID();
     private static final ZonedDateTime DECISION_DATE = ZonedDateTime.now();
@@ -122,6 +124,9 @@ public class ProsecutionCasesViewHelperTest {
 
     @Mock
     private ReferenceDataService referenceDataService;
+
+    @Mock
+    private ReferenceDataOffencesService referenceDataOffencesService;
 
     @InjectMocks
     private ProsecutionCasesViewHelper prosecutionCasesViewHelper;
@@ -236,7 +241,7 @@ public class ProsecutionCasesViewHelperTest {
                 DEFENDANT_ETHNICITY_ID,
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
-                mockCJSOffenceCodeToOffenceDefinitionId(),
+                mockCJSOffenceCodeToOffenceDefinition(),
                 singletonList(offences.get(0)));
 
         assertThat(prosecutionCaseViews.size(), is(1));
@@ -282,7 +287,7 @@ public class ProsecutionCasesViewHelperTest {
                 DEFENDANT_ETHNICITY_ID,
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
-                mockCJSOffenceCodeToOffenceDefinitionId(),
+                mockCJSOffenceCodeToOffenceDefinition(),
                 offences);
 
         assertThat(prosecutionCaseViews, hasSize(1));
@@ -328,7 +333,7 @@ public class ProsecutionCasesViewHelperTest {
                 DEFENDANT_ETHNICITY_ID,
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
-                mockCJSOffenceCodeToOffenceDefinitionId(),
+                mockCJSOffenceCodeToOffenceDefinition(),
                 singletonList(offences.get(0)));
 
         assertThat(prosecutionCaseViews, hasSize(1));
@@ -374,7 +379,7 @@ public class ProsecutionCasesViewHelperTest {
                 DEFENDANT_ETHNICITY_ID,
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
-                mockCJSOffenceCodeToOffenceDefinitionId(),
+                mockCJSOffenceCodeToOffenceDefinition(),
                 singletonList(offences.get(0)));
 
         assertThat(prosecutionCaseViews, hasSize(1));
@@ -419,6 +424,9 @@ public class ProsecutionCasesViewHelperTest {
                 .build()
         ));
 
+        when(referenceDataOffencesService.getOffenceDefinitionId(mockCJSOffenceCodeToOffenceDefinition().get(OFFENCE_CJS_CODE1))).thenReturn(OFFENCE_DEFINITION_ID);
+        when(referenceDataOffencesService.getMaxPenalty(mockCJSOffenceCodeToOffenceDefinition().get(OFFENCE_CJS_CODE1))).thenReturn(OFFENCE_MAX_PENALTY);
+
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
                 caseDecision,
@@ -430,7 +438,7 @@ public class ProsecutionCasesViewHelperTest {
                 DEFENDANT_ETHNICITY_ID,
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
-                mockCJSOffenceCodeToOffenceDefinitionId(),
+                mockCJSOffenceCodeToOffenceDefinition(),
                 singletonList(offences.get(0)));
 
         assertThat(prosecutionCaseViews, hasSize(1));
@@ -440,7 +448,7 @@ public class ProsecutionCasesViewHelperTest {
         final DefendantView defendantView = prosecutionCaseView.getDefendants().get(0);
 
         final OffenceView offenceView1 = defendantView.getOffences().get(0);
-        assetOffenceView(offenceView1, offences.get(0), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
+        assertOffenceView(offenceView1, offences.get(0), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
         assertThat(offenceView1.getReportingRestrictions(), notNullValue());
         final ReportingRestrictionView reportingRestrictionView = offenceView1.getReportingRestrictions().get(0);
         assertThat(reportingRestrictionView.getId(), notNullValue());
@@ -478,6 +486,9 @@ public class ProsecutionCasesViewHelperTest {
         final JsonObject prosecutionCaseFile = createCaseFileDetails();
         final JsonObject caseFileDefendantDetails = createCaseFileDefendantDetails();
 
+        when(referenceDataOffencesService.getOffenceDefinitionId(mockCJSOffenceCodeToOffenceDefinition().get(OFFENCE_CJS_CODE1))).thenReturn(OFFENCE_DEFINITION_ID);
+        when(referenceDataOffencesService.getMaxPenalty(mockCJSOffenceCodeToOffenceDefinition().get(OFFENCE_CJS_CODE1))).thenReturn(OFFENCE_MAX_PENALTY);
+
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
                 caseDecision,
@@ -489,7 +500,7 @@ public class ProsecutionCasesViewHelperTest {
                 DEFENDANT_ETHNICITY_ID,
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
-                mockCJSOffenceCodeToOffenceDefinitionId(),
+                mockCJSOffenceCodeToOffenceDefinition(),
                 asList(offences.get(0), offences.get(1)));
 
         assertThat(prosecutionCaseViews, hasSize(1));
@@ -503,10 +514,10 @@ public class ProsecutionCasesViewHelperTest {
         assertDefendantDetailsMatch(defendantPersonalDetails, defendantView, employer, caseFileDefendantDetails, employer, 2);
 
         final OffenceView offenceView1 = defendantView.getOffences().get(0);
-        assetOffenceView(offenceView1, offences.get(0), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
+        assertOffenceView(offenceView1, offences.get(0), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
 
         final OffenceView offenceView2 = defendantView.getOffences().get(1);
-        assetOffenceView(offenceView2, offences.get(1), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
+        assertOffenceView(offenceView2, offences.get(1), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
     }
 
     @Test
@@ -564,6 +575,9 @@ public class ProsecutionCasesViewHelperTest {
         final JsonObject prosecutionCaseFile = createCaseFileDetails();
         final JsonObject caseFileDefendantDetails = createCaseFileDefendantDetails();
 
+        when(referenceDataOffencesService.getOffenceDefinitionId(mockCJSOffenceCodeToOffenceDefinition().get(OFFENCE_CJS_CODE1))).thenReturn(OFFENCE_DEFINITION_ID);
+        when(referenceDataOffencesService.getMaxPenalty(mockCJSOffenceCodeToOffenceDefinition().get(OFFENCE_CJS_CODE1))).thenReturn(OFFENCE_MAX_PENALTY);
+
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
                 caseDecision, prosecutor,
@@ -574,7 +588,7 @@ public class ProsecutionCasesViewHelperTest {
                 DEFENDANT_ETHNICITY_ID,
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
-                mockCJSOffenceCodeToOffenceDefinitionId(),
+                mockCJSOffenceCodeToOffenceDefinition(),
                 asList(offences.get(0), offences.get(1)));
 
         assertThat(prosecutionCaseViews, hasSize(1));
@@ -587,7 +601,7 @@ public class ProsecutionCasesViewHelperTest {
         assertDefendantDetailsMatch(defendantPersonalDetails, defendantView, employer, caseFileDefendantDetails, employer, 2);
 
         final OffenceView offenceView1 = defendantView.getOffences().get(0);
-        assetOffenceView(offenceView1, offences.get(0), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
+        assertOffenceView(offenceView1, offences.get(0), caseFileDefendantDetails, notifiedPleaView, DECISION_DATE.toLocalDate());
 
     }
 
@@ -620,6 +634,9 @@ public class ProsecutionCasesViewHelperTest {
 
         final JsonObject prosecutor = createProsecutor();
 
+        when(referenceDataOffencesService.getOffenceDefinitionId(mockCJSOffenceCodeToOffenceDefinition().get(OFFENCE_CJS_CODE1))).thenReturn(OFFENCE_DEFINITION_ID);
+        when(referenceDataOffencesService.getMaxPenalty(mockCJSOffenceCodeToOffenceDefinition().get(OFFENCE_CJS_CODE1))).thenReturn(OFFENCE_MAX_PENALTY);
+
         final List<ProsecutionCaseView> prosecutionCaseViews = prosecutionCasesViewHelper.createProsecutionCaseViews(
                 caseDetails,
                 caseDecision,
@@ -631,7 +648,7 @@ public class ProsecutionCasesViewHelperTest {
                 DEFENDANT_ETHNICITY_ID,
                 caseReferredForCourtHearing,
                 OFFENCE_MITIGATION,
-                mockCJSOffenceCodeToOffenceDefinitionId(),
+                mockCJSOffenceCodeToOffenceDefinition(),
                 singletonList(offence));
 
         assertThat(prosecutionCaseViews, hasSize(1));
@@ -644,10 +661,10 @@ public class ProsecutionCasesViewHelperTest {
         assertDefendantDetailsMatch(defendantPersonalDetails, defendantView, employer, caseFileDefendantDetails, employer, 1);
 
         final OffenceView offenceView = defendantView.getOffences().get(0);
-        assetOffenceView(offenceView, offence, caseFileDefendantDetails, notifiedPleaView, expectedConvictionDate);
+        assertOffenceView(offenceView, offence, caseFileDefendantDetails, notifiedPleaView, expectedConvictionDate);
     }
 
-    private void assetOffenceView(final OffenceView offenceView, final Offence offence, final JsonObject caseFileDefendantDetails, final NotifiedPleaView notifiedPleaView, final LocalDate expectedConvictionDate) {
+    private void assertOffenceView(final OffenceView offenceView, final Offence offence, final JsonObject caseFileDefendantDetails, final NotifiedPleaView notifiedPleaView, final LocalDate expectedConvictionDate) {
         assertThat(offenceView.getId(), is(offence.getId()));
         assertThat(offenceView.getChargeDate(), is(LocalDate.parse(offence.getChargeDate())));
         assertThat(offenceView.getOffenceDefinitionId(), is(OFFENCE_DEFINITION_ID));
@@ -660,6 +677,7 @@ public class ProsecutionCasesViewHelperTest {
         assertThat(offenceView.getCount(), is(1));
         assertThat(ofNullable(offenceView.getOffenceFacts()).map(OffenceFactsView::getVehicleMake).orElse(null), is(offence.getVehicleMake()));
         assertThat(ofNullable(offenceView.getOffenceFacts()).map(OffenceFactsView::getVehicleRegistration).orElse(null), is(offence.getVehicleRegistrationMark()));
+        assertThat(offenceView.getMaxPenalty(), is(OFFENCE_MAX_PENALTY));
     }
 
     private void assertDefendantDetailsMatch(final PersonalDetails defendantPersonalDetails,
@@ -942,8 +960,14 @@ public class ProsecutionCasesViewHelperTest {
                 .collect(Collectors.toList());
     }
 
-    private static Map<String, UUID> mockCJSOffenceCodeToOffenceDefinitionId() {
-        return ImmutableMap.of(OFFENCE_CJS_CODE1, OFFENCE_DEFINITION_ID);
+    private static Map<String, JsonObject> mockCJSOffenceCodeToOffenceDefinition() {
+        JsonObject offenceDefinition = createObjectBuilder().add("offences", createArrayBuilder()
+                .add(createObjectBuilder()
+                        .add("cjsoffencecode", OFFENCE_CJS_CODE1)
+                        .add("offenceId", OFFENCE_DEFINITION_ID.toString())
+                        .add("maxPenalty", OFFENCE_MAX_PENALTY
+                        ))).build();
+        return ImmutableMap.of(OFFENCE_CJS_CODE1, offenceDefinition);
     }
 
     private static List<OffenceDecisionInformation> getReferredOffencesWithVerdict(VerdictType verdictType) {

@@ -56,7 +56,7 @@ public class ProsecutionCasesDataSourcingService {
                 caseReferredForCourtHearing.getReferredOffences(),
                 caseDetails);
 
-        final Map<String, UUID> offenceDefinitionIdByOffenceCode = referenceDataOffencesService.getOffenceDefinitionIdByOffenceCode(
+        final Map<String, JsonObject> offenceDefinition = referenceDataOffencesService.getOffenceDefinitionByOffenceCode(
                 getOffenceCodes(referredOffences),
                 caseReferredForCourtHearing.getReferredAt().toLocalDate(),
                 emptyEnvelopeWithReferralEventMetadata);
@@ -103,7 +103,7 @@ public class ProsecutionCasesDataSourcingService {
                 ethnicityId,
                 caseReferredForCourtHearing,
                 pleaMitigation,
-                offenceDefinitionIdByOffenceCode,
+                offenceDefinition,
                 referredOffences);
     }
 

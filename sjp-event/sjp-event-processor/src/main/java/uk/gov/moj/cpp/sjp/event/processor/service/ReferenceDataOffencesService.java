@@ -29,9 +29,8 @@ public class ReferenceDataOffencesService {
     @ServiceComponent(Component.EVENT_PROCESSOR)
     private Requester requester;
 
-    public Map<String, UUID> getOffenceDefinitionIdByOffenceCode(final Set<String> offenceCodes, final LocalDate referredAt, final JsonEnvelope envelope) {
-        return offenceCodes.stream().collect(toMap(identity(), offenceCode -> getOffenceDefinitionId(offenceCode, referredAt, envelope)));
-
+    public Map<String, JsonObject> getOffenceDefinitionByOffenceCode(final Set<String> offenceCodes, final LocalDate referredAt, final JsonEnvelope envelope) {
+        return offenceCodes.stream().collect(toMap(identity(), offenceCode -> getOffenceReferenceData(envelope, offenceCode, referredAt.toString()).get()));
     }
 
     @SuppressWarnings("squid:CallToDeprecatedMethod")
@@ -46,9 +45,11 @@ public class ReferenceDataOffencesService {
         return response.payloadAsJsonObject().getJsonArray("offences").getValuesAs(JsonObject.class).stream().findFirst();
     }
 
-    private UUID getOffenceDefinitionId(final String offenceCode, final LocalDate referredAt, final JsonEnvelope envelope) {
-        return getOffenceReferenceData(envelope, offenceCode, referredAt.toString())
-                .map(offenceDefinitionId -> fromString(offenceDefinitionId.getString("offenceId")))
-                .orElse(null);
+    public UUID getOffenceDefinitionId(final JsonObject offenceDefinitionJsonObject) {
+        return fromString(offenceDefinitionJsonObject.getString("offenceId"));
+    }
+
+    public String getMaxPenalty(final JsonObject offenceDefinitionJsonObject) {
+        return offenceDefinitionJsonObject.getString("maxPenalty", null);
     }
 }

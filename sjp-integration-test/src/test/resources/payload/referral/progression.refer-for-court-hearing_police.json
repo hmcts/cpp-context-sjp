@@ -28,7 +28,8 @@
                   "vehicleMake" : "Ford",
                   "alcoholReadingAmount": 100,
                   "alcoholReadingMethod": "A"
-                }
+                },
+                "maxPenalty": "Max Penalty"
               }
             ],
             "numberOfPreviousConvictionsCited": 2,

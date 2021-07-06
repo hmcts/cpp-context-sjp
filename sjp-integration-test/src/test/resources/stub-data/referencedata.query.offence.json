@@ -23,6 +23,6 @@
       "dateCreated": "2016-01-02",
       "dateOfLastUpdate": "2016-01-03",
       "modeoftrial": "STRAFF",
-      "modeoftrialdescription": "SUMMARY MINOR TRAFFIC"
-
+      "modeoftrialdescription": "SUMMARY MINOR TRAFFIC",
+      "maxPenalty": "Max Penalty"
 }

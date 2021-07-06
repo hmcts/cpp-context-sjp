@@ -40,6 +40,7 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.PersonDetailsView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseIdentifierView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReportingRestrictionView;
+import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 
 import java.time.LocalDate;
@@ -65,6 +66,9 @@ public class ProsecutionCasesViewHelper {
     @Inject
     private ReferenceDataService referenceDataService;
 
+    @Inject
+    private ReferenceDataOffencesService referenceDataOffencesService;
+
     @SuppressWarnings("squid:S00107")
     public List<ProsecutionCaseView> createProsecutionCaseViews(
             final CaseDetails caseDetails,
@@ -77,7 +81,7 @@ public class ProsecutionCasesViewHelper {
             final String ethnicityId,
             final CaseReferredForCourtHearing caseReferredForCourtHearing,
             final String pleaMitigation,
-            final Map<String, UUID> offenceDefinitionIdByOffenceCode,
+            final Map<String, JsonObject> offenceDefinition,
             final List<Offence> referredOffences) {
 
         final String prosecutionFacts = getProsecutionFacts(referredOffences)
@@ -94,7 +98,7 @@ public class ProsecutionCasesViewHelper {
                 nationalityId,
                 ethnicityId,
                 pleaMitigation,
-                offenceDefinitionIdByOffenceCode,
+                offenceDefinition,
                 caseReferredForCourtHearing.getDefendantCourtOptions());
 
         final JsonObject prosecutor = prosecutors.getJsonArray("prosecutors").getJsonObject(0);
@@ -147,7 +151,7 @@ public class ProsecutionCasesViewHelper {
             final String nationalityId,
             final String ethnicityId,
             final String pleaMitigation,
-            final Map<String, UUID> offenceDefinitionIdByOffenceCode,
+            final Map<String, JsonObject> offenceDefinition,
             final DefendantCourtOptions defendantCourtOptions) {
 
         final Defendant defendantDetails = caseDetails.getDefendant();
@@ -174,7 +178,7 @@ public class ProsecutionCasesViewHelper {
                         caseFileDefendantDetails,
                         rrLabel,
                         createNotifiedPleaView(referredAt, offence),
-                        offenceDefinitionIdByOffenceCode))
+                        offenceDefinition))
                 .collect(Collectors.toList());
 
         final List<DefendantAliasView> aliases = ofNullable(caseFileDefendantDetails)
@@ -299,7 +303,7 @@ public class ProsecutionCasesViewHelper {
             final JsonObject caseFileDefendantDetails,
             final String rrLabel,
             final NotifiedPleaView notifiedPleaView,
-            final Map<String, UUID> offenceDefinitionIdByOffenceCode) {
+            final Map<String, JsonObject> offenceDefinition) {
 
         final Optional<JsonObject> caseFileOffenceDetailsOptional = ofNullable(caseFileDefendantDetails)
                 .flatMap(defendantDetails -> defendantDetails.getJsonArray(OFFENCES_KEY)
@@ -320,7 +324,7 @@ public class ProsecutionCasesViewHelper {
 
         final OffenceView.Builder offenceViewBuilder = OffenceView.builder()
                 .withId(offenceDetails.getId())
-                .withOffenceDefinitionId(offenceDefinitionIdByOffenceCode.get(offenceDetails.getCjsCode()))
+                .withOffenceDefinitionId(referenceDataOffencesService.getOffenceDefinitionId(offenceDefinition.get(offenceDetails.getCjsCode())))
                 .withWording(offenceDetails.getWording())
                 .withWordingWelsh(offenceDetails.getWordingWelsh())
                 .withStartDate(LocalDate.parse(offenceDetails.getStartDate()))
@@ -332,7 +336,8 @@ public class ProsecutionCasesViewHelper {
                         .map(LocalDate::parse)
                         .orElse(null))
                 .withOffenceFacts(createOffenceFactsView(offenceDetails, caseFileOffenceDetailsOptional))
-                .withOffenceDateCode(offenceDetails.getOffenceDateCode());
+                .withOffenceDateCode(offenceDetails.getOffenceDateCode())
+                .withMaxPenalty(referenceDataOffencesService.getMaxPenalty(offenceDefinition.get(offenceDetails.getCjsCode())));
 
         if(nonNull(rrLabel)) {
             offenceViewBuilder.withReportingRestrictions(singletonList(new ReportingRestrictionView(randomUUID(), rrLabel, referredAt)));

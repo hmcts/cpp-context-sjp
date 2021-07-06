@@ -22,6 +22,7 @@
                   "vehicleRegistration" : "FG59 4FD",
                   "vehicleMake" : "Ford"
                 },
+                "maxPenalty": "Max Penalty",
                 "reportingRestrictions": [
                   {
                     "id": "9efdbffa-08f0-4cb5-905d-139511ddcadc",

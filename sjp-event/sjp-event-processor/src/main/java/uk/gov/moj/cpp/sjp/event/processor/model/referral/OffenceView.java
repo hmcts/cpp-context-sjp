@@ -25,6 +25,7 @@ public class OffenceView {
     private final OffenceFactsView offenceFacts;
     private final Integer offenceDateCode;
     private final List<ReportingRestrictionView> reportingRestrictions;
+    private final String maxPenalty;
 
     @SuppressWarnings("squid:S00107")
     public OffenceView(final UUID id,
@@ -39,7 +40,8 @@ public class OffenceView {
                        final NotifiedPleaView notifiedPlea,
                        final OffenceFactsView offenceFacts,
                        final Integer offenceDateCode,
-                       final List<ReportingRestrictionView> reportingRestrictions) {
+                       final List<ReportingRestrictionView> reportingRestrictions,
+                       final String maxPenalty) {
 
         this.id = id;
         this.offenceDefinitionId = offenceDefinitionId;
@@ -57,6 +59,7 @@ public class OffenceView {
                 .filter(reportingRes -> !reportingRes.isEmpty())
                 .map(ArrayList::new)
                 .orElse(null);
+        this.maxPenalty = maxPenalty;
     }
 
 
@@ -112,6 +115,10 @@ public class OffenceView {
         return reportingRestrictions != null ? unmodifiableList(reportingRestrictions) : null;
     }
 
+    public String getMaxPenalty() {
+        return maxPenalty;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -135,6 +142,7 @@ public class OffenceView {
         private OffenceFactsView offenceFacts;
         private Integer offenceDateCode;
         private List<ReportingRestrictionView> reportingRestrictions;
+        private String maxPenalty;
 
         public Builder withId(final UUID id) {
             this.id = id;
@@ -204,6 +212,11 @@ public class OffenceView {
             return this;
         }
 
+        public Builder withMaxPenalty(final String maxPenalty) {
+            this.maxPenalty = maxPenalty;
+            return this;
+        }
+
         public OffenceView build() {
             return new OffenceView(
                     id,
@@ -218,7 +231,8 @@ public class OffenceView {
                     notifiedPlea,
                     offenceFacts,
                     offenceDateCode,
-                    reportingRestrictions);
+                    reportingRestrictions,
+                    maxPenalty);
         }
     }
 }

@@ -81,6 +81,7 @@ public class DocumentTypeValidatorTest extends TestCase {
         final boolean valid = documentTypeValidator.isValid("fileName.JPG");
         assertThat(valid, is(true));
     }
+
     @Test
     public void shouldPassValidationForjpegFileNameExtenstion() {
         final boolean valid = documentTypeValidator.isValid("fileName.jpeg");
@@ -103,5 +104,29 @@ public class DocumentTypeValidatorTest extends TestCase {
     public void shouldPassValidationForTXTFileNameExtenstion() {
         final boolean valid = documentTypeValidator.isValid("fileName.TXT");
         assertThat(valid, is(true));
+    }
+
+    @Test
+    public void shouldPassValidationForPdfExtenstionWithSpace() {
+        final boolean valid = documentTypeValidator.isValid("fileName .pdf");
+        assertThat(valid, is(true));
+    }
+
+    @Test
+    public void shouldPassValidationForPdfExtenstionWithSpaceNoUnderscore() {
+        final boolean valid = documentTypeValidator.isValid("fileName xyz .pdf");
+        assertThat(valid, is(true));
+    }
+
+    @Test
+    public void shouldPassValidationForPdfExtenstionWithUnderscoreAndSpace() {
+        final boolean valid = documentTypeValidator.isValid("file_Name_ A_B .pdf");
+        assertThat(valid, is(true));
+    }
+
+    @Test
+    public void shouldFailValidationForNoExtenstion() {
+        final boolean valid = documentTypeValidator.isValid("file_Name_ A_Bpdf");
+        assertThat(valid, is(false));
     }
 }

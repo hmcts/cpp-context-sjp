@@ -4,6 +4,7 @@ import static java.util.UUID.fromString;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
@@ -39,7 +40,7 @@ public class AdjournDecisionResultAggregatorTest extends BaseDecisionResultAggre
                 = new Adjourn(null, Collections.singletonList(createOffenceDecisionInformation(offence1Id, NO_VERDICT)), ADJOURN_REASON, adjournTo);
 
         aggregator.aggregate(offenceDecision, sjpSessionEnvelope, resultsAggregate, resultedOn);
-
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)),Matchers.is(nullValue()));
         assertThat(resultsAggregate.getResults(offence1Id),
                 allOf(hasItem(allOf(
                         hasProperty("judicialResultId", Matchers.is(fromString("f7784e82-20b5-4d2c-b174-6fd57ebf8d7c"))),

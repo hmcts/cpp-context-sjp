@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator;
 
 import static java.util.Collections.singletonList;
+import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.LEN;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.NSP;
@@ -47,6 +48,9 @@ public class NoSeparatePenaltyDecisionResultAggregator extends DecisionResultAgg
 
         // press restriction
         judicialResults.addAll(pressRestriction(noSeparatePenalty.getPressRestriction(), sjpSessionEnvelope, resultedOn));
+
+
+        setFinalOffence(decisionAggregate, offenceId, judicialResults);
 
         decisionAggregate.putConvictionInfo(offenceId,
                 new ConvictionInfo(offenceId,

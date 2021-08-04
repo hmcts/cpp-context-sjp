@@ -73,5 +73,6 @@ public class ReferredToOpenCourtDecisionResultAggregatorTest extends  BaseDecisi
                                         hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("dbbb47c9-2202-4913-9a0d-db0a048bfd5f"))),
                                         hasProperty("value", Matchers.is("For a case management hearing (no appearance)")))
                                 )))))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)), is(true));
     }
 }

@@ -6,6 +6,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.apache.activemq.artemis.utils.JsonLoader.createArrayBuilder;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -74,5 +75,7 @@ public class WithDrawDecisionResultAggregatorTest extends  BaseDecisionResultAgg
         assertThat(judicialResult.getJudicialResultPrompts(),
                 hasItem(allOf(Matchers.hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("318c9eb2-cf3c-4592-a353-1b2166c15f81"))),
                               Matchers.hasProperty("value", Matchers.is("With Drawn reason1")))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)), is(true));
+
     }
 }

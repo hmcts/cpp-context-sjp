@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult;
 
+import static java.lang.Boolean.FALSE;
+
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.ConvictionInfo;
 
@@ -13,6 +15,9 @@ public class DecisionAggregate {
     private final Map<UUID, List<JudicialResult>> results = new HashMap<>();
 
     private final Map<UUID, ConvictionInfo> convictionInfoMap = new HashMap<>();
+
+
+    private final Map<UUID, Boolean> finalOffenceMap = new HashMap<>();
 
     public void putResults(final UUID key, final List<JudicialResult> value) {
         results.put(key, value);
@@ -28,6 +33,13 @@ public class DecisionAggregate {
 
     public ConvictionInfo getConvictionInfo(final UUID offenceId) {
         return convictionInfoMap.get(offenceId);
+    }
+
+    public Boolean getFinalOffence(final UUID offenceId) {
+        return finalOffenceMap.get(offenceId);
+    }
+    public void putFinalOffence(final UUID offenceId, final boolean isFinal) {
+        finalOffenceMap.put(offenceId,Boolean.valueOf(isFinal));
     }
 
 }

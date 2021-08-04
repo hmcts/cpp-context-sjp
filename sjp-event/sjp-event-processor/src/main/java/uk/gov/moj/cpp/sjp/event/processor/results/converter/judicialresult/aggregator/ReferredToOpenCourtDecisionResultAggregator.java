@@ -70,7 +70,10 @@ public class ReferredToOpenCourtDecisionResultAggregator extends DecisionResultA
 
         referredToOpenCourt
                 .getOffenceDecisionInformation()
-                .forEach(offenceDecisionInformation -> decisionAggregate.putResults(offenceDecisionInformation.getOffenceId(), judicialResults));
+                .forEach(offenceDecisionInformation -> {
+                    decisionAggregate.putResults(offenceDecisionInformation.getOffenceId(), judicialResults);
+                    setFinalOffence(decisionAggregate, offenceDecisionInformation.getOffenceId(), judicialResults);
+                });
 
     }
 

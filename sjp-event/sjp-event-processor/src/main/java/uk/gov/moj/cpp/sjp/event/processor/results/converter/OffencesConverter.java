@@ -26,6 +26,8 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
+import com.google.common.annotations.VisibleForTesting;
+
 public class OffencesConverter {
 
     private static final String MODE_OF_TRIAL = "1";
@@ -88,7 +90,8 @@ public class OffencesConverter {
         return getOffenceBuilderWithPopulation(offence, offenceObject, resultsAggregate, plea);
     }
 
-    private Offence.Builder getOffenceBuilderWithPopulation(final uk.gov.justice.json.schemas.domains.sjp.queries.Offence offence,
+    @VisibleForTesting
+    Offence.Builder getOffenceBuilderWithPopulation(final uk.gov.justice.json.schemas.domains.sjp.queries.Offence offence,
                                                             final JsonObject offenceObject,
                                                             final DecisionAggregate resultsAggregate,
                                                             final Plea plea) {
@@ -114,6 +117,7 @@ public class OffencesConverter {
                 .withChargeDate(offence.getChargeDate())
                 .withOrderIndex(offence.getOffenceSequenceNumber())
                 .withPlea(plea)
+                .withIsDisposed(resultsAggregate.getFinalOffence(offence.getId()))
                 .withVerdict(verdict)
                 .withConvictionDate(ofNullable(convictionDate).map(e -> convictionDate.toString()).orElse(null))
                 .withOffenceFacts(offenceFactsConverter.getOffenceFacts(offence))

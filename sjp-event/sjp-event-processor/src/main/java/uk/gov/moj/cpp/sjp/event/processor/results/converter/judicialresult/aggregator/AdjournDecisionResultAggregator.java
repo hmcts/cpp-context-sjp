@@ -52,7 +52,12 @@ public class AdjournDecisionResultAggregator extends DecisionResultAggregator {
 
         adjournOffenceDecision
                 .getOffenceDecisionInformation()
-                .forEach(offenceDecisionInformation -> decisionAggregate.putResults(offenceDecisionInformation.getOffenceId(), judicialResults));
+                .forEach(offenceDecisionInformation -> {
+                    decisionAggregate.putResults(offenceDecisionInformation.getOffenceId(), judicialResults);
+                    setFinalOffence(decisionAggregate, offenceDecisionInformation.getOffenceId(), judicialResults);
+
+                });
+
 
         // conviction information
         adjournOffenceDecision

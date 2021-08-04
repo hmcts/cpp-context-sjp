@@ -47,5 +47,6 @@ public class DismissDecisionResultAggregatorTest extends BaseDecisionResultAggre
                         hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
                         hasProperty("resultText", Matchers.is("Dismissed")),
                         hasProperty("judicialResultPrompts", is(nullValue()))))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)),Matchers.is(true));
     }
 }

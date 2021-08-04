@@ -68,6 +68,8 @@ public class FinancialPenaltyDecisionResultAggregatorTest extends  BaseDecisionR
                                 hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("7cd1472f-2379-4f5b-9e67-98a43d86e122"))),
                                 hasProperty("value", Matchers.is("£1.00")))
                         )))))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)),Matchers.is(true));
+
     }
 
 
@@ -110,5 +112,7 @@ public class FinancialPenaltyDecisionResultAggregatorTest extends  BaseDecisionR
                                 hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("2bf54447-328c-4c1b-a123-341adbd52172"))),
                                 hasProperty("value", Matchers.is("2 Months")))
                         )))))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)),Matchers.is(true));
+
     }
 }

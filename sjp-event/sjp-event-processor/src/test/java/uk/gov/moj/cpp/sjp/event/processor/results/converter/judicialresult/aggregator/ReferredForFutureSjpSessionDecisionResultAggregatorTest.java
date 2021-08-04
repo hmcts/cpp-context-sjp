@@ -12,6 +12,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.ReferredForFutureSJPSession;
 
 import java.util.Collections;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,5 +44,7 @@ public class ReferredForFutureSjpSessionDecisionResultAggregatorTest extends  Ba
         assertThat(judicialResult.getResultText(), is("Referred for resulting in another SJP session"));
 
         assertThat(judicialResult.getJudicialResultPrompts(), is(nullValue()));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)), is(true));
+
     }
 }

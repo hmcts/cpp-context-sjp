@@ -9,7 +9,6 @@ import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
-import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.ConvictionInfo;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionAggregate;
@@ -45,7 +44,10 @@ public class ReferForCourtHearingDecisionResultAggregator extends DecisionResult
 
         referForCourtHearing
                 .getOffenceDecisionInformation()
-                .forEach(o -> decisionAggregate.putResults(o.getOffenceId(), judicialResults));
+                .forEach(o -> {
+                    decisionAggregate.putResults(o.getOffenceId(), judicialResults);
+                    setFinalOffence(decisionAggregate, o.getOffenceId(), judicialResults);
+                });
 
         // conviction information
         referForCourtHearing

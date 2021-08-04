@@ -41,5 +41,6 @@ public class SetAsideDecisionResultAggregatorTest extends  BaseDecisionResultAgg
         assertThat(judicialResult.getResultText(), is("Set Aside (Single Justice Procedure hearing)"));
 
         assertThat(judicialResult.getJudicialResultPrompts(), is(nullValue()));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)), is(nullValue()));
     }
 }

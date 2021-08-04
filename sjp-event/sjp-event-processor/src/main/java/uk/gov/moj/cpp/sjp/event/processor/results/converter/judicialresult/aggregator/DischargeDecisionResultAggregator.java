@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator;
 
+import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JPrompt.DURATION_VALUE_OF_CONDITIONAL_DISCHARGE;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JResultCode.AD;
@@ -63,6 +64,9 @@ public class DischargeDecisionResultAggregator extends DecisionResultAggregator 
 
         // press restriction
         judicialResults.addAll(pressRestriction(dischargeOffenceDecision.getPressRestriction(), sjpSessionEnvelope, resultedOn));
+
+
+        setFinalOffence(decisionAggregate, offenceId, judicialResults);
 
         // conviction information
         decisionAggregate.putConvictionInfo(offenceId,

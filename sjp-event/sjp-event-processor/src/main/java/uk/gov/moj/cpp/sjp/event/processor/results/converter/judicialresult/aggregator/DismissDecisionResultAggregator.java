@@ -44,7 +44,11 @@ public class DismissDecisionResultAggregator extends DecisionResultAggregator {
                         .withResultText(getResultText(judicialResultPrompts, resultDefinition.getString(LABEL)))
                         .build());
 
+
         decisionAggregate.putResults(offenceId, judicialResults);
+
+        setFinalOffence(decisionAggregate, offenceId, judicialResults);
+
     }
 
 }

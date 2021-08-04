@@ -6,9 +6,11 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds.NO_DISABILITY_NEEDS;
@@ -16,6 +18,7 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
 
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtInterpreter;
 import uk.gov.moj.cpp.sjp.domain.DefendantCourtOptions;
@@ -78,11 +81,13 @@ public class ReferForCourtHearingDecisionResultAggregatorTest extends  BaseDecis
         assertThat(judicialResult.getResultText(), is("Refer for a full court hearing\n" +
                 "Reasons for referring to court referral reason (referral sub reason)"));
 
+        assertThat(resultsAggregate.getFinalOffence(offence1Id),is(nullValue()));
         assertThat(judicialResult.getJudicialResultPrompts().size(), is(1));
         assertThat(judicialResult.getJudicialResultPrompts(),
                 hasItem(allOf(
                         Matchers.hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("bca4e07c-17e0-48f1-84f4-7b6ff8bab5e2"))),
                         Matchers.hasProperty("value", Matchers.is("referral reason (referral sub reason)")))
                 ));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)),Matchers.is(nullValue()));
     }
 }

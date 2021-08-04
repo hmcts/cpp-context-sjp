@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.aggregator;
 
+import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JPrompt.WDRNNOT_REASONS;
@@ -53,6 +54,8 @@ public class WithDrawDecisionResultAggregator extends DecisionResultAggregator {
                 .build());
 
         decisionAggregate.putResults(offenceId, judicialResults);
+
+        setFinalOffence(decisionAggregate, offenceId, judicialResults);
     }
 
 }

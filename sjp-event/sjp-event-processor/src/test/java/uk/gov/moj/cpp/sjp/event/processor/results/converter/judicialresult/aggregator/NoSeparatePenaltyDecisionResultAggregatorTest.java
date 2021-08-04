@@ -54,6 +54,7 @@ public class NoSeparatePenaltyDecisionResultAggregatorTest extends  BaseDecision
                         hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
                         hasProperty("resultText", Matchers.is("No separate penalty")),
                         hasProperty("judicialResultPrompts", is(nullValue()))))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)),Matchers.is(true));
     }
 
     @Test
@@ -75,6 +76,7 @@ public class NoSeparatePenaltyDecisionResultAggregatorTest extends  BaseDecision
                                 hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
                                 hasProperty("resultText", Matchers.is("Driving record endorsed (no points)")),
                                 hasProperty("judicialResultPrompts", is(nullValue()))))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)),Matchers.is(true));
     }
 
     @Test
@@ -103,6 +105,7 @@ public class NoSeparatePenaltyDecisionResultAggregatorTest extends  BaseDecision
                                         hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("03983f51-f937-4dd8-9656-276b1ca86785"))),
                                         hasProperty("value", Matchers.is("Test")))
                                 )))))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)),Matchers.is(true));
     }
 
     @Test
@@ -132,5 +135,6 @@ public class NoSeparatePenaltyDecisionResultAggregatorTest extends  BaseDecision
                                 hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("1a7da720-a95a-46e4-b2ee-6b8e9db430cc"))),
                                 hasProperty("value", Matchers.is("2021-02-07")))
                         )))))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)),Matchers.is(true));
     }
 }

@@ -69,6 +69,8 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
                         hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
                         hasProperty("resultText", Matchers.is("5: DVLA held not produced"))
                 ))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)), is(true));
+
     }
 
     @Test
@@ -94,6 +96,8 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
                                 hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("d3205319-84cf-4c5b-9d7a-7e4bb1865054"))),
                                 hasProperty("value", Matchers.is("2 Months")))
                         )))))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)), is(true));
+
     }
 
     @Test
@@ -127,6 +131,7 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
                         hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
                         hasProperty("resultText", Matchers.is("5: DVLA held not produced"))
                 ))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)),is(true));
     }
 
     @Test
@@ -165,6 +170,8 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
                         hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
                         hasProperty("resultText", Matchers.is("5: DVLA held not produced"))
                 ))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)), is(true));
+
     }
 
     @Test
@@ -209,6 +216,8 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
                         hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
                         hasProperty("resultText", Matchers.is("5: DVLA held not produced"))
                 ))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)), is(true));
+
     }
 
 
@@ -238,6 +247,8 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
                         hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
                         hasProperty("resultText", Matchers.is("5: DVLA held not produced"))
                 ))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)), is(true));
+
     }
 
     @Test
@@ -269,6 +280,8 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
                         hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
                         hasProperty("resultText", Matchers.is("5: DVLA held not produced"))
                 ))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)), is(true));
+
     }
 
     @Test
@@ -300,6 +313,8 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
                         hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
                         hasProperty("resultText", Matchers.is("5: DVLA held not produced"))
                 ))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)), is(true));
+
     }
 
     @Test
@@ -331,6 +346,8 @@ public class DischargeDecisionResultAggregatorTest extends  BaseDecisionResultAg
                         hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
                         hasProperty("resultText", Matchers.is("0: None or unknown"))
                 ))));
+        assertThat(resultsAggregate.getFinalOffence(offenceDecision.getOffenceIds().get(0)), is(true));
+
     }
 
 }

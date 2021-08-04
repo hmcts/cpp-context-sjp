@@ -5,6 +5,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.justice.core.courts.JudicialResult.Builder;
+import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DATE_FORMAT;
 import static uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCaseResultsConstants.DISCHARGE_FOR_DAY;
@@ -45,6 +46,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargePeriod;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPeriod;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
 import uk.gov.moj.cpp.sjp.domain.decision.endorsement.PenaltyPointsReason;
+import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionAggregate;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JCachedReferenceData;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JPrompt;
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.JudicialResultHelper;
@@ -447,4 +449,11 @@ public class DecisionResultAggregator {
         return amountValue;
     }
 
+    protected void setFinalOffence(final DecisionAggregate decisionAggregate, final UUID offenceId, final List<JudicialResult> judicialResults) {
+        judicialResults.stream()
+                .map(JudicialResult::getCategory)
+                .filter(FINAL::equals)
+                .findFirst()
+                .ifPresent(e-> decisionAggregate.putFinalOffence(offenceId, true));
+    }
 }

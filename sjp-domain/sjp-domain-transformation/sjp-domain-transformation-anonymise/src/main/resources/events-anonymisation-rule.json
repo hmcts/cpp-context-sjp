@@ -286,6 +286,12 @@
         "$.caseByManagementStatusList[*].caseManagementStatus",
         "$.cases[*].caseManagementStatus"
       ]
+    },
+    {
+      "eventName": "sjp.events.transparency-report-metadata-added",
+      "fieldsToBeIgnored": [
+        "$.language"
+      ]
     }
   ]
 }

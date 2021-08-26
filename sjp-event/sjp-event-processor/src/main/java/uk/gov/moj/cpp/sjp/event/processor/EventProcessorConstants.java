@@ -4,6 +4,7 @@ public class EventProcessorConstants {
 
     public static final String ID = "id";
     public static final String CASE_ID = "caseId";
+    public static final String CORRELATION_ID = "correlationId";
     public static final String URN = "urn";
     public static final String OFFENCE_ID = "offenceId";
     public static final String SESSION_ID = "sessionId";
@@ -24,6 +25,8 @@ public class EventProcessorConstants {
     public static final String DATES_TO_AVOID = "datesToAvoid";
     public static final String EXPECTED_DATE_READY = "expectedDateReady";
     public static final String DEFENDANT_ID = "defendantId";
+    public static final String APPLICATION_ID = "applicationId";
+    public static final String APPLICATION_REFERENCE = "applicationReference";
 
     private EventProcessorConstants() {
     }

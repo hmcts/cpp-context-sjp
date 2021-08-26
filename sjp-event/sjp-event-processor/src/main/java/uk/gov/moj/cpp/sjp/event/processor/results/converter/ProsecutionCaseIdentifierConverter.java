@@ -32,7 +32,7 @@ public class ProsecutionCaseIdentifierConverter {
                 .build(), NULL);
 
         final JsonObject prosecutor = referenceDataService
-                .getProsecutor(prosecutingAuthority, emptyEnvelope)
+                .getProsecutors(prosecutingAuthority, emptyEnvelope)
                 .getJsonArray("prosecutors")
                 .getJsonObject(0);
 

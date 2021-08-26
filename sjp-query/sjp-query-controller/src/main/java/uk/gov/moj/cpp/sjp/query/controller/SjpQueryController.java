@@ -55,6 +55,11 @@ public class SjpQueryController {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.prosecution-case")
+    public JsonEnvelope findProsecutionCase(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
     @Handles("sjp.query.case-by-urn-postcode")
     public JsonEnvelope findCaseByUrnPostcode(final JsonEnvelope query) {
         return requester.request(query);
@@ -155,6 +160,11 @@ public class SjpQueryController {
 
     @Handles("sjp.query.case-results")
     public JsonEnvelope getCaseResults(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
+    @Handles("sjp.query.common-case-application")
+    public JsonEnvelope getCommonCaseApplication(final JsonEnvelope query) {
         return requester.request(query);
     }
 

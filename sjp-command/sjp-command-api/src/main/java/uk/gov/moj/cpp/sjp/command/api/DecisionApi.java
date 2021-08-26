@@ -9,6 +9,7 @@ import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.sjp.command.api.validator.decisionvalidator.AdjournDecisionValidator.validateAdjournDecision;
+import static uk.gov.moj.cpp.sjp.command.api.validator.decisionvalidator.ApplicationDecisionValidator.validateApplicationDecision;
 import static uk.gov.moj.cpp.sjp.command.api.validator.decisionvalidator.DischargeDecisionValidator.validateDischargeDecision;
 import static uk.gov.moj.cpp.sjp.command.api.validator.decisionvalidator.FinancialImpositionValidator.validateFinancialImposition;
 import static uk.gov.moj.cpp.sjp.command.api.validator.decisionvalidator.FinancialPenaltyDecisionValidator.validateFinancialPenaltyDecision;
@@ -116,5 +117,17 @@ public class DecisionApi {
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder(envelope.payloadAsJsonObject());
         jsonObjectBuilder.add("savedAt", clock.now().toString());
         return jsonObjectBuilder.build();
+    }
+
+    @Handles("sjp.save-application-decision")
+    public void saveApplicationDecision(final JsonEnvelope decisionEnvelope) {
+        final JsonObject applicationDecision = decisionEnvelope.payloadAsJsonObject();
+        validateApplicationDecision(applicationDecision);
+        sender.send(
+                envelopeFrom(
+                    metadataFrom(decisionEnvelope.metadata())
+                    .withName("sjp.command.controller.save-application-decision")
+                    .build(),
+                applicationDecision));
     }
 }

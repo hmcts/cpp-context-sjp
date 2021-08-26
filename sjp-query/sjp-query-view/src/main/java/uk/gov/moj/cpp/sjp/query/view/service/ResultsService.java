@@ -5,6 +5,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
+import static java.util.stream.IntStream.range;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -28,12 +29,15 @@ import uk.gov.moj.cpp.sjp.query.view.exception.EnforcementAreaNotFoundException;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDecisionView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.FinancialImpositionView;
+import uk.gov.moj.cpp.sjp.query.view.response.OffenceDecisionView;
+import uk.gov.moj.cpp.sjp.query.view.response.OffenceView;
 import uk.gov.moj.cpp.sjp.query.view.response.SessionView;
-import uk.gov.moj.cpp.sjp.query.view.response.OffenceDecisionView ;
-import uk.gov.moj.cpp.sjp.query.view.response.OffenceView ;
 
-
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;
@@ -66,13 +70,13 @@ public class ResultsService {
                           final DecisionSavedOffenceConverter decisionSavedOffenceConverter,
                           final ReferencedDecisionSavedOffenceConverter referencedDecisionSavedOffenceConverter,
                           final OffenceHelper offenceHelper,
-                          final EmployerService employerService){
+                          final EmployerService employerService) {
         this.caseService = caseService;
         this.referenceDataService = referenceDataService;
         this.decisionSavedOffenceConverter = decisionSavedOffenceConverter;
         this.referencedDecisionSavedOffenceConverter = referencedDecisionSavedOffenceConverter;
         this.offenceHelper = offenceHelper;
-        this.employerService  = employerService;
+        this.employerService = employerService;
     }
 
     public JsonObject findCaseResults(JsonEnvelope envelope) {
@@ -84,11 +88,19 @@ public class ResultsService {
 
         final CaseView aCase = caseService.findCase(caseId);
 
+        // remove previous decisions
+        removePreviousDecisions(aCase.getCaseDecisions());
+
         final JsonArrayBuilder decisions = createArrayBuilder();
 
         aCase.getCaseDecisions().forEach(caseDecision -> {
-           // enrich with verdict information in case
-            caseDecision.getOffenceDecisions().forEach(offenceDecision -> enrichOffenceDecision(aCase,offenceDecision));
+            // we don't want to process applications here
+            if (caseDecision.getApplicationDecision() != null) {
+                return;
+            }
+
+            // enrich with verdict information in case
+            caseDecision.getOffenceDecisions().forEach(offenceDecision -> enrichOffenceDecision(aCase, offenceDecision));
 
             // query the view and covert to the event payload structure
             final JsonEnvelope decisionSavedEvent = convertToDecisionSavedEvent(envelope, caseDecision);
@@ -109,6 +121,37 @@ public class ResultsService {
         caseResultsPayload.add("caseDecisions", decisions);
         return caseResultsPayload.build();
 
+    }
+
+    private void removePreviousDecisions(final List<CaseDecisionView> caseDecisionViews) {
+        // find the latest saved application
+        final Optional<CaseDecisionView> latestApplicationOptional = caseDecisionViews
+                .stream()
+                .filter(caseDecision -> caseDecision.getApplicationDecision() != null)
+                .max(CaseDecisionView::compareTo);
+
+        if (latestApplicationOptional.isPresent()) {
+            final ZonedDateTime latestApplicationDecisionDate = latestApplicationOptional.get().getSavedAt();
+            // if there is an application remove all the decisions before that and itself
+            if (latestApplicationDecisionDate != null) {
+                // find the number of decisions to remove
+                final int numberOfDecisionsToRemove = getNumberOfOldDecisionToRemove(caseDecisionViews, latestApplicationDecisionDate);
+
+                // remove the ones which are already sent
+                range(0, numberOfDecisionsToRemove)
+                        .forEach(i -> caseDecisionViews.remove(0));
+            }
+        }
+    }
+
+    private int getNumberOfOldDecisionToRemove(final List<CaseDecisionView> caseDecisionViews,
+                                               final ZonedDateTime latestApplicationDecisionDate) {
+        return caseDecisionViews
+                .stream()
+                .filter(caseDecisionView ->
+                        caseDecisionView.getSavedAt().isBefore(latestApplicationDecisionDate)
+                                || caseDecisionView.getSavedAt().isEqual(latestApplicationDecisionDate))
+                .collect(Collectors.toList()).size();
     }
 
     private JsonObject convertToPublicReferencedDecisionSavedEvent(JsonEnvelope referencedDecisionSavedEnvelope, CaseView caseView) {
@@ -153,7 +196,7 @@ public class ResultsService {
                 .add(RESULTED_ON, caseDecisionView.getSavedAt().toString());
 
         final FinancialImpositionView financialImpositionView = caseDecisionView.getFinancialImposition();
-        if(nonNull(financialImpositionView)) {
+        if (nonNull(financialImpositionView)) {
             decisionSavedPayload.add(FINANCIAL_IMPOSITION, decisionSavedOffenceConverter.convertFinancialImposition(financialImpositionView));
         }
 
@@ -191,14 +234,14 @@ public class ResultsService {
 
     }
 
-    private  void enrichOffenceDecision(final CaseView aCase, final OffenceDecisionView offenceDecision) {
-         aCase.getDefendant().getOffences().stream()
+    private void enrichOffenceDecision(final CaseView aCase, final OffenceDecisionView offenceDecision) {
+        aCase.getDefendant().getOffences().stream()
                 .filter(offence -> offence.getId().equals(offenceDecision.getOffenceId()))
-                .findFirst().ifPresent(offence  -> addVerdictToOffenceDecision(offenceDecision,offence));
+                .findFirst().ifPresent(offence -> addVerdictToOffenceDecision(offenceDecision, offence));
     }
 
-    private  void addVerdictToOffenceDecision(final OffenceDecisionView offenceDecision, final OffenceView offence) {
-        if (isNull(offenceDecision.getVerdict())){
+    private void addVerdictToOffenceDecision(final OffenceDecisionView offenceDecision, final OffenceView offence) {
+        if (isNull(offenceDecision.getVerdict())) {
             offenceDecision.setVerdict(offence.getConviction());
         }
 

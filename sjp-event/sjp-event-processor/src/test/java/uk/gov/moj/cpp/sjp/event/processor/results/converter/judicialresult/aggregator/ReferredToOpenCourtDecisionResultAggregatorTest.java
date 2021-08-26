@@ -53,13 +53,13 @@ public class ReferredToOpenCourtDecisionResultAggregatorTest extends  BaseDecisi
                         hasProperty("judicialResultId", Matchers.is(fromString("3d2c05b3-fcd6-49c2-b5a9-52855be7f90a"))),
                         hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
                         hasProperty("resultText", Matchers.is("Summons on referral to other court\n" +
-                                "Date of hearing 2018-11-02\nMagistrates' court Lavender Hill Magistrates' Court\n" +
+                                "Date of hearing 02/11/2018\nMagistrates' court Lavender Hill Magistrates' Court\n" +
                                 "Time of hearing 09:30 AM\n" +
                                 "Reason for referring to court For a case management hearing (no appearance)")),
                         hasProperty("judicialResultPrompts", allOf(
                                 hasItem(allOf(
                                         hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("a528bbfd-54b8-45d6-bad0-26a3a95eb274"))),
-                                        hasProperty("value", Matchers.is("2018-11-02")))
+                                        hasProperty("value", Matchers.is("02/11/2018")))
                                 ),
                                 hasItem(allOf(
                                         hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("f5699b34-f32f-466e-b7d8-40b4173df154"))),

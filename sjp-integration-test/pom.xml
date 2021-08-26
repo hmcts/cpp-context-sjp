@@ -181,7 +181,6 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.unifiedsearch</groupId>
             <artifactId>unifiedsearch-test-utils</artifactId>
-            <version>${cpp.platform-libraries.version}</version>
         </dependency>
 
         <dependency>

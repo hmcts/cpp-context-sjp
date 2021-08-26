@@ -71,6 +71,12 @@
     },
     "listedInCriminalCourts": {
       "type": "boolean"
+    },
+    "managedByATCM": {
+      "type": "boolean"
+    },
+    "ccApplicationStatus": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/application-status.json"
     }
   },
   "additionalProperties": true,

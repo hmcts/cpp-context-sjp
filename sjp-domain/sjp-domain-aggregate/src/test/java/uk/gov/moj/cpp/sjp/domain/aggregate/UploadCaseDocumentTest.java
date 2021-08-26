@@ -18,7 +18,6 @@ import uk.gov.moj.cpp.sjp.domain.decision.Decision;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.decision.ReferForCourtHearing;
-import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentUploadRejected;
 import uk.gov.moj.cpp.sjp.event.CaseDocumentUploaded;
@@ -83,17 +82,32 @@ public class UploadCaseDocumentTest extends CaseAggregateBaseTest {
 
         final List<Object> events = whenUploadCaseDocumentInvoked(documentReference, documentType, this.caseId);
 
-        thenCaseDocumentUploadRejectEventRaised(documentReference, events);
+        final String description = format("Case Document %s Upload rejected as case %s is referred to court for hearing", documentReference, caseId);
+        thenCaseDocumentUploadRejectEventRaised(documentReference, events, description);
     }
 
-    private void thenCaseDocumentUploadRejectEventRaised(final UUID documentReference, final List<Object> events) {
+    @Test
+    public void raisesCaseDocumentUploadRejectedEventWhenCaseIsNotManagedByATCM() {
+        givenCaseIsNotManagedByATCM();
+
+        final List<Object> events = whenUploadCaseDocumentInvoked(documentReference, documentType, this.caseId);
+
+        final String description = format("Case Document %s Upload rejected as case %s is not managed by ATCM", documentReference, caseId);
+        thenCaseDocumentUploadRejectEventRaised(documentReference, events, description);
+    }
+
+    private void givenCaseIsNotManagedByATCM() {
+        caseAggregate.getState().setManagedByAtcm(false);
+    }
+
+    private void thenCaseDocumentUploadRejectEventRaised(final UUID documentReference, final List<Object> events, final String expectedDescription) {
         assertThat(events, hasSize(1));
         assertThat(events.get(0), instanceOf(CaseDocumentUploadRejected.class));
 
         final CaseDocumentUploadRejected caseDocumentUploadRejected = (CaseDocumentUploadRejected) events.get(0);
         assertThat(caseDocumentUploadRejected.getDocumentId(), equalTo(documentReference));
-        final String description = format("Case Document %s Upload rejected as case %s is referred to court for hearing", documentReference, caseId);
-        assertThat(caseDocumentUploadRejected.getDescription(), equalTo(description));
+
+        assertThat(caseDocumentUploadRejected.getDescription(), equalTo(expectedDescription));
     }
 
     private List<Object> whenUploadCaseDocumentInvoked(final UUID documentReference, final String documentType, final UUID caseId) {

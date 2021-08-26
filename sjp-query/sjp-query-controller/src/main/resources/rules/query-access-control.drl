@@ -11,6 +11,14 @@ rule "sjp.query.case"
     $outcome.setSuccess(true);
 end
 
+rule "sjp.query.prosecution-case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.prosecution-case");
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "sjp.query.case-with-document-metadata"
   when
     $outcome: Outcome();
@@ -231,6 +239,14 @@ rule "Regions - API - Get all regions"
   when
     $outcome: Outcome();
     $action: Action(name == "sjp.query.regions");
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get common case application"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.common-case-application");
   then
     $outcome.setSuccess(true);
 end

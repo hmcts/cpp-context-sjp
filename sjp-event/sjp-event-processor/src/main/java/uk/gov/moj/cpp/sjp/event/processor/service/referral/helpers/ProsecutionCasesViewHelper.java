@@ -27,21 +27,22 @@ import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.domain.disability.DisabilityNeeds;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.AddressView;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.ContactView;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.DefendantAliasView;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.DefendantView;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.EmployerOrganisationView;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.NotifiedPleaView;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.OffenceFactsView;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.OffenceView;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.PersonDefendantView;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.PersonDetailsView;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseIdentifierView;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReportingRestrictionView;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
+import uk.gov.moj.cpp.sjp.model.prosecution.AddressView;
+import uk.gov.moj.cpp.sjp.model.prosecution.ContactView;
+import uk.gov.moj.cpp.sjp.model.prosecution.DefendantAliasView;
+import uk.gov.moj.cpp.sjp.model.prosecution.DefendantView;
+import uk.gov.moj.cpp.sjp.model.prosecution.EmployerOrganisationView;
+import uk.gov.moj.cpp.sjp.model.prosecution.NotifiedPleaView;
+import uk.gov.moj.cpp.sjp.model.prosecution.OffenceFactsView;
+import uk.gov.moj.cpp.sjp.model.prosecution.OffenceView;
+import uk.gov.moj.cpp.sjp.model.prosecution.PersonDefendantView;
+import uk.gov.moj.cpp.sjp.model.prosecution.PersonDetailsView;
+import uk.gov.moj.cpp.sjp.model.prosecution.ProsecutionCaseIdentifierView;
+import uk.gov.moj.cpp.sjp.model.prosecution.ProsecutionCaseView;
+import uk.gov.moj.cpp.sjp.model.prosecution.ReportingRestrictionView;
+import uk.gov.moj.cpp.sjp.model.prosecution.helpers.DefendantTitleParser;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -106,7 +107,7 @@ public class ProsecutionCasesViewHelper {
         String prosecutingAuthorityReference = null;
         String caseURN = null;
 
-        if(policeCase){
+        if (policeCase) {
             caseURN = caseDetails.getUrn();
         } else {
             prosecutingAuthorityReference = caseDetails.getUrn();
@@ -235,7 +236,7 @@ public class ProsecutionCasesViewHelper {
                 .map(defendantDetails -> (JsonObject) defendantDetails.getOrDefault("personalInformation", createObjectBuilder().build()));
 
         String interpreter = ofNullable(defendant.getInterpreter()).map(Interpreter::getLanguage).orElse(null);
-        if(defendantCourtOptions != null && defendantCourtOptions.getInterpreter() != null) {
+        if (defendantCourtOptions != null && defendantCourtOptions.getInterpreter() != null) {
             interpreter = defendantCourtOptions.getInterpreter().getLanguage();
         }
 
@@ -309,7 +310,7 @@ public class ProsecutionCasesViewHelper {
                 .flatMap(defendantDetails -> defendantDetails.getJsonArray(OFFENCES_KEY)
                         .getValuesAs(JsonObject.class)
                         .stream()
-                        .filter(caseFileOffence -> offenceDetails.getId().toString().equals(caseFileOffence.getString("offenceId",null)))
+                        .filter(caseFileOffence -> offenceDetails.getId().toString().equals(caseFileOffence.getString("offenceId", null)))
                         .findFirst());
 
         final VerdictType verdict = offenceDecisionInformationList
@@ -339,7 +340,7 @@ public class ProsecutionCasesViewHelper {
                 .withOffenceDateCode(offenceDetails.getOffenceDateCode())
                 .withMaxPenalty(referenceDataOffencesService.getMaxPenalty(offenceDefinition.get(offenceDetails.getCjsCode())));
 
-        if(nonNull(rrLabel)) {
+        if (nonNull(rrLabel)) {
             offenceViewBuilder.withReportingRestrictions(singletonList(new ReportingRestrictionView(randomUUID(), rrLabel, referredAt)));
         }
 
@@ -347,7 +348,7 @@ public class ProsecutionCasesViewHelper {
     }
 
     private static OffenceFactsView createOffenceFactsView(final Offence offence, final Optional<JsonObject> caseFileOffenceOptional) {
-        if(isNotEmpty(offence.getVehicleRegistrationMark()) ||  isNotEmpty(offence.getVehicleMake())) {
+        if (isNotEmpty(offence.getVehicleRegistrationMark()) || isNotEmpty(offence.getVehicleMake())) {
 
             final OffenceFactsView.Builder factsBuilder = OffenceFactsView.builder()
                     .withVehicleMake(offence.getVehicleMake())
@@ -356,7 +357,7 @@ public class ProsecutionCasesViewHelper {
             caseFileOffenceOptional
                     .map(caseFileOffence -> caseFileOffence.getJsonObject("alcoholRelatedOffence"))
                     .ifPresent(alcoholRelatedFacts -> {
-                        if(alcoholRelatedFacts.containsKey("alcoholLevelAmount")){
+                        if (alcoholRelatedFacts.containsKey("alcoholLevelAmount")) {
                             factsBuilder.withAlcoholReadingAmount(alcoholRelatedFacts.getInt("alcoholLevelAmount"));
                         }
 
@@ -397,13 +398,13 @@ public class ProsecutionCasesViewHelper {
     private static String createSpecialRequirement(final JsonObject caseFileDefendantDetails, final DefendantCourtOptions defendantCourtOptions) {
         final Optional<String> disabiltyStatus = ofNullable(defendantCourtOptions)
                 .map(DefendantCourtOptions::getDisabilityNeeds)
-                .map(DisabilityNeeds::getDisabilityNeeds) ;
+                .map(DisabilityNeeds::getDisabilityNeeds);
 
         final String specificRequirements = ofNullable(caseFileDefendantDetails)
                 .map(defendantDetails -> defendantDetails.getString("specificRequirements", null))
                 .orElse(null);
 
-      return   disabiltyStatus.orElse(specificRequirements);
+        return disabiltyStatus.orElse(specificRequirements);
 
 
     }

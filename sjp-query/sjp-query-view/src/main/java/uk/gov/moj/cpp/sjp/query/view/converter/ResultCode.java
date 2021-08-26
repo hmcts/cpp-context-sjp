@@ -98,7 +98,6 @@ public enum ResultCode {
     DPR(fromString("b27b42bf-e20e-46ec-a6e3-5c2e8a076c20"), DPRResultCodeConverter::new),
     SETASIDE(fromString("af590f98-21cb-43e7-b992-2a9d444acb2b"), SETASIDEResultCodeConverter::new);
 
-
     private static final Logger LOGGER = getLogger(ResultCode.class);
     private UUID resultDefinitionId;
     private Supplier<ResultCodeConverter> converter;

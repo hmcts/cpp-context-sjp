@@ -28,6 +28,8 @@ public class SjpDatabaseCleaner {
                 "online_plea",
                 "session",
                 "case_details",
+                "case_application",
+                "application_decision",
                 "ready_cases",
                 "case_assignment_restriction",
                 "case_publish_status"

@@ -25,6 +25,15 @@ rule "sjp.query.case-with-document-metadata"
     $outcome.setSuccess(true);
 end
 
+rule "sjp.query.prosecution-case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.prosecution-case");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getQueryCaseActionGroups()))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "sjp.query.case-by-urn"
   when
     $outcome: Outcome();
@@ -315,6 +324,15 @@ rule "Regions - API - Get all regions"
     $outcome: Outcome();
     $action: Action(name == "sjp.query.regions");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.prosecutorsOnly()))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "sjp - Query - API - Get common case application"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.query.common-case-application");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAllowedGroupsForCommonCaseApplication()))
   then
     $outcome.setSuccess(true);
 end

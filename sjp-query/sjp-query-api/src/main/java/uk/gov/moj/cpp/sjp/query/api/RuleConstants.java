@@ -132,4 +132,8 @@ public final class RuleConstants {
     public static List<String> prosecutorsOnly() {
         return asList(GROUP_SJP_PROSECUTORS);
     }
+
+    public static List<String> getAllowedGroupsForCommonCaseApplication() {
+        return asList(GROUP_SYSTEM_USERS, GROUP_SJP_PROSECUTORS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
+    }
 }

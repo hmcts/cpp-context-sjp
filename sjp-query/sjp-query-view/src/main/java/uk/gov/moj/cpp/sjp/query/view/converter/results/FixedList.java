@@ -18,7 +18,7 @@ public enum FixedList {
     PAY_WITHIN_DAYS(fromString("cd4cc782-5dd6-11e8-9c2d-fa7ae01bbebc"), PayWithinDaysFixedListConverter::new) ,
     INSTALMENTS_PAYMENT_FREQUENCY(fromString("e555e078-5dd8-11e8-9c2d-fa7ae01bbebc"), NoActionFixedListConverter::new),
     COLLECTION_ORDER_TYPE(fromString("d7d75420-aace-11e8-98d0-529269fb1459"), CollectionOrderFixedListConverter::new),
-    SUMRCC_REFERRAL_REASONS(fromString("a47a312a-79fe-4f3e-84ab-63a39f52bc75"), SUMRCCFixedListConverter::new) ;
+    SUMRCC_REFERRAL_REASONS(fromString("a47a312a-79fe-4f3e-84ab-63a39f52bc75"), SUMRCCFixedListConverter::new);
 
     private final UUID id;
     private final Supplier<FixedListConverter> supplier;

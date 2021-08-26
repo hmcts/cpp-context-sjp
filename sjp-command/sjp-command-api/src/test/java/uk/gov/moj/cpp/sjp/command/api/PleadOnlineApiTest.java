@@ -81,18 +81,20 @@ public class PleadOnlineApiTest {
     @SuppressWarnings("unused")
     private ObjectToJsonValueConverter objectToJsonValueConverter =
             new ObjectToJsonValueConverter(new ObjectMapperProducer().objectMapper());
-
     @Spy
+    @SuppressWarnings("unused")
     private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
     @Spy
     @InjectMocks
     @SuppressWarnings("unused")
-    private PleadOnlineValidator pleadOnlineValidator = new PleadOnlineValidator();
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+
 
     @Spy
     @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    @SuppressWarnings("unused")
+    private PleadOnlineValidator pleadOnlineValidator = new PleadOnlineValidator();
 
     @InjectMocks
     private PleadOnlineApi pleadOnline;

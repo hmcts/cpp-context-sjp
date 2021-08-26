@@ -57,7 +57,9 @@ public class CaseSearchResultListener {
 
     private void updateCaseDetailsAssignment(final UUID caseId, final UUID assigneeId) {
         final CaseDetail caseDetail = caseRepository.findBy(caseId);
-        caseDetail.setAssigneeId(assigneeId);
-        Optional.ofNullable(readyCaseRepository.findBy(caseId)).ifPresent(readyCase -> readyCase.setAssigneeId(assigneeId));
+        if (caseDetail != null) {
+            caseDetail.setAssigneeId(assigneeId);
+            Optional.ofNullable(readyCaseRepository.findBy(caseId)).ifPresent(readyCase -> readyCase.setAssigneeId(assigneeId));
+        }
     }
 }

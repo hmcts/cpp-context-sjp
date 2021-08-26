@@ -28,6 +28,8 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.sjp.event.processor.service.enforcementnotification.EnforcementAreaNotFoundException;
+import uk.gov.moj.cpp.sjp.event.processor.service.referral.DocumentTypeAccess;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -42,8 +44,15 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @SuppressWarnings("squid:CallToDeprecatedMethod")
 public class ReferenceDataService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceDataService.class);
+    private static final String REFERENCEDATA_GET_DOCUMENT_ACCESS = "referencedata.query.document-type-access";
+    private static final String ID = "id";
 
     private static final String ON_QUERY_PARAMETER = "on";
     public static final String VERDICT_TYPES = "verdictTypes";
@@ -69,7 +78,7 @@ public class ReferenceDataService {
 
         final JsonObject payload = Json.createObjectBuilder().build();
 
-        final Envelope<JsonObject> jsonObjectEnvelope  = envelop(payload)
+        final Envelope<JsonObject> jsonObjectEnvelope = envelop(payload)
                 .withName("referencedata.query.verdict-types")
                 .withMetadataFrom(event);
 
@@ -223,11 +232,19 @@ public class ReferenceDataService {
                 .findFirst();
     }
 
-    public JsonObject getProsecutor(final String prosecutingAuthority, final JsonEnvelope envelope) {
+    public JsonObject getProsecutors(final String prosecutingAuthority, final JsonEnvelope envelope) {
         final JsonObject payload = createObjectBuilder().add("prosecutorCode", prosecutingAuthority).build();
         final JsonEnvelope request = enveloper.withMetadataFrom(envelope, "referencedata.query.prosecutors").apply(payload);
         final JsonEnvelope response = requester.requestAsAdmin(request);
         return response.payloadAsJsonObject();
+    }
+
+    public Optional<JsonObject> getProsecutor(final String prosecutingAuthority, final JsonEnvelope envelope) {
+        return getProsecutors(prosecutingAuthority, envelope)
+                .getJsonArray("prosecutors")
+                .getValuesAs(JsonObject.class)
+                .stream()
+                .findFirst();
     }
 
     public JsonObject getProsecutorByPtiUrn(final String ptiurn, final JsonEnvelope envelope) {
@@ -239,7 +256,7 @@ public class ReferenceDataService {
 
 
     public String getProsecutor(final String prosecutingAuthority, final Boolean isWelsh, final JsonEnvelope envelope) {
-        final JsonObject prosecutor = this.getProsecutor(prosecutingAuthority, envelope)
+        final JsonObject prosecutor = this.getProsecutors(prosecutingAuthority, envelope)
                 .getJsonArray("prosecutors")
                 .getValuesAs(JsonObject.class)
                 .stream()
@@ -273,12 +290,18 @@ public class ReferenceDataService {
         return response.payloadAsJsonObject();
     }
 
-    public JsonObject getDocumentTypeAccess(final LocalDate date, final JsonEnvelope envelope) {
+    public List<DocumentTypeAccess> getDocumentTypeAccess(final LocalDate date, final JsonEnvelope envelope) {
         final JsonObject payload = createObjectBuilder().add("date", date.toString()).build();
         final JsonEnvelope request = enveloper.withMetadataFrom(
                 envelope, "referencedata.get-all-document-type-access").apply(payload);
         final JsonEnvelope response = requester.requestAsAdmin(request);
-        return response.payloadAsJsonObject();
+
+        return response.payloadAsJsonObject()
+                .getJsonArray("documentsTypeAccess")
+                .getValuesAs(JsonObject.class)
+                .stream()
+                .map(e -> new DocumentTypeAccess(fromString(e.getString("id")), e.getString("section")))
+                .collect(toList());
     }
 
     public JsonObject getHearingTypes(final JsonEnvelope envelope) {
@@ -330,6 +353,15 @@ public class ReferenceDataService {
         return requester.request(request)
                 .payloadAsJsonObject()
                 .getJsonArray(RESULT_DEFINITIONS);
+    }
+
+    public LocalJusticeArea getLocalJusticeAreaByCode(final JsonEnvelope envelope, final String localJusticeAreaNationalCourtCode) {
+        final JsonObject queryParams = createObjectBuilder()
+                .add("localJusticeAreaNationalCourtCode", localJusticeAreaNationalCourtCode)
+                .build();
+        return getEnforcementArea(envelope, queryParams)
+                .map(enforcementArea -> LocalJusticeArea.fromJson(enforcementArea.getJsonObject("localJusticeArea")))
+                .orElseThrow(() -> new EnforcementAreaNotFoundException("Could not find Local Justice Area by code: " + localJusticeAreaNationalCourtCode));
     }
 
     public Optional<String> getDvlaPenaltyPointNotificationEmailAddress(final JsonEnvelope envelope) {
@@ -409,6 +441,18 @@ public class ReferenceDataService {
                 .getJsonArray(RESULT_DEFINITIONS))
                 .filter(resultDefinitions -> !resultDefinitions.isEmpty())
                 .map(resultDefinitions -> resultDefinitions.getJsonObject(0));
+    }
+
+    public Optional<JsonObject> getDocumentTypeAccessData(final UUID documentTypeId, final JsonEnvelope jsonEnvelope, final Requester requester) {
+        final JsonObject payload = Json.createObjectBuilder().add(ID, documentTypeId.toString()).build();
+        final JsonEnvelope response = requester.request(envelop(payload)
+                .withName(REFERENCEDATA_GET_DOCUMENT_ACCESS)
+                .withMetadataFrom(jsonEnvelope));
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(" '{}' by id {} received with payload {} ", REFERENCEDATA_GET_DOCUMENT_ACCESS, documentTypeId, response.toObfuscatedDebugString());
+        }
+        return Optional.ofNullable(response.payloadAsJsonObject());
     }
 
 }

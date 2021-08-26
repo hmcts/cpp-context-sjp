@@ -6,6 +6,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static java.time.LocalDate.now;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -13,6 +14,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
@@ -71,7 +73,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class DecisionApiTest {
 
-    private static final String COMMAND_NAME = "sjp.save-decision";
+    private static final String SAVE_DECISION_COMMAND_NAME = "sjp.save-decision";
+    private static final String SAVE_APPLICATION_DECISION_COMMAND_NAME = "sjp.save-application-decision";
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
@@ -115,9 +118,11 @@ public class DecisionApiTest {
     }
 
     @Test
-    public void shouldHandleCommand() {
+    public void shouldHandleDecisionCommands() {
         assertThat(DecisionApi.class, isHandlerClass(COMMAND_API)
-                .with(method("saveDecision").thatHandles(COMMAND_NAME)));
+                .with(method("saveDecision").thatHandles(SAVE_DECISION_COMMAND_NAME))
+                .with(method("saveApplicationDecision").thatHandles(SAVE_APPLICATION_DECISION_COMMAND_NAME))
+        );
     }
 
     @Test
@@ -360,6 +365,52 @@ public class DecisionApiTest {
 
         decisionApi.saveDecision(envelope);
         verify(sender).send(envelopeCaptor.capture());
+    }
+
+    @Test
+    public void shouldThrowBadRequestWhenApplicationRejectedWithoutReason() {
+        expectBadRequestException("Rejection reason must be provided if application is rejected");
+        final JsonEnvelope envelope = createApplicationDecisionCommand(false, null, false, null);
+        decisionApi.saveApplicationDecision(envelope);
+        verify(sender, never()).send(envelopeCaptor.capture());
+    }
+
+    @Test
+    public void shouldThrowBadRequestWhenApplicationOutOfTimeWithoutReason() {
+        expectBadRequestException("Out of time reason must be provided if application is out of time");
+        final JsonEnvelope envelope = createApplicationDecisionCommand(true, null, true, null);
+        decisionApi.saveApplicationDecision(envelope);
+        verify(sender, never()).send(envelopeCaptor.capture());
+    }
+
+    @Test
+    public void shouldSaveApplicationDecision() {
+        final JsonEnvelope envelope = createApplicationDecisionCommand(true, null, false, null);
+        decisionApi.saveApplicationDecision(envelope);
+        verify(sender).send(envelopeCaptor.capture());
+        final Envelope sentEnvelope = envelopeCaptor.getValue();
+        assertThat(sentEnvelope.metadata().name(), is("sjp.command.controller.save-application-decision"));
+        assertThat(sentEnvelope.payload().toString(), isJson(
+                allOf(
+                    withJsonPath("$.granted", is(true)),
+                    withJsonPath("$.outOfTime", is(false))
+                )
+        ));
+    }
+
+
+
+    private JsonEnvelope createApplicationDecisionCommand(final boolean granted, final String rejectionReason,
+                                                          final boolean outOfTime, final String outOfTimeReason) {
+
+        final JsonObjectBuilder applicationBuilder = createObjectBuilder()
+                .add("granted", granted)
+                .add("outOfTime", outOfTime);
+
+        ofNullable(rejectionReason).ifPresent(reason -> applicationBuilder.add("rejectionReason", reason));
+        ofNullable(outOfTimeReason).ifPresent(reason -> applicationBuilder.add("outOfTimeReason", reason));
+
+        return envelopeFrom(metadataWithRandomUUID(SAVE_APPLICATION_DECISION_COMMAND_NAME), applicationBuilder.build());
     }
 
     private void saveDecision(final JsonObject financialImposition) {

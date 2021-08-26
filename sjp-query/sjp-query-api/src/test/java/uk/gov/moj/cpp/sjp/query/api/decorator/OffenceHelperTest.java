@@ -106,12 +106,14 @@ public class OffenceHelperTest {
                 .add("id", offenceId_1)
                 .add("offenceCode", offence1Code)
                 .add("startDate", offence1CommittedDate.toString())
+                .add("completed", true)
                 .add("withdrawalRequestReasonId", WITHDRAWAL_REQUEST_REASON_ID_FOR_INSUFFICIENT_EVIDENCE)
                 .build();
 
         final JsonObject offence2 = createObjectBuilder()
                 .add("id", offenceId_2)
                 .add("offenceCode", offence2Code)
+                .add("completed", true)
                 .add("startDate", offence2CommittedDate.toString())
                 .add("withdrawalRequestReasonId", WITHDRAWAL_REQUEST_REASON_ID_FOR_NOT_IN_PUBLIC_INTEREST_TO_PROCEED)
                 .build();
@@ -119,6 +121,7 @@ public class OffenceHelperTest {
         final JsonObject offence3 = createObjectBuilder()
                 .add("id", offenceId_3)
                 .add("offenceCode", offence3Code)
+                .add("completed", false)
                 .add("startDate", offence3CommittedDate.toString())
                 .build();
 

@@ -53,7 +53,7 @@ public class ProsecutionCaseIdentifierConverterTest {
                 .add("prosecutors", value)
                 .build();
 
-        when(referenceDataService.getProsecutor(anyObject(), anyObject())).thenReturn(jsonObject);
+        when(referenceDataService.getProsecutors(anyObject(), anyObject())).thenReturn(jsonObject);
 
         final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCaseIdentifierConverter.getProsecutionCaseIdentifier(PROSECUTION_AUTHORITY, CASE_URN);
 
@@ -82,7 +82,7 @@ public class ProsecutionCaseIdentifierConverterTest {
                 .add("prosecutors", value)
                 .build();
 
-        when(referenceDataService.getProsecutor(anyObject(), anyObject())).thenReturn(jsonObject);
+        when(referenceDataService.getProsecutors(anyObject(), anyObject())).thenReturn(jsonObject);
 
         final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCaseIdentifierConverter.getProsecutionCaseIdentifier(PROSECUTION_AUTHORITY, CASE_URN);
 

@@ -4,7 +4,7 @@ import static java.util.Optional.ofNullable;
 
 import uk.gov.justice.json.schemas.domains.sjp.PleaType;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Offence;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.NotifiedPleaView;
+import uk.gov.moj.cpp.sjp.model.prosecution.NotifiedPleaView;
 
 import java.time.LocalDate;
 

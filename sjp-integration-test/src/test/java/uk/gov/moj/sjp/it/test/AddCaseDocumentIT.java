@@ -102,8 +102,11 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
         try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
             caseDocumentHelper.addCaseDocumentWithDocumentType(legalAdviserId, "OTHER-TravelCard");
             caseDocumentHelper.addCaseDocumentWithDocumentType(legalAdviserId, "OTHER-TravelCard");
+
             caseDocumentHelper.findDocument(legalAdviserId, 0, "OTHER-TravelCard", 1);
             caseDocumentHelper.findDocument(legalAdviserId, 1, "OTHER-TravelCard", 2);
+
+
         }
     }
 
@@ -145,6 +148,19 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
     @Test
     public void shouldUploadCaseDocument() {
         final String documentType = "PLEA";
+        createCase();
+        stubAddCaseMaterial();
+
+        try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
+            caseDocumentHelper.uploadDocument(documentType);
+            final UUID documentId = caseDocumentHelper.verifyCaseDocumentUploadedEventRaised();
+            final UUID materialId = MaterialStub.processMaterialAddedCommand(documentId);
+            CaseDocumentHelper.assertDocumentAdded(USER_ID, caseId, materialId, documentId, documentType);
+        }
+    }
+    @Test
+    public void shouldUploadCaseDocumentApplication() {
+        final String documentType = "APPLICATION";
         createCase();
         stubAddCaseMaterial();
 
@@ -207,6 +223,7 @@ public class AddCaseDocumentIT extends BaseIntegrationTest {
         try (final CaseDocumentHelper caseDocumentHelper = new CaseDocumentHelper(caseId)) {
             caseDocumentHelper.uploadPleaCaseDocument();
             caseDocumentHelper.verifyInActiveMQCaseUploadRejected();
+            caseDocumentHelper.verifyUploadRejectedInPublicTopic();
         }
     }
 

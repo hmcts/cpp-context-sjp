@@ -41,7 +41,7 @@ import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostco
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubEndSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SchedulingStub.stubStartSjpSessionCommand;
 import static uk.gov.moj.sjp.it.stub.SysDocGeneratorStub.pollSysDocGenerationRequests;
-import static uk.gov.moj.sjp.it.stub.SysDocGeneratorStub.stubDocGeneratorEndPoint;
+import static uk.gov.moj.sjp.it.stub.SysDocGeneratorStub.stubGenerateDocumentEndPoint;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.executeTimerJobs;
 import static uk.gov.moj.sjp.it.util.ActivitiHelper.pollUntilProcessExists;
@@ -110,7 +110,7 @@ public class TransparencyReportIT extends BaseIntegrationTest {
         new SjpDatabaseCleaner().cleanViewStore();
         stubAllIndividualProsecutorsQueries();
         stubAnyQueryOffences();
-        stubDocGeneratorEndPoint();
+        stubGenerateDocumentEndPoint();
     }
 
     @Test

@@ -4,7 +4,7 @@ ${VAGRANT_DIR:?"Please export VAGRANT_DIR environment variable to point at atcm-
 WILDFLY_DEPLOYMENT_DIR="${VAGRANT_DIR}/deployments"
 CONTEXT_NAME=sjp
 FRAMEWORK_VERSION=7.0.10
-EVENT_STORE_VERSION=7.0.8
+EVENT_STORE_VERSION=7.0.9
 FRAMEWORK_LIBRARIES_VERSION=7.0.10
 CPP_ACTIVITI_VERSION=5.22.0
 
@@ -166,7 +166,7 @@ function integrationTests() {
 }
 
 function buildDeployAndTest() {
-  buildWars
+   buildWars
   deployAndTest
 }
 

@@ -80,6 +80,12 @@
     },
     "setAside": {
       "type": "boolean"
+    },
+    "managedByATCM": {
+      "type": "boolean"
+    },
+    "caseApplication": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/case-application.json"
     }
   },
   "additionalProperties": true,

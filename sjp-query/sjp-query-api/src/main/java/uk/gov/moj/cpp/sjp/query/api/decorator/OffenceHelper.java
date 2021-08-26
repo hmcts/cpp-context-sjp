@@ -98,6 +98,9 @@ public class OffenceHelper {
     }
 
     public boolean hasFinalDecision(final JsonObject offenceInstance, final JsonArray caseDecisions) {
+        if(!offenceInstance.getBoolean("completed", false)) {
+            return false;
+        }
         final Optional<JsonObject> offenceDecision = caseDecisions.getValuesAs(JsonObject.class)
                 .stream()
                 .map(e -> Pair.of(e, ZonedDateTime.parse(e.getString("savedAt"))))

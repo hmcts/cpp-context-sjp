@@ -14,7 +14,7 @@ public class CaseDecision {
     private final List<Offence> offences;
 
     @JsonCreator
-    public CaseDecision(@JsonProperty("caseId") final UUID sjpSessionId,
+    public CaseDecision(@JsonProperty("sjpSessionId") final UUID sjpSessionId,
                         @JsonProperty("resultedOn") final ZonedDateTime resultedOn,
                         @JsonProperty("offences") final List<Offence> offences) {
         this.sjpSessionId = sjpSessionId;

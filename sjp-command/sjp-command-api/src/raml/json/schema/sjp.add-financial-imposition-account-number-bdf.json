@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.add-financial-imposition-account-number-bdf.json",
+  "type": "object",
+  "properties": {
+    "correlationId" : {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "accountNumber": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "correlationId",
+    "accountNumber"
+  ],
+  "additionalProperties": false
+}

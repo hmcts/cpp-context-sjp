@@ -29,6 +29,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -37,10 +38,10 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.RandomStringUtils;
 
 public class CreateCase {
+    private static final String ADD_FINANCIAL_IMPOSITION_WRITE_MEDIA_TYPE = "application/vnd.sjp.add-financial-imposition-account-number-bdf+json";
 
     private static final String WRITE_MEDIA_TYPE = "application/vnd.sjp.create-sjp-case+json";
     private final CreateCasePayloadBuilder payloadBuilder;
-
     private CreateCase(final CreateCasePayloadBuilder payloadBuilder) {
         this.payloadBuilder = payloadBuilder;
     }
@@ -51,6 +52,14 @@ public class CreateCase {
 
     public static String createCaseForPayloadBuilder(final CreateCasePayloadBuilder payloadBuilder, final Response.Status status) {
         return new CreateCase(payloadBuilder).createCase(status);
+    }
+
+    public static String addFinancialImposition(final UUID caseId, final UUID defendantId, final Response.Status status) {
+        final JsonObjectBuilder payload = Json.createObjectBuilder();
+        payload.add("correlationId", caseId.toString())
+                .add("accountNumber", "12345678");
+
+        return getPostCallResponse("/cases/" + caseId.toString() + "/defendant/" + defendantId.toString() + "/add-financial-imposition-account-number-bdf", ADD_FINANCIAL_IMPOSITION_WRITE_MEDIA_TYPE, payload.build().toString(), status);
     }
 
     private void createCase() {

@@ -7,12 +7,16 @@ import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.SET_ASIDE;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
 
+import uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionSaved;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
+import uk.gov.moj.cpp.sjp.event.listener.converter.ApplicationDecisionSavedToApplicationDecision;
 import uk.gov.moj.cpp.sjp.event.listener.converter.DecisionSavedToCaseDecision;
+import uk.gov.moj.cpp.sjp.event.listener.service.CaseApplicationService;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplicationDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
@@ -37,7 +41,15 @@ public class CaseDecisionListener {
     @Inject
     private DecisionSavedToCaseDecision eventConverter;
 
+    @Inject
+    private ApplicationDecisionSavedToApplicationDecision applicationDecisionConverter;
+
+    @Inject
+    private CaseApplicationService caseApplicationService;
+
     private static final List<VerdictType> CONVICTION_VERDICTS = asList(FOUND_GUILTY, PROVED_SJP);
+
+    private static final String APPLICATION_DECISION_SAVED = "sjp.events.application-decision-saved";
 
     @Handles(DecisionSaved.EVENT_NAME)
     public void handleCaseDecisionSaved(final Envelope<DecisionSaved> envelope) {
@@ -49,6 +61,12 @@ public class CaseDecisionListener {
         updateOffencePressRestriction(caseDetails, caseDecision);
         updateOffenceCompleted(caseDetails, caseDecision);
         caseRepository.save(caseDetails);
+    }
+
+    @Handles(APPLICATION_DECISION_SAVED)
+    public void handleApplicationDecisionSaved(final Envelope<ApplicationDecisionSaved> envelope) {
+        final CaseApplicationDecision applicationDecision = applicationDecisionConverter.convert(envelope.payload());
+        caseApplicationService.saveCaseApplicationDecision(applicationDecision);
     }
 
     private void updateOffenceCompleted(final CaseDetail caseDetails, final CaseDecision caseDecision) {

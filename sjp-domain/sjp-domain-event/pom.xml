@@ -43,6 +43,11 @@
             <artifactId>sjp-domain-common</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.core.domain</groupId>
+            <artifactId>common-core-domain</artifactId>
+            <version>${coredomain.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -65,6 +70,19 @@
                                 <include>json/schema/events/sjp.events.case-adjournment-to-later-sjp-hearing-elapsed.json</include>
                                 <include>json/schema/events/sjp.events.offences-withdrawal-status-set.json</include>
                                 <include>json/schema/events/sjp.events.case-assignment-restriction-added.json</include>
+                                <include>json/schema/commands/sjp.create-case-application.json</include>
+                                <include>json/schema/commands/save-application-decision.json</include>
+                                <include>json/schema/fragments/application-status.json</include>
+                                <include>json/schema/fragments/result-status.json</include>
+                                <include>json/schema/fragments/application-type.json</include>
+                                <include>json/schema/events/sjp.events.case-application-recorded.json</include>
+                                <include>json/schema/events/sjp.events.case-stat-dec-recorded.json</include>
+                                <include>json/schema/events/sjp.events.case-application-for-reopening-recorded.json</include>
+                                <include>json/schema/events/sjp.events.case-application-rejected.json</include>
+                                <include>json/schema/fragments/application-decision-granted.json</include>
+                                <include>json/schema/fragments/application-decision-rejected.json</include>
+                                <include>json/schema/events/sjp.events.application-decision-saved.json</include>
+                                <include>json/schema/events/sjp.events.application-decision-rejected.json</include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>

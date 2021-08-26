@@ -32,7 +32,7 @@ import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_LAST_NAME;
 import static uk.gov.moj.cpp.sjp.domain.testutils.StoreOnlinePleaBuilder.PERSON_NI_NUMBER;
 
-import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;

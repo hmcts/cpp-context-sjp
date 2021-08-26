@@ -96,5 +96,6 @@
   "postingDate": "2015-12-02",
   "enterpriseId": "${enterpriseId}",
   "onlinePleaReceived": true,
-  "status": "${caseStatus}"
+  "status": "${caseStatus}",
+  "managedByATCM": true
 }

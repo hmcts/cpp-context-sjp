@@ -371,7 +371,7 @@ public class CaseRepositoryTest extends BaseTransactionalTest {
                 .withProsecutingAuthority(PROSECUTING_AUTHORITY)
                 .withCosts(COSTS)
                 .withPostingDate(postingDate)
-                .addDefendantDetail(defendantDetail)
+                .withDefendantDetail(defendantDetail)
                 .withCreatedOn(caseCreatedOn);
 
         for (final UUID materialId : materialIds) {

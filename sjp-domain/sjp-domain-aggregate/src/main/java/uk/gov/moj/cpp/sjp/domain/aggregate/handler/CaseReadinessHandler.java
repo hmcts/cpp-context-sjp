@@ -1,16 +1,7 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
-import static uk.gov.moj.cpp.sjp.domain.aggregate.domain.SessionRules.getPriority;
-import static uk.gov.moj.cpp.sjp.domain.aggregate.domain.SessionRules.getSessionType;
-import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED;
-import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REFERRED_FOR_COURT_HEARING;
-import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REOPENED_IN_LIBRA;
-import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.isAReadyStatus;
-import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.isAllowedStatusFromComplete;
-import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.isAllowedStatusFromReopenedToLibra;
-import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.isNotAllowedFromNonReady;
-import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.isTerminalStatus;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.aggregate.casestatus.ExpectedDateReadyCalculator;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
@@ -25,8 +16,17 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.domain.SessionRules.getPriority;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.domain.SessionRules.getSessionType;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED_APPLICATION_PENDING;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REFERRED_FOR_COURT_HEARING;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REOPENED_IN_LIBRA;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.isAReadyStatus;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.isAllowedStatusFromComplete;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.isAllowedStatusFromReopenedToLibra;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.isNotAllowedFromNonReady;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.isTerminalStatus;
 
 public class CaseReadinessHandler {
 
@@ -73,18 +73,34 @@ public class CaseReadinessHandler {
 
     @SuppressWarnings("squid:S1067")
     private boolean isItValidStatusTransition(final CaseStatus previousCaseStatus, final CaseStatus currentCaseStatus) {
-        return (previousCaseStatus != COMPLETED || isAllowedStatusFromComplete(currentCaseStatus))
-                && (previousCaseStatus == COMPLETED || !isAllowedStatusFromComplete(currentCaseStatus))
-                && (previousCaseStatus != REOPENED_IN_LIBRA || isAllowedStatusFromReopenedToLibra(currentCaseStatus))
+        return  wasNotCompletedOrIsValidTransitionFromComplete(previousCaseStatus, currentCaseStatus)
+                && wasCompletedOrIsNotValidTransitionFromComplete(previousCaseStatus, currentCaseStatus)
+                && wasNotReopenedInLibraOrIsAllowedTransitionFromReopenedInLibra(previousCaseStatus, currentCaseStatus)
                 && (previousCaseStatus != REFERRED_FOR_COURT_HEARING) // terminal status, cannot be changed
-                && (isAReadyStatus(previousCaseStatus) || !isNotAllowedFromNonReady(currentCaseStatus))
-                && !isPreviousStatusReadyAndIsCurrentStatusTerminal(previousCaseStatus, currentCaseStatus);
+                && wasReadyOrIsAllowedFromNonReady(previousCaseStatus, currentCaseStatus)
+                && !(isPreviousStatusReadyAndIsCurrentStatusTerminal(previousCaseStatus, currentCaseStatus) && previousCaseStatus != COMPLETED_APPLICATION_PENDING);
+    }
+
+    private boolean wasReadyOrIsAllowedFromNonReady(final CaseStatus previousCaseStatus, final CaseStatus currentCaseStatus) {
+        return isAReadyStatus(previousCaseStatus) || !isNotAllowedFromNonReady(currentCaseStatus);
+    }
+
+    private boolean wasNotReopenedInLibraOrIsAllowedTransitionFromReopenedInLibra(final CaseStatus previousCaseStatus, final CaseStatus currentCaseStatus) {
+        return previousCaseStatus != REOPENED_IN_LIBRA || isAllowedStatusFromReopenedToLibra(currentCaseStatus);
+    }
+
+    private boolean wasCompletedOrIsNotValidTransitionFromComplete(final CaseStatus previousCaseStatus, final CaseStatus currentCaseStatus) {
+        return previousCaseStatus == COMPLETED || !isAllowedStatusFromComplete(currentCaseStatus);
+    }
+
+    private boolean wasNotCompletedOrIsValidTransitionFromComplete(final CaseStatus previousCaseStatus, final CaseStatus currentCaseStatus) {
+        return previousCaseStatus != COMPLETED || isAllowedStatusFromComplete(currentCaseStatus);
     }
 
     private void raiseCaseMarkedOrUnmarkedEvent(final CaseAggregateState aggregateState, final CaseState currentCaseState,
                                                 final CaseStatus previousCaseStatus, final Stream.Builder<Object> streamBuilder) {
         final CaseStatus currentCaseStatus = currentCaseState.getCaseStatus();
-        if (isAReadyStatus(currentCaseStatus)) {
+        if (isAReadyStatus(currentCaseStatus) && !aggregateState.hasRefusedApplication()) {
             raiseMarkedReadyEvent(aggregateState, currentCaseState, streamBuilder);
         } else {
             checkAndRaiseUnmarkedReadyOrExpectedDateReadyEvent(aggregateState, previousCaseStatus, streamBuilder);
@@ -96,7 +112,7 @@ public class CaseReadinessHandler {
         streamBuilder.add(new CaseMarkedReadyForDecision(aggregateState.getCaseId(),
                 caseReadinessReason,
                 calculateMarkedAtReadyDate(aggregateState),
-                getSessionType(caseReadinessReason, aggregateState.isPostConviction(), aggregateState.isSetAside()),
+                getSessionType(caseReadinessReason, aggregateState.isPostConviction(), aggregateState.isSetAside(),aggregateState.hasPendingApplication()),
                 getPriority(aggregateState)));
     }
 

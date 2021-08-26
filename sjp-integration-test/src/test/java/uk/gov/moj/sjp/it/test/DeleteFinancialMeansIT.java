@@ -12,7 +12,7 @@ import static uk.gov.moj.sjp.it.helper.DeleteFinancialMeansMatcherHelper.getExpe
 import static uk.gov.moj.sjp.it.helper.DeleteFinancialMeansMatcherHelper.getSavedOnlinePleaPayloadContentMatcher;
 import static uk.gov.moj.sjp.it.helper.FinancialMeansHelper.getOnlinePleaData;
 import static uk.gov.moj.sjp.it.stub.MaterialStub.stubAddCaseMaterial;
-import static uk.gov.moj.sjp.it.stub.NotifyStub.stubNotifications;
+import static uk.gov.moj.sjp.it.stub.NotificationNotifyStub.stubNotifications;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllIndividualProsecutorsQueries;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubCountryByPostcodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;

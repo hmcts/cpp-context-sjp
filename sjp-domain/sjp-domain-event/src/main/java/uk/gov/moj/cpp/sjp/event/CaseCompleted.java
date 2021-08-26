@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.sjp.event;
 
 import uk.gov.justice.domain.annotation.Event;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 

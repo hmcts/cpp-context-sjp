@@ -36,6 +36,9 @@
     },
     "pncIdentifier": {
       "type": "string"
+    },
+    "gobAccountNumber": {
+      "type": "string"
     }
   },
   "additionalProperties": false

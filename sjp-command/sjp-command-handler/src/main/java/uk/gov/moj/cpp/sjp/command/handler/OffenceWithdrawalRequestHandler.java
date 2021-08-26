@@ -13,8 +13,11 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityAccess;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -36,12 +39,20 @@ public class OffenceWithdrawalRequestHandler extends CaseCommandHandler {
         final SetOffencesWithdrawalRequestsStatus setOffencesWithdrawalRequestsStatus = command.payload();
         final JsonEnvelope jsonEnvelope = envelopeFrom(command.metadata(), objectToJsonObjectConverter.convert(command.payload()));
         final ProsecutingAuthorityAccess prosecutingAuthorityAccess = prosecutingAuthorityProvider.getCurrentUsersProsecutingAuthorityAccess(jsonEnvelope);
+        final List<WithdrawalRequestsStatus> offencesWithdrawalRequestsStatus =
+                setOffencesWithdrawalRequestsStatus.getWithdrawalRequestsStatus().stream()
+                        .map(requestStatus -> new WithdrawalRequestsStatus.Builder()
+                                .with(requestStatus)
+                                .build()
+                        )
+                        .collect(Collectors.toList());
+
 
         applyToCaseAggregate(setOffencesWithdrawalRequestsStatus.getCaseId(), command, caseAggregate -> caseAggregate.requestForOffenceWithdrawal(
                 setOffencesWithdrawalRequestsStatus.getCaseId(),
                 UUID.fromString(command.metadata().userId().get()),
                 clock.now(),
-                setOffencesWithdrawalRequestsStatus.getWithdrawalRequestsStatus(),
+                offencesWithdrawalRequestsStatus,
                 prosecutingAuthorityAccess.getProsecutingAuthority()));
     }
 

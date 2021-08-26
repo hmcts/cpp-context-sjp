@@ -7,11 +7,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
+import uk.gov.justice.services.common.converter.JsonObjectConvertersProducer;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.LocalDates;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -95,11 +96,7 @@ public class CaseReceivedListenerTest {
     private CaseSearchResultService caseSearchResultService = new CaseSearchResultService();
 
     @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
-    @Spy
-    @InjectMocks
-    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+    private JsonObjectToObjectConverter converter = new JsonObjectToObjectConverter(objectMapper);
 
     private static final UUID caseId = UUID.randomUUID();
     private static final String prosecutingAuthority = "TFL";
@@ -135,6 +132,12 @@ public class CaseReceivedListenerTest {
     private static final String prosecutionFacts = "this is prosecution facts";
     private static final String witnessStatement = "this is witness statement";
     private static final BigDecimal compensation = BigDecimal.valueOf(2.34);
+
+
+    @Test
+    public void setUp() {
+        setField(this.converter, "objectMapper", new ObjectMapperProducer().objectMapper());
+    }
 
     @Test
     public void shouldSaveTheCaseAndSearchResult() {
@@ -266,6 +269,7 @@ public class CaseReceivedListenerTest {
         assertThat(actualCaseDetail.getDateTimeCreated().toEpochSecond(), equalTo(expectedCaseDetail.getDateTimeCreated().toEpochSecond()));
 
         assertThat(actualCaseDetail.getId(), equalTo(expectedCaseDetail.getId()));
+        assertThat(actualCaseDetail.getManagedByAtcm(), is(true));
     }
 
     private void whenItIsPickedUpByListener(final JsonEnvelope envelope) {

@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.sjp.event.processor.model.referral;
 
+import uk.gov.moj.cpp.sjp.model.prosecution.ProsecutionCaseView;
+
 import java.util.List;
 
 public class ReferCaseForCourtHearingCommand {

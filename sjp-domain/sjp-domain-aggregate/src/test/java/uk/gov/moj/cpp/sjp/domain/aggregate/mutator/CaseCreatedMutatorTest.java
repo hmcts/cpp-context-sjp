@@ -38,6 +38,7 @@ public class CaseCreatedMutatorTest {
         assertThat(state.getProsecutingAuthority(), is(event.getProsecutingAuthority()));
         assertThat(state.getOffenceIdsByDefendantId().entrySet(), iterableWithSize(aCase.getDefendant().getOffences().size()));
         assertThat(state.isCaseReceived(), is(true));
+        assertThat(state.isManagedByAtcm(), is(true));
     }
 
 }

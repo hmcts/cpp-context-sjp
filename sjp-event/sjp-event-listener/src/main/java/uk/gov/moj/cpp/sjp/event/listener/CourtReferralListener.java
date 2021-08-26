@@ -39,6 +39,10 @@ public class CourtReferralListener {
         caseCourtReferralStatus.markRejected(
                 caseReferralForCourtHearingRejectionRecorded.getRejectedAt(),
                 caseReferralForCourtHearingRejectionRecorded.getRejectionReason());
+
+        final CaseDetail caseDetail = caseRepository.findBy(caseId);
+        caseDetail.setManagedByAtcm(true);
+        caseRepository.save(caseDetail);
     }
 
     @Handles("sjp.events.case-referred-for-court-hearing")
@@ -55,7 +59,9 @@ public class CourtReferralListener {
         caseCourtReferralStatusRepository.save(caseCourtReferralStatus);
 
         caseDetail.setReferredForCourtHearing(true);
+        caseDetail.setManagedByAtcm(false);
         updateDisabilityNeeds(caseReferredForCourtHearing, caseDetail);
+
 
     }
 

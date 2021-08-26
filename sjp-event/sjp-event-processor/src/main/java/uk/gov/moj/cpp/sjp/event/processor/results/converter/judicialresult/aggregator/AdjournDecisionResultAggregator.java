@@ -40,7 +40,7 @@ public class AdjournDecisionResultAggregator extends DecisionResultAggregator {
 
         judicialResultPrompts.add(getPrompt(ADJOURN_TO_DATE, resultDefinition)
                 .withJudicialResultPromptTypeId(ADJOURN_TO_DATE.getId())
-                .withValue(adjournOffenceDecision.getAdjournTo().toString())
+                .withValue(restructureDate(adjournOffenceDecision.getAdjournTo().toString()))
                 .build());
 
         judicialResults.add(

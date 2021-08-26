@@ -21,6 +21,7 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.test.ActivitiRule;
 import org.activiti.engine.test.Deployment;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;

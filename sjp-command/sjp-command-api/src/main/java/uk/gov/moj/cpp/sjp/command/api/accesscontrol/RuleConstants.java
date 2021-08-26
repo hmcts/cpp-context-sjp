@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.sjp.command.api.accesscontrol;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
-import java.util.Arrays;
 import java.util.List;
 
 public final class RuleConstants {
@@ -19,43 +19,43 @@ public final class RuleConstants {
     }
 
     public static List<String> getCreateSjpCaseActionGroups() {
-        return Arrays.asList(GROUP_SJP_PROSECUTORS, GROUP_SYSTEM_USERS);
+        return asList(GROUP_SJP_PROSECUTORS, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getPleadOnlineActionGroups() {
-        return Arrays.asList(GROUP_ONLINE_PLEA_SYSTEM_USERS);
+        return asList(GROUP_ONLINE_PLEA_SYSTEM_USERS);
     }
 
     public static List<String> getAddCaseDocumentActionGroups() {
-        return Arrays.asList(GROUP_SYSTEM_USERS, GROUP_SJP_PROSECUTORS, GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_SYSTEM_USERS, GROUP_SJP_PROSECUTORS, GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
     public static List<String> getUpdateDefendantNationalInsuranceNumberGroups() {
-        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getUploadCaseDocumentActionGroups() {
-        return Arrays.asList(GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_SYSTEM_USERS);
+        return asList(GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getUpdatePleaActionGroups() {
-        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
     public static List<String> getUpdateFinancialMeansGroups() {
-        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getUpdateEmployerGroups() {
-        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
     public static List<String> getDeleteEmployerGroups() {
-        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
     public static List<String> getCancelPleaActionGroups() {
-        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
     public static String[] getCaseReopenedActionGroups() {
@@ -71,15 +71,15 @@ public final class RuleConstants {
     }
 
     public static List<String> getActionCourtReferralGroups() {
-        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
     public static List<String> getUpdateDefendantDetails() {
-        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getUpdateHearingRequirementsGroups() {
-        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
     public static List<String> getStartSessionGroups() {
@@ -119,19 +119,19 @@ public final class RuleConstants {
     }
 
     public static List<String> getAddCaseNoteGroups() {
-        return Arrays.asList(GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
+        return asList(GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
     }
 
     public static List<String> getOffenceWithdrawalRequestActionGroups() {
-        return Arrays.asList(GROUP_SJP_PROSECUTORS);
+        return asList(GROUP_SJP_PROSECUTORS);
     }
 
-    public static List<String> getSetPleasGroups(){
-        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
+    public static List<String> getSetPleasGroups() {
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS, GROUP_SYSTEM_USERS);
     }
 
     public static List<String> getSaveDecisionActionGroups() {
-        return Arrays.asList(GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_LEGAL_ADVISERS);
     }
 
     public static List<String> resolveCaseStatusGroups() {
@@ -139,18 +139,31 @@ public final class RuleConstants {
     }
 
     public static List<String> getDeleteFinancialMeansGroups() {
-        return Arrays.asList(GROUP_SYSTEM_USERS);
+        return asList(GROUP_SYSTEM_USERS);
     }
 
     public static List<String> updateCasesManagementStatusGroups() {
-        return Arrays.asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
     }
 
     public static List<String> getAddCaseAssignmentRestrictionActionGroups() {
-        return Arrays.asList(GROUP_SYSTEM_USERS);
+        return asList(GROUP_SYSTEM_USERS);
     }
+
     public static List<String> getAddRequestForOutstandingFinesGroups() {
-        return Arrays.asList(GROUP_SYSTEM_USERS);
+        return asList(GROUP_SYSTEM_USERS);
+    }
+
+    public static List<String> getCreateCaseApplicationGroups() {
+        return asList(GROUP_COURT_ADMINISTRATORS, GROUP_LEGAL_ADVISERS);
+    }
+
+    public static List<String> getAddFinancialImpositionCorrelationIdGroups() {
+        return asList(GROUP_SYSTEM_USERS, GROUP_LEGAL_ADVISERS, GROUP_COURT_ADMINISTRATORS);
+    }
+
+    public static List<String> getAddFinancialImpositionAccountNumberBdfGroups() {
+        return asList(GROUP_SYSTEM_USERS);
     }
 
 }

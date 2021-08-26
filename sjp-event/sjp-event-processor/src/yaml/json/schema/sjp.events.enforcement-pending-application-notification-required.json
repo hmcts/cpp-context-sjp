@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/events/enforcement-pending-application-notification-required.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "initiatedTime": {
+      "type": "string"
+    },
+    "gobAccountNumber": {
+      "type": "string"
+    },
+    "divisionCode": {
+      "type": "integer"
+    },
+    "defendantName": {
+      "type": "string"
+    },
+    "urn": {
+      "type": "string"
+    },
+    "dateApplicationIsListed": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "caseId",
+    "applicationId",
+    "initiatedTime",
+    "gobAccountNumber",
+    "divisionCode",
+    "defendantName",
+    "urn",
+    "dateApplicationIsListed"
+  ],
+  "additionalProperties": false
+}

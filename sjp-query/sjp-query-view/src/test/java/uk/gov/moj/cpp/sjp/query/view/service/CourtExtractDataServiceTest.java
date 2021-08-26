@@ -2,15 +2,18 @@ package uk.gov.moj.cpp.sjp.query.view.service;
 
 
 import static java.lang.String.format;
-import static java.math.BigDecimal.*;
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
 import static java.time.ZonedDateTime.now;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createReader;
 import static org.apache.commons.lang.math.RandomUtils.nextInt;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -21,10 +24,13 @@ import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.ADJOURN;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.DISMISS;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.WITHDRAW;
-import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.*;
-import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.*;
+import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.ABSOLUTE;
+import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.CONDITIONAL;
+import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.WEEK;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
-import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.*;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 import static uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder.aCase;
 import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
 import static uk.gov.moj.cpp.sjp.query.view.helper.PleaInfo.plea;
@@ -33,6 +39,9 @@ import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.persistence.entity.AdjournOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.ApplicationType;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplication;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplicationDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -43,14 +52,16 @@ import uk.gov.moj.cpp.sjp.persistence.entity.FinancialPenaltyOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.ReferForCourtHearingDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.Session;
 import uk.gov.moj.cpp.sjp.persistence.entity.WithdrawOffenceDecision;
 import uk.gov.moj.cpp.sjp.query.view.helper.PleaInfo;
 import uk.gov.moj.cpp.sjp.query.view.response.courtextract.CaseCourtExtractView;
+import uk.gov.moj.cpp.sjp.query.view.response.courtextract.DecisionView;
 import uk.gov.moj.cpp.sjp.query.view.response.courtextract.OffenceDecisionLineView;
-import uk.gov.moj.cpp.sjp.query.view.response.courtextract.OffenceDecisionView;
+import uk.gov.moj.cpp.sjp.query.view.util.builders.CaseApplicationDecisionEntityBuilder;
+import uk.gov.moj.cpp.sjp.query.view.util.builders.SessionEntityBuilder;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -71,28 +82,31 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class CourtExtractDataServiceTest {
 
-    @InjectMocks
-    private CourtExtractDataService courtExtractDataService;
-
-    @Mock
-    private CaseService caseService;
-
-    @Mock
-    private ReferenceDataService referenceDataService;
-
-    @Mock
-    private UserAndGroupsService userAndGroupsService;
-
-    private final UUID caseId = randomUUID();
-    private final UUID offence1Id = randomUUID();
-    private final UUID offence2Id = randomUUID();
-
     private static final DateTimeFormatter DATE_FORMAT = ofPattern("dd MMMM yyyy");
     private static final String LEGAL_ADVISER_NAME = "Legal adviser name";
     private static final String MAGISTRATE_NAME = "Legal adviser name";
-
+    private static final int SEQUENCE_NUMBER_1 = 1;
+    private final UUID caseId = randomUUID();
+    private final UUID applicationId = randomUUID();
+    private final UUID offence1Id = randomUUID();
+    private final UUID offence2Id = randomUUID();
     private final ZonedDateTime decisionSavedAt = ZonedDateTime.now();
     private final String formattedSavedAt = DATE_FORMAT.format(decisionSavedAt);
+    @InjectMocks
+    private CourtExtractDataService courtExtractDataService;
+    @Mock
+    private CaseService caseService;
+    @Mock
+    private ReferenceDataService referenceDataService;
+    @Mock
+    private UserAndGroupsService userAndGroupsService;
+
+    private static String expectedDecisionMade(final ZonedDateTime decisionSavedAt, boolean magistrate) {
+        final String decisionDate = DATE_FORMAT.format(decisionSavedAt);
+        final String userName = magistrate ? MAGISTRATE_NAME : LEGAL_ADVISER_NAME;
+        final String userType = magistrate ? "Magistrate" : "Legal Adviser";
+        return String.format("%s\n%s (%s)", decisionDate, userName, userType);
+    }
 
     @Before
     public void setUp() {
@@ -131,7 +145,7 @@ public class CourtExtractDataServiceTest {
 
         assertTrue(caseCourtExtractView.isPresent());
 
-        final OffenceDecisionView offenceDecisionView = caseCourtExtractView.get().getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = caseCourtExtractView.get().getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
 
         assertEquals("Court decision", offenceDecisionView.getHeading());
         assertThat(offenceDecisionView.getLines(), contains(
@@ -139,6 +153,25 @@ public class CourtExtractDataServiceTest {
                 new OffenceDecisionLineView("Verdict", "Found not guilty"),
                 new OffenceDecisionLineView("Date of verdict", formattedSavedAt),
                 new OffenceDecisionLineView("Result", "Dismissed"),
+                new OffenceDecisionLineView("Decision made", expectedDecisionMade(decisionSavedAt, true))));
+    }
+
+    @Test
+    public void shouldVerifyDismissCaseWithApplicationWithMagistrateSession() {
+        final CaseDetail caseDetail = buildCaseWithSingleDecisionAndSingleOffenceAndApplication(caseId, applicationId, decisionSavedAt);
+
+        when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
+
+        final Optional<CaseCourtExtractView> caseCourtExtractView = this.courtExtractDataService.getCourtExtractData(caseId);
+
+        assertTrue(caseCourtExtractView.isPresent());
+
+        final DecisionView applicationDecisionView = caseCourtExtractView.get().getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getApplicationDecision();
+
+        assertThat("Court decision", is(applicationDecisionView.getHeading()));
+        assertThat(applicationDecisionView.getLines(), contains(
+                new OffenceDecisionLineView("Result", "Statutory declaration made under section 16E of the Magistrates' Courts Act 1980. Conviction and Sentence imposed on " + DATE_FORMAT.format(decisionSavedAt)),
+                new OffenceDecisionLineView("Accepted outside 21 days", "out of time reason"),
                 new OffenceDecisionLineView("Decision made", expectedDecisionMade(decisionSavedAt, true))));
     }
 
@@ -154,7 +187,7 @@ public class CourtExtractDataServiceTest {
 
         assertTrue(caseCourtExtractView.isPresent());
 
-        final OffenceDecisionView offenceDecisionView = caseCourtExtractView.get().getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = caseCourtExtractView.get().getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
 
         assertEquals("Court decision", offenceDecisionView.getHeading());
         assertThat(offenceDecisionView.getLines(), contains(
@@ -176,7 +209,7 @@ public class CourtExtractDataServiceTest {
 
         assertTrue(caseCourtExtractView.isPresent());
 
-        final OffenceDecisionView offenceDecisionView = caseCourtExtractView.get().getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = caseCourtExtractView.get().getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
 
         assertEquals("Court decision", offenceDecisionView.getHeading());
         assertThat(offenceDecisionView.getLines(), contains(
@@ -197,7 +230,7 @@ public class CourtExtractDataServiceTest {
 
         assertTrue(caseCourtExtractView.isPresent());
 
-        final OffenceDecisionView offenceDecisionView = caseCourtExtractView.get().getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = caseCourtExtractView.get().getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
         assertEquals("Court decision", offenceDecisionView.getHeading());
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
@@ -216,7 +249,7 @@ public class CourtExtractDataServiceTest {
 
         assertTrue(caseCourtExtractView.isPresent());
 
-        final OffenceDecisionView offenceDecisionView = caseCourtExtractView.get().getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = caseCourtExtractView.get().getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
 
         assertEquals("Court decision", offenceDecisionView.getHeading());
         assertThat(offenceDecisionView.getLines(), contains(
@@ -238,7 +271,7 @@ public class CourtExtractDataServiceTest {
 
         assertTrue(caseCourtExtractView.isPresent());
 
-        final OffenceDecisionView offenceDecisionView = caseCourtExtractView.get().getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = caseCourtExtractView.get().getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
 
         assertEquals("Court decision (set aside)", offenceDecisionView.getHeading());
         assertThat(offenceDecisionView.getLines(), contains(
@@ -278,8 +311,8 @@ public class CourtExtractDataServiceTest {
 
         assertTrue(caseCourtExtractView.isPresent());
 
-        final OffenceDecisionView dismissedDecisionView = caseCourtExtractView.get().getOffences().get(0).getOffenceDecisions().get(0);
-        final OffenceDecisionView withdrawnDecisionView = caseCourtExtractView.get().getOffences().get(1).getOffenceDecisions().get(0);
+        final DecisionView dismissedDecisionView = caseCourtExtractView.get().getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
+        final DecisionView withdrawnDecisionView = caseCourtExtractView.get().getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(1).getOffenceDecisions().get(0);
 
         assertEquals("Court decision", dismissedDecisionView.getHeading());
         assertThat(dismissedDecisionView.getLines(), contains(
@@ -323,8 +356,8 @@ public class CourtExtractDataServiceTest {
 
         assertTrue(caseCourtExtractView.isPresent());
 
-        final OffenceDecisionView withdrawnDecisionView = caseCourtExtractView.get().getOffences().get(0).getOffenceDecisions().get(0);
-        final OffenceDecisionView adjournedDecisionView = caseCourtExtractView.get().getOffences().get(0).getOffenceDecisions().get(1);
+        final DecisionView withdrawnDecisionView = caseCourtExtractView.get().getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
+        final DecisionView adjournedDecisionView = caseCourtExtractView.get().getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(1);
 
         assertEquals("Previous court decision", adjournedDecisionView.getHeading());
         assertThat(adjournedDecisionView.getLines(), contains(
@@ -340,6 +373,156 @@ public class CourtExtractDataServiceTest {
                 new OffenceDecisionLineView("Decision made", expectedDecisionMade(withdrawnCaseDecision.getSavedAt(), false))));
     }
 
+    @Test
+    public void shouldVerifyForDischargeOffenceDecisions() {
+        final CaseDetail caseDetail = buildCaseDetailWithOneOffence();
+
+        final CaseDecision dischargeDecision1 = buildCaseDecisionEntity(caseDetail.getId(), false, now());
+        dischargeDecision1.setOffenceDecisions(asList(
+                new DischargeOffenceDecision(offence1Id,
+                        dischargeDecision1.getId(),
+                        FOUND_GUILTY,
+                        null,
+                        true,
+                        ZERO,
+                        null,
+                        ABSOLUTE, null, null)));
+
+        caseDetail.setCaseDecisions(asList(dischargeDecision1));
+        when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
+
+        final Optional<CaseCourtExtractView> caseCourtExtractView = this.courtExtractDataService
+                .getCourtExtractData(caseDetail.getId());
+
+        assertTrue(caseCourtExtractView.isPresent());
+
+        final DecisionView dischargeDecisionViewNoPlea = caseCourtExtractView.get().getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
+
+        assertEquals("Court decision", dischargeDecisionViewNoPlea.getHeading());
+        assertThat(dischargeDecisionViewNoPlea.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "No plea received"),
+                new OffenceDecisionLineView("Verdict", "Guilty plea accepted"),
+                new OffenceDecisionLineView("Date of verdict", formattedSavedAt),
+                new OffenceDecisionLineView("Result", "Discharged absolutely"),
+                new OffenceDecisionLineView("Defendant's guilty plea", "Taken into account when imposing sentence"),
+                new OffenceDecisionLineView("Decision made", expectedDecisionMade(decisionSavedAt, false))
+                )
+        );
+    }
+
+    @Test
+    public void shouldVerifyForDischargeOffenceDecisionsConditionallyCharged() {
+        final CaseDetail caseDetail = buildCaseDetailWithOneOffence();
+
+        final CaseDecision dischargeDecision = buildCaseDecisionEntity(caseDetail.getId(), false, now());
+        dischargeDecision.setOffenceDecisions(asList(
+                new DischargeOffenceDecision(offence1Id,
+                        dischargeDecision.getId(),
+                        FOUND_GUILTY,
+                        new DischargePeriod(WEEK, 10),
+                        true,
+                        BigDecimal.valueOf(2000.236),
+                        "Limited means of defendant",
+                        CONDITIONAL, null, null)));
+
+        caseDetail.setCaseDecisions(asList(dischargeDecision));
+        when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
+
+        final Optional<CaseCourtExtractView> caseCourtExtractView = this.courtExtractDataService
+                .getCourtExtractData(caseDetail.getId());
+
+        assertTrue(caseCourtExtractView.isPresent());
+        final DecisionView dischargeDecisionViewNoPlea = caseCourtExtractView.get().getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
+
+        assertEquals("Court decision", dischargeDecisionViewNoPlea.getHeading());
+        assertThat(dischargeDecisionViewNoPlea.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "No plea received"),
+                new OffenceDecisionLineView("Verdict", "Guilty plea accepted"),
+                new OffenceDecisionLineView("Date of verdict", formattedSavedAt),
+                new OffenceDecisionLineView("Result", "Discharged conditionally"),
+                new OffenceDecisionLineView("Period", "10 weeks"),
+                new OffenceDecisionLineView("To pay compensation of", "£2,000.24"),
+                new OffenceDecisionLineView("No compensation ordered\nbecause", "Limited means of defendant"),
+                new OffenceDecisionLineView("Defendant's guilty plea", "Taken into account when imposing sentence"),
+                new OffenceDecisionLineView("Decision made", expectedDecisionMade(decisionSavedAt, false))
+                )
+        );
+    }
+
+    @Test
+    public void shouldVerifyForFinancialPenaltyOffenceDecisionsConditionallyCharged() {
+        final CaseDetail caseDetail = buildCaseDetailWithOneOffence();
+
+        final CaseDecision financialDecision = buildCaseDecisionEntity(caseDetail.getId(), false, now());
+        financialDecision.setOffenceDecisions(asList(
+                new FinancialPenaltyOffenceDecision(offence1Id,
+                        financialDecision.getId(),
+                        FOUND_GUILTY,
+                        true,
+                        BigDecimal.valueOf(1000.987),
+                        "Limited means of defendant",
+                        BigDecimal.valueOf(2000.236), null, null, null, null)));
+
+        caseDetail.setCaseDecisions(asList(financialDecision));
+        when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
+        final Optional<CaseCourtExtractView> caseCourtExtractView = this.courtExtractDataService
+                .getCourtExtractData(caseDetail.getId());
+
+        assertTrue(caseCourtExtractView.isPresent());
+
+        final DecisionView dischargeDecisionViewNoPlea = caseCourtExtractView.get().getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
+
+        assertEquals("Court decision", dischargeDecisionViewNoPlea.getHeading());
+        assertThat(dischargeDecisionViewNoPlea.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "No plea received"),
+                new OffenceDecisionLineView("Verdict", "Guilty plea accepted"),
+                new OffenceDecisionLineView("Date of verdict", formattedSavedAt),
+                new OffenceDecisionLineView("To pay a fine of", "£2,000.24"),
+                new OffenceDecisionLineView("To pay compensation of", "£1,000.99"),
+                new OffenceDecisionLineView("No compensation ordered\nbecause", "Limited means of defendant"),
+                new OffenceDecisionLineView("Defendant's guilty plea", "Taken into account when imposing sentence"),
+                new OffenceDecisionLineView("Decision made", expectedDecisionMade(decisionSavedAt, false))
+                )
+        );
+    }
+
+    @Test
+    public void shouldVerifyForExcisePenaltyAndBackDutyOffenceDecisionsConditionallyCharged() {
+        final CaseDetail caseDetail = buildCaseDetailWithOneOffence();
+
+        final CaseDecision financialDecision = buildCaseDecisionEntity(caseDetail.getId(), false, now());
+        financialDecision.setOffenceDecisions(asList(
+                new FinancialPenaltyOffenceDecision(offence1Id,
+                        financialDecision.getId(),
+                        FOUND_GUILTY,
+                        true,
+                        BigDecimal.valueOf(1000.987),
+                        null,
+                        null, BigDecimal.valueOf(123.45), BigDecimal.valueOf(234.56), null, null)));
+
+        caseDetail.setCaseDecisions(asList(financialDecision));
+        when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
+        final Optional<CaseCourtExtractView> caseCourtExtractView = this.courtExtractDataService
+                .getCourtExtractData(caseDetail.getId());
+
+        assertTrue(caseCourtExtractView.isPresent());
+
+        final DecisionView dischargeDecisionViewNoPlea = caseCourtExtractView.get().getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
+
+        assertEquals("Court decision", dischargeDecisionViewNoPlea.getHeading());
+        assertThat(dischargeDecisionViewNoPlea.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "No plea received"),
+                new OffenceDecisionLineView("Verdict", "Guilty plea accepted"),
+                new OffenceDecisionLineView("Date of verdict", formattedSavedAt),
+                new OffenceDecisionLineView("To pay an excise penalty of", "£234.56"),
+                new OffenceDecisionLineView("To pay back duty of", "£123.45"),
+                new OffenceDecisionLineView("To pay compensation of", "£1,000.99"),
+                new OffenceDecisionLineView("Defendant's guilty plea", "Taken into account when imposing sentence"),
+                new OffenceDecisionLineView("Decision made", expectedDecisionMade(decisionSavedAt, false))
+                )
+        );
+    }
+
     private CaseDetail buildCaseWithSingleDecisionAndSingleOffence(final UUID caseId,
                                                                    final DecisionType decisionType,
                                                                    final ZonedDateTime savedAt,
@@ -348,31 +531,50 @@ public class CourtExtractDataServiceTest {
         final CaseDetail entity = aCase()
                 .withCaseId(caseId)
                 .withProsecutingAuthority("TFL")
+                .withDefendantDetail(aDefendantDetail()
+                        .withOffences(singletonList(buildOffenceDetailEntity(SEQUENCE_NUMBER_1, offence1Id)))
+                        .build())
                 .build();
 
-        final DefendantDetail defendantDetail = aDefendantDetail().build();
-        final List<OffenceDetail> offenceDetails = new ArrayList<>();
-        offenceDetails.add(buildOffenceDetailEntity(1, offence1Id));
-        defendantDetail.setOffences(offenceDetails);
-        entity.setDefendant(defendantDetail);
-
         final CaseDecision caseDecision = buildCaseDecisionEntity(entity.getId(), magistrate, savedAt);
-        caseDecision.setOffenceDecisions(asList(
-                buildOffenceDecisionEntity(caseDecision.getId(), offence1Id, decisionType, pleaAtDecisionTime)));
-
+        caseDecision.setOffenceDecisions(asList(buildOffenceDecisionEntity(caseDecision.getId(), offence1Id, decisionType, pleaAtDecisionTime)));
         entity.setCaseDecisions(asList(caseDecision));
         return entity;
     }
 
+    private CaseDetail buildCaseWithSingleDecisionAndSingleOffenceAndApplication(final UUID caseId,
+                                                                                 final UUID applicationId,
+                                                                                 final ZonedDateTime savedAt) {
+        final CaseDecision caseDecision = buildCaseDecisionEntity(caseId, true, savedAt);
+        caseDecision.setOffenceDecisions(asList(buildOffenceDecisionEntity(caseDecision.getId(), offence1Id, DecisionType.DISMISS, null)));
+
+        final CaseApplicationDecision caseApplicationDecision = CaseApplicationDecisionEntityBuilder.applicationDecision()
+                .withDecisionId(randomUUID())
+                .withGranted(true)
+                .withOutOfTime("out of time reason")
+                .withSavedAt(now())
+                .withSession(SessionEntityBuilder.withDefaults().build())
+                .build();
+
+        final CaseDetail entity = aCase()
+                .withCaseId(caseId)
+                .withProsecutingAuthority("TFL")
+                .withDefendantDetail(aDefendantDetail()
+                        .withOffences(singletonList(buildOffenceDetailEntity(SEQUENCE_NUMBER_1, offence1Id))).build()
+                )
+                .withCaseDecision(caseDecision)
+                .withCaseApplication(buildCaseApplication(caseApplicationDecision, applicationId, savedAt.toLocalDate(), "Ref123", ApplicationType.STAT_DEC))
+                .build();
+
+        return entity;
+    }
 
     private CaseDecision buildCaseDecisionEntity(UUID caseId, boolean magistrate, ZonedDateTime savedAt) {
         final CaseDecision caseDecision = new CaseDecision();
         caseDecision.setCaseId(caseId);
         caseDecision.setId(randomUUID());
         caseDecision.setSavedAt(savedAt);
-
-        caseDecision.setSession(new Session(randomUUID(), randomUUID(), "ASDF", "Lavender Hill",
-                "YUIO", magistrate ? MAGISTRATE_NAME : null, now()));
+        caseDecision.setSession(SessionEntityBuilder.withDefaults().withMagistrate(magistrate ? MAGISTRATE_NAME : null).build());
         return caseDecision;
     }
 
@@ -457,163 +659,6 @@ public class CourtExtractDataServiceTest {
                 readObject().getJsonArray("offences").getJsonObject(0));
     }
 
-    private static String expectedDecisionMade(final ZonedDateTime decisionSavedAt, boolean magistrate) {
-        final String decisionDate = DATE_FORMAT.format(decisionSavedAt);
-        final String userName = magistrate ? MAGISTRATE_NAME : LEGAL_ADVISER_NAME;
-        final String userType = magistrate ? "Magistrate" : "Legal Adviser";
-        return String.format("%s\n%s (%s)", decisionDate, userName, userType);
-    }
-
-    @Test
-    public void shouldVerifyForDischargeOffenceDecisions() {
-        final CaseDetail caseDetail = buildCaseDetailWithOneOffence();
-
-        final CaseDecision dischargeDecision1 = buildCaseDecisionEntity(caseDetail.getId(), false, now());
-        dischargeDecision1.setOffenceDecisions(asList(
-                new DischargeOffenceDecision(offence1Id,
-                        dischargeDecision1.getId(),
-                        FOUND_GUILTY,
-                        null,
-                        true,
-                        ZERO,
-                        null,
-                        ABSOLUTE, null, null)));
-
-        caseDetail.setCaseDecisions(asList(dischargeDecision1));
-        when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
-
-        final Optional<CaseCourtExtractView> caseCourtExtractView = this.courtExtractDataService
-                .getCourtExtractData(caseDetail.getId());
-
-        assertTrue(caseCourtExtractView.isPresent());
-
-        final OffenceDecisionView dischargeDecisionViewNoPlea = caseCourtExtractView.get().getOffences().get(0).getOffenceDecisions().get(0);
-
-        assertEquals("Court decision", dischargeDecisionViewNoPlea.getHeading());
-        assertThat(dischargeDecisionViewNoPlea.getLines(), contains(
-                new OffenceDecisionLineView("Plea", "No plea received"),
-                new OffenceDecisionLineView("Verdict", "Guilty plea accepted"),
-                new OffenceDecisionLineView("Date of verdict", formattedSavedAt),
-                new OffenceDecisionLineView("Result", "Discharged absolutely"),
-                new OffenceDecisionLineView("Defendant's guilty plea", "Taken into account when imposing sentence"),
-                new OffenceDecisionLineView("Decision made", expectedDecisionMade(decisionSavedAt, false))
-                )
-        );
-    }
-
-    @Test
-    public void shouldVerifyForDischargeOffenceDecisionsConditionallyCharged() {
-        final CaseDetail caseDetail = buildCaseDetailWithOneOffence();
-
-        final CaseDecision dischargeDecision = buildCaseDecisionEntity(caseDetail.getId(), false, now());
-        dischargeDecision.setOffenceDecisions(asList(
-                new DischargeOffenceDecision(offence1Id,
-                        dischargeDecision.getId(),
-                        FOUND_GUILTY,
-                        new DischargePeriod(WEEK, 10),
-                        true,
-                        BigDecimal.valueOf(2000.236),
-                        "Limited means of defendant",
-                        CONDITIONAL, null, null)));
-
-        caseDetail.setCaseDecisions(asList(dischargeDecision));
-        when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
-
-        final Optional<CaseCourtExtractView> caseCourtExtractView = this.courtExtractDataService
-                .getCourtExtractData(caseDetail.getId());
-
-        assertTrue(caseCourtExtractView.isPresent());
-        final OffenceDecisionView dischargeDecisionViewNoPlea = caseCourtExtractView.get().getOffences().get(0).getOffenceDecisions().get(0);
-
-        assertEquals("Court decision", dischargeDecisionViewNoPlea.getHeading());
-        assertThat(dischargeDecisionViewNoPlea.getLines(), contains(
-                new OffenceDecisionLineView("Plea", "No plea received"),
-                new OffenceDecisionLineView("Verdict", "Guilty plea accepted"),
-                new OffenceDecisionLineView("Date of verdict", formattedSavedAt),
-                new OffenceDecisionLineView("Result", "Discharged conditionally"),
-                new OffenceDecisionLineView("Period", "10 weeks"),
-                new OffenceDecisionLineView("To pay compensation of", "£2,000.24"),
-                new OffenceDecisionLineView("No compensation ordered\nbecause", "Limited means of defendant"),
-                new OffenceDecisionLineView("Defendant's guilty plea", "Taken into account when imposing sentence"),
-                new OffenceDecisionLineView("Decision made", expectedDecisionMade(decisionSavedAt, false))
-                )
-        );
-    }
-
-    @Test
-    public void shouldVerifyForFinancialPenaltyOffenceDecisionsConditionallyCharged() {
-        final CaseDetail caseDetail = buildCaseDetailWithOneOffence();
-
-        final CaseDecision financialDecision = buildCaseDecisionEntity(caseDetail.getId(), false, now());
-        financialDecision.setOffenceDecisions(asList(
-                new FinancialPenaltyOffenceDecision(offence1Id,
-                        financialDecision.getId(),
-                        FOUND_GUILTY,
-                        true,
-                        BigDecimal.valueOf(1000.987),
-                        "Limited means of defendant",
-                        BigDecimal.valueOf(2000.236), null, null, null, null)));
-
-        caseDetail.setCaseDecisions(asList(financialDecision));
-        when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
-        final Optional<CaseCourtExtractView> caseCourtExtractView = this.courtExtractDataService
-                .getCourtExtractData(caseDetail.getId());
-
-        assertTrue(caseCourtExtractView.isPresent());
-
-        final OffenceDecisionView dischargeDecisionViewNoPlea = caseCourtExtractView.get().getOffences().get(0).getOffenceDecisions().get(0);
-
-        assertEquals("Court decision", dischargeDecisionViewNoPlea.getHeading());
-        assertThat(dischargeDecisionViewNoPlea.getLines(), contains(
-                new OffenceDecisionLineView("Plea", "No plea received"),
-                new OffenceDecisionLineView("Verdict", "Guilty plea accepted"),
-                new OffenceDecisionLineView("Date of verdict", formattedSavedAt),
-                new OffenceDecisionLineView("To pay a fine of", "£2,000.24"),
-                new OffenceDecisionLineView("To pay compensation of", "£1,000.99"),
-                new OffenceDecisionLineView("No compensation ordered\nbecause", "Limited means of defendant"),
-                new OffenceDecisionLineView("Defendant's guilty plea", "Taken into account when imposing sentence"),
-                new OffenceDecisionLineView("Decision made", expectedDecisionMade(decisionSavedAt, false))
-                )
-        );
-    }
-
-    @Test
-    public void shouldVerifyForExcisePenaltyAndBackDutyOffenceDecisionsConditionallyCharged() {
-        final CaseDetail caseDetail = buildCaseDetailWithOneOffence();
-
-        final CaseDecision financialDecision = buildCaseDecisionEntity(caseDetail.getId(), false, now());
-        financialDecision.setOffenceDecisions(asList(
-                new FinancialPenaltyOffenceDecision(offence1Id,
-                        financialDecision.getId(),
-                        FOUND_GUILTY,
-                        true,
-                        BigDecimal.valueOf(1000.987),
-                        null,
-                        null, BigDecimal.valueOf(123.45), BigDecimal.valueOf(234.56), null, null)));
-
-        caseDetail.setCaseDecisions(asList(financialDecision));
-        when(caseService.getCase(caseId)).thenReturn(Optional.of(caseDetail));
-        final Optional<CaseCourtExtractView> caseCourtExtractView = this.courtExtractDataService
-                .getCourtExtractData(caseDetail.getId());
-
-        assertTrue(caseCourtExtractView.isPresent());
-
-        final OffenceDecisionView dischargeDecisionViewNoPlea = caseCourtExtractView.get().getOffences().get(0).getOffenceDecisions().get(0);
-
-        assertEquals("Court decision", dischargeDecisionViewNoPlea.getHeading());
-        assertThat(dischargeDecisionViewNoPlea.getLines(), contains(
-                new OffenceDecisionLineView("Plea", "No plea received"),
-                new OffenceDecisionLineView("Verdict", "Guilty plea accepted"),
-                new OffenceDecisionLineView("Date of verdict", formattedSavedAt),
-                new OffenceDecisionLineView("To pay an excise penalty of", "£234.56"),
-                new OffenceDecisionLineView("To pay back duty of", "£123.45"),
-                new OffenceDecisionLineView("To pay compensation of", "£1,000.99"),
-                new OffenceDecisionLineView("Defendant's guilty plea", "Taken into account when imposing sentence"),
-                new OffenceDecisionLineView("Decision made", expectedDecisionMade(decisionSavedAt, false))
-                )
-        );
-    }
-
     private CaseDetail buildCaseDetailWithOneOffence() {
         final CaseDetail caseDetail = aCase()
                 .withCaseId(caseId)
@@ -627,5 +672,19 @@ public class CourtExtractDataServiceTest {
         return caseDetail;
     }
 
+    private final CaseApplication buildCaseApplication(final CaseApplicationDecision caseApplicationDecision, final UUID applicationId, final LocalDate dateReceived, final String applicationReference, final ApplicationType applicationType) {
+        final CaseApplication caseApplication = new CaseApplication();
+        caseApplication.setApplicationId(applicationId);
+        caseApplication.setApplicationDecision(caseApplicationDecision);
+        caseApplication.setTypeId(randomUUID());
+        caseApplication.setDateReceived(dateReceived);
+        caseApplication.setTypeCode(randomUUID().toString());
+        caseApplication.setApplicationReference(applicationReference);
+        caseApplication.setApplicationType(applicationType);
+        caseApplication.setOutOfTime(caseApplicationDecision.getOutOfTime());
+        caseApplication.setOutOfTimeReason(caseApplicationDecision.getOutOfTimeReason());
+        caseApplicationDecision.setCaseApplication(caseApplication);
+        return caseApplication;
+    }
 
 }

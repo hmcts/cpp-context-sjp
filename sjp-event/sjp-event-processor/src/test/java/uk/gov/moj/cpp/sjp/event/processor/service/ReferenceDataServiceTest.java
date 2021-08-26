@@ -3,12 +3,14 @@ package uk.gov.moj.cpp.sjp.event.processor.service;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.when;
@@ -23,17 +25,24 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.moj.cpp.sjp.event.processor.service.enforcementnotification.EnforcementAreaNotFoundException;
+import uk.gov.moj.cpp.sjp.event.processor.service.referral.DocumentTypeAccess;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 
 import org.hamcrest.Matcher;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -44,7 +53,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ReferenceDataServiceTest {
 
     private final static String TFL = "TFL";
-
     private static final String FIELD_ID = "id";
     private static final String FIELD_VERSION = "version";
     private static final String FIELD_LABEL = "label";
@@ -60,12 +68,24 @@ public class ReferenceDataServiceTest {
     private static final String DISMISSED_RESULT_ID = "14d66587-8fbe-424f-a369-b1144f1684e3";
     private static final String WITHDRAWN_SHORT_CODE = "WDRNNOT";
     private static final String DISMISSED_SHORT_CODE = "DISM";
+    private static final String ACCOUNT_DIVISION_CODE = "accountDivisionCode";
+    private static final String ENFORCING_COURT_CODE = "enforcingCourtCode";
+    private static final String NATIONAL_PAYMENT_PHONE = "nationalPaymentPhone";
+    private static final String PAYMENT_QUERIES_ADDRESS1 = "paymentQueriesAddress1";
+    private static final String PAYMENT_QUERIES_ADDRESS2 = "paymentQueriesAddress2";
+    private static final String PAYMENT_QUERIES_ADDRESS3 = "paymentQueriesAddress3";
+    private static final String PAYMENT_QUERIES_ADDRESS4 = "paymentQueriesAddress4";
+    private static final String PAYMENT_QUERIES_POSTCODE = "paymentQueriesPostcode";
+    private static final String REMITTANCE_ADVICE_EMAIL_ADDRESS = "remittanceAdviceEmailAddress";
+
     private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
+
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloper();
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
     @Mock
     private Requester requester;
-
     @InjectMocks
     private ReferenceDataService referenceDataService;
 
@@ -109,26 +129,12 @@ public class ReferenceDataServiceTest {
                 is(empty()));
     }
 
-    private void mockCountryNationalityResponseAndAssertOnResult(final JsonObject nationality, final Matcher nationalityMatcher) {
-
-        final JsonArray nationalities = createArrayBuilder()
-                .add(nationality)
-                .build();
-        final JsonObject responsePayload = createObjectBuilder().add("countryNationality", nationalities).build();
-        final JsonEnvelope queryResponse = envelopeFrom(metadataWithRandomUUIDAndName(), responsePayload);
-
-        when(requestCountryNationalities()).thenReturn(queryResponse);
-
-        final Optional<JsonObject> nationalityResult = referenceDataService.getNationality("nationalityCode", envelope);
-        assertThat(nationalityResult, nationalityMatcher);
-    }
-
     @Test
     public void shouldReturnEthnicity() {
         final String ethnicityCode = "code";
         final JsonArray ethnicity = createArrayBuilder()
                 .add(createObjectBuilder()
-                        .add("id", UUID.randomUUID().toString())
+                        .add("id", randomUUID().toString())
                         .add("code", ethnicityCode))
                 .build();
 
@@ -149,7 +155,7 @@ public class ReferenceDataServiceTest {
         when(requestProsecutor(TFL)).thenReturn(response);
 
 
-        final JsonObject prosecutor = referenceDataService.getProsecutor(TFL, envelope);
+        final JsonObject prosecutor = referenceDataService.getProsecutors(TFL, envelope);
         assertThat(prosecutor, is(response.payloadAsJsonObject()));
     }
 
@@ -171,7 +177,7 @@ public class ReferenceDataServiceTest {
 
     @Test
     public void shouldReturnReferralReasons() {
-        final JsonObject responsePayload = createObjectBuilder().add("referralReasons", Json.createArrayBuilder()).build();
+        final JsonObject responsePayload = createObjectBuilder().add("referralReasons", createArrayBuilder()).build();
         final JsonEnvelope queryResponse = envelopeFrom(
                 metadataWithRandomUUID("referencedata.query.referral-reasons"),
                 responsePayload);
@@ -184,21 +190,33 @@ public class ReferenceDataServiceTest {
 
     @Test
     public void shouldReturnDocumentsTypeAccess() {
-        final JsonObject responsePayload = createObjectBuilder().add("date", Json.createArrayBuilder()).build();
+        final UUID id1 = randomUUID();
+        final UUID id2 = randomUUID();
+        final JsonObject responsePayload = createObjectBuilder()
+                .add("documentsTypeAccess", createArrayBuilder()
+                        .add(createObjectBuilder()
+                                .add("id", id1.toString())
+                                .add("section", "section1"))
+                        .add(createObjectBuilder()
+                                .add("id", id2.toString())
+                                .add("section", "section2")))
+                .build();
         final JsonEnvelope queryResponse = envelopeFrom(
                 metadataWithRandomUUID("referencedata.get-all-document-type-access"),
                 responsePayload);
-
-        final LocalDate date = LocalDate.now();
         when(requestDocumentTypeAccess()).thenReturn(queryResponse);
 
-        final JsonObject documentTypeAccess = referenceDataService.getDocumentTypeAccess(date, envelope);
-        assertThat(documentTypeAccess, is(responsePayload));
+        final List<DocumentTypeAccess> documentTypeAccess = referenceDataService.getDocumentTypeAccess(LocalDate.now(), envelope);
+
+        assertThat(documentTypeAccess, containsInAnyOrder(
+                new DocumentTypeAccess(id1, "section1"),
+                new DocumentTypeAccess(id2, "section2")
+        ));
     }
 
     @Test
     public void shouldReturnHearingTypes() {
-        final JsonObject responsePayload = createObjectBuilder().add("hearingTypes", Json.createArrayBuilder()).build();
+        final JsonObject responsePayload = createObjectBuilder().add("hearingTypes", createArrayBuilder()).build();
         final JsonEnvelope queryResponse = envelopeFrom(
                 metadataWithRandomUUID("referencedata.query.hearing-types"),
                 responsePayload);
@@ -209,10 +227,8 @@ public class ReferenceDataServiceTest {
         assertThat(hearingTypes, is(responsePayload));
     }
 
-
     @Test
     public void shouldReturnAllResultDefinitions() {
-
         final JsonEnvelope queryResponse = envelopeFrom(metadataWithRandomUUIDAndName(), getAllResultsDefinitionJsonObject());
 
         when(requester.request(any())).thenReturn(queryResponse);
@@ -223,10 +239,138 @@ public class ReferenceDataServiceTest {
         assertThat(allResultDefinitions.getJsonObject(0).getString(FIELD_ID), is(WITHDRAWN_RESULT_ID));
     }
 
-    private JsonEnvelope organisationUnitsQuery(final String oucode) {
+    @Test
+    public void getLocalJusticeAreaByCodeShouldReturnEmptyWhenNullResponseIsReturnedFromReferenceData() {
+        final JsonEnvelope referenceDataResponse = envelopeFrom(metadataWithRandomUUIDAndName(), JsonValue.NULL);
+        when(requester.requestAsAdmin(any())).thenReturn(referenceDataResponse);
+
+        thrown.expect(EnforcementAreaNotFoundException.class);
+        thrown.expectMessage(equalTo("Could not find Local Justice Area by code: localJusticeAreaNationalCourtCode"));
+
+        referenceDataService.getLocalJusticeAreaByCode(envelope, "localJusticeAreaNationalCourtCode");
+    }
+
+    @Test
+    public void shouldReturnDvlaPenaltyPointNotificationEmailAddress() {
+        final JsonObjectBuilder payload = createObjectBuilder()
+                .add("id", randomUUID().toString())
+                .add("seqNum", 10010)
+                .add("orgName", "DVLA Penalty Point Notification")
+                .add("orgType", "DVLA")
+                .add("startDate", "2020-05-01")
+                .add("emailAddress", "rehab@dvla.gov.uk");
+        final JsonEnvelope referenceDataResponse = envelopeFrom(metadataWithRandomUUIDAndName(), payload);
+        when(requester.requestAsAdmin(any())).thenReturn(referenceDataResponse);
+
+        final Optional<String> dvlaEmailAddress = referenceDataService.getDvlaPenaltyPointNotificationEmailAddress(envelope);
+
+        assertThat(dvlaEmailAddress.isPresent(), is(true));
+        assertThat(dvlaEmailAddress.get(), equalTo("rehab@dvla.gov.uk"));
+    }
+
+    @Test
+    public void shouldReturnEmptyWhenDvlaEmailIsNotPresentInReferenceData() {
+        final JsonEnvelope referenceDataResponse = envelopeFrom(metadataWithRandomUUIDAndName(), JsonValue.NULL);
+        when(requester.requestAsAdmin(any())).thenReturn(referenceDataResponse);
+
+        final Optional<String> dvlaEmailAddress = referenceDataService.getDvlaPenaltyPointNotificationEmailAddress(envelope);
+
+        assertThat(dvlaEmailAddress.isPresent(), is(false));
+    }
+
+
+    @Test
+    public void shouldReturnEnforcementAreaByPostcode() {
+        final String postcode = "CRO 2GE";
+        final JsonObject enforcementArea = newEnforcementArea();
+
+        final JsonEnvelope queryResponse = envelopeFrom(metadataWithRandomUUIDAndName(), enforcementArea);
+
+        when(enforcementAreaQueryByPostcode(postcode)).thenReturn(queryResponse);
+
+        final Optional<JsonObject> actualEnforcementArea = referenceDataService.getEnforcementAreaByPostcode(postcode, envelope);
+
+        assertThat(actualEnforcementArea.isPresent(), equalTo(true));
+        assertThat(actualEnforcementArea.get(), equalTo(enforcementArea));
+    }
+
+    @Test
+    public void shouldReturnEmptyEnforcementAreaIfNotFoundByPostcode() {
+        final String postcode = "CR0 2GE";
+        final JsonEnvelope queryResponse = envelopeFrom(metadataWithRandomUUIDAndName(), JsonValue.NULL);
+
+        when(enforcementAreaQueryByPostcode(postcode)).thenReturn(queryResponse);
+
+        final Optional<JsonObject> actualEnforcementArea = referenceDataService.getEnforcementAreaByPostcode(postcode, envelope);
+
+        assertThat(actualEnforcementArea.isPresent(), equalTo(false));
+    }
+
+    @Test
+    public void shouldReturnEnforcementAreaByLocalJusticeAreaNationalCourtCode() {
+        final String localJusticeAreaNationalCourtCode = "1000";
+        final JsonObject enforcementArea = newEnforcementArea();
+
+        final JsonEnvelope queryResponse = envelopeFrom(metadataWithRandomUUIDAndName(), enforcementArea);
+
+        when(enforcementAreaQueryByNationalCourtCode(localJusticeAreaNationalCourtCode)).thenReturn(queryResponse);
+
+        final Optional<JsonObject> actualEnforcementArea = referenceDataService.getEnforcementAreaByLocalJusticeAreaNationalCourtCode(localJusticeAreaNationalCourtCode, envelope);
+
+        assertThat(actualEnforcementArea.isPresent(), equalTo(true));
+        assertThat(actualEnforcementArea.get(), equalTo(enforcementArea));
+    }
+
+    @Test
+    public void shouldReturnEmptyEnforcementAreaIfNotFoundByLocalJusticeAreaNationalCourtCode() {
+        final String localJusticeAreaNationalCourtCode = "1000";
+        final JsonEnvelope enforcementArea = envelopeFrom(metadataWithRandomUUIDAndName(), JsonValue.NULL);
+
+        when(enforcementAreaQueryByNationalCourtCode(localJusticeAreaNationalCourtCode)).thenReturn(enforcementArea);
+
+        final Optional<JsonObject> actualEnforcementArea = referenceDataService.getEnforcementAreaByLocalJusticeAreaNationalCourtCode(localJusticeAreaNationalCourtCode, envelope);
+
+        assertThat(actualEnforcementArea.isPresent(), equalTo(false));
+    }
+
+    private JsonEnvelope enforcementAreaQueryByPostcode(final String postcode) {
         return requester.requestAsAdmin(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope).withName("referencedata.query.organisationunits"),
-                payloadIsJson(withJsonPath("$.oucode", equalTo(oucode))))));
+                withMetadataEnvelopedFrom(envelope).withName("referencedata.query.enforcement-area.v2"),
+                payloadIsJson(withJsonPath("$.postcode", equalTo(postcode))))));
+    }
+
+    private JsonEnvelope enforcementAreaQueryByNationalCourtCode(final String localJusticeAreaNationalCourtCode) {
+        return requester.requestAsAdmin(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(envelope).withName("referencedata.query.enforcement-area.v2"),
+                payloadIsJson(withJsonPath("$.localJusticeAreaNationalCourtCode", equalTo(localJusticeAreaNationalCourtCode))))));
+    }
+
+    private static JsonObject newEnforcementArea() {
+        return Json.createObjectBuilder()
+                .add(ACCOUNT_DIVISION_CODE, "100")
+                .add(ENFORCING_COURT_CODE, "1000")
+                .add(NATIONAL_PAYMENT_PHONE, "030 0790 9901")
+                .add(PAYMENT_QUERIES_ADDRESS1, "London Collection and Compliance Centre")
+                .add(PAYMENT_QUERIES_ADDRESS2, "HMCTS")
+                .add(PAYMENT_QUERIES_ADDRESS3, "PO Box 31090")
+                .add(PAYMENT_QUERIES_ADDRESS4, "London")
+                .add(PAYMENT_QUERIES_POSTCODE, "SW1P 3WQ")
+                .add(REMITTANCE_ADVICE_EMAIL_ADDRESS, "lcccBank@hmcts.gsi.gov.uk")
+                .build();
+    }
+
+    private void mockCountryNationalityResponseAndAssertOnResult(final JsonObject nationality, final Matcher nationalityMatcher) {
+
+        final JsonArray nationalities = createArrayBuilder()
+                .add(nationality)
+                .build();
+        final JsonObject responsePayload = createObjectBuilder().add("countryNationality", nationalities).build();
+        final JsonEnvelope queryResponse = envelopeFrom(metadataWithRandomUUIDAndName(), responsePayload);
+
+        when(requestCountryNationalities()).thenReturn(queryResponse);
+
+        final Optional<JsonObject> nationalityResult = referenceDataService.getNationality("nationalityCode", envelope);
+        assertThat(nationalityResult, nationalityMatcher);
     }
 
     private Object requestEthnicity(final String ethnicityCode) {
@@ -284,7 +428,7 @@ public class ReferenceDataServiceTest {
                 payloadIsJson(notNullValue()))));
     }
 
-    private final JsonObject getAllResultsDefinitionJsonObject() {
+    private JsonObject getAllResultsDefinitionJsonObject() {
 
         final JsonObject withdrawnResultDefinitionJsonObject = createObjectBuilder()
                 .add(FIELD_ID, WITHDRAWN_RESULT_ID)

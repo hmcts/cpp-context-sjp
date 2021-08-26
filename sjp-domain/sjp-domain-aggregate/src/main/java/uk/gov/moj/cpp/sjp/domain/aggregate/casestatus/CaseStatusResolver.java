@@ -5,6 +5,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.tuple.Pair.of;
+import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.APPLICATION_PENDING;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY_REQUEST_HEARING;
@@ -13,12 +14,15 @@ import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.SET_ASIDE;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.WITHDRAWAL_REQUESTED;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.casestatus.OffenceInformation.createOffenceInformation;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseState.INVALID_CASE_STATE;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.APPEALED;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED_APPLICATION_PENDING;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.PLEA_RECEIVED_NOT_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REFERRED_FOR_COURT_HEARING;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.RELISTED;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REOPENED_IN_LIBRA;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.SET_ASIDE_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.UNKNOWN;
@@ -30,7 +34,6 @@ import uk.gov.moj.cpp.sjp.domain.common.CaseState;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -57,21 +60,9 @@ public class CaseStatusResolver {
             return INVALID_CASE_STATE;
         }
 
-        final CaseState resultState = isCaseInCompletedStatus(
-                caseAggregateState.isCaseReferredForCourtHearing(),
-                caseAggregateState.getCaseReopenedDate(),
-                caseAggregateState.isCaseCompleted()) ?
-                handleCompletedCaseRules(caseAggregateState.isCaseReferredForCourtHearing(),
-                        caseAggregateState.getCaseReopenedDate(),
-                        caseAggregateState.isCaseCompleted())
-                :
-                handleNotCompletedCases(buildOffenceInformation(caseAggregateState),
-                        caseAggregateState.isDefendantsResponseTimerExpired(),
-                        caseAggregateState.getDatesToAvoid(),
-                        caseAggregateState.isAdjourned(),
-                        caseAggregateState.isDatesToAvoidTimerExpired(),
-                        caseAggregateState.isPostConviction(),
-                        caseAggregateState.isSetAside());
+        final CaseState resultState = isCaseInCompletedStatus(caseAggregateState) ?
+                handleCompletedCaseRules(caseAggregateState):
+                handleNotCompletedCases(caseAggregateState);
 
         if (resultState.getCaseStatus() == UNKNOWN) {
             LOGGER.warn("Case status is not covered! offenceInformation={}, referredToCourt={}, reopenedDate={}, completed={}, defendantsResponseTimerElapsed={}, datesToAvoid={}, adjourned={}",
@@ -109,7 +100,7 @@ public class CaseStatusResolver {
 
     private static boolean validate(final CaseAggregateState caseAggregateState) {
         final List<OffenceInformation> offenceInformation = buildOffenceInformation(caseAggregateState);
-        if (!isNotEmpty(offenceInformation) && !caseAggregateState.isCaseCompleted()) {
+        if (!isNotEmpty(offenceInformation) && !caseAggregateState.isCaseCompleted() && !caseAggregateState.hasGrantedApplication()) {
             LOGGER.info("OffenceInformation list should not be empty");
             return false;
         }
@@ -122,16 +113,26 @@ public class CaseStatusResolver {
         return true;
     }
 
-    private static boolean isCaseInCompletedStatus(final boolean referredToCourt, final LocalDate reopenedDate, final boolean completed) {
-        return referredToCourt || nonNull(reopenedDate) || completed;
+    private static boolean isCaseInCompletedStatus(final CaseAggregateState caseAggregateState) {
+        return caseAggregateState.isCaseReferredForCourtHearing()
+                || nonNull(caseAggregateState.getCaseReopenedDate())
+                || caseAggregateState.isCaseCompleted()
+                || caseAggregateState.hasPendingApplication();
     }
 
-    private static CaseState handleCompletedCaseRules(final boolean referredToCourt, final LocalDate reopenedDate, final boolean completed) {
-        final Set<Optional<CaseStatus>> rules = new LinkedHashSet<>();
-        rules.add(returnStatusIf(referredToCourt, REFERRED_FOR_COURT_HEARING));
-        rules.add(returnStatusIf(nonNull(reopenedDate), REOPENED_IN_LIBRA));
-        rules.add(returnStatusIf(completed, COMPLETED));
-        return new CaseState(rules.stream().filter(Optional::isPresent).map(Optional::get).findFirst().orElse(CaseStatus.DEFAULT_STATUS));
+    private static CaseState handleCompletedCaseRules(final CaseAggregateState caseState) {
+        final Set<Optional<CaseState>> rules = new LinkedHashSet<>();
+        rules.add(returnStatusIf(caseState.isCaseReferredForCourtHearing(), new CaseState (REFERRED_FOR_COURT_HEARING)));
+        rules.add(returnStatusIf(nonNull(caseState.getCaseReopenedDate()),new CaseState ( REOPENED_IN_LIBRA)));
+        rules.add(returnStatusIf(caseState.hasPendingApplication(), new CaseState(COMPLETED_APPLICATION_PENDING, APPLICATION_PENDING))) ;
+        rules.add(returnStatusIf(caseState.hasGrantedApplication() && caseState.isSetAside(), new CaseState(SET_ASIDE_READY_FOR_DECISION, SET_ASIDE)));
+        rules.add(returnStatusIf(caseState.hasRefusedApplication(), new CaseState(COMPLETED)));
+        rules.add(returnStatusIf(caseState.isCaseRelisted(), new CaseState(RELISTED)));
+        rules.add(returnStatusIf(caseState.isCaseAppealed(), new CaseState(APPEALED)));
+        rules.add(returnStatusIf(caseState.isCaseCompleted(), new CaseState (COMPLETED)));
+
+
+        return rules.stream().filter(Optional::isPresent).map(Optional::get).findFirst().orElse(new CaseState(CaseStatus.DEFAULT_STATUS));
     }
 
     private static class Scenario {
@@ -173,6 +174,7 @@ public class CaseStatusResolver {
         private final boolean adjourned;
         private final boolean postConviction;
         private final boolean setAside;
+        private final boolean applicationGranted;
 
         public CaseStateCheckerBuilderFactory(final List<OffenceInformation> offenceInformation,
                                               final boolean defendantsResponseTimerElapsed,
@@ -180,7 +182,8 @@ public class CaseStatusResolver {
                                               final boolean datesToAvoidTimerElapsed,
                                               final boolean adjourned,
                                               final boolean postConviction,
-                                              final boolean setAside) {
+                                              final boolean setAside,
+                                              final boolean applicationGranted) {
             this.offenceInformation = offenceInformation;
             this.defendantsResponseTimerElapsed = defendantsResponseTimerElapsed;
             this.datesToAvoid = datesToAvoid;
@@ -188,28 +191,31 @@ public class CaseStatusResolver {
             this.adjourned = adjourned;
             this.postConviction = postConviction;
             this.setAside = setAside;
+            this.applicationGranted = applicationGranted;
         }
 
         public CaseStateChecker.CaseStateCheckerBuilder getCaseStatusChecker() {
-            return CaseStateChecker.CaseStateCheckerBuilder.caseStateCheckerFor(offenceInformation, defendantsResponseTimerElapsed, datesToAvoid, datesToAvoidTimerElapsed, adjourned, postConviction, setAside);
+            return CaseStateChecker.CaseStateCheckerBuilder.caseStateCheckerFor(offenceInformation, defendantsResponseTimerElapsed, datesToAvoid, datesToAvoidTimerElapsed, adjourned, postConviction, setAside, applicationGranted);
         }
     }
 
     // TODO: Double check the case readiness!
-    private static CaseState handleNotCompletedCases(final List<OffenceInformation> offenceInformation,
-                                                     final boolean defendantResponseTimerExpired,
-                                                     final String datesToAvoid,
-                                                     final boolean adjourned,
-                                                     final boolean datesToAvoidTimerExpired,
-                                                     final boolean postConviction,
-                                                     final boolean setAside) {
+    private static CaseState handleNotCompletedCases(final CaseAggregateState caseAggregateState) {
         final Set<Scenario> cases = new LinkedHashSet<>();
 
+        final List<OffenceInformation> offenceInformation = buildOffenceInformation(caseAggregateState);
         final CaseStateCheckerBuilderFactory factory =
-                new CaseStateCheckerBuilderFactory(offenceInformation, defendantResponseTimerExpired, datesToAvoid, datesToAvoidTimerExpired, adjourned, postConviction, setAside);
+                new CaseStateCheckerBuilderFactory(
+                        offenceInformation,
+                        caseAggregateState.isDefendantsResponseTimerExpired(),
+                        caseAggregateState.getDatesToAvoid(),
+                        caseAggregateState.isDatesToAvoidTimerExpired(),
+                        caseAggregateState.isAdjourned(),
+                        caseAggregateState.isPostConviction(),
+                        caseAggregateState.isSetAside(),
+                        caseAggregateState.hasGrantedApplication()
+                );
 
-        // The rules below have to be in importance order, so that's why it's implemented on Linked hash set implementation (could be list as well)
-        // The first rule which is found will be returned to the outside and treated as the status so this is why they are not exclusive
         cases.add(new Scenario("Case is set aside currently",
                 SET_ASIDE,
                 factory.getCaseStatusChecker()
@@ -332,7 +338,7 @@ public class CaseStatusResolver {
                 .map(e -> Pair.of(e.getCaseStatus(), e.getReadinessReason()))
                 .orElse(Pair.of(UNKNOWN, CaseReadinessReason.DEFAULT_STATUS));
 
-        return new CaseState(modifyCaseStatusBasedOnAdjournmentInformation(adjourned, caseState.getLeft()), caseState.getRight());
+        return new CaseState(modifyCaseStatusBasedOnAdjournmentInformation(caseAggregateState.isAdjourned(), caseState.getLeft()), caseState.getRight());
     }
 
     private static CaseStatus modifyCaseStatusBasedOnAdjournmentInformation(final boolean adjourned, final CaseStatus caseStatus) {
@@ -349,7 +355,7 @@ public class CaseStatusResolver {
         }
     }
 
-    private static Optional<CaseStatus> returnStatusIf(final boolean condition, final CaseStatus caseStatus) {
+    private static Optional<CaseState> returnStatusIf(final boolean condition, final CaseState caseStatus) {
         return condition ? Optional.of(caseStatus) : empty();
     }
 

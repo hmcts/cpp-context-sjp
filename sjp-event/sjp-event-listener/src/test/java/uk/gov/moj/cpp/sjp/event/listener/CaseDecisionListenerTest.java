@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionSaved.applicationDecisionSaved;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.ABSOLUTE;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit.MONTH;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
@@ -16,9 +17,13 @@ import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 
+import uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionSaved;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
+import uk.gov.moj.cpp.sjp.event.listener.converter.ApplicationDecisionSavedToApplicationDecision;
 import uk.gov.moj.cpp.sjp.event.listener.converter.DecisionSavedToCaseDecision;
+import uk.gov.moj.cpp.sjp.event.listener.service.CaseApplicationService;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplicationDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
@@ -61,13 +66,25 @@ public class CaseDecisionListenerTest {
     private Envelope<DecisionSaved> envelope;
 
     @Mock
+    private Envelope<ApplicationDecisionSaved> applicationEnvelope;
+
+    @Mock
     private DecisionSaved decisionSavedEvent;
+
+    @Mock
+    private ApplicationDecisionSaved applicationDecisionSaved;
 
     @Mock
     private DecisionSavedToCaseDecision eventConverter;
 
     @Mock
+    private ApplicationDecisionSavedToApplicationDecision applicationDecisionConverter;
+
+    @Mock
     private CaseDecisionRepository caseDecisionRepository;
+
+    @Mock
+    private CaseApplicationService caseApplicationService;
 
     @Mock
     private CaseRepository caseRepository;
@@ -231,6 +248,16 @@ public class CaseDecisionListenerTest {
         assertThat(offences.get(2).getCompleted(), is(true));
 
         verify(caseDecisionRepository).save(caseDecision);
+    }
+
+    @Test
+    public void shouldSaveApplicationDecision() {
+        when(applicationEnvelope.payload()).thenReturn(applicationDecisionSaved);
+        final CaseApplicationDecision applicationDecision = new CaseApplicationDecision();
+        when(applicationDecisionConverter.convert(applicationDecisionSaved)).thenReturn(applicationDecision);
+        listener.handleApplicationDecisionSaved(applicationEnvelope);
+
+        verify(caseApplicationService).saveCaseApplicationDecision(applicationDecision);
     }
 
 

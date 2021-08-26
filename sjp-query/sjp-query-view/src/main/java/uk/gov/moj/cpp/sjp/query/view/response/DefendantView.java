@@ -26,6 +26,7 @@ public class DefendantView {
     private final DisabilityNeeds disabilityNeeds;
     private final String asn;
     private final String pncIdentifier;
+    private final String gobAccountNumber;
 
     public DefendantView(DefendantDetail defendant) {
         this.id = defendant.getId();
@@ -41,6 +42,7 @@ public class DefendantView {
         this.disabilityNeeds = disabilityNeedsOf(defendant.getDisabilityNeeds());
         this.asn = defendant.getAsn();
         this.pncIdentifier = defendant.getPncIdentifier();
+        this.gobAccountNumber = defendant.getAccountNumber();
     }
 
     public List<OffenceView> getOffences() {
@@ -81,6 +83,10 @@ public class DefendantView {
 
     public String getPncIdentifier() {
         return pncIdentifier;
+    }
+
+    public String getGobAccountNumber() {
+        return gobAccountNumber;
     }
 
     private static List<OffenceView> constructDefendantChargeView(final DefendantDetail defendant) {

@@ -1,14 +1,16 @@
 package uk.gov.moj.cpp.sjp.event.processor;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.moj.cpp.sjp.event.processor.matcher.PressTransparencyReportEnvelopeMatchers;
-import uk.gov.moj.cpp.sjp.event.processor.matcher.TransparencyReportEnvelopeMatchers;
-import uk.gov.moj.cpp.sjp.event.processor.utils.builders.GenerationFailedEventEnvelopeBuilder;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.sjp.event.processor.service.systemdocgenerator.SystemDocGeneratorResponseStrategy;
 import uk.gov.moj.cpp.sjp.event.processor.utils.builders.SystemDocGeneratorEnvelopes;
+
+import java.util.Arrays;
+
+import javax.enterprise.inject.Instance;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,65 +21,39 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class SysDocGeneratorProcessorTest {
 
-    private static final String TRANSPARENCY_TEMPLATE_IDENTIFIER_ENGLISH = "PendingCasesEnglish";
-    private static final String TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH = "PendingCasesWelsh";
-    private static final String PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER = "PressPendingCasesEnglish";
-
     @Mock
-    private Sender sender;
+    private SystemDocGeneratorResponseStrategy strategy1;
+    @Mock
+    private SystemDocGeneratorResponseStrategy strategy2;
+    @Mock
+    private Instance<SystemDocGeneratorResponseStrategy> strategies;
     @InjectMocks
     private SysDocGeneratorProcessor processor;
 
     @Test
-    public void shouldSendTransparencyReportCommandBasedOnTemplateName() {
-        final GenerationFailedEventEnvelopeBuilder envelopeBuilder = SystemDocGeneratorEnvelopes.generationFailedEvent()
-                .templateIdentifier(TRANSPARENCY_TEMPLATE_IDENTIFIER_ENGLISH);
+    public void shouldCallStrategyThatCanProcessThePayloadForDocumentAvailableEvent() {
+        final JsonEnvelope envelope = SystemDocGeneratorEnvelopes.documentAvailablePublicEvent().envelope();
+        when(strategy1.canProcess(envelope)).thenReturn(true);
+        when(strategy2.canProcess(envelope)).thenReturn(false);
+        when(strategies.iterator()).thenReturn(Arrays.asList(strategy1, strategy2).iterator());
 
-        processor.handleDocumentGenerationFailedEvent(envelopeBuilder.envelope());
+        processor.handleDocumentAvailableEvent(envelope);
 
-        final String transparencyReportId = envelopeBuilder.getSourceCorrelationId();
-        verify(sender).send(TransparencyReportEnvelopeMatchers.reportFailedCommand(transparencyReportId));
+        verify(strategy1).process(envelope);
+        verify(strategy2, never()).process(envelope);
     }
 
     @Test
-    public void shouldSendTransparencyReportCommandBasedOnTemplateNameInWelsh() {
-        final GenerationFailedEventEnvelopeBuilder envelopeBuilder = SystemDocGeneratorEnvelopes.generationFailedEvent()
-                .templateIdentifier(TRANSPARENCY_TEMPLATE_IDENTIFIER_WELSH);
+    public void shouldCallStrategyThatCanProcessThePayloadForGenerationFailedEvent() {
+        final JsonEnvelope envelope = SystemDocGeneratorEnvelopes.generationFailedEvent().envelope();
+        when(strategy1.canProcess(envelope)).thenReturn(false);
+        when(strategy2.canProcess(envelope)).thenReturn(true);
+        when(strategies.iterator()).thenReturn(Arrays.asList(strategy2, strategy1).iterator());
 
-        processor.handleDocumentGenerationFailedEvent(envelopeBuilder.envelope());
+        processor.handleDocumentGenerationFailedEvent(envelope);
 
-        final String transparencyReportId = envelopeBuilder.getSourceCorrelationId();
-        verify(sender).send(TransparencyReportEnvelopeMatchers.reportFailedCommand(transparencyReportId));
+        verify(strategy2).process(envelope);
+        verify(strategy1, never()).process(envelope);
     }
 
-    @Test
-    public void shouldSendPressTransparencyReportCommandBasedOnTemplateName() {
-        final GenerationFailedEventEnvelopeBuilder envelopeBuilder = SystemDocGeneratorEnvelopes.generationFailedEvent()
-                .templateIdentifier(PRESS_TRANSPARENCY_TEMPLATE_IDENTIFIER);
-
-        processor.handleDocumentGenerationFailedEvent(envelopeBuilder.envelope());
-
-        final String pressTransparencyReportId = envelopeBuilder.getSourceCorrelationId();
-        verify(sender).send(PressTransparencyReportEnvelopeMatchers.reportFailedCommand(pressTransparencyReportId));
-    }
-
-    @Test
-    public void shouldNotInvokeAnyCommandIfTheTemplateIdentifierIsUnknown() {
-        final GenerationFailedEventEnvelopeBuilder envelopeBuilder = SystemDocGeneratorEnvelopes.generationFailedEvent()
-                .templateIdentifier("");
-
-        processor.handleDocumentGenerationFailedEvent(envelopeBuilder.envelope());
-
-        verify(sender, never()).send(any());
-    }
-
-    @Test
-    public void shouldNotInvokeAnyCommandIfTheTemplateIdentifierIsNotPresent() {
-        final GenerationFailedEventEnvelopeBuilder envelopeBuilder = SystemDocGeneratorEnvelopes.generationFailedEvent()
-                .templateIdentifier(null);
-
-        processor.handleDocumentGenerationFailedEvent(envelopeBuilder.envelope());
-
-        verify(sender, never()).send(any());
-    }
 }

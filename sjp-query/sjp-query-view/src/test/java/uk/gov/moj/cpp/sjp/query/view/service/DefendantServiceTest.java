@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -163,7 +162,8 @@ public class DefendantServiceTest {
         final DefendantDetail defendantDetail = DefendantDetailBuilder.aDefendantDetail()
                 .withFirstName("Defen")
                 .build();
-        final CaseDetail caseDetail = CaseDetailBuilder.aCase().addDefendantDetail(defendantDetail).build();
+        final CaseDetail caseDetail = CaseDetailBuilder.aCase().withDefendantDetail(defendantDetail).build();
+        defendantDetail.setCaseDetail(caseDetail);
         when(defendantRepository.findByReadyCases()).thenReturn(asList(defendantDetail));
 
         final DefendantOutstandingFineRequestsQueryResult outstandingFineRequests = defendantService.getOutstandingFineRequests();

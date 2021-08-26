@@ -64,6 +64,8 @@ import uk.gov.justice.json.schemas.domains.sjp.query.EmployerDetails;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
+import uk.gov.moj.cpp.sjp.domain.decision.FinancialPenalty;
+import uk.gov.moj.cpp.sjp.domain.decision.SingleOffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.CostsAndSurcharge;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.FinancialImposition;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.InstallmentPeriod;
@@ -88,6 +90,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -95,6 +98,9 @@ import javax.json.JsonObject;
 import com.google.common.collect.ImmutableMap;
 
 public class FinancialImpositionDecisionResultAggregator extends DecisionResultAggregator {
+
+    public static final String DEFENDANT_LEVEL = "D";
+    public static final String CASE_LEVEL = "C";
 
     private final SjpService sjpService;
 
@@ -131,14 +137,18 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
                           final ZonedDateTime resultedOn,
                           final String prosecutingAuthority) {
 
-        final List<JudicialResult> judicialResults = new ArrayList<>();
+        final List<JudicialResult> judicialResultsAtDefendantLevel = new ArrayList<>();
+        final List<JudicialResult> judicialResultsAtCaseLevel = new ArrayList<>();
 
         if (decisionSaved.getFinancialImposition() != null) {
-            judicialResults.addAll(financialImposition(decisionSaved, sjpSessionEnvelope, defendantId, resultedOn, prosecutingAuthority));
+            final List<JudicialResult> judicialResults = financialImposition(decisionSaved, sjpSessionEnvelope, defendantId, resultedOn, prosecutingAuthority);
+            judicialResultsAtDefendantLevel.addAll(judicialResults.stream().filter(e -> e.getLevel().equals(DEFENDANT_LEVEL)).collect(Collectors.toList()));
+            judicialResultsAtCaseLevel.addAll(judicialResults.stream().filter(e -> e.getLevel().equals(CASE_LEVEL)).collect(Collectors.toList()));
         }
 
         // case level results
-        decisionAggregate.putResults(caseId, judicialResults);
+        decisionAggregate.putResults(defendantId, judicialResultsAtDefendantLevel);
+        decisionAggregate.putResults(caseId, judicialResultsAtCaseLevel);
     }
 
     private List<JudicialResult> financialImposition(final DecisionSaved decisionSaved,
@@ -152,42 +162,58 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
         final CostsAndSurcharge costsAndSurcharge = financialImposition.getCostsAndSurcharge();
         final Payment payment = financialImposition.getPayment();
 
+        final UUID firstOffenceIdWithFinancialResult = getOffenceId(decisionSaved);
+
         //
         final PaymentTerms paymentTerms = payment.getPaymentTerms();
 
         // costs
-        judicialResults.addAll(costsResult(costsAndSurcharge, sjpSessionEnvelope, resultedOn, prosecutingAuthority));
+        judicialResults.addAll(costsResult(costsAndSurcharge, sjpSessionEnvelope, resultedOn, prosecutingAuthority, firstOffenceIdWithFinancialResult));
 
         // reason for no costs
-        judicialResults.addAll(reasonForNoCosts(costsAndSurcharge, sjpSessionEnvelope, resultedOn));
+        judicialResults.addAll(reasonForNoCosts(costsAndSurcharge, sjpSessionEnvelope, resultedOn, firstOffenceIdWithFinancialResult));
 
         // collection order
-        judicialResults.addAll(collectionOrder(financialImposition, sjpSessionEnvelope, resultedOn));
+        judicialResults.addAll(collectionOrder(financialImposition, sjpSessionEnvelope, resultedOn, firstOffenceIdWithFinancialResult));
 
         // deduct from benefits and attachment of earnings
-        judicialResults.addAll(deductFromBenefits(financialImposition.getPayment(), sjpSessionEnvelope, resultedOn));
-        judicialResults.addAll(attachToEarnings(financialImposition.getPayment(), sjpSessionEnvelope, defendantId, resultedOn));
+        judicialResults.addAll(deductFromBenefits(financialImposition.getPayment(), sjpSessionEnvelope, resultedOn, firstOffenceIdWithFinancialResult));
+        judicialResults.addAll(attachToEarnings(financialImposition.getPayment(), sjpSessionEnvelope, defendantId, resultedOn, firstOffenceIdWithFinancialResult));
 
         // victim surcharge
         if (nonNull(costsAndSurcharge.getVictimSurcharge())) {
             final BigDecimal victimSurchargeValue = costsAndSurcharge.getVictimSurcharge();
             if (victimSurchargeValue.compareTo(BigDecimal.valueOf(0L)) > 0) {
-                judicialResults.addAll(victimSurcharge(victimSurchargeValue, sjpSessionEnvelope, resultedOn));
+                judicialResults.addAll(victimSurcharge(victimSurchargeValue, sjpSessionEnvelope, resultedOn, firstOffenceIdWithFinancialResult));
             } else {
                 final String victimSurchargeReason = getNoVictimSurchargeReason(decisionSaved);
-                judicialResults.addAll(noVictimSurcharge(sjpSessionEnvelope, resultedOn, victimSurchargeReason));
+                judicialResults.addAll(noVictimSurcharge(sjpSessionEnvelope, resultedOn, victimSurchargeReason, firstOffenceIdWithFinancialResult));
             }
         }
 
-        judicialResults.addAll(paymentTerms(paymentTerms, sjpSessionEnvelope, resultedOn));
+        judicialResults.addAll(paymentTerms(paymentTerms, sjpSessionEnvelope, resultedOn, firstOffenceIdWithFinancialResult));
 
         return judicialResults;
+    }
+
+    @SuppressWarnings("squid:S3655")
+    private UUID getOffenceId(final DecisionSaved decisionSaved) {
+        return decisionSaved
+                .getOffenceDecisions()
+                .stream()
+                .filter(od -> od instanceof Discharge || od instanceof FinancialPenalty)
+                .map(od -> (SingleOffenceDecision) od)
+                .findFirst()
+                .get()
+                .getOffenceDecisionInformation()
+                .getOffenceId();
     }
 
     private List<JudicialResult> costsResult(final CostsAndSurcharge costsAndSurcharge,
                                              final JsonEnvelope sjpSessionEnvelope,
                                              final ZonedDateTime resultedOn,
-                                             final String prosecutingAuthority) {
+                                             final String prosecutingAuthority,
+                                             final UUID firstOffenceIdWithFinancialResult) {
         final UUID resultId = FCOST.getResultDefinitionId();
         final JsonObject resultDefinition = getResultDefinition(sjpSessionEnvelope, resultId);
 
@@ -213,6 +239,7 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
                             .withOrderedDate(resultedOn.format(DATE_FORMAT))
                             .withJudicialResultPrompts(getCheckJudicialPromptsEmpty(resultPrompts))
                             .withResultText(getResultText(resultPrompts, resultDefinition.getString(LABEL)))
+                            .withOffenceId(firstOffenceIdWithFinancialResult)
                             .build());
         }
         return judicialResults;
@@ -220,7 +247,8 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
 
     private List<JudicialResult> reasonForNoCosts(final CostsAndSurcharge costsAndSurcharge,
                                                   final JsonEnvelope sjpSessionEnvelope,
-                                                  final ZonedDateTime resultedOn) {
+                                                  final ZonedDateTime resultedOn,
+                                                  final UUID firstOffenceIdWithFinancialResult) {
         final UUID resultId = NCOSTS.getResultDefinitionId();
         final JsonObject resultDefinition = getResultDefinition(sjpSessionEnvelope, resultId);
 
@@ -238,6 +266,7 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
                     populateResultDefinitionAttributes(resultId, sjpSessionEnvelope)
                             .withOrderedDate(resultedOn.format(DATE_FORMAT))
                             .withJudicialResultPrompts(getCheckJudicialPromptsEmpty(resultPrompts))
+                            .withOffenceId(firstOffenceIdWithFinancialResult)
                             .withResultText(getResultText(resultPrompts, resultDefinition.getString(LABEL)))
                             .build());
         }
@@ -247,7 +276,8 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
 
     private List<JudicialResult> deductFromBenefits(final Payment payment,
                                                     final JsonEnvelope sjpSessionEnvelope,
-                                                    final ZonedDateTime resultedOn) {
+                                                    final ZonedDateTime resultedOn,
+                                                    final UUID firstOffenceIdWithFinancialResult) {
         final UUID resultId = ABDC.getResultDefinitionId();
         final JsonObject resultDefinition = getResultDefinition(sjpSessionEnvelope, resultId);
 
@@ -269,6 +299,7 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
                     populateResultDefinitionAttributes(resultId, sjpSessionEnvelope)
                             .withJudicialResultPrompts(getCheckJudicialPromptsEmpty(resultPrompts))
                             .withOrderedDate(resultedOn.format(DATE_FORMAT))
+                            .withOffenceId(firstOffenceIdWithFinancialResult)
                             .withResultText(getResultText(resultPrompts, resultDefinition.getString(LABEL)))
                             .build());
         }
@@ -279,7 +310,8 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
 
     private List<JudicialResult> collectionOrder(final FinancialImposition financialImposition,
                                                  final JsonEnvelope sjpSessionEnvelope,
-                                                 final ZonedDateTime resultedOn) {
+                                                 final ZonedDateTime resultedOn,
+                                                 final UUID firstOffenceIdWithFinancialResult) {
         final UUID resultId = COLLO.getResultDefinitionId();
         final JsonObject resultDefinition = getResultDefinition(sjpSessionEnvelope, resultId);
 
@@ -309,6 +341,7 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
                     populateResultDefinitionAttributes(resultId, sjpSessionEnvelope)
                             .withJudicialResultPrompts(getCheckJudicialPromptsEmpty(resultPrompts))
                             .withOrderedDate(resultedOn.format(DATE_FORMAT))
+                            .withOffenceId(firstOffenceIdWithFinancialResult)
                             .withResultText(getResultText(resultPrompts, resultDefinition.getString(LABEL)))
                             .build());
 
@@ -320,7 +353,8 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
     private List<JudicialResult> attachToEarnings(final Payment payment,
                                                   final JsonEnvelope sjpSessionEnvelope,
                                                   final UUID defendantId,
-                                                  final ZonedDateTime resultedOn) {
+                                                  final ZonedDateTime resultedOn,
+                                                  final UUID firstOffenceIdWithFinancialResult) {
         final UUID resultId = AEOC.getResultDefinitionId();
         final JsonObject resultDefinition = getResultDefinition(sjpSessionEnvelope, resultId);
 
@@ -357,6 +391,7 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
                     populateResultDefinitionAttributes(resultId, sjpSessionEnvelope)
                             .withJudicialResultPrompts(getCheckJudicialPromptsEmpty(resultPrompts))
                             .withOrderedDate(resultedOn.format(DATE_FORMAT))
+                            .withOffenceId(firstOffenceIdWithFinancialResult)
                             .withResultText(getResultText(resultPrompts, resultDefinition.getString(LABEL)))
                             .build());
         }
@@ -366,7 +401,8 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
 
     private List<JudicialResult> victimSurcharge(final BigDecimal victimSurchargeValue,
                                                  final JsonEnvelope sjpSessionEnvelope,
-                                                 final ZonedDateTime resultedOn) {
+                                                 final ZonedDateTime resultedOn,
+                                                 final UUID firstOffenceIdWithFinancialResult) {
         final UUID resultId = FVS.getResultDefinitionId();
         final JsonObject resultDefinition = getResultDefinition(sjpSessionEnvelope, resultId);
 
@@ -380,6 +416,7 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
                 populateResultDefinitionAttributes(resultId, sjpSessionEnvelope)
                         .withJudicialResultPrompts(getCheckJudicialPromptsEmpty(resultPrompts))
                         .withOrderedDate(resultedOn.format(DATE_FORMAT))
+                        .withOffenceId(firstOffenceIdWithFinancialResult)
                         .withResultText(getResultText(resultPrompts, resultDefinition.getString(LABEL)))
                         .build());
 
@@ -388,7 +425,8 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
 
     private List<JudicialResult> noVictimSurcharge(final JsonEnvelope sjpSessionEnvelope,
                                                    final ZonedDateTime resultedOn,
-                                                   final String reasonVictimSurcharge) {
+                                                   final String reasonVictimSurcharge,
+                                                   final UUID firstOffenceIdWithFinancialResult) {
         final UUID resultId = NOVS.getResultDefinitionId();
         final JsonObject resultDefinition = getResultDefinition(sjpSessionEnvelope, resultId);
 
@@ -402,6 +440,7 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
                 populateResultDefinitionAttributes(resultId, sjpSessionEnvelope)
                         .withJudicialResultPrompts(getCheckJudicialPromptsEmpty(resultPrompts))
                         .withOrderedDate(resultedOn.format(DATE_FORMAT))
+                        .withOffenceId(firstOffenceIdWithFinancialResult)
                         .withResultText(getResultText(resultPrompts, resultDefinition.getString(LABEL)))
                         .build());
 
@@ -410,7 +449,8 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
 
     private List<JudicialResult> paymentTerms(final PaymentTerms paymentTerms,
                                               final JsonEnvelope sjpSessionEnvelope,
-                                              final ZonedDateTime resultedOn) {
+                                              final ZonedDateTime resultedOn,
+                                              final UUID firstOffenceIdWithFinancialResult) {
 
         final boolean isReserveTerms = paymentTerms.isReserveTerms();
 
@@ -418,11 +458,11 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
         final Installments installments = paymentTerms.getInstallments();
 
         if (nonNull(lumpSum) && nonNull(installments)) {
-            return lumpSumAndInstallments(isReserveTerms, lumpSum, installments, sjpSessionEnvelope, resultedOn);
+            return lumpSumAndInstallments(isReserveTerms, lumpSum, installments, sjpSessionEnvelope, resultedOn, firstOffenceIdWithFinancialResult);
         } else if (nonNull(lumpSum)) {
-            return lumpSum(isReserveTerms, lumpSum, sjpSessionEnvelope, resultedOn);
+            return lumpSum(isReserveTerms, lumpSum, sjpSessionEnvelope, resultedOn, firstOffenceIdWithFinancialResult);
         } else if (nonNull(installments)) {
-            return installments(isReserveTerms, installments, sjpSessionEnvelope, resultedOn);
+            return installments(isReserveTerms, installments, sjpSessionEnvelope, resultedOn, firstOffenceIdWithFinancialResult);
         }
 
         return new ArrayList<>();
@@ -431,7 +471,8 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
     private List<JudicialResult> lumpSum(final boolean isReserveTerms,
                                          final LumpSum lumpSum,
                                          final JsonEnvelope sjpSessionEnvelope,
-                                         final ZonedDateTime resultedOn) {
+                                         final ZonedDateTime resultedOn,
+                                         final UUID firstOffenceIdWithFinancialResult) {
         final UUID resultId = isReserveTerms ?
                 RLSUM.getResultDefinitionId() : LSUM.getResultDefinitionId();
         final JsonObject resultDefinition = getResultDefinition(sjpSessionEnvelope, resultId);
@@ -441,7 +482,7 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
 
         if (resultId.equals(LSUM.getResultDefinitionId())) {
             getLumSumWithInDate(lumpSum.getWithinDays(), LocalDate.of(resultedOn.getYear(), resultedOn.getMonth(), resultedOn.getDayOfMonth()))
-                    .ifPresent(e -> addJudicialResultPrompt(LSUM_DATE, ofNullable(e), resultPrompts, resultDefinition));
+                    .ifPresent(e -> addJudicialResultPrompt(LSUM_DATE, ofNullable(restructureDate(e)), resultPrompts, resultDefinition));
         } else {
             ofNullable(lumpSum.getWithinDays()).ifPresent(e ->
                     addJudicialResultPrompt(PAY_WITHIN_DAYS, ofNullable(format("lump sum %d days", e)), resultPrompts, resultDefinition));
@@ -452,6 +493,7 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
                 populateResultDefinitionAttributes(resultId, sjpSessionEnvelope)
                         .withJudicialResultPrompts(getCheckJudicialPromptsEmpty(resultPrompts))
                         .withOrderedDate(resultedOn.format(DATE_FORMAT))
+                        .withOffenceId(firstOffenceIdWithFinancialResult)
                         .withResultText(getResultText(resultPrompts, resultDefinition.getString(LABEL)))
                         .build());
 
@@ -462,7 +504,8 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
                                                         final LumpSum lumpSum,
                                                         final Installments installments,
                                                         final JsonEnvelope sjpSessionEnvelope,
-                                                        final ZonedDateTime resultedOn) {
+                                                        final ZonedDateTime resultedOn,
+                                                        final UUID firstOffenceIdWithFinancialResult) {
         final UUID resultId = isReserveTerms ? RLSUMI.getResultDefinitionId() : LUMSI.getResultDefinitionId();
         final JsonObject resultDefinition = getResultDefinition(sjpSessionEnvelope, resultId);
 
@@ -475,7 +518,7 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
             ofNullable(installments.getAmount()).ifPresent(e ->
                     addJudicialResultPrompt(RLSUMI_INSTALMENT_AMOUNT, ofNullable(getCurrencyAmount(e.toString())), judicialResultPrompts, resultDefinition));
             ofNullable(installments.getStartDate()).ifPresent(e ->
-                    addJudicialResultPrompt(RLSUMI_INSTALMENT_START_DATE, ofNullable(e.toString()), judicialResultPrompts, resultDefinition));
+                    addJudicialResultPrompt(RLSUMI_INSTALMENT_START_DATE, ofNullable(restructureDate(e.toString())), judicialResultPrompts, resultDefinition));
             ofNullable(installments.getPeriod()).ifPresent(e ->
                     addJudicialResultPrompt(RLSUMI_PAYMENT_FREQUENCY, ofNullable(
                             jCachedReferenceData.getInstallmentFrequency(installmentPeriodMap.get(e.name()),
@@ -487,7 +530,7 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
             ofNullable(installments.getAmount()).ifPresent(e ->
                     addJudicialResultPrompt(LUMSI_INSTALMENT_AMOUNT, ofNullable(getCurrencyAmount(e.toString())), judicialResultPrompts, resultDefinition));
             ofNullable(installments.getStartDate()).ifPresent(e ->
-                    addJudicialResultPrompt(LUMSI_INSTALMENT_START_DATE, ofNullable(e.toString()), judicialResultPrompts, resultDefinition));
+                    addJudicialResultPrompt(LUMSI_INSTALMENT_START_DATE, ofNullable(restructureDate(e.toString())), judicialResultPrompts, resultDefinition));
             ofNullable(installments.getPeriod()).ifPresent(e ->
                     addJudicialResultPrompt(LUMSI_PAYMENT_FREQUENCY, ofNullable(
                             jCachedReferenceData.getInstallmentFrequency(installmentPeriodMap.get(e.name()),
@@ -499,6 +542,7 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
                 populateResultDefinitionAttributes(resultId, sjpSessionEnvelope)
                         .withJudicialResultPrompts(getCheckJudicialPromptsEmpty(judicialResultPrompts))
                         .withOrderedDate(resultedOn.format(DATE_FORMAT))
+                        .withOffenceId(firstOffenceIdWithFinancialResult)
                         .withResultText(getResultText(judicialResultPrompts, resultDefinition.getString(LABEL)))
                         .build());
 
@@ -508,7 +552,8 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
     private List<JudicialResult> installments(final boolean isReserveTerms,
                                               final Installments installments,
                                               final JsonEnvelope sjpSessionEnvelope,
-                                              final ZonedDateTime resultedOn) {
+                                              final ZonedDateTime resultedOn,
+                                              final UUID firstOffenceIdWithFinancialResult) {
         final UUID resultId = isReserveTerms ?
                 RINSTL.getResultDefinitionId() : INSTL.getResultDefinitionId();
         final JsonObject resultDefinition = getResultDefinition(sjpSessionEnvelope, resultId);
@@ -520,7 +565,7 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
             ofNullable(installments.getAmount()).ifPresent(e ->
                     addJudicialResultPrompt(RINSTL_INSTALMENT_AMOUNT, ofNullable(getCurrencyAmount(e.toString())), judicialResultPrompts, resultDefinition));
             ofNullable(installments.getStartDate()).ifPresent(e ->
-                    addJudicialResultPrompt(RINSTL_INSTALMENT_START_DATE, ofNullable(e.toString()), judicialResultPrompts, resultDefinition));
+                    addJudicialResultPrompt(RINSTL_INSTALMENT_START_DATE, ofNullable(restructureDate(e.toString())), judicialResultPrompts, resultDefinition));
             ofNullable(installments.getPeriod()).ifPresent(e ->
                     addJudicialResultPrompt(RINSTL_PAYMENT_FREQUENCY, ofNullable(
                             jCachedReferenceData.getInstallmentFrequency(installmentPeriodMap.get(e.name()),
@@ -529,7 +574,7 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
             ofNullable(installments.getAmount()).ifPresent(e ->
                     addJudicialResultPrompt(INSTALMENTS_AMOUNT, ofNullable(getCurrencyAmount(e.toString())), judicialResultPrompts, resultDefinition));
             ofNullable(installments.getStartDate()).ifPresent(e ->
-                    addJudicialResultPrompt(INSTL_INSTALMENT_START_DATE, ofNullable(e.toString()), judicialResultPrompts, resultDefinition));
+                    addJudicialResultPrompt(INSTL_INSTALMENT_START_DATE, ofNullable(restructureDate(e.toString())), judicialResultPrompts, resultDefinition));
             ofNullable(installments.getPeriod()).ifPresent(e ->
                     addJudicialResultPrompt(INSTL_PAYMENT_FREQUENCY, ofNullable(
                             jCachedReferenceData.getInstallmentFrequency(installmentPeriodMap.get(e.name()),
@@ -541,6 +586,7 @@ public class FinancialImpositionDecisionResultAggregator extends DecisionResultA
                 populateResultDefinitionAttributes(resultId, sjpSessionEnvelope)
                         .withJudicialResultPrompts(getCheckJudicialPromptsEmpty(judicialResultPrompts))
                         .withOrderedDate(resultedOn.format(DATE_FORMAT))
+                        .withOffenceId(firstOffenceIdWithFinancialResult)
                         .withResultText(getResultText(judicialResultPrompts, resultDefinition.getString(LABEL)))
                         .build());
 

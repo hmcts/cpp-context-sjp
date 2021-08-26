@@ -15,14 +15,24 @@ import java.util.UUID;
 
 public class DefaultRequests {
     private static final String GET_CASE_BY_ID_MEDIA_TYPE = "application/vnd.sjp.query.case+json";
+    private static final String GET_PROSECUTION_CASE_BY_ID_MEDIA_TYPE = "application/vnd.sjp.query.prosecution-case+json";
     private static final String GET_CASE_BY_ID_WITH_DOCUMENT_METADATA_MEDIA_TYPE = "application/vnd.sjp.query.case-with-document-metadata+json";
 
     public static RequestParamsBuilder getCaseById(final UUID caseId) {
         return getCaseById(caseId, USER_ID);
     }
 
+    public static RequestParamsBuilder getProsecutionCaseById(final UUID caseId) {
+        return getProsecutionCaseById(caseId, USER_ID);
+    }
+
     public static RequestParamsBuilder getCaseById(final UUID caseId, final UUID userId) {
         return requestParams(getReadUrl("/cases/") + caseId, GET_CASE_BY_ID_MEDIA_TYPE)
+                .withHeader(HeaderConstants.USER_ID, userId);
+    }
+
+    public static RequestParamsBuilder getProsecutionCaseById(final UUID caseId, final UUID userId) {
+        return requestParams(getReadUrl("/cases/") + caseId, GET_PROSECUTION_CASE_BY_ID_MEDIA_TYPE)
                 .withHeader(HeaderConstants.USER_ID, userId);
     }
 

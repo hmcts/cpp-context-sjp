@@ -24,6 +24,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
@@ -34,10 +35,8 @@ import static uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus.IN_PROGRESS;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
-import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.FIELD_CASE_ID;
-import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.FIELD_QUERY;
-import static uk.gov.moj.cpp.sjp.query.view.SjpQueryView.FIELD_URN;
 
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.common.util.UtcClock;
@@ -66,6 +65,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
+import uk.gov.moj.cpp.sjp.query.view.response.ApplicationView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseSearchResultsView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
@@ -73,11 +73,13 @@ import uk.gov.moj.cpp.sjp.query.view.response.CasesPendingDatesToAvoidView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantDetailsUpdatesView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantProfilingView;
 import uk.gov.moj.cpp.sjp.query.view.response.SearchCaseByMaterialIdView;
+import uk.gov.moj.cpp.sjp.query.view.service.CaseApplicationService;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
 import uk.gov.moj.cpp.sjp.query.view.service.DefendantService;
 import uk.gov.moj.cpp.sjp.query.view.service.EmployerService;
 import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
+import uk.gov.moj.cpp.sjp.query.view.service.ProsecutionCaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
 
@@ -110,8 +112,16 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class SjpQueryViewTest {
 
+    private static final String FIELD_CASE_ID = "caseId";
+    private static final String FIELD_URN = "urn";
+    private static final String FIELD_CORRELATION_ID = "correlationId";
+    private static final String FIELD_QUERY = "q";
     private static final String URN = "urn";
-    private static final UUID CASE_ID = UUID.randomUUID();
+    private static final String FIELD_APP_ID = "applicationId";
+    private static final UUID CORRELATION_ID = randomUUID();
+    private static final UUID CASE_ID = randomUUID();
+    private static final UUID APP_ID = randomUUID();
+
 
     @Spy
     private Clock clock = new UtcClock();
@@ -127,6 +137,9 @@ public class SjpQueryViewTest {
 
     @Mock
     private CaseService caseService;
+
+    @Mock
+    private CaseApplicationService caseApplicationService;
 
     @Mock
     private DefendantService defendantService;
@@ -167,6 +180,9 @@ public class SjpQueryViewTest {
     @Mock
     private ProsecutingAuthorityProvider prosecutingAuthorityProvider;
 
+    @Mock
+    private ProsecutionCaseService prosecutionCaseService;
+
     @InjectMocks
     private SjpQueryView sjpQueryView;
 
@@ -204,6 +220,16 @@ public class SjpQueryViewTest {
     }
 
     @Test
+    public void shouldFindProsecutionCase() {
+        setupCaseExpectations();
+        final ProsecutionCase prosecutionCaseView = Mockito.mock(ProsecutionCase.class);
+        when(prosecutionCaseService.findProsecutionCase(CASE_ID)).thenReturn(prosecutionCaseView);
+
+        sjpQueryView.findProsecutionCase(envelope);
+        verify(prosecutionCaseService).findProsecutionCase(CASE_ID);
+    }
+
+    @Test
     public void shouldFindCaseByUrn() {
         setupExpectations();
         final CaseView caseView = Mockito.mock(CaseView.class);
@@ -214,6 +240,34 @@ public class SjpQueryViewTest {
 
         assertEquals(result, outputEnvelope);
         verify(caseService).findCaseByUrn(URN);
+        verify(function).apply(caseView);
+    }
+
+    @Test
+    public void shouldFindCaseByCorrelationId() {
+        setupExpectations();
+        final CaseView caseView = Mockito.mock(CaseView.class);
+        when(payloadObject.getString(FIELD_CORRELATION_ID)).thenReturn(CORRELATION_ID.toString());
+        when(caseService.findCaseByCorrelationId(CORRELATION_ID)).thenReturn(caseView);
+
+        final JsonEnvelope result = sjpQueryView.findCaseByCorrelationId(envelope);
+
+        assertEquals(result, outputEnvelope);
+        verify(caseService).findCaseByCorrelationId(CORRELATION_ID);
+        verify(function).apply(caseView);
+    }
+
+    @Test
+    public void shouldFindCaseByApplicationId() {
+        setupExpectations();
+        final CaseView caseView = Mockito.mock(CaseView.class);
+        when(payloadObject.getString(FIELD_APP_ID)).thenReturn(APP_ID.toString());
+        when(caseService.findCaseByApplicationId(APP_ID)).thenReturn(caseView);
+
+        final JsonEnvelope result = sjpQueryView.findCaseByApplicationId(envelope);
+
+        assertEquals(result, outputEnvelope);
+        verify(caseService).findCaseByApplicationId(APP_ID);
         verify(function).apply(caseView);
     }
 
@@ -229,10 +283,10 @@ public class SjpQueryViewTest {
                 .withPayloadOf(postcode, "postcode")
                 .build();
 
-        final CaseDetail caseDetail = CaseDetailBuilder.aCase().addDefendantDetail(
-                aDefendantDetail().withPostcode(postcode).withId(UUID.randomUUID()).build())
+        final CaseDetail caseDetail = CaseDetailBuilder.aCase().withDefendantDetail(
+                aDefendantDetail().withPostcode(postcode).withId(randomUUID()).build())
                 .withCompleted(false).withProsecutingAuthority("TFL")
-                .withCaseId(UUID.randomUUID()).withUrn(urn).build();
+                .withCaseId(randomUUID()).withUrn(urn).build();
 
         JsonObject prosecutorPayload = createObjectBuilder()
                 .add("fullName", "Transport for London")
@@ -273,7 +327,7 @@ public class SjpQueryViewTest {
     public void shouldSearchCaseByMaterialId() {
         setupExpectations();
         final UUID query = UUID.fromString("dc1c7baf-5230-4580-877d-b4ee25bc7188");
-        final UUID caseId = UUID.randomUUID();
+        final UUID caseId = randomUUID();
         final SearchCaseByMaterialIdView searchCaseByMaterialIdView = new SearchCaseByMaterialIdView(caseId, null);
         when(payloadObject.getString(FIELD_QUERY)).thenReturn(query.toString());
         when(caseService.searchCaseByMaterialId(query)).thenReturn(searchCaseByMaterialIdView);
@@ -454,7 +508,7 @@ public class SjpQueryViewTest {
     @Test
     public void shouldFindPendingDatesToAvoid() {
         final UUID caseId = randomUUID();
-        final JsonEnvelope response = mockAndVerifyPendingDatesToAvoid(caseId, UUID.randomUUID());
+        final JsonEnvelope response = mockAndVerifyPendingDatesToAvoid(caseId, randomUUID());
         assertThat(response, jsonEnvelope(metadata().withName("sjp.pending-dates-to-avoid"), payload().isJson(allOf(
                 withJsonPath("$.cases[0].caseId", equalTo(caseId.toString())),
                 withJsonPath("$.count", equalTo(2))
@@ -738,6 +792,19 @@ public class SjpQueryViewTest {
 
     }
 
+    @Test
+    public void shouldFindApplication() {
+        setupAppExpectations();
+        final Optional<ApplicationView> appView = Optional.of(Mockito.mock(ApplicationView.class));
+        when(caseApplicationService.findApplication(APP_ID)).thenReturn(appView);
+
+        final JsonEnvelope result = sjpQueryView.findApplication(envelope);
+
+        assertEquals(result, outputEnvelope);
+        verify(caseApplicationService).findApplication(APP_ID);
+        verify(function).apply(appView.get());
+    }
+
     private JsonObject buildNotGuiltyPleaCases(final ZonedDateTime pleaDate) {
         return createObjectBuilder()
                 .add("results", 1)
@@ -783,18 +850,24 @@ public class SjpQueryViewTest {
         setupExpectations();
     }
 
+    private void setupAppExpectations() {
+        when(payloadObject.getString(FIELD_APP_ID)).thenReturn(APP_ID.toString());
+        setupExpectations();
+    }
+
     private void setupExpectations() {
         when(enveloper.withMetadataFrom(eq(envelope), any())).thenReturn(function);
         when(function.apply(any())).thenReturn(outputEnvelope);
         when(envelope.payloadAsJsonObject()).thenReturn(payloadObject);
+        when(envelope.metadata()).thenReturn(metadataBuilder().withId(randomUUID()).withName("name").build());
     }
 
     private DefendantOutstandingFineRequestsQueryResult createDefendantRequestProfile() {
         return new DefendantOutstandingFineRequestsQueryResult(
                 Arrays.asList(
-                        DefendantOutstandingFineRequest.newBuilder().withDefendantId(UUID.randomUUID()).withDateOfBirth("1980-06-25 00:00:00").withFirstName("Mr").withLastName("Brown").build(),
-                        DefendantOutstandingFineRequest.newBuilder().withDefendantId(UUID.randomUUID()).withFirstName("Mrs").withLastName("Brown").withNationalInsuranceNumber("AB123456Z").build(),
-                        DefendantOutstandingFineRequest.newBuilder().withDefendantId(UUID.randomUUID()).withLegalEntityDefendantName("ACME").build()
+                        DefendantOutstandingFineRequest.newBuilder().withDefendantId(randomUUID()).withDateOfBirth("1980-06-25 00:00:00").withFirstName("Mr").withLastName("Brown").build(),
+                        DefendantOutstandingFineRequest.newBuilder().withDefendantId(randomUUID()).withFirstName("Mrs").withLastName("Brown").withNationalInsuranceNumber("AB123456Z").build(),
+                        DefendantOutstandingFineRequest.newBuilder().withDefendantId(randomUUID()).withLegalEntityDefendantName("ACME").build()
                 )
         );
     }

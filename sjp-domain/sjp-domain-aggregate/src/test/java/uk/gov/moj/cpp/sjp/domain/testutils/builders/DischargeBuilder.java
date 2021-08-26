@@ -34,6 +34,7 @@ public class DischargeBuilder {
         builder.dischargedFor = null;
         builder.compensation = BigDecimal.TEN;
         builder.noCompensationReason = null;
+        builder.offenceDecisionInformation = createOffenceDecisionInformation(builder.id, PROVED_SJP);
         builder.guiltyPleaTakenIntoAccount = false;
         builder.backDuty = null;
         builder.pressRestriction = null;
@@ -43,7 +44,7 @@ public class DischargeBuilder {
     public Discharge build() {
         return createDischarge(
                 this.id,
-                this.offenceDecisionInformation = createOffenceDecisionInformation(this.id, PROVED_SJP),
+                this.offenceDecisionInformation,
                 this.dischargeType,
                 this.dischargedFor,
                 this.compensation,
@@ -56,6 +57,11 @@ public class DischargeBuilder {
 
     public DischargeBuilder id(final UUID offenceId) {
         this.id = offenceId;
+        return this;
+    }
+
+    public DischargeBuilder offenceDecisionInformation(final OffenceDecisionInformation offenceDecisionInformation) {
+        this.offenceDecisionInformation = offenceDecisionInformation;
         return this;
     }
 

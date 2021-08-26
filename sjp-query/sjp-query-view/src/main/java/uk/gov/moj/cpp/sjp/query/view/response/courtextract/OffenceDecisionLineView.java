@@ -24,6 +24,10 @@ public class OffenceDecisionLineView {
         this.value = value;
     }
 
+    public boolean isDecisionMade() {
+        return "Decision made".equals(this.label);
+    }
+
     @Override
     public String toString() {
         return label + "->" + value;

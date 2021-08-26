@@ -52,8 +52,8 @@ import uk.gov.moj.cpp.sjp.event.processor.model.referral.DocumentCategoryView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingRequestView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingTypeView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.MaterialView;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseIdentifierView;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
+import uk.gov.moj.cpp.sjp.model.prosecution.ProsecutionCaseIdentifierView;
+import uk.gov.moj.cpp.sjp.model.prosecution.ProsecutionCaseView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReferringJudicialDecisionView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.SjpReferralView;
 import uk.gov.moj.cpp.sjp.event.processor.service.ProsecutionCaseFileService;
@@ -200,7 +200,7 @@ public class CourtReferralProcessorTest {
         when(hearingRequestsDataSourcingService.createHearingRequestViews(any(), any(), any(), any())).thenReturn(singletonList(listHearingRequestView));
 
         final CourtDocumentView courtDocumentView = createDummyCourtDocumentView();
-        when(courtDocumentsDataSourcingService.createCourtDocumentViews(any(), any(), any())).thenReturn(singletonList(courtDocumentView));
+        when(courtDocumentsDataSourcingService.createCourtDocumentViews(any(CaseReferredForCourtHearing.class), any(), any())).thenReturn(singletonList(courtDocumentView));
 
         courtReferralProcessor.caseReferredForCourtHearing(caseReferredForCourtHearingEnvelope);
 
@@ -254,7 +254,7 @@ public class CourtReferralProcessorTest {
                 new DocumentCategoryView(
                         new DefendantDocumentView(
                                 randomUUID(),
-                                emptyList()
+                                null
                         )
                 ),
                 "Bank Statement",

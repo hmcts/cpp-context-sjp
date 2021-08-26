@@ -65,7 +65,7 @@ public class CaseDocumentsRestrictionTests {
 
         final CaseView caseView = new CaseView(CaseDetailBuilder.aCase()
                 .withCaseId(caseId)
-                .addDefendantDetail(
+                .withDefendantDetail(
                         DefendantDetailBuilder
                                 .aDefendantDetail()
                                 .build())

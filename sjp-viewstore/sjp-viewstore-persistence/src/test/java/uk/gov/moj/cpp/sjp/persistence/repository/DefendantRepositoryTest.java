@@ -223,7 +223,7 @@ public class DefendantRepositoryTest extends BaseTransactionalTest {
         final CaseDetail caseDetail = CaseDetailBuilder.aCase()
                 .withCaseId(UUID.randomUUID())
                 .withProsecutingAuthority(prosecutingAuthority)
-                .addDefendantDetail(defendantDetail)
+                .withDefendantDetail(defendantDetail)
                 .build();
 
         final DefendantDetail defendant = caseRepository.save(caseDetail).getDefendant();

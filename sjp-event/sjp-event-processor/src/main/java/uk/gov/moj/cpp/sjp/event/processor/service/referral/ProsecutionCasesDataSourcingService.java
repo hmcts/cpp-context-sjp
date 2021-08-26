@@ -12,7 +12,7 @@ import uk.gov.justice.json.schemas.domains.sjp.query.EmployerDetails;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
+import uk.gov.moj.cpp.sjp.model.prosecution.ProsecutionCaseView;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataOffencesService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
@@ -61,7 +61,7 @@ public class ProsecutionCasesDataSourcingService {
                 caseReferredForCourtHearing.getReferredAt().toLocalDate(),
                 emptyEnvelopeWithReferralEventMetadata);
 
-        final JsonObject prosecutor = referenceDataService.getProsecutor(
+        final JsonObject prosecutor = referenceDataService.getProsecutors(
                 caseDetails.getProsecutingAuthority(),
                 emptyEnvelopeWithReferralEventMetadata);
 

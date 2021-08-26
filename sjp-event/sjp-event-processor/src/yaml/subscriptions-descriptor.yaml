@@ -26,6 +26,9 @@ subscriptions_descriptor:
         - name: sjp.events.case-document-already-exists
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-document-already-exists.json
 
+        - name: sjp.events.case-document-upload-rejected
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/event/case-document-upload-rejected.json
+
         - name: sjp.events.case-update-rejected
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/public/events/case-update-rejected.json
 
@@ -158,6 +161,27 @@ subscriptions_descriptor:
         - name: sjp.events.financial-means-delete-docs-started
           schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/sjp.events.financial-means-delete-docs-started.json
 
+        - name: sjp.events.application-decision-set-aside
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/application-decision-set-aside.json
+
+        - name: sjp.events.financial-imposition-account-number-added
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/financial-imposition-account-number-added.json
+
+        - name: sjp.events.notification-remove-endorsements-generated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/notification-remove-endorsements-generated.json
+
+        - name: sjp.events.case-application-recorded
+          schema_uri: http://cpp.moj.gov.uk/sjp/event/case-application-recorded.json
+
+        - name: sjp.events.enforcement-pending-application-notification-required
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/enforcement-pending-application-notification-required.json
+
+        - name: sjp.events.enforcement-pending-application-notification-generated
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/enforcement-pending-application-notification-generated.json
+
+        - name: sjp.events.application-decision-saved
+          schema_uri: http://justice.gov.uk/json/schemas/domains/sjp/events/application-decision-saved.json
+
       event_source_name: sjp
 
     - name: public event subscription
@@ -176,5 +200,26 @@ subscriptions_descriptor:
 
         - name: public.systemdocgenerator.events.generation-failed
           schema_uri: http://moj.gov.uk/cpp/json/schemas/systemdocgenerator/events/public/generation-failed.json
+
+        - name: public.stagingenforcement.enforce-financial-imposition-acknowledgement
+          schema_uri: http://cpp.moj.gov.uk/stagingenforcement/json/schema/event/public.stagingenforcement.enforce-financial-imposition-acknowledgement.json
+
+        - name: public.notificationnotify.events.notification-sent
+          schema_uri: http://justice.gov.uk/json/schemas/domains/notificationnotify/public.notificationnotify.events.notification-sent.json
+
+        - name: public.notificationnotify.events.notification-failed
+          schema_uri: http://justice.gov.uk/json/schemas/domains/notificationnotify/public.notificationnotify.events.notification-failed.json
+
+        - name: public.hearing.resulted
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/public-resulted.json
+
+        - name: public.events.hearing.hearing-resulted
+          schema_uri: http://justice.gov.uk/hearing/courts/public.events.hearing.hearing-resulted.json
+
+        - name: public.progression.court-application-created
+          schema_uri: http://justice.gov.uk/progression/courts/courtApplicationCreated.json
+
+        - name: public.progression.sjp-prosecution-case-created
+          schema_uri: http://justice.gov.uk/core/courts/public.progression.sjp-prosecution-case-created.json
 
       event_source_name: public.event.source

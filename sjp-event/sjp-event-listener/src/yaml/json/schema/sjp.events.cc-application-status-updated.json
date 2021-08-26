@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/event/cc-application-status-updated.json",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "status": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/application-status.json"
+    }
+  },
+  "required": [
+    "caseId",
+    "applicationId",
+    "status"
+  ]
+}

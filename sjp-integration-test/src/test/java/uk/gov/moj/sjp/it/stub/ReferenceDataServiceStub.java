@@ -455,6 +455,17 @@ public class ReferenceDataServiceStub {
         }
     }
 
+    public static void stubResultDefinitions() {
+//        stubPingFor(REFERENCEDATA_SERVICE);
+//        final String urlPath = QUERY_API_PATH + "/result-definitions";
+//
+//        stubFor(get(urlPathEqualTo(urlPath))
+//                .willReturn(aResponse().withStatus(SC_OK)
+//                        .withHeader(ID, randomUUID().toString())
+//                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+//                        .withBody(getPayload("stub-data/referencedata.result-definitions.json"))));
+    }
+
     public static void stubResultIds() {
         stubPingFor(REFERENCEDATA_SERVICE);
         final String urlPath = QUERY_API_PATH + "/results";

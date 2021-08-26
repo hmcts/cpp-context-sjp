@@ -17,6 +17,9 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
       (mapping):
           responseType: application/vnd.sjp.query.case+json
           name: sjp.query.case
+      (mapping):
+          responseType: application/vnd.sjp.query.prosecution-case+json
+          name: sjp.query.prosecution-case
       ...
     responses:
       200:
@@ -24,6 +27,9 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
           application/vnd.sjp.query.case+json:
             schema: !include json/schema/sjp.query.case-details.json
             example: !include json/sjp.query.case-details.json
+          application/vnd.sjp.query.prosecution-case+json:
+            schema: !include json/schema/sjp.query.prosecution-case.json
+            example: !include json/sjp.query.prosecution-case.json
 
 /cases:
   get:
@@ -576,3 +582,22 @@ baseUri: http://localhost:8080/sjp-query-controller/query/controller/rest/sjp
           application/vnd.sjp.query.regions+json:
             schema: !include json/schema/sjp.query.regions.json
             example: !include json/sjp.query.regions.json
+
+/cases/{caseId}/common-case-application:
+  uriParameters:
+     caseId:
+       description: Case ID
+       type: string
+       required: true
+  get:
+    description: |
+        ...
+        (mapping):
+            responseType: application/vnd.sjp.query.common-case-application+json
+            name: sjp.query.common-case-application
+        ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.common-case-application+json:
+            schema: !include json/schema/sjp.query.common-case-application.json

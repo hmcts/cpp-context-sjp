@@ -12,6 +12,7 @@
 
     <properties>
         <cpp.service-component>EVENT_LISTENER</cpp.service-component>
+        <hamcrest-date.version>2.0.4</hamcrest-date.version>
     </properties>
 
     <dependencies>
@@ -72,6 +73,12 @@
             <artifactId>sjp-domain-aggregate</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.exparity</groupId>
+            <artifactId>hamcrest-date</artifactId>
+            <version>${hamcrest-date.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

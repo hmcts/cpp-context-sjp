@@ -45,6 +45,7 @@ final class CaseReceivedMutator implements AggregateStateMutator<CaseReceived, C
         state.setDefendantRegion(event.getDefendant().getRegion());
         state.setDefendantDriverNumber(event.getDefendant().getDriverNumber());
         state.setCosts(event.getCosts());
+        state.setManagedByAtcm(true);
 
         event.getDefendant().getOffences().stream()
                 .filter(offence -> isTrue(offence.getPressRestrictable()))

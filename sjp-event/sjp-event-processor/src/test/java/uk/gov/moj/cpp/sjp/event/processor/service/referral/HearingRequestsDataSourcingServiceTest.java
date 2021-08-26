@@ -7,6 +7,7 @@ import static javax.json.Json.createObjectBuilder;
 import static javax.json.JsonValue.NULL;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDecision.caseDecision;
 import static uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails.caseDetails;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
@@ -94,8 +95,13 @@ public class HearingRequestsDataSourcingServiceTest {
     }
 
     private List<CaseDecision> mockCaseDecisions() {
-        List<CaseDecision> casedDecisions = new ArrayList<>();
-        casedDecisions.add(new CaseDecision(null, DECISION_ID, null, REFERRAL_DATE_TIME, mockSessionDetails()));
+        final List<CaseDecision> casedDecisions = new ArrayList<>();
+        final CaseDecision caseDecision = caseDecision()
+                .withId(DECISION_ID)
+                .withSavedAt(REFERRAL_DATE_TIME)
+                .withSession(mockSessionDetails())
+                .build();
+        casedDecisions.add(caseDecision);
         return casedDecisions;
     }
 

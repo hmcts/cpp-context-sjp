@@ -2,16 +2,58 @@ package uk.gov.moj.cpp.sjp.domain.aggregate.mutator;
 
 import com.google.common.collect.Sets;
 import org.junit.Test;
-import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
-import uk.gov.moj.cpp.sjp.domain.*;
+import uk.gov.moj.cpp.sjp.domain.Address;
+import uk.gov.moj.cpp.sjp.domain.Benefits;
+import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
+import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
+import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
+import uk.gov.moj.cpp.sjp.domain.Employer;
+import uk.gov.moj.cpp.sjp.domain.Income;
+import uk.gov.moj.cpp.sjp.domain.IncomeFrequency;
+import uk.gov.moj.cpp.sjp.domain.Interpreter;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.Application;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.FinancialImpositionExportDetails;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
+import uk.gov.moj.cpp.sjp.domain.decision.Discharge;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecision;
 import uk.gov.moj.cpp.sjp.domain.decision.Withdraw;
 import uk.gov.moj.cpp.sjp.domain.plea.Plea;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
-import uk.gov.moj.cpp.sjp.event.*;
+import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequestCancelled;
+import uk.gov.moj.cpp.sjp.event.AllOffencesWithdrawalRequested;
+import uk.gov.moj.cpp.sjp.event.ApplicationStatusChanged;
+import uk.gov.moj.cpp.sjp.event.CaseCompleted;
+import uk.gov.moj.cpp.sjp.event.CaseExpectedDateReadyChanged;
+import uk.gov.moj.cpp.sjp.event.CaseMarkedReadyForDecision;
+import uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded;
+import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.CaseReopenedUpdated;
+import uk.gov.moj.cpp.sjp.event.CaseStarted;
+import uk.gov.moj.cpp.sjp.event.CaseUnmarkedReadyForDecision;
+import uk.gov.moj.cpp.sjp.event.DatesToAvoidAdded;
+import uk.gov.moj.cpp.sjp.event.DatesToAvoidUpdated;
+import uk.gov.moj.cpp.sjp.event.EmployerDeleted;
+import uk.gov.moj.cpp.sjp.event.EmployerUpdated;
+import uk.gov.moj.cpp.sjp.event.EmploymentStatusUpdated;
+import uk.gov.moj.cpp.sjp.event.FinancialImpositionAccountNumberAdded;
+import uk.gov.moj.cpp.sjp.event.FinancialImpositionCorrelationIdAdded;
+import uk.gov.moj.cpp.sjp.event.FinancialMeansDeleteDocsStarted;
+import uk.gov.moj.cpp.sjp.event.FinancialMeansUpdated;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceCancelledForDefendant;
+import uk.gov.moj.cpp.sjp.event.HearingLanguagePreferenceUpdatedForDefendant;
+import uk.gov.moj.cpp.sjp.event.InterpreterCancelledForDefendant;
+import uk.gov.moj.cpp.sjp.event.InterpreterUpdatedForDefendant;
+import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequestCancelled;
+import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequestReasonChanged;
+import uk.gov.moj.cpp.sjp.event.OffenceWithdrawalRequested;
+import uk.gov.moj.cpp.sjp.event.PleaCancelled;
+import uk.gov.moj.cpp.sjp.event.PleaUpdated;
+import uk.gov.moj.cpp.sjp.event.TrialRequestCancelled;
+import uk.gov.moj.cpp.sjp.event.VerdictCancelled;
+import uk.gov.moj.cpp.sjp.event.decision.ApplicationDecisionSetAside;
 import uk.gov.moj.cpp.sjp.event.decision.DecisionSaved;
 import uk.gov.moj.cpp.sjp.event.decommissioned.CaseAssignmentDeleted;
 import uk.gov.moj.cpp.sjp.event.session.CaseAssigned;
@@ -26,12 +68,31 @@ import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.time.ZonedDateTime.now;
+import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.iterableWithSize;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_GRANTED;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_PENDING;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
 import static uk.gov.moj.cpp.sjp.domain.Priority.MEDIUM;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
+import static uk.gov.moj.cpp.sjp.domain.testutils.builders.DischargeBuilder.withDefaults;
+import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
+import static uk.gov.moj.cpp.sjp.event.CaseReferralForCourtHearingRejectionRecorded.caseReferralForCourtHearingRejectionRecorded;
 import static uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing.caseReferredForCourtHearing;
 
 public class CompositeCaseAggregateStateMutatorTest {
@@ -142,6 +203,14 @@ public class CompositeCaseAggregateStateMutatorTest {
         compositeCaseAggregateStateMutator.apply(caseReferredForCourtHearing, caseAggregateState);
 
         assertTrue(caseAggregateState.isCaseReferredForCourtHearing());
+        assertThat(caseAggregateState.isManagedByAtcm(), is(false));
+    }
+
+    @Test
+    public void shouldMutateStateOnCaseReferralForCourtHearingRejectionRecordedEvent() {
+        final CaseReferralForCourtHearingRejectionRecorded event = caseReferralForCourtHearingRejectionRecorded().build();
+        compositeCaseAggregateStateMutator.apply(event, caseAggregateState);
+        assertThat(caseAggregateState.isManagedByAtcm(), is(true));
     }
 
     @Test
@@ -397,5 +466,78 @@ public class CompositeCaseAggregateStateMutatorTest {
         final FinancialMeansDeleteDocsStarted deleteDocsStarted = new FinancialMeansDeleteDocsStarted(caseId, defendantId);
         compositeCaseAggregateStateMutator.apply(deleteDocsStarted, caseAggregateState);
         assertThat(caseAggregateState.isDeleteDocsStarted(), is(true));
+    }
+
+    @Test
+    public void shouldMutateStateOnVerdictCancelled() {
+        final Discharge discharge = withDefaults()
+                .offenceDecisionInformation(createOffenceDecisionInformation(offenceId, FOUND_GUILTY))
+                .build();
+        caseAggregateState.updateOffenceConvictionDates(now(), asList(discharge));
+        assertThat(caseAggregateState.getOffencesWithConviction(), not(empty()));
+
+        final VerdictCancelled verdictCancelled = new VerdictCancelled(offenceId);
+        compositeCaseAggregateStateMutator.apply(verdictCancelled, caseAggregateState);
+        assertThat(caseAggregateState.getOffencesWithConviction(), empty());
+    }
+
+    @Test
+    public void shouldMutateStateOnApplicationDecisionSetAside() {
+        caseAggregateState.setSetAside(false);
+        caseAggregateState.markCaseCompleted();
+
+        final ApplicationDecisionSetAside applicationSetAside = new ApplicationDecisionSetAside(randomUUID(), caseId);
+        compositeCaseAggregateStateMutator.apply(applicationSetAside, caseAggregateState);
+        assertThat(caseAggregateState.isSetAside(), is(true));
+        assertThat(caseAggregateState.isCaseCompleted(), is(false));
+    }
+
+    @Test
+    public void shouldMutateStateOnApplicationStatusChanged() {
+        caseAggregateState.setSetAside(false);
+        final UUID applicationId = randomUUID();
+        final Application application = new Application(null);
+        application.setType(STAT_DEC);
+        application.setStatus(STATUTORY_DECLARATION_PENDING);
+        caseAggregateState.setCurrentApplication(application);
+
+        final ApplicationStatusChanged applicationStatusChanged = new ApplicationStatusChanged(
+                applicationId,
+                STATUTORY_DECLARATION_GRANTED);
+
+        compositeCaseAggregateStateMutator.apply(applicationStatusChanged, caseAggregateState);
+        assertThat(caseAggregateState.getCurrentApplication().getStatus(), is(STATUTORY_DECLARATION_GRANTED));
+    }
+
+    @Test
+    public void shouldMutateStateOnFinancialImpositionCorrelationIdAdded() {
+        final FinancialImpositionCorrelationIdAdded correlationIdAdded =
+                new FinancialImpositionCorrelationIdAdded(caseId, defendantId, randomUUID());
+
+        compositeCaseAggregateStateMutator.apply(correlationIdAdded, caseAggregateState);
+        assertThat(caseAggregateState.getDefendantFinancialImpositionExportDetails().size(), is(1));
+        assertThat(caseAggregateState.getDefendantFinancialImpositionExportDetails().values(), hasItem(allOf(
+                hasProperty("correlationId", is(correlationIdAdded.getCorrelationId()))
+        )));
+    }
+
+    @Test
+    public void shouldMutateStateOnFinancialImpositionAccountNumberAdded() {
+        final UUID correlationId = randomUUID();
+        final String accountNumber = "123456780";
+
+        final FinancialImpositionExportDetails exportDetails = new FinancialImpositionExportDetails();
+        exportDetails.setCorrelationId(correlationId);
+        caseAggregateState.addFinancialImpositionExportDetails(defendantId, exportDetails);
+
+        final FinancialImpositionAccountNumberAdded accountNumberAdded =
+                new FinancialImpositionAccountNumberAdded(caseId, defendantId, accountNumber);
+
+        compositeCaseAggregateStateMutator.apply(accountNumberAdded, caseAggregateState);
+        assertThat(caseAggregateState.getDefendantFinancialImpositionExportDetails().size(), is(1));
+        assertThat(caseAggregateState.getDefendantFinancialImpositionExportDetails().values(), hasItem(allOf(
+                hasProperty("correlationId", is(correlationId)),
+                hasProperty("accountNumber", is(accountNumber))
+        )));
     }
 }

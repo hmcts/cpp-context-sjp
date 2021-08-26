@@ -3,6 +3,8 @@ package uk.gov.moj.cpp.sjp.event.processor.model.referral;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 
+import uk.gov.moj.cpp.sjp.model.prosecution.ProsecutionCaseView;
+
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;

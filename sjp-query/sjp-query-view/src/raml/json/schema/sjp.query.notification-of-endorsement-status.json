@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/queries/notification-of-endorsement-status.json",
+  "type": "object",
+  "properties": {
+    "applicationDecisionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "fileId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "GENERATED",
+        "GENERATION_FAILED",
+        "QUEUED",
+        "FAILED",
+        "SENT"
+      ]
+    },
+    "updated": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+    }
+  }
+}

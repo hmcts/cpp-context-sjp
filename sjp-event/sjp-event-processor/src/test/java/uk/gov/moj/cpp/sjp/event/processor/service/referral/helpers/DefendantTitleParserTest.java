@@ -4,6 +4,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 
+import uk.gov.moj.cpp.sjp.model.prosecution.helpers.DefendantTitleParser;
+
 import org.junit.Test;
 
 

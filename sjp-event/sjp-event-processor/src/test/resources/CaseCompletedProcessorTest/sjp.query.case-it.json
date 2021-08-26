@@ -1,0 +1,199 @@
+{
+  "id": "0d61cb1c-d841-4262-9fd2-e726b8e4df35",
+  "urn": "TVL6217620803",
+  "defendant": {
+    "id": "3371399b-a86b-43aa-85a9-f92e9a6b288b",
+    "offences": [
+      {
+        "id": "86aa2966-fae7-4bd1-920a-52bb44c0293c",
+        "offenceCode": "CA03011",
+        "offenceSequenceNumber": 1,
+        "wording": "On 10/08/2016 At thread needle street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without aConductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction",
+        "wordingWelsh": "Prosecution charge wording in Welsh",
+        "cjsCode": "CA03011",
+        "sequenceNumber": 1,
+        "startDate": "2020-12-30",
+        "chargeDate": "2020-12-30",
+        "backDuty": 340.3,
+        "backDutyDateFrom": "2018-04-30",
+        "backDutyDateTo": "2018-05-30",
+        "compensation": 15.3,
+        "prosecutionFacts": "Prosecution statements of facts",
+        "endorsable": false,
+        "pressRestrictable": false,
+        "completed": true,
+        "offenceDateCode": 1,
+        "title": "Possess a    television set with intent to install / use without a licence",
+        "legislation": "Contrary to section 363(3)(a) and (4) of the Communications Act 2003.",
+        "outOfTime": false,
+        "notInEffect": false,
+        "imprisonable": false,
+        "maxFineLevel": "3",
+        "hasFinalDecision": true,
+        "pendingWithdrawal": false,
+        "backDutyOffence": false,
+        "penaltyType": "",
+        "sentencing": "",
+        "titleWelsh": "Meddu ar set deledu gan fwriadu'i osod/ddefnyddio heb drwydded",
+        "legislationWelsh": "Yn groes i adran 363(3)(a) a (4) Deddf Cyfathrebu 2003.",
+        "maxFineValue": 1000
+      },
+      {
+        "id": "9460d873-ff1c-469e-b189-a8b8743e1848",
+        "offenceCode": "CA03013",
+        "offenceSequenceNumber": 2,
+        "wording": "On 10/08/2016 At thread needle street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without aConductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction",
+        "wordingWelsh": "Prosecution charge wording in Welsh",
+        "cjsCode": "CA03013",
+        "sequenceNumber": 2,
+        "startDate": "2020-12-30",
+        "chargeDate": "2020-12-30",
+        "backDuty": 340.3,
+        "backDutyDateFrom": "2018-04-30",
+        "backDutyDateTo": "2018-05-30",
+        "compensation": 15.3,
+        "prosecutionFacts": "Prosecution statements of facts",
+        "withdrawalRequestReasonId": "93c6b978-4cad-31f0-a6d9-59cfd71c324a",
+        "endorsable": false,
+        "pressRestrictable": false,
+        "completed": true,
+        "offenceDateCode": 1,
+        "title": "Obstruct    person executing search warrant for TV receiver",
+        "legislation": "Contrary to section 366(8)(a) and    (9) of the Communications Act 2003.",
+        "outOfTime": false,
+        "notInEffect": false,
+        "imprisonable": false,
+        "maxFineLevel": "U",
+        "hasFinalDecision": true,
+        "pendingWithdrawal": false,
+        "backDutyOffence": false,
+        "penaltyType": "",
+        "sentencing": "",
+        "titleWelsh": "Rhwystro unigolyn a oedd yn gweithredu gwarant chwilio ar gyfer derbynnydd teledu",
+        "legislationWelsh": "Yn groes i adran 366(8)(a) a (9) Deddf Cyfathrebu 2003.",
+        "withdrawalRequestReason": "Agreement between prosecutor and defendant reached"
+      }
+    ],
+    "caseId": "0d61cb1c-d841-4262-9fd2-e726b8e4df35",
+    "interpreter": {
+      "needed": false
+    },
+    "speakWelsh": false,
+    "numPreviousConvictions": 3,
+    "personalDetails": {
+      "title": "Mr",
+      "firstName": "John Adam Theodore",
+      "lastName": "Protractor-6217620803",
+      "dateOfBirth": "1980-02-04",
+      "gender": "Not Specified",
+      "nationalInsuranceNumber": "AA123456C",
+      "driverNumber": "KER99861065SE9RP",
+      "address": {
+        "address1": "Flat 55",
+        "address2": "1 Oxford Road",
+        "address3": "'SW99 1AA'",
+        "address4": "Surrey",
+        "address5": "",
+        "postcode": "SW99 1AA"
+      },
+      "contactDetails": {
+        "email": "john@email.com"
+      },
+      "dobChanged": false,
+      "addressChanged": false,
+      "nameChanged": false
+    },
+    "disabilityNeeds": {
+      "needed": false
+    },
+    "asn": "???"
+  },
+  "caseDecisions": [
+    {
+      "id": "e55daa5d-5bc5-4a5d-9cdc-140a5b1ea38f",
+      "session": {
+        "sessionId": "85571919-86bb-4d02-a495-e08cfea623ae",
+        "legalAdviserUserId": "31ec3a16-8721-498c-8da5-f099390ee254",
+        "courtHouseCode": "B23HS00",
+        "courtHouseName": "Leamington Spa Magistrates' Court",
+        "localJusticeAreaNationalCourtCode": "2905",
+        "startedAt": "2021-01-29T09:14:53.607Z",
+        "endedAt": "2021-01-29T09:15:02.464Z",
+        "sessionType": "DELEGATED_POWERS",
+        "legalAdviser": {
+          "id": "31ec3a16-8721-498c-8da5-f099390ee254",
+          "firstName": "Erica",
+          "lastName": "Wilson"
+        }
+      },
+      "savedAt": "2021-01-29T09:15:00.939Z",
+      "offenceDecisions": [
+        {
+          "offenceId": "9460d873-ff1c-469e-b189-a8b8743e1848",
+          "decisionType": "WITHDRAW",
+          "withdrawalReasonId": "030d4335-f9fe-39e0-ad7e-d01a0791ff87",
+          "verdict": "NO_VERDICT",
+          "withdrawalReason": "Insufficient Evidence"
+        }
+      ]
+    },
+    {
+      "id": "27354b44-e84e-4db8-b126-d7bb7ca4b036",
+      "session": {
+        "sessionId": "284eebcd-035d-4248-9724-a115308de640",
+        "legalAdviserUserId": "31ec3a16-8721-498c-8da5-f099390ee254",
+        "courtHouseCode": "B23HS00",
+        "courtHouseName": "Leamington Spa Magistrates' Court",
+        "localJusticeAreaNationalCourtCode": "2905",
+        "magistrate": "Jenny",
+        "startedAt": "2021-01-29T09:14:41.186Z",
+        "endedAt": "2021-01-29T09:14:49.557Z",
+        "sessionType": "MAGISTRATE",
+        "legalAdviser": {
+          "id": "31ec3a16-8721-498c-8da5-f099390ee254",
+          "firstName": "Erica",
+          "lastName": "Wilson"
+        }
+      },
+      "savedAt": "2021-01-29T09:14:48.124Z",
+      "offenceDecisions": [
+        {
+          "offenceId": "86aa2966-fae7-4bd1-920a-52bb44c0293c",
+          "decisionType": "WITHDRAW",
+          "withdrawalReasonId": "030d4335-f9fe-39e0-ad7e-d01a0791ff87",
+          "verdict": "NO_VERDICT",
+          "withdrawalReason": "Insufficient Evidence"
+        },
+        {
+          "adjournedTo": "2021-02-05",
+          "offenceId": "9460d873-ff1c-469e-b189-a8b8743e1848",
+          "decisionType": "ADJOURN",
+          "verdict": "NO_VERDICT"
+        }
+      ]
+    }
+  ],
+  "dateTimeCreated": "2021-01-29T09:14:37.600Z",
+  "caseDocuments": [
+    {
+      "id": "0a55f7be-349f-4204-bcc5-64b0638f1b30",
+      "materialId": "4acb6610-386a-4efa-878b-b4a68e3f4d63",
+      "documentType": "RESULT_ORDER",
+      "documentNumber": 1,
+      "addedAt": "2021-01-29T09:15:10.387Z"
+    }
+  ],
+  "prosecutingAuthority": "TVL",
+  "prosecutingAuthorityName": "TV Licensing",
+  "completed": true,
+  "assigned": false,
+  "costs": 20.1,
+  "postingDate": "2021-01-01",
+  "enterpriseId": "G9667KW9V9SG",
+  "onlinePleaReceived": false,
+  "status": "COMPLETED",
+  "listedInCriminalCourts": false,
+  "policeFlag": false,
+  "postConviction": false,
+  "setAside": false
+}

@@ -46,8 +46,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static uk.gov.moj.cpp.sjp.domain.AssignmentRuleType.ALLOW;
-import static uk.gov.moj.cpp.sjp.domain.AssignmentRuleType.DISALLOW;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PLEADED_GUILTY_REQUEST_HEARING;
@@ -443,7 +441,7 @@ public class AssignmentRepositoryTest extends BaseTransactionalTest {
                     .withCompleted(completed)
                     .withAssigneeId(assigneeId)
                     .withDatesToAvoid(datesToAvoid)
-                    .addDefendantDetail(defendant)
+                    .withDefendantDetail(defendant)
                     .build();
 
             final StreamStatus caseStreamStatus = new StreamStatus(caseId, "sjp", "EVENT_LISTENER", version);

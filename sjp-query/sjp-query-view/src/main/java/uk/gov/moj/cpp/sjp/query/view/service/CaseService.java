@@ -12,7 +12,6 @@ import static java.util.stream.Collectors.toMap;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-import static org.apache.commons.lang3.StringUtils.length;
 
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -24,9 +23,11 @@ import uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseWithoutDefendantPostcode;
 import uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence;
+import uk.gov.moj.cpp.sjp.persistence.repository.CaseApplicationRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.DefendantRepository;
 import uk.gov.moj.cpp.sjp.query.view.ExportType;
 import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
@@ -77,10 +78,16 @@ public class CaseService {
     private CaseRepository caseRepository;
 
     @Inject
+    private DefendantRepository defendantRepository;
+
+    @Inject
     private CaseDocumentRepository caseDocumentRepository;
 
     @Inject
     private CaseSearchResultRepository caseSearchResultRepository;
+
+    @Inject
+    private CaseApplicationRepository applicationRepository;
 
     @Inject
     private ProsecutingAuthorityProvider prosecutingAuthorityProvider;
@@ -177,6 +184,36 @@ public class CaseService {
         }
     }
 
+    public CaseView findCaseByCorrelationId(final UUID correlationId) {
+        try {
+            final UUID caseId = defendantRepository.findCaseIdByCorrelationId(correlationId);
+            return ofNullable(caseId)
+                    .map(id -> getCaseView(caseRepository.findBy(id)))
+                    .orElse(null);
+        } catch (NoResultException e) {
+            LOGGER.debug("No case found with correlationId='{}'", correlationId, e);
+            return null;
+        }
+    }
+
+    public Object findCaseApplicationDecisionId(final UUID applicationDecisionId) {
+        try {
+            return getCaseView(applicationRepository.findByApplicationDecisionId(applicationDecisionId));
+        } catch (NoResultException e) {
+            LOGGER.debug("No case found with applicationDecisionId='{}'", applicationDecisionId, e);
+            return null;
+        }
+    }
+
+    public Object findCaseByApplicationId(final UUID applicationId) {
+        try {
+            return getCaseView(applicationRepository.findByApplicationId(applicationId));
+        } catch (NoResultException e) {
+            LOGGER.debug("No case found with applicationDecisionId='{}'", applicationId, e);
+            return null;
+        }
+    }
+
     public SearchCaseByMaterialIdView searchCaseByMaterialId(final UUID materialId) {
         SearchCaseByMaterialIdView searchCaseByMaterialIdView = new SearchCaseByMaterialIdView();
         try {
@@ -218,7 +255,7 @@ public class CaseService {
     }
 
     public CaseDocumentsView findCaseDocumentsFilterOtherAndFinancialMeans(UUID caseId) {
-        final List<String> WANTED = asList("SJPN", "PLEA", "CITN");
+        final List<String> WANTED = asList("SJPN", "PLEA", "CITN","APPLICATION");
 
         return findCaseDocuments(caseId, documentView -> WANTED.contains(documentView.getDocumentType()));
     }
@@ -354,7 +391,7 @@ public class CaseService {
     }
 
     private void filterOtherAndFinancialMeansDocuments(Collection<CaseDocumentView> caseDocumentsView) {
-        Set<String> documentsTypeToRetain = Sets.newHashSet("SJPN", "PLEA", "CITN");
+        Set<String> documentsTypeToRetain = Sets.newHashSet("SJPN", "PLEA", "CITN","APPLICATION");
         caseDocumentsView.removeIf(
                 documentView -> !documentsTypeToRetain.contains(documentView.getDocumentType())
         );

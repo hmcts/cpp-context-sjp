@@ -61,6 +61,7 @@ public class SjpQueryControllerTest {
         assertThat(SjpQueryController.class, isHandlerClass(Component.QUERY_CONTROLLER)
                 .with(allOf(
                         method("findCaseByUrn").thatHandles("sjp.query.case-by-urn").withRequesterPassThrough(),
+                        method("findProsecutionCase").thatHandles("sjp.query.prosecution-case").withRequesterPassThrough(),
                         method("findFinancialMeans").thatHandles("sjp.query.financial-means").withRequesterPassThrough(),
                         method("findEmployer").thatHandles("sjp.query.employer").withRequesterPassThrough(),
                         method("findCaseSearchResults").thatHandles("sjp.query.case-search-results").withRequesterPassThrough(),

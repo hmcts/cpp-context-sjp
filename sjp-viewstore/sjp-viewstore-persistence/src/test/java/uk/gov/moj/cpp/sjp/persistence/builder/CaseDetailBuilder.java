@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.persistence.builder;
 
 import static java.time.ZoneOffset.UTC;
 
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplication;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
@@ -27,6 +28,7 @@ public class CaseDetailBuilder {
     private String prosecutingAuthority;
     private Set<CaseDocument> caseDocuments = new LinkedHashSet<>();
     private List<CaseDecision> caseDecisions = new ArrayList<>();
+    private List<CaseApplication>caseApplications=new ArrayList<>();
     private DefendantDetail defendant;
     private Boolean completed;
     private UUID assigneeId;
@@ -85,7 +87,7 @@ public class CaseDetailBuilder {
         return this;
     }
 
-    public CaseDetailBuilder addDefendantDetail(DefendantDetail defendantDetail) {
+    public CaseDetailBuilder withDefendantDetail(DefendantDetail defendantDetail) {
         if (defendantDetail != null) {
             this.defendant = defendantDetail;
         }
@@ -99,9 +101,15 @@ public class CaseDetailBuilder {
         return this;
     }
 
-    public CaseDetailBuilder addCaseDecision(final CaseDecision caseDecision) {
+    public CaseDetailBuilder withCaseDecision(final CaseDecision caseDecision) {
         if (caseDecision != null) {
             this.caseDecisions.add(caseDecision);
+        }
+        return this;
+    }
+    public CaseDetailBuilder withCaseApplication(final CaseApplication caseApplication){
+        if (caseApplication!=null){
+            this .caseApplications.add(caseApplication);
         }
         return this;
     }
@@ -122,7 +130,7 @@ public class CaseDetailBuilder {
                 createdOn, defendant, costs, postingDate);
         caseDetail.setDatesToAvoid(datesToAvoid);
         caseDetail.setCaseDecisions(caseDecisions);
-
+        caseDetail.setApplications(caseApplications);
         caseDocuments.forEach(caseDetail::addCaseDocuments);
 
         return caseDetail;

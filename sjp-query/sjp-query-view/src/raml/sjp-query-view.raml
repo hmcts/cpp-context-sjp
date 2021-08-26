@@ -18,6 +18,9 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
           responseType: application/vnd.sjp.query.case+json
           name: sjp.query.case
       (mapping):
+          responseType: application/vnd.sjp.query.prosecution-case+json
+          name: sjp.query.prosecution-case
+      (mapping):
           responseType: application/vnd.sjp.query.case-filter-other-and-financial-means-documents+json
           name: sjp.query.case-filter-other-and-financial-means-documents
       ...
@@ -27,6 +30,9 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
           application/vnd.sjp.query.case+json:
             schema: !include json/schema/sjp.query.case-details.json
             example: !include json/sjp.query.case-details.json
+          application/vnd.sjp.query.prosecution-case+json:
+            schema: !include json/schema/sjp.query.prosecution-case.json
+            example: !include json/sjp.query.prosecution-case.json
           application/vnd.sjp.query.case-filter-other-and-financial-means-documents+json:
             schema: !include json/schema/sjp.query.case-filter-other-and-financial-means-documents.json
             example: !include json/sjp.query.case-filter-other-and-financial-means-documents.json
@@ -34,15 +40,36 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
 /cases:
   get:
     description: |
-      Get case by URN
+      Get case by URN, Correlation ID or Application Decision ID
       ...
       (mapping):
           responseType: application/vnd.sjp.query.case-by-urn+json
           name: sjp.query.case-by-urn
+      (mapping):
+          responseType: application/vnd.sjp.query.case-by-correlation-id+json
+          name: sjp.query.case-by-correlation-id
+      (mapping):
+          responseType: application/vnd.sjp.query.case-by-application-decision-id+json
+          name: sjp.query.case-by-application-decision-id
+      (mapping):
+          responseType: application/vnd.sjp.query.case-by-application-id+json
+          name: sjp.query.case-by-application-id
       ...
     queryParameters:
       urn:
         description: Unique Reference Number
+        type: string
+        required: false
+      correlationId:
+        description: Staging enforcement correlation id
+        type: string
+        required: false
+      applicationDecisionId:
+        description: The Application Decision ID belonging to the case
+        type: string
+        required: false
+      applicationId:
+        description: The Application ID belonging to the case
         type: string
         required: false
     responses:
@@ -52,6 +79,16 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
                 application/vnd.sjp.query.case-by-urn+json:
                   schema: !include json/schema/sjp.query.case-details.json
                   example: !include json/sjp.query.case-details.json
+                application/vnd.sjp.query.case-by-correlation-id+json:
+                  schema: !include json/schema/sjp.query.case-details.json
+                  example: !include json/sjp.query.case-details.json
+                application/vnd.sjp.query.case-by-application-decision-id+json:
+                  schema: !include json/schema/sjp.query.case-details.json
+                  example: !include json/sjp.query.case-details.json
+                application/vnd.sjp.query.case-by-application-id+json:
+                  schema: !include json/schema/sjp.query.case-details.json
+                  example: !include json/sjp.query.case-details.json
+
 
 /result-orders:
   get:
@@ -655,3 +692,82 @@ baseUri: http://localhost:8080/sjp-query-view/query/view/rest/sjp
           application/vnd.sjp.query.regions+json:
             schema: !include json/schema/sjp.query.regions.json
             example: !include json/sjp.query.regions.json
+
+
+/application/{applicationId}:
+  description: returns an appllication
+  uriParameters:
+    applicationId:
+      description: Application ID
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.application+json
+          name: sjp.query.application
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.application+json:
+            schema: !include json/schema/sjp.query.case-application.json
+
+
+/notification-of-endorsement-status/{applicationDecisionId}:
+  description: returns a notification of endorsement status
+  uriParameters:
+    applicationDecisionId:
+      description: The application decision Id
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.notification-of-endorsement-status+json
+          name: sjp.query.notification-of-endorsement-status
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.notification-of-endorsement-status+json:
+            schema: !include json/schema/sjp.query.notification-of-endorsement-status.json
+
+/enforcement-pending-application-notification-status/{applicationId}:
+  description: returns a notification of enforcement of pending application status
+  uriParameters:
+    applicationId:
+      description: The application Id
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.sjp.query.enforcement-pending-application-notification-status+json
+          name: sjp.query.enforcement-pending-application-notification-status
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.enforcement-pending-application-notification-status+json:
+            schema: !include json/schema/sjp.query.enforcement-pending-application-notification-status.json
+
+
+/cases/{caseId}/common-case-application:
+  uriParameters:
+     caseId:
+       description: Case ID
+       type: string
+       required: true
+  get:
+    description: |
+        ...
+        (mapping):
+            responseType: application/vnd.sjp.query.common-case-application+json
+            name: sjp.query.common-case-application
+        ...
+    responses:
+      200:
+        body:
+          application/vnd.sjp.query.common-case-application+json:
+            schema: !include json/schema/sjp.query.common-case-application.json

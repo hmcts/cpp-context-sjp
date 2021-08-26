@@ -1,24 +1,22 @@
 package uk.gov.moj.sjp.it.util;
 
-import static java.util.Objects.isNull;
-import static org.skyscreamer.jsonassert.JSONCompare.compareJSON;
-import static org.skyscreamer.jsonassert.JSONCompareMode.LENIENT;
-
+import org.json.JSONObject;
+import org.skyscreamer.jsonassert.JSONCompareResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-
-import org.json.JSONObject;
-import org.skyscreamer.jsonassert.JSONCompareResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.isNull;
+import static org.skyscreamer.jsonassert.JSONCompare.compareJSON;
+import static org.skyscreamer.jsonassert.JSONCompareMode.LENIENT;
 
 public class JsonHelper {
 

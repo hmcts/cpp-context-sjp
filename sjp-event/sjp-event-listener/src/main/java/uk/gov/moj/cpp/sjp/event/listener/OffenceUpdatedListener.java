@@ -13,6 +13,7 @@ import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.PleadedGuilty;
 import uk.gov.moj.cpp.sjp.event.PleadedGuiltyCourtHearingRequested;
 import uk.gov.moj.cpp.sjp.event.PleadedNotGuilty;
+import uk.gov.moj.cpp.sjp.event.VerdictCancelled;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaDetail;
@@ -141,6 +142,16 @@ public class OffenceUpdatedListener {
         offenceDetail.setPlea(null);
         offenceDetail.setPleaMethod(null);
         offenceDetail.setPleaDate(null);
+    }
+
+    @Handles(VerdictCancelled.EVENT_NAME)
+    @Transactional
+    public void cancelVerdict(final JsonEnvelope envelope) {
+        final VerdictCancelled event = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), VerdictCancelled.class);
+
+        final OffenceDetail offenceDetail = offenceRepository.findBy(event.getOffenceId());
+        offenceDetail.setConviction(null);
+        offenceDetail.setConvictionDate(null);
     }
 
     @Handles(OffenceWithdrawalRequested.EVENT_NAME)

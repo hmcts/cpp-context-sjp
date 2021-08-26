@@ -155,7 +155,7 @@ public class DatesToAvoidServiceTest {
     }
 
     private CaseDetail createCaseDetailsWithRegion(final String region) {
-        return CaseDetailBuilder.aCase().addDefendantDetail(
+        return CaseDetailBuilder.aCase().withDefendantDetail(
                 DefendantDetailBuilder.aDefendantDetail().withPersonalDetails(
                         PersonalDetailsBuilder.aPersonalDetails()
                                 .withRegion(region)

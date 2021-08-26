@@ -29,6 +29,7 @@ import uk.gov.moj.cpp.sjp.event.PleaUpdated;
 import uk.gov.moj.cpp.sjp.event.PleadedGuilty;
 import uk.gov.moj.cpp.sjp.event.PleadedGuiltyCourtHearingRequested;
 import uk.gov.moj.cpp.sjp.event.PleadedNotGuilty;
+import uk.gov.moj.cpp.sjp.event.VerdictCancelled;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseSearchResult;
 import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
@@ -79,6 +80,9 @@ public class OffenceUpdatedListenerTest {
 
     @Mock
     private PleaCancelled pleaCancelled;
+
+    @Mock
+    private VerdictCancelled verdictCancelled;
 
     @Mock
     private OffenceDetail offence;
@@ -183,6 +187,19 @@ public class OffenceUpdatedListenerTest {
         verify(offence).setPlea(null);
         verify(offence).setPleaMethod(null);
         verify(offence).setPleaDate(null);
+    }
+
+    @Test
+    public void shouldCancelVerdict() {
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, VerdictCancelled.class)).thenReturn(verdictCancelled);
+        when(verdictCancelled.getOffenceId()).thenReturn(offenceId);
+        when(offenceRepository.findBy(offenceId)).thenReturn(offence);
+
+        listener.cancelVerdict(envelope);
+
+        verify(offence).setConviction(null);
+        verify(offence).setConvictionDate(null);
     }
 
     @Test

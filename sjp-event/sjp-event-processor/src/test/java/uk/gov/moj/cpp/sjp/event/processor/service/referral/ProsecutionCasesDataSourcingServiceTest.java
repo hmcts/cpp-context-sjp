@@ -109,7 +109,7 @@ public class ProsecutionCasesDataSourcingServiceTest {
 
     @Before
     public void setUp() {
-        when(referenceDataService.getProsecutor(TFL, EMPTY_ENVELOPE)).thenReturn(PROSECUTOR);
+        when(referenceDataService.getProsecutors(TFL, EMPTY_ENVELOPE)).thenReturn(PROSECUTOR);
         when(referenceDataOffencesService.getOffenceDefinitionByOffenceCode(mockOffenceCodes(), DECISION_DATE.toLocalDate(), EMPTY_ENVELOPE)).thenReturn(mockCJSOffenceCodeToOffenceDefinition());
         when(sjpService.getEmployerDetails(CASE_DETAILS.getDefendant().getId(), EMPTY_ENVELOPE)).thenReturn(EMPLOYER);
         when(referenceDataService.getEthnicity(DEFENDANT_ETHNICITY_CODE, EMPTY_ENVELOPE)).thenReturn(ofNullable(ETHNICITY));

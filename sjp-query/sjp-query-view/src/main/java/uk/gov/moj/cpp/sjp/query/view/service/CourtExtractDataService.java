@@ -1,10 +1,13 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 import static uk.gov.moj.cpp.sjp.domain.SessionType.MAGISTRATE;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
 
 import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplication;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplicationDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
@@ -13,12 +16,15 @@ import uk.gov.moj.cpp.sjp.persistence.entity.Session;
 import uk.gov.moj.cpp.sjp.query.view.response.courtextract.Address;
 import uk.gov.moj.cpp.sjp.query.view.response.courtextract.CaseCourtExtractView;
 import uk.gov.moj.cpp.sjp.query.view.response.courtextract.CaseDetailsView;
+import uk.gov.moj.cpp.sjp.query.view.response.courtextract.DecisionDetailsView;
+import uk.gov.moj.cpp.sjp.query.view.response.courtextract.DecisionView;
 import uk.gov.moj.cpp.sjp.query.view.response.courtextract.OffenceDecisionLineView;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -52,15 +58,18 @@ public class CourtExtractDataService {
     private void resolveOffenceDetails(final CaseDetail caseDetail,
                                        final CaseCourtExtractView caseCourtExtract) {
 
-        caseCourtExtract.getOffences().forEach(offenceDetailsView ->
-                caseDetail.getDefendant().getOffences().
-                        stream().
-                        filter(ofDetail -> ofDetail.getSequenceNumber() == offenceDetailsView.getSequenceNumber()).
-                        findFirst().ifPresent(offenceDetail -> referenceDataService.getOffenceData(offenceDetail.getCode()).
-                        ifPresent(offenceRefData -> {
-                            offenceDetailsView.setTitle(offenceRefData.getString("title"));
-                            offenceDetailsView.setLegislation(offenceRefData.getString("legislation"));
-                        })));
+        caseCourtExtract.getDecisionCourtExtractView()
+                .stream()
+                .flatMap(court -> court.getOffencesApplicationsDecisions().stream())
+                .forEach(offenceDetailsView ->
+                        caseDetail.getDefendant().getOffences().
+                                stream().
+                                filter(ofDetail -> ofDetail.getSequenceNumber() == offenceDetailsView.getSequenceNumber()).
+                                findFirst().ifPresent(offenceDetail -> referenceDataService.getOffenceData(offenceDetail.getCode()).
+                                ifPresent(offenceRefData -> {
+                                    offenceDetailsView.setTitle(offenceRefData.getString("title"));
+                                    offenceDetailsView.setLegislation(offenceRefData.getString("legislation"));
+                                })));
     }
 
     private void resolveProsecutorDetails(final CaseDetail caseDetail, final CaseCourtExtractView caseCourtExtract) {
@@ -82,18 +91,20 @@ public class CourtExtractDataService {
     private void resolveDecisionView(CaseDetail caseDetail, CaseCourtExtractView caseCourtExtractView) {
         resolveResultDetail(caseDetail, caseCourtExtractView);
         resolveDecisionMadeDetail(caseDetail, caseCourtExtractView);
+        resolveApplicationDecisionMadeDetail(caseDetail, caseCourtExtractView);
     }
 
     private void resolveResultDetail(final CaseDetail caseDetail, final CaseCourtExtractView caseCourtExtractView) {
         final List<OffenceDecision> offenceDecisions = caseDetail.getCaseDecisions()
                 .stream()
                 .flatMap(caseDecision -> caseDecision.getOffenceDecisions().stream())
-                .collect(Collectors.toList());
+                .collect(toList());
 
         offenceDecisions.forEach(offenceDecision ->
-                caseCourtExtractView.getOffences()
+                caseCourtExtractView.getDecisionCourtExtractView()
                         .stream()
-                        .flatMap(offenceDetailsView -> offenceDetailsView.getOffenceDecisions().stream())
+                        .flatMap(offenceDetailsView -> offenceDetailsView.getOffencesApplicationsDecisions().stream())
+                        .flatMap(off -> off.getOffenceDecisions().stream())
                         .filter(decisionView -> decisionView.getOffenceId().equals(offenceDecision.getOffenceId())
                                 && decisionView.getOffenceDecisionId().equals(offenceDecision.getCaseDecisionId()))
                         .findFirst()
@@ -109,7 +120,7 @@ public class CourtExtractDataService {
         final List<OffenceDecision> offenceDecisions = caseDetail.getCaseDecisions()
                 .stream()
                 .flatMap(caseDecision -> caseDecision.getOffenceDecisions().stream())
-                .collect(Collectors.toList());
+                .collect(toList());
 
         offenceDecisions.forEach(offenceDecision -> {
             final CaseDecision caseDecision = caseDetail.getCaseDecisions()
@@ -117,9 +128,10 @@ public class CourtExtractDataService {
                     .filter(decision -> decision.getId().equals(offenceDecision.getCaseDecisionId()))
                     .findFirst().get();
 
-            caseCourtExtractView.getOffences()
+            caseCourtExtractView.getDecisionCourtExtractView()
                     .stream()
-                    .flatMap(offenceDetailsView -> offenceDetailsView.getOffenceDecisions().stream())
+                    .flatMap(offenceDetailsView -> offenceDetailsView.getOffencesApplicationsDecisions().stream())
+                    .flatMap(offencesDecision -> offencesDecision.getOffenceDecisions().stream())
                     .filter(decisionView -> decisionView.getOffenceId().equals(offenceDecision.getOffenceId())
                             && decisionView.getOffenceDecisionId().equals(caseDecision.getId()))
                     .findFirst()
@@ -129,6 +141,32 @@ public class CourtExtractDataService {
                             .findFirst().ifPresent(offenceDecisionLineView -> updateDecisionMadeDetail(caseDecision.getSession(), offenceDecisionLineView)));
 
         });
+    }
+
+    private void resolveApplicationDecisionMadeDetail(final CaseDetail caseDetail, final CaseCourtExtractView caseCourtExtractView) {
+        for (final CaseApplicationDecision caseApplicationDecision : getApplicationDecisions(caseDetail).collect(toList())) {
+
+            final Optional<OffenceDecisionLineView> courtExtractApplicationDecision = getApplicationDecisionByDecisionId(caseCourtExtractView, caseApplicationDecision)
+                    .flatMap(DecisionView::getDecisionMade);
+            courtExtractApplicationDecision.ifPresent(applicationDecisionLine -> updateDecisionMadeDetail(caseApplicationDecision.getSession(), applicationDecisionLine));
+        }
+    }
+
+    private Optional<DecisionView> getApplicationDecisionByDecisionId(final CaseCourtExtractView caseCourtExtractView, final CaseApplicationDecision caseApplicationDecision) {
+        return caseCourtExtractView.getDecisionCourtExtractView()
+                .stream()
+                .flatMap(offenceDetailsView -> offenceDetailsView.getOffencesApplicationsDecisions().stream())
+                .map(DecisionDetailsView::getApplicationDecision)
+                .filter(Objects::nonNull)
+                .filter(decisionView -> decisionView.getOffenceDecisionId().equals(caseApplicationDecision.getDecisionId()))
+                .findFirst();
+    }
+
+    private Stream<CaseApplicationDecision> getApplicationDecisions(final CaseDetail caseDetail) {
+        return caseDetail.getApplications()
+                .stream()
+                .map(CaseApplication::getApplicationDecision)
+                .filter(Objects::nonNull);
     }
 
     private void updateDecisionMadeDetail(final Session session, final OffenceDecisionLineView offenceDecisionLineView) {

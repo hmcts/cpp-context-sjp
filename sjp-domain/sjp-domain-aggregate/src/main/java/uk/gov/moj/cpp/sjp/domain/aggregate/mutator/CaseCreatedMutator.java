@@ -25,5 +25,6 @@ final class CaseCreatedMutator implements AggregateStateMutator<SjpCaseCreated, 
                         .collect(toSet()));
 
         state.setCaseReceived(true);
+        state.setManagedByAtcm(true);
     }
 }

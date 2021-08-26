@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 import static javax.json.JsonValue.NULL;
@@ -8,7 +9,6 @@ import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted.publicHearingResulted;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
-import static uk.gov.moj.cpp.sjp.event.processor.helper.JsonObjectConversionHelper.toJsonString;
 
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.Hearing;
@@ -22,6 +22,7 @@ import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.Decis
 import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.DecisionSavedToJudicialResultsConverter;
 import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -72,8 +73,8 @@ public class SjpCaseDecisionToHearingResultConverter {
                         driverNumber,
                         prosecutingAuthority);
 
-        final List<DefendantJudicialResult> defendantJudicialResults = resultsAggregate
-                .getResults(caseId)
+        final List<DefendantJudicialResult> defendantJudicialResults = ofNullable(resultsAggregate
+                .getResults(defendantId)).orElse(new ArrayList<>())
                 .stream()
                 .map(e -> DefendantJudicialResult
                         .defendantJudicialResult()
@@ -101,7 +102,7 @@ public class SjpCaseDecisionToHearingResultConverter {
                         .getSavedAt())
                 .build();
 
-        LOGGER.info("[publicHearingResulted for Case]:{}", toJsonString(publicHearingResulted));
+        LOGGER.info("[publicHearingResulted for Case]:{}", caseId);
 
         return publicHearingResulted;
     }

@@ -5,11 +5,17 @@ import static java.util.UUID.randomUUID;
 import static javax.json.JsonValue.NULL;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationDecision.applicationDecision;
+import static uk.gov.justice.json.schemas.domains.sjp.commands.SaveApplicationDecision.saveApplicationDecision;
+import static uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionSaved.applicationDecisionSaved;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloperWithEvents;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
@@ -22,6 +28,9 @@ import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.ABSOLUT
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 
 import uk.gov.justice.json.schemas.domains.sjp.User;
+import uk.gov.justice.json.schemas.domains.sjp.commands.SaveApplicationDecision;
+import uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionRejected;
+import uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionSaved;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -29,7 +38,6 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.sjp.domain.SessionType;
 import uk.gov.moj.cpp.sjp.domain.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.sjp.domain.aggregate.Session;
@@ -48,7 +56,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -80,7 +87,10 @@ public class DecisionHandlerTest {
     private ArgumentCaptor<Stream<JsonEnvelope>> argumentCaptor;
 
     @Spy
-    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(DecisionSaved.class);
+    private final Enveloper enveloper = createEnveloperWithEvents(
+            DecisionSaved.class,
+            ApplicationDecisionSaved.class,
+            ApplicationDecisionRejected.class);
 
     @InjectMocks
     private DecisionHandler decisionHandler;
@@ -131,7 +141,7 @@ public class DecisionHandlerTest {
         decisionHandler.saveDecision(decisionEnvelope);
 
         verify(eventStream).append(argumentCaptor.capture());
-        assertThat(argumentCaptor.getValue(), CoreMatchers.is(streamContaining(
+        assertThat(argumentCaptor.getValue(), is(streamContaining(
                 jsonEnvelope(
                         withMetadataEnvelopedFrom(JsonEnvelope.envelopeFrom(decisionEnvelope.metadata(), NULL))
                                 .withName("sjp.events.decision-saved"),
@@ -187,7 +197,7 @@ public class DecisionHandlerTest {
         decisionHandler.saveDecision(decisionEnvelope);
 
         verify(eventStream).append(argumentCaptor.capture());
-        assertThat(argumentCaptor.getValue(), CoreMatchers.is(streamContaining(
+        assertThat(argumentCaptor.getValue(), is(streamContaining(
                 jsonEnvelope(
                         withMetadataEnvelopedFrom(JsonEnvelope.envelopeFrom(decisionEnvelope.metadata(), NULL))
                                 .withName("sjp.events.decision-saved"),
@@ -239,7 +249,7 @@ public class DecisionHandlerTest {
         decisionHandler.saveDecision(decisionEnvelope);
 
         verify(eventStream).append(argumentCaptor.capture());
-        assertThat(argumentCaptor.getValue(), CoreMatchers.is(streamContaining(
+        assertThat(argumentCaptor.getValue(), is(streamContaining(
                 jsonEnvelope(
                         withMetadataEnvelopedFrom(JsonEnvelope.envelopeFrom(decisionEnvelope.metadata(), NULL))
                                 .withName("sjp.events.decision-saved"),
@@ -258,6 +268,65 @@ public class DecisionHandlerTest {
                                 withJsonPath("$.offenceDecisions[1].type", equalTo("DISCHARGE")),
                                 withJsonPath("$.offenceDecisions[1].backDuty", equalTo(3)
                                 )
+                        ))))));
+    }
+
+    @Test
+    public void shouldSaveApplicationDecision() throws EventStreamException {
+        final UUID userId = randomUUID();
+        final User savedBy = new User("John", "Smith", userId);
+        final UUID applicationId = randomUUID();
+        final UUID sessionId = randomUUID();
+        final UUID caseId = randomUUID();
+        final SaveApplicationDecision applicationDecision = saveApplicationDecision()
+                .withApplicationId(applicationId)
+                .withCaseId(caseId)
+                .withSessionId(sessionId)
+                .withGranted(true)
+                .withOutOfTime(false)
+                .withSavedBy(savedBy)
+                .build();
+
+        final ApplicationDecisionSaved applicationDecisionSaved = applicationDecisionSaved()
+                .withCaseId(caseId)
+                .withApplicationId(applicationId)
+                .withSessionId(sessionId)
+                .withDecisionId(randomUUID())
+                .withSavedAt(ZonedDateTime.now())
+                .withApplicationDecision(applicationDecision()
+                        .withGranted(true)
+                        .withOutOfTime(false)
+                        .build())
+                .withSavedBy(savedBy)
+                .build();
+
+        mockCalls(caseId, sessionId);
+        when(caseAggregate.saveApplicationDecision(applicationDecision, session))
+                .thenReturn(Stream.of(applicationDecisionSaved));
+
+        final Envelope<SaveApplicationDecision> envelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.command.handler.save-application-decision"),
+                applicationDecision);
+
+        decisionHandler.saveApplicationDecision(envelope);
+
+        verify(eventStream).append(argumentCaptor.capture());
+
+        assertThat(argumentCaptor.getValue(), is(streamContaining(
+                jsonEnvelope(
+                        withMetadataEnvelopedFrom(JsonEnvelope.envelopeFrom(envelope.metadata(), NULL))
+                                .withName("sjp.events.application-decision-saved"),
+                        payloadIsJson(allOf(
+                                withJsonPath("$.caseId", equalTo(caseId.toString())),
+                                withJsonPath("$.decisionId", notNullValue()),
+                                withJsonPath("$.sessionId", equalTo(sessionId.toString())),
+                                withJsonPath("$.savedAt", notNullValue()),
+                                withJsonPath("$.applicationId", equalTo(applicationId.toString())),
+                                withJsonPath("$.savedBy.userId", equalTo(savedBy.getUserId().toString())),
+                                withJsonPath("$.savedBy.firstName", equalTo(savedBy.getFirstName())),
+                                withJsonPath("$.savedBy.lastName", equalTo(savedBy.getLastName())),
+                                withJsonPath("$.applicationDecision.granted", equalTo(true)),
+                                withJsonPath("$.applicationDecision.outOfTime", equalTo(false))
                         ))))));
     }
 }

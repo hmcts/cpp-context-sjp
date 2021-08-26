@@ -19,6 +19,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonValueIsJsonMa
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.POSTAL;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SET_PLEAS;
 import static uk.gov.moj.sjp.it.helper.CaseHelper.pollUntilCaseReady;
+import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_USER_ID;
 import static uk.gov.moj.sjp.it.util.HttpClientUtil.makePostCall;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -62,15 +63,18 @@ public class SetPleasHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(SetPleasHelper.class);
 
     private static final String WRITE_URL_PATTERN = "/cases/%s/set-pleas";
+    private static final String SET_PLEAS_MEDIA_TYPE = "application/vnd.sjp.set-pleas+json";
 
     public static void setPleas(final UUID caseId, final JsonObject payload) {
+        setPleasAsUser(caseId, payload, DEFAULT_USER_ID);
+    }
+
+    public static void setPleasAsUser(final UUID caseId, final JsonObject setPleasPayload, final UUID userId) {
         Objects.requireNonNull(caseId);
-
-        LOGGER.info("Request payload: {}", new JsonPath(payload.toString()).prettify());
-
-        makePostCall(format(WRITE_URL_PATTERN, caseId),
-                "application/vnd.sjp.set-pleas+json",
-                payload.toString(),
+        LOGGER.info("Request payload: {}", new JsonPath(setPleasPayload.toString()).prettify());
+        makePostCall(userId, format(WRITE_URL_PATTERN, caseId),
+                SET_PLEAS_MEDIA_TYPE,
+                setPleasPayload.toString(),
                 Response.Status.ACCEPTED);
     }
 

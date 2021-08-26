@@ -8,5 +8,9 @@ public abstract class EventNamesHolder {
     public static final String CASE_STATUS_CHANGED = "sjp.events.case-status-changed";
     public static final String CASE_REOPENED_UPDATED = "sjp.events.case-reopened-in-libra-updated";
     public static final String CASE_REOPENED_UNDONE = "sjp.events.case-reopened-in-libra-undone";
+    public static final String CASE_APPLICATION_CREATED = "sjp.events.case-application-recorded";
+    public static final String CASE_STAT_DECS = "sjp.events.case-stat-dec-recorded";
+
+
 
 }

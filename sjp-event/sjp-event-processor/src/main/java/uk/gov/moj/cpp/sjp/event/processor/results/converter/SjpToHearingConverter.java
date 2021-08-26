@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor.results.converter;
 
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
+import uk.gov.justice.json.schemas.domains.sjp.events.ApplicationDecisionSaved;
 import uk.gov.justice.json.schemas.domains.sjp.results.PublicHearingResulted;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.Envelope;
@@ -12,6 +13,8 @@ import javax.inject.Inject;
 
 public class SjpToHearingConverter {
 
+    @Inject
+    private SjpApplicationDecisionToHearingResultConverter sjpApplicationDecisionToHearingResultConverter;
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -29,4 +32,9 @@ public class SjpToHearingConverter {
         return sjpCaseDecisionToHearingResultConverter.convertCaseDecision(decisionSavedEnvelope);
     }
 
+    // return the hearing object structure
+    public PublicHearingResulted convertApplicationDecision(final Envelope<ApplicationDecisionSaved>
+                                                                    applicationDecisionSavedEnvelope) {
+        return sjpApplicationDecisionToHearingResultConverter.convertApplicationDecision(applicationDecisionSavedEnvelope);
+    }
 }

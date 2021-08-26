@@ -1,5 +1,9 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
+import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
+import uk.gov.justice.json.schemas.domains.sjp.ApplicationType;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.Application;
+
 import java.time.LocalDate;
 
 public class CaseAggregateConfig {
@@ -8,15 +12,18 @@ public class CaseAggregateConfig {
     private LocalDate datesToAvoidExpirationDate;
     private boolean isNotGuiltyPleaPresent;
     private boolean isGuiltyPleaPresent;
+    private Application application;
 
     private CaseAggregateConfig(final LocalDate postingDateExpirationDate, final LocalDate adjournedTo,
                                 final LocalDate datesToAvoidExpirationDate,
-                                final boolean isNotGuiltyPleaPresent, final boolean isGuiltyPleaPresent) {
+                                final boolean isNotGuiltyPleaPresent, final boolean isGuiltyPleaPresent,
+                                final Application application) {
         this.postingDateExpirationDate = postingDateExpirationDate;
         this.adjournedTo = adjournedTo;
         this.datesToAvoidExpirationDate = datesToAvoidExpirationDate;
         this.isNotGuiltyPleaPresent = isNotGuiltyPleaPresent;
         this.isGuiltyPleaPresent = isGuiltyPleaPresent;
+        this.application = application;
     }
 
     LocalDate getAdjournedTo() {
@@ -39,12 +46,17 @@ public class CaseAggregateConfig {
         return isGuiltyPleaPresent;
     }
 
+    public Application getApplication() {
+        return application;
+    }
+
     static class Builder {
         private LocalDate postingDateExpirationDate;
         private LocalDate adjournedTo;
         private LocalDate datesToAvoidExpirationDate;
         private boolean isNotGuiltyPleaPresent = false;
         private boolean isGuiltyPleaPresent = false;
+        private Application application;
 
         static Builder caseAggregateConfigBuilder() {
             return new Builder();
@@ -76,9 +88,47 @@ public class CaseAggregateConfig {
             return this;
         }
 
-        public CaseAggregateConfig build() {
-            return new CaseAggregateConfig(postingDateExpirationDate, adjournedTo, datesToAvoidExpirationDate, isNotGuiltyPleaPresent, isGuiltyPleaPresent);
+        Builder withApplication(final Application application) {
+            this.application = application;
+            return this;
         }
+
+        public CaseAggregateConfig build() {
+            return new CaseAggregateConfig(
+                    postingDateExpirationDate, adjournedTo,
+                    datesToAvoidExpirationDate, isNotGuiltyPleaPresent,
+                    isGuiltyPleaPresent,
+                    application
+            );
+        }
+
+
+    }
+
+    static class ApplicationBuilder {
+
+        private Application application = new Application(null);
+
+        public static ApplicationBuilder application(final ApplicationType type) {
+            final ApplicationBuilder builder = new ApplicationBuilder();
+            builder.withType(type);
+            return builder;
+        }
+
+        public ApplicationBuilder withType(final ApplicationType type) {
+            this.application.setType(type);
+            return this;
+        }
+
+        public ApplicationBuilder withApplicationStatus(final ApplicationStatus status) {
+            this.application.setStatus(status);
+            return this;
+        }
+
+        public Application build() {
+            return application;
+        }
+
     }
 
     @Override

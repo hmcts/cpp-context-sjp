@@ -9,18 +9,25 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_GRANTED;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_PENDING;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_REFUSED;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseAggregateConfig.ApplicationBuilder.application;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseAggregateConfig.Builder.caseAggregateConfigBuilder;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseReadinessEventRaised.CASE_EXPECTED_DATE_READY_CHANGED_RAISED;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseReadinessEventRaised.CASE_MARKED_READY_FOR_DECISION_RAISED;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseReadinessEventRaised.CASE_UNMARKED_READY_FOR_DECISION_RAISED;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseReadinessEventRaised.NONE;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED_APPLICATION_PENDING;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.PLEA_RECEIVED_NOT_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.PLEA_RECEIVED_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REFERRED_FOR_COURT_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.REOPENED_IN_LIBRA;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.SET_ASIDE_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.UNKNOWN;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.WITHDRAWAL_REQUEST_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
@@ -85,6 +92,10 @@ public class CaseReadinessHandlerTest {
                 {NO_PLEA_RECEIVED, NO_PLEA_RECEIVED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_28_DAYS).build(),
                         false, NONE, null},
+
+                {COMPLETED, COMPLETED_APPLICATION_PENDING,
+                        caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
 
                 {NO_PLEA_RECEIVED, NO_PLEA_RECEIVED_READY_FOR_DECISION,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).build(),
@@ -383,6 +394,22 @@ public class CaseReadinessHandlerTest {
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(DAYS_AGO_2).withNotGuiltyPlea().build(),
                         true, NONE, null},
 
+                {COMPLETED_APPLICATION_PENDING, SET_ASIDE_READY_FOR_DECISION,
+                        caseAggregateConfigBuilder()
+                            .withPostingDateExpirationDate(DAYS_AGO_2)
+                            .withApplication(
+                                    application(STAT_DEC).withApplicationStatus(STATUTORY_DECLARATION_GRANTED).build()
+                            ).build(),
+                        true, CASE_MARKED_READY_FOR_DECISION_RAISED, null},
+
+                {COMPLETED_APPLICATION_PENDING, COMPLETED,
+                        caseAggregateConfigBuilder()
+                                .withPostingDateExpirationDate(DAYS_AGO_2)
+                                .withApplication(
+                                        application(STAT_DEC).withApplicationStatus(STATUTORY_DECLARATION_REFUSED).build()
+                                ).build(),
+                        true, CASE_UNMARKED_READY_FOR_DECISION_RAISED, DAYS_AGO_2},
+
                 // NOT POSSIBLE TRANSITION
                 {REOPENED_IN_LIBRA, NO_PLEA_RECEIVED,
                         caseAggregateConfigBuilder().withPostingDateExpirationDate(IN_28_DAYS).build(),
@@ -494,6 +521,7 @@ public class CaseReadinessHandlerTest {
         if (this.previousStatus.equals(COMPLETED)) {
             state.markCaseCompleted();
         }
+        state.setCurrentApplication(aggregateConfig.getApplication());
     }
 
     private void setPleasFromConfig() {

@@ -16,7 +16,7 @@ import static org.junit.Assume.assumeThat;
 import static uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation.createOffenceDecisionInformation;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 
-import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.Interpreter;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.Dismiss;

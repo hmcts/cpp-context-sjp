@@ -25,6 +25,7 @@ import static uk.gov.moj.sjp.it.Constants.EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_RE
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS;
 import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED;
+import static uk.gov.moj.sjp.it.Constants.PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED;
 import static uk.gov.moj.sjp.it.stub.MaterialStub.stubMaterialMetadata;
 import static uk.gov.moj.sjp.it.test.BaseIntegrationTest.USER_ID;
 import static uk.gov.moj.sjp.it.util.DefaultRequests.getCaseById;
@@ -97,6 +98,7 @@ public class CaseDocumentHelper implements AutoCloseable {
     private MessageConsumer privateEventsConsumer;
 
     private MessageConsumer privateEventsConsumerForRejectedCaseUpload;
+    private MessageConsumerClient publicConsumerForRejected = new MessageConsumerClient();
 
     private ZonedDateTime uploadTime;
 
@@ -109,6 +111,7 @@ public class CaseDocumentHelper implements AutoCloseable {
         privateEventsConsumerForRejectedCaseUpload = privateEvents.createConsumer(EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED);
 
         publicConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ADDED, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
+        publicConsumerForRejected.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOAD_REJECTED, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
 
         publicCaseDocumentAlreadyExistsConsumer.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_ALREADY_EXISTS, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
         publicCaseDocumentUploaded.startConsumer(PUBLIC_EVENT_SELECTOR_CASE_DOCUMENT_UPLOADED, Constants.PUBLIC_ACTIVE_MQ_TOPIC);
@@ -198,6 +201,16 @@ public class CaseDocumentHelper implements AutoCloseable {
                 .assertThat("$.caseId", is(caseId.toString()))
                 .assertThat("$.id", notNullValue())
                 .assertThat("$.materialId", is(materialId));
+    }
+
+    public void verifyUploadRejectedInPublicTopic() {
+        final String caseDocumentUploadRejected = publicConsumerForRejected.retrieveMessage().orElse(null);
+
+        assertThat(caseDocumentUploadRejected, notNullValue());
+
+        with(caseDocumentUploadRejected)
+                .assertThat("$.documentId", isAUuid())
+                .assertThat("$.description", notNullValue());
     }
 
     public void stubGetMetadata() {

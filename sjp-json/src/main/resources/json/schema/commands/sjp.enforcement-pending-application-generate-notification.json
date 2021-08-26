@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/command/sjp.command.enforcement-pending-application-generate-notification.json",
+  "type": "object",
+  "properties": {
+    "applicationDecisionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "generatedTime": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "applicationId",
+    "generatedTime"
+  ],
+  "additionalProperties": false
+}

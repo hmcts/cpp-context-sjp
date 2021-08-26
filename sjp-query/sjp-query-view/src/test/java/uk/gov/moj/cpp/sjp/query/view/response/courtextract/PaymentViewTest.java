@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.sjp.query.view.response.courtextract;
 import static java.time.ZonedDateTime.now;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang.math.RandomUtils.nextInt;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -43,6 +44,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -91,7 +93,13 @@ public class PaymentViewTest {
         caseDecision.setFinancialImposition(buildFinancialImposition(PAY_TO_COURT));
         caseDetail.setCaseDecisions(asList(caseDecision));
 
-        PaymentView payment = PaymentView.getPayment(caseDetail);
+        final List<CaseDecisionCourtExtractView> caseOffenceDecisions = caseDetail.getCaseDecisions()
+                .stream()
+                .map(CaseDecisionCourtExtractView::new)
+                .sorted()
+                .collect(toList());
+
+        PaymentView payment = PaymentView.getPayment(caseOffenceDecisions);
         assertEquals("£9,164.14", payment.getTotalToPay());
         assertEquals("£2,000.60", payment.getTotalFine());
         assertNull(payment.getNoVictimSurchargeReason());
@@ -128,13 +136,19 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1000),
                         null,
-                        ABSOLUTE,BigDecimal.valueOf(700), null)));
+                        ABSOLUTE, BigDecimal.valueOf(700), null)));
 
         caseDecision.setFinancialImposition(buildFinancialImposition(PAY_TO_COURT));
         caseDetail.setCaseDecisions(asList(caseDecision));
         caseDecision.getFinancialImposition().getCostsAndSurcharge().setVictimSurcharge(BigDecimal.ZERO);
 
-        verifyAllAbsoluteDischargePayment(caseDetail);
+        final List<CaseDecisionCourtExtractView> caseOffenceDecisions = caseDetail.getCaseDecisions()
+                .stream()
+                .map(CaseDecisionCourtExtractView::new)
+                .sorted()
+                .collect(toList());
+
+        verifyAllAbsoluteDischargePayment(caseOffenceDecisions);
     }
 
     @Test
@@ -149,7 +163,7 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1000),
                         "Limited means of defendant",
-                        CONDITIONAL,null,null),
+                        CONDITIONAL, null, null),
                 new FinancialPenaltyOffenceDecision(offence1Id,
                         caseDecision.getId(),
                         FOUND_GUILTY,
@@ -161,7 +175,15 @@ public class PaymentViewTest {
         caseDecision.setFinancialImposition(buildFinancialImposition(ATTACH_TO_EARNINGS));
         caseDetail.setCaseDecisions(asList(caseDecision));
 
-        PaymentView payment = PaymentView.getPayment(caseDetail);
+
+        final List<CaseDecisionCourtExtractView> caseOffenceDecisions = caseDetail.getCaseDecisions()
+                .stream()
+                .map(CaseDecisionCourtExtractView::new)
+                .sorted()
+                .collect(toList());
+
+        PaymentView payment = PaymentView.getPayment(caseOffenceDecisions);
+
         assertEquals("£5,000.83", payment.getTotalToPay());
         assertEquals("£2,000.60", payment.getTotalFine());
         assertNull(payment.getNoVictimSurchargeReason());
@@ -188,7 +210,7 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1000),
                         "Limited means of defendant",
-                        CONDITIONAL, null,null),
+                        CONDITIONAL, null, null),
                 new FinancialPenaltyOffenceDecision(offence1Id,
                         caseDecision.getId(),
                         FOUND_GUILTY,
@@ -200,7 +222,13 @@ public class PaymentViewTest {
         caseDecision.setFinancialImposition(buildFinancialImposition(ATTACH_TO_EARNINGS, new LumpSum(BigDecimal.valueOf(30.34), 0, LocalDate.now())));
         caseDetail.setCaseDecisions(asList(caseDecision));
 
-        PaymentView payment = PaymentView.getPayment(caseDetail);
+        final List<CaseDecisionCourtExtractView> caseOffenceDecisions = caseDetail.getCaseDecisions()
+                .stream()
+                .map(CaseDecisionCourtExtractView::new)
+                .sorted()
+                .collect(toList());
+
+        PaymentView payment = PaymentView.getPayment(caseOffenceDecisions);
         assertEquals("£5,000.83", payment.getTotalToPay());
         assertEquals("£2,000.60", payment.getTotalFine());
         assertNull(payment.getNoVictimSurchargeReason());
@@ -237,14 +265,20 @@ public class PaymentViewTest {
                         BigDecimal.valueOf(1000),
                         null,
                         ABSOLUTE, BigDecimal.valueOf(700), null),
-                new WithdrawOffenceDecision(),
-                new DismissOffenceDecision()));
+                new WithdrawOffenceDecision(offence1Id, caseDecision.getId(), null, null, null),
+                new DismissOffenceDecision(offence1Id, caseDecision.getId(), null, null)));
 
         caseDecision.setFinancialImposition(buildFinancialImposition(PAY_TO_COURT));
         caseDetail.setCaseDecisions(asList(caseDecision));
         caseDecision.getFinancialImposition().getCostsAndSurcharge().setVictimSurcharge(BigDecimal.ZERO);
+        caseDecision.getFinancialImposition().getCostsAndSurcharge().setReasonForNoVictimSurcharge("Absolute Discharge");
+        final List<CaseDecisionCourtExtractView> caseOffenceDecisions = caseDetail.getCaseDecisions()
+                .stream()
+                .map(CaseDecisionCourtExtractView::new)
+                .sorted()
+                .collect(toList());
 
-        verifyAllAbsoluteDischargePayment(caseDetail);
+        verifyAllAbsoluteDischargePayment(caseOffenceDecisions);
     }
 
     @Test
@@ -259,7 +293,7 @@ public class PaymentViewTest {
                         true,
                         BigDecimal.valueOf(1000),
                         "Limited means of defendant",
-                        ABSOLUTE, null,null),
+                        ABSOLUTE, null, null),
                 new DischargeOffenceDecision(offence1Id,
                         caseDecision.getId(),
                         FOUND_GUILTY,
@@ -275,13 +309,20 @@ public class PaymentViewTest {
                         BigDecimal.valueOf(1500),
                         null,
                         BigDecimal.valueOf(2000.600), null, null, null, null),
-                new WithdrawOffenceDecision(),
-                new DismissOffenceDecision()));
+                new WithdrawOffenceDecision(offence1Id, caseDecision.getId(), null, null, null),
+                new DismissOffenceDecision(offence1Id, caseDecision.getId(), null, null)));
 
         caseDecision.setFinancialImposition(buildFinancialImposition(PAY_TO_COURT));
         caseDetail.setCaseDecisions(asList(caseDecision));
 
-        PaymentView payment = PaymentView.getPayment(caseDetail);
+        final List<CaseDecisionCourtExtractView> caseOffenceDecisions = caseDetail.getCaseDecisions()
+                .stream()
+                .map(CaseDecisionCourtExtractView::new)
+                .sorted()
+                .collect(toList());
+
+        PaymentView payment = PaymentView.getPayment(caseOffenceDecisions);
+
         assertEquals("£6,000.83", payment.getTotalToPay());
         assertEquals("£2,000.60", payment.getTotalFine());
         assertNull(payment.getNoVictimSurchargeReason());
@@ -308,7 +349,7 @@ public class PaymentViewTest {
                         true,
                         null,
                         "Limited means of defendant",
-                        ABSOLUTE, null,null),
+                        ABSOLUTE, null, null),
                 new DischargeOffenceDecision(offence1Id,
                         caseDecision.getId(),
                         FOUND_GUILTY,
@@ -324,13 +365,20 @@ public class PaymentViewTest {
                         null,
                         null,
                         BigDecimal.valueOf(2000.600), null, null, null, null),
-                new WithdrawOffenceDecision(),
-                new DismissOffenceDecision()));
+                new WithdrawOffenceDecision(offence1Id, caseDecision.getId(), null, null, null),
+                new DismissOffenceDecision(offence1Id, caseDecision.getId(), null, null)));
 
         caseDecision.setFinancialImposition(buildFinancialImposition(PAY_TO_COURT));
         caseDetail.setCaseDecisions(asList(caseDecision));
 
-        PaymentView payment = PaymentView.getPayment(caseDetail);
+        final List<CaseDecisionCourtExtractView> caseOffenceDecisions = caseDetail.getCaseDecisions()
+                .stream()
+                .map(CaseDecisionCourtExtractView::new)
+                .sorted()
+                .collect(toList());
+
+        PaymentView payment = PaymentView.getPayment(caseOffenceDecisions);
+
         assertEquals("£2,500.83", payment.getTotalToPay());
         assertEquals("£2,000.60", payment.getTotalFine());
         assertNull(payment.getNoVictimSurchargeReason());
@@ -370,13 +418,18 @@ public class PaymentViewTest {
                                 new Installments(BigDecimal.valueOf(40), WEEKLY, LocalDate.of(2019, 8, 1))), null)));
         caseDetail.setCaseDecisions(asList(caseDecision));
 
-        PaymentView payment = PaymentView.getPayment(caseDetail);
+        final List<CaseDecisionCourtExtractView> caseOffenceDecisions = caseDetail.getCaseDecisions()
+                .stream()
+                .map(CaseDecisionCourtExtractView::new)
+                .sorted()
+                .collect(toList());
+        PaymentView payment = PaymentView.getPayment(caseOffenceDecisions);
         assertNull(payment.getTotalToPay());
 
     }
 
-    private void verifyAllAbsoluteDischargePayment(CaseDetail caseDetail) {
-        PaymentView payment = PaymentView.getPayment(caseDetail);
+    private void verifyAllAbsoluteDischargePayment(final List<CaseDecisionCourtExtractView> caseOffenceDecisions) {
+        PaymentView payment = PaymentView.getPayment(caseOffenceDecisions);
         assertEquals("£3,400.23", payment.getTotalToPay());
         assertNull(payment.getTotalFine());
         assertEquals("Absolute Discharge", payment.getNoVictimSurchargeReason());

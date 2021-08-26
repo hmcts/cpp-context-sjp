@@ -1,0 +1,12 @@
+package uk.gov.moj.cpp.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+
+rule "Command - Add financial imposition correlation id"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.command.add-financial-imposition-correlation-id");
+  then
+    $outcome.setSuccess(true);
+end

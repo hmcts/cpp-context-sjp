@@ -20,7 +20,7 @@
           "type": "string"
         },
         "roomId": {
-          "type": "string"
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "roomName": {
           "type": "string"

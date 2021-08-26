@@ -6,23 +6,20 @@ import static java.math.BigDecimal.*;
 import static java.text.NumberFormat.*;
 import static java.time.format.DateTimeFormatter.*;
 import static java.util.Objects.*;
+import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.FINANCIAL_PENALTY;
 import static uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType.ABSOLUTE;
 import static uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType.*;
 import static uk.gov.moj.cpp.sjp.domain.decision.imposition.ReasonForDeductingFromBenefits.*;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType;
 import uk.gov.moj.cpp.sjp.domain.decision.imposition.ReasonForDeductingFromBenefits;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CostsAndSurcharge;
-import uk.gov.moj.cpp.sjp.persistence.entity.DischargeOffenceDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.FinancialImposition;
-import uk.gov.moj.cpp.sjp.persistence.entity.FinancialPenaltyOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.Installments;
 import uk.gov.moj.cpp.sjp.persistence.entity.LumpSum;
-import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.Payment;
-
+import uk.gov.moj.cpp.sjp.query.view.response.FinancialImpositionView;
+import uk.gov.moj.cpp.sjp.query.view.response.OffenceDecisionView;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -45,7 +42,8 @@ public class PaymentView {
     private String totalBackDuty;
     private String totalExcisePenalty;
 
-    private final CaseDetail caseDetail;
+    List<CaseDecisionCourtExtractView> caseDecisions ;
+
 
     private static Predicate<BigDecimal> isGreaterThanZero = number -> nonNull(number) && number.compareTo(ZERO) > 0;
 
@@ -61,15 +59,15 @@ public class PaymentView {
             DEFENDANT_REQUESTED, "Defendant requested this"
     );
 
-    private PaymentView(final CaseDetail caseDetail) {
-        this.caseDetail = caseDetail;
+    private PaymentView(final List<CaseDecisionCourtExtractView> caseDecisions) {
+        this.caseDecisions = caseDecisions;
         setTotalFine();
         setTotalCompensation();
         setTotalBackDuty();
         setTotalExcisePenalty();
         setTotalToPay();
 
-        final FinancialImposition financialImposition = extractFinancialImposition();
+        final FinancialImpositionView financialImposition = extractFinancialImposition();
         final CostsAndSurcharge costsAndSurcharge = financialImposition.getCostsAndSurcharge();
         setVictimSurcharge(costsAndSurcharge);
         setProsecutionCosts(costsAndSurcharge);
@@ -178,33 +176,31 @@ public class PaymentView {
         }
     }
 
-    public static PaymentView getPayment(final CaseDetail caseDetail) {
-        final boolean containsFinancialImposition = caseDetail
-                .getCaseDecisions()
+    public static PaymentView getPayment(final List<CaseDecisionCourtExtractView> caseDecisions) {
+        final boolean containsFinancialImposition = caseDecisions
                 .stream()
                 .anyMatch(a -> nonNull(a.getFinancialImposition()));
 
         if (containsFinancialImposition) {
-            return new PaymentView(caseDetail);
+            return new PaymentView(caseDecisions);
         } else {
             return null;
         }
     }
 
     private BigDecimal calcTotalToPay() {
-        final BigDecimal costs = caseDetail
-                .getCaseDecisions()
+        final BigDecimal costs = caseDecisions
                 .stream()
                 .filter(a -> nonNull(a.getFinancialImposition()))
                 .map(a -> a.getFinancialImposition().getCostsAndSurcharge().getCosts())
+                .filter(Objects::nonNull)
                 .reduce(ZERO, BigDecimal::add);
 
-        final BigDecimal compensationSum = caseDetail
-                .getCaseDecisions()
+        final BigDecimal compensationSum = caseDecisions
                 .stream()
                 .flatMap(a -> a.getOffenceDecisions().stream())
-                .map(this::getCompensation)
-                .map(compensation -> nonNull(compensation) ? compensation : ZERO)
+                .map(OffenceDecisionView::getCompensation)
+                .filter(Objects::nonNull)
                 .reduce(ZERO, BigDecimal::add);
 
         return calcTotalFine()
@@ -215,67 +211,37 @@ public class PaymentView {
                 .add(calcVictimSurcharge());
     }
 
-    private BigDecimal getCompensation(OffenceDecision a) {
-        if (a instanceof DischargeOffenceDecision) {
-            return ((DischargeOffenceDecision) a).getCompensation();
-        }
-        if (a instanceof FinancialPenaltyOffenceDecision) {
-            return ((FinancialPenaltyOffenceDecision) a).getCompensation();
-        }
-        return ZERO;
-    }
-
     private BigDecimal calcTotalFine() {
-        return caseDetail
-                .getCaseDecisions()
+        return caseDecisions
                 .stream()
                 .flatMap(a -> a.getOffenceDecisions().stream())
-                .filter(a -> a instanceof FinancialPenaltyOffenceDecision)
-                .map(a -> (FinancialPenaltyOffenceDecision) a)
                 .filter(decision -> nonNull(decision.getFine()))
-                .map(FinancialPenaltyOffenceDecision::getFine)
+                .map(OffenceDecisionView::getFine)
+                .filter(Objects::nonNull)
                 .reduce(ZERO, BigDecimal::add);
     }
 
     private BigDecimal calcTotalExcisePenalty() {
-        return caseDetail
-                .getCaseDecisions()
+        return caseDecisions
                 .stream()
                 .flatMap(a -> a.getOffenceDecisions().stream())
-                .filter(a -> a instanceof FinancialPenaltyOffenceDecision)
-                .map(a -> (FinancialPenaltyOffenceDecision) a)
                 .filter(decision -> nonNull(decision.getExcisePenalty()))
-                .map(FinancialPenaltyOffenceDecision::getExcisePenalty)
+                .map(OffenceDecisionView::getExcisePenalty)
                 .reduce(ZERO, BigDecimal::add);
     }
 
-    private BigDecimal calcTotalBackDutyForFinancialPenalty() {
-        return caseDetail
-                .getCaseDecisions()
+    private BigDecimal calcTotalBackDuty() {
+        return caseDecisions
                 .stream()
                 .flatMap(a -> a.getOffenceDecisions().stream())
-                .filter(a -> a instanceof FinancialPenaltyOffenceDecision)
-                .map(a -> (FinancialPenaltyOffenceDecision) a)
                 .filter(decision -> nonNull(decision.getBackDuty()))
-                .map(FinancialPenaltyOffenceDecision::getBackDuty)
+                .map(OffenceDecisionView::getBackDuty)
                 .reduce(ZERO, BigDecimal::add);
     }
 
-    private BigDecimal calcTotalBackDutyForDischarge() {
-        return caseDetail
-                .getCaseDecisions()
-                .stream()
-                .flatMap(a -> a.getOffenceDecisions().stream())
-                .filter(a -> a instanceof DischargeOffenceDecision)
-                .map(a -> (DischargeOffenceDecision) a)
-                .filter(decision -> nonNull(decision.getBackDuty()))
-                .map(DischargeOffenceDecision::getBackDuty)
-                .reduce(ZERO, BigDecimal::add);
-    }
 
     private BigDecimal calcVictimSurcharge() {
-        return caseDetail
-                .getCaseDecisions()
+        return caseDecisions
                 .stream()
                 .filter(a -> nonNull(a.getFinancialImposition()))
                 .filter(a -> nonNull(a.getFinancialImposition().getCostsAndSurcharge().getVictimSurcharge()))
@@ -283,43 +249,20 @@ public class PaymentView {
                 .reduce(ZERO, BigDecimal::add);
     }
 
-    private BigDecimal calcTotalBackDuty() {
-        return calcTotalBackDutyForFinancialPenalty().add(calcTotalBackDutyForDischarge());
-    }
 
     private BigDecimal calcTotalCompensation() {
-        return calcFinancialPenaltyTotalCompensation().add(calcDischargeTotalCompensation());
-    }
-
-    private BigDecimal calcFinancialPenaltyTotalCompensation() {
-        return caseDetail
-                .getCaseDecisions()
+        return caseDecisions
                 .stream()
                 .flatMap(a -> a.getOffenceDecisions().stream())
-                .filter(a -> a instanceof FinancialPenaltyOffenceDecision)
-                .map(a -> (FinancialPenaltyOffenceDecision) a)
-                .map(FinancialPenaltyOffenceDecision::getCompensation)
-                .map(compensation -> nonNull(compensation) ? compensation : ZERO)
+                .map(OffenceDecisionView::getCompensation)
+                .filter(Objects::nonNull)
                 .reduce(ZERO, BigDecimal::add);
     }
 
-    private BigDecimal calcDischargeTotalCompensation() {
-        return caseDetail
-                .getCaseDecisions()
+    private FinancialImpositionView extractFinancialImposition() {
+        return caseDecisions
                 .stream()
-                .flatMap(a -> a.getOffenceDecisions().stream())
-                .filter(a -> a instanceof DischargeOffenceDecision)
-                .map(a -> (DischargeOffenceDecision) a)
-                .map(DischargeOffenceDecision::getCompensation)
-                .map(compensation -> nonNull(compensation) ? compensation : ZERO)
-                .reduce(ZERO, BigDecimal::add);
-    }
-
-    private FinancialImposition extractFinancialImposition() {
-        return caseDetail
-                .getCaseDecisions()
-                .stream()
-                .map(CaseDecision::getFinancialImposition)
+                .map(CaseDecisionCourtExtractView::getFinancialImposition)
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("FinancialImposition cannot be null"));
@@ -329,19 +272,16 @@ public class PaymentView {
         if (hasFinancialPenalty()) {
             return false;
         }
-        return caseDetail
-                .getCaseDecisions()
+        return caseDecisions
                 .stream()
                 .flatMap(a -> a.getOffenceDecisions().stream())
-                .filter(a -> (a instanceof DischargeOffenceDecision))
-                .allMatch(a -> ((DischargeOffenceDecision) a).getDischargeType() == ABSOLUTE);
+                .allMatch(a -> a.getDischargeType() == ABSOLUTE);
     }
     private boolean hasFinancialPenalty() {
-        return caseDetail
-                .getCaseDecisions()
+        return caseDecisions
                 .stream()
                 .flatMap(a -> a.getOffenceDecisions().stream())
-                .anyMatch(a -> a instanceof FinancialPenaltyOffenceDecision);
+                .anyMatch(a -> a.getDecisionType()==FINANCIAL_PENALTY);
     }
 
     private String formatCurrency(final BigDecimal value) {

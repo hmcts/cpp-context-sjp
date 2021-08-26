@@ -1,5 +1,48 @@
 package uk.gov.moj.cpp.sjp.query.view.response.courtextract;
 
+import org.junit.Test;
+import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
+import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
+import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
+import uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit;
+import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPeriodTimeUnit;
+import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
+import uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType;
+import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
+import uk.gov.moj.cpp.sjp.persistence.entity.AdjournOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.ApplicationType;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplication;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplicationDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.CostsAndSurcharge;
+import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.DischargeOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.DischargePeriod;
+import uk.gov.moj.cpp.sjp.persistence.entity.DismissOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.FinancialImposition;
+import uk.gov.moj.cpp.sjp.persistence.entity.FinancialPenaltyOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.Installments;
+import uk.gov.moj.cpp.sjp.persistence.entity.LumpSum;
+import uk.gov.moj.cpp.sjp.persistence.entity.NoSeparatePenaltyOffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.sjp.persistence.entity.Payment;
+import uk.gov.moj.cpp.sjp.persistence.entity.PaymentTerms;
+import uk.gov.moj.cpp.sjp.persistence.entity.PressRestriction;
+import uk.gov.moj.cpp.sjp.persistence.entity.ReferForCourtHearingDecision;
+import uk.gov.moj.cpp.sjp.persistence.entity.Session;
+import uk.gov.moj.cpp.sjp.persistence.entity.WithdrawOffenceDecision;
+import uk.gov.moj.cpp.sjp.query.view.helper.PleaInfo;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
 import static java.lang.String.format;
 import static java.time.ZonedDateTime.now;
 import static java.time.format.DateTimeFormatter.ofPattern;
@@ -19,6 +62,9 @@ import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.FINANCIAL_PENALTY;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.NO_SEPARATE_PENALTY;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.REFER_FOR_COURT_HEARING;
 import static uk.gov.moj.cpp.sjp.domain.decision.DecisionType.WITHDRAW;
+import static uk.gov.moj.cpp.sjp.domain.decision.imposition.InstallmentPeriod.WEEKLY;
+import static uk.gov.moj.cpp.sjp.domain.decision.imposition.PaymentType.ATTACH_TO_EARNINGS;
+import static uk.gov.moj.cpp.sjp.domain.decision.imposition.ReasonForDeductingFromBenefits.COMPENSATION_ORDERED;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaMethod.ONLINE;
 import static uk.gov.moj.cpp.sjp.domain.plea.PleaType.GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.PROVED_SJP;
@@ -26,45 +72,14 @@ import static uk.gov.moj.cpp.sjp.persistence.builder.CaseDetailBuilder.aCase;
 import static uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder.aDefendantDetail;
 import static uk.gov.moj.cpp.sjp.query.view.helper.PleaInfo.plea;
 
-import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
-import uk.gov.moj.cpp.sjp.domain.decision.DecisionType;
-import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
-import uk.gov.moj.cpp.sjp.domain.decision.discharge.PeriodUnit;
-import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationPeriodTimeUnit;
-import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
-import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
-import uk.gov.moj.cpp.sjp.persistence.entity.AdjournOffenceDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.DefendantDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.DischargeOffenceDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.DischargePeriod;
-import uk.gov.moj.cpp.sjp.persistence.entity.DismissOffenceDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.FinancialPenaltyOffenceDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.NoSeparatePenaltyOffenceDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
-import uk.gov.moj.cpp.sjp.persistence.entity.PressRestriction;
-import uk.gov.moj.cpp.sjp.persistence.entity.ReferForCourtHearingDecision;
-import uk.gov.moj.cpp.sjp.persistence.entity.Session;
-import uk.gov.moj.cpp.sjp.persistence.entity.WithdrawOffenceDecision;
-import uk.gov.moj.cpp.sjp.query.view.helper.PleaInfo;
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-
-import org.junit.Test;
-
 public class CaseCourtExtractViewTest {
 
     private static final DateTimeFormatter DATE_FORMAT = ofPattern("dd MMMM yyyy");
     private final UUID caseId = randomUUID();
     private final UUID offence1Id = randomUUID();
     private final UUID offence2Id = randomUUID();
+    private final UUID applicationId = randomUUID();
+
     private final ZonedDateTime savedAt = now();
 
     @Test
@@ -95,15 +110,15 @@ public class CaseCourtExtractViewTest {
 
         final CaseDetail aCase = aCase()
                 .withCaseId(caseId)
-                .addDefendantDetail(defendantDetail)
-                .addCaseDecision(adjournedCaseDecision)
-                .addCaseDecision(withdrawnCaseDecision)
+                .withDefendantDetail(defendantDetail)
+                .withCaseDecision(adjournedCaseDecision)
+                .withCaseDecision(withdrawnCaseDecision)
                 .build();
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final OffenceDecisionView withdrawOffenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
-        final OffenceDecisionView adjournOffenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(1);
+        final DecisionView withdrawOffenceDecisionView = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
+        final DecisionView adjournOffenceDecisionView = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(1);
 
         final String actualAdjourn = adjournOffenceDecisionView.getLines()
                 .stream()
@@ -126,7 +141,7 @@ public class CaseCourtExtractViewTest {
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
         assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
@@ -143,7 +158,7 @@ public class CaseCourtExtractViewTest {
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
         assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
@@ -160,7 +175,7 @@ public class CaseCourtExtractViewTest {
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
         assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
@@ -178,7 +193,7 @@ public class CaseCourtExtractViewTest {
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
         assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
@@ -192,7 +207,7 @@ public class CaseCourtExtractViewTest {
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
         assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
@@ -207,7 +222,7 @@ public class CaseCourtExtractViewTest {
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
         assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
@@ -224,7 +239,7 @@ public class CaseCourtExtractViewTest {
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
         assertThat(offenceDecisionView.getHeading(), equalTo("Court decision (set aside)"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "No plea received"),
@@ -247,22 +262,22 @@ public class CaseCourtExtractViewTest {
                 buildOffenceDecisionEntity(caseDecision.getId(), offence2Id, WITHDRAW, null, null)));
 
         final CaseDetail aCase = aCase()
-                .addDefendantDetail(defendantDetail)
-                .addCaseDecision(caseDecision)
+                .withDefendantDetail(defendantDetail)
+                .withCaseDecision(caseDecision)
                 .build();
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final List<OffenceDetailsView> offenceDetailsViews = courtExtractView.getOffences();
+        final List<DecisionDetailsView> offenceDetailsViews = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions();
 
         assertThat(offenceDetailsViews, hasSize(2));
 
-        final OffenceDetailsView dismissOffenceDetailsView = offenceDetailsViews.get(0);
-        final OffenceDetailsView withdrawOffenceDetailsView = offenceDetailsViews.get(1);
-        final List<OffenceDecisionView> dismissOffenceDecisionViews = dismissOffenceDetailsView.getOffenceDecisions();
-        final List<OffenceDecisionView> withdrawOffenceDecisionViews = withdrawOffenceDetailsView.getOffenceDecisions();
-        final OffenceDecisionView dismissOffenceDecisionView = dismissOffenceDecisionViews.get(0);
-        final OffenceDecisionView withdrawOffenceDecisionView = withdrawOffenceDecisionViews.get(0);
+        final DecisionDetailsView dismissOffenceDetailsView = offenceDetailsViews.get(0);
+        final DecisionDetailsView withdrawOffenceDetailsView = offenceDetailsViews.get(1);
+        final List<DecisionView> dismissOffenceDecisionViews = dismissOffenceDetailsView.getOffenceDecisions();
+        final List<DecisionView> withdrawOffenceDecisionViews = withdrawOffenceDetailsView.getOffenceDecisions();
+        final DecisionView dismissOffenceDecisionView = dismissOffenceDecisionViews.get(0);
+        final DecisionView withdrawOffenceDecisionView = withdrawOffenceDecisionViews.get(0);
 
         assertThat(dismissOffenceDetailsView.getSequenceNumber(), equalTo(1));
         assertThat(withdrawOffenceDetailsView.getSequenceNumber(), equalTo(2));
@@ -305,19 +320,19 @@ public class CaseCourtExtractViewTest {
 
 
         final CaseDetail aCase = aCase()
-                .addDefendantDetail(defendantDetail)
-                .addCaseDecision(firstDecision)
-                .addCaseDecision(secondDecision)
+                .withDefendantDetail(defendantDetail)
+                .withCaseDecision(firstDecision)
+                .withCaseDecision(secondDecision)
                 .build();
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final List<OffenceDetailsView> offenceDetailsViews = courtExtractView.getOffences();
+        final List<DecisionDetailsView> offenceDetailsViews = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions();
 
         assertThat(offenceDetailsViews, hasSize(2));
 
-        final OffenceDetailsView offenceDetailsView1 = offenceDetailsViews.get(0);
-        final OffenceDetailsView offenceDetailsView2 = offenceDetailsViews.get(1);
+        final DecisionDetailsView offenceDetailsView1 = offenceDetailsViews.get(0);
+        final DecisionDetailsView offenceDetailsView2 = offenceDetailsViews.get(1);
 
         assertThat(offenceDetailsView1.getSequenceNumber(), equalTo(1));
         assertThat(offenceDetailsView2.getSequenceNumber(), equalTo(2));
@@ -325,15 +340,15 @@ public class CaseCourtExtractViewTest {
         assertThat(offenceDetailsView1.getWording(), equalTo("offence wording"));
         assertThat(offenceDetailsView2.getWording(), equalTo("offence wording"));
 
-        final List<OffenceDecisionView> dismissAndAdjournOffenceDecisionViews = offenceDetailsView1.getOffenceDecisions();
-        final List<OffenceDecisionView> dismissOffenceDecisionViews = offenceDetailsView2.getOffenceDecisions();
+        final List<DecisionView> dismissAndAdjournOffenceDecisionViews = offenceDetailsView1.getOffenceDecisions();
+        final List<DecisionView> dismissOffenceDecisionViews = offenceDetailsView2.getOffenceDecisions();
 
         assertThat(dismissAndAdjournOffenceDecisionViews, hasSize(2));
         assertThat(dismissOffenceDecisionViews, hasSize(1));
 
-        final OffenceDecisionView dismissDecisionView = dismissAndAdjournOffenceDecisionViews.get(0);
-        final OffenceDecisionView adjournOffenceDecisionView = dismissAndAdjournOffenceDecisionViews.get(1);
-        final OffenceDecisionView dismissDecisionView2 = dismissOffenceDecisionViews.get(0);
+        final DecisionView dismissDecisionView = dismissAndAdjournOffenceDecisionViews.get(0);
+        final DecisionView adjournOffenceDecisionView = dismissAndAdjournOffenceDecisionViews.get(1);
+        final DecisionView dismissDecisionView2 = dismissOffenceDecisionViews.get(0);
 
         assertThat(dismissDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(adjournOffenceDecisionView.getHeading(), equalTo("Previous court decision"));
@@ -359,21 +374,21 @@ public class CaseCourtExtractViewTest {
         withdrawnCaseDecision.setOffenceDecisions(asList(buildOffenceDecisionEntity(withdrawnCaseDecision.getId(), offence1Id, WITHDRAW, null, null)));
 
         final CaseDetail aCase = aCase()
-                .addDefendantDetail(defendantDetail)
-                .addCaseDecision(adjournedCaseDecision)
-                .addCaseDecision(withdrawnCaseDecision)
+                .withDefendantDetail(defendantDetail)
+                .withCaseDecision(adjournedCaseDecision)
+                .withCaseDecision(withdrawnCaseDecision)
                 .build();
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final List<OffenceDetailsView> offenceDetailsViews = courtExtractView.getOffences();
+        final List<DecisionDetailsView> offenceDetailsViews = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions();
 
         assertThat(offenceDetailsViews, hasSize(1));
 
-        final OffenceDetailsView offenceDetailsView = offenceDetailsViews.get(0);
-        final List<OffenceDecisionView> offenceDecisionViews = offenceDetailsView.getOffenceDecisions();
-        final OffenceDecisionView withdrawOffenceDecisionView = offenceDecisionViews.get(0);
-        final OffenceDecisionView adjournOffenceDecisionView = offenceDecisionViews.get(1);
+        final DecisionDetailsView offenceDetailsView = offenceDetailsViews.get(0);
+        final List<DecisionView> offenceDecisionViews = offenceDetailsView.getOffenceDecisions();
+        final DecisionView withdrawOffenceDecisionView = offenceDecisionViews.get(0);
+        final DecisionView adjournOffenceDecisionView = offenceDecisionViews.get(1);
 
         assertThat(offenceDetailsView.getSequenceNumber(), equalTo(1));
         assertThat(offenceDetailsView.getWording(), equalTo("offence wording"));
@@ -406,28 +421,28 @@ public class CaseCourtExtractViewTest {
         adjournedCaseDecision2.setOffenceDecisions(asList(buildOffenceDecisionEntity(adjournedCaseDecision2.getId(), offence1Id, ADJOURN, null, null)));
 
         final CaseDetail aCase = aCase()
-                .addDefendantDetail(defendantDetail)
-                .addCaseDecision(adjournedCaseDecision1)
-                .addCaseDecision(adjournedCaseDecision2)
+                .withDefendantDetail(defendantDetail)
+                .withCaseDecision(adjournedCaseDecision1)
+                .withCaseDecision(adjournedCaseDecision2)
                 .build();
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final List<OffenceDetailsView> offenceDetailsViews = courtExtractView.getOffences();
+        final List<DecisionDetailsView> offenceDetailsViews = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions();
 
         assertThat(offenceDetailsViews, hasSize(1));
 
-        final OffenceDetailsView offenceDetailsView = offenceDetailsViews.get(0);
+        final DecisionDetailsView offenceDetailsView = offenceDetailsViews.get(0);
 
         assertThat(offenceDetailsView.getSequenceNumber(), equalTo(1));
         assertThat(offenceDetailsView.getWording(), equalTo("offence wording"));
 
-        final List<OffenceDecisionView> offenceDecisionViews = offenceDetailsView.getOffenceDecisions();
+        final List<DecisionView> offenceDecisionViews = offenceDetailsView.getOffenceDecisions();
 
         assertThat(offenceDecisionViews, hasSize(2));
 
-        final OffenceDecisionView adjournOffenceDecisionView1 = offenceDecisionViews.get(0);
-        final OffenceDecisionView adjournOffenceDecisionView2 = offenceDecisionViews.get(1);
+        final DecisionView adjournOffenceDecisionView1 = offenceDecisionViews.get(0);
+        final DecisionView adjournOffenceDecisionView2 = offenceDecisionViews.get(1);
 
         assertThat(adjournOffenceDecisionView2.getHeading(), equalTo("Previous court decision"));
         assertThat(adjournOffenceDecisionView2.getLines(), contains(
@@ -455,14 +470,14 @@ public class CaseCourtExtractViewTest {
                 buildFinancialPenaltyOffenceDecisionEntity(offence1Id, null, null, null, "No compensation reason", null)));
 
         final CaseDetail aCase = aCase()
-                .addDefendantDetail(defendantDetail)
-                .addCaseDecision(firstDecision)
+                .withDefendantDetail(defendantDetail)
+                .withCaseDecision(firstDecision)
                 .build();
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
-        final List<OffenceDetailsView> offenceDetailsViews = courtExtractView.getOffences();
-        final OffenceDetailsView offenceDetailsView = offenceDetailsViews.get(0);
-        final List<OffenceDecisionView> offenceDecisionViews = offenceDetailsView.getOffenceDecisions();
+        final List<DecisionDetailsView> offenceDetailsViews = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions();
+        final DecisionDetailsView offenceDetailsView = offenceDetailsViews.get(0);
+        final List<DecisionView> offenceDecisionViews = offenceDetailsView.getOffenceDecisions();
         final List<OffenceDecisionLineView> lines = offenceDecisionViews.get(0).getLines();
         assertTrue(lines
                 .stream()
@@ -480,7 +495,7 @@ public class CaseCourtExtractViewTest {
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
         assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "Guilty"),
@@ -503,7 +518,7 @@ public class CaseCourtExtractViewTest {
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
         assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "Guilty"),
@@ -528,7 +543,7 @@ public class CaseCourtExtractViewTest {
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
         assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "Guilty"),
@@ -552,7 +567,7 @@ public class CaseCourtExtractViewTest {
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
         assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "Guilty"),
@@ -574,7 +589,7 @@ public class CaseCourtExtractViewTest {
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
         assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "Guilty"),
@@ -596,7 +611,7 @@ public class CaseCourtExtractViewTest {
 
         final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
 
-        final OffenceDecisionView offenceDecisionView = courtExtractView.getOffences().get(0).getOffenceDecisions().get(0);
+        final DecisionView offenceDecisionView = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions().get(0).getOffenceDecisions().get(0);
         assertThat(offenceDecisionView.getHeading(), equalTo("Court decision"));
         assertThat(offenceDecisionView.getLines(), contains(
                 new OffenceDecisionLineView("Plea", "Guilty"),
@@ -606,6 +621,244 @@ public class CaseCourtExtractViewTest {
                 new OffenceDecisionLineView("Result", "No seperate penalty"),
                 new OffenceDecisionLineView("Driver record endorsed", ""),
                 new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt))));
+    }
+
+    @Test
+    public void shouldVerifySingleCaseDecisionWithMultipleOffenceDecisionsWithApplication() {
+        final ZonedDateTime savedABeforeApplication = now().minusDays(1);
+
+        final DefendantDetail defendantDetail = aDefendantDetail().build();
+        defendantDetail.setOffences(asList(
+                buildOffenceDetailEntity(1, offence1Id),
+                buildOffenceDetailEntity(2, offence2Id)));
+
+        final CaseDecision caseDecision = buildCaseDecisionEntity(caseId, false, savedABeforeApplication);
+        caseDecision.setOffenceDecisions(asList(
+                buildOffenceDecisionEntity(caseDecision.getId(), offence1Id, DISMISS, null, null),
+                buildOffenceDecisionEntity(caseDecision.getId(), offence2Id, WITHDRAW, null, null)));
+
+        final CaseApplicationDecision caseApplicationDecision = buildCaseApplicationDecisionEntity(randomUUID(), true, true, "out of time reason", now());
+
+        final CaseApplication caseApplication = buildCaseApplication(caseApplicationDecision, applicationId, savedAt.toLocalDate(), "Ref123", ApplicationType.STAT_DEC);
+        caseApplicationDecision.setCaseApplication(caseApplication);
+
+        final CaseDetail aCase = aCase()
+                .withDefendantDetail(defendantDetail)
+                .withCaseDecision(caseDecision)
+                .withCaseApplication(caseApplication)
+                .build();
+
+
+        final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
+
+        final List<DecisionDetailsView> offenceDetailsViews = courtExtractView.getDecisionCourtExtractView().get(1).getOffencesApplicationsDecisions();
+        final List<DecisionDetailsView> offenceDetailsAppViews = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions();
+
+        assertThat(offenceDetailsViews, hasSize(2));
+
+        final DecisionDetailsView statDecApplicationDetailsView = offenceDetailsAppViews.get(0);
+        final DecisionDetailsView dismissOffenceDetailsView = offenceDetailsViews.get(0);
+        final DecisionDetailsView withdrawOffenceDetailsView = offenceDetailsViews.get(1);
+        final DecisionView StatDecDecisionViews = statDecApplicationDetailsView.getApplicationDecision();
+        final List<DecisionView> dismissOffenceDecisionViews = dismissOffenceDetailsView.getOffenceDecisions();
+        final List<DecisionView> withdrawOffenceDecisionViews = withdrawOffenceDetailsView.getOffenceDecisions();
+        final DecisionView dismissOffenceDecisionView = dismissOffenceDecisionViews.get(0);
+        final DecisionView withdrawOffenceDecisionView = withdrawOffenceDecisionViews.get(0);
+
+        assertThat(dismissOffenceDetailsView.getSequenceNumber(), equalTo(1));
+        assertThat(withdrawOffenceDetailsView.getSequenceNumber(), equalTo(2));
+        assertThat(statDecApplicationDetailsView.getSequenceNumber(), equalTo(0));
+
+        assertThat(dismissOffenceDecisionViews, hasSize(1));
+        assertThat(withdrawOffenceDecisionViews, hasSize(1));
+
+        assertThat(statDecApplicationDetailsView.getWording(), equalTo("Appearance to make statutory declaration (SJP case)"));
+        assertThat(dismissOffenceDetailsView.getWording(), equalTo("offence wording"));
+        assertThat(withdrawOffenceDetailsView.getWording(), equalTo("offence wording"));
+
+        assertThat(StatDecDecisionViews.getHeading(), equalTo("Court decision"));
+        assertThat(StatDecDecisionViews.getLines(), contains(
+                new OffenceDecisionLineView("Result", "Statutory declaration made under section 16E of the Magistrates' Courts Act 1980. Conviction and Sentence imposed on " + DATE_FORMAT.format(savedAt)),
+                new OffenceDecisionLineView("Accepted outside 21 days", "out of time reason"),
+                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt))));
+
+
+        assertThat(dismissOffenceDecisionView.getHeading(), equalTo("Previous court decision"));
+        assertThat(dismissOffenceDecisionView.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "No plea received"),
+                new OffenceDecisionLineView("Verdict", "Found not guilty"),
+                new OffenceDecisionLineView("Date of verdict", DATE_FORMAT.format(savedABeforeApplication)),
+                new OffenceDecisionLineView("Result", "Dismissed"),
+                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedABeforeApplication))));
+
+        assertThat(withdrawOffenceDecisionView.getHeading(), equalTo("Previous court decision"));
+        assertThat(withdrawOffenceDecisionView.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "No plea received"),
+                new OffenceDecisionLineView("Result", "Withdrawn"),
+                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedABeforeApplication))));
+    }
+
+    @Test
+    public void shouldVerifySingleCaseDecisionWithMultipleOffenceDecisionsWithDecisionPostApplication() {
+
+        final ZonedDateTime savedABeforeApplication = now().minusDays(2);
+        final ZonedDateTime savedAtForApplication = now().minusDays(1);
+
+        final DefendantDetail defendantDetail = aDefendantDetail().build();
+        defendantDetail.setOffences(asList(
+                buildOffenceDetailEntity(1, offence1Id),
+                buildOffenceDetailEntity(2, offence2Id)));
+
+        final CaseDecision caseDecision = buildCaseDecisionEntity(caseId, false, savedABeforeApplication);
+        caseDecision.setOffenceDecisions(asList(
+                buildOffenceDecisionEntity(caseDecision.getId(), offence1Id, DISMISS, null, null),
+                buildOffenceDecisionEntity(caseDecision.getId(), offence2Id, WITHDRAW, null, null)));
+
+        final CaseDecision caseDecisionPostApplication = buildCaseDecisionEntity(caseId, false, now());
+        caseDecisionPostApplication.setOffenceDecisions(asList(
+                buildOffenceDecisionEntity(caseDecision.getId(), offence1Id, DISMISS, null, null),
+                buildOffenceDecisionEntity(caseDecision.getId(), offence2Id, WITHDRAW, null, null)));
+
+        final CaseApplicationDecision caseApplicationDecision = buildCaseApplicationDecisionEntity(randomUUID(), true, false, "", savedAtForApplication);
+
+
+        final CaseApplication caseApplication = buildCaseApplication(caseApplicationDecision, applicationId, savedAt.toLocalDate(), "Ref123", ApplicationType.REOPENING);
+        caseApplicationDecision.setCaseApplication(caseApplication);
+
+        final CaseDetail aCase = aCase()
+                .withDefendantDetail(defendantDetail)
+                .withCaseDecision(caseDecision)
+                .withCaseDecision(caseDecisionPostApplication)
+                .withCaseApplication(caseApplication)
+                .build();
+
+
+        final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
+
+        final List<DecisionDetailsView> offenceDetailsViews = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions();
+        final List<DecisionDetailsView> offenceDetailsApplicationViews = courtExtractView.getDecisionCourtExtractView().get(1).getOffencesApplicationsDecisions();
+
+        assertThat(offenceDetailsViews, hasSize(2));
+
+        final DecisionDetailsView statDecApplicationDetailsView = offenceDetailsApplicationViews.get(0);
+        final DecisionDetailsView dismissOffenceDetailsView = offenceDetailsViews.get(0);
+        final DecisionDetailsView withdrawOffenceDetailsView = offenceDetailsViews.get(1);
+        final DecisionView StatDecDecisionViews = statDecApplicationDetailsView.getApplicationDecision();
+        final List<DecisionView> dismissOffenceDecisionViews = dismissOffenceDetailsView.getOffenceDecisions();
+        final List<DecisionView> withdrawOffenceDecisionViews = withdrawOffenceDetailsView.getOffenceDecisions();
+        final DecisionView dismissOffenceDecisionView = dismissOffenceDecisionViews.get(0);
+        final DecisionView withdrawOffenceDecisionView = withdrawOffenceDecisionViews.get(0);
+
+        assertThat(dismissOffenceDetailsView.getSequenceNumber(), equalTo(1));
+        assertThat(withdrawOffenceDetailsView.getSequenceNumber(), equalTo(2));
+
+        assertThat(dismissOffenceDecisionViews, hasSize(1));
+        assertThat(withdrawOffenceDecisionViews, hasSize(1));
+
+
+        assertThat(statDecApplicationDetailsView.getWording(), equalTo("Application to reopen case"));
+        assertThat(dismissOffenceDetailsView.getWording(), equalTo("offence wording"));
+        assertThat(withdrawOffenceDetailsView.getWording(), equalTo("offence wording"));
+
+        assertThat(StatDecDecisionViews.getHeading(), equalTo("Previous court decision"));
+        assertThat(StatDecDecisionViews.getLines(), contains(
+                new OffenceDecisionLineView("Result", "Case reopened under section 142 of the Magistrates' Courts Act 1980. Conviction and Sentence imposed on " + DATE_FORMAT.format(savedAtForApplication) + " set aside."),
+                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAtForApplication))));
+
+
+        assertThat(dismissOffenceDecisionView.getHeading(), equalTo("Court decision"));
+        assertThat(dismissOffenceDecisionView.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "No plea received"),
+                new OffenceDecisionLineView("Verdict", "Found not guilty"),
+                new OffenceDecisionLineView("Date of verdict", DATE_FORMAT.format(savedAt)),
+                new OffenceDecisionLineView("Result", "Dismissed"),
+                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt))));
+
+        assertThat(withdrawOffenceDecisionView.getHeading(), equalTo("Court decision"));
+        assertThat(withdrawOffenceDecisionView.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "No plea received"),
+                new OffenceDecisionLineView("Result", "Withdrawn"),
+                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedAt))));
+    }
+
+
+    @Test
+    public void shouldVerifySingleCaseDecisionWithMultipleOffenceDecisionsWithApplicationRefused() {
+
+        final ZonedDateTime savedABeforeApplication = now().minusDays(2);
+
+        final DefendantDetail defendantDetail = aDefendantDetail().build();
+        defendantDetail.setOffences(asList(
+                buildOffenceDetailEntity(1, offence1Id),
+                buildOffenceDetailEntity(2, offence2Id)));
+
+        final CaseDecision caseDecision = buildCaseDecisionEntity(caseId, false, savedABeforeApplication);
+        caseDecision.setOffenceDecisions(asList(
+                buildOffenceDecisionEntity(caseDecision.getId(), offence1Id, DISMISS, null, null),
+                buildOffenceDecisionEntity(caseDecision.getId(), offence2Id, WITHDRAW, null, null)));
+
+        final CaseApplicationDecision caseApplicationDecision = buildCaseApplicationRefusedDecisionEntity(randomUUID(), false, false, "rejection Reason", now());
+
+        final CaseApplication caseApplication = buildCaseApplication(caseApplicationDecision, applicationId, savedAt.toLocalDate(), "Ref123", ApplicationType.REOPENING);
+        caseApplicationDecision.setCaseApplication(caseApplication);
+
+        final CaseDetail aCase = aCase()
+                .withDefendantDetail(defendantDetail)
+                .withCaseDecision(caseDecision)
+                .withCaseApplication(caseApplication)
+                .build();
+
+
+        final CaseCourtExtractView courtExtractView = new CaseCourtExtractView(aCase);
+
+        final List<DecisionDetailsView> offenceDetailsViews = courtExtractView.getDecisionCourtExtractView().get(1).getOffencesApplicationsDecisions();
+        final List<DecisionDetailsView> offenceDetailsApplicationViews = courtExtractView.getDecisionCourtExtractView().get(0).getOffencesApplicationsDecisions();
+
+        assertThat(offenceDetailsViews, hasSize(2));
+
+        final DecisionDetailsView statDecApplicationDetailsView = offenceDetailsApplicationViews.get(0);
+        final DecisionDetailsView dismissOffenceDetailsView = offenceDetailsViews.get(0);
+        final DecisionView StatDecDecisionViews = statDecApplicationDetailsView.getApplicationDecision();
+        final List<DecisionView> dismissOffenceDecisionViews = dismissOffenceDetailsView.getOffenceDecisions();
+        final DecisionView dismissOffenceDecisionView = dismissOffenceDecisionViews.get(0);
+
+        assertThat(dismissOffenceDetailsView.getSequenceNumber(), equalTo(1));
+
+        assertThat(dismissOffenceDecisionViews, hasSize(1));
+
+
+        assertThat(statDecApplicationDetailsView.getWording(), equalTo("Application to reopen case"));
+        assertThat(dismissOffenceDetailsView.getWording(), equalTo("offence wording"));
+
+        assertThat(StatDecDecisionViews.getHeading(), equalTo("Court decision"));
+        assertThat(StatDecDecisionViews.getLines(), contains(
+                new OffenceDecisionLineView("Result", "Application refused"),
+                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(now()))));
+
+
+        assertThat(dismissOffenceDecisionView.getHeading(), equalTo("Previous court decision"));
+        assertThat(dismissOffenceDecisionView.getLines(), contains(
+                new OffenceDecisionLineView("Plea", "No plea received"),
+                new OffenceDecisionLineView("Verdict", "Found not guilty"),
+                new OffenceDecisionLineView("Date of verdict", DATE_FORMAT.format(savedABeforeApplication)),
+                new OffenceDecisionLineView("Result", "Dismissed"),
+                new OffenceDecisionLineView("Decision made", DATE_FORMAT.format(savedABeforeApplication))));
+
+    }
+
+    private final CaseApplication buildCaseApplication(final CaseApplicationDecision caseApplicationDecision, final UUID applicationId, final LocalDate dateReceived, final String applicationReference, final ApplicationType applicationType) {
+
+        final CaseApplication caseApplication = new CaseApplication();
+        caseApplication.setApplicationId(applicationId);
+        caseApplication.setApplicationDecision(caseApplicationDecision);
+        caseApplication.setTypeId(randomUUID());
+        caseApplication.setDateReceived(dateReceived);
+        caseApplication.setTypeCode(randomUUID().toString());
+        caseApplication.setApplicationReference(applicationReference);
+        caseApplication.setApplicationType(applicationType);
+        caseApplication.setOutOfTime(caseApplicationDecision.getOutOfTime());
+        caseApplication.setOutOfTimeReason(caseApplicationDecision.getOutOfTimeReason());
+        return caseApplication;
     }
 
     private static CaseDetail buildSingleOffenceCaseWithSingleDecision(final UUID caseId,
@@ -620,12 +873,26 @@ public class CaseCourtExtractViewTest {
         final CaseDecision caseDecision = buildCaseDecisionEntity(caseId, magistrate, savedAt);
         caseDecision.setOffenceDecisions(asList(
                 buildOffenceDecisionEntity(caseDecision.getId(), offenceId, decisionType, pleaAtDecisionTime, pressRestriction)));
+        caseDecision.setFinancialImposition(buildFinancialImposition(ATTACH_TO_EARNINGS, new LumpSum(BigDecimal.valueOf(30.34), 0, LocalDate.now())));
 
         return aCase()
                 .withCaseId(caseId)
-                .addDefendantDetail(defendantDetail)
-                .addCaseDecision(caseDecision)
+                .withDefendantDetail(defendantDetail)
+                .withCaseDecision(caseDecision)
                 .build();
+    }
+
+    private static FinancialImposition buildFinancialImposition(PaymentType paymentType, LumpSum lumpSum) {
+        FinancialImposition financialImposition = new FinancialImposition(
+                new CostsAndSurcharge(BigDecimal.valueOf(200.23), null,
+                        BigDecimal.valueOf(300), null,
+                        true, null),
+                new Payment(BigDecimal.valueOf(300), paymentType,
+                        "some reason", COMPENSATION_ORDERED,
+                        new PaymentTerms(false,
+                                lumpSum,
+                                new Installments(BigDecimal.valueOf(40), WEEKLY, LocalDate.of(2019, 8, 1))), null));
+        return financialImposition;
     }
 
     private static CaseDecision buildCaseDecisionEntity(final UUID caseId, final boolean magistrate, final ZonedDateTime savedAt) {
@@ -639,6 +906,36 @@ public class CaseCourtExtractViewTest {
         caseDecision.setSession(session);
 
         return caseDecision;
+    }
+
+    private static CaseApplicationDecision buildCaseApplicationDecisionEntity(final UUID decisionId, final boolean granted, final boolean outOfTime, final String outOfTimeReason, final ZonedDateTime savedAt) {
+        final Session session = new Session(randomUUID(), randomUUID(), "ASDF", "Lavender Hill",
+                "YUIO", "Magistrate name", now());
+
+        final CaseApplicationDecision caseApplicationDecision = new CaseApplicationDecision();
+        caseApplicationDecision.setDecisionId(decisionId);
+        caseApplicationDecision.setGranted(granted);
+        caseApplicationDecision.setOutOfTime(outOfTime);
+        caseApplicationDecision.setOutOfTimeReason(outOfTimeReason);
+        caseApplicationDecision.setSavedAt(savedAt);
+        caseApplicationDecision.setSession(session);
+
+        return caseApplicationDecision;
+    }
+
+    private static CaseApplicationDecision buildCaseApplicationRefusedDecisionEntity(final UUID decisionId, final boolean granted, final boolean outOfTime, final String rejectionReason, final ZonedDateTime savedAt) {
+        final Session session = new Session(randomUUID(), randomUUID(), "ASDF", "Lavender Hill",
+                "YUIO", "Magistrate name", now());
+
+        final CaseApplicationDecision caseApplicationDecision = new CaseApplicationDecision();
+        caseApplicationDecision.setDecisionId(decisionId);
+        caseApplicationDecision.setGranted(granted);
+        caseApplicationDecision.setOutOfTime(outOfTime);
+        caseApplicationDecision.setRejectionReason(rejectionReason);
+        caseApplicationDecision.setSavedAt(savedAt);
+        caseApplicationDecision.setSession(session);
+
+        return caseApplicationDecision;
     }
 
     private static OffenceDecision buildFinancialPenaltyOffenceDecisionEntity(

@@ -30,6 +30,11 @@ public class GenerationFailedEventEnvelopeBuilder {
         return this;
     }
 
+    public GenerationFailedEventEnvelopeBuilder sourceCorrelationId(final String sourceCorrelationId) {
+        this.sourceCorrelationId = sourceCorrelationId;
+        return this;
+    }
+
     public String getSourceCorrelationId() {
         return this.sourceCorrelationId;
     }

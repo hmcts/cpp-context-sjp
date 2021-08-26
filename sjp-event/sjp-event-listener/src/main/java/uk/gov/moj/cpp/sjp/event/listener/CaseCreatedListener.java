@@ -50,6 +50,7 @@ public class CaseCreatedListener {
                         envelope.payloadAsJsonObject(), SjpCaseCreated.class
                 )
         );
+        caseDetail.setManagedByAtcm(true);
         caseRepository.save(caseDetail);
     }
 
@@ -61,6 +62,7 @@ public class CaseCreatedListener {
                         envelope.payloadAsJsonObject(), CaseReceived.class
                 )
         );
+        caseDetail.setManagedByAtcm(true);
         caseRepository.save(caseDetail);
 
         caseSearchResultService.onDefendantDetailsUpdated(

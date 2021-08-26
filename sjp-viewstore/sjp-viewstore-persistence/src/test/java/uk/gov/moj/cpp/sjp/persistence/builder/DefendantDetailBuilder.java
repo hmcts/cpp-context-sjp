@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.persistence.builder;
 
 
 import static java.util.Collections.singletonList;
+import static java.util.Objects.nonNull;
 
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
@@ -14,6 +15,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.PersonalDetails;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public class DefendantDetailBuilder {
@@ -22,6 +24,7 @@ public class DefendantDetailBuilder {
 
     private DefendantDetail defendantDetail;
     private OffenceDetail.OffenceDetailBuilder offenceBuilder;
+    private List<OffenceDetail> offences;
 
     private DefendantDetailBuilder() {
         defendantDetail = new DefendantDetail();
@@ -93,9 +96,23 @@ public class DefendantDetailBuilder {
         return this;
     }
 
+    public DefendantDetailBuilder withOffences(final List<OffenceDetail> offences) {
+        this.offences = offences;
+        return this;
+    }
+
+    public DefendantDetailBuilder withFirstName(final String firstName) {
+        this.defendantDetail.getPersonalDetails().setFirstName(firstName);
+        return this;
+    }
+
     public DefendantDetail build() {
-        defendantDetail.setOffences(singletonList(offenceBuilder.build()));
+        defendantDetail.setOffences(getOffences());
         return defendantDetail;
+    }
+
+    private List<OffenceDetail> getOffences() {
+        return nonNull(offences) ? offences : singletonList(offenceBuilder.build());
     }
 
     private OffenceDetail.OffenceDetailBuilder prepareOffenceBuilder() {
@@ -110,10 +127,5 @@ public class DefendantDetailBuilder {
                 .withWitnessStatement("witness statement")
                 .withProsecutionFacts("prosecution facts")
                 .setWording("");
-    }
-
-    public DefendantDetailBuilder withFirstName(final String firstName) {
-        this.defendantDetail.getPersonalDetails().setFirstName(firstName);
-        return this;
     }
 }

@@ -1,0 +1,17 @@
+package uk.gov.moj.cpp.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import java.util.Arrays;
+import uk.gov.moj.cpp.sjp.command.api.accesscontrol.RuleConstants;
+
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command - Rule for add enforce financial imposition account number command used by Bdf only"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "sjp.add-financial-imposition-account-number-bdf");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getAddFinancialImpositionAccountNumberBdfGroups()));
+  then
+    $outcome.setSuccess(true);
+end

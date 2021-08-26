@@ -79,6 +79,7 @@ public class DefendantsConverter {
                 .withOffences(offences)
                 .withCourtProceedingsInitiated(ZonedDateTimes.fromString(sjpSessionPayload.getString("startedAt", null)))
                 .withProsecutionAuthorityReference(prosecutorReference)
+                .withDefendantCaseJudicialResults(resultsAggregate.getResults(caseDetails.getId()).isEmpty() ? null : resultsAggregate.getResults(caseDetails.getId()))
                 .build();
         defendant1.getOffences().get(0);
 

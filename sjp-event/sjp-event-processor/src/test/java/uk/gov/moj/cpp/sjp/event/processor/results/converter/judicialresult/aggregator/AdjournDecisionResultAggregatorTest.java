@@ -45,10 +45,10 @@ public class AdjournDecisionResultAggregatorTest extends BaseDecisionResultAggre
                 allOf(hasItem(allOf(
                         hasProperty("judicialResultId", Matchers.is(fromString("f7784e82-20b5-4d2c-b174-6fd57ebf8d7c"))),
                         hasProperty("orderedDate", Matchers.is(resultedOn.format(DATE_FORMAT))),
-                        hasProperty("resultText", Matchers.is("Adjourn to a later SJP hearing session\nAdjourn to date 2021-02-17")),
+                        hasProperty("resultText", Matchers.is("Adjourn to a later SJP hearing session\nAdjourn to date 17/02/2021")),
                         hasProperty("judicialResultPrompts", allOf(hasItem(allOf(
                                 hasProperty("judicialResultPromptTypeId", Matchers.is(fromString("185e6a04-8b44-430d-8073-d8d12f69733a"))),
-                                hasProperty("value", Matchers.is("2021-02-17")))
+                                hasProperty("value", Matchers.is("17/02/2021")))
                         )))))));
     }
 

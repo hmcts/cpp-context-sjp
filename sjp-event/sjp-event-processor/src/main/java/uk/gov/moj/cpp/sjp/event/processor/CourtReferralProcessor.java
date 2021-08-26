@@ -20,7 +20,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.CourtDocumentView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.HearingRequestView;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.ProsecutionCaseView;
+import uk.gov.moj.cpp.sjp.model.prosecution.ProsecutionCaseView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.ReferCaseForCourtHearingCommand;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.SjpReferralView;
 import uk.gov.moj.cpp.sjp.event.processor.service.ProsecutionCaseFileService;

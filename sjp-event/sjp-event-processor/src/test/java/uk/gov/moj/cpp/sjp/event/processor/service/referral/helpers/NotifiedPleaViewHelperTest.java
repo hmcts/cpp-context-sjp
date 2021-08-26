@@ -11,7 +11,7 @@ import static uk.gov.justice.json.schemas.domains.sjp.queries.Offence.offence;
 import static uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.NotifiedPleaViewHelper.createNotifiedPleaView;
 
 import uk.gov.justice.json.schemas.domains.sjp.PleaType;
-import uk.gov.moj.cpp.sjp.event.processor.model.referral.NotifiedPleaView;
+import uk.gov.moj.cpp.sjp.model.prosecution.NotifiedPleaView;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;

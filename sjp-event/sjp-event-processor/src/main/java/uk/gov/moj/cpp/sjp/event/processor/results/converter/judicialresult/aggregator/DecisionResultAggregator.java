@@ -55,6 +55,8 @@ import uk.gov.moj.cpp.sjp.event.processor.results.converter.judicialresult.Judic
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +82,9 @@ public class DecisionResultAggregator {
     public static final String SESSION_ID = "sessionId";
 
     private static final int MAXIMUM_DECIMAL_PLACES = 2;
+    public static final String OUTGOING_PROMPT_DATE_FORMAT = "dd/MM/yyyy";
+    private static final String INCOMING_PROMPT_DATE_FORMAT = "yyyy-MM-dd";
+
 
     protected final JCachedReferenceData jCachedReferenceData;
 
@@ -449,6 +454,16 @@ public class DecisionResultAggregator {
         return amountValue;
     }
 
+    @SuppressWarnings("squid:S00112")
+    protected String restructureDate(final String value) {
+        try {
+            final LocalDate dateValue = LocalDate.parse(value, DateTimeFormatter.ofPattern(INCOMING_PROMPT_DATE_FORMAT));
+            return dateValue.format(DateTimeFormatter.ofPattern(OUTGOING_PROMPT_DATE_FORMAT));
+        } catch (DateTimeParseException parseException) {
+            throw new RuntimeException(String.format("invalid format for incoming date prompt value: %s", value), parseException);
+        }
+    }
+
     protected void setFinalOffence(final DecisionAggregate decisionAggregate, final UUID offenceId, final List<JudicialResult> judicialResults) {
         judicialResults.stream()
                 .map(JudicialResult::getCategory)
@@ -456,4 +471,5 @@ public class DecisionResultAggregator {
                 .findFirst()
                 .ifPresent(e-> decisionAggregate.putFinalOffence(offenceId, true));
     }
+
 }

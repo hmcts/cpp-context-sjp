@@ -1,7 +1,14 @@
 package uk.gov.moj.cpp.sjp.query.view.response;
 
 
+import static java.util.Collections.sort;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
+
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
+import uk.gov.moj.cpp.sjp.persistence.entity.ApplicationStatus;
+import uk.gov.moj.cpp.sjp.persistence.entity.CaseApplication;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 
 import java.math.BigDecimal;
@@ -9,12 +16,10 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-
-import static java.util.Objects.nonNull;
-
-import com.google.common.collect.ImmutableList;
 
 import javax.json.JsonObject;
 
@@ -46,7 +51,11 @@ public class CaseView {
     private final Boolean policeFlag;
     private final Boolean postConviction;
     private final Boolean setAside;
+    private final Boolean managedByATCM;
+    private ApplicationView caseApplication;// latest case application
+    private final ApplicationStatus ccApplicationStatus;
 
+    @SuppressWarnings("squid:S2384")
     public CaseView(final CaseDetail caseDetail, final JsonObject prosecutor) {
 
         this.postConviction = caseDetail.getDefendant().getOffences().stream().anyMatch(
@@ -61,14 +70,15 @@ public class CaseView {
 
         this.defendant = new DefendantView(caseDetail.getDefendant());
         this.caseDecisions = new ArrayList<>();
-        caseDetail.getCaseDecisions().forEach(caseDecisionEntity -> caseDecisions.add(new CaseDecisionView(caseDecisionEntity)));
+        buildCaseDecisionsView(caseDetail);
         this.dateTimeCreated = caseDetail.getDateTimeCreated();
-
         this.caseDocuments = new LinkedHashSet<>();
         if (!caseDetail.getCaseDocuments().isEmpty()) {
             caseDetail.getCaseDocuments().forEach(caseDocument -> caseDocuments.add(new CaseDocumentView(caseDocument)));
         }
-
+        if (nonNull(caseDetail.getCurrentApplication())){
+            this.caseApplication = new ApplicationView(caseDetail.getCurrentApplication());
+        }
         completed = caseDetail.isCompleted();
         assigned = caseDetail.getAssigneeId() != null;
 
@@ -87,6 +97,44 @@ public class CaseView {
         this.hearingCourtName = caseDetail.getHearingCourtName();
         this.hearingTime = caseDetail.getHearingTime();
         this.setAside = caseDetail.getSetAside();
+        this.managedByATCM = caseDetail.getManagedByAtcm();
+        this.ccApplicationStatus = caseDetail.getCcApplicationStatus();
+    }
+
+    private void buildCaseDecisionsView(final CaseDetail caseDetail) {
+
+        final List<CaseDecisionView> caseOffenceDecisions = caseDetail.getCaseDecisions()
+                .stream()
+                .map(CaseDecisionView::new)
+                .sorted()
+                .collect(toList());
+
+        final List<CaseDecisionView> caseApplicationDecisions = ofNullable(caseDetail.getApplications())
+                .map(applications -> applications.stream()
+                        .map(CaseApplication::getApplicationDecision)
+                        .filter(Objects::nonNull)
+                        .map(CaseDecisionView::new)
+                        .sorted()
+                        .collect(toList()))
+                .orElse(new LinkedList<>());
+
+
+        caseApplicationDecisions.forEach(caseApplicationDecision ->
+                setPreviousFinalDecision(caseApplicationDecision, caseOffenceDecisions));
+
+        caseDecisions.addAll(caseOffenceDecisions);
+        caseDecisions.addAll(caseApplicationDecisions);
+        sort(caseDecisions);
+    }
+
+    private void setPreviousFinalDecision(final CaseDecisionView caseApplicationDecision, final List<CaseDecisionView> caseOffenceDecisions) {
+        caseOffenceDecisions
+                .stream()
+                .filter(caseDecisionView -> caseDecisionView.getSavedAt().isBefore(caseApplicationDecision.getSavedAt()))
+                .max(CaseDecisionView::compareTo)
+                .ifPresent(previousCaseDecision ->
+                        caseApplicationDecision.getApplicationDecision()
+                                .setPreviousFinalDecision(previousCaseDecision));
     }
 
     public String getId() {
@@ -105,8 +153,9 @@ public class CaseView {
         return defendant;
     }
 
+    @SuppressWarnings("squid:S2384")
     public List<CaseDecisionView> getCaseDecisions() {
-        return ImmutableList.copyOf(caseDecisions);
+        return caseDecisions;
     }
 
     public String getProsecutingAuthority() {
@@ -193,4 +242,13 @@ public class CaseView {
         return setAside;
     }
 
+    public Boolean isManagedByATCM() { return managedByATCM; }
+
+    public ApplicationView getCaseApplication() {
+        return caseApplication;
+    }
+
+    public ApplicationStatus getCcApplicationStatus() {
+        return ccApplicationStatus;
+    }
 }

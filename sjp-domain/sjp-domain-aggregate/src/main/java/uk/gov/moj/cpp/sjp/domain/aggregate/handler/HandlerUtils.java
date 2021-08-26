@@ -146,6 +146,11 @@ public final class HandlerUtils {
     }
 
     private static boolean isPleaSubmittedForAnOffenceWithFinalDecision(final List<Plea> newPleaRequests, final CaseAggregateState state) {
+
+        if (caseIsSetAsideDueToApplication(state)) {
+            return false;
+        }
+
         final Map<UUID, OffenceDecision> offenceDecisionMap = state.getOffenceDecisionsWithOffenceIds();
         final Collection<UUID> offenceDecisionIds = offenceDecisionMap.keySet();
         for (final UUID offenceDecisionId : offenceDecisionIds) {
@@ -159,7 +164,6 @@ public final class HandlerUtils {
             }
         }
         return false;
-
     }
 
     private static Plea getMatchingPlea(final UUID offenceId, final Collection<Plea> pleas) {
@@ -170,8 +174,16 @@ public final class HandlerUtils {
     }
 
     private static boolean isPleaSubmittedForAnOffenceWithPreviousAdjournPostConviction(final CaseAggregateState state) {
+        if (caseIsSetAsideDueToApplication(state)) {
+            return false;
+        }
+
         return state.getOffenceDecisionsWithOffenceIds().entrySet().stream()
                 .anyMatch(entry -> DecisionType.ADJOURN == entry.getValue().getType() &&
                         state.offenceHasPreviousConviction(entry.getKey()));
+    }
+
+    private static boolean caseIsSetAsideDueToApplication(final CaseAggregateState state) {
+        return state.isSetAside() && state.hasGrantedApplication();
     }
 }

@@ -37,6 +37,7 @@ import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.persistence.builder.CaseDocumentBuilder;
 import uk.gov.moj.cpp.sjp.persistence.builder.DefendantDetailBuilder;
+import uk.gov.moj.cpp.sjp.persistence.entity.ApplicationStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseDocument;
 import uk.gov.moj.cpp.sjp.persistence.entity.CaseNotGuiltyPlea;
@@ -49,6 +50,7 @@ import uk.gov.moj.cpp.sjp.persistence.entity.PendingCaseToPublishPerOffence;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseDocumentRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseSearchResultRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.DefendantRepository;
 import uk.gov.moj.cpp.sjp.query.view.ExportType;
 import uk.gov.moj.cpp.sjp.query.view.converter.ProsecutingAuthorityAccessFilterConverter;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseDocumentView;
@@ -91,6 +93,7 @@ public class CaseServiceTest {
     private static final UUID CASE_ID = randomUUID();
     private static final CaseStatus CASE_STATUS_REFERRED_FOR_COURT_HEARING = CaseStatus.REFERRED_FOR_COURT_HEARING;
     private static final String URN = "TFL1234";
+    private static final UUID CORRELATION_ID = randomUUID();
     private static final String PROSECUTING_AUTHORITY = "prosecutingAuthority";
     private static final Boolean COMPLETED = Boolean.TRUE;
     private static final String ENTERPRISE_ID = "2K2SLYFC743H";
@@ -120,6 +123,9 @@ public class CaseServiceTest {
 
     @Mock
     private CaseRepository caseRepository;
+
+    @Mock
+    private DefendantRepository defendantRepository;
 
     @Mock
     private CaseDocumentRepository caseDocumentRepository;
@@ -170,6 +176,7 @@ public class CaseServiceTest {
         assertThat(caseView.getCaseDocuments(), hasSize(3));
         assertThat(caseView.isOnlinePleaReceived(), is(onlinePleaReceived));
         assertThat(caseView.getStatus(), is(CASE_STATUS_REFERRED_FOR_COURT_HEARING));
+        assertThat(caseView.getCcApplicationStatus(), is(ApplicationStatus.APPEAL_ALLOWED));
     }
 
     @Test
@@ -185,23 +192,23 @@ public class CaseServiceTest {
 
     @Test
     public void shouldFindCaseViewWithFilteringWhichLeavesRequiredDocuments() {
-        final CaseDetail caseDetail = createCaseDetailWithDocumentTypes("PLEA", "CITN", "SJPN");
+        final CaseDetail caseDetail = createCaseDetailWithDocumentTypes("PLEA", "CITN", "SJPN","APPLICATION");
 
         given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
         given(referenceDataService.getProsecutorsByProsecutorCode(anyString())).willReturn(of(PROSECUTORS));
         final CaseView caseView = service.findCaseAndFilterOtherAndFinancialMeansDocuments(CASE_ID.toString());
-        assertThat(caseView.getCaseDocuments().size(), is(3));
+        assertThat(caseView.getCaseDocuments().size(), is(4));
     }
 
     @Test
     public void shouldFindCaseViewWithFilteringOfUnwantedDocuments() {
-        final CaseDetail caseDetail = createCaseDetailWithDocumentTypes("PLEA", "OTHER", "FINANCIAL_MEANS");
+        final CaseDetail caseDetail = createCaseDetailWithDocumentTypes("PLEA", "OTHER", "FINANCIAL_MEANS","APPLICATION");
 
         given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
         given(referenceDataService.getProsecutorsByProsecutorCode(anyString())).willReturn(of(PROSECUTORS));
 
         final CaseView caseView = service.findCaseAndFilterOtherAndFinancialMeansDocuments(CASE_ID.toString());
-        assertThat(caseView.getCaseDocuments().size(), is(1));
+        assertThat(caseView.getCaseDocuments().size(), is(2));
     }
 
     @Test
@@ -211,6 +218,23 @@ public class CaseServiceTest {
         given(caseRepository.findByUrn(URN)).willReturn(caseDetail);
         given(referenceDataService.getProsecutorsByProsecutorCode(anyString())).willReturn(of(PROSECUTORS));
         final CaseView caseView = service.findCaseByUrn(URN);
+
+        assertThat(caseView, notNullValue());
+        assertThat(caseView.getId(), is(CASE_ID.toString()));
+        assertThat(caseView.getUrn(), is(URN));
+        assertThat(caseView.getDateTimeCreated(), is(clock.now()));
+        assertThat(caseView.getCosts(), nullValue());
+        assertThat(caseView.isOnlinePleaReceived(), is(true));
+    }
+
+    @Test
+    public void shouldFindCaseByCorrelationId() {
+        final CaseDetail caseDetail = createCaseDetail(true);
+
+        given(defendantRepository.findCaseIdByCorrelationId(CORRELATION_ID)).willReturn(CASE_ID);
+        given(caseRepository.findBy(CASE_ID)).willReturn(caseDetail);
+        given(referenceDataService.getProsecutorsByProsecutorCode(anyString())).willReturn(of(PROSECUTORS));
+        final CaseView caseView = service.findCaseByCorrelationId(CORRELATION_ID);
 
         assertThat(caseView, notNullValue());
         assertThat(caseView.getId(), is(CASE_ID.toString()));
@@ -775,6 +799,7 @@ public class CaseServiceTest {
                 null, clock.now(), DefendantDetailBuilder.aDefendantDetail().build(), null, now().minusDays(5));
         caseDetail.setOnlinePleaReceived(onlinePleaReceived);
         caseDetail.setCaseStatus(CASE_STATUS_REFERRED_FOR_COURT_HEARING);
+        caseDetail.setCcApplicationStatus(ApplicationStatus.APPEAL_ALLOWED);
         return caseDetail;
     }
 

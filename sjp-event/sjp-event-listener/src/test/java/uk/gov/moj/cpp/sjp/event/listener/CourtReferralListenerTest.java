@@ -72,7 +72,7 @@ public class CourtReferralListenerTest {
                 RECEIVED_AT);
 
         when(caseCourtReferralStatusRepository.findBy(CASE_ID)).thenReturn(caseCourtReferralStatus);
-
+        when(caseRepository.findBy(CASE_ID)).thenReturn(caseDetail);
         courtReferralListener.handleCaseReferredForCourtHearingRejectionRecorded(eventEnvelope);
         assertThat(caseCourtReferralStatus.getRejectedAt(), Matchers.is(REJECTED_AT));
         assertThat(caseCourtReferralStatus.getRejectionReason(), Matchers.is(REJECTION_REASON));
@@ -104,5 +104,53 @@ public class CourtReferralListenerTest {
                         method("handleCaseReferredForCourtHearing").thatHandles("sjp.events.case-referred-for-court-hearing"),
                         method("handleCaseReferredForCourtHearingRejectionRecorded").thatHandles("sjp.events.case-referral-for-court-hearing-rejection-recorded")
                 )));
+    }
+
+    @Test
+    public void shouldMarkManagedByATCMAsFalseStatusWhenCaseReferredForHearing() {
+        final CaseReferredForCourtHearing caseReferredForCourtHearing = caseReferredForCourtHearing()
+                .withCaseId(CASE_ID)
+                .withReferredAt(RECEIVED_AT)
+                .build();
+        final Envelope<CaseReferredForCourtHearing> eventEnvelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.events.case-referred-for-court-hearing"),
+                caseReferredForCourtHearing);
+
+        when(caseRepository.findBy(CASE_ID)).thenReturn(caseDetail);
+
+        courtReferralListener.handleCaseReferredForCourtHearing(eventEnvelope);
+        caseCourtReferralStatusRepository.save(new CaseCourtReferralStatus(CASE_ID, URN, RECEIVED_AT));
+
+        verify(caseCourtReferralStatusRepository).save(new CaseCourtReferralStatus(CASE_ID, URN, RECEIVED_AT));
+        verify(caseDetail).setReferredForCourtHearing(true);
+        verify(caseDetail).setManagedByAtcm(false);
+
+    }
+
+    @Test
+    public void shouldMarkManagedByATCMStatusAsTrueWhenCaseReferralRejected() {
+        final CaseReferralForCourtHearingRejectionRecorded caseReferralForCourtHearingRejected =
+                caseReferralForCourtHearingRejectionRecorded()
+                        .withCaseId(CASE_ID)
+                        .withRejectionReason(REJECTION_REASON)
+                        .withRejectedAt(REJECTED_AT)
+                        .build();
+        final Envelope<CaseReferralForCourtHearingRejectionRecorded> eventEnvelope = envelopeFrom(
+                metadataWithRandomUUID("sjp.events.case-referral-for-court-hearing-rejection-recorded"),
+                caseReferralForCourtHearingRejected);
+
+        final CaseCourtReferralStatus caseCourtReferralStatus = new CaseCourtReferralStatus(
+                CASE_ID,
+                URN,
+                RECEIVED_AT);
+
+        when(caseCourtReferralStatusRepository.findBy(CASE_ID)).thenReturn(caseCourtReferralStatus);
+        when(caseRepository.findBy(CASE_ID)).thenReturn(caseDetail);
+
+        courtReferralListener.handleCaseReferredForCourtHearingRejectionRecorded(eventEnvelope);
+
+        assertThat(caseCourtReferralStatus.getRejectedAt(), Matchers.is(REJECTED_AT));
+        assertThat(caseCourtReferralStatus.getRejectionReason(), Matchers.is(REJECTION_REASON));
+        verify(caseDetail).setManagedByAtcm(true);
     }
 }

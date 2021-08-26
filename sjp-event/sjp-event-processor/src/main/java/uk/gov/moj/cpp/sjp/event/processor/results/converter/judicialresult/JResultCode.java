@@ -18,11 +18,11 @@ public enum JResultCode {
     CD(fromString("554c2622-c1cc-459e-a98d-b7f317ab065c")),
     WDRNNOT(fromString("6feb0f2e-8d1e-40c7-af2c-05b28c69e5fc")),
     RLSUM(fromString("a09bbfa0-5dd5-11e8-9c2d-fa7ae01bbebc")),
-    RLSUMI(fromString("d6e93aae-5dd7-11e8-9c2d-fa7ae01bbebc")),
-    RINSTL(fromString("9ba8f03a-5dda-11e8-9c2d-fa7ae01bbebc")),
+    RLSUMI(fromString("d6e93aae-5dd7-11e8-9c2d-fa7ae01bbebc")), //
+    RINSTL(fromString("9ba8f03a-5dda-11e8-9c2d-fa7ae01bbebc")), //
     LSUM(fromString("bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1")), // PAY BY DATE
-    LUMSI(fromString("272d1ec2-634b-11e8-adc0-fa7ae01bbebc")),
-    INSTL(fromString("6d76b10c-64c4-11e8-adc0-fa7ae01bbebc")),
+    LUMSI(fromString("272d1ec2-634b-11e8-adc0-fa7ae01bbebc")), //
+    INSTL(fromString("6d76b10c-64c4-11e8-adc0-fa7ae01bbebc")), //
     ABDC(fromString("f7dfefd2-64c6-11e8-adc0-fa7ae01bbebc")),
     NOVS(fromString("204fc6b8-d6c9-4fb8-acd0-47d23c087625")),
     NCR(fromString("29e02fa1-42ce-4eec-914e-e62508397a16")),
@@ -41,11 +41,11 @@ public enum JResultCode {
     NSP(fromString("49939c7c-750f-403e-9ce1-f82e3e568065")),
     TFOOUT(fromString("1e96d1a9-9618-4ddd-a925-ca6a0ef86018")),
     SUMRCC(fromString("600edfc3-a584-4f9f-a52e-5bb8a99646c1")),
-    ADJOURNSJP(fromString("f7784e82-20b5-4d2c-b174-6fd57ebf8d7c")),
-    SUMRTO(fromString("3d2c05b3-fcd6-49c2-b5a9-52855be7f90a")),
+    ADJOURNSJP(fromString("f7784e82-20b5-4d2c-b174-6fd57ebf8d7c")), //
+    SUMRTO(fromString("3d2c05b3-fcd6-49c2-b5a9-52855be7f90a")), //
     SJPR(fromString("0149ab92-5466-11e8-9c2d-fa7ae01bbebc")),
     D45(fromString("fcbf777d-1a73-47e7-ab9b-7c51091a022c")),
-    DPR(fromString("b27b42bf-e20e-46ec-a6e3-5c2e8a076c20")),
+    DPR(fromString("b27b42bf-e20e-46ec-a6e3-5c2e8a076c20")), //
     SETASIDE(fromString("af590f98-21cb-43e7-b992-2a9d444acb2b")),
     LPC(fromString("ea1ee5a4-be13-48dc-8411-78f22e01c236")),
     NONE(fromString("c3a39c2f-b056-442f-8dfc-604b5434f956")),
@@ -53,8 +53,8 @@ public enum JResultCode {
 
     // application result codes
     STDEC(fromString("e2f6e11b-c3a2-4e76-8d29-fbede4174988")),
-    ROPENED(fromString("e3fb46ee-e406-4f73-9bf1-71d513da8cc7")),
-    DER(fromString("f42fa098-0f7b-4269-ac4f-b10c9b6832d7")),
+    ROPENED(fromString("e3fb46ee-e406-4f73-9bf1-71d513da8cc7")), //
+    DER(fromString("f42fa098-0f7b-4269-ac4f-b10c9b6832d7")), //
     RFSD(fromString("d3902789-4cc8-4753-a15f-7e26dd39f6ae"));
 
     private final UUID resultDefinitionId;

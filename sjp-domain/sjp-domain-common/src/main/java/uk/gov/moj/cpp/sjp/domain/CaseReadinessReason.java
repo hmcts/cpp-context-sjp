@@ -7,8 +7,8 @@ public enum CaseReadinessReason {
     PLEADED_GUILTY_REQUEST_HEARING,
     WITHDRAWAL_REQUESTED,
     SET_ASIDE,
+    APPLICATION_PENDING,
     UNKNOWN;
-
 
     public static final CaseReadinessReason DEFAULT_STATUS = UNKNOWN;
 }

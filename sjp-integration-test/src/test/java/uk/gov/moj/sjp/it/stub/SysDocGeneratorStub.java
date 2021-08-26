@@ -36,7 +36,7 @@ public class SysDocGeneratorStub {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SysDocGeneratorStub.class);
 
-    public static void stubDocGeneratorEndPoint() {
+    public static void stubGenerateDocumentEndPoint() {
         stubPingFor("systemdocgenerator-service");
 
         stubFor(post(urlPathMatching(SYS_DOC_GENERATOR_URL))

@@ -1,26 +1,11 @@
 package uk.gov.moj.cpp.sjp.persistence.entity;
 
-import static com.google.common.collect.ImmutableList.copyOf;
-import static org.apache.commons.lang3.BooleanUtils.isTrue;
-import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
-import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED;
-
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import uk.gov.justice.services.common.jpa.converter.LocalDatePersistenceConverter;
 import uk.gov.moj.cpp.sjp.domain.AssignmentCandidate;
 import uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.view.CaseCountByAgeView;
-
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -32,13 +17,27 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SqlResultSetMapping;
 import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import static com.google.common.collect.ImmutableList.copyOf;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
+import static org.apache.commons.lang3.builder.ToStringStyle.SHORT_PREFIX_STYLE;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED;
 
 @SqlResultSetMappings({
         @SqlResultSetMapping(
@@ -142,6 +141,20 @@ public class CaseDetail implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "case_management_status")
     private CaseManagementStatus caseManagementStatus;
+
+    @Column(name = "managed_by_atcm")
+    private Boolean managedByAtcm;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "current_application_id")
+    private CaseApplication currentApplication;
+
+    @OneToMany(mappedBy = "caseDetail")
+    private List<CaseApplication> applications;
+
+    @Column(name = "cc_application_status")
+    @Enumerated(EnumType.STRING)
+    private ApplicationStatus ccApplicationStatus;
 
     public CaseDetail() {
         defendant.setCaseDetail(this);
@@ -408,6 +421,36 @@ public class CaseDetail implements Serializable {
 
     public void setCaseStatus(final CaseStatus caseStatus) {
         this.caseStatus = caseStatus;
+    }
+
+    public Boolean getManagedByAtcm() { return managedByAtcm; }
+
+    public void setManagedByAtcm(final Boolean managedByATCM) { this.managedByAtcm = managedByATCM; }
+
+    public CaseApplication getCurrentApplication() {
+        return currentApplication;
+    }
+
+    public void setCurrentApplication(final CaseApplication currentApplication) {
+        this.currentApplication = currentApplication;
+    }
+
+    public ApplicationStatus getCcApplicationStatus() {
+        return ccApplicationStatus;
+    }
+
+    public void setCcApplicationStatus(ApplicationStatus ccApplicationStatus) {
+        this.ccApplicationStatus = ccApplicationStatus;
+    }
+
+    @SuppressWarnings("squid:S2384")
+    public List<CaseApplication> getApplications() {
+        return applications;
+    }
+
+    @SuppressWarnings("squid:S2384")
+    public void setApplications(final List<CaseApplication> applications) {
+        this.applications = applications;
     }
 
     @Override

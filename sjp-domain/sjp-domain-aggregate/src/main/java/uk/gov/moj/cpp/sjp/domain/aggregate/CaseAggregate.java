@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate;
 
-import static java.util.stream.Stream.empty;
-
 import uk.gov.justice.domain.aggregate.Aggregate;
+import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.justice.json.schemas.domains.sjp.Note;
 import uk.gov.justice.json.schemas.domains.sjp.User;
-import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
+import uk.gov.justice.json.schemas.domains.sjp.commands.CreateCaseApplication;
+import uk.gov.justice.json.schemas.domains.sjp.commands.SaveApplicationDecision;
 import uk.gov.moj.cpp.sjp.domain.Benefits;
 import uk.gov.moj.cpp.sjp.domain.Case;
 import uk.gov.moj.cpp.sjp.domain.CaseAssignmentType;
@@ -13,11 +13,14 @@ import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
 import uk.gov.moj.cpp.sjp.domain.CaseReopenDetails;
 import uk.gov.moj.cpp.sjp.domain.Employer;
+import uk.gov.moj.cpp.sjp.domain.EnforcementPendingApplicationRequiredNotification;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
 import uk.gov.moj.cpp.sjp.domain.Income;
 import uk.gov.moj.cpp.sjp.domain.Person;
 import uk.gov.moj.cpp.sjp.domain.aggregate.casestatus.CaseStatusResolver;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ApplicationDecisionHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseAdjournmentHandler;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseApplicationHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseCoreHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseDecisionHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseDefendantHandler;
@@ -30,6 +33,7 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CaseReadinessHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ChangeCaseManagementStatusHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.CourtReferralHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.DeleteDocsHandler;
+import uk.gov.moj.cpp.sjp.domain.aggregate.handler.FinancialImpositionHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.OffenceWithdrawalHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.ResolveCaseStatusHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.SetDatesToAvoidRequiredAggregateHandler;
@@ -38,12 +42,15 @@ import uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.OnlinePleaHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.handler.plea.SetPleasHandler;
 import uk.gov.moj.cpp.sjp.domain.aggregate.mutator.AggregateStateMutator;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
+
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.common.CaseManagementStatus;
 import uk.gov.moj.cpp.sjp.domain.common.CaseState;
 import uk.gov.moj.cpp.sjp.domain.decision.Decision;
 import uk.gov.moj.cpp.sjp.domain.onlineplea.PleadOnline;
 import uk.gov.moj.cpp.sjp.domain.plea.PleaMethod;
 import uk.gov.moj.cpp.sjp.domain.plea.SetPleas;
+import uk.gov.moj.cpp.sjp.event.CCApplicationStatusCreated;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -52,10 +59,13 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import static java.util.stream.Stream.empty;
+import static uk.gov.moj.cpp.sjp.domain.aggregate.handler.EnforcementCheckIfNotificationRequired.INSTANCE;
+
 @SuppressWarnings("WeakerAccess")
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 13L;
+    private static final long serialVersionUID = 14L;
     private static final AggregateStateMutator<Object, CaseAggregateState> AGGREGATE_STATE_MUTATOR = AggregateStateMutator.compositeCaseAggregateStateMutator();
     private static final CaseReadinessHandler caseReadinessHandler = CaseReadinessHandler.INSTANCE;
 
@@ -256,6 +266,12 @@ public class CaseAggregate implements Aggregate {
         return applyAndResolveCaseReadiness(() -> CaseDecisionHandler.INSTANCE.saveDecision(decision, state, session));
     }
 
+    public Stream<Object> saveApplicationDecision(final SaveApplicationDecision applicationDecision,
+                                                  final Session session) {
+        return applyAndResolveCaseReadiness(() ->
+                ApplicationDecisionHandler.INSTANCE.saveApplicationDecision(applicationDecision, state, session));
+    }
+
     public Stream<Object> setDatesToAvoidRequired() {
         return applyAndResolveCaseReadiness(() -> SetDatesToAvoidRequiredAggregateHandler.INSTANCE.handleSetDatesToAvoidRequired(state));
     }
@@ -266,6 +282,24 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> changeCaseManagementStatus(final CaseManagementStatus caseManagementStatus) {
         return apply(ChangeCaseManagementStatusHandler.INSTANCE.changeCaseManagementStatus(state, caseManagementStatus));
+    }
+
+    public Stream<Object> updateCaseApplicationStatus(final UUID caseId, final UUID applicationId, final ApplicationStatus applicationStatus) {
+
+        if(applicationStatus.equals(ApplicationStatus.STATUTORY_DECLARATION_PENDING)
+                || applicationStatus.equals(ApplicationStatus.REOPENING_PENDING)
+                || applicationStatus.equals(ApplicationStatus.APPEAL_PENDING)) {
+
+            final Stream.Builder<Object> streamBuilder = Stream.builder();
+            if(state.isCaseCompleted()) {
+                streamBuilder.add(new CCApplicationStatusCreated(caseId, applicationId, applicationStatus));
+            }
+            return apply(streamBuilder.build());
+
+        } else {
+            return applyAndResolveCaseReadiness(() -> CaseCoreHandler.INSTANCE.updateCaseStatusOnCCApplicationResult(state, caseId, applicationId, applicationStatus));
+        }
+
     }
 
     public Stream<Object> deleteDocs() {
@@ -284,11 +318,29 @@ public class CaseAggregate implements Aggregate {
         return state;
     }
 
+    public Stream<Object> createCaseApplication(final CreateCaseApplication createCaseApplication) { //
+        return applyAndResolveCaseReadiness(() -> CaseApplicationHandler.INSTANCE.createCaseApplication(state, createCaseApplication));
+    }
+
+    public Stream<Object> checkIfPendingApplicationToNotified(final EnforcementPendingApplicationRequiredNotification notification) { //
+        return apply(INSTANCE.checkIfPendingApplicationToNotified(state, notification));
+    }
+
+    public Stream<Object> addFinancialImpositionCorrelationId(final UUID defendantId, final UUID correlationId) {
+        return apply(FinancialImpositionHandler.INSTANCE.addFinancialImpositionCorrelationId(state, defendantId, correlationId));
+    }
+
+    public Stream<Object> addFinancialImpositionAccountNumber(final UUID correlationId, final String accountNumber) {
+        return apply(FinancialImpositionHandler.INSTANCE.addFinancialImpositionAccountNumber(state, correlationId, accountNumber));
+    }
+
+    public Stream<Object> addFinancialImpositionAccountNumberBdf(final UUID defendantId, final UUID correlationId, final String accountNumber) {
+        return apply(FinancialImpositionHandler.INSTANCE.addFinancialImpositionAccountNumberBdf(state, defendantId, correlationId, accountNumber));
+    }
+
     @Override
     public Object apply(final Object event) {
         AGGREGATE_STATE_MUTATOR.apply(event, state);
         return event;
     }
-
-
 }

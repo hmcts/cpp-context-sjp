@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.sjp.event.processor;
 
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.sjp.event.processor.EventProcessorConstants.DOCUMENT_REFERENCE;
@@ -73,6 +74,15 @@ public class CaseDocumentProcessor {
                 metadataFrom(caseDocumentUploadedEvent.metadata()).withName("material.command.upload-file").build(),
                 sjpMetadata,
                 uploadFilePayload));
+    }
+
+    @Handles("sjp.events.case-document-upload-rejected")
+    public void handleCaseDocumentUploadRejected(final JsonEnvelope uploadRejectedEvent) {
+        sender.send(envelopeFrom(
+                metadataFrom(uploadRejectedEvent.metadata())
+                        .withName("public.sjp.events.case-document-upload-rejected"),
+                    uploadRejectedEvent.payloadAsJsonObject()
+                ));
     }
 
     @Handles("material.material-added")

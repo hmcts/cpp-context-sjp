@@ -67,6 +67,20 @@ public class DefendantDetail implements Serializable {
     @Column(name="pnc_identifier")
     private String pncIdentifier;
 
+    /**
+     * Correlation / request id provided to staging enforcement
+     * when exporting financial impositions.
+     */
+    @Column(name = "correlation_id")
+    private UUID correlationId;
+
+    /**
+     * Libra / GOB account number provided by staging enforcement
+     * once financial impositions have been exported.
+     */
+    @Column(name = "account_number")
+    private String accountNumber;
+
     public DefendantDetail() {
         this(UUID.randomUUID());
     }
@@ -218,5 +232,21 @@ public class DefendantDetail implements Serializable {
 
     public void setPncIdentifier(final String pncIdentifier) {
         this.pncIdentifier = pncIdentifier;
+    }
+
+    public void setCorrelationId(final UUID correlationId) {
+        this.correlationId = correlationId;
+    }
+
+    public UUID getCorrelationId() {
+        return correlationId;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public void setAccountNumber(final String accountNumber) {
+        this.accountNumber = accountNumber;
     }
 }

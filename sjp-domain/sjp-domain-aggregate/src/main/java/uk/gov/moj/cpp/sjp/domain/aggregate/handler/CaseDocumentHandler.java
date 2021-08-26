@@ -51,6 +51,12 @@ public class CaseDocumentHandler {
             final String description = format("Case Document %s Upload rejected as case %s is referred to court for hearing", documentReference, caseId);
             return Stream.of(new CaseDocumentUploadRejected(documentReference, description));
         }
+
+        if(!state.isManagedByAtcm()) {
+            LOGGER.warn("Case Document Upload rejected as case is no longer managed by ATCM: {}", documentReference);
+            final String description = format("Case Document %s Upload rejected as case %s is not managed by ATCM", documentReference, caseId);
+            return Stream.of(new CaseDocumentUploadRejected(documentReference, description));
+        }
         return Stream.of(new CaseDocumentUploaded(caseId, documentReference, documentType));
     }
 }

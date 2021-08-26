@@ -82,6 +82,7 @@ public class UploadCaseDocumentHandlerTest {
     @Before
     public void setUp() {
         when(aggregateService.get(any(), any())).thenReturn(caseAggregate);
+        caseAggregate.getState().setManagedByAtcm(true);
     }
 
     @Test

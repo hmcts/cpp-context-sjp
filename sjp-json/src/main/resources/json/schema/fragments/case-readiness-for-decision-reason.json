@@ -4,6 +4,7 @@
   "enum": [
     "PIA",
     "WITHDRAWAL_REQUESTED",
+    "APPLICATION_PENDING",
     "SET_ASIDE",
     "PLEADED_GUILTY",
     "PLEADED_NOT_GUILTY",

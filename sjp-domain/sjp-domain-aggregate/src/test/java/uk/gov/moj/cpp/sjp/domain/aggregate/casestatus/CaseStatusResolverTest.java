@@ -7,9 +7,15 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.REOPENING_GRANTED;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.REOPENING_REFUSED;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_PENDING;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.REOPENING;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationType.STAT_DEC;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.casestatus.CaseStatusResolver.resolve;
 import static uk.gov.moj.cpp.sjp.domain.aggregate.casestatus.OffenceInformation.createOffenceInformation;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED;
+import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.COMPLETED_APPLICATION_PENDING;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.NO_PLEA_RECEIVED_READY_FOR_DECISION;
 import static uk.gov.moj.cpp.sjp.domain.common.CaseStatus.PLEA_RECEIVED_NOT_READY_FOR_DECISION;
@@ -30,7 +36,8 @@ import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.FOUND_NOT_GUILTY;
 import static uk.gov.moj.cpp.sjp.domain.verdict.VerdictType.NO_VERDICT;
 
-import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.WithdrawalRequestsStatus;
+import uk.gov.moj.cpp.sjp.domain.aggregate.state.Application;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
 import uk.gov.moj.cpp.sjp.domain.common.CaseState;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
@@ -1103,6 +1110,60 @@ public class CaseStatusResolverTest {
         final CaseState caseState = resolve(caseAggregateState);
 
         // TODO: Assert against readiness
+        assertThat(caseState.getCaseStatus(), is(COMPLETED));
+    }
+
+    @Test
+    public void shouldSetStatusCompletedApplicationPendingIfCaseCompletedWithApplication() {
+        CaseAggregateState caseAggregateState = populateCaseAggregateState();
+        caseAggregateState.markCaseCompleted();
+        final Application application = new Application(null);
+        application.setType(STAT_DEC);
+        application.setStatus(STATUTORY_DECLARATION_PENDING);
+        caseAggregateState.setCurrentApplication(application);
+
+        final CaseState caseState = resolve(caseAggregateState);
+        assertThat(caseState.getCaseStatus(), is(COMPLETED_APPLICATION_PENDING));
+    }
+
+    @Test
+    public void shouldSetStatusSetAsideIfApplicationGranted() {
+        CaseAggregateState caseAggregateState = populateCaseAggregateState();
+        caseAggregateState.unMarkCaseCompleted();
+        caseAggregateState.setSetAside(true);
+        final Application application = new Application(null);
+        application.setType(REOPENING);
+        application.setStatus(REOPENING_GRANTED);
+        caseAggregateState.setCurrentApplication(application);
+
+        final CaseState caseState = resolve(caseAggregateState);
+        assertThat(caseState.getCaseStatus(), is(SET_ASIDE_READY_FOR_DECISION));
+    }
+
+    @Test
+    public void shouldSetStatusCompletedIfApplicationGrantedAndFinalDecisionSaved() {
+        CaseAggregateState caseAggregateState = populateCaseAggregateState();
+        caseAggregateState.markCaseCompleted();
+        caseAggregateState.setSetAside(false);
+        final Application application = new Application(null);
+        application.setType(REOPENING);
+        application.setStatus(REOPENING_GRANTED);
+        caseAggregateState.setCurrentApplication(application);
+
+        final CaseState caseState = resolve(caseAggregateState);
+        assertThat(caseState.getCaseStatus(), is(COMPLETED));
+    }
+
+    @Test
+    public void shouldSetStatusCompletedIfApplicationRefused() {
+        CaseAggregateState caseAggregateState = populateCaseAggregateState();
+        caseAggregateState.markCaseCompleted();
+        final Application application = new Application(null);
+        application.setType(REOPENING);
+        application.setStatus(REOPENING_REFUSED);
+        caseAggregateState.setCurrentApplication(application);
+
+        final CaseState caseState = resolve(caseAggregateState);
         assertThat(caseState.getCaseStatus(), is(COMPLETED));
     }
 

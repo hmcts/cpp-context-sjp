@@ -1,16 +1,9 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.handler;
 
-import static java.time.ZoneOffset.UTC;
-import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
-import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason;
-import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_NOT_READY;
-
+import org.hamcrest.Matchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Spy;
 import uk.gov.justice.services.common.util.Clock;
 import uk.gov.justice.services.test.utils.common.helper.StoppedClock;
 import uk.gov.moj.cpp.sjp.domain.aggregate.state.CaseAggregateState;
@@ -25,10 +18,19 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Spy;
+import static java.time.ZoneOffset.UTC;
+import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static uk.gov.moj.cpp.sjp.domain.CaseAssignmentType.MAGISTRATE_DECISION;
+import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.APPLICATION_PENDING;
+import static uk.gov.moj.cpp.sjp.domain.CaseReadinessReason.PIA;
+import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason;
+import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_COMPLETED;
+import static uk.gov.moj.cpp.sjp.event.session.CaseAssignmentRejected.RejectReason.CASE_NOT_READY;
 
 public class CaseCoreHandlerAssignmentTest {
 
@@ -54,6 +56,27 @@ public class CaseCoreHandlerAssignmentTest {
         final List<Object> eventList = eventStream.collect(toList());
 
         thenTheCaseAssignmentIsRejected(CASE_NOT_READY, eventList);
+    }
+    @Test
+    public void shouldRejectCaseAssignmentIfCaseIsCompletedAndNoPendingApplication() {
+
+        caseAggregateState.markCaseCompleted();
+        final Stream<Object> eventStream = CaseCoreHandler.INSTANCE.assignCase(assigneeId, assignedAt,MAGISTRATE_DECISION, caseAggregateState);
+
+        final List<Object> eventList = eventStream.collect(toList());
+
+        thenTheCaseAssignmentIsRejected(CASE_COMPLETED, eventList);
+    }
+
+    @Test
+    public void shouldAssignCaseIfCaseIsReadyAndCompletedAndHasPendingApplication() {
+        caseAggregateState.markReady(clock.now(), APPLICATION_PENDING);
+
+        final Stream<Object> eventStream = CaseCoreHandler.INSTANCE.assignCase(assigneeId, assignedAt,MAGISTRATE_DECISION, caseAggregateState);
+
+        final List<Object> eventList = eventStream.collect(toList());
+
+        thenCaseIsAssignedToUser(caseId, assigneeId, assignedAt, eventList);
     }
 
     @Test

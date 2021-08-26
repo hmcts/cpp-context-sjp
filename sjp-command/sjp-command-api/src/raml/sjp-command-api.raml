@@ -713,3 +713,115 @@ baseUri: http://localhost:8080/sjp-command-api/command/api/rest/sjp
           description: Accepted
         500:
           description: Internal Server Error
+
+
+/cases/{caseId}/applications:
+  uriParameters:
+    caseId:
+      description: The ID of the case for the new application
+      type: string
+  post:
+    description: |
+      Create new stat decs application
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.create-case-application+json
+          name: sjp.create-case-application
+      ...
+    body:
+      application/vnd.sjp.create-case-application+json:
+        example:
+          !include json/sjp.create-case-application.json
+        schema:
+          !include json/schema/sjp.api.create-case-application.json
+    responses:
+          500:
+            description: Internal Server Error
+          202:
+
+
+/cases/{caseId}/applications/{applicationId}/decision:
+  uriParameters:
+    caseId:
+      description: Id of the case for which decision is made
+      type: string
+    applicationId:
+      description: Id of the application belonging to the case
+  post:
+    description: |
+      application-decision
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.save-application-decision+json
+          name: sjp.save-application-decision
+      ...
+    body:
+          application/vnd.sjp.save-application-decision+json:
+            example:
+              !include json/sjp.save-application-decision.json
+            schema:
+              !include json/schema/sjp.save-application-decision.json
+    responses:
+      400:
+        description: Request failed validation
+      202:
+        description: Accepted
+
+/cases/{caseId}/defendant/{defendantId}/add-financial-imposition-correlation-id:
+  uriParameters:
+    caseId:
+      description: Id of the case containing the defendant for which the correlation/request id is added
+      type: string
+      required: true
+    defendantId:
+      description: Id of the defendant to which the correlation/request id is added
+      required: true
+  post:
+    description: |
+      Record the correlation id of the request to enforce financial impositions,
+      this is later used to record the libra account number
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.add-financial-imposition-correlation-id+json
+          name: sjp.add-financial-imposition-correlation-id
+      ...
+    body:
+          application/vnd.sjp.add-financial-imposition-correlation-id+json:
+            example:
+              !include json/sjp.add-financial-imposition-correlation-id.json
+            schema:
+              !include json/schema/sjp.add-financial-imposition-correlation-id.json
+    responses:
+      400:
+        description: Request failed validation
+      202:
+        description: Accepted
+
+/cases/{caseId}/defendant/{defendantId}/add-financial-imposition-account-number-bdf:
+  uriParameters:
+    caseId:
+      description: Id of the case containing the defendant for which the libra account number is added
+      type: string
+      required: true
+    defendantId:
+      description: Id of the defendant to which the correlation/request id is added
+      required: true
+  post:
+    description: |
+      Record the libra account number and correlation id of the request to enforce financial impositions, used by ATCM-6980 BDF only!
+      ...
+      (mapping):
+          requestType: application/vnd.sjp.add-financial-imposition-account-number-bdf+json
+          name: sjp.add-financial-imposition-account-number-bdf
+      ...
+    body:
+          application/vnd.sjp.add-financial-imposition-account-number-bdf+json:
+            example:
+              !include json/sjp.add-financial-imposition-account-number-bdf.json
+            schema:
+              !include json/schema/sjp.add-financial-imposition-account-number-bdf.json
+    responses:
+      400:
+        description: Request failed validation
+      202:
+        description: Accepted

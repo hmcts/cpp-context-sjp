@@ -45,7 +45,7 @@ public class ReferredToOpenCourtDecisionResultAggregator extends DecisionResultA
 
         judicialResultPrompts.add(getPrompt(SUMRTO_DATE_OF_HEARING, resultDefinition)
                 .withJudicialResultPromptTypeId(SUMRTO_DATE_OF_HEARING.getId())
-                .withValue(referredToOpenCourt.getReferredToDateTime().format(DATE_FORMAT))
+                .withValue(restructureDate(referredToOpenCourt.getReferredToDateTime().format(DATE_FORMAT)))
                 .build());
 
         judicialResultPrompts.add(getPrompt(SUMRTO_MAGISTRATES_COURT, resultDefinition)

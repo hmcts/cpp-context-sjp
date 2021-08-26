@@ -60,6 +60,9 @@ public abstract class DefendantRepository implements EntityRepository<DefendantD
     @Query("SELECT d.caseDetail.id FROM DefendantDetail d WHERE d.id=:id")
     public abstract UUID findCaseIdByDefendantId(@QueryParam("id") final UUID id);
 
+    @Query("SELECT d.caseDetail.id FROM DefendantDetail d WHERE d.correlationId=:correlationId")
+    public abstract UUID findCaseIdByCorrelationId(@QueryParam("correlationId") final UUID correlationId);
+
     @Query(value = "SELECT d.caseDetail.id FROM DefendantDetail d WHERE d.id=:id",
             singleResult = SingleResultType.OPTIONAL)
     public abstract UUID findOptionalCaseIdByDefendantId(@QueryParam("id") final UUID id);

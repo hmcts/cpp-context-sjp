@@ -30,6 +30,7 @@ import uk.gov.moj.cpp.sjp.event.processor.service.SjpService;
 
 import java.util.Arrays;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -69,11 +70,17 @@ public class SjpCaseDecisionToHearingResultConverterTest {
     uk.gov.justice.json.schemas.domains.sjp.queries.Defendant defendant;
     @Mock
     PersonalDetails personalDetails;
-    @Mock
+
     DecisionAggregate resultsAggregate;
+
     private HearingDay hearingDay = HearingDay.hearingDay().build();
 
     private CourtCentre courtCentre = courtCentre().build();
+
+    @Before
+    public void setUp() {
+        resultsAggregate = new DecisionAggregate();
+    }
 
     @Test
     public void shouldConvertSjpCaseDecisionToHearingResultWithMandatoryField() {

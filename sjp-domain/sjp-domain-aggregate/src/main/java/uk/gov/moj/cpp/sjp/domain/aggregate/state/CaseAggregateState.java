@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.sjp.domain.aggregate.state;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
@@ -7,10 +8,16 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.REOPENING_GRANTED;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.REOPENING_PENDING;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.REOPENING_REFUSED;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_GRANTED;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_PENDING;
+import static uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus.STATUTORY_DECLARATION_REFUSED;
 import static uk.gov.moj.cpp.sjp.event.DefendantDetailsUpdated.DefendantDetailsUpdatedBuilder.defendantDetailsUpdated;
 
+import uk.gov.justice.json.schemas.domains.sjp.ApplicationStatus;
 import uk.gov.justice.json.schemas.domains.sjp.Gender;
-import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.moj.cpp.sjp.domain.Address;
 import uk.gov.moj.cpp.sjp.domain.CaseDocument;
 import uk.gov.moj.cpp.sjp.domain.CaseReadinessReason;
@@ -44,14 +51,23 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Defines the case aggregate state.
  */
-public class CaseAggregateState implements AggregateState {
+public class
+
+CaseAggregateState implements AggregateState {
 
 
     public static final String FINANCIAL_MEANS_DOCUMENT_TYPE = "FINANCIAL_MEANS";
+    private static final List<ApplicationStatus> PENDING_APPLICATION_STATUSES = asList(STATUTORY_DECLARATION_PENDING, REOPENING_PENDING);
+    private static final List<ApplicationStatus> GRANTED_APPLICATION_STATUSES = asList(STATUTORY_DECLARATION_GRANTED, REOPENING_GRANTED);
+    private static final List<ApplicationStatus> REFUSED_APPLICATION_STATUSES = asList(STATUTORY_DECLARATION_REFUSED, REOPENING_REFUSED);
     private UUID caseId;
     private String urn;
     private boolean caseReopened;
     private boolean caseCompleted;
+    private boolean caseRelisted;
+    private boolean caseAppealed;
+
+
     private boolean caseReferredForCourtHearing;
     private LocalDate caseReopenedDate;
     private boolean withdrawalAllOffencesRequested;
@@ -115,10 +131,15 @@ public class CaseAggregateState implements AggregateState {
     private String defendantDriverLicenceDetails;
     private boolean setAside;
     private boolean deleteDocsStarted;
+    private Application currentApplication;
+
+
+    private boolean managedByAtcm;
 
     private final Set<UUID> pressRestrictableOffenceIds = new HashSet<>();
     private final Set<UUID> offencesHavingPreviousPressRestriction = new HashSet<>();
     private final Map<UUID, DisabilityNeeds> defendantsDisabilityNeeds = new HashMap<>();
+    private final Map<UUID, FinancialImpositionExportDetails> defendantFinancialImpositionExportDetails = new HashMap<>();
 
     public UUID getCaseId() {
         return caseId;
@@ -158,6 +179,10 @@ public class CaseAggregateState implements AggregateState {
 
     public void markCaseCompleted() {
         this.caseCompleted = true;
+    }
+
+    public void unMarkCaseCompleted() {
+        this.caseCompleted = false;
     }
 
     public void markCaseReferredForCourtHearing() {
@@ -294,6 +319,26 @@ public class CaseAggregateState implements AggregateState {
 
     public Map<UUID, Boolean> getDefendantsSpeakWelsh() {
         return defendantsSpeakWelsh;
+    }
+
+    public Map<UUID, FinancialImpositionExportDetails> getDefendantFinancialImpositionExportDetails() {
+        return defendantFinancialImpositionExportDetails;
+    }
+
+    public FinancialImpositionExportDetails getDefendantFinancialImpositionExportDetails(final UUID defendantId) {
+        return defendantFinancialImpositionExportDetails.get(defendantId);
+    }
+
+    public Optional<UUID> getDefendantForCorrelationId(final UUID correlationId) {
+        return defendantFinancialImpositionExportDetails.entrySet().stream()
+                .filter(fiExportDetailsEntry -> nonNull(fiExportDetailsEntry.getValue().getCorrelationId()))
+                .filter(fiExportDetailsEntry -> Objects.equals(fiExportDetailsEntry.getValue().getCorrelationId(), correlationId))
+                .map(Map.Entry::getKey)
+                .findFirst();
+    }
+
+    public void addFinancialImpositionExportDetails(final UUID defendantId, FinancialImpositionExportDetails exportDetails) {
+        this.defendantFinancialImpositionExportDetails.put(defendantId, exportDetails);
     }
 
     public boolean isTrialRequested() {
@@ -525,6 +570,10 @@ public class CaseAggregateState implements AggregateState {
         this.sessionIds.add(sessionId);
     }
 
+    public void clearOffenceDecisions() {
+        this.offenceDecisionsByOffenceId.clear();
+    }
+
     public UUID getDefendantId() {
         return defendantId;
     }
@@ -627,13 +676,17 @@ public class CaseAggregateState implements AggregateState {
         this.adjournedTo = adjournedTo;
     }
 
+    public Application getCurrentApplication() {
+        return currentApplication;
+    }
+
     public PleaType getPleaTypeForOffenceId(final UUID offenceId) {
         if (this.pleas == null) {
             return null;
         }
 
         return this.pleas.stream()
-                .filter(plea -> Objects.nonNull(plea.getPleaType()))
+                .filter(plea -> nonNull(plea.getPleaType()))
                 .filter(plea -> plea.getOffenceId().equals(offenceId))
                 .map(Plea::getPleaType)
                 .findFirst()
@@ -788,12 +841,20 @@ public class CaseAggregateState implements AggregateState {
         return offenceConvictionDates.containsKey(offenceId);
     }
 
+    public Set<UUID> getOffencesWithConviction() {
+        return offenceConvictionDates.keySet();
+    }
+
     public ZonedDateTime getOffencePreviousConvictionDate(final UUID offenceId) {
         return offenceConvictionDates.get(offenceId);
     }
 
     public void clearOffenceConvictionDates() {
         offenceConvictionDates.clear();
+    }
+
+    public void removeOffenceConvictionDate(final UUID offenceId) {
+        this.offenceConvictionDates.remove(offenceId);
     }
 
     public boolean isSetAside() {
@@ -820,6 +881,10 @@ public class CaseAggregateState implements AggregateState {
         return offencesHavingPreviousPressRestriction.contains(offenceId);
     }
 
+    public boolean isManagedByAtcm() { return managedByAtcm; }
+
+    public void setManagedByAtcm(final boolean managedByAtcm) { this.managedByAtcm = managedByAtcm; }
+
     public BigDecimal getCosts() {
         return costs;
     }
@@ -830,5 +895,51 @@ public class CaseAggregateState implements AggregateState {
 
     public void setDeleteDocsStarted(final boolean deleteDocsStarted) {
         this.deleteDocsStarted = deleteDocsStarted;
+    }
+
+    public void setCurrentApplication(final Application currentApplication) {
+        this.currentApplication = currentApplication;
+    }
+
+    public boolean hasPendingApplication() {
+        return this.hasApplicationWithOneStatusOf(PENDING_APPLICATION_STATUSES);
+    }
+
+    public boolean hasGrantedApplication() {
+        return this.hasApplicationWithOneStatusOf(GRANTED_APPLICATION_STATUSES);
+    }
+
+    public boolean hasRefusedApplication() {
+        return this.hasApplicationWithOneStatusOf(REFUSED_APPLICATION_STATUSES);
+    }
+
+    private boolean hasApplicationWithOneStatusOf(final List<ApplicationStatus> possibleStatus) {
+        return ofNullable(this.currentApplication)
+                .map(Application::getStatus)
+                .map(possibleStatus::contains)
+                .orElse(false);
+    }
+
+    public void removePlea(final UUID defendantId, final UUID offenceId) {
+        final Optional<Plea> plea = this.getPleas().stream()
+                .filter(pl -> pl.getDefendantId().equals(defendantId) && pl.getOffenceId().equals(offenceId))
+                .findFirst();
+        plea.ifPresent(pl -> this.getPleas().remove(pl));
+    }
+
+    public boolean isCaseRelisted() {
+        return caseRelisted;
+    }
+
+    public void setCaseRelisted(boolean caseRelisted) {
+        this.caseRelisted = caseRelisted;
+    }
+
+    public boolean isCaseAppealed() {
+        return caseAppealed;
+    }
+
+    public void setCaseAppealed(boolean caseAppealed) {
+        this.caseAppealed = caseAppealed;
     }
 }

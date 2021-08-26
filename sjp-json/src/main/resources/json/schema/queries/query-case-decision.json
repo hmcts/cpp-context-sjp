@@ -20,13 +20,16 @@
     },
     "financialImposition" : {
       "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/query-financial-imposition.json"
+    },
+    "applicationDecision": {
+      "$ref" : "http://justice.gov.uk/json/schemas/domains/sjp/queries/query-application-decision.json"
     }
+
   },
   "additionalProperties": false,
   "required": [
     "id",
     "session",
-    "savedAt",
-    "offenceDecisions"
+    "savedAt"
   ]
 }

@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/commands/sjp.command.handler.save-application-decision.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "sessionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "granted": {
+      "type": "boolean"
+    },
+    "rejectionReason": {
+      "type": "string"
+    },
+    "outOfTime": {
+      "type": "boolean"
+    },
+    "outOfTimeReason": {
+      "type": "string"
+    },
+    "savedBy": {
+      "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/user.json"
+    }
+  },
+  "required": [
+    "granted",
+    "sessionId",
+    "caseId",
+    "applicationId"
+  ]
+}

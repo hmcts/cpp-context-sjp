@@ -1,5 +1,10 @@
 package uk.gov.moj.cpp.sjp.query.api;
 
+import static java.util.Optional.ofNullable;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
+
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.ObjectToJsonValueConverter;
 import uk.gov.justice.services.core.annotation.Component;
@@ -19,19 +24,14 @@ import uk.gov.moj.cpp.sjp.query.service.OffenceFineLevels;
 import uk.gov.moj.cpp.sjp.query.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.query.service.WithdrawalReasons;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.ws.rs.NotFoundException;
-
-import java.util.List;
-import java.util.Map;
-
-import static java.util.Optional.ofNullable;
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
 @SuppressWarnings("WeakerAccess")
 @ServiceComponent(Component.QUERY_API)
@@ -80,6 +80,17 @@ public class SjpQueryApi {
             return enveloper.withMetadataFrom(caseResponse, caseResponse.metadata().name())
                     .apply(decisionDecorator.decorate(
                             offenceDecorator.decorateAllOffences(caseResponse.payloadAsJsonObject(), query, withdrawalReasons, offenceFineLevels), query, withdrawalReasons));
+        }
+    }
+
+    @Handles("sjp.query.prosecution-case")
+    public JsonEnvelope findProsecutionCase(final JsonEnvelope query) {
+        final JsonEnvelope caseResponse = requester.request(query);
+
+        if (JsonValue.NULL.equals(caseResponse.payload())) {
+            return caseResponse;
+        } else {
+            return envelopeFrom(metadataFrom(caseResponse.metadata()), caseResponse.payloadAsJsonObject());
         }
     }
 
@@ -240,6 +251,11 @@ public class SjpQueryApi {
         return requester.request(query);
     }
 
+    @Handles("sjp.query.common-case-application")
+    public JsonEnvelope getCommonCaseApplication(final JsonEnvelope query) {
+        return requester.request(query);
+    }
+
     @Handles("sjp.query.not-guilty-plea-cases")
     public JsonEnvelope getNotGuiltyPleaCases(final JsonEnvelope query) {
         return requester.request(query);
@@ -254,4 +270,5 @@ public class SjpQueryApi {
     public JsonEnvelope getCasesWithoutDefendantPostcode(final JsonEnvelope query) {
         return requester.request(query);
     }
+
 }

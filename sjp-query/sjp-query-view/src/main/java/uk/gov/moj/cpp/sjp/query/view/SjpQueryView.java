@@ -9,6 +9,7 @@ import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.sjp.query.view.util.JsonUtility.getString;
 
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.LocalDates;
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
@@ -16,15 +17,20 @@ import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.accesscontrol.sjp.providers.ProsecutingAuthorityProvider;
 import uk.gov.moj.cpp.sjp.domain.DefendantOutstandingFineRequestsQueryResult;
 import uk.gov.moj.cpp.sjp.domain.Employer;
 import uk.gov.moj.cpp.sjp.domain.FinancialMeans;
+import uk.gov.moj.cpp.sjp.persistence.entity.EnforcementNotification;
+import uk.gov.moj.cpp.sjp.persistence.entity.NotificationOfEndorsementStatus;
 import uk.gov.moj.cpp.sjp.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePlea;
 import uk.gov.moj.cpp.sjp.persistence.entity.OnlinePleaDetail;
 import uk.gov.moj.cpp.sjp.persistence.repository.CaseRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.EndorsementRemovalNotificationRepository;
+import uk.gov.moj.cpp.sjp.persistence.repository.EnforcementPendingApplicationNotificationStatusRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OffenceRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaDetailRepository;
 import uk.gov.moj.cpp.sjp.persistence.repository.OnlinePleaRepository;
@@ -32,12 +38,14 @@ import uk.gov.moj.cpp.sjp.query.view.response.CaseNotGuiltyPleaView;
 import uk.gov.moj.cpp.sjp.query.view.response.CaseView;
 import uk.gov.moj.cpp.sjp.query.view.response.DefendantProfilingView;
 import uk.gov.moj.cpp.sjp.query.view.response.onlineplea.OnlinePleaView;
+import uk.gov.moj.cpp.sjp.query.view.service.CaseApplicationService;
 import uk.gov.moj.cpp.sjp.query.view.service.CaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.DatesToAvoidService;
 import uk.gov.moj.cpp.sjp.query.view.service.DefendantService;
 import uk.gov.moj.cpp.sjp.query.view.service.EmployerService;
 import uk.gov.moj.cpp.sjp.query.view.service.FinancialMeansService;
 import uk.gov.moj.cpp.sjp.query.view.service.PressTransparencyReportService;
+import uk.gov.moj.cpp.sjp.query.view.service.ProsecutionCaseService;
 import uk.gov.moj.cpp.sjp.query.view.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.query.view.service.TransparencyReportService;
 import uk.gov.moj.cpp.sjp.query.view.service.UserAndGroupsService;
@@ -59,13 +67,14 @@ import org.slf4j.LoggerFactory;
 @ServiceComponent(Component.QUERY_VIEW)
 public class SjpQueryView {
 
-    static final String FIELD_CASE_ID = "caseId";
-    static final String FIELD_URN = "urn";
-    static final String FIELD_POSTCODE = "postcode";
-    static final String FIELD_QUERY = "q";
-    static final String FIELD_DEFENDANT_ID = "defendantId";
-    static final String FIELD_DAYS_SINCE_POSTING = "daysSincePosting";
-
+    private static final String FIELD_CASE_ID = "caseId";
+    private static final String FIELD_URN = "urn";
+    private static final String FIELD_CORRELATION_ID = "correlationId";
+    private static final String FIELD_POSTCODE = "postcode";
+    private static final String FIELD_QUERY = "q";
+    private static final String FIELD_DEFENDANT_ID = "defendantId";
+    private static final String FIELD_DAYS_SINCE_POSTING = "daysSincePosting";
+    private static final String FIELD_APPLICATION_ID = "applicationId";
     private static final Logger LOGGER = LoggerFactory.getLogger(SjpQueryView.class);
     private static final String NAME_RESPONSE_CASE = "sjp.query.case-response";
     private static final String NAME_RESPONSE_CASES_SEARCH = "sjp.query.cases-search-response";
@@ -76,11 +85,17 @@ public class SjpQueryView {
     private static final String PRESS_TRANSPARENCY_REPORT_METADATA_RESPONSE_NAME = "sjp.query.press-transparency-report-metadata";
     private static final String NOT_GUILTY_PLEA_CASES_RESPONSE_NAME = "sjp.query.not-guilty-plea-cases";
     private static final String CASES_WITHOUT_DEFENDANT_POSTCODE_RESPONSE_NAME = "sjp.query.cases-without-defendant-postcode";
-
+    private static final String NAME_APPLICATION_RESPONSE_CASE = "sjp.query.application-response";
     private static final int DEFAULT_CASES_PAGE_SIZE = 20;
 
     @Inject
     private CaseService caseService;
+
+    @Inject
+    private ProsecutionCaseService prosecutionCaseService;
+
+    @Inject
+    private CaseApplicationService caseApplicationService;
 
     @Inject
     private DefendantService defendantService;
@@ -119,6 +134,12 @@ public class SjpQueryView {
     private ReferenceDataService referenceDataService;
 
     @Inject
+    private EndorsementRemovalNotificationRepository endorsementRemovalNotificationRepository;
+
+    @Inject
+    private EnforcementPendingApplicationNotificationStatusRepository enforcementPendingApplicationNotificationStatusRepository;
+
+    @Inject
     private Enveloper enveloper;
 
     @Inject
@@ -135,14 +156,14 @@ public class SjpQueryView {
         if (caseView != null) {
             final String prosecutingAuthority = caseView.getProsecutingAuthority();
             final Optional<String> userId = envelope.metadata().userId();
-            if(userId.isPresent()) {
+            if (userId.isPresent()) {
                 final boolean userHasProsecutingAuthorityAccess = prosecutingAuthorityProvider.userHasProsecutingAuthorityAccess(envelope, prosecutingAuthority);
                 if (userHasProsecutingAuthorityAccess) {
                     return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
                 } else {
                     throw new ForbiddenRequestException("User is not authorize to view this case");
                 }
-            }  else {
+            } else {
                 return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
             }
         } else {
@@ -157,7 +178,7 @@ public class SjpQueryView {
         if (caseView != null) {
             final String prosecutingAuthority = caseView.getProsecutingAuthority();
             final Optional<String> userId = envelope.metadata().userId();
-            if(userId.isPresent()) {
+            if (userId.isPresent()) {
                 final boolean userHasProsecutingAuthorityAccess = prosecutingAuthorityProvider.userHasProsecutingAuthorityAccess(envelope, prosecutingAuthority);
                 if (userHasProsecutingAuthorityAccess) {
                     LOGGER.info("User {} has valid prosecution authority to access this case", userId);
@@ -166,12 +187,20 @@ public class SjpQueryView {
                     LOGGER.info("User {} has no prosecution authority to access this case", userId);
                     throw new ForbiddenRequestException("User is not authorize to view this case");
                 }
-            }  else {
+            } else {
                 return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
             }
         } else {
             return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(caseView);
         }
+    }
+
+    @Handles("sjp.query.prosecution-case")
+    public Envelope<ProsecutionCase> findProsecutionCase(final JsonEnvelope envelope) {
+        return Envelope.envelopeFrom(
+                metadataFrom(envelope.metadata()),
+                prosecutionCaseService.findProsecutionCase(fromString(extract(envelope, FIELD_CASE_ID)))
+        );
     }
 
     @Handles("sjp.query.case-by-urn")
@@ -187,6 +216,25 @@ public class SjpQueryView {
                         extract(envelope, FIELD_POSTCODE)));
     }
 
+    @Handles("sjp.query.case-by-correlation-id")
+    public JsonEnvelope findCaseByCorrelationId(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(
+                caseService.findCaseByCorrelationId(fromString(extract(envelope, FIELD_CORRELATION_ID))));
+    }
+
+    @Handles("sjp.query.case-by-application-decision-id")
+    public JsonEnvelope findCaseByApplicationDecisionId(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(
+                caseService.findCaseApplicationDecisionId(getApplicationDecisionId(envelope)));
+    }
+
+    @Handles("sjp.query.case-by-application-id")
+    public JsonEnvelope findCaseByApplicationId(final JsonEnvelope envelope) {
+        return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASE).apply(
+                caseService.findCaseByApplicationId(getApplicationId(envelope)));
+    }
+
+
     @Handles("sjp.query.case-search-results")
     public JsonEnvelope findCaseSearchResults(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, NAME_RESPONSE_CASES_SEARCH).apply(
@@ -198,10 +246,10 @@ public class SjpQueryView {
         final JsonObject payload = envelope.payloadAsJsonObject();
         final Optional<Integer> limit = payload.containsKey("limit") ? Optional.of(payload.getInt("limit")) : empty();
         final Optional<LocalDate> postedBefore = payload.containsKey(FIELD_DAYS_SINCE_POSTING) ?
-                                                         Optional.of(LocalDate.now().minusDays(payload.getInt(FIELD_DAYS_SINCE_POSTING))) : empty();
+                Optional.of(LocalDate.now().minusDays(payload.getInt(FIELD_DAYS_SINCE_POSTING))) : empty();
 
         return enveloper.withMetadataFrom(envelope, "sjp.query.cases-missing-sjpn")
-                       .apply(caseService.findCasesMissingSjpn(envelope, limit, postedBefore));
+                .apply(caseService.findCasesMissingSjpn(envelope, limit, postedBefore));
     }
 
     @Handles("sjp.query.case-documents")
@@ -222,7 +270,7 @@ public class SjpQueryView {
         final UUID defendantId = fromString(extract(envelope, FIELD_DEFENDANT_ID));
         final Optional<FinancialMeans> financialMeans = financialMeansService.getFinancialMeans(defendantId);
         return enveloper.withMetadataFrom(envelope, "sjp.query.financial-means")
-                       .apply(financialMeans.orElseGet(() -> new FinancialMeans(null, null, null, null)));
+                .apply(financialMeans.orElseGet(() -> new FinancialMeans(null, null, null, null)));
     }
 
     @Handles("sjp.query.employer")
@@ -230,7 +278,7 @@ public class SjpQueryView {
         final UUID defendantId = fromString(extract(envelope, FIELD_DEFENDANT_ID));
         final Optional<Employer> employer = employerService.getEmployer(defendantId);
         return enveloper.withMetadataFrom(envelope, "sjp.query.employer")
-                       .apply(employer.orElseGet(() -> new Employer(null, null, null, null, null)));
+                .apply(employer.orElseGet(() -> new Employer(null, null, null, null, null)));
     }
 
     @Handles("sjp.query.cases-search-by-material-id")
@@ -253,7 +301,7 @@ public class SjpQueryView {
         final LocalDate toDate = LocalDates.from(extract(envelope, "toDate"));
 
         return enveloper.withMetadataFrom(envelope, "sjp.query.result-orders")
-                       .apply(caseService.findResultOrders(fromDate, toDate));
+                .apply(caseService.findResultOrders(fromDate, toDate));
     }
 
     @Handles("sjp.query.defendants-online-plea")
@@ -289,7 +337,7 @@ public class SjpQueryView {
     @Handles("sjp.query.pending-dates-to-avoid")
     public JsonEnvelope findPendingDatesToAvoid(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, "sjp.pending-dates-to-avoid")
-                       .apply(datesToAvoidService.findCasesPendingDatesToAvoid(envelope));
+                .apply(datesToAvoidService.findCasesPendingDatesToAvoid(envelope));
     }
 
     @Handles("sjp.query.case-prosecuting-authority")
@@ -297,8 +345,8 @@ public class SjpQueryView {
         final UUID caseId = fromString(query.payloadAsJsonObject().getString(FIELD_CASE_ID));
 
         final JsonObject prosecutingAuthorityPayload = Optional.ofNullable(caseRepository.getProsecutingAuthority(caseId))
-                                                               .map(prosecutingAuthority -> createObjectBuilder().add("prosecutingAuthority", prosecutingAuthority).build())
-                                                               .orElse(null);
+                .map(prosecutingAuthority -> createObjectBuilder().add("prosecutingAuthority", prosecutingAuthority).build())
+                .orElse(null);
 
         return enveloper.withMetadataFrom(query, "sjp.query.case-prosecuting-authority").apply(prosecutingAuthorityPayload);
     }
@@ -306,7 +354,7 @@ public class SjpQueryView {
     @Handles("sjp.query.defendant-details-updates")
     public JsonEnvelope findDefendantDetailUpdates(final JsonEnvelope envelope) {
         return enveloper.withMetadataFrom(envelope, "sjp.query.defendant-details-updates")
-                       .apply(defendantService.findDefendantDetailUpdates(envelope));
+                .apply(defendantService.findDefendantDetailUpdates(envelope));
     }
 
     @Handles("sjp.query.transparency-report-metadata")
@@ -347,7 +395,7 @@ public class SjpQueryView {
         final int pageSize = queryFilters.getInt("pageSize", DEFAULT_CASES_PAGE_SIZE);
         final int pageNumber = queryFilters.getInt("pageNumber", 1);
 
-        if(pageNumber <= 0 || pageSize <= 0) {
+        if (pageNumber <= 0 || pageSize <= 0) {
             throw new IllegalArgumentException(format("invalid page number (%d) or page size (%d)", pageNumber, pageSize));
         }
 
@@ -377,6 +425,28 @@ public class SjpQueryView {
         }
     }
 
+    @Handles("sjp.query.application")
+    public JsonEnvelope findApplication(final JsonEnvelope envelope) {
+        return caseApplicationService.findApplication(fromString(extract(envelope, FIELD_APPLICATION_ID)))
+                .map(app -> enveloper.withMetadataFrom(envelope, NAME_APPLICATION_RESPONSE_CASE).apply(app))
+                .orElse(envelopeFrom(envelope.metadata(), Json.createObjectBuilder().build()));
+
+    }
+
+    @Handles("sjp.query.notification-of-endorsement-status")
+    public JsonEnvelope getNotificationOfEndorsementStatus(final JsonEnvelope envelope) {
+        final NotificationOfEndorsementStatus notificationStatus = endorsementRemovalNotificationRepository.findBy(getApplicationDecisionId(envelope));
+        return enveloper.withMetadataFrom(envelope, "sjp.query.notification-of-endorsement-status-response")
+                .apply(notificationStatus);
+    }
+
+    @Handles("sjp.query.enforcement-pending-application-notification-status")
+    public JsonEnvelope getEnforcementPendingApplicationNotificationStatus(final JsonEnvelope envelope) {
+        final EnforcementNotification notificationStatus = enforcementPendingApplicationNotificationStatusRepository.findBy(getApplicationId(envelope));
+        return enveloper.withMetadataFrom(envelope, "sjp.query.enforcement-pending-application-notification-status")
+                .apply(notificationStatus);
+    }
+
     private String extract(final JsonEnvelope envelope, final String fieldName) {
         return envelope.payloadAsJsonObject().getString(fieldName);
     }
@@ -386,5 +456,13 @@ public class SjpQueryView {
             return ExportType.of(envelope.payloadAsJsonObject().getString("export"));
         }
         return ExportType.PUBLIC;
+    }
+
+    private UUID getApplicationDecisionId(final JsonEnvelope envelope) {
+        return fromString(envelope.payloadAsJsonObject().getString("applicationDecisionId"));
+    }
+
+    private UUID getApplicationId(JsonEnvelope envelope) {
+        return fromString(envelope.payloadAsJsonObject().getString(FIELD_APPLICATION_ID));
     }
 }

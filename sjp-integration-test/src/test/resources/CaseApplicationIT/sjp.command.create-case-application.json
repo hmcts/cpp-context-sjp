@@ -1,0 +1,50 @@
+{
+  "courtApplication": {
+    "courtApplicationCases": [
+      {
+        "prosecutionCaseId": "bf73207f-3ced-488a-82a0-3fba79c3ce85",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "TFL",
+          "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c3ce85",
+          "prosecutionAuthorityReference": "TFL12345-A"
+        },
+        "isSJP": true,
+        "caseStatus": "caseStatus"
+      }
+    ],
+    "id": "${APP_ID}",
+    "type": {
+      "id": "${TYPE_ID}",
+      "type": "${APPLICATION_TYPE}",
+      "code": "${APPLICATION_CODE}",
+      "categoryCode": "categoryCode123",
+      "linkType": "STANDALONE",
+      "jurisdiction": "MAGISTRATES",
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "breachType": "NOT_APPLICABLE",
+      "appealFlag": false,
+      "applicantAppellantFlag": false,
+      "pleaApplicableFlag": false,
+      "commrOfOathFlag": false,
+      "courtOfAppealFlag": false,
+      "courtExtractAvlFlag": false,
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": false,
+      "offenceActiveOrder": "COURT_ORDER"
+    },
+    "applicationReceivedDate": "${APPLICATION_RECEIVED_DATE}",
+    "applicant": {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "synonym": "a",
+      "summonsRequired": false,
+      "notificationRequired": false
+    },
+    "subject": {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "synonym": "a",
+      "summonsRequired": false,
+      "notificationRequired": false
+    },
+    "applicationStatus": "${APP_STATUS}"
+  }
+}

@@ -157,8 +157,19 @@ public class NoActionController {
         send(envelope);
     }
 
+    @Handles("sjp.command.add-financial-imposition-correlation-id")
+    public void addFinancialImpositionCorrelationId(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
+    @Handles("sjp.command.add-financial-imposition-account-number-bdf")
+    public void addFinancialImpositionAccountNumberBdf(final JsonEnvelope envelope) {
+        send(envelope);
+    }
+
     private void send(final Envelope<?> envelope) {
         sender.send(envelope);
     }
+
 
 }

@@ -282,6 +282,10 @@ public class CaseDecisionHandler {
             return;
         }
 
+        if(state.isSetAside()) {
+            return;
+        }
+
         final Set<UUID> offenceIdsWithFinalDecision = getOffenceIds(state.getOffenceDecisions(), OffenceDecision::isFinalDecision);
 
         decision.getOffenceIds().stream()

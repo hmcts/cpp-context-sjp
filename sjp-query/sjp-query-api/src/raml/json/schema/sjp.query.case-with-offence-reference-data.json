@@ -141,6 +141,9 @@
     },
     "defendant": {
       "$ref": "#/definitions/defendant"
+    },
+    "managedByATCM": {
+      "type": "boolean"
     }
   },
   "additionalProperties": true,

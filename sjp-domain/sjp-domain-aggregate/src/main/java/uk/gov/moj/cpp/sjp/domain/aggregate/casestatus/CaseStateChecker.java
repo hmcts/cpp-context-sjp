@@ -35,6 +35,7 @@ class CaseStateChecker {
         private final boolean adjourned;
         private final boolean postConviction;
         private final boolean setAside;
+        private final boolean applicationGranted;
 
         private final List<SingleRuleChecker> checkers;
 
@@ -44,7 +45,8 @@ class CaseStateChecker {
                                         final boolean datesToAvoidTimerExpired,
                                         final boolean adjourned,
                                         final boolean postConviction,
-                                        final boolean setAside) {
+                                        final boolean setAside,
+                                        final boolean applicationGranted) {
             this.offenceInformations = offenceInformations;
             this.defendantsResponseTimerExpired = defendantsResponseTimerExpired;
             this.datesToAvoid = datesToAvoid;
@@ -52,6 +54,7 @@ class CaseStateChecker {
             this.adjourned = adjourned;
             this.postConviction = postConviction;
             this.setAside = setAside;
+            this.applicationGranted = applicationGranted;
             this.checkers = new ArrayList<>();
         }
 
@@ -61,8 +64,9 @@ class CaseStateChecker {
                                                            final boolean datesToAvoidTimerElapsed,
                                                            final boolean adjourned,
                                                            final boolean postConviction,
-                                                           final boolean setAside) {
-            return new CaseStateCheckerBuilder(offenceInformation, defendantsResponseTimerElapsed, datesToAvoid, datesToAvoidTimerElapsed, adjourned, postConviction, setAside);
+                                                           final boolean setAside,
+                                                           final boolean applicationGranted) {
+            return new CaseStateCheckerBuilder(offenceInformation, defendantsResponseTimerElapsed, datesToAvoid, datesToAvoidTimerElapsed, adjourned, postConviction, setAside, applicationGranted);
         }
 
         private static boolean notGuiltyPlea(final OffenceInformation offenceInformation) {
@@ -165,6 +169,11 @@ class CaseStateChecker {
 
         CaseStateCheckerBuilder setAside() {
             checkers.add(() -> setAside);
+            return this;
+        }
+
+        CaseStateCheckerBuilder applicationGranted() {
+            checkers.add(() -> applicationGranted);
             return this;
         }
 

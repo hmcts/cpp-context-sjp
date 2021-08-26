@@ -1,7 +1,8 @@
 package uk.gov.moj.cpp.sjp.event.processor.service.referral;
 
-import static java.util.UUID.fromString;
-import static java.util.stream.Collectors.toMap;
+import static java.util.Collections.singletonList;
+import static java.util.Objects.isNull;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.normalizeSpace;
 import static org.apache.commons.lang3.StringUtils.upperCase;
 
@@ -9,24 +10,38 @@ import uk.gov.justice.json.schemas.domains.sjp.queries.CaseDetails;
 import uk.gov.justice.json.schemas.domains.sjp.queries.Document;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.sjp.event.CaseReferredForCourtHearing;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.ApplicationDocumentView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.CourtDocumentView;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.DefendantDocumentView;
+import uk.gov.moj.cpp.sjp.event.processor.model.referral.DocumentCategoryView;
 import uk.gov.moj.cpp.sjp.event.processor.model.referral.MaterialView;
 import uk.gov.moj.cpp.sjp.event.processor.service.MaterialService;
 import uk.gov.moj.cpp.sjp.event.processor.service.ReferenceDataService;
 import uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.CaseDocumentTypeHelper;
-import uk.gov.moj.cpp.sjp.event.processor.service.referral.helpers.CourtDocumentsViewHelper;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
 public class CourtDocumentsDataSourcingService {
+
+    private static final String FINANCIAL_MEANS = "FINANCIAL_MEANS";
+    private static final String APPLICATION_DOCUMENT_TYPE = "APPLICATION";
+    private static final Set<String> EXCLUDED_DOCUMENT_TYPES = new HashSet<>();
+
+    static {
+        EXCLUDED_DOCUMENT_TYPES.add("RESULT_ORDER");
+        EXCLUDED_DOCUMENT_TYPES.add("EMPLOYER_ATTACHMENT_TO_EARNINGS");
+    }
+
 
     @Inject
     private MaterialService materialService;
@@ -34,86 +49,65 @@ public class CourtDocumentsDataSourcingService {
     @Inject
     private ReferenceDataService referenceDataService;
 
-    @Inject
-    private CourtDocumentsViewHelper courtDocumentsHelper;
+    public List<CourtDocumentView> createCourtDocumentViews(final CaseReferredForCourtHearing caseReferral,
+                                                            final CaseDetails caseDetails,
+                                                            final JsonEnvelope envelope) {
 
-    public List<CourtDocumentView> createCourtDocumentViews(
-            final CaseReferredForCourtHearing caseReferredForCourtHearing,
-            final CaseDetails caseDetails,
-            final JsonEnvelope emptyEnvelopeWithReferralEventMetadata) {
+        final LocalDate date = caseReferral.getReferredAt().toLocalDate();
+        final List<DocumentTypeAccess> referenceDataDocumentTypes = referenceDataService.getDocumentTypeAccess(date, envelope);
+        final List<CourtDocumentView> results = new ArrayList<>();
+        final List<Document> caseDocumentsToBeSent = getCaseDocumentsForReferral(caseDetails);
+        for (final Document caseDocument : caseDocumentsToBeSent) {
 
-        final Map<String, UUID> documentTypeToDocumentTypeId =
-                getDocumentsTypes(caseReferredForCourtHearing.getReferredAt().toLocalDate(),
-                        emptyEnvelopeWithReferralEventMetadata);
+            final MaterialView material = getMaterial(caseDocument.getMaterialId(), envelope);
+            final UUID documentTypeId = getDocumentTypeId(caseDocument.getDocumentType(), referenceDataDocumentTypes);
+            final DocumentCategoryView documentCategory = createDocumentCategory(caseDetails, caseDocument.getDocumentType());
 
-        final Map<UUID, MaterialView> documentIdToMaterialView =
-                createDocumentIdToMaterialView(caseDetails, emptyEnvelopeWithReferralEventMetadata);
+            final CourtDocumentView courtDocument = new CourtDocumentView(
+                    caseDocument.getId(),
+                    documentCategory,
+                    material.getName(),
+                    documentTypeId,
+                    material.getMimeType(),
+                    isFinancialMeans(caseDocument.getDocumentType()),
+                    singletonList(material));
 
-        final Map<UUID, UUID> documentIdToDocumentTypeId =
-                createDocumentIdToDocumentTypeId(documentTypeToDocumentTypeId, caseDetails);
+            results.add(courtDocument);
+        }
 
-        return courtDocumentsHelper.createCourtDocumentViews(
-                caseDetails,
-                documentIdToMaterialView,
-                documentIdToDocumentTypeId);
+        return results;
     }
 
-    private Map<UUID, UUID> createDocumentIdToDocumentTypeId(
-            final Map<String, UUID> documentsMetadata,
-            final CaseDetails caseDetails) {
+    public List<CourtDocumentView> createCourtDocumentViews(final LocalDate date,
+                                                            final CaseDetails caseDetails,
+                                                            final JsonEnvelope envelope) {
 
-        return caseDetails
-                .getCaseDocuments()
-                .stream()
-                .collect(toMap(
-                        Document::getId,
-                        toDocumentMetadataId(documentsMetadata))
-                );
+        final List<DocumentTypeAccess> referenceDataDocumentTypes = referenceDataService.getDocumentTypeAccess(date, envelope);
+        final List<CourtDocumentView> results = new ArrayList<>();
+        final List<Document> caseDocumentsToBeSent = getCaseDocumentsForReferral(caseDetails);
+        for (final Document caseDocument : caseDocumentsToBeSent) {
+
+            final MaterialView material = getMaterial(caseDocument.getMaterialId(), envelope);
+            final UUID documentTypeId = getDocumentTypeId(caseDocument.getDocumentType(), referenceDataDocumentTypes);
+            final DocumentCategoryView documentCategory = createDocumentCategory(caseDetails, caseDocument.getDocumentType());
+
+            final CourtDocumentView courtDocument = new CourtDocumentView(
+                    caseDocument.getId(),
+                    documentCategory,
+                    material.getName(),
+                    documentTypeId,
+                    material.getMimeType(),
+                    isFinancialMeans(caseDocument.getDocumentType()),
+                    singletonList(material));
+
+            results.add(courtDocument);
+        }
+
+        return results;
     }
 
-    private Function<Document, UUID> toDocumentMetadataId(final Map<String, UUID> documentsMetadata) {
-        return document -> {
-            final String documentType = CaseDocumentTypeHelper.getDocumentType(document.getDocumentType());
-            return documentsMetadata.getOrDefault(normalizedDocumentType(documentType), null);
-        };
-    }
-
-    private Map<String, UUID> getDocumentsTypes(
-            final LocalDate date,
-            final JsonEnvelope emptyEnvelopeWithCourtDocumentsMetadata) {
-
-        return referenceDataService.getDocumentTypeAccess(date,
-                emptyEnvelopeWithCourtDocumentsMetadata)
-                .getJsonArray("documentsTypeAccess")
-                .getValuesAs(JsonObject.class)
-                .stream()
-                .collect(toMap(
-                        metadata -> normalizedDocumentType(metadata.getString("section")),
-                        metadata -> fromString(metadata.getString("id"))
-                ));
-    }
-
-    private Map<UUID, MaterialView> createDocumentIdToMaterialView(
-            final CaseDetails caseDetails,
-            final JsonEnvelope emptyEnvelopeWithReferralEventMetadata) {
-
-        return caseDetails
-                .getCaseDocuments()
-                .stream()
-                .collect(
-                        toMap(Document::getId,
-                                document -> createMaterialView(
-                                        document.getMaterialId(),
-                                        emptyEnvelopeWithReferralEventMetadata)));
-    }
-
-    private MaterialView createMaterialView(
-            UUID materialId,
-            final JsonEnvelope emptyEnvelopeWithReferralEventMetadata) {
-        final JsonObject materialMetadata =
-                materialService.getMaterialMetadata(
-                        materialId,
-                        emptyEnvelopeWithReferralEventMetadata);
+    private MaterialView getMaterial(final UUID materialId, final JsonEnvelope envelope) {
+        final JsonObject materialMetadata = materialService.getMaterialMetadata(materialId, envelope);
 
         return new MaterialView(
                 materialId,
@@ -122,7 +116,48 @@ public class CourtDocumentsDataSourcingService {
                 materialMetadata.getString("mimeType"));
     }
 
+    private UUID getDocumentTypeId(final String sjpDocumentType, final List<DocumentTypeAccess> referenceDataDocumentTypes) {
+        final String referenceDataDocumentType = normalizedDocumentType(CaseDocumentTypeHelper.getDocumentType(sjpDocumentType));
+        return referenceDataDocumentTypes
+                .stream()
+                .filter(documentTypeAccess -> normalizedDocumentType(documentTypeAccess.getDocumentType()).equals(referenceDataDocumentType))
+                .findFirst()
+                .map(DocumentTypeAccess::getDocumentTypeId)
+                .orElse(null);
+    }
+
+    private DocumentCategoryView createDocumentCategory(final CaseDetails caseDetails, final String documentType) {
+        final UUID caseId = caseDetails.getId();
+        final UUID defendantId = caseDetails.getDefendant().getId();
+
+        if (APPLICATION_DOCUMENT_TYPE.equals(documentType)) {
+            return new DocumentCategoryView(new ApplicationDocumentView(
+                    caseDetails.getCaseApplication().getApplicationId(),
+                    defendantId,
+                    caseId
+            ));
+        }
+
+        return new DocumentCategoryView(new DefendantDocumentView(caseId, defendantId));
+    }
+
+    private Boolean isFinancialMeans(final String documentType) {
+        if (isNull(documentType) || isEmpty(documentType)) {
+            return Boolean.FALSE;
+        }
+        return documentType.contentEquals(FINANCIAL_MEANS);
+    }
+
     private String normalizedDocumentType(final String documentType) {
         return normalizeSpace(upperCase(documentType));
+    }
+
+    private List<Document> getCaseDocumentsForReferral(final CaseDetails caseDetails) {
+
+        return caseDetails.getCaseDocuments()
+                .stream()
+                .filter(caseDoc -> !EXCLUDED_DOCUMENT_TYPES.contains(caseDoc.getDocumentType()))
+                .filter(caseDoc -> !(caseDetails.getCaseApplication() == null && APPLICATION_DOCUMENT_TYPE.equals(caseDoc.getDocumentType())))
+                .collect(Collectors.toList());
     }
 }

@@ -29,10 +29,12 @@ import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.DVLA;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TFL;
 import static uk.gov.moj.sjp.it.model.ProsecutingAuthority.TVL;
 import static uk.gov.moj.sjp.it.pollingquery.CasePoller.pollUntilCaseByIdIsOk;
-import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllReferenceData;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubAllResultDefinitions;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubDefaultCourtByCourtHouseOUCodeQuery;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubEnforcementAreaByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubProsecutorQuery;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForAllProsecutors;
+import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubQueryForVerdictTypes;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubRegionByPostcode;
 import static uk.gov.moj.sjp.it.stub.ReferenceDataServiceStub.stubWithdrawalReasonsQuery;
 import static uk.gov.moj.sjp.it.stub.UsersGroupsStub.stubForUserDetails;
@@ -41,6 +43,7 @@ import static uk.gov.moj.sjp.it.util.Defaults.DEFAULT_LONDON_COURT_HOUSE_OU_CODE
 import uk.gov.justice.json.schemas.domains.sjp.User;
 import uk.gov.justice.json.schemas.fragments.sjp.WithdrawalRequestsStatus;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.sjp.domain.common.CaseStatus;
 import uk.gov.moj.cpp.sjp.domain.decision.Adjourn;
 import uk.gov.moj.cpp.sjp.domain.decision.OffenceDecisionInformation;
@@ -69,6 +72,8 @@ import java.util.UUID;
 import javax.jms.JMSException;
 
 import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.tuple.Triple;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
@@ -78,6 +83,7 @@ import org.junit.Test;
 public class CaseAdjournmentIT extends BaseIntegrationTest {
 
     private static final String TIMER_TIMEOUT_PROCESS_NAME = "timerTimeout";
+    public static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private final LocalDate postingDate = now().minusDays(NOTICE_PERIOD_IN_DAYS + 1);
     private final LocalDate adjournmentDate = now().plusDays(7);
     private final SjpDatabaseCleaner databaseCleaner = new SjpDatabaseCleaner();
@@ -101,10 +107,14 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
         AssignmentStub.stubAssignmentReplicationCommands();
         SchedulingStub.stubStartSjpSessionCommand();
         stubDefaultCourtByCourtHouseOUCodeQuery();
-        stubAllReferenceData();
+        stubAllResultDefinitions();
+        stubQueryForAllProsecutors();
 
         stubWithdrawalReasonsQuery(withdrawalRequestReasonId, "Insufficient Evidence");
         stubForUserDetails(user, "ALL");
+
+        final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", false);
+        FeatureStubber.stubFeaturesFor("sjp", features);
 
         createCasePayloadBuilder = CreateCase.CreateCasePayloadBuilder
                 .withDefaults()
@@ -114,6 +124,7 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
 
         final ProsecutingAuthority prosecutingAuthority = createCasePayloadBuilder.getProsecutingAuthority();
         stubProsecutorQuery(prosecutingAuthority.name(), prosecutingAuthority.getFullName(), randomUUID());
+        stubQueryForVerdictTypes();
         stubEnforcementAreaByPostcode(createCasePayloadBuilder.getDefendantBuilder().getAddressBuilder().getPostcode(), NATIONAL_COURT_CODE, "Bedfordshire Magistrates' Court");
         stubRegionByPostcode(NATIONAL_COURT_CODE, "DEFENDANT_REGION");
 
@@ -354,12 +365,15 @@ public class CaseAdjournmentIT extends BaseIntegrationTest {
         final List<Adjourn> offencesDecisions = singletonList(adjournDecision);
         final DecisionCommand decision = new DecisionCommand(sessionId, caseId, null, user, offencesDecisions, null);
 
-        final Optional<JsonEnvelope> caseAdjournmentRecordedEvent = new EventListener()
+        final EventListener eventListener = new EventListener()
                 .subscribe(CASE_ADJOURNED_TO_LATER_SJP_EVENT)
-                .run(() -> DecisionHelper.saveDecision(decision))
-                .popEvent(CASE_ADJOURNED_TO_LATER_SJP_EVENT);
+                .subscribe(PUBLIC_HEARING_RESULTED)
+                .run(() -> DecisionHelper.saveDecision(decision));
 
+        final Optional<JsonEnvelope> caseAdjournmentRecordedEvent = eventListener.popEvent(CASE_ADJOURNED_TO_LATER_SJP_EVENT);
         assertTrue(caseAdjournmentRecordedEvent.isPresent());
+        final Optional<JsonEnvelope> publicHearingResulted = eventListener.popEvent(PUBLIC_HEARING_RESULTED);
+        assertTrue(publicHearingResulted.isPresent());
     }
 
     private Matcher caseAssigned(final boolean assigned) {

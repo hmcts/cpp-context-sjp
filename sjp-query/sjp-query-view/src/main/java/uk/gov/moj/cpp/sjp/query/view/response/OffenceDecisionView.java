@@ -8,6 +8,7 @@ import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargePeriod;
 import uk.gov.moj.cpp.sjp.domain.decision.discharge.DischargeType;
 import uk.gov.moj.cpp.sjp.domain.decision.disqualification.DisqualificationType;
 import uk.gov.moj.cpp.sjp.domain.decision.endorsement.PenaltyPointsReason;
+import uk.gov.moj.cpp.sjp.domain.plea.PleaType;
 import uk.gov.moj.cpp.sjp.domain.verdict.VerdictType;
 import uk.gov.moj.cpp.sjp.persistence.entity.AdjournOffenceDecision;
 import uk.gov.moj.cpp.sjp.persistence.entity.DischargeOffenceDecision;
@@ -28,7 +29,10 @@ public class OffenceDecisionView {
 
     private LocalDate adjournedTo;
     private UUID offenceId;
+    private UUID offenceDecisionId ;
     private DecisionType decisionType;
+    private PleaType pleaAtDecisionTime ;
+    private ZonedDateTime pleaDate;
     private UUID withdrawalReasonId;
     private VerdictType verdict;
     private UUID referralReasonId;
@@ -60,8 +64,11 @@ public class OffenceDecisionView {
 
     public OffenceDecisionView(final OffenceDecision offenceDecision) {
         this.offenceId = offenceDecision.getOffenceId();
+        this.offenceDecisionId=offenceDecision.getCaseDecisionId() ;
         this.decisionType = offenceDecision.getDecisionType();
+        this.pleaAtDecisionTime=offenceDecision.getPleaAtDecisionTime() ;
         this.verdict = offenceDecision.getVerdictType();
+        this.pleaDate=offenceDecision.getPleaDate();
         this.convictionDate = offenceDecision.getConvictionDate();
         this.pressRestriction = mapPressRestriction(offenceDecision.getPressRestriction());
         switch (offenceDecision.getDecisionType()) {
@@ -281,5 +288,21 @@ public class OffenceDecisionView {
 
     public PressRestriction getPressRestriction() {
         return this.pressRestriction;
+    }
+    public UUID getOffenceDecisionId() { return offenceDecisionId; }
+    public void setOffenceDecisionId(UUID offenceDecisionId) { this.offenceDecisionId = offenceDecisionId; }
+
+    public PleaType getPleaAtDecisionTime() {
+        return pleaAtDecisionTime;
+    }
+
+    public void setPleaAtDecisionTime(PleaType pleaAtDecisionTime) {
+        this.pleaAtDecisionTime = pleaAtDecisionTime;
+    }
+    public ZonedDateTime getPleaDate() {
+        return pleaDate;
+    }
+    public void setPleaDate(ZonedDateTime pleaDate) {
+        this.pleaDate = pleaDate;
     }
 }

@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.sjp.query.view.service;
 
 import static java.util.Collections.emptyList;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
@@ -27,9 +28,12 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+@SuppressWarnings("squid:CallToDeprecatedMethod")
 public class ReferenceDataService {
 
     private static final String RESULTS = "results";
+    private static final String REFERENCEDATA_QUERY_PROSECUTORS = "referencedata.query.prosecutors";
+    private static final String PROSECUTORS_KEY = "prosecutors";
 
     @Inject
     private Enveloper enveloper;
@@ -44,7 +48,7 @@ public class ReferenceDataService {
     public Optional<JsonArray> getProsecutorsByProsecutorCode(String prosecutorCode) {
         final JsonEnvelope prosecutorsQueryEnvelope = envelopeFrom(
                 metadataBuilder().
-                        withName("referencedata.query.prosecutors").
+                        withName(REFERENCEDATA_QUERY_PROSECUTORS).
                         withId(randomUUID()),
 
                 createObjectBuilder().
@@ -53,22 +57,37 @@ public class ReferenceDataService {
         final JsonEnvelope prosecutorsData = requester.requestAsAdmin(prosecutorsQueryEnvelope);
 
         return ofNullable(prosecutorsData.payloadAsJsonObject()).
-                map(payload -> payload.getJsonArray("prosecutors"));
+                map(payload -> payload.getJsonArray(PROSECUTORS_KEY));
+    }
+
+    public JsonObject getProsecutor(final String prosecutingAuthority) {
+        final JsonObject payload = createObjectBuilder().add("prosecutorCode", prosecutingAuthority).build();
+        final JsonEnvelope request = envelopeFrom(
+                metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(REFERENCEDATA_QUERY_PROSECUTORS), payload
+        );
+        final JsonEnvelope response = requester.requestAsAdmin(request);
+        return response.payloadAsJsonObject().getJsonArray(PROSECUTORS_KEY)
+                .getValuesAs(JsonObject.class)
+                .stream()
+                .findFirst()
+                .orElse(null);
     }
 
     public Optional<JsonArray> getAllProsecutors() {
         final JsonEnvelope prosecutorsQueryEnvelope = envelopeFrom(
                 metadataBuilder().
-                        withName("referencedata.query.prosecutors").
+                        withName(REFERENCEDATA_QUERY_PROSECUTORS).
                         withId(randomUUID()), createObjectBuilder());
 
         final JsonEnvelope prosecutorsData = requester.requestAsAdmin(prosecutorsQueryEnvelope);
 
         return ofNullable(prosecutorsData.payloadAsJsonObject()).
-                map(payload -> payload.getJsonArray("prosecutors"));
+                map(payload -> payload.getJsonArray(PROSECUTORS_KEY));
     }
 
-    public Optional<JsonObject> getOffenceData(String offenceCode){
+    public Optional<JsonObject> getOffenceData(String offenceCode) {
         final JsonEnvelope offenceQueryEnvelope = envelopeFrom(
                 metadataBuilder().
                         withId(randomUUID()).
@@ -78,7 +97,7 @@ public class ReferenceDataService {
 
         final JsonEnvelope offenceRefDataEnvelope = requester.requestAsAdmin(offenceQueryEnvelope);
         final JsonArray offencesArray = offenceRefDataEnvelope.payloadAsJsonObject().getJsonArray("offences");
-        if(!offencesArray.isEmpty()){
+        if (!offencesArray.isEmpty()) {
             return of(offencesArray.getJsonObject(0));
         } else {
             return empty();
@@ -116,7 +135,7 @@ public class ReferenceDataService {
         final JsonObject resultsResponse = requester.requestAsAdmin(query)
                 .payloadAsJsonObject();
 
-        if(resultsResponse.containsKey(RESULTS) && !resultsResponse.isNull(RESULTS)){
+        if (resultsResponse.containsKey(RESULTS) && !resultsResponse.isNull(RESULTS)) {
             return resultsResponse.getJsonArray(RESULTS).getValuesAs(JsonObject.class);
         } else {
             return emptyList();
@@ -155,7 +174,7 @@ public class ReferenceDataService {
 
     public List<RegionalOrganisation> getRegionalOrganisations(final JsonEnvelope source) {
         final JsonEnvelope requestEnvelope = envelopeFrom(
-                metadataFrom(source.metadata()).withName("referencedata.query.regional-organisations"),
+                metadataFrom(source.metadata()).withName("referencedata.query.regional-organisations-except-region-name-police"),
                 createObjectBuilder()
         );
 
@@ -181,5 +200,36 @@ public class ReferenceDataService {
                         jsonObject.containsKey("cbwaEnforcerEmail") ? jsonObject.getString("cbwaEnforcerEmail") : null
                 ))
                 .collect(Collectors.toList());
+    }
+
+    public Optional<JsonObject> getNationality(final String nationalityCode) {
+        final JsonEnvelope request = envelopeFrom(
+                metadataBuilder()
+                    .withId(randomUUID())
+                    .withName("referencedata.query.country-nationality"),
+                createObjectBuilder().build());
+        final JsonEnvelope response = requester.requestAsAdmin(request);
+
+        return response.payloadAsJsonObject().getJsonArray("countryNationality")
+                .getValuesAs(JsonObject.class).stream()
+                .filter(nationality -> nonNull(nationality.getString("isoCode", null)))
+                .filter(nationality -> nationality.getString("isoCode").equals(nationalityCode))
+                .findFirst();
+    }
+
+    public Optional<JsonObject> getEthnicity(final String ethnicityCode) {
+        final JsonObject payload = createObjectBuilder().add("code", ethnicityCode).build();
+        final JsonEnvelope request = envelopeFrom(
+                metadataBuilder()
+                        .withId(randomUUID())
+                        .withName("referencedata.query.ethnicities"),
+                payload);
+        final JsonEnvelope response = requester.requestAsAdmin(request);
+
+        return response.payloadAsJsonObject()
+                .getJsonArray("ethnicities")
+                .getValuesAs(JsonObject.class)
+                .stream()
+                .findFirst();
     }
 }

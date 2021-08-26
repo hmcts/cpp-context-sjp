@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/json/schemas/domains/sjp/event/public-case-document-upload-rejected.json",
+  "type": "object",
+  "properties": {
+      "documentId": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      },
+      "description": {
+        "type": "string"
+      }
+  },
+  "required": [
+    "documentId",
+    "description"
+  ]
+}
